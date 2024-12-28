@@ -1,12 +1,12 @@
-import { SchemaFormValues } from "@arrirpc/codegen-utils";
+import { SchemaFormValues } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
     outputIsOptionType,
     RustProperty,
     validRustIdentifier,
-} from "./_common";
-import { rustTypeFromSchema } from "./_index";
+} from './_common';
+import { rustTypeFromSchema } from './_index';
 
 export default function rustRecordFromSchema(
     schema: SchemaFormValues,
@@ -70,7 +70,7 @@ export default function rustRecordFromSchema(
                 ${target}.push_str(format!("{}:", serialize_string(_key_)).as_str());
                 match _value_ {
                     Some(value_val) => {
-                        ${innerType.toJsonTemplate("value_val", target)};
+                        ${innerType.toJsonTemplate('value_val', target)};
                     },
                     _ => {
                         ${target}.push_str("null");

@@ -1,4 +1,4 @@
-import { type SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
+import { type SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
@@ -7,8 +7,8 @@ import {
     isNullable,
     kotlinIdentifier,
     type KotlinProperty,
-} from "./_common";
-import { kotlinObjectFromSchema } from "./object";
+} from './_common';
+import { kotlinObjectFromSchema } from './object';
 
 export function kotlinDiscriminatorFromSchema(
     schema: SchemaFormDiscriminator,
@@ -41,9 +41,9 @@ export function kotlinDiscriminatorFromSchema(
         }
     }
     if (subTypes.length === 0) {
-        throw new Error("Discriminator schemas must have at least one mapping");
+        throw new Error('Discriminator schemas must have at least one mapping');
     }
-    const defaultValue = nullable ? "null" : `${className}.new()`;
+    const defaultValue = nullable ? 'null' : `${className}.new()`;
     const result: KotlinProperty = {
         typeName: className,
         isNullable: nullable,
@@ -66,12 +66,12 @@ export function kotlinDiscriminatorFromSchema(
         toQueryString() {
             return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
     if (context.existingTypeIds.includes(className)) {
         return result;
     }
-    const codeComment = getCodeComment(schema.metadata, "", "class");
+    const codeComment = getCodeComment(schema.metadata, '', 'class');
     const content = `${codeComment}sealed interface ${className} : ${context.clientName}Model {
     val ${kotlinDiscriminatorKey}: String
 
@@ -94,7 +94,7 @@ export function kotlinDiscriminatorFromSchema(
             }
             return when (__input.jsonObject["${schema.discriminator}"]) {
                 is JsonPrimitive -> when (__input.jsonObject["${schema.discriminator}"]!!.jsonPrimitive.contentOrNull) {
-                    ${subTypes.map((type) => `"${type.discriminatorValue}" -> ${type.typeName}.fromJsonElement(__input, instancePath)`).join("\n")}
+                    ${subTypes.map((type) => `"${type.discriminatorValue}" -> ${type.typeName}.fromJsonElement(__input, instancePath)`).join('\n')}
                     else -> new()
                 }
 
@@ -104,7 +104,7 @@ export function kotlinDiscriminatorFromSchema(
     }
 }
 
-${subContent.join("\n\n")}`;
+${subContent.join('\n\n')}`;
     context.existingTypeIds.push(className);
     return {
         ...result,

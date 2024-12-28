@@ -1,35 +1,35 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
-import { type AppDefinition, isAppDefinition } from "@arrirpc/codegen-utils";
-import { loadConfig } from "c12";
-import { watch } from "chokidar";
-import { defineCommand } from "citty";
-import { ofetch } from "ofetch";
-import path from "pathe";
+import { type AppDefinition, isAppDefinition } from '@arrirpc/codegen-utils';
+import { loadConfig } from 'c12';
+import { watch } from 'chokidar';
+import { defineCommand } from 'citty';
+import { ofetch } from 'ofetch';
+import path from 'pathe';
 
-import { logger } from "../common";
-import { ArriConfig, isArriConfig } from "../config";
+import { logger } from '../common';
+import { ArriConfig, isArriConfig } from '../config';
 
 export default defineCommand({
     meta: {
-        name: "Codegen",
+        name: 'Codegen',
         description:
-            "Run code-generators. (Uses options from your arri config file)",
+            'Run code-generators. (Uses options from your arri config file)',
     },
     args: {
         schema: {
-            type: "positional",
-            alias: ["l"],
+            type: 'positional',
+            alias: ['l'],
             required: true,
         },
         config: {
-            type: "string",
-            alias: ["c"],
-            default: "arri.config.ts",
+            type: 'string',
+            alias: ['c'],
+            default: 'arri.config.ts',
         },
         watch: {
-            type: "boolean",
-            alias: ["w"],
+            type: 'boolean',
+            alias: ['w'],
             default: false,
         },
     },
@@ -53,12 +53,12 @@ export default defineCommand({
         }
 
         const isUrl =
-            args.schema.startsWith("http://") ||
-            args.schema.startsWith("https://");
+            args.schema.startsWith('http://') ||
+            args.schema.startsWith('https://');
 
         let def: AppDefinition | undefined;
         if (isUrl) {
-            if (args.watch) throw new Error("Cannot watch a URL");
+            if (args.watch) throw new Error('Cannot watch a URL');
             const result = await ofetch(args.schema);
             if (!isAppDefinition(result)) {
                 throw new Error(`Invalid App Definition at ${args.schema}`);
@@ -87,7 +87,7 @@ export default defineCommand({
         if (!args.watch) process.exit(0);
         const watcher = watch(args.schema, { ignoreInitial: true });
         logger.info(`Watching ${args.schema} for changes...`);
-        watcher.on("add", async (_, __) => {
+        watcher.on('add', async (_, __) => {
             try {
                 logger.info(`Change detected`);
                 const startTime = new Date();
@@ -102,7 +102,7 @@ export default defineCommand({
                 logger.error(err);
             }
         });
-        watcher.on("change", async (_, __) => {
+        watcher.on('change', async (_, __) => {
             try {
                 logger.info(`Change detected in AppDefinition file.`);
                 const startTime = new Date();
@@ -124,8 +124,8 @@ async function getAppDefinitionFromFile(file: string) {
     if (!fs.existsSync(file)) {
         throw new Error(`Unable to find ${file}`);
     }
-    const isTs = file.endsWith(".ts");
-    const isJs = file.endsWith(".js");
+    const isTs = file.endsWith('.ts');
+    const isJs = file.endsWith('.js');
     if (isTs || isJs) {
         const schemaResult = await loadConfig({
             configFile: file,
@@ -136,7 +136,7 @@ async function getAppDefinitionFromFile(file: string) {
         return schemaResult.config;
     } else {
         const parsingResult = JSON.parse(
-            fs.readFileSync(file, { encoding: "utf-8" }),
+            fs.readFileSync(file, { encoding: 'utf-8' }),
         );
         if (!isAppDefinition(parsingResult)) {
             throw new Error(`Invalid App Definition at ${file}`);
@@ -147,14 +147,14 @@ async function getAppDefinitionFromFile(file: string) {
 
 async function runGenerators(
     def: AppDefinition,
-    generators: ArriConfig["generators"],
+    generators: ArriConfig['generators'],
 ) {
     logger.info(`Generating ${generators?.length} client(s)`);
     await Promise.allSettled(
         generators.map((gen) =>
             gen.run(
                 def ?? {
-                    schemaVersion: "0.0.7",
+                    schemaVersion: '0.0.7',
                     procedures: {},
                     definitions: {},
                 },

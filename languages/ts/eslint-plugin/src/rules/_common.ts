@@ -1,18 +1,18 @@
-import { type Rule, SourceCode } from "eslint";
-import { type BaseCallExpression, type Node } from "estree";
+import { type Rule, SourceCode } from 'eslint';
+import { type BaseCallExpression, type Node } from 'estree';
 
 export function argHasIdKey(
-    arg: BaseCallExpression["arguments"][number],
+    arg: BaseCallExpression['arguments'][number],
 ): boolean {
-    if (arg.type === "ObjectExpression") {
+    if (arg.type === 'ObjectExpression') {
         for (const prop of arg.properties) {
-            if (prop.type === "Property") {
-                if (prop.key.type === "Identifier" && prop.key.name === "id") {
+            if (prop.type === 'Property') {
+                if (prop.key.type === 'Identifier' && prop.key.name === 'id') {
                     return true;
                 }
                 if (
-                    prop.key.type === "Literal" &&
-                    prop.key.value?.toString() === "id"
+                    prop.key.type === 'Literal' &&
+                    prop.key.value?.toString() === 'id'
                 ) {
                     return true;
                 }
@@ -29,7 +29,7 @@ export function isNestedInSchema(
     log = false,
 ) {
     const sourceCode =
-        "sourceCode" in context
+        'sourceCode' in context
             ? context.sourceCode
             : // legacy method
               ((context as any).getSourceCode() as SourceCode);
@@ -39,14 +39,14 @@ export function isNestedInSchema(
     }
     for (const node of ancestors) {
         if (
-            node.type !== "CallExpression" ||
-            node.callee.type !== "MemberExpression" ||
-            node.callee.object.type !== "Identifier" ||
-            node.callee.object.name !== "a"
+            node.type !== 'CallExpression' ||
+            node.callee.type !== 'MemberExpression' ||
+            node.callee.object.type !== 'Identifier' ||
+            node.callee.object.name !== 'a'
         ) {
             continue;
         }
-        if (node.callee.property.type !== "Identifier") {
+        if (node.callee.property.type !== 'Identifier') {
             continue;
         }
         const nodeName = node.callee.property.name;

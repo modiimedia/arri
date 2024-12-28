@@ -3,7 +3,7 @@ import {
     type ASchemaOptions,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
+} from '../schemas';
 
 /**
  * @example
@@ -13,9 +13,9 @@ import {
  */
 export function boolean(
     opts: ASchemaOptions = {},
-): AScalarSchema<"boolean", boolean> {
+): AScalarSchema<'boolean', boolean> {
     return {
-        type: "boolean",
+        type: 'boolean',
         metadata: {
             id: opts.id,
             description: opts.description,
@@ -30,14 +30,14 @@ export function boolean(
                         return input;
                     }
                     switch (input) {
-                        case "true":
-                        case "TRUE":
-                        case "1":
+                        case 'true':
+                        case 'TRUE':
+                        case '1':
                         case 1:
                             return true;
-                        case "false":
-                        case "FALSE":
-                        case "0":
+                        case 'false':
+                        case 'FALSE':
+                        case '0':
                         case 0:
                             return false;
                         default:
@@ -58,17 +58,17 @@ export function boolean(
 }
 
 function validate(input: unknown): input is boolean {
-    return typeof input === "boolean";
+    return typeof input === 'boolean';
 }
 function parse(input: unknown, data: ValidationContext): boolean | undefined {
     if (validate(input)) {
         return input;
     }
-    if (data.instancePath.length === 0 && typeof input === "string") {
-        if (input === "true") {
+    if (data.instancePath.length === 0 && typeof input === 'string') {
+        if (input === 'true') {
             return true;
         }
-        if (input === "false") {
+        if (input === 'false') {
             return false;
         }
         data.errors.push({

@@ -1,20 +1,20 @@
-import { a } from "@arrirpc/schema";
-import { defineCommand } from "citty";
-import consola from "consola";
-import { readFile, writeFile } from "fs/promises";
-import { ofetch } from "ofetch";
-import path from "pathe";
+import { a } from '@arrirpc/schema';
+import { defineCommand } from 'citty';
+import consola from 'consola';
+import { readFile, writeFile } from 'fs/promises';
+import { ofetch } from 'ofetch';
+import path from 'pathe';
 
-import { getArriPackageMetadata } from "../common";
+import { getArriPackageMetadata } from '../common';
 
 export default defineCommand({
     meta: {
-        name: "use",
-        description: "Use a specific arri version",
+        name: 'use',
+        description: 'Use a specific arri version',
     },
     args: {
         version: {
-            type: "positional",
+            type: 'positional',
             required: true,
             description:
                 'The version you want to use. You can also specify a tag such as "latest".',
@@ -22,32 +22,32 @@ export default defineCommand({
     },
     async run({ args }) {
         const arriInfo = await getArriPackageMetadata();
-        const version = arriInfo["dist-tags"][args.version] ?? args.version;
+        const version = arriInfo['dist-tags'][args.version] ?? args.version;
         if (!arriInfo.versions[version]) {
             throw new Error(
                 `Version ${args.version} doesn't exist. Run "arri list" to see available versions.`,
             );
         }
-        const globby = (await import("globby")).globby;
+        const globby = (await import('globby')).globby;
 
         // UPDATE TS DEPENDENCIES
         consola.info(`Checking for TS/JS dependencies`);
         const fileMap: Record<string, string> = {};
         const pkgJsonFiles = await globby(
             [
-                "package.json",
-                "**/package.json",
-                "package.jsonc",
-                "**/package.jsonc",
+                'package.json',
+                '**/package.json',
+                'package.jsonc',
+                '**/package.jsonc',
             ],
             {
-                ignore: ["node_modules", "**/node_modules", "**/dist", "dist"],
+                ignore: ['node_modules', '**/node_modules', '**/dist', 'dist'],
             },
         );
         const jkgJsonFileTasks: Promise<any>[] = [];
         for (const file of pkgJsonFiles) {
             jkgJsonFileTasks.push(
-                readFile(path.resolve(file), "utf8").then((content) => {
+                readFile(path.resolve(file), 'utf8').then((content) => {
                     const result = updatePackageJson(content, version);
                     if (result.updated) {
                         fileMap[file] = result.content;
@@ -60,7 +60,7 @@ export default defineCommand({
 
         // UPDATE DART DEPENDENCIES
         consola.info(`Checking for dart dependencies`);
-        const pubspecFiles = await globby(["pubspec.yaml", "**/pubspec.yaml"]);
+        const pubspecFiles = await globby(['pubspec.yaml', '**/pubspec.yaml']);
         const pubspecFileTasks: Promise<any>[] = [];
         if (pubspecFiles.length) {
             const dartPackage = await getDartPackageMeta();
@@ -79,7 +79,7 @@ export default defineCommand({
         }
         for (const file of pubspecFiles) {
             pubspecFileTasks.push(
-                readFile(path.resolve(file), "utf8").then((content) => {
+                readFile(path.resolve(file), 'utf8').then((content) => {
                     const result = updatePubspecYaml(content, version);
                     if (result.updated) {
                         fileMap[file] = result.content;
@@ -90,17 +90,17 @@ export default defineCommand({
         await Promise.all(pubspecFileTasks);
 
         // RUST DEPENDENCIES
-        consola.info("Checking for rust dependencies");
+        consola.info('Checking for rust dependencies');
         const cargoTomlFiles = await globby([
-            "cargo.toml",
-            "Cargo.toml",
-            "**/cargo.toml",
-            "**/Cargo.toml",
+            'cargo.toml',
+            'Cargo.toml',
+            '**/cargo.toml',
+            '**/Cargo.toml',
         ]);
         const cargoTomlTasks: Promise<any>[] = [];
         for (const file of cargoTomlFiles) {
             cargoTomlTasks.push(
-                readFile(path.resolve(file), "utf8").then((content) => {
+                readFile(path.resolve(file), 'utf8').then((content) => {
                     const result = updateCargoToml(content, version);
                     if (result.updated) {
                         fileMap[file] = result.content;
@@ -111,12 +111,12 @@ export default defineCommand({
         await Promise.all(cargoTomlTasks);
 
         // GO DEPENDENCIES
-        consola.info("Checking for go dependencies");
-        const goModFiles = await globby(["go.mod", "**/go.mod"]);
+        consola.info('Checking for go dependencies');
+        const goModFiles = await globby(['go.mod', '**/go.mod']);
         const goModFileTasks: Promise<any>[] = [];
         for (const file of goModFiles) {
             goModFileTasks.push(
-                readFile(path.resolve(file), "utf8").then((content) => {
+                readFile(path.resolve(file), 'utf8').then((content) => {
                     const result = updateGoMod(content, version);
                     if (result.updated) {
                         fileMap[file] = result.content;
@@ -130,7 +130,7 @@ export default defineCommand({
         const updateTasks: Promise<any>[] = [];
         for (const key of Object.keys(fileMap)) {
             updateTasks.push(
-                writeFile(path.resolve(key), fileMap[key]!, "utf8").then(() =>
+                writeFile(path.resolve(key), fileMap[key]!, 'utf8').then(() =>
                     consola.success(`Updated ${key}`),
                 ),
             );
@@ -146,7 +146,7 @@ export function updatePackageJson(
     fileContent: string,
     targetVersion: string,
 ): { updated: boolean; content: string } {
-    const lines = fileContent.split("\n");
+    const lines = fileContent.split('\n');
     const output: string[] = [];
     let updated = false;
     for (const line of lines) {
@@ -174,7 +174,7 @@ export function updatePackageJson(
     }
     return {
         updated,
-        content: output.join("\n"),
+        content: output.join('\n'),
     };
 }
 
@@ -202,7 +202,7 @@ const PubPackageResponse = a.object({
 });
 
 export async function getDartPackageMeta() {
-    const response = await ofetch("https://pub.dev/api/packages/arri_client");
+    const response = await ofetch('https://pub.dev/api/packages/arri_client');
     const data = a.parse(PubPackageResponse, response);
     return data;
 }
@@ -214,21 +214,21 @@ export function updatePubspecYaml(
     updated: boolean;
     content: string;
 } {
-    const lines = fileContent.split("\n");
+    const lines = fileContent.split('\n');
     const output: string[] = [];
     let updated = false;
     for (const line of lines) {
-        if (line.includes("arri_client: ")) {
-            const parts = line.split(": ");
+        if (line.includes('arri_client: ')) {
+            const parts = line.split(': ');
             if (parts.length < 2) {
                 output.push(line);
                 continue;
             }
             const targetPart = parts[1];
-            const subParts = targetPart!.split(" ");
+            const subParts = targetPart!.split(' ');
             subParts[0] = `^${version}`;
-            parts[1] = subParts.join(" ");
-            output.push(parts.join(": "));
+            parts[1] = subParts.join(' ');
+            output.push(parts.join(': '));
             updated = true;
             continue;
         }
@@ -236,13 +236,13 @@ export function updatePubspecYaml(
     }
     return {
         updated,
-        content: output.join("\n"),
+        content: output.join('\n'),
     };
 }
 
-const CratesIoPackageResponse = a.object("CratesIoPackageResponse", {
+const CratesIoPackageResponse = a.object('CratesIoPackageResponse', {
     categories: a.array(a.any()),
-    crate: a.object("CratesIoCrate", {
+    crate: a.object('CratesIoCrate', {
         badges: a.array(a.any()),
         categories: a.array(a.string()),
         created_at: a.string(),
@@ -328,12 +328,12 @@ export function updateCargoToml(
     fileContent: string,
     version: string,
 ): { updated: boolean; content: string } {
-    const lines = fileContent.split("\n");
+    const lines = fileContent.split('\n');
     let updated = false;
     const newLines: string[] = [];
     for (const line of lines) {
-        if (line.trim().startsWith("arri_client")) {
-            let newLine = "";
+        if (line.trim().startsWith('arri_client')) {
+            let newLine = '';
             let insertChar = true;
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
@@ -367,36 +367,36 @@ export function updateCargoToml(
         }
         newLines.push(line);
     }
-    return { updated, content: newLines.join("\n") };
+    return { updated, content: newLines.join('\n') };
 }
 
 export function updateGoMod(
     fileContent: string,
     version: string,
 ): { updated: boolean; content: string } {
-    const lines = fileContent.split("\n");
+    const lines = fileContent.split('\n');
     const newLines: string[] = [];
     let updated = false;
     for (const line of lines) {
-        if (!line.includes("github.com/modiimedia/arri")) {
+        if (!line.includes('github.com/modiimedia/arri')) {
             newLines.push(line);
             continue;
         }
         updated = true;
-        const lineParts = line.split(" ");
+        const lineParts = line.split(' ');
         const updatedLineParts: string[] = [];
         for (const part of lineParts) {
-            if (part.startsWith("v") && isNumberChar(part[1] ?? "")) {
+            if (part.startsWith('v') && isNumberChar(part[1] ?? '')) {
                 updatedLineParts.push(`v${version}`);
                 continue;
             }
             updatedLineParts.push(part);
         }
-        newLines.push(updatedLineParts.join(" "));
+        newLines.push(updatedLineParts.join(' '));
     }
     return {
         updated,
-        content: newLines.join("\n"),
+        content: newLines.join('\n'),
     };
 }
 

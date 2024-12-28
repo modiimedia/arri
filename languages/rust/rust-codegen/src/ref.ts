@@ -1,4 +1,4 @@
-import { SchemaFormRef } from "@arrirpc/codegen-utils";
+import { SchemaFormRef } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
@@ -6,7 +6,7 @@ import {
     RustProperty,
     validRustIdentifier,
     validRustName,
-} from "./_common";
+} from './_common';
 
 export default function rustRefFromSchema(
     schema: SchemaFormRef,
@@ -21,7 +21,7 @@ export default function rustRefFromSchema(
     }
     let defaultValue: string;
     if (isOptionType) {
-        defaultValue = "None";
+        defaultValue = 'None';
     } else if (needsBoxing) {
         defaultValue = `Box::new(${innerTypeName}::new())`;
     } else {
@@ -66,6 +66,6 @@ export default function rustRefFromSchema(
         toQueryStringTemplate() {
             return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

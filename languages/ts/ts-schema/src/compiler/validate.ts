@@ -1,4 +1,4 @@
-import { type Type } from "@arrirpc/type-defs";
+import { type Type } from '@arrirpc/type-defs';
 
 import {
     int8Max,
@@ -13,7 +13,7 @@ import {
     uint16Min,
     uint32Max,
     uint32Min,
-} from "../lib/numberConstants";
+} from '../lib/numberConstants';
 import {
     type AArraySchema,
     type ADiscriminatorSchema,
@@ -30,8 +30,8 @@ import {
     isARefSchema,
     isAScalarSchema,
     isAStringEnumSchema,
-} from "../schemas";
-import { type TemplateInput } from "./common";
+} from '../schemas';
+import { type TemplateInput } from './common';
 
 export function createValidationTemplate(
     inputName: string,
@@ -40,47 +40,47 @@ export function createValidationTemplate(
     const subFunctions: Record<string, string> = {};
     const template = schemaTemplate({
         val: inputName,
-        targetVal: "",
+        targetVal: '',
         schema,
         schemaPath: ``,
-        instancePath: "",
+        instancePath: '',
         subFunctions,
     });
 
     const subFunctionBodies = Object.keys(subFunctions).map(
         (key) => subFunctions[key],
     );
-    return `${subFunctionBodies.join("\n")}
+    return `${subFunctionBodies.join('\n')}
     return ${template}`;
 }
 
 function schemaTemplate(input: TemplateInput): string {
     if (isAScalarSchema(input.schema)) {
         switch (input.schema.type as Type) {
-            case "boolean":
+            case 'boolean':
                 return booleanTemplate(input);
-            case "float32":
-            case "float64":
+            case 'float32':
+            case 'float64':
                 return floatTemplate(input);
-            case "int8":
+            case 'int8':
                 return intTemplate(input, int8Min, int8Max);
-            case "int16":
+            case 'int16':
                 return intTemplate(input, int16Min, int16Max);
-            case "int32":
+            case 'int32':
                 return intTemplate(input, int32Min, int32Max);
-            case "uint8":
+            case 'uint8':
                 return intTemplate(input, uint8Min, uint8Max);
-            case "uint16":
+            case 'uint16':
                 return intTemplate(input, uint16Min, uint16Max);
-            case "uint32":
+            case 'uint32':
                 return intTemplate(input, uint32Min, uint32Max);
-            case "int64":
+            case 'int64':
                 return bigIntTemplate(input, false);
-            case "uint64":
+            case 'uint64':
                 return bigIntTemplate(input, true);
-            case "string":
+            case 'string':
                 return stringTemplate(input);
-            case "timestamp":
+            case 'timestamp':
                 return timestampTemplate(input);
         }
     }
@@ -103,11 +103,11 @@ function schemaTemplate(input: TemplateInput): string {
         return refTemplate(input);
     }
     // any types always return true
-    return "true";
+    return 'true';
 }
 
 function booleanTemplate(
-    input: TemplateInput<AScalarSchema<"boolean">>,
+    input: TemplateInput<AScalarSchema<'boolean'>>,
 ): string {
     if (input.schema.nullable) {
         return `(${input.val} === null || typeof ${input.val} === 'boolean')`;
@@ -116,7 +116,7 @@ function booleanTemplate(
 }
 
 function floatTemplate(
-    input: TemplateInput<AScalarSchema<"float32" | "float64">>,
+    input: TemplateInput<AScalarSchema<'float32' | 'float64'>>,
 ): string {
     if (input.schema.nullable) {
         return `((typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) || ${input.val} === null)`;
@@ -127,7 +127,7 @@ function floatTemplate(
 function intTemplate(
     input: TemplateInput<
         AScalarSchema<
-            "int16" | "int32" | "int8" | "uint16" | "uint32" | "uint8"
+            'int16' | 'int32' | 'int8' | 'uint16' | 'uint32' | 'uint8'
         >
     >,
     min: number,
@@ -140,7 +140,7 @@ function intTemplate(
 }
 
 function bigIntTemplate(
-    input: TemplateInput<AScalarSchema<"int64" | "uint64">>,
+    input: TemplateInput<AScalarSchema<'int64' | 'uint64'>>,
     isUnsigned = false,
 ) {
     const mainTemplate = isUnsigned
@@ -152,7 +152,7 @@ function bigIntTemplate(
     return mainTemplate;
 }
 
-function stringTemplate(input: TemplateInput<AScalarSchema<"string">>): string {
+function stringTemplate(input: TemplateInput<AScalarSchema<'string'>>): string {
     if (input.schema.nullable) {
         return `(typeof ${input.val} === 'string' || ${input.val} === null)`;
     }
@@ -160,7 +160,7 @@ function stringTemplate(input: TemplateInput<AScalarSchema<"string">>): string {
 }
 
 function timestampTemplate(
-    input: TemplateInput<AScalarSchema<"timestamp">>,
+    input: TemplateInput<AScalarSchema<'timestamp'>>,
 ): string {
     if (input.schema.nullable) {
         return `((typeof ${input.val} === 'object' && ${input.val} instanceof Date) || ${input.val} === null)`;
@@ -194,7 +194,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 schemaPath: `${input.schemaPath}/properties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
-                targetVal: "",
+                targetVal: '',
                 subFunctions: input.subFunctions,
             }),
         );
@@ -207,7 +207,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
-                targetVal: "",
+                targetVal: '',
                 subFunctions: input.subFunctions,
             });
             parts.push(
@@ -215,8 +215,8 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
             );
         }
     }
-    let mainTemplate = parts.join(" && ");
-    const fnName = refFunctionName(input.schema.metadata.id ?? "");
+    let mainTemplate = parts.join(' && ');
+    const fnName = refFunctionName(input.schema.metadata.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(input) {
@@ -238,7 +238,7 @@ function enumTemplate(
 ): string {
     const enumPart = input.schema.enum
         .map((val) => `${input.val} === "${val}"`)
-        .join(" || ");
+        .join(' || ');
     if (input.schema.nullable) {
         return `((typeof ${input.val} === 'string' && (${enumPart})) || ${input.val} === null)`;
     }
@@ -247,11 +247,11 @@ function enumTemplate(
 
 function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     const innerTemplate = schemaTemplate({
-        val: "item",
+        val: 'item',
         instancePath: `${input.instancePath}/item`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
-        targetVal: "",
+        targetVal: '',
         subFunctions: input.subFunctions,
     });
 
@@ -267,7 +267,7 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         instancePath: `${input.instancePath}`,
         schemaPath: `${input.schemaPath}/values`,
         val: `${input.val}[key]`,
-        targetVal: "",
+        targetVal: '',
         subFunctions: input.subFunctions,
     });
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
@@ -289,7 +289,7 @@ function discriminatorTemplate(
         parts.push(
             objectTemplate({
                 val: input.val,
-                targetVal: "",
+                targetVal: '',
                 schema: subSchema,
                 schemaPath: `${input.schemaPath}/mapping/${discriminatorVal}`,
                 instancePath: input.instancePath,
@@ -301,8 +301,8 @@ function discriminatorTemplate(
     }
     let mainTemplate = `typeof ${input.val} === 'object' && ${
         input.val
-    } !== null && (${parts.join(" || ")})`;
-    const fnName = refFunctionName(input.schema.metadata.id ?? "");
+    } !== null && (${parts.join(' || ')})`;
+    const fnName = refFunctionName(input.schema.metadata.id ?? '');
 
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
@@ -326,7 +326,7 @@ function refFunctionName(id: string) {
 function refTemplate(input: TemplateInput<ARefSchema<any>>) {
     const fnName = refFunctionName(input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
-        input.subFunctions[fnName] = "";
+        input.subFunctions[fnName] = '';
     }
     if (input.schema.nullable) {
         return `(${input.val} === null || ${fnName}(${input.val}))`;

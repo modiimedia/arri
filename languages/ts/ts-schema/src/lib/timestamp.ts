@@ -3,7 +3,7 @@ import {
     type ASchemaOptions,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
+} from '../schemas';
 
 /**
  * Create a Date schema
@@ -14,9 +14,9 @@ import {
  */
 export function timestamp(
     opts: ASchemaOptions = {},
-): AScalarSchema<"timestamp", Date> {
+): AScalarSchema<'timestamp', Date> {
     return {
-        type: "timestamp",
+        type: 'timestamp',
         metadata: {
             id: opts.id,
             description: opts.description,
@@ -33,13 +33,13 @@ export function timestamp(
 }
 
 function validate(input: unknown): input is Date {
-    return typeof input === "object" && input instanceof Date;
+    return typeof input === 'object' && input instanceof Date;
 }
 function parse(input: unknown, data: ValidationContext): Date | undefined {
     if (validate(input)) {
         return input;
     }
-    if (typeof input === "string") {
+    if (typeof input === 'string') {
         const result = Date.parse(input);
         if (Number.isNaN(result)) {
             data?.errors.push({
@@ -60,7 +60,7 @@ function parse(input: unknown, data: ValidationContext): Date | undefined {
     return undefined;
 }
 function coerce(input: unknown, options: ValidationContext): Date | undefined {
-    if (typeof input === "number") {
+    if (typeof input === 'number') {
         return new Date(input);
     }
     return parse(input, options);

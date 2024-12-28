@@ -1,11 +1,11 @@
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
-import path from "pathe";
-import prettier from "prettier";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import path from 'pathe';
+import prettier from 'prettier';
 
-import { a } from "../../languages/ts/ts-schema/src/_index";
-import { createAppDefinition } from "../../tooling/codegen-utils/src";
+import { a } from '../../languages/ts/ts-schema/src/_index';
+import { createAppDefinition } from '../../tooling/codegen-utils/src';
 
-const Enumerator = a.enumerator(["FOO", "BAR", "BAZ"], { id: "Enumerator" });
+const Enumerator = a.enumerator(['FOO', 'BAR', 'BAZ'], { id: 'Enumerator' });
 type Enumerator = a.infer<typeof Enumerator>;
 
 const NestedObject = a.object(
@@ -13,12 +13,12 @@ const NestedObject = a.object(
         id: a.string(),
         content: a.string(),
     },
-    { id: "NestedObject" },
+    { id: 'NestedObject' },
 );
 type NestedObject = a.infer<typeof NestedObject>;
 
 const Discriminator = a.discriminator(
-    "typeName",
+    'typeName',
     {
         A: a.object({
             id: a.string(),
@@ -34,7 +34,7 @@ const Discriminator = a.discriminator(
         }),
     },
     {
-        id: "Discriminator",
+        id: 'Discriminator',
     },
 );
 type Discriminator = a.infer<typeof Discriminator>;
@@ -62,13 +62,13 @@ const ObjectWithEveryType = a.object(
         any: a.any(),
     },
     {
-        id: "ObjectWithEveryType",
+        id: 'ObjectWithEveryType',
     },
 );
 type ObjectWithEveryType = a.infer<typeof ObjectWithEveryType>;
 
 const ObjectWithOptionalFields = a.partial(ObjectWithEveryType, {
-    id: "ObjectWithOptionalFields",
+    id: 'ObjectWithOptionalFields',
 });
 type ObjectWithOptionalFields = a.infer<typeof ObjectWithOptionalFields>;
 
@@ -95,7 +95,7 @@ const ObjectWithNullableFields = a.object(
         any: a.nullable(a.any()),
     },
     {
-        id: "ObjectWithNullableFields",
+        id: 'ObjectWithNullableFields',
     },
 );
 type ObjectWithNullableFields = a.infer<typeof ObjectWithNullableFields>;
@@ -110,20 +110,20 @@ const RecursiveObject = a.recursive<RecursiveObject>(
             left: a.nullable(self),
             right: a.nullable(self),
         }),
-    { id: "RecursiveObject" },
+    { id: 'RecursiveObject' },
 );
 
 const Book = a.object(
     {
-        id: a.string({ description: "The book ID" }),
-        name: a.string({ description: "The book title" }),
+        id: a.string({ description: 'The book ID' }),
+        name: a.string({ description: 'The book title' }),
         createdAt: a.timestamp({
-            description: "When the book was created",
+            description: 'When the book was created',
             isDeprecated: true,
         }),
         updatedAt: a.timestamp({ isDeprecated: true }),
     },
-    { id: "Book", description: "This is a book" },
+    { id: 'Book', description: 'This is a book' },
 );
 type Book = a.infer<typeof Book>;
 
@@ -131,51 +131,51 @@ const BookParams = a.object(
     {
         bookId: a.string(),
     },
-    { id: "BookParams" },
+    { id: 'BookParams' },
 );
 type BookParams = a.infer<typeof BookParams>;
 
 const def = createAppDefinition({
     info: {
-        version: "20",
+        version: '20',
     },
     procedures: {
         sendObject: {
-            path: "/send-object",
-            transport: "http",
-            method: "post",
+            path: '/send-object',
+            transport: 'http',
+            method: 'post',
             params: NestedObject,
             response: NestedObject,
         },
-        "books.getBook": {
-            path: "/books/get-book",
-            transport: "http",
-            method: "get",
+        'books.getBook': {
+            path: '/books/get-book',
+            transport: 'http',
+            method: 'get',
             params: BookParams,
             response: Book,
-            description: "Get a book",
+            description: 'Get a book',
         },
-        "books.createBook": {
-            path: "/books/create-book",
-            transport: "http",
-            method: "post",
+        'books.createBook': {
+            path: '/books/create-book',
+            transport: 'http',
+            method: 'post',
             params: Book,
             response: Book,
-            description: "Create a book",
+            description: 'Create a book',
             isDeprecated: true,
         },
-        "books.watchBook": {
-            path: "/books/watch-book",
-            transport: "http",
-            method: "get",
+        'books.watchBook': {
+            path: '/books/watch-book',
+            transport: 'http',
+            method: 'get',
             params: BookParams,
             response: Book,
             isEventStream: true,
             isDeprecated: true,
         },
-        "books.createConnection": {
-            path: "/books/create-connection",
-            transport: "ws",
+        'books.createConnection': {
+            path: '/books/create-connection',
+            transport: 'ws',
             params: BookParams,
             response: Book,
         },
@@ -192,7 +192,7 @@ const def = createAppDefinition({
 });
 
 async function main() {
-    const outDir = path.resolve(__dirname, "../../tests/test-files");
+    const outDir = path.resolve(__dirname, '../../tests/test-files');
     if (existsSync(outDir)) {
         rmSync(outDir, { recursive: true, force: true });
     }
@@ -200,37 +200,37 @@ async function main() {
     writeFileSync(
         path.resolve(outDir, `AppDefinition.json`),
         await prettier.format(JSON.stringify(def), {
-            parser: "json",
+            parser: 'json',
             tabWidth: 2,
-            endOfLine: "lf",
+            endOfLine: 'lf',
         }),
     );
     const files: { filename: string; content: string }[] = [];
 
-    const targetDate = new Date("01/01/2001 10:00 AM CST");
+    const targetDate = new Date('01/01/2001 10:00 AM CST');
 
     const book: Book = {
-        id: "1",
-        name: "The Adventures of Tom Sawyer",
+        id: '1',
+        name: 'The Adventures of Tom Sawyer',
         createdAt: targetDate,
         updatedAt: targetDate,
     };
     files.push({
-        filename: "Book.json",
+        filename: 'Book.json',
         content: a.serialize(Book, book),
     });
 
     const bookParams: BookParams = {
-        bookId: "1",
+        bookId: '1',
     };
     files.push({
-        filename: "BookParams.json",
+        filename: 'BookParams.json',
         content: a.serialize(BookParams, bookParams),
     });
 
     const nestedObject: NestedObject = {
-        id: "1",
-        content: "hello world",
+        id: '1',
+        content: 'hello world',
     };
     files.push({
         filename: `NestedObject_NoSpecialChars.json`,
@@ -238,17 +238,17 @@ async function main() {
     });
 
     const nestedObjectWithSpecialChars: NestedObject = {
-        id: "1",
+        id: '1',
         content:
             'double-quote: " | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000',
     };
     files.push({
-        filename: "NestedObject_SpecialChars.json",
+        filename: 'NestedObject_SpecialChars.json',
         content: a.serialize(NestedObject, nestedObjectWithSpecialChars),
     });
 
     const objectWithEveryFieldValue: ObjectWithEveryType = {
-        string: "",
+        string: '',
         boolean: false,
         timestamp: targetDate,
         float32: 1.5,
@@ -261,10 +261,10 @@ async function main() {
         uint32: 100,
         int64: 1000n,
         uint64: 1000n,
-        enum: "BAZ",
+        enum: 'BAZ',
         object: {
-            id: "1",
-            content: "hello world",
+            id: '1',
+            content: 'hello world',
         },
         array: [true, false, false],
         record: {
@@ -272,25 +272,25 @@ async function main() {
             B: false,
         },
         discriminator: {
-            typeName: "C",
-            id: "",
-            name: "",
+            typeName: 'C',
+            id: '',
+            name: '',
             date: targetDate,
         },
-        any: "hello world",
+        any: 'hello world',
     };
     files.push({
-        filename: "ObjectWithEveryType.json",
+        filename: 'ObjectWithEveryType.json',
         content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
     });
     objectWithEveryFieldValue.record = { B: false, A: true };
     files.push({
-        filename: "ObjectWithEveryType_ReversedRecord.json",
+        filename: 'ObjectWithEveryType_ReversedRecord.json',
         content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
     });
     const objectWithOptionalFieldsAllUndefined: ObjectWithOptionalFields = {};
     files.push({
-        filename: "ObjectWithOptionalFields_AllUndefined.json",
+        filename: 'ObjectWithOptionalFields_AllUndefined.json',
         content: a.serialize(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsAllUndefined,
@@ -301,7 +301,7 @@ async function main() {
         record: { A: true, B: false },
     };
     files.push({
-        filename: "ObjectWithOptionalFields_NoUndefined.json",
+        filename: 'ObjectWithOptionalFields_NoUndefined.json',
         content: a.serialize(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsNoUndefined,
@@ -312,7 +312,7 @@ async function main() {
         A: true,
     };
     files.push({
-        filename: "ObjectWithOptionalFields_NoUndefined_ReversedRecord.json",
+        filename: 'ObjectWithOptionalFields_NoUndefined_ReversedRecord.json',
         content: a.serialize(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsNoUndefined,
@@ -347,7 +347,7 @@ async function main() {
         ),
     });
     const objectWithNullableFieldsNoNull: ObjectWithNullableFields = {
-        string: "",
+        string: '',
         boolean: true,
         timestamp: targetDate,
         float32: 1.5,
@@ -360,10 +360,10 @@ async function main() {
         uint32: 100,
         int64: 1000n,
         uint64: 1000n,
-        enum: "BAZ",
+        enum: 'BAZ',
         object: {
-            id: "",
-            content: "",
+            id: '',
+            content: '',
         },
         array: [true, false, false],
         record: {
@@ -371,17 +371,17 @@ async function main() {
             B: false,
         },
         discriminator: {
-            typeName: "C",
-            id: "",
-            name: "",
+            typeName: 'C',
+            id: '',
+            name: '',
             date: targetDate,
         },
         any: {
-            message: "hello world",
+            message: 'hello world',
         },
     };
     files.push({
-        filename: "ObjectWithNullableFields_NoNull.json",
+        filename: 'ObjectWithNullableFields_NoNull.json',
         content: a.serialize(
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,
@@ -392,7 +392,7 @@ async function main() {
         A: true,
     };
     files.push({
-        filename: "ObjectWithNullableFields_NoNull_ReversedRecord.json",
+        filename: 'ObjectWithNullableFields_NoNull_ReversedRecord.json',
         content: a.serialize(
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,
@@ -416,12 +416,12 @@ async function main() {
         },
     };
     files.push({
-        filename: "RecursiveObject.json",
+        filename: 'RecursiveObject.json',
         content: a.serialize(RecursiveObject, recursiveObject),
     });
     const mdParts: string[] = [
-        "Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.",
-        "",
+        'Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.',
+        '',
     ];
     for (const file of files) {
         writeFileSync(path.resolve(outDir, file.filename), file.content);
@@ -432,11 +432,11 @@ ${file.content}
 `);
     }
     writeFileSync(
-        path.resolve(outDir, "README.md"),
-        await prettier.format(mdParts.join("\n"), {
+        path.resolve(outDir, 'README.md'),
+        await prettier.format(mdParts.join('\n'), {
             tabWidth: 2,
-            endOfLine: "lf",
-            parser: "markdown",
+            endOfLine: 'lf',
+            parser: 'markdown',
         }),
     );
 }

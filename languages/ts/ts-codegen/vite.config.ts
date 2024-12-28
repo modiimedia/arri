@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/languages/ts/ts-codegen",
+    cacheDir: '../../../node_modules/.vite/languages/ts/ts-codegen',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -19,16 +19,16 @@ export default defineConfig({
     // },
 
     test: {
-        pool: "threads",
+        pool: 'threads',
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
         globals: true,
-        reporters: ["default", "html"],
-        outputFile: ".temp/test-results/index.html",
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        reporters: ['default', 'html'],
+        outputFile: '.temp/test-results/index.html',
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
 });

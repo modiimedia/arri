@@ -1,25 +1,25 @@
-import { type Rule } from "eslint";
-import { type CallExpression, Node } from "estree";
+import { type Rule } from 'eslint';
+import { type CallExpression, Node } from 'estree';
 
-import { argHasIdKey, isNestedInSchema } from "./_common";
+import { argHasIdKey, isNestedInSchema } from './_common';
 
-const guardedSchemaTypes = ["object", "partial", "pick", "extend"] as const;
+const guardedSchemaTypes = ['object', 'partial', 'pick', 'extend'] as const;
 type SchemaType = (typeof guardedSchemaTypes)[number];
 
-const defaultMessage = "root object schemas should specify an id";
+const defaultMessage = 'root object schemas should specify an id';
 
 const noAnonymousObject: Rule.RuleModule = {
     meta: {
-        type: "suggestion",
+        type: 'suggestion',
     },
     create(context) {
         return {
             CallExpression: (node) => {
                 if (
-                    node.callee.type !== "MemberExpression" ||
-                    node.callee.object.type !== "Identifier" ||
-                    node.callee.object.name !== "a" ||
-                    node.callee.property.type !== "Identifier"
+                    node.callee.type !== 'MemberExpression' ||
+                    node.callee.object.type !== 'Identifier' ||
+                    node.callee.object.name !== 'a' ||
+                    node.callee.property.type !== 'Identifier'
                 ) {
                     return;
                 }
@@ -28,16 +28,16 @@ const noAnonymousObject: Rule.RuleModule = {
                     return;
                 }
                 switch (nodeName as SchemaType) {
-                    case "pick":
+                    case 'pick':
                         handlePick(node as any, context);
                         return;
-                    case "partial":
+                    case 'partial':
                         handlePartial(node as any, context);
                         return;
-                    case "extend":
+                    case 'extend':
                         handleExtend(node as any, context);
                         return;
-                    case "object":
+                    case 'object':
                         handleObject(node as any, context);
                 }
             },
@@ -61,7 +61,7 @@ function handleObject(
     }
     const arg1 = node.arguments[0]!;
     const arg2 = node.arguments[1]!;
-    if (arg1.type === "Literal" && (arg1.value?.toString().length ?? 0) > 0) {
+    if (arg1.type === 'Literal' && (arg1.value?.toString().length ?? 0) > 0) {
         // using ID shorthand so safe to exit
         return;
     }
@@ -150,7 +150,7 @@ function isRootObjectSchema(
 ) {
     return !isNestedInSchema(
         node,
-        [...guardedSchemaTypes, "discriminator", "recursive"],
+        [...guardedSchemaTypes, 'discriminator', 'recursive'],
         context,
         log,
     );

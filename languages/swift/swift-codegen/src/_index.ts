@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
 import {
     AppDefinition,
@@ -12,24 +12,24 @@ import {
     isSchemaFormValues,
     Schema,
     unflattenProcedures,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
-import { GeneratorContext, SwiftProperty } from "./_common";
-import { swiftAnyFromSchema } from "./any";
-import { swiftArrayFromSchema } from "./array";
-import { swiftTaggedUnionFromSchema } from "./discriminator";
-import { swiftEnumFromSchema } from "./enum";
-import { swiftObjectFromSchema } from "./object";
+import { GeneratorContext, SwiftProperty } from './_common';
+import { swiftAnyFromSchema } from './any';
+import { swiftArrayFromSchema } from './array';
+import { swiftTaggedUnionFromSchema } from './discriminator';
+import { swiftEnumFromSchema } from './enum';
+import { swiftObjectFromSchema } from './object';
 import {
     swiftBooleanFromSchema,
     swiftLargeIntFromSchema,
     swiftNumberFromSchema,
     swiftStringFromSchema,
     swiftTimestampFromSchema,
-} from "./primitives";
-import { swiftServiceFromSchema } from "./procedures";
-import { swiftDictionaryFromSchema } from "./record";
-import { swiftRefFromSchema } from "./ref";
+} from './primitives';
+import { swiftServiceFromSchema } from './procedures';
+import { swiftDictionaryFromSchema } from './record';
+import { swiftRefFromSchema } from './ref';
 
 export interface SwiftClientGeneratorOptions {
     clientName: string;
@@ -43,7 +43,7 @@ export const swiftClientGenerator = defineGeneratorPlugin(
             options,
             async run(def, _isDevServer) {
                 const content = createSwiftClient(def, options);
-                fs.writeFileSync(options.outputFile, content, "utf8");
+                fs.writeFileSync(options.outputFile, content, 'utf8');
             },
         };
     },
@@ -54,11 +54,11 @@ export function createSwiftClient(
     options: SwiftClientGeneratorOptions,
 ) {
     const context: GeneratorContext = {
-        clientVersion: def.info?.version ?? "",
+        clientVersion: def.info?.version ?? '',
         clientName: options.clientName,
-        typePrefix: options.typePrefix ?? "",
-        instancePath: "",
-        schemaPath: "",
+        typePrefix: options.typePrefix ?? '',
+        instancePath: '',
+        schemaPath: '',
         generatedTypes: [],
         containsRequiredRef: {},
     };
@@ -84,7 +84,7 @@ export function createSwiftClient(
 import ArriClient
 
 ${mainService}
-${typeContent.join("\n")}`;
+${typeContent.join('\n')}`;
 }
 
 export function swiftTypeFromSchema(
@@ -93,80 +93,80 @@ export function swiftTypeFromSchema(
 ): SwiftProperty {
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
-            case "string":
+            case 'string':
                 return swiftStringFromSchema(schema, context);
-            case "boolean":
+            case 'boolean':
                 return swiftBooleanFromSchema(schema, context);
-            case "timestamp":
+            case 'timestamp':
                 return swiftTimestampFromSchema(schema, context);
-            case "float32":
+            case 'float32':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "Float32",
-                    "float",
-                    "0.0",
+                    'Float32',
+                    'float',
+                    '0.0',
                 );
-            case "float64":
+            case 'float64':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "Float64",
-                    "double",
-                    "0.0",
+                    'Float64',
+                    'double',
+                    '0.0',
                 );
-            case "int8":
+            case 'int8':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "Int8",
-                    "int8",
-                    "0",
+                    'Int8',
+                    'int8',
+                    '0',
                 );
-            case "uint8":
+            case 'uint8':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "UInt8",
-                    "uInt8",
-                    "0",
+                    'UInt8',
+                    'uInt8',
+                    '0',
                 );
-            case "int16":
+            case 'int16':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "Int16",
-                    "int16",
-                    "0",
+                    'Int16',
+                    'int16',
+                    '0',
                 );
-            case "uint16":
+            case 'uint16':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "UInt16",
-                    "uInt16",
-                    "0",
+                    'UInt16',
+                    'uInt16',
+                    '0',
                 );
-            case "int32":
+            case 'int32':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "Int32",
-                    "int32",
-                    "0",
+                    'Int32',
+                    'int32',
+                    '0',
                 );
-            case "uint32":
+            case 'uint32':
                 return swiftNumberFromSchema(
                     schema,
                     context,
-                    "UInt32",
-                    "uInt32",
-                    "0",
+                    'UInt32',
+                    'uInt32',
+                    '0',
                 );
-            case "int64":
-                return swiftLargeIntFromSchema(schema, context, "Int64");
-            case "uint64":
-                return swiftLargeIntFromSchema(schema, context, "UInt64");
+            case 'int64':
+                return swiftLargeIntFromSchema(schema, context, 'Int64');
+            case 'uint64':
+                return swiftLargeIntFromSchema(schema, context, 'UInt64');
             default:
                 schema.type satisfies never;
                 break;

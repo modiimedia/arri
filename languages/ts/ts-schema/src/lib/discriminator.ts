@@ -7,8 +7,8 @@ import {
     type ResolveObject,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
-import { ValidationError } from "./validation";
+} from '../schemas';
+import { ValidationError } from './validation';
 
 /**
  * Create a discriminated union / tagged union
@@ -86,7 +86,7 @@ export function discriminator<
         JoinedDiscriminator<TDiscriminatorKey, TMapping>
     >
 > {
-    const isIdShorthand = typeof propB === "string";
+    const isIdShorthand = typeof propB === 'string';
     const discriminator = isIdShorthand ? propB : propA;
     const mapping = (isIdShorthand ? propC : propB) as TMapping;
     const opts = (
@@ -124,7 +124,7 @@ export function discriminator<
                     return parse(discriminator, mapping, input, context, true);
                 },
                 serialize(input, context) {
-                    const discriminatorVal = input[discriminator] ?? "";
+                    const discriminatorVal = input[discriminator] ?? '';
                     const targetSchema = mapping[discriminatorVal];
                     if (!targetSchema) {
                         throw discriminatorMappingError(
@@ -192,7 +192,7 @@ function parse(
 ) {
     let parsedInput = input;
     if (
-        typeof input === "string" &&
+        typeof input === 'string' &&
         input.length &&
         data.instancePath.length === 0
     ) {
@@ -225,7 +225,7 @@ function parse(
             message: `Error at ${data.instancePath}/${discriminator}. "${
                 parsedInput[discriminator]
             }" is not one of the accepted discriminator values: [${acceptedDiscriminatorVals.join(
-                ", ",
+                ', ',
             )}]`,
         });
         return undefined;
@@ -265,7 +265,7 @@ function discriminatorMappingError(
         message: `Error fetching discriminator schema for "${discriminatorVal}"`,
         errors: [
             {
-                message: "Error fetching discriminator schema",
+                message: 'Error fetching discriminator schema',
                 instancePath: data.instancePath,
                 schemaPath: data.schemaPath,
             },

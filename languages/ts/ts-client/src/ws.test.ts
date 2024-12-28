@@ -1,13 +1,13 @@
-import { expect, test } from "vitest";
+import { expect, test } from 'vitest';
 
-import { parsedWsResponse } from "./ws";
+import { parsedWsResponse } from './ws';
 
-test("Parse WS Response", () => {
+test('Parse WS Response', () => {
     const result = parsedWsResponse(
         `event: message\ndata: {"message":"hello world"}`,
     );
     expect(result).toStrictEqual({
-        event: "message",
+        event: 'message',
         data: `{"message":"hello world"}`,
     });
 
@@ -15,7 +15,7 @@ test("Parse WS Response", () => {
         `event: error\ndata: {"code": 1, "message": "there was an error"}`,
     );
     expect(result2).toStrictEqual({
-        event: "error",
+        event: 'error',
         data: `{"code": 1, "message": "there was an error"}`,
     });
 });

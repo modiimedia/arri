@@ -1,4 +1,4 @@
-import { isSchemaFormRef, SchemaFormProperties } from "@arrirpc/codegen-utils";
+import { isSchemaFormRef, SchemaFormProperties } from '@arrirpc/codegen-utils';
 
 import {
     codeComments,
@@ -7,8 +7,8 @@ import {
     isNullableType,
     SwiftProperty,
     validSwiftKey,
-} from "./_common";
-import { swiftTypeFromSchema } from "./_index";
+} from './_common';
+import { swiftTypeFromSchema } from './_index';
 
 export function swiftObjectFromSchema(
     schema: SchemaFormProperties,
@@ -17,7 +17,7 @@ export function swiftObjectFromSchema(
     const typeName = getTypeName(schema, context);
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
     const isNullable = isNullableType(schema, context);
-    const defaultValue = isNullable ? "" : `${prefixedTypeName}()`;
+    const defaultValue = isNullable ? '' : `${prefixedTypeName}()`;
     const result: SwiftProperty = {
         typeName: isNullable ? `${prefixedTypeName}?` : prefixedTypeName,
         defaultValue,
@@ -59,12 +59,12 @@ export function swiftObjectFromSchema(
                 fieldContent = `${input}?.clone()`;
             }
             return {
-                tempKey: "",
-                bodyContent: "",
+                tempKey: '',
+                bodyContent: '',
                 fieldContent,
             };
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(typeName)) {
         return result;
@@ -121,11 +121,11 @@ export function swiftObjectFromSchema(
         fieldNames.push(fieldName);
         if (subType.defaultValue) {
             fieldNameParts.push(
-                `${codeComments(subSchema, "    ")}    public var ${fieldName}: ${subType.typeName} = ${subType.defaultValue}`,
+                `${codeComments(subSchema, '    ')}    public var ${fieldName}: ${subType.typeName} = ${subType.defaultValue}`,
             );
         } else {
             fieldNameParts.push(
-                `${codeComments(subSchema, "    ")}    public var ${fieldName}: ${subType.typeName}`,
+                `${codeComments(subSchema, '    ')}    public var ${fieldName}: ${subType.typeName}`,
             );
         }
         initArgParts.push(`        ${fieldName}: ${subType.typeName}`);
@@ -162,7 +162,7 @@ export function swiftObjectFromSchema(
             );
         } else {
             cloneFieldParts.push(
-                `            ${fieldName.split("`").join("")}: self.${fieldName}`,
+                `            ${fieldName.split('`').join('')}: self.${fieldName}`,
             );
         }
         numKeys++;
@@ -188,7 +188,7 @@ export function swiftObjectFromSchema(
         const fieldName = validSwiftKey(key);
         fieldNames.push(fieldName);
         fieldNameParts.push(
-            `${codeComments(subSchema, "    ")}    public var ${fieldName}: ${subType.typeName}`,
+            `${codeComments(subSchema, '    ')}    public var ${fieldName}: ${subType.typeName}`,
         );
         initArgParts.push(`        ${fieldName}: ${subType.typeName}`);
         initBodyParts.push(`            self.${fieldName} = ${fieldName}`);
@@ -236,33 +236,33 @@ export function swiftObjectFromSchema(
             );
         } else {
             cloneFieldParts.push(
-                `            ${fieldName.split("`").join("")}: self.${fieldName}`,
+                `            ${fieldName.split('`').join('')}: self.${fieldName}`,
             );
         }
         numOptionalKeys++;
     }
-    const declaration = hasRecursiveSubType ? `final class` : "struct";
+    const declaration = hasRecursiveSubType ? `final class` : 'struct';
     const initPrefix = hasRecursiveSubType ? `public required` : `public`;
     const initJsonStringPrefix = hasRecursiveSubType
         ? `public required convenience`
         : `public`;
-    let equalsPart = "";
+    let equalsPart = '';
     if (hasRecursiveSubType) {
         equalsPart = `public static func == (lhs: ${prefixedTypeName}, rhs: ${prefixedTypeName}) -> Bool {
             return
-${fieldNames.map((field) => `               lhs.${field} == rhs.${field}`).join(" &&\n")}
+${fieldNames.map((field) => `               lhs.${field} == rhs.${field}`).join(' &&\n')}
         }`;
     }
     result.content = `${codeComments(schema)}public ${declaration} ${prefixedTypeName}: ArriClientModel {
-${fieldNameParts.join("\n")}
+${fieldNameParts.join('\n')}
     ${initPrefix} init(
-${initArgParts.join(",\n")}
+${initArgParts.join(',\n')}
     ) {
-${initBodyParts.join("\n")}
+${initBodyParts.join('\n')}
     }
     ${initPrefix} init() {}
     ${initPrefix} init(json: JSON) {
-${initFromJsonParts.join("\n")}
+${initFromJsonParts.join('\n')}
     }
     ${initJsonStringPrefix} init(JSONData: Data) {
         do {
@@ -284,26 +284,26 @@ ${initFromJsonParts.join("\n")}
     }
     public func toJSONString() -> String {
         var __json = "{"
-${numKeys === 0 ? `      var __numKeys = 0` : ""}
-${toJsonParts.join("\n")}
+${numKeys === 0 ? `      var __numKeys = 0` : ''}
+${toJsonParts.join('\n')}
         __json += "}"
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
-        ${canBeQueryString ? `var __queryParts: [URLQueryItem] = []` : ""}
-${toQueryStringParts.join("\n")}
+        ${canBeQueryString ? `var __queryParts: [URLQueryItem] = []` : ''}
+${toQueryStringParts.join('\n')}
         ${canBeQueryString ? `return __queryParts` : `return []`}
     }
     public func clone() -> ${prefixedTypeName} {
-${cloneBodyParts.join("\n")}
+${cloneBodyParts.join('\n')}
         return ${prefixedTypeName}(
-${cloneFieldParts.join(",\n")}
+${cloneFieldParts.join(',\n')}
         )
     }
     ${equalsPart}
 }
     
-${subContent.join("\n")}`;
+${subContent.join('\n')}`;
     context.generatedTypes.push(typeName);
     return result;
 }

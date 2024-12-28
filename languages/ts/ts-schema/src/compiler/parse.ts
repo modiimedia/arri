@@ -16,8 +16,8 @@ import {
     type SchemaFormRef,
     type SchemaFormType,
     type SchemaFormValues,
-} from "@arrirpc/type-defs";
-import { camelCase } from "scule";
+} from '@arrirpc/type-defs';
+import { camelCase } from 'scule';
 
 import {
     int8Max,
@@ -32,31 +32,31 @@ import {
     uint16Min,
     uint32Max,
     uint32Min,
-} from "../lib/numberConstants";
-import { type TemplateInput } from "./common";
+} from '../lib/numberConstants';
+import { type TemplateInput } from './common';
 
 export function createParsingTemplate(input: string, schema: Schema): string {
     const fallbackTemplate = `
     function $fallback(instancePath, schemaPath) {
         throw new Error(\`Error parsing input. InstancePath: "\${instancePath}". SchemaPath: "\${schemaPath}"\`);
     }`;
-    let jsonParseCheck = "";
+    let jsonParseCheck = '';
 
     const subFunctions: Record<string, string> = {};
     const template = schemaTemplate({
         val: input,
-        targetVal: "result",
+        targetVal: 'result',
         schema,
-        instancePath: "",
-        schemaPath: "",
+        instancePath: '',
+        schemaPath: '',
         subFunctions,
     });
     const jsonTemplate = schemaTemplate({
-        val: "json",
-        targetVal: "result",
+        val: 'json',
+        targetVal: 'result',
         schema,
-        instancePath: "",
-        schemaPath: "",
+        instancePath: '',
+        schemaPath: '',
         subFunctions,
     });
 
@@ -87,7 +87,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         (key) => subFunctions[key],
     );
     const finalTemplate = `${fallbackTemplate}
-    ${functionBodyParts.join("\n")}
+    ${functionBodyParts.join('\n')}
     ${jsonParseCheck}
     let result = {};
     ${template}
@@ -98,30 +98,30 @@ export function createParsingTemplate(input: string, schema: Schema): string {
 export function schemaTemplate(input: TemplateInput): string {
     if (isSchemaFormType(input.schema)) {
         switch (input.schema.type) {
-            case "boolean":
+            case 'boolean':
                 return booleanTemplate(input);
-            case "string":
+            case 'string':
                 return stringTemplate(input);
-            case "timestamp":
+            case 'timestamp':
                 return timestampTemplate(input);
-            case "float64":
-            case "float32":
+            case 'float64':
+            case 'float32':
                 return floatTemplate(input);
-            case "int32":
+            case 'int32':
                 return intTemplate(input, int32Min, int32Max);
-            case "int16":
+            case 'int16':
                 return intTemplate(input, int16Min, int16Max);
-            case "int8":
+            case 'int8':
                 return intTemplate(input, int8Min, int8Max);
-            case "uint32":
+            case 'uint32':
                 return intTemplate(input, uint32Min, uint32Max);
-            case "uint16":
+            case 'uint16':
                 return intTemplate(input, uint16Min, uint16Max);
-            case "uint8":
+            case 'uint8':
                 return intTemplate(input, uint8Min, uint8Max);
-            case "int64":
+            case 'int64':
                 return bigIntTemplate(input, false);
-            case "uint64":
+            case 'uint64':
                 return bigIntTemplate(input, true);
         }
     }
@@ -178,7 +178,7 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
         templateParts.push(
             `$fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");`,
         );
-        templateParts.push("}");
+        templateParts.push('}');
     }
     const mainTemplate = `if (typeof ${input.val} === 'boolean') {
         ${input.targetVal} = ${input.val};
@@ -194,7 +194,7 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
     } else {
         templateParts.push(mainTemplate);
     }
-    return templateParts.join("\n");
+    return templateParts.join('\n');
 }
 
 export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
@@ -216,7 +216,7 @@ export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
 
 function getVarName(input: string): string {
     return camelCase(
-        input.split(".").join("_").split("[").join("_").split("]").join("_"),
+        input.split('.').join('_').split('[').join('_').split(']').join('_'),
     );
 }
 
@@ -237,7 +237,7 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
         templateParts.push(
             `$fallback("${input.instancePath}", "${input.schemaPath}/type", \`Could not parse number from \${${input.val}}\`);`,
         );
-        templateParts.push("}");
+        templateParts.push('}');
     }
     const errorMessage = `Expected number at ${input.instancePath}`;
     const mainTemplate = `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
@@ -254,7 +254,7 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
     } else {
         templateParts.push(mainTemplate);
     }
-    return templateParts.join("\n");
+    return templateParts.join('\n');
 }
 
 export function intTemplate(
@@ -278,7 +278,7 @@ export function intTemplate(
         templateParts.push(
             `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max});`,
         );
-        templateParts.push("}");
+        templateParts.push('}');
     }
     const mainTemplate = `if (typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max}) {
             ${input.targetVal} = ${input.val};
@@ -295,7 +295,7 @@ export function intTemplate(
     } else {
         templateParts.push(mainTemplate);
     }
-    return templateParts.join("\n");
+    return templateParts.join('\n');
 }
 
 export function bigIntTemplate(
@@ -326,9 +326,9 @@ export function bigIntTemplate(
         $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse BigInt from ${input.val}.");
     }`);
     if (input.instancePath.length === 0 && input.schema.nullable) {
-        templateParts.push("}");
+        templateParts.push('}');
     }
-    templateParts.push("}");
+    templateParts.push('}');
     if (isUnsigned) {
         templateParts.push(`else if (typeof ${input.val} === 'bigint') {
         if (${input.val} >= BigInt("0")) {
@@ -350,7 +350,7 @@ export function bigIntTemplate(
     templateParts.push(`else {
         $fallback("${input.instancePath}", "${input.schemaPath}", "Expected BigInt or Integer string. Got \${${input.val}}");
     }`);
-    return templateParts.join("\n");
+    return templateParts.join('\n');
 }
 
 export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
@@ -369,7 +369,7 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
         templateParts.push(
             `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string");`,
         );
-        templateParts.push("}");
+        templateParts.push('}');
     }
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
         ${input.targetVal} = ${input.val};
@@ -387,16 +387,16 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     } else {
         templateParts.push(mainTemplate);
     }
-    return templateParts.join("\n");
+    return templateParts.join('\n');
 }
 
 function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
     const enumTemplate = input.schema.enum
         .map((val) => `${input.val} === "${val}"`)
-        .join(" || ");
+        .join(' || ');
     const errorMessage = `Expected one of the following values: [${input.schema.enum.join(
-        ", ",
-    )}]${input.instancePath.length ? ` at ${input.instancePath}` : ""}.`;
+        ', ',
+    )}]${input.instancePath.length ? ` at ${input.instancePath}` : ''}.`;
     const templateParts: string[] = [];
     templateParts.push(`if (typeof ${input.val} === 'string') {
         if (${enumTemplate}) {
@@ -416,7 +416,7 @@ function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
         $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}");
     }`,
     );
-    const mainTemplate = templateParts.join("\n");
+    const mainTemplate = templateParts.join('\n');
     if (input.schema.nullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
@@ -441,15 +441,15 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
         const optionalKeyVal = `_${depthStr}_optionalKeys`;
         const keys = Object.keys(input.schema.properties)
             .map((key) => `"${key}"`)
-            .join(",");
+            .join(',');
         const optionalKeys = Object.keys(input.schema.optionalProperties ?? {})
             .map((key) => `"${key}"`)
-            .join(",");
+            .join(',');
         parsingParts.push(
             `const ${keyVal} = [${keys}];
             const ${optionalKeyVal} = [${optionalKeys}];
             for (let _key of Object.keys(${input.val})) {
-                if(!${keyVal}.includes(_key) && !${optionalKeyVal}.includes(_key) && _key !== "${input.discriminatorKey ?? ""}") {
+                if(!${keyVal}.includes(_key) && !${optionalKeyVal}.includes(_key) && _key !== "${input.discriminatorKey ?? ''}") {
                     $fallback("${input.instancePath}", "${input.schemaPath}/strict", \`The following key is now allowed by the schema "\${_key}".\`);
                 }
             }
@@ -490,27 +490,27 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
         input.val
     } !== null) {
         const ${innerTargetVal} = {};
-        ${parsingParts.join("\n")}
+        ${parsingParts.join('\n')}
         ${input.targetVal} = ${innerTargetVal};
     } else {
         $fallback("${input.instancePath}", "${
             input.schemaPath
         }", "Expected object");
     }`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? "");
+    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
                     let _fnTarget
                 ${mainTemplate
                     .split(` ${input.val}`)
-                    .join(" _fnVal")
+                    .join(' _fnVal')
                     .split(`(${input.val}`)
                     .join(`(_fnVal`)
                     .split(` ${input.targetVal}`)
                     .join(` _fnTarget`)
                     .split(`(${input.targetVal}`)
-                    .join("(_fnTarget")}
+                    .join('(_fnTarget')}
                 return _fnTarget;
             }`;
         }
@@ -588,7 +588,7 @@ export function discriminatorTemplate(
         input.val
     } !== null) {
         switch(${input.val}.${input.schema.discriminator}) {
-            ${switchParts.join("\n")}
+            ${switchParts.join('\n')}
             default:
                 $fallback("${input.instancePath}", "${
                     input.schemaPath
@@ -602,7 +602,7 @@ export function discriminatorTemplate(
             input.schemaPath
         }", "Expected Object.");
     }`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? "");
+    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
@@ -632,7 +632,7 @@ export function discriminatorTemplate(
 }
 
 function getDepthStr(instancePath: string) {
-    const parts = instancePath.split("/");
+    const parts = instancePath.split('/');
     const depth = parts.length;
     return `D${depth}`;
 }
@@ -678,7 +678,7 @@ function refFunctionName(id: string) {
 export function refTemplate(input: TemplateInput<SchemaFormRef>): string {
     const fnName = refFunctionName(input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
-        input.subFunctions[fnName] = "";
+        input.subFunctions[fnName] = '';
     }
     if (input.schema.nullable) {
         return `if (${input.val} === null) {

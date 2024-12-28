@@ -1,16 +1,16 @@
-import { arriSafeRequest, isArriError } from "./_index";
+import { arriSafeRequest, isArriError } from './_index';
 
-test("error messages", async () => {
+test('error messages', async () => {
     const request = await arriSafeRequest({
-        url: "http://thisurldoesntexist.blah",
-        method: "get",
+        url: 'http://thisurldoesntexist.blah',
+        method: 'get',
         responseFromJson() {},
         responseFromString() {},
         serializer() {
             return undefined;
         },
         headers: undefined,
-        clientVersion: "",
+        clientVersion: '',
     });
     expect(!request.success);
     if (!request.success) {

@@ -1,6 +1,6 @@
-import { SchemaFormEmpty } from "@arrirpc/codegen-utils";
+import { SchemaFormEmpty } from '@arrirpc/codegen-utils';
 
-import { GeneratorContext, RustProperty, validRustIdentifier } from "./_common";
+import { GeneratorContext, RustProperty, validRustIdentifier } from './_common';
 
 export default function rustAnyFromSchema(
     schema: SchemaFormEmpty,
@@ -9,7 +9,7 @@ export default function rustAnyFromSchema(
     return {
         typeName: context.isOptional
             ? `Option<serde_json::Value>`
-            : "serde_json::Value",
+            : 'serde_json::Value',
         defaultValue: context.isOptional ? `None` : `serde_json::Value::Null`,
         isNullable: false,
         fromJsonTemplate(input, key) {
@@ -35,6 +35,6 @@ export default function rustAnyFromSchema(
         toQueryStringTemplate() {
             return `println!("[WARNING] cannot serialize any's to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

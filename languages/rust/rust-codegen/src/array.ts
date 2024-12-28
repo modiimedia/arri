@@ -1,12 +1,12 @@
-import { SchemaFormElements } from "@arrirpc/codegen-utils";
+import { SchemaFormElements } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
     outputIsOptionType,
     RustProperty,
     validRustIdentifier,
-} from "./_common";
-import { rustTypeFromSchema } from "./_index";
+} from './_common';
+import { rustTypeFromSchema } from './_index';
 
 export default function rustArrayFromSchema(
     schema: SchemaFormElements,

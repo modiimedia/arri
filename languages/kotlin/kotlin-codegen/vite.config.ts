@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/languages/kotlin/kotlin-codegen",
+    cacheDir: '../../../node_modules/.vite/languages/kotlin/kotlin-codegen',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -19,16 +19,16 @@ export default defineConfig({
     // },
 
     test: {
-        pool: "threads",
+        pool: 'threads',
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
         globals: true,
-        reporters: ["default", "html"],
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-        outputFile: ".temp/test-results/index.html",
+        reporters: ['default', 'html'],
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        outputFile: '.temp/test-results/index.html',
     },
 });

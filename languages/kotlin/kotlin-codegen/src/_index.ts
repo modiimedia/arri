@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
 import {
     type AppDefinition,
@@ -14,19 +14,19 @@ import {
     isServiceDefinition,
     type Schema,
     unflattenProcedures,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     kotlinClassName,
     kotlinIdentifier,
-} from "./_common";
-import { kotlinAnyFromSchema } from "./any";
-import { kotlinArrayFromSchema } from "./array";
-import { kotlinDiscriminatorFromSchema } from "./discriminator";
-import { kotlinEnumFromSchema } from "./enum";
-import { kotlinMapFromSchema } from "./map";
-import { kotlinObjectFromSchema } from "./object";
+} from './_common';
+import { kotlinAnyFromSchema } from './any';
+import { kotlinArrayFromSchema } from './array';
+import { kotlinDiscriminatorFromSchema } from './discriminator';
+import { kotlinEnumFromSchema } from './enum';
+import { kotlinMapFromSchema } from './map';
+import { kotlinObjectFromSchema } from './object';
 import {
     kotlinBooleanFromSchema,
     kotlinFloat32FromSchema,
@@ -41,12 +41,12 @@ import {
     kotlinUint16FromSchema as kotlinUInt16FromSchema,
     kotlinUint32FromSchema as kotlinUInt32FromSchema,
     kotlinUint64FromSchema as kotlinUInt64FromSchema,
-} from "./primitives";
+} from './primitives';
 import {
     kotlinProcedureFromSchema,
     kotlinServiceFromSchema,
-} from "./procedures";
-import { kotlinRefFromSchema } from "./ref";
+} from './procedures';
+import { kotlinRefFromSchema } from './ref';
 
 export interface ServiceContext {
     clientName: string;
@@ -76,13 +76,13 @@ export function kotlinClientFromAppDefinition(
     def: AppDefinition,
     options: KotlinClientOptions,
 ): string {
-    const clientName = kotlinClassName(options.clientName ?? "Client");
+    const clientName = kotlinClassName(options.clientName ?? 'Client');
     const context: CodegenContext = {
-        typePrefix: options.typePrefix ?? "",
+        typePrefix: options.typePrefix ?? '',
         clientName,
-        clientVersion: def.info?.version ?? "",
-        instancePath: "",
-        schemaPath: "",
+        clientVersion: def.info?.version ?? '',
+        instancePath: '',
+        schemaPath: '',
         existingTypeIds: [],
     };
     const modelParts: string[] = [];
@@ -134,14 +134,14 @@ export function kotlinClientFromAppDefinition(
         }
     }
     if (procedureParts.length === 0) {
-        return `${getHeader({ clientName, clientVersion: context.clientVersion, packageName: "" })}
+        return `${getHeader({ clientName, clientVersion: context.clientVersion, packageName: '' })}
 ${getUtilityClasses(clientName)}
 
-${modelParts.join("\n\n")}
+${modelParts.join('\n\n')}
 
 ${getUtilityFunctions(clientName)}`;
     }
-    return `${getHeader({ clientName, clientVersion: context.clientVersion, packageName: "" })}
+    return `${getHeader({ clientName, clientVersion: context.clientVersion, packageName: '' })}
 
 class ${clientName}(
     private val httpClient: HttpClient,
@@ -149,14 +149,14 @@ class ${clientName}(
     private val headers: headersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    ${procedureParts.join("\n\n    ")}
+    ${procedureParts.join('\n\n    ')}
 }
 
-${subServiceParts.join("\n\n")}
+${subServiceParts.join('\n\n')}
 
 ${getUtilityClasses(clientName)}
 
-${modelParts.join("\n\n")}
+${modelParts.join('\n\n')}
 
 ${getUtilityFunctions(clientName)}`;
 }
@@ -164,31 +164,31 @@ ${getUtilityFunctions(clientName)}`;
 export function kotlinTypeFromSchema(schema: Schema, context: CodegenContext) {
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
-            case "string":
+            case 'string':
                 return kotlinStringFromSchema(schema, context);
-            case "boolean":
+            case 'boolean':
                 return kotlinBooleanFromSchema(schema, context);
-            case "timestamp":
+            case 'timestamp':
                 return kotlinTimestampFromSchema(schema, context);
-            case "float32":
+            case 'float32':
                 return kotlinFloat32FromSchema(schema, context);
-            case "float64":
+            case 'float64':
                 return kotlinFloat64FromSchema(schema, context);
-            case "int8":
+            case 'int8':
                 return kotlinInt8FromSchema(schema, context);
-            case "int16":
+            case 'int16':
                 return kotlinInt16FromSchema(schema, context);
-            case "int32":
+            case 'int32':
                 return kotlinInt32FromSchema(schema, context);
-            case "int64":
+            case 'int64':
                 return kotlinInt64FromSchema(schema, context);
-            case "uint8":
+            case 'uint8':
                 return kotlinUInt8FromSchema(schema, context);
-            case "uint16":
+            case 'uint16':
                 return kotlinUInt16FromSchema(schema, context);
-            case "uint32":
+            case 'uint32':
                 return kotlinUInt32FromSchema(schema, context);
-            case "uint64":
+            case 'uint64':
                 return kotlinUInt64FromSchema(schema, context);
             default:
                 schema.type satisfies never;

@@ -1,9 +1,9 @@
-import { serializeSmallString } from "@arrirpc/schema";
-import { EventSourcePlusOptions, type HttpMethod } from "event-source-plus";
-import { FetchError, ofetch } from "ofetch";
+import { serializeSmallString } from '@arrirpc/schema';
+import { EventSourcePlusOptions, type HttpMethod } from 'event-source-plus';
+import { FetchError, ofetch } from 'ofetch';
 
-import { ArriErrorInstance, isArriError } from "./errors";
-import { getHeaders } from "./utils";
+import { ArriErrorInstance, isArriError } from './errors';
+import { getHeaders } from './utils';
 
 export interface ArriRequestOpts<
     TType,
@@ -11,7 +11,7 @@ export interface ArriRequestOpts<
 > {
     url: string;
     method: HttpMethod;
-    headers: EventSourcePlusOptions["headers"];
+    headers: EventSourcePlusOptions['headers'];
     params?: TParams;
     responseFromJson: (input: Record<string, unknown>) => TType;
     responseFromString: (input: string) => TType;
@@ -30,23 +30,23 @@ export async function arriRequest<
     let body: undefined | string;
     let contentType: undefined | string;
     switch (opts.method) {
-        case "get":
-        case "head":
-            if (opts.params && typeof opts.params === "object") {
+        case 'get':
+        case 'head':
+            if (opts.params && typeof opts.params === 'object') {
                 url = `${opts.url}?${opts.serializer(opts.params)}`;
             }
             break;
         default:
-            if (opts.params && typeof opts.params === "object") {
+            if (opts.params && typeof opts.params === 'object') {
                 body = opts.serializer(opts.params);
-                contentType = "application/json";
+                contentType = 'application/json';
             }
             break;
     }
     try {
         const headers = (await getHeaders(opts.headers)) ?? {};
-        if (contentType) headers["Content-Type"] = contentType;
-        if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
+        if (contentType) headers['Content-Type'] = contentType;
+        if (opts.clientVersion) headers['client-version'] = opts.clientVersion;
         const result = await ofetch(url, {
             method: opts.method,
             body,
@@ -96,7 +96,7 @@ export async function arriSafeRequest<
                 success: false,
                 error: new ArriErrorInstance({
                     code: err.statusCode ?? 0,
-                    message: err.statusMessage ?? "",
+                    message: err.statusMessage ?? '',
                     stack: err.stack,
                     data: err.data,
                 }),
@@ -157,10 +157,10 @@ export const UINT16_MAX = 65535;
 export const INT32_MIN = -2147483648;
 export const INT32_MAX = 2147483647;
 export const UINT32_MAX = 4294967295;
-export const INT64_MIN = BigInt("9223372036854775808");
-export const INT64_MAX = BigInt("9223372036854775807");
-export const UINT64_MAX = BigInt("18446744073709551615");
+export const INT64_MIN = BigInt('9223372036854775808');
+export const INT64_MAX = BigInt('9223372036854775807');
+export const UINT64_MAX = BigInt('18446744073709551615');
 
 export function isObject(input: unknown): input is Record<string, unknown> {
-    return typeof input === "object" && input !== null;
+    return typeof input === 'object' && input !== null;
 }

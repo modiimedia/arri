@@ -1,4 +1,4 @@
-import { type ASchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
+import { type ASchema, type ASchemaOptions, SCHEMA_METADATA } from '../schemas';
 
 /**
  * Transforms a schema into a nullable type
@@ -36,8 +36,8 @@ export function nullable<T>(
                 parse(val, data) {
                     if (
                         data.instancePath.length === 0 &&
-                        typeof val === "string" &&
-                        val === "null"
+                        typeof val === 'string' &&
+                        val === 'null'
                     ) {
                         return null;
                     }
@@ -50,14 +50,14 @@ export function nullable<T>(
                     if (val === null) {
                         return null;
                     }
-                    if (val === "null") {
+                    if (val === 'null') {
                         return null;
                     }
                     return schema.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
                 serialize(val, data) {
                     if (val === null) {
-                        return "null";
+                        return 'null';
                     }
                     return schema.metadata[SCHEMA_METADATA].serialize(
                         val,
@@ -102,26 +102,26 @@ export function optional<T>(
                 optional: true,
                 validate: isType,
                 parse: (val, data) => {
-                    if (typeof val === "undefined") {
+                    if (typeof val === 'undefined') {
                         return undefined;
                     }
-                    if (data.instancePath.length === 0 && val === "undefined") {
+                    if (data.instancePath.length === 0 && val === 'undefined') {
                         return undefined;
                     }
                     return input.metadata[SCHEMA_METADATA].parse(val, data);
                 },
                 coerce: (val, data) => {
-                    if (typeof val === "undefined") {
+                    if (typeof val === 'undefined') {
                         return undefined;
                     }
-                    if (val === "undefined") {
+                    if (val === 'undefined') {
                         return undefined;
                     }
                     return input.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
                 serialize: (val, data) => {
-                    if (typeof val === "undefined") {
-                        return "undefined";
+                    if (typeof val === 'undefined') {
+                        return 'undefined';
                     }
                     return input.metadata[SCHEMA_METADATA].serialize(val, data);
                 },

@@ -3,8 +3,8 @@ import {
     pascalCase,
     removeDisallowedChars,
     type Schema,
-} from "@arrirpc/codegen-utils";
-import { stringStartsWithNumber } from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
+import { stringStartsWithNumber } from '@arrirpc/codegen-utils';
 
 export interface CodegenContext {
     typePrefix: string;
@@ -30,40 +30,40 @@ export interface KotlinProperty {
 }
 
 const reservedIdentifierKeywords = [
-    "as",
-    "as?",
-    "break",
-    "class",
-    "continue",
-    "do",
-    "else",
-    "false",
-    "for",
-    "fun",
-    "if",
-    "in",
-    "!in",
-    "interface",
-    "is",
-    "!is",
-    "null",
-    "object",
-    "package",
-    "return",
-    "super",
-    "this",
-    "throw",
-    "true",
-    "try",
-    "typealias",
-    "typeof",
-    "val",
-    "var",
-    "when",
-    "while",
+    'as',
+    'as?',
+    'break',
+    'class',
+    'continue',
+    'do',
+    'else',
+    'false',
+    'for',
+    'fun',
+    'if',
+    'in',
+    '!in',
+    'interface',
+    'is',
+    '!is',
+    'null',
+    'object',
+    'package',
+    'return',
+    'super',
+    'this',
+    'throw',
+    'true',
+    'try',
+    'typealias',
+    'typeof',
+    'val',
+    'var',
+    'when',
+    'while',
 ];
 
-const illegalCharacters = "+-*/%=&|!<>[]?:.@$;";
+const illegalCharacters = '+-*/%=&|!<>[]?:.@$;';
 
 export function kotlinIdentifier(input: string): string {
     const name = removeDisallowedChars(camelCase(input), illegalCharacters);
@@ -102,7 +102,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
     const depth = instanceDepth(context);
     if (depth === 1 && !context.discriminatorKey) {
         const className = kotlinClassName(
-            pascalCase(context.instancePath.replace("/", ""), {
+            pascalCase(context.instancePath.replace('/', ''), {
                 normalize: true,
             }),
         );
@@ -126,12 +126,12 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
     const className = kotlinClassName(
         pascalCase(
             context.instancePath
-                .split("/")
-                .join("_")
-                .split("[")
-                .join("_")
-                .split("]")
-                .join("_"),
+                .split('/')
+                .join('_')
+                .split('[')
+                .join('_')
+                .split(']')
+                .join('_'),
             {
                 normalize: true,
             },
@@ -141,7 +141,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
 }
 
 export function instanceDepth(context: CodegenContext) {
-    const parts = context.instancePath.split("/");
+    const parts = context.instancePath.split('/');
     return parts.length - 1;
 }
 
@@ -150,19 +150,19 @@ export function isNullable(schema: Schema, context: CodegenContext) {
 }
 
 export function getCodeComment(
-    metadata?: Schema["metadata"],
+    metadata?: Schema['metadata'],
     prefix?: string,
-    valueField?: "field" | "method" | "class",
+    valueField?: 'field' | 'method' | 'class',
 ) {
-    if (!metadata?.description && !metadata?.isDeprecated) return "";
+    if (!metadata?.description && !metadata?.isDeprecated) return '';
     const descriptionPart = metadata.description
-        ?.split("\n")
-        .map((line) => `${prefix ?? ""}* ${line}`)
-        .join("\n");
+        ?.split('\n')
+        .map((line) => `${prefix ?? ''}* ${line}`)
+        .join('\n');
     const finalDescription = metadata.description
-        ? `${prefix ?? ""}/**\n${descriptionPart}${prefix ?? ""}\n*/`
-        : "";
-    const deprecationMessage = `@Deprecated(message = "This ${valueField ?? "item"} was marked as deprecated by the server")`;
+        ? `${prefix ?? ''}/**\n${descriptionPart}${prefix ?? ''}\n*/`
+        : '';
+    const deprecationMessage = `@Deprecated(message = "This ${valueField ?? 'item'} was marked as deprecated by the server")`;
     if (metadata.description && metadata.isDeprecated) {
         return `${finalDescription}\n${deprecationMessage}\n`;
     }
@@ -172,5 +172,5 @@ export function getCodeComment(
     if (metadata.description) {
         return `${finalDescription}\n`;
     }
-    return "";
+    return '';
 }

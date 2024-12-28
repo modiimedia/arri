@@ -15,10 +15,10 @@ import {
     type SchemaFormRef,
     type SchemaFormType,
     type SchemaFormValues,
-} from "@arrirpc/type-defs";
-import { camelCase } from "scule";
+} from '@arrirpc/type-defs';
+import { camelCase } from 'scule';
 
-import { type TemplateInput } from "./common";
+import { type TemplateInput } from './common';
 
 interface SerializeTemplateInput<TSchema extends Schema = any>
     extends TemplateInput<TSchema> {
@@ -33,11 +33,11 @@ export function createSerializationV2Template(
     const subFunctions: Record<string, string> = {};
     const context: SerializeTemplateInput<any> = {
         val: inputName,
-        targetVal: "json",
+        targetVal: 'json',
         schema,
-        schemaPath: "",
-        instancePath: "",
-        outputPrefix: "",
+        schemaPath: '',
+        instancePath: '',
+        outputPrefix: '',
         needsSanitization: [],
         subFunctions,
     };
@@ -50,8 +50,8 @@ export function createSerializationV2Template(
     );
     return `
     let json = '';
-    ${subFunctionParts.join("\n")}
-    ${context.needsSanitization.length > 0 ? `const STR_ESCAPE = /[\\u0000-\\u001f\\u0022\\u005c\\ud800-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?:[^\\ud800-\\udbff]|^)[\\udc00-\\udfff]/;` : ""}
+    ${subFunctionParts.join('\n')}
+    ${context.needsSanitization.length > 0 ? `const STR_ESCAPE = /[\\u0000-\\u001f\\u0022\\u005c\\ud800-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?:[^\\ud800-\\udbff]|^)[\\udc00-\\udfff]/;` : ''}
     ${result}
     return json;`;
 }
@@ -85,26 +85,26 @@ export function scalarTemplate(
     input: SerializeTemplateInput<SchemaFormType>,
 ): string {
     switch (input.schema.type) {
-        case "string":
+        case 'string':
             return stringTemplate(input);
-        case "boolean":
+        case 'boolean':
             return booleanTemplate(input);
-        case "timestamp":
+        case 'timestamp':
             return timestampTemplate(input);
-        case "float32":
-        case "float64":
+        case 'float32':
+        case 'float64':
             return numberTemplate(input);
-        case "int64":
+        case 'int64':
             return bigIntTemplate(input);
-        case "int32":
-        case "int16":
-        case "int8":
+        case 'int32':
+        case 'int16':
+        case 'int8':
             return numberTemplate(input);
-        case "uint64":
+        case 'uint64':
             return bigIntTemplate(input);
-        case "uint32":
-        case "uint16":
-        case "uint8":
+        case 'uint32':
+        case 'uint16':
+        case 'uint8':
             return numberTemplate(input);
         default:
             input.schema.type satisfies never;
@@ -125,7 +125,7 @@ export function stringTemplate(
         return `return ${input.val};`;
     }
     input.needsSanitization.push(input.instancePath);
-    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix ?? ""}\`;
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix ?? ''}\`;
 if (${input.val}.length < 42) {
     let __result__ = "";
     let __last__ = -1;
@@ -160,7 +160,7 @@ if (${input.val}.length < 42) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += '${input.outputPrefix ?? ""}null';
+            ${input.targetVal} += '${input.outputPrefix ?? ''}null';
         }`;
     }
     return mainTemplate;
@@ -321,10 +321,10 @@ export function objectTemplate(
             ? camelCase(`${input.instancePath}_HasFields`)
             : camelCase(
                   `${input.val}_HasFields`
-                      .split("[")
-                      .join("")
-                      .split("]")
-                      .join(""),
+                      .split('[')
+                      .join('')
+                      .split(']')
+                      .join(''),
               );
         templateParts.push(`let ${hasFieldsVar} = false;`);
         for (let i = 0; i < optionalPropKeys.length; i++) {
@@ -378,7 +378,7 @@ export function objectTemplate(
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 val: innerVal,
-                targetVal: "json",
+                targetVal: 'json',
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
@@ -390,12 +390,12 @@ export function objectTemplate(
         }
     }
     templateParts.push(`${input.targetVal} += '}';`);
-    let mainTemplate = templateParts.join("\n");
-    const fnName = refFnName(input.schema.metadata?.id ?? "");
+    let mainTemplate = templateParts.join('\n');
+    const fnName = refFnName(input.schema.metadata?.id ?? '');
     if (hasFunctionName(fnName, input.subFunctions)) {
         if (!hasFunctionBody(fnName, input.subFunctions)) {
             input.subFunctions[fnName] = `function ${fnName}(__inputVal__) {
-                ${mainTemplate.split("___val___").join("__inputVal__")}
+                ${mainTemplate.split('___val___').join('__inputVal__')}
             }`;
         }
         mainTemplate = `${fnName}(${input.val});`;
@@ -403,28 +403,28 @@ export function objectTemplate(
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${input.targetVal} += '${input.outputPrefix}';
-            ${mainTemplate.split("___val___").join(input.val)}
+            ${mainTemplate.split('___val___').join(input.val)}
         } else {
             ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return `
     ${input.targetVal} += '${input.outputPrefix}';
-    ${mainTemplate.split("___val___").join(input.val)}`;
+    ${mainTemplate.split('___val___').join(input.val)}`;
 }
 
 function hasFunctionName(name: string, fns: Record<string, string>) {
-    return typeof fns[name] === "string";
+    return typeof fns[name] === 'string';
 }
 
 function hasFunctionBody(name: string, fns: Record<string, string>) {
-    return typeof fns[name] === "string" && fns[name]!.length > 0;
+    return typeof fns[name] === 'string' && fns[name]!.length > 0;
 }
 
 export function arrayTemplate(
     input: SerializeTemplateInput<SchemaFormElements>,
 ): string {
-    const itemVarName = camelCase(`${input.val || "list"}_item`);
+    const itemVarName = camelCase(`${input.val || 'list'}_item`);
     const templateParts: string[] = [
         `${input.targetVal} += '${input.outputPrefix}[';`,
     ];
@@ -434,7 +434,7 @@ export function arrayTemplate(
         instancePath: `${input.instancePath}/i`,
         val: itemVarName,
         targetVal: input.targetVal,
-        outputPrefix: "",
+        outputPrefix: '',
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
     });
@@ -446,7 +446,7 @@ export function arrayTemplate(
         ${innerTemplate}
     }`);
     templateParts.push(`${input.targetVal} += ']';`);
-    const mainTemplate = templateParts.join("\n");
+    const mainTemplate = templateParts.join('\n');
     if (input.schema.nullable) {
         return `if (Array.isArray(${input.val})) {
             ${mainTemplate}
@@ -461,8 +461,8 @@ export function recordTemplate(
     input: SerializeTemplateInput<SchemaFormValues>,
 ): string {
     const keysVarName = input.instancePath.length
-        ? camelCase(input.instancePath.split("/").join("_")) + "Keys"
-        : camelCase(`${input.val.split(".").join("_")}_Keys`);
+        ? camelCase(input.instancePath.split('/').join('_')) + 'Keys'
+        : camelCase(`${input.val.split('.').join('_')}_Keys`);
     const templateParts: string[] = [
         `const ${keysVarName} = Object.keys(${input.val});`,
         `${input.targetVal} += '${input.outputPrefix}{';`,
@@ -473,7 +473,7 @@ export function recordTemplate(
         instancePath: `${input.instancePath}/key`,
         val: `innerVal`,
         targetVal: input.targetVal,
-        outputPrefix: "",
+        outputPrefix: '',
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
     });
@@ -517,7 +517,7 @@ export function recordTemplate(
         ${innerTemplate}
     }`);
     templateParts.push(`${input.targetVal} += '}';`);
-    const mainTemplate = templateParts.join("\n");
+    const mainTemplate = templateParts.join('\n');
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
@@ -533,7 +533,7 @@ function discriminatorTemplate(
 ): string {
     const discriminatorKey = input.schema.discriminator;
     const discriminatorVals = Object.keys(input.schema.mapping);
-    const inputPlaceholder = "<<<tempval>>>";
+    const inputPlaceholder = '<<<tempval>>>';
     const templateParts = [`switch(${inputPlaceholder}.${discriminatorKey}) {`];
     for (const val of discriminatorVals) {
         const valSchema = input.schema.mapping[val];
@@ -554,13 +554,13 @@ function discriminatorTemplate(
             break;
         }`);
     }
-    templateParts.push("}");
-    let mainTemplate = templateParts.join("\n");
-    const fnName = refFnName(input.schema.metadata?.id ?? "");
+    templateParts.push('}');
+    let mainTemplate = templateParts.join('\n');
+    const fnName = refFnName(input.schema.metadata?.id ?? '');
     if (hasFunctionName(fnName, input.subFunctions)) {
         if (!hasFunctionBody(fnName, input.subFunctions)) {
             input.subFunctions[fnName] = `function ${fnName}(__fnInput__){
-                ${mainTemplate.split(inputPlaceholder).join("__fnInput__")}
+                ${mainTemplate.split(inputPlaceholder).join('__fnInput__')}
             }`;
         }
         mainTemplate = `${fnName}(${input.val});`;
@@ -606,7 +606,7 @@ export function refTemplate(
 ): string {
     const fnName = refFnName(input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
-        input.subFunctions[fnName] = "";
+        input.subFunctions[fnName] = '';
     }
     if (input.schema.nullable) {
         return `if (${input.val} === null) {

@@ -1,10 +1,10 @@
-import { RuleTester } from "eslint";
+import { RuleTester } from 'eslint';
 
-import noAnonymousDiscriminator from "./no-anonymous-discriminator";
+import noAnonymousDiscriminator from './no-anonymous-discriminator';
 
 const tester = new RuleTester();
 
-tester.run("no-anonymous-discriminator", noAnonymousDiscriminator, {
+tester.run('no-anonymous-discriminator', noAnonymousDiscriminator, {
     valid: [
         {
             code: `
@@ -52,10 +52,10 @@ const Message = a.discriminator("type", {
 })`,
             errors: [
                 {
-                    message: "discriminator schemas must specify an id",
+                    message: 'discriminator schemas must specify an id',
                 },
                 {
-                    message: "discriminator schemas must specify an id",
+                    message: 'discriminator schemas must specify an id',
                 },
             ],
         },

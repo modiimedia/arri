@@ -1,19 +1,19 @@
-import { type SchemaFormEmpty } from "@arrirpc/codegen-utils";
+import { type SchemaFormEmpty } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     isNullable,
     type KotlinProperty,
-} from "./_common";
+} from './_common';
 
 export function kotlinAnyFromSchema(
     schema: SchemaFormEmpty,
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "JsonNull";
+    const defaultValue = nullable ? 'null' : 'JsonNull';
     return {
-        typeName: "JsonElement",
+        typeName: 'JsonElement',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -47,6 +47,6 @@ export function kotlinAnyFromSchema(
         toQueryString() {
             return `__logError("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

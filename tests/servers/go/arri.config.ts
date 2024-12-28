@@ -1,6 +1,6 @@
-import { servers } from "arri";
+import { servers } from 'arri';
 
-import config from "../ts/arri.config";
+import config from '../ts/arri.config';
 
 config.server = servers.goServer({
     cwd: __dirname,

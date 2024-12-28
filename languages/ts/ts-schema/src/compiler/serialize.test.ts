@@ -1,6 +1,6 @@
-import { a, isAScalarSchema, isAStringEnumSchema } from "../_index";
-import { compile } from "../compile";
-import { serializationTestSuites, validationTestSuites } from "../testSuites";
+import { a, isAScalarSchema, isAStringEnumSchema } from '../_index';
+import { compile } from '../compile';
+import { serializationTestSuites, validationTestSuites } from '../testSuites';
 
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
@@ -10,7 +10,7 @@ for (const key of Object.keys(validationTestSuites)) {
         test(`${key} - ${i + 1}`, () => {
             try {
                 const result = Compiled.serialize(input);
-                expect(typeof result === "string").toBe(true);
+                expect(typeof result === 'string').toBe(true);
                 if (
                     !isAScalarSchema(suite.schema) &&
                     !isAStringEnumSchema(suite.schema)
@@ -18,7 +18,7 @@ for (const key of Object.keys(validationTestSuites)) {
                     try {
                         JSON.parse(result);
                     } catch (err) {
-                        console.log("RESULT", result);
+                        console.log('RESULT', result);
                         throw err;
                     }
                 }
@@ -27,12 +27,12 @@ for (const key of Object.keys(validationTestSuites)) {
                 if (!parseResult.success) {
                     console.error(parseResult.error);
                     console.error(Compiled.compiledCode.serialize);
-                    console.error(result, "SHOULD BE VALID");
+                    console.error(result, 'SHOULD BE VALID');
                 }
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
-                console.log(input, "SHOULD NOT THROW");
+                console.log(input, 'SHOULD NOT THROW');
                 throw err;
             }
         });
@@ -47,7 +47,7 @@ for (const key of Object.keys(serializationTestSuites)) {
         test(`${key} - ${i + 1}`, () => {
             try {
                 const result = Compiled.serialize(input);
-                expect(typeof result).toBe("string");
+                expect(typeof result).toBe('string');
                 if (
                     !isAScalarSchema(suite.schema) ||
                     !isAStringEnumSchema(suite.schema)
@@ -59,29 +59,29 @@ for (const key of Object.keys(serializationTestSuites)) {
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
-                console.log(input, "SHOULD NOT THROW");
+                console.log(input, 'SHOULD NOT THROW');
                 throw err;
             }
         });
     }
 }
 
-it("serializes strings", () => {
+it('serializes strings', () => {
     const Compiled = compile(a.string());
-    expect(Compiled.serialize("Hello World")).toBe("Hello World");
+    expect(Compiled.serialize('Hello World')).toBe('Hello World');
 });
-it("serializes timestamp", () => {
+it('serializes timestamp', () => {
     const Compiled = compile(a.timestamp());
     const input = new Date();
     expect(Compiled.serialize(input)).toBe(input.toISOString());
 });
-it("serializes boolean", () => {
+it('serializes boolean', () => {
     const Compiled = compile(a.boolean());
-    expect(Compiled.serialize(true)).toBe("true");
+    expect(Compiled.serialize(true)).toBe('true');
 });
-it("serializes enum", () => {
-    const Compiled = compile(a.stringEnum(["ADMIN", "STANDARD", "MODERATOR"]));
-    expect(Compiled.serialize("ADMIN")).toBe("ADMIN");
+it('serializes enum', () => {
+    const Compiled = compile(a.stringEnum(['ADMIN', 'STANDARD', 'MODERATOR']));
+    expect(Compiled.serialize('ADMIN')).toBe('ADMIN');
 });
 it("doesn't serialize NaN", () => {
     const Schema = a.object({ num: a.number(), int: a.int32() });
@@ -94,11 +94,11 @@ it("doesn't serialize NaN", () => {
         expect(true).toBe(true);
     }
 });
-it("serializes objects", () => {
+it('serializes objects', () => {
     const Compiled = compile(
         a.object({
             a: a.string(),
-            b: a.stringEnum(["A", "B", "C"]),
+            b: a.stringEnum(['A', 'B', 'C']),
             c: a.number(),
             d: a.boolean(),
             e: a.timestamp(),
@@ -107,8 +107,8 @@ it("serializes objects", () => {
     const inputDate = new Date();
     expect(
         Compiled.serialize({
-            a: "hello world",
-            b: "B",
+            a: 'hello world',
+            b: 'B',
             c: 10,
             d: false,
             e: inputDate,
@@ -118,24 +118,24 @@ it("serializes objects", () => {
     );
 });
 
-it("serializes objects will nullable fields", () => {
+it('serializes objects will nullable fields', () => {
     const Compiled = compile(
         a.object(
             {
                 a: a.nullable(a.string()),
-                b: a.nullable(a.stringEnum(["B"])),
+                b: a.nullable(a.stringEnum(['B'])),
                 c: a.nullable(a.number()),
                 d: a.nullable(a.boolean()),
                 e: a.nullable(a.timestamp()),
             },
-            { id: "NullableObject" },
+            { id: 'NullableObject' },
         ),
     );
     const inputDate = new Date();
     expect(
         Compiled.serialize({
-            a: "hello world",
-            b: "B",
+            a: 'hello world',
+            b: 'B',
             c: 10,
             d: false,
             e: inputDate,
@@ -148,7 +148,7 @@ it("serializes objects will nullable fields", () => {
     ).toBe(`{"a":null,"b":null,"c":null,"d":null,"e":null}`);
 });
 
-it("serializes any object", () => {
+it('serializes any object', () => {
     const Schema = a.object({
         any: a.any(),
         string: a.string(),
@@ -157,11 +157,11 @@ it("serializes any object", () => {
     const Compiled = a.compile(Schema);
     const input: Schema = {
         any: {
-            a: "",
-            b: "",
+            a: '',
+            b: '',
             c: false,
         },
-        string: "",
+        string: '',
     };
     const result = Compiled.serialize(input);
     expect(Compiled.parse(result)).toStrictEqual(input);

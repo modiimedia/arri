@@ -1,12 +1,12 @@
-import { a } from "@arrirpc/schema";
+import { a } from '@arrirpc/schema';
 
 import {
     defineEventStreamRpc,
     type EventStreamConnection,
     isEventStreamRpc,
-} from "./eventStreamRpc";
+} from './eventStreamRpc';
 
-test("type inference", () => {
+test('type inference', () => {
     const ParamsSchema = a.object({
         id: a.string(),
     });
@@ -29,7 +29,7 @@ test("type inference", () => {
     });
 });
 
-test("isEventStreamRpc()", () => {
+test('isEventStreamRpc()', () => {
     const rpc = defineEventStreamRpc({
         params: undefined,
         response: undefined,

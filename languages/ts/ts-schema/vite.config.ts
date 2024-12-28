@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/languages-ts-ts-schema",
+    cacheDir: '../../../node_modules/.vite/languages-ts-ts-schema',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -20,14 +20,14 @@ export default defineConfig({
 
     test: {
         globals: true,
-        reporters: ["default"],
-        pool: "threads",
+        reporters: ['default'],
+        pool: 'threads',
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
 });

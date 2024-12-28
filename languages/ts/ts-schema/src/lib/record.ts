@@ -6,8 +6,8 @@ import {
     isObject,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
-import { serializeString } from "./string";
+} from '../schemas';
+import { serializeString } from './string';
 
 /**
  * Create a schema for a record with strings keys
@@ -59,14 +59,14 @@ export function record<TInnerSchema extends ASchema<any>>(
                     return parse(schema, input, data, true);
                 },
                 serialize(input, context) {
-                    let result = "{";
+                    let result = '{';
                     const keys = Object.keys(input);
                     for (let i = 0; i < keys.length; i++) {
                         const key = keys[i]!;
                         const val = input[key];
-                        if (i > 0) result += ",";
+                        if (i > 0) result += ',';
                         result += serializeString(key);
-                        result += ":";
+                        result += ':';
                         result += schema.metadata[SCHEMA_METADATA].serialize(
                             val,
                             {
@@ -76,7 +76,7 @@ export function record<TInnerSchema extends ASchema<any>>(
                             },
                         );
                     }
-                    result += "}";
+                    result += '}';
                     return result;
                 },
             },
@@ -91,7 +91,7 @@ function parse<T>(
     coerce = false,
 ): Record<string, T> | undefined {
     let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === 'string') {
         parsedInput = JSON.parse(input);
     }
     if (!isObject(parsedInput)) {

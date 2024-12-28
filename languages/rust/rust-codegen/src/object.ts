@@ -2,7 +2,7 @@ import {
     isSchemaFormElements,
     isSchemaFormValues,
     SchemaFormProperties,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 import {
     formatDescriptionComment,
@@ -11,8 +11,8 @@ import {
     outputIsOptionType,
     RustProperty,
     validRustIdentifier,
-} from "./_common";
-import { rustTypeFromSchema } from "./_index";
+} from './_common';
+import { rustTypeFromSchema } from './_index';
 
 export default function rustObjectFromSchema(
     schema: SchemaFormProperties,
@@ -52,7 +52,7 @@ export default function rustObjectFromSchema(
         toQueryStringTemplate() {
             return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(structName)) {
         return result;
@@ -84,10 +84,10 @@ export default function rustObjectFromSchema(
         }
         const fieldName = validRustIdentifier(key);
         fieldNames.push(fieldName);
-        let leading = "";
+        let leading = '';
         if (prop.metadata?.description) {
             leading += formatDescriptionComment(prop.metadata.description);
-            leading += "\n";
+            leading += '\n';
         }
         if (prop.metadata?.isDeprecated) {
             leading += `\t#[deprecated]\n`;
@@ -108,7 +108,7 @@ export default function rustObjectFromSchema(
             const innerKey = validRustIdentifier(`${key}_val`);
             toJsonParts.push(`\t\tmatch &self.${fieldName} {
                 Some(${innerKey}) => {
-                    ${innerType.toJsonTemplate(innerKey, "_json_output_")};
+                    ${innerType.toJsonTemplate(innerKey, '_json_output_')};
                 }
                 _ => {
                     _json_output_.push_str("null");
@@ -117,15 +117,15 @@ export default function rustObjectFromSchema(
         } else {
             const leading =
                 isSchemaFormElements(prop) || isSchemaFormValues(prop)
-                    ? ""
-                    : "&";
+                    ? ''
+                    : '&';
             toJsonParts.push(
-                `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, "_json_output_")};`,
+                `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, '_json_output_')};`,
             );
         }
 
         toQueryParamParams.push(
-            `\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, "_query_parts_")};`,
+            `\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, '_query_parts_')};`,
         );
     }
     for (let i = 0; i < optionalKeys.length; i++) {
@@ -147,10 +147,10 @@ export default function rustObjectFromSchema(
         fieldNames.push(fieldName);
         let leading = prop.metadata?.description
             ? `${prop.metadata.description
-                  .split("\n")
+                  .split('\n')
                   .map((line) => `\t/// ${line}`)
-                  .join("\n")}\n`
-            : "";
+                  .join('\n')}\n`
+            : '';
         if (prop.metadata?.isDeprecated) {
             leading += `\t#[deprecated]\n`;
         }
@@ -168,7 +168,7 @@ export default function rustObjectFromSchema(
             toJsonParts.push(`match &self.${fieldName} {
                 Some(${innerKey}) => {
                     _json_output_.push_str(",\\"${key}\\":");
-                    ${innerType.toJsonTemplate(innerKey, "_json_output_")}
+                    ${innerType.toJsonTemplate(innerKey, '_json_output_')}
                 },
                 _ => {}
             };`);
@@ -181,51 +181,51 @@ export default function rustObjectFromSchema(
                             ? `if _has_keys_ {
                         _json_output_.push(',');
                     }`
-                            : ""
+                            : ''
                     }
                     _json_output_.push_str("\\"${key}\\":");
-                    ${innerType.toJsonTemplate(innerKey, "_json_output_")};
-                    ${i !== optionalKeys.length - 1 ? "_has_keys_ = true;" : ""}
+                    ${innerType.toJsonTemplate(innerKey, '_json_output_')};
+                    ${i !== optionalKeys.length - 1 ? '_has_keys_ = true;' : ''}
                 }
                 _ => {}
             };`);
         }
         toQueryParamParams.push(
-            `\t\t\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, "_query_parts_")};`,
+            `\t\t\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, '_query_parts_')};`,
         );
     }
     context.generatedTypes.push(structName);
     let selfDeclaration = `Self {
-        ${fieldNames.join(",\n\t\t\t\t")},
+        ${fieldNames.join(',\n\t\t\t\t')},
     }`;
     if (fieldNames.length < 4) {
-        selfDeclaration = `Self { ${fieldNames.join(", ")} }`;
+        selfDeclaration = `Self { ${fieldNames.join(', ')} }`;
     }
-    let leading = "";
+    let leading = '';
     if (schema.metadata?.description) {
         leading += `${schema.metadata.description
-            .split("\n")
+            .split('\n')
             .map((line) => `/// ${line}`)
-            .join("\n")}\n`;
+            .join('\n')}\n`;
     }
     if (schema.metadata?.isDeprecated) {
         leading += `#[deprecated]\n`;
     }
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub struct ${structName} {
-${fieldDeclarationParts.join(",\n")},
+${fieldDeclarationParts.join(',\n')},
 }
 
 impl ArriModel for ${structName} {
     fn new() -> Self {
         Self {
-${defaultParts.join(",\n")},
+${defaultParts.join(',\n')},
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::Object(_val_) => {
-${fromJsonParts.join("\n")}
+${fromJsonParts.join('\n')}
                 ${selfDeclaration}
             }
             _ => Self::new(),
@@ -239,18 +239,18 @@ ${fromJsonParts.join("\n")}
     }
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
-        ${!hasKeys ? `let mut _has_keys_ = false;` : ""}
-${toJsonParts.join("\n")}
+        ${!hasKeys ? `let mut _has_keys_ = false;` : ''}
+${toJsonParts.join('\n')}
         _json_output_.push('}');
         _json_output_
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-${toQueryParamParams.join("\n")}
+${toQueryParamParams.join('\n')}
         _query_parts_.join("&")
     }
 }
 
-${subContent.join("\n\n")}`;
+${subContent.join('\n\n')}`;
     return result;
 }

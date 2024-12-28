@@ -1,11 +1,11 @@
-import { pascalCase, SchemaFormRef } from "@arrirpc/codegen-utils";
+import { pascalCase, SchemaFormRef } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
     DartProperty,
     outputIsNullable,
     sanitizeIdentifier,
-} from "./_common";
+} from './_common';
 
 export function dartRefFromSchema(
     schema: SchemaFormRef,
@@ -45,6 +45,6 @@ export function dartRefFromSchema(
             return `print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

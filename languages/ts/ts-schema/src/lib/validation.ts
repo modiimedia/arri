@@ -2,15 +2,15 @@ import {
     type ASchema,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
+} from '../schemas';
 
 export function sanitizeJson(json: string) {
     return json
-        .replace(/[\b]/g, "\\b")
-        .replace(/[\f]/g, "\\f")
-        .replace(/[\n]/g, "\\n")
-        .replace(/[\r]/g, "\\r")
-        .replace(/[\t]/g, "\\t");
+        .replace(/[\b]/g, '\\b')
+        .replace(/[\f]/g, '\\f')
+        .replace(/[\n]/g, '\\n')
+        .replace(/[\r]/g, '\\r')
+        .replace(/[\t]/g, '\\t');
 }
 
 /**
@@ -29,8 +29,8 @@ export function validate<T = any>(
 export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
     const errors: ValueError[] = [];
     const result = schema.metadata[SCHEMA_METADATA].parse(input, {
-        schemaPath: "",
-        instancePath: "",
+        schemaPath: '',
+        instancePath: '',
         errors,
     });
     if (errors.length) {
@@ -65,7 +65,7 @@ export function safeParse<T = any>(
         return {
             success: false,
             error: new ValidationError({
-                message: "Unable to parse input",
+                message: 'Unable to parse input',
                 errors: [],
             }),
         };
@@ -78,8 +78,8 @@ export function safeParse<T = any>(
 export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
     const errors: ValueError[] = [];
     const result = schema.metadata[SCHEMA_METADATA].coerce(input, {
-        schemaPath: "",
-        instancePath: "",
+        schemaPath: '',
+        instancePath: '',
         errors,
     });
     if (errors.length) {
@@ -118,7 +118,7 @@ export function safeCoerce<T = any>(
         return {
             success: false,
             error: new ValidationError({
-                message: "Unable to coerce input",
+                message: 'Unable to coerce input',
                 errors: [],
             }),
         };
@@ -130,8 +130,8 @@ export function safeCoerce<T = any>(
  */
 export function serialize<T = any>(schema: ASchema<T>, input: T) {
     const context: ValidationContext = {
-        instancePath: "",
-        schemaPath: "",
+        instancePath: '',
+        schemaPath: '',
         errors: [],
     };
     return schema.metadata[SCHEMA_METADATA].serialize(input, context);
@@ -142,11 +142,11 @@ export function errors(schema: ASchema, input: unknown): ValueError[] {
     try {
         schema.metadata[SCHEMA_METADATA].parse(input, {
             errors: errorList,
-            instancePath: "",
-            schemaPath: "",
+            instancePath: '',
+            schemaPath: '',
         });
     } catch (err) {
-        errorList.push({ instancePath: "", schemaPath: "", message: `${err}` });
+        errorList.push({ instancePath: '', schemaPath: '', message: `${err}` });
     }
     return errorList;
 }
@@ -168,13 +168,13 @@ export class ValidationError extends Error {
 }
 
 export function isValidationError(input: unknown): input is ValidationError {
-    if (typeof input !== "object" || !input) {
+    if (typeof input !== 'object' || !input) {
         return false;
     }
     return (
-        "message" in input &&
-        typeof input.message === "string" &&
-        "errors" in input &&
+        'message' in input &&
+        typeof input.message === 'string' &&
+        'errors' in input &&
         Array.isArray(input.errors)
     );
 }

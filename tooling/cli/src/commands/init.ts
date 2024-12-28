@@ -1,51 +1,51 @@
-import fs, { readFileSync, rmSync, writeFileSync } from "node:fs";
+import fs, { readFileSync, rmSync, writeFileSync } from 'node:fs';
 
-import { kebabCase } from "@arrirpc/codegen-utils";
-import { a } from "@arrirpc/schema";
-import { defineCommand } from "citty";
-import Degit from "degit";
-import enquirer from "enquirer";
-import path from "pathe";
-import prettier from "prettier";
+import { kebabCase } from '@arrirpc/codegen-utils';
+import { a } from '@arrirpc/schema';
+import { defineCommand } from 'citty';
+import Degit from 'degit';
+import enquirer from 'enquirer';
+import path from 'pathe';
+import prettier from 'prettier';
 
-import { logger } from "../common";
+import { logger } from '../common';
 
-const Language = a.enumerator(["typescript", "go"]);
+const Language = a.enumerator(['typescript', 'go']);
 type Language = a.infer<typeof Language>;
 
 const CliArgs = a.object({
     dir: a.string(),
     force: a.optional(a.boolean()),
-    type: a.optional(a.enumerator(["app", "plugin"])),
+    type: a.optional(a.enumerator(['app', 'plugin'])),
     language: a.optional(Language),
 });
 type CliArgs = a.infer<typeof CliArgs>;
 
 export default defineCommand({
     meta: {
-        name: "Init",
-        description: "Scaffold an arri app",
+        name: 'Init',
+        description: 'Scaffold an arri app',
     },
     args: {
         dir: {
-            type: "positional",
+            type: 'positional',
             required: true,
-            description: "Directory where to initialize the project",
+            description: 'Directory where to initialize the project',
         },
         force: {
-            type: "boolean",
+            type: 'boolean',
             default: false,
-            alias: "f",
+            alias: 'f',
             description:
-                "Force created a project when if a directory already exists",
+                'Force created a project when if a directory already exists',
         },
         type: {
-            type: "string",
+            type: 'string',
             description: `"app" | "plugin"`,
         },
         language: {
-            type: "string",
-            alias: ["lang", "l"],
+            type: 'string',
+            alias: ['lang', 'l'],
             description: `"typescript" | "go"`,
         },
     },
@@ -53,21 +53,21 @@ export default defineCommand({
         const args = a.parse(CliArgs, context.args);
         if (!args.type) {
             const { projectType } = await enquirer.prompt<{
-                projectType: "application" | "generator plugin";
+                projectType: 'application' | 'generator plugin';
             }>([
                 {
-                    type: "select",
-                    name: "projectType",
-                    message: "What kind of project do you want to initialize?",
-                    choices: ["application", "generator plugin"],
+                    type: 'select',
+                    name: 'projectType',
+                    message: 'What kind of project do you want to initialize?',
+                    choices: ['application', 'generator plugin'],
                 },
             ]);
             switch (projectType) {
-                case "application":
-                    args.type = "app";
+                case 'application':
+                    args.type = 'app';
                     break;
-                case "generator plugin":
-                    args.type = "plugin";
+                case 'generator plugin':
+                    args.type = 'plugin';
                     break;
                 default:
                     throw new Error(
@@ -77,13 +77,13 @@ export default defineCommand({
         }
         if (!args.language) {
             const { language } = await enquirer.prompt<{
-                language: "typescript" | "go";
+                language: 'typescript' | 'go';
             }>([
                 {
-                    type: "select",
-                    name: "language",
-                    message: "What language do you want to use?",
-                    choices: ["typescript", "go"],
+                    type: 'select',
+                    name: 'language',
+                    message: 'What language do you want to use?',
+                    choices: ['typescript', 'go'],
                 },
             ]);
             args.language = language;
@@ -100,10 +100,10 @@ export default defineCommand({
             process.exit(1);
         }
         switch (args.type) {
-            case "app":
+            case 'app':
                 await initApp(args.dir, args.language, args.force ?? false);
                 break;
-            case "plugin":
+            case 'plugin':
                 await initPlugin(args.dir, args.force ?? false);
                 break;
             default:
@@ -116,9 +116,9 @@ export default defineCommand({
 
 async function initApp(dir: string, language: Language, force: boolean) {
     switch (language) {
-        case "typescript":
+        case 'typescript':
             return initTypescriptApp(dir, force);
-        case "go":
+        case 'go':
             return initGoApp(dir, force);
         default:
             language satisfies never;
@@ -129,9 +129,9 @@ async function initApp(dir: string, language: Language, force: boolean) {
 async function initTypescriptApp(dir: string, force: boolean) {
     const { eslint } = await enquirer.prompt<{ eslint: boolean }>([
         {
-            name: "eslint",
-            type: "confirm",
-            message: "Do you want to setup Eslint?",
+            name: 'eslint',
+            type: 'confirm',
+            message: 'Do you want to setup Eslint?',
             initial: true,
         },
     ]);
@@ -141,8 +141,8 @@ async function initTypescriptApp(dir: string, force: boolean) {
         );
     }
     const repo = eslint
-        ? "modiimedia/arri-starters/app-starter-ts-with-eslint"
-        : "modiimedia/arri-starters/app-starter-ts";
+        ? 'modiimedia/arri-starters/app-starter-ts-with-eslint'
+        : 'modiimedia/arri-starters/app-starter-ts';
     const degit = Degit(repo, {
         force,
     });
@@ -153,7 +153,7 @@ async function initTypescriptApp(dir: string, force: boolean) {
 }
 
 async function initGoApp(dir: string, force: boolean) {
-    const degit = Degit("modiimedia/arri-starters/app-starter-go", { force });
+    const degit = Degit('modiimedia/arri-starters/app-starter-go', { force });
     await degit.clone(dir);
     await cleanPackageJsonAndPnpmLockFiles(dir);
     logger.success(`Project created in ${dir}!`);
@@ -163,17 +163,17 @@ async function initGoApp(dir: string, force: boolean) {
 }
 
 async function cleanPackageJsonAndPnpmLockFiles(dir: string) {
-    rmSync(path.resolve(dir, "pnpm-lock.yaml"));
+    rmSync(path.resolve(dir, 'pnpm-lock.yaml'));
     const packageJson = JSON.parse(
-        readFileSync(path.resolve(dir, "package.json"), {
-            encoding: "utf-8",
+        readFileSync(path.resolve(dir, 'package.json'), {
+            encoding: 'utf-8',
         }),
     );
     packageJson.name = kebabCase(dir);
-    if (packageJson.name.startsWith("-")) {
-        packageJson.name = packageJson.name.replace("-", "");
+    if (packageJson.name.startsWith('-')) {
+        packageJson.name = packageJson.name.replace('-', '');
     }
-    packageJson.description = "An RPC server created with Arri RPC";
+    packageJson.description = 'An RPC server created with Arri RPC';
     packageJson.private = true;
     delete packageJson.license;
     delete packageJson.main;
@@ -181,38 +181,38 @@ async function cleanPackageJsonAndPnpmLockFiles(dir: string) {
     delete packageJson.tags;
     delete packageJson.packageManager;
     writeFileSync(
-        path.resolve(dir, "package.json"),
+        path.resolve(dir, 'package.json'),
         await prettier.format(JSON.stringify(packageJson), {
-            parser: "json",
+            parser: 'json',
             tabWidth: 2,
             semi: true,
-            endOfLine: "lf",
-            trailingComma: "all",
+            endOfLine: 'lf',
+            trailingComma: 'all',
         }),
     );
 }
 
 async function initPlugin(dir: string, force: boolean) {
     const name = kebabCase(dir);
-    const degit = Degit("modiimedia/arri-starters/generator-starter", {
+    const degit = Degit('modiimedia/arri-starters/generator-starter', {
         force,
     });
     await degit.clone(dir);
-    rmSync(path.resolve(dir, "pnpm-lock.yaml"));
-    let packageJson = readFileSync(path.resolve(dir, "package.json"), {
-        encoding: "utf8",
+    rmSync(path.resolve(dir, 'pnpm-lock.yaml'));
+    let packageJson = readFileSync(path.resolve(dir, 'package.json'), {
+        encoding: 'utf8',
     });
     packageJson = packageJson.replace(`"arri-generator-name"`, `"${name}"`);
     const parsedPackageJson = JSON.parse(packageJson) as Record<string, any>;
     delete parsedPackageJson.packageManager;
     writeFileSync(
-        path.resolve(dir, "package.json"),
+        path.resolve(dir, 'package.json'),
         await prettier.format(JSON.stringify(parsedPackageJson), {
-            parser: "json",
+            parser: 'json',
             tabWidth: 2,
             semi: true,
-            endOfLine: "lf",
-            trailingComma: "all",
+            endOfLine: 'lf',
+            trailingComma: 'all',
         }),
     );
     logger.success(`Project initialized in ${dir}!`);

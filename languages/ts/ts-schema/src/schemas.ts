@@ -7,11 +7,11 @@ import {
     isSchemaFormValues,
     type Type as JtdType,
     TypeValues,
-} from "@arrirpc/type-defs";
+} from '@arrirpc/type-defs';
 
-import { type ValueError } from "./lib/validation";
+import { type ValueError } from './lib/validation';
 
-export const SCHEMA_METADATA = Symbol.for("arri.schema_metadata");
+export const SCHEMA_METADATA = Symbol.for('arri.schema_metadata');
 
 export type MaybeNullable<
     T = any,
@@ -49,24 +49,24 @@ export interface ASchema<T = any> {
     nullable?: boolean;
 }
 export function isASchema(input: unknown): input is ASchema {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
-    if (!input || !("metadata" in input)) {
+    if (!input || !('metadata' in input)) {
         return false;
     }
     if (
         !input.metadata ||
-        typeof input.metadata !== "object" ||
+        typeof input.metadata !== 'object' ||
         !(SCHEMA_METADATA in input.metadata) ||
         !input.metadata[SCHEMA_METADATA] ||
-        typeof input.metadata[SCHEMA_METADATA] !== "object"
+        typeof input.metadata[SCHEMA_METADATA] !== 'object'
     ) {
         return false;
     }
     return (
-        "parse" in input.metadata[SCHEMA_METADATA] &&
-        typeof input.metadata[SCHEMA_METADATA] === "object"
+        'parse' in input.metadata[SCHEMA_METADATA] &&
+        typeof input.metadata[SCHEMA_METADATA] === 'object'
     );
 }
 
@@ -81,7 +81,7 @@ export type ResolveObject<T> = Resolve<{ [k in keyof T]: T[k] }>;
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type InferType<TInput extends ASchema<any>> = Resolve<
-    TInput["metadata"][typeof SCHEMA_METADATA]["output"]
+    TInput['metadata'][typeof SCHEMA_METADATA]['output']
 >;
 
 /**
@@ -128,24 +128,24 @@ export interface AScalarSchema<T extends JtdType | NumberType = any, TVal = any>
 export function isAScalarSchema(input: unknown): input is AScalarSchema {
     return (
         isASchema(input) &&
-        "type" in input &&
-        typeof input.type === "string" &&
+        'type' in input &&
+        typeof input.type === 'string' &&
         (TypeValues.includes(input.type as any) ||
             NumberTypeValues.includes(input.type as any))
     );
 }
 
 export const NumberTypeValues = [
-    "float32",
-    "float64",
-    "int8",
-    "int16",
-    "int32",
-    "int64",
-    "uint8",
-    "uint16",
-    "uint32",
-    "uint64",
+    'float32',
+    'float64',
+    'int8',
+    'int16',
+    'int32',
+    'int64',
+    'uint8',
+    'uint16',
+    'uint32',
+    'uint64',
 ] as const;
 export type NumberType = (typeof NumberTypeValues)[number];
 
@@ -222,16 +222,16 @@ export type InferObjectOutput<TInput = any> = ResolveObject<
 export type InferObjectRawType<TInput> =
     TInput extends Record<any, any>
         ? {
-              [TKey in keyof TInput]: TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["optional"] extends true
+              [TKey in keyof TInput]: TInput[TKey]['metadata'][typeof SCHEMA_METADATA]['optional'] extends true
                   ?
-                        | TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"]
+                        | TInput[TKey]['metadata'][typeof SCHEMA_METADATA]['output']
                         | undefined
-                  : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
+                  : TInput[TKey]['metadata'][typeof SCHEMA_METADATA]['output'];
           }
         : never;
 
 export function isObject(input: unknown): input is Record<any, any> {
-    return typeof input === "object" && input !== null;
+    return typeof input === 'object' && input !== null;
 }
 
 // recursive types

@@ -1,34 +1,34 @@
-import { pascalCase } from "scule";
+import { pascalCase } from 'scule';
 
 import {
     Schema,
     SchemaFormDiscriminator,
     SchemaFormProperties,
-} from "./typeDef";
+} from './typeDef';
 
 export const HttpMethodValues = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
+    'get',
+    'post',
+    'put',
+    'patch',
+    'delete',
+    'head',
 ] as const;
 
 export type HttpMethod = (typeof HttpMethodValues)[number];
-export type RpcHttpMethod = Exclude<HttpMethod, "head">;
+export type RpcHttpMethod = Exclude<HttpMethod, 'head'>;
 export const isHttpMethod = (input: any): input is HttpMethod => {
-    if (typeof input !== "string") {
+    if (typeof input !== 'string') {
         return false;
     }
     return HttpMethodValues.includes(input as any);
 };
 
 export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
-    return isHttpMethod(input) && input !== "head";
+    return isHttpMethod(input) && input !== 'head';
 };
 
-export const SCHEMA_VERSION = "0.0.7";
+export const SCHEMA_VERSION = '0.0.7';
 
 export interface AppDefinition {
     schemaVersion: typeof SCHEMA_VERSION;
@@ -47,17 +47,17 @@ export interface AppDefinition {
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
     const inputObj = input as Record<any, any>;
-    if (typeof inputObj.schemaVersion !== "string") {
+    if (typeof inputObj.schemaVersion !== 'string') {
         return false;
     }
-    if (typeof inputObj.procedures !== "object") {
+    if (typeof inputObj.procedures !== 'object') {
         return false;
     }
-    if (typeof inputObj.definitions !== "object") {
+    if (typeof inputObj.definitions !== 'object') {
         return false;
     }
     return true;
@@ -72,12 +72,12 @@ export interface RpcDefinitionBase<T = string> {
 }
 
 export interface HttpRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-    transport: "http";
+    transport: 'http';
     method: RpcHttpMethod;
     isEventStream?: boolean;
 }
 export interface WsRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-    transport: "ws";
+    transport: 'ws';
 }
 export interface CustomRpcDefinition<T = string> extends RpcDefinitionBase<T> {
     transport: `custom:${string}`;
@@ -91,30 +91,30 @@ export type RpcDefinition<T = string> =
 export function isRpcDefinitionBase(
     input: unknown,
 ): input is RpcDefinitionBase {
-    if (typeof input !== "object" || input === null) {
+    if (typeof input !== 'object' || input === null) {
         return false;
     }
     if (
-        "params" in input &&
-        typeof input.params !== "undefined" &&
-        typeof input.params !== "string"
+        'params' in input &&
+        typeof input.params !== 'undefined' &&
+        typeof input.params !== 'string'
     ) {
         return false;
     }
     if (
-        "response" in input &&
-        typeof input.response !== "undefined" &&
-        typeof input.response !== "string"
+        'response' in input &&
+        typeof input.response !== 'undefined' &&
+        typeof input.response !== 'string'
     ) {
         return false;
     }
 
     return (
-        "transport" in input &&
-        typeof input.transport === "string" &&
+        'transport' in input &&
+        typeof input.transport === 'string' &&
         input.transport.length > 0 &&
-        "path" in input &&
-        typeof input.path === "string" &&
+        'path' in input &&
+        typeof input.path === 'string' &&
         input.path.length > 0
     );
 }
@@ -123,16 +123,16 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
     if (!isRpcDefinitionBase(input)) {
         return false;
     }
-    if (!("transport" in input) || typeof input.transport !== "string") {
+    if (!('transport' in input) || typeof input.transport !== 'string') {
         return false;
     }
-    if (input.transport === "http") {
-        return "method" in input && isRpcHttpMethod(input.method);
+    if (input.transport === 'http') {
+        return 'method' in input && isRpcHttpMethod(input.method);
     }
-    if (input.transport === "ws") {
+    if (input.transport === 'ws') {
         return true;
     }
-    if (input.transport.startsWith("custom:")) {
+    if (input.transport.startsWith('custom:')) {
         return true;
     }
     return false;
@@ -143,12 +143,12 @@ export interface ServiceDefinition {
 }
 
 export function isServiceDefinition(input: any): input is ServiceDefinition {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
 
     for (const key of Object.keys(input)) {
-        if (typeof input[key] !== "object") {
+        if (typeof input[key] !== 'object') {
             return false;
         }
     }
@@ -175,29 +175,29 @@ type RpcDefinitionHelper = RpcDefinition<
 
 type AppDefinitionHelper = Omit<
     AppDefinition,
-    "procedures" | "definitions" | "schemaVersion"
+    'procedures' | 'definitions' | 'schemaVersion'
 > & {
     procedures: Record<string, RpcDefinitionHelper>;
-    definitions?: AppDefinition["definitions"];
+    definitions?: AppDefinition['definitions'];
 };
 
 export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
     const definitions = { ...input.definitions };
-    const procedures: AppDefinition["procedures"] = {};
+    const procedures: AppDefinition['procedures'] = {};
     for (const key of Object.keys(input.procedures)) {
         const def = input.procedures[key]!;
         let paramName: string | undefined;
         if (def.params) {
             paramName =
                 def.params.metadata?.id ??
-                pascalCase(`${key.split(".").join("_")}Params`);
+                pascalCase(`${key.split('.').join('_')}Params`);
             definitions[paramName] = def.params;
         }
         let responseName: string | undefined;
         if (def.response) {
             responseName =
                 def.response.metadata?.id ??
-                pascalCase(`${key.split(".").join("_")}Response`);
+                pascalCase(`${key.split('.').join('_')}Response`);
             definitions[responseName] = def.response;
         }
         delete def.params;
@@ -209,7 +209,7 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
         };
     }
     const result: AppDefinition = {
-        schemaVersion: "0.0.7",
+        schemaVersion: '0.0.7',
         ...input,
         procedures,
         definitions,

@@ -1,11 +1,11 @@
-import { camelCase, SchemaFormEnum } from "@arrirpc/codegen-utils";
+import { camelCase, SchemaFormEnum } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
     DartProperty,
     getDartClassName,
     outputIsNullable,
-} from "./_common";
+} from './_common';
 
 export function dartEnumFromSchema(
     schema: SchemaFormEnum,
@@ -24,7 +24,7 @@ export function dartEnumFromSchema(
         );
     }
     const defaultValue = isNullable
-        ? "null"
+        ? 'null'
         : `${context.modelPrefix}${enumName}.${enumValues[0]?.name}`;
     const output: DartProperty = {
         typeName,
@@ -54,13 +54,13 @@ export function dartEnumFromSchema(
             }
             return `${target}.add("${key}=\${${input}.serialValue}")`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(enumName)) {
         return output;
     }
     output.content = `enum ${context.modelPrefix}${enumName} implements Comparable<${context.modelPrefix}${enumName}> {
-${enumValues.map((val) => `  ${val.name}("${val.serialValue}")`).join(",\n")};
+${enumValues.map((val) => `  ${val.name}("${val.serialValue}")`).join(',\n')};
 
   const ${context.modelPrefix}${enumName}(this.serialValue);
   final String serialValue;

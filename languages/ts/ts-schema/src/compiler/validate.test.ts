@@ -1,6 +1,6 @@
-import { a } from "../_index";
-import { compile } from "../compile";
-import { validationTestSuites } from "../testSuites";
+import { a } from '../_index';
+import { compile } from '../compile';
+import { validationTestSuites } from '../testSuites';
 
 Object.keys(validationTestSuites).forEach((key) => {
     test(key, () => {
@@ -9,7 +9,7 @@ Object.keys(validationTestSuites).forEach((key) => {
         for (const input of suite.goodInputs) {
             if (!Compiled.validate(input)) {
                 console.log(suite.schema);
-                console.log(input, "Should be TRUE");
+                console.log(input, 'Should be TRUE');
                 console.log(Compiled.compiledCode.validate);
             }
             expect(Compiled.validate(input)).toBe(true);
@@ -17,7 +17,7 @@ Object.keys(validationTestSuites).forEach((key) => {
         for (const input of suite.badInputs) {
             if (Compiled.validate(input)) {
                 console.log(suite.schema);
-                console.log(input, "Should be FALSE");
+                console.log(input, 'Should be FALSE');
                 console.log(Compiled.compiledCode.validate);
             }
             expect(Compiled.validate(input)).toBe(false);
@@ -36,7 +36,7 @@ const User = a.object({
     ),
 });
 
-const PostComment = a.discriminator("commentType", {
+const PostComment = a.discriminator('commentType', {
     TEXT: a.object({
         userId: a.string(),
         user: User,
@@ -59,7 +59,7 @@ const Post = a.object({
     isFeatured: a.boolean(),
     userId: a.string(),
     user: User,
-    type: a.stringEnum(["text", "image", "video"]),
+    type: a.stringEnum(['text', 'image', 'video']),
     title: a.string(),
     content: a.string(),
     tags: a.optional(a.array(a.string())),
@@ -83,120 +83,120 @@ type Post = a.infer<typeof Post>;
 
 const PostValidator = compile(Post);
 const goodInput: Post = {
-    id: "",
+    id: '',
     isFeatured: false,
-    userId: "",
+    userId: '',
     user: {
-        id: "",
+        id: '',
         photo: {
-            url: "",
+            url: '',
             width: 500,
             height: null,
         },
     },
-    type: "text",
-    title: "",
-    content: "",
+    type: 'text',
+    title: '',
+    content: '',
     tags: undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
     numComments: 199,
     numLikes: 2888,
     unknownField: {
-        blah: "blah",
+        blah: 'blah',
         blahBlah: {
             blah: false,
         },
     },
     comments: [
         {
-            commentType: "TEXT",
+            commentType: 'TEXT',
             user: {
-                id: "1",
+                id: '1',
                 photo: undefined,
             },
-            userId: "1",
-            text: "You suck",
+            userId: '1',
+            text: 'You suck',
         },
         {
-            commentType: "IMAGE",
+            commentType: 'IMAGE',
             user: {
-                id: "2",
+                id: '2',
                 photo: {
-                    url: "",
+                    url: '',
                     height: 10,
                     width: 10,
                 },
             },
-            userId: "2",
-            imageUrl: "https://someimage.com/image.jpg",
+            userId: '2',
+            imageUrl: 'https://someimage.com/image.jpg',
         },
     ],
     numArray: [50, 100, 20],
-    stringArray: ["50", "100", "20"],
+    stringArray: ['50', '100', '20'],
     metadata: {
         foo: {
-            key: "foo",
+            key: 'foo',
             createdAt: new Date(),
         },
         bar: {
-            key: "bar",
+            key: 'bar',
             createdAt: new Date(),
         },
     },
 };
-it("validates good input", () => {
+it('validates good input', () => {
     expect(PostValidator.validate(goodInput));
 });
 it("doesn't validate bad input", () => {
     const badInput1 = {
         ...goodInput,
-        numArray: ["1", "2", "50"],
+        numArray: ['1', '2', '50'],
     };
     expect(PostValidator.validate(badInput1));
     const badInput2 = {
         ...goodInput,
-        metadata: { foo: { name: "blah", createdAt: 0 } },
+        metadata: { foo: { name: 'blah', createdAt: 0 } },
     };
     expect(!PostValidator.validate(badInput2));
 });
 
-it("validates strings", () => {
+it('validates strings', () => {
     const Compiled = compile(a.string());
-    expect(Compiled.validate("hello world"));
+    expect(Compiled.validate('hello world'));
     expect(!Compiled.validate(0));
-    expect(!Compiled.validate({ hello: "world" }));
+    expect(!Compiled.validate({ hello: 'world' }));
 });
 
-it("validates nullable strings", () => {
+it('validates nullable strings', () => {
     const Compiled = compile(a.nullable(a.string()));
-    expect(Compiled.validate("hello world"));
+    expect(Compiled.validate('hello world'));
     expect(Compiled.validate(null));
     expect(!Compiled.validate(0));
 });
 
-it("validates floats", () => {
+it('validates floats', () => {
     const Compiled = compile(a.float32());
     expect(Compiled.validate(0.1));
     expect(Compiled.validate(100));
     expect(Compiled.validate(-100.5));
-    expect(!Compiled.validate("0.5"));
+    expect(!Compiled.validate('0.5'));
 });
 
-it("validates nullable floats", () => {
+it('validates nullable floats', () => {
     const Compiled = compile(a.nullable(a.float32()));
     expect(Compiled.validate(0.1));
     expect(Compiled.validate(null));
-    expect(!Compiled.validate("0.1"));
+    expect(!Compiled.validate('0.1'));
 });
 
-it("validates ints", () => {
+it('validates ints', () => {
     const CompiledInt8 = compile(a.int8());
     expect(CompiledInt8.validate(1));
     expect(CompiledInt8.validate(100));
     expect(!CompiledInt8.validate(10000));
     expect(!CompiledInt8.validate(1.5));
-    expect(!CompiledInt8.validate("199"));
+    expect(!CompiledInt8.validate('199'));
 
     const CompiledUint8 = compile(a.uint8());
     expect(CompiledUint8.validate(1));
@@ -204,7 +204,7 @@ it("validates ints", () => {
     expect(!CompiledUint8.validate(1000));
     expect(!CompiledUint8.validate(-100));
     expect(!CompiledUint8.validate(10.5));
-    expect(!CompiledUint8.validate("100"));
+    expect(!CompiledUint8.validate('100'));
 
     const CompiledInt32 = compile(a.int32());
     expect(CompiledInt32.validate(5000));
@@ -212,37 +212,37 @@ it("validates ints", () => {
     // eslint-disable-next-line no-loss-of-precision
     expect(!CompiledInt32.validate(99999999999999999999));
     expect(!CompiledInt32.validate(100.5));
-    expect(!CompiledInt32.validate("100"));
+    expect(!CompiledInt32.validate('100'));
 
     const CompiledUint32 = compile(a.uint32());
     expect(CompiledUint32.validate(1000));
     expect(!CompiledUint32.validate(-1000));
 });
 
-it("validates nullable ints", () => {
+it('validates nullable ints', () => {
     const Compiled = compile(a.nullable(a.int8()));
     expect(Compiled.validate(1));
     expect(Compiled.validate(null));
-    expect(!Compiled.validate("1"));
+    expect(!Compiled.validate('1'));
 });
 
-it("validates enums", () => {
-    const Compiled = compile(a.stringEnum(["TEXT", "VIDEO", "IMAGE"]));
-    expect(Compiled.validate("TEXT"));
-    expect(Compiled.validate("VIDEO"));
-    expect(!Compiled.validate("text"));
+it('validates enums', () => {
+    const Compiled = compile(a.stringEnum(['TEXT', 'VIDEO', 'IMAGE']));
+    expect(Compiled.validate('TEXT'));
+    expect(Compiled.validate('VIDEO'));
+    expect(!Compiled.validate('text'));
 });
 
-it("validates nullable enums", () => {
+it('validates nullable enums', () => {
     const Compiled = compile(
-        a.nullable(a.stringEnum(["TEXT", "VIDEO", "IMAGE"])),
+        a.nullable(a.stringEnum(['TEXT', 'VIDEO', 'IMAGE'])),
     );
-    expect(Compiled.validate("TEXT"));
+    expect(Compiled.validate('TEXT'));
     expect(Compiled.validate(null));
-    expect(!Compiled.validate("BAR"));
+    expect(!Compiled.validate('BAR'));
 });
 
-it("validates objects", () => {
+it('validates objects', () => {
     const Compiled = compile(
         a.object({
             id: a.string(),
@@ -252,7 +252,7 @@ it("validates objects", () => {
     );
     expect(
         Compiled.validate({
-            id: "1",
+            id: '1',
             isActive: false,
             createdAt: undefined,
         }),
@@ -276,13 +276,13 @@ it("validates objects", () => {
     );
     expect(
         CompiledNested.validate({
-            foo: "1",
+            foo: '1',
             bar: { foo: [true, false], bar: new Date(), baz: null },
         }),
     );
     expect(
         CompiledNested.validate({
-            foo: "1",
+            foo: '1',
             bar: {
                 foo: [true, false],
                 bar: new Date(),
@@ -292,17 +292,17 @@ it("validates objects", () => {
     );
     expect(
         !CompiledNested.validate({
-            foo: "1",
+            foo: '1',
             bar: {
                 foo: [true, false],
                 bar: new Date(),
-                baz: { a: null, _b: "Hello world" },
+                baz: { a: null, _b: 'Hello world' },
             },
         }),
     );
 });
 
-it("validates nullable objects", () => {
+it('validates nullable objects', () => {
     const Compiled = compile(
         a.nullable(
             a.object({
@@ -312,63 +312,63 @@ it("validates nullable objects", () => {
             }),
         ),
     );
-    expect(Compiled.validate({ foo: "FOO", bar: "BAR", baz: new Date() }));
+    expect(Compiled.validate({ foo: 'FOO', bar: 'BAR', baz: new Date() }));
     expect(Compiled.validate(null));
     expect(
         !Compiled.validate({
             foo: 1,
-            bar: "",
+            bar: '',
             baz: false,
         }),
     );
 });
 
-it("validates booleans", () => {
+it('validates booleans', () => {
     const Compiled = compile(a.boolean());
     expect(Compiled.validate(true));
     expect(Compiled.validate(false));
-    expect(!Compiled.validate("Hello world"));
+    expect(!Compiled.validate('Hello world'));
 });
 
-it("validates nullable booleans", () => {
+it('validates nullable booleans', () => {
     const Compiled = compile(a.nullable(a.boolean()));
     expect(Compiled.validate(true));
     expect(Compiled.validate(null));
-    expect(!Compiled.validate("Hello world"));
+    expect(!Compiled.validate('Hello world'));
 });
 
-it("validates arrays", () => {
+it('validates arrays', () => {
     const CompiledSimple = compile(a.array(a.boolean()));
     expect(CompiledSimple.validate([true, false, true]));
-    expect(!CompiledSimple.validate([true, false, 1, "true"]));
+    expect(!CompiledSimple.validate([true, false, 1, 'true']));
 
     const CompiledComplex = compile(
         a.array(a.object({ id: a.string(), isActive: a.boolean() })),
     );
     expect(
         CompiledComplex.validate([
-            { id: "12345", isActive: true },
-            { id: "1", isActive: false },
+            { id: '12345', isActive: true },
+            { id: '1', isActive: false },
         ]),
     );
     expect(
         !CompiledComplex.validate([
             {
                 id: 1,
-                isActive: "true",
+                isActive: 'true',
             },
         ]),
     );
 });
 
-it("validates nullable arrays", () => {
+it('validates nullable arrays', () => {
     const Compiled = compile(a.array(a.string()));
-    expect(Compiled.validate(["1", "2"]));
+    expect(Compiled.validate(['1', '2']));
     expect(Compiled.validate(null));
     expect(!Compiled.validate([1, 2]));
 });
 
-it("validates records", () => {
+it('validates records', () => {
     const Compiled = compile(a.record(a.number()));
     expect(
         Compiled.validate({
@@ -379,23 +379,23 @@ it("validates records", () => {
     );
     expect(
         !Compiled.validate({
-            foo: "1",
-            bar: "2",
-            baz: "3",
+            foo: '1',
+            bar: '2',
+            baz: '3',
         }),
     );
 });
 
-it("validates nullable records", () => {
+it('validates nullable records', () => {
     const Compiled = compile(a.record(a.string()));
-    expect(Compiled.validate({ foo: "foo" }));
+    expect(Compiled.validate({ foo: 'foo' }));
     expect(Compiled.validate(null));
     expect(!Compiled.validate({ foo: true }));
 });
 
-it("validates discriminators", () => {
+it('validates discriminators', () => {
     const Compiled = compile(
-        a.discriminator("eventType", {
+        a.discriminator('eventType', {
             POST_LIKE: a.object({
                 userId: a.string(),
                 postId: a.string(),
@@ -408,27 +408,27 @@ it("validates discriminators", () => {
         }),
     );
     expect(
-        Compiled.validate({ eventType: "POST_LIKE", userId: "", postId: "" }),
+        Compiled.validate({ eventType: 'POST_LIKE', userId: '', postId: '' }),
     );
     expect(
         Compiled.validate({
-            eventType: "POST_COMMENT",
-            userId: "",
-            postId: "",
-            commentText: "",
+            eventType: 'POST_COMMENT',
+            userId: '',
+            postId: '',
+            commentText: '',
         }),
     );
     expect(
         !Compiled.validate({
-            eventType: "POST_DELETE",
-            postId: "",
+            eventType: 'POST_DELETE',
+            postId: '',
         }),
     );
 });
 
-it("validates nullable discriminators", () => {
+it('validates nullable discriminators', () => {
     const Compiled = compile(
-        a.discriminator("eventType", {
+        a.discriminator('eventType', {
             A: a.object({
                 foo: a.string(),
             }),
@@ -440,26 +440,26 @@ it("validates nullable discriminators", () => {
     );
     expect(
         Compiled.validate({
-            eventType: "A",
-            foo: "foo",
+            eventType: 'A',
+            foo: 'foo',
         }),
     );
     expect(
         Compiled.validate({
-            eventType: "B",
-            foo: "foo",
+            eventType: 'B',
+            foo: 'foo',
             bar: 0,
         }),
     );
     expect(Compiled.validate(null));
     expect(
         !Compiled.validate({
-            eventType: "A",
+            eventType: 'A',
         }),
     );
 });
 
-it("uses strict properly", () => {
+it('uses strict properly', () => {
     const LooseSchema = a.compile(
         a.object({ id: a.string(), name: a.string() }),
     );
@@ -473,12 +473,12 @@ it("uses strict properly", () => {
         ),
     );
     const input = {
-        id: "",
-        name: "",
+        id: '',
+        name: '',
     };
     const inputWithAdditionalFields = {
-        id: "",
-        name: "",
+        id: '',
+        name: '',
     };
     expect(LooseSchema.validate(input));
     expect(LooseSchema.validate(inputWithAdditionalFields));

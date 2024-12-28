@@ -1,4 +1,4 @@
-import { SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
+import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
@@ -6,8 +6,8 @@ import {
     getDartClassName,
     outputIsNullable,
     validDartIdentifier,
-} from "./_common";
-import { dartClassFromSchema } from "./object";
+} from './_common';
+import { dartClassFromSchema } from './object';
 
 export function dartSealedClassFromSchema(
     schema: SchemaFormDiscriminator,
@@ -33,6 +33,7 @@ export function dartSealedClassFromSchema(
             discriminatorKey,
             discriminatorValue,
             discriminatorParentId: className,
+            clientVersion: context.clientVersion,
         });
         subTypeParts.push({
             name: subTypeResult.typeName,
@@ -69,7 +70,7 @@ export function dartSealedClassFromSchema(
             return `print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(className)) {
         return result;
@@ -91,7 +92,7 @@ ${subTypeParts
         (type) => `      case "${type.value}":
         return ${type.name}.fromJson(_input_);`,
     )
-    .join("\n")}
+    .join('\n')}
           default:
             return ${finalClassName}.empty();
         }
@@ -102,7 +103,7 @@ ${subTypeParts
     }
 }
     
-${subContentParts.join("\n\n")}`;
+${subContentParts.join('\n\n')}`;
     context.generatedTypes.push(className);
     return result;
 }

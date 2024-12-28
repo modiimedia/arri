@@ -1,11 +1,11 @@
-import { type SchemaFormRef } from "@arrirpc/codegen-utils";
+import { type SchemaFormRef } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     isNullable,
     kotlinClassName,
     type KotlinProperty,
-} from "./_common";
+} from './_common';
 
 export function kotlinRefFromSchema(
     schema: SchemaFormRef,
@@ -13,7 +13,7 @@ export function kotlinRefFromSchema(
 ): KotlinProperty {
     const typeName = kotlinClassName(schema.ref);
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : `${typeName}.new()`;
+    const defaultValue = nullable ? 'null' : `${typeName}.new()`;
     return {
         typeName,
         isNullable: nullable,
@@ -36,6 +36,6 @@ export function kotlinRefFromSchema(
         toQueryString() {
             return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

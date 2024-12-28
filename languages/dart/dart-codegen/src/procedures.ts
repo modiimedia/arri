@@ -6,29 +6,29 @@ import {
     Schema,
     ServiceDefinition,
     WsRpcDefinition,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
     getCodeComments,
     validDartClassName,
     validDartIdentifier,
-} from "./_common";
+} from './_common';
 
 export function dartRpcFromSchema(
     schema: RpcDefinition,
     context: CodegenContext,
 ): string {
     switch (schema.transport) {
-        case "http":
+        case 'http':
             return dartHttpRpcFromSchema(schema, context);
-        case "ws":
+        case 'ws':
             return dartWsRpcFromSchema(schema, context);
         default:
             console.warn(
                 `[WARNING] unsupported transport "${schema.transport}". Skipping ${context.instancePath}.`,
             );
-            return "";
+            return '';
     }
 }
 
@@ -37,12 +37,12 @@ export function dartHttpRpcFromSchema(
     context: CodegenContext,
 ): string {
     const functionName = getFunctionName(context.instancePath);
-    const metadata: Schema["metadata"] = {
+    const metadata: Schema['metadata'] = {
         description: schema.description,
         isDeprecated: schema.isDeprecated,
     };
-    let responseType = "void";
-    let paramsType = "";
+    let responseType = 'void';
+    let paramsType = '';
     if (schema.response) {
         responseType = `${context.modelPrefix}${validDartClassName(schema.response, context.modelPrefix)}`;
     }
@@ -51,7 +51,7 @@ export function dartHttpRpcFromSchema(
     }
     if (schema.isEventStream) {
         return `${getCodeComments(metadata)}EventSource<${responseType}> ${functionName}(
-            ${paramsType ? `${paramsType} params, ` : ""} {
+            ${paramsType ? `${paramsType} params, ` : ''} {
             void Function(${responseType} data, EventSource<${responseType}> connection)? onMessage,
             void Function(http.StreamedResponse response, EventSource<${responseType}> connection)? onOpen,
             void Function(EventSource<${responseType}> connection)? onClose,
@@ -69,7 +69,7 @@ export function dartHttpRpcFromSchema(
                 retryDelay: retryDelay,
                 maxRetryCount: maxRetryCount,
                 lastEventId: lastEventId,
-                ${paramsType ? "params: params.toJson()," : ""}
+                ${paramsType ? 'params: params.toJson(),' : ''}
                 parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : `{}`},
                 onMessage: onMessage,
                 onOpen: onOpen,
@@ -87,30 +87,30 @@ export function dartHttpRpcFromSchema(
             );
         }`;
     }
-    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ""}) async {
+    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ''}) async {
         return parsedArriRequest(
             "$_baseUrl${schema.path}",
             method: HttpMethod.${schema.method.toLowerCase()},
             httpClient: _httpClient,
             headers: _headers,
             clientVersion: _clientVersion,
-            ${paramsType ? "params: params.toJson()," : ""}
-            parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : "{}"},
+            ${paramsType ? 'params: params.toJson(),' : ''}
+            parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : '{}'},
             onError: _onError,
         );
     }`;
 }
 
 function getFunctionName(instancePath: string) {
-    const parts = instancePath.split(".");
-    return parts.pop() ?? "";
+    const parts = instancePath.split('.');
+    return parts.pop() ?? '';
 }
 
 export function dartWsRpcFromSchema(
     schema: WsRpcDefinition,
     context: CodegenContext,
 ): string {
-    const metadata: Schema["metadata"] = {
+    const metadata: Schema['metadata'] = {
         description: schema.description,
         isDeprecated: schema.isDeprecated,
     };
@@ -123,13 +123,13 @@ export function dartWsRpcFromSchema(
     if (schema.params) {
         paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
     }
-    return `${getCodeComments(metadata)}Future<ArriWebsocketController<${responseType ?? "void"}, ${paramsType ?? "void"}>> ${functionName}() {
+    return `${getCodeComments(metadata)}Future<ArriWebsocketController<${responseType ?? 'void'}, ${paramsType ?? 'void'}>> ${functionName}() {
         return arriWebsocketRequest(
             "$_baseUrl${schema.path}",
             headers: _headers,
             clientVersion: _clientVersion,
-            parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : "{}"},
-            serializer: (msg) ${paramsType ? "=> msg.toJsonString()" : '=> ""'},
+            parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : '{}'},
+            serializer: (msg) ${paramsType ? '=> msg.toJsonString()' : '=> ""'},
             onError: _onError,
         );
     }`;
@@ -203,7 +203,7 @@ export function dartServiceFromSchema(
        _headers = headers,
        _onError = onError;
 
-  ${rpcParts.join("\n\n")}
+  ${rpcParts.join('\n\n')}
 
   ${subServices
       .map(
@@ -214,14 +214,14 @@ export function dartServiceFromSchema(
           onError: _onError,
         );`,
       )
-      .join("\n\n")}
+      .join('\n\n')}
 }
-${subServiceParts.join("\n\n")}`;
+${subServiceParts.join('\n\n')}`;
 }
 
 export function getServiceName(instancePath: string, clientName: string) {
     return validDartClassName(
-        `${clientName}_${instancePath.split(".").join("_")}_Service`,
-        "",
+        `${clientName}_${instancePath.split('.').join('_')}_Service`,
+        '',
     );
 }

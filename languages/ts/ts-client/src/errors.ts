@@ -7,20 +7,20 @@ export interface ArriError {
 }
 
 export function isArriError(input: unknown): input is ArriError {
-    if (typeof input !== "object" || input === null) {
+    if (typeof input !== 'object' || input === null) {
         return false;
     }
-    if ("stack" in input && typeof input !== "string") {
+    if ('stack' in input && typeof input !== 'string') {
         return false;
     }
-    if ("serverStack" in input && typeof input !== "string") {
+    if ('serverStack' in input && typeof input !== 'string') {
         return false;
     }
     return (
-        "code" in input &&
-        typeof input.code === "number" &&
-        "message" in input &&
-        typeof input.message === "string"
+        'code' in input &&
+        typeof input.code === 'number' &&
+        'message' in input &&
+        typeof input.message === 'string'
     );
 }
 
@@ -57,35 +57,35 @@ export class ArriErrorInstance extends Error implements ArriError {
 
     static fromJson(json: unknown) {
         let parsedJson = json;
-        if (typeof parsedJson === "string") {
+        if (typeof parsedJson === 'string') {
             try {
                 parsedJson = JSON.parse(parsedJson);
             } catch (_) {
                 /* empty */
             }
         }
-        if (typeof parsedJson !== "object" || parsedJson === null) {
+        if (typeof parsedJson !== 'object' || parsedJson === null) {
             return new ArriErrorInstance({
                 code: 500,
-                message: "Unknown error",
+                message: 'Unknown error',
                 data: parsedJson,
             });
         }
         return new ArriErrorInstance({
             code:
-                "code" in parsedJson && typeof parsedJson.code === "number"
+                'code' in parsedJson && typeof parsedJson.code === 'number'
                     ? parsedJson.code
                     : 500,
             message:
-                "message" in parsedJson &&
-                typeof parsedJson.message === "string"
+                'message' in parsedJson &&
+                typeof parsedJson.message === 'string'
                     ? parsedJson.message
-                    : "",
+                    : '',
             stack:
-                "stack" in parsedJson && Array.isArray(parsedJson.stack)
-                    ? parsedJson.stack.join("\n")
+                'stack' in parsedJson && Array.isArray(parsedJson.stack)
+                    ? parsedJson.stack.join('\n')
                     : undefined,
-            data: "data" in parsedJson ? parsedJson.data : undefined,
+            data: 'data' in parsedJson ? parsedJson.data : undefined,
         });
     }
 }

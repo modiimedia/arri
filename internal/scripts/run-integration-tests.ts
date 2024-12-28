@@ -1,11 +1,11 @@
-import { execSync } from "child_process";
-import { defineCommand, runMain } from "citty";
-import enquirer from "enquirer";
+import { execSync } from 'child_process';
+import { defineCommand, runMain } from 'citty';
+import enquirer from 'enquirer';
 
-import { a } from "../../languages/ts/ts-schema/dist";
+import { a } from '../../languages/ts/ts-schema/dist';
 
 const CliArgs = a.object({
-    server: a.optional(a.enumerator(["ts", "go"])),
+    server: a.optional(a.enumerator(['ts', 'go'])),
     affected: a.optional(a.boolean()),
 });
 type CliArgs = a.infer<typeof CliArgs>;
@@ -13,37 +13,37 @@ type CliArgs = a.infer<typeof CliArgs>;
 const run = defineCommand({
     args: {
         server: {
-            type: "string",
+            type: 'string',
             description:
-                "which test server should integration tests be run against. [ts or go]",
+                'which test server should integration tests be run against. [ts or go]',
         },
         affected: {
-            type: "boolean",
+            type: 'boolean',
             description:
-                "Only test clients that have been affected by the changes",
+                'Only test clients that have been affected by the changes',
             default: false,
         },
     },
     async run({ args }) {
         const parsedArgs = a.parse(CliArgs, args);
         if (!parsedArgs.server) {
-            const { type } = await enquirer.prompt<{ type: "ts" | "go" }>([
+            const { type } = await enquirer.prompt<{ type: 'ts' | 'go' }>([
                 {
-                    name: "type",
-                    type: "select",
-                    message: "What test server do you want to use?",
-                    choices: ["ts", "go"],
+                    name: 'type',
+                    type: 'select',
+                    message: 'What test server do you want to use?',
+                    choices: ['ts', 'go'],
                 },
             ]);
             parsedArgs.server = type;
         }
-        let cmd = "pnpm integration-tests-";
+        let cmd = 'pnpm integration-tests-';
         switch (parsedArgs.server) {
-            case "go":
-                cmd += "go";
+            case 'go':
+                cmd += 'go';
                 break;
-            case "ts":
-                cmd += "ts";
+            case 'ts':
+                cmd += 'ts';
                 break;
             case undefined:
                 throw new Error(`Must specify type of server`);
@@ -52,9 +52,9 @@ const run = defineCommand({
                 throw new Error(`Unsupported server type ${parsedArgs.server}`);
         }
         if (parsedArgs.affected) {
-            cmd += ":affected";
+            cmd += ':affected';
         }
-        execSync(cmd, { stdio: "inherit" });
+        execSync(cmd, { stdio: 'inherit' });
     },
 });
 

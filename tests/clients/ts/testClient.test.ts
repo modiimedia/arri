@@ -1,7 +1,7 @@
-import { ArriErrorInstance } from "@arrirpc/client";
-import { randomUUID } from "crypto";
-import { FetchError, ofetch } from "ofetch";
-import { expect, test } from "vitest";
+import { ArriErrorInstance } from '@arrirpc/client';
+import { randomUUID } from 'crypto';
+import { FetchError, ofetch } from 'ofetch';
+import { expect, test } from 'vitest';
 
 import {
     type ObjectWithEveryNullableType,
@@ -12,7 +12,7 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     TestClient,
-} from "./testClient.rpc";
+} from './testClient.rpc';
 
 function wait(ms: number) {
     return new Promise((resolve) => {
@@ -22,9 +22,9 @@ function wait(ms: number) {
     });
 }
 
-const baseUrl = "http://127.0.0.1:2020";
+const baseUrl = 'http://127.0.0.1:2020';
 const headers = {
-    "x-test-header": "test",
+    'x-test-header': 'test',
 };
 
 const client = new TestClient({
@@ -32,22 +32,22 @@ const client = new TestClient({
     headers,
 });
 
-test("route request", async () => {
-    const result = await ofetch("/routes/hello-world", {
-        method: "post",
+test('route request', async () => {
+    const result = await ofetch('/routes/hello-world', {
+        method: 'post',
         baseURL: baseUrl,
         headers,
         body: {
-            name: "John Doe",
+            name: 'John Doe',
         },
     });
-    expect(result).toBe("hello world");
+    expect(result).toBe('hello world');
 });
 
-test("route request (unauthorized)", async () => {
+test('route request (unauthorized)', async () => {
     try {
-        await ofetch("/routes/hello-world", {
-            method: "post",
+        await ofetch('/routes/hello-world', {
+            method: 'post',
             baseURL: baseUrl,
         });
     } catch (err) {
@@ -58,24 +58,24 @@ test("route request (unauthorized)", async () => {
     }
 });
 
-test("can handle RPCs with no params", async () => {
+test('can handle RPCs with no params', async () => {
     const result = await client.tests.emptyParamsGetRequest();
     const result2 = await client.tests.emptyParamsPostRequest();
-    expect(typeof result.message).toBe("string");
-    expect(typeof result2.message).toBe("string");
+    expect(typeof result.message).toBe('string');
+    expect(typeof result2.message).toBe('string');
 });
-test("can handle RPCs with no response", async () => {
-    await client.tests.emptyResponseGetRequest({ message: "ok" });
-    await client.tests.emptyResponsePostRequest({ message: "ok" });
+test('can handle RPCs with no response', async () => {
+    await client.tests.emptyResponseGetRequest({ message: 'ok' });
+    await client.tests.emptyResponsePostRequest({ message: 'ok' });
 });
 const input: ObjectWithEveryType = {
     any: {
-        blah: "blah",
-        blah2: "blah2",
+        blah: 'blah',
+        blah2: 'blah2',
         blah3: true,
     },
     boolean: true,
-    string: "hello world",
+    string: 'hello world',
     timestamp: new Date(),
     float32: 0,
     float64: 0,
@@ -87,51 +87,51 @@ const input: ObjectWithEveryType = {
     uint32: 0,
     int64: 0n,
     uint64: 0n,
-    enumerator: "B",
+    enumerator: 'B',
     array: [true, false, false],
     object: {
-        string: "",
+        string: '',
         boolean: false,
         timestamp: new Date(),
     },
     record: {
-        A: BigInt("1"),
-        B: BigInt("0"),
-        '"C"\t': BigInt("4"),
+        A: BigInt('1'),
+        B: BigInt('0'),
+        '"C"\t': BigInt('4'),
     },
     discriminator: {
-        type: "B",
-        title: "Hello World",
-        description: "",
+        type: 'B',
+        title: 'Hello World',
+        description: '',
     },
     nestedObject: {
-        id: "",
+        id: '',
         timestamp: new Date(),
         data: {
-            id: "",
+            id: '',
             timestamp: new Date(),
             data: {
-                id: "",
+                id: '',
                 timestamp: new Date(),
             },
         },
     },
     nestedArray: [
         [
-            { id: "", timestamp: new Date() },
-            { id: "", timestamp: new Date() },
+            { id: '', timestamp: new Date() },
+            { id: '', timestamp: new Date() },
         ],
     ],
 };
-test("can send/receive object every field type", async () => {
+test('can send/receive object every field type', async () => {
     const result = await client.tests.sendObject(input);
     expect(result).toStrictEqual(input);
 });
-test("can send/receive object with transformed keys", async () => {
+test('can send/receive object with transformed keys', async () => {
     const snakeCasePayload: ObjectWithSnakeCaseKeys = {
         createdAt: new Date(),
-        displayName: "john doe",
-        emailAddress: "johndoe@gmail.com",
+        displayName: 'john doe',
+        emailAddress: 'johndoe@gmail.com',
         phoneNumber: null,
         isAdmin: false,
     };
@@ -142,17 +142,17 @@ test("can send/receive object with transformed keys", async () => {
         createdAt: new Date(),
         emailAddress: undefined,
         isAdmin: undefined,
-        displayName: "john doe",
-        phoneNumber: "2112112111",
+        displayName: 'john doe',
+        phoneNumber: '2112112111',
     };
     const pascalCaseResult =
         await client.tests.sendObjectWithPascalCaseKeys(pascalCasePayload);
     expect(pascalCaseResult).toStrictEqual(pascalCasePayload);
 });
-test("returns error if sending nothing when RPC expects body", async () => {
+test('returns error if sending nothing when RPC expects body', async () => {
     try {
         await ofetch(`${baseUrl}/rpcs/tests/send-object`, {
-            method: "post",
+            method: 'post',
             headers,
         });
         // should never reach this
@@ -163,13 +163,13 @@ test("returns error if sending nothing when RPC expects body", async () => {
             expect(err.statusCode).toBe(400);
             expect(err.data?.code).toBe(400);
             expect(
-                typeof err.data.message === "string" &&
+                typeof err.data.message === 'string' &&
                     err.data.message.length > 0,
             ).toBe(true);
         }
     }
 });
-test("unauthenticated RPC request returns a 401 error", async () => {
+test('unauthenticated RPC request returns a 401 error', async () => {
     let firedOnErr = false;
     const unauthenticatedClient = new TestClient({
         baseUrl,
@@ -188,7 +188,7 @@ test("unauthenticated RPC request returns a 401 error", async () => {
     }
     expect(firedOnErr).toBe(true);
 });
-test("can use async functions for headers", async () => {
+test('can use async functions for headers', async () => {
     const _client = new TestClient({
         baseUrl: baseUrl,
         async headers() {
@@ -201,13 +201,13 @@ test("can use async functions for headers", async () => {
         },
     });
     const result = await _client.tests.emptyParamsGetRequest();
-    expect(typeof result.message).toBe("string");
+    expect(typeof result.message).toBe('string');
 });
-test("can send/receive partial objects", async () => {
+test('can send/receive partial objects', async () => {
     const fullObjectResult = await client.tests.sendPartialObject(input);
     expect(fullObjectResult).toStrictEqual(input);
     const partialInput: ObjectWithEveryOptionalType = {
-        string: "",
+        string: '',
         boolean: undefined,
         timestamp: undefined,
         float32: undefined,
@@ -233,7 +233,7 @@ test("can send/receive partial objects", async () => {
         await client.tests.sendPartialObject(partialInput);
     expect(partialObjectResult).toStrictEqual(partialInput);
 });
-test("can send/receive object with nullable fields", async () => {
+test('can send/receive object with nullable fields', async () => {
     const fullObjectResult =
         await client.tests.sendObjectWithNullableFields(input);
     expect(fullObjectResult).toStrictEqual(input);
@@ -273,57 +273,57 @@ test("can send/receive object with nullable fields", async () => {
     expect(nullableResult).toStrictEqual(nullableInput);
 });
 
-test("can send/receive recursive objects", async () => {
+test('can send/receive recursive objects', async () => {
     const payload: RecursiveObject = {
         left: {
             left: {
                 left: null,
                 right: null,
-                value: "depth3",
+                value: 'depth3',
             },
             right: {
                 left: null,
                 right: {
                     left: null,
                     right: null,
-                    value: "depth4",
+                    value: 'depth4',
                 },
-                value: "depth3",
+                value: 'depth3',
             },
-            value: "depth2",
+            value: 'depth2',
         },
         right: null,
-        value: "depth1",
+        value: 'depth1',
     };
     const result = await client.tests.sendRecursiveObject(payload);
     expect(result).toStrictEqual(payload);
 });
 
-test("can send/receive recursive unions", async () => {
+test('can send/receive recursive unions', async () => {
     const payload: RecursiveUnion = {
-        type: "CHILDREN",
+        type: 'CHILDREN',
         data: [
             {
-                type: "CHILD",
+                type: 'CHILD',
                 data: {
-                    type: "TEXT",
-                    data: "Hello world",
+                    type: 'TEXT',
+                    data: 'Hello world',
                 },
             },
             {
-                type: "SHAPE",
+                type: 'SHAPE',
                 data: {
                     width: 1,
                     height: 2,
-                    color: "blue",
+                    color: 'blue',
                 },
             },
             {
-                type: "CHILDREN",
+                type: 'CHILDREN',
                 data: [
                     {
-                        type: "TEXT",
-                        data: "Hello world",
+                        type: 'TEXT',
+                        data: 'Hello world',
                     },
                 ],
             },
@@ -333,7 +333,7 @@ test("can send/receive recursive unions", async () => {
     expect(result).toStrictEqual(payload);
 });
 
-test("onError hook fires properly", async () => {
+test('onError hook fires properly', async () => {
     let onErrorFired = false;
     const customClient = new TestClient({
         baseUrl,
@@ -350,27 +350,27 @@ test("onError hook fires properly", async () => {
     expect(onErrorFired).toBe(true);
 });
 
-test("[SSE] supports server sent events", async () => {
+test('[SSE] supports server sent events', async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
     const controller = await client.tests.streamMessages(
-        { channelId: "1" },
+        { channelId: '1' },
         {
             onMessage(msg) {
                 receivedMessageCount++;
-                expect(msg.channelId).toBe("1");
+                expect(msg.channelId).toBe('1');
                 switch (msg.messageType) {
-                    case "IMAGE":
+                    case 'IMAGE':
                         expect(msg.date instanceof Date).toBe(true);
-                        expect(typeof msg.image).toBe("string");
+                        expect(typeof msg.image).toBe('string');
                         break;
-                    case "TEXT":
+                    case 'TEXT':
                         expect(msg.date instanceof Date).toBe(true);
-                        expect(typeof msg.text).toBe("string");
+                        expect(typeof msg.text).toBe('string');
                         break;
-                    case "URL":
+                    case 'URL':
                         expect(msg.date instanceof Date).toBe(true);
-                        expect(typeof msg.url).toBe("string");
+                        expect(typeof msg.url).toBe('string');
                         break;
                 }
             },
@@ -410,7 +410,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
     expect(messageCount).toBe(10);
 });
 
-test("[SSE] auto-reconnects when connection is closed by server", async () => {
+test('[SSE] auto-reconnects when connection is closed by server', async () => {
     let connectionCount = 0;
     let errorCount = 0;
     let messageCount = 0;
@@ -438,12 +438,12 @@ test("[SSE] auto-reconnects when connection is closed by server", async () => {
     controller.abort();
 });
 
-test("[SSE] reconnect with new credentials", async () => {
+test('[SSE] reconnect with new credentials', async () => {
     const dynamicClient = new TestClient({
         baseUrl,
         headers() {
             return {
-                "x-test-header": randomUUID(),
+                'x-test-header': randomUUID(),
             };
         },
     });

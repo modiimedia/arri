@@ -1,18 +1,18 @@
-import { type WsRpcDefinition } from "@arrirpc/codegen-utils";
+import { type WsRpcDefinition } from '@arrirpc/codegen-utils';
 import {
     type ASchema,
     type CompiledValidator,
     type InferType,
-} from "@arrirpc/schema";
-import { type Peer, type WSError } from "crossws";
-import { defineWebSocketHandler, type Router } from "h3";
+} from '@arrirpc/schema';
+import { type Peer, type WSError } from 'crossws';
+import { defineWebSocketHandler, type Router } from 'h3';
 
-import { type arriErrorResponse } from "./errors";
+import { type arriErrorResponse } from './errors';
 import {
     getRpcParamName,
     getRpcResponseName,
     type RpcParamSchema,
-} from "./rpc";
+} from './rpc';
 
 export interface NamedWebsocketRpc<
     TParams extends RpcParamSchema | undefined = undefined,
@@ -25,7 +25,7 @@ export interface WebsocketRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
 > {
-    transport: "ws";
+    transport: 'ws';
     description?: string;
     path?: string;
     isDeprecated?: boolean;
@@ -68,7 +68,7 @@ export class WsPeer<TResponse> {
     constructor(peer: Peer, opts: WsPeerOpts<TResponse>) {
         this._peer = peer;
         this._validator = opts.validator;
-        this.url = peer.websocket.url ?? "";
+        this.url = peer.websocket.url ?? '';
         this.context = opts.context;
     }
 
@@ -88,7 +88,7 @@ export class WsPeer<TResponse> {
     }
 
     close() {
-        throw new Error("close() is not yet implemented on WsPeer");
+        throw new Error('close() is not yet implemented on WsPeer');
     }
 
     subscribe(channel: string) {
@@ -136,9 +136,9 @@ export function defineWebsocketRpc<
     TParams extends RpcParamSchema | undefined,
     TResponse extends RpcParamSchema | undefined,
 >(
-    def: Omit<WebsocketRpc<TParams, TResponse>, "transport">,
+    def: Omit<WebsocketRpc<TParams, TResponse>, 'transport'>,
 ): WebsocketRpc<TParams, TResponse> {
-    (def as any).transport = "ws";
+    (def as any).transport = 'ws';
     return def as any;
 }
 
@@ -224,7 +224,7 @@ export function createWsRpcDefinition(
     rpc: NamedWebsocketRpc<any, any>,
 ): WsRpcDefinition {
     return {
-        transport: "ws",
+        transport: 'ws',
         path,
         params: getRpcParamName(rpcName, rpc),
         response: getRpcResponseName(rpcName, rpc),

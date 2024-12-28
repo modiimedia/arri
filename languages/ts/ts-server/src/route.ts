@@ -1,10 +1,10 @@
-import { type HttpMethod } from "@arrirpc/codegen-utils";
+import { type HttpMethod } from '@arrirpc/codegen-utils';
 import {
     a,
     type AObjectSchema,
     type ASchema,
     type InferType,
-} from "@arrirpc/schema";
+} from '@arrirpc/schema';
 import {
     defineEventHandler,
     getQuery,
@@ -15,12 +15,12 @@ import {
     type Router,
     send,
     setHeader,
-} from "h3";
+} from 'h3';
 
-import { type ArriOptions } from "./app";
-import { type RouteEventContext, type RoutePostEventContext } from "./context";
-import { defineError, handleH3Error } from "./errors";
-import { type Middleware, type MiddlewareEvent } from "./middleware";
+import { type ArriOptions } from './app';
+import { type RouteEventContext, type RoutePostEventContext } from './context';
+import { defineError, handleH3Error } from './errors';
+import { type Middleware, type MiddlewareEvent } from './middleware';
 
 export interface RouteEvent<
     TPath extends string,
@@ -73,7 +73,7 @@ export function defineRoute<
 
 export type RouteOptions = Pick<
     ArriOptions,
-    "onAfterResponse" | "onBeforeResponse" | "onError" | "onRequest" | "debug"
+    'onAfterResponse' | 'onBeforeResponse' | 'onError' | 'onRequest' | 'debug'
 > & { middleware: Middleware[] };
 
 export function registerRoute(
@@ -81,7 +81,7 @@ export function registerRoute(
     route: ArriRoute<any>,
     opts: RouteOptions,
 ) {
-    if (typeof route.method === "string") {
+    if (typeof route.method === 'string') {
         handleRoute(router, route.method, route, opts);
         return;
     }
@@ -98,7 +98,7 @@ export function handleRoute(
 ) {
     const handler = defineEventHandler(async (event: MiddlewareEvent) => {
         if (isPreflightRequest(event)) {
-            return "ok";
+            return 'ok';
         }
         try {
             if (opts.onRequest) {
@@ -115,15 +115,15 @@ export function handleRoute(
                 if (!parsedQuery.success) {
                     const errParts: string[] = [];
                     for (const err of parsedQuery.error.errors) {
-                        const errPath = err.instancePath.split("/");
+                        const errPath = err.instancePath.split('/');
                         errPath.shift();
-                        const propName = errPath.join(".");
+                        const propName = errPath.join('.');
                         if (!errParts.includes(propName)) {
                             errParts.push(propName);
                         }
                     }
                     const message = `Missing or invalid url query parameters: [${errParts.join(
-                        ", ",
+                        ', ',
                     )}]`;
                     throw defineError(400, {
                         message,
@@ -132,10 +132,10 @@ export function handleRoute(
                 event.context.query = parsedQuery.value;
             }
             const notAllowedBodyMethods: HTTPMethod[] = [
-                "GET",
-                "HEAD",
-                "CONNECT",
-                "OPTIONS",
+                'GET',
+                'HEAD',
+                'CONNECT',
+                'OPTIONS',
             ];
             if (route.body && !notAllowedBodyMethods.includes(event.method)) {
                 const body = await readRawBody(event);
@@ -143,15 +143,15 @@ export function handleRoute(
                 if (!parsedBody.success) {
                     const errorParts: string[] = [];
                     for (const err of parsedBody.error.errors) {
-                        const errPath = err.instancePath.split("/");
+                        const errPath = err.instancePath.split('/');
                         errPath.shift();
-                        if (!errorParts.includes(errPath.join("."))) {
-                            errorParts.push(errPath.join("."));
+                        if (!errorParts.includes(errPath.join('.'))) {
+                            errorParts.push(errPath.join('.'));
                         }
                     }
                     throw defineError(400, {
                         message: `Invalid request body. Affected properties [${errorParts.join(
-                            ", ",
+                            ', ',
                         )}]`,
                         data: parsedBody.error,
                     });
@@ -164,8 +164,8 @@ export function handleRoute(
                 if (opts.onBeforeResponse) {
                     await opts.onBeforeResponse(event);
                 }
-                if (typeof response === "object" && response) {
-                    setHeader(event, "Content-Type", "application/json");
+                if (typeof response === 'object' && response) {
+                    setHeader(event, 'Content-Type', 'application/json');
                     await send(event, JSON.stringify(response));
                 } else {
                     await send(event, response);
@@ -180,26 +180,26 @@ export function handleRoute(
         } catch (err) {
             await handleH3Error(err, event, opts.onError, opts.debug ?? false);
         }
-        return "";
+        return '';
     });
 
     switch (method) {
-        case "head":
+        case 'head':
             router.head(route.path, handler);
             break;
-        case "get":
+        case 'get':
             router.get(route.path, handler);
             break;
-        case "delete":
+        case 'delete':
             router.delete(route.path, handler);
             break;
-        case "patch":
+        case 'patch':
             router.patch(route.path, handler);
             break;
-        case "post":
+        case 'post':
             router.post(route.path, handler);
             break;
-        case "put":
+        case 'put':
             router.put(route.path, handler);
             break;
     }

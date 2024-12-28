@@ -1,4 +1,4 @@
-import { a, type AObjectSchema, type ValidationError } from "@arrirpc/schema";
+import { a, type AObjectSchema, type ValidationError } from '@arrirpc/schema';
 import {
     type H3Error,
     type H3Event,
@@ -7,9 +7,9 @@ import {
     setResponseHeader,
     setResponseStatus,
     StatusCode,
-} from "h3";
+} from 'h3';
 
-import { type ArriOptions } from "./app";
+import { type ArriOptions } from './app';
 
 export class arriError extends Error {
     code: number;
@@ -45,7 +45,7 @@ export type arriErrorResponse = a.infer<typeof arriErrorResponse>;
 
 export function defineError(
     statusCode: StatusCode,
-    input: Partial<Omit<arriErrorResponse, "code" | "stack">> = {},
+    input: Partial<Omit<arriErrorResponse, 'code' | 'stack'>> = {},
 ): arriError {
     const defaultVals = errorResponseDefaults[statusCode];
     return new arriError({
@@ -53,27 +53,27 @@ export function defineError(
         message:
             input.message ??
             defaultVals?.message ??
-            "An unknown error occurred",
+            'An unknown error occurred',
         data: input.data,
     });
 }
 
 export function errorResponseFromValidationErrors(
-    errors: ValidationError["errors"],
+    errors: ValidationError['errors'],
     prefixText = `Missing or invalid parameters`,
 ): H3Error {
     const errorParts: string[] = [];
     for (const err of errors) {
-        const propName: string[] = err.instancePath?.split("/") ?? [];
+        const propName: string[] = err.instancePath?.split('/') ?? [];
         if (propName.length > 0) {
             propName.shift();
         }
-        if (!errorParts.includes(propName.join("."))) {
-            errorParts.push(propName.join("."));
+        if (!errorParts.includes(propName.join('.'))) {
+            errorParts.push(propName.join('.'));
         }
     }
     throw defineError(400, {
-        message: `${prefixText}: [${errorParts.join(",")}]`,
+        message: `${prefixText}: [${errorParts.join(',')}]`,
         data: errors,
     });
 }
@@ -83,159 +83,159 @@ const errorResponseDefaults: Record<
     { name: string; message: string }
 > = {
     400: {
-        name: "BAD_REQUEST",
-        message: "Bad Request",
+        name: 'BAD_REQUEST',
+        message: 'Bad Request',
     },
     401: {
-        name: "UNAUTHORIZED",
-        message: "Unauthorized",
+        name: 'UNAUTHORIZED',
+        message: 'Unauthorized',
     },
     402: {
-        name: "PAYMENT_REQUIRED",
-        message: "Payment Required",
+        name: 'PAYMENT_REQUIRED',
+        message: 'Payment Required',
     },
     403: {
-        name: "FORBIDDEN",
-        message: "Forbidden",
+        name: 'FORBIDDEN',
+        message: 'Forbidden',
     },
     404: {
-        name: "NOT_FOUND",
-        message: "Not Found",
+        name: 'NOT_FOUND',
+        message: 'Not Found',
     },
     405: {
-        name: "METHOD_NOT_ALLOWED",
-        message: "Method Not Allowed",
+        name: 'METHOD_NOT_ALLOWED',
+        message: 'Method Not Allowed',
     },
     406: {
-        name: "NOT_ACCEPTABLE",
-        message: "Not Acceptable",
+        name: 'NOT_ACCEPTABLE',
+        message: 'Not Acceptable',
     },
     407: {
-        name: "PROXY_AUTHENTICATION_REQUIRED",
-        message: "Proxy Authentication Required",
+        name: 'PROXY_AUTHENTICATION_REQUIRED',
+        message: 'Proxy Authentication Required',
     },
     408: {
-        name: "REQUEST_TIMEOUT",
-        message: "Request Timeout",
+        name: 'REQUEST_TIMEOUT',
+        message: 'Request Timeout',
     },
     409: {
-        name: "CONFLICT",
-        message: "Conflict",
+        name: 'CONFLICT',
+        message: 'Conflict',
     },
     410: {
-        name: "GONE",
-        message: "Gone",
+        name: 'GONE',
+        message: 'Gone',
     },
     411: {
-        name: "LENGTH_REQUIRED",
-        message: "Length Required",
+        name: 'LENGTH_REQUIRED',
+        message: 'Length Required',
     },
     412: {
-        name: "PRECONDITION_FAILED",
-        message: "Precondition Failed",
+        name: 'PRECONDITION_FAILED',
+        message: 'Precondition Failed',
     },
     413: {
-        name: "REQUEST_TOO_LONG",
-        message: "Request Entity Too Large",
+        name: 'REQUEST_TOO_LONG',
+        message: 'Request Entity Too Large',
     },
     414: {
-        name: "REQUEST_URI_TOO_LONG",
-        message: "Request-URI Too Long",
+        name: 'REQUEST_URI_TOO_LONG',
+        message: 'Request-URI Too Long',
     },
     415: {
-        name: "UNSUPPORTED_MEDIA_TYPE",
-        message: "Unsupported Media Type",
+        name: 'UNSUPPORTED_MEDIA_TYPE',
+        message: 'Unsupported Media Type',
     },
     416: {
-        name: "REQUESTED_RANGE_NOT_SATISFIABLE",
-        message: "Requested Range Not Satisfiable",
+        name: 'REQUESTED_RANGE_NOT_SATISFIABLE',
+        message: 'Requested Range Not Satisfiable',
     },
     417: {
-        name: "EXPECTATION_FAILED",
-        message: "Expectation Failed",
+        name: 'EXPECTATION_FAILED',
+        message: 'Expectation Failed',
     },
     418: {
-        name: "IM_A_TEAPOT",
+        name: 'IM_A_TEAPOT',
         message: "I'm a teapot",
     },
     419: {
-        name: "INSUFFICIENT_SPACE_ON_RESOURCE",
-        message: "Insufficient Space on Resource",
+        name: 'INSUFFICIENT_SPACE_ON_RESOURCE',
+        message: 'Insufficient Space on Resource',
     },
     420: {
-        name: "METHOD_FAILURE",
-        message: "Method Failure",
+        name: 'METHOD_FAILURE',
+        message: 'Method Failure',
     },
     421: {
-        name: "MISDIRECTED_REQUEST",
-        message: "Misdirected Request",
+        name: 'MISDIRECTED_REQUEST',
+        message: 'Misdirected Request',
     },
     422: {
-        name: "UNPROCESSABLE_ENTITY",
-        message: "Unprocessable Entity",
+        name: 'UNPROCESSABLE_ENTITY',
+        message: 'Unprocessable Entity',
     },
     423: {
-        name: "LOCKED",
-        message: "Locked",
+        name: 'LOCKED',
+        message: 'Locked',
     },
     424: {
-        name: "FAILED_DEPENDENCY",
-        message: "Failed Dependency",
+        name: 'FAILED_DEPENDENCY',
+        message: 'Failed Dependency',
     },
     428: {
-        name: "PRECONDITION_REQUIRED",
-        message: "Precondition Required",
+        name: 'PRECONDITION_REQUIRED',
+        message: 'Precondition Required',
     },
     429: {
-        name: "TOO_MANY_REQUESTS",
-        message: "Too Many Requests",
+        name: 'TOO_MANY_REQUESTS',
+        message: 'Too Many Requests',
     },
     431: {
-        name: "REQUEST_HEADER_FIELDS_TOO_LARGE",
-        message: "Request Header Fields Too Large",
+        name: 'REQUEST_HEADER_FIELDS_TOO_LARGE',
+        message: 'Request Header Fields Too Large',
     },
     451: {
-        name: "UNAVAILABLE_FOR_LEGAL_REASONS",
-        message: "Unavailable For Legal Reasons",
+        name: 'UNAVAILABLE_FOR_LEGAL_REASONS',
+        message: 'Unavailable For Legal Reasons',
     },
     500: {
-        name: "INTERNAL_SERVER_ERROR",
-        message: "Internal Server Error",
+        name: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal Server Error',
     },
     501: {
-        name: "NOT_IMPLEMENTED",
-        message: "Not Implemented",
+        name: 'NOT_IMPLEMENTED',
+        message: 'Not Implemented',
     },
     502: {
-        name: "BAD_GATEWAY",
-        message: "Bad Gateway",
+        name: 'BAD_GATEWAY',
+        message: 'Bad Gateway',
     },
     503: {
-        name: "SERVICE_UNAVAILABLE",
-        message: "Service Unavailable",
+        name: 'SERVICE_UNAVAILABLE',
+        message: 'Service Unavailable',
     },
     504: {
-        name: "GATEWAY_TIMEOUT",
-        message: "Gateway Timeout",
+        name: 'GATEWAY_TIMEOUT',
+        message: 'Gateway Timeout',
     },
     505: {
-        name: "HTTP_VERSION_NOT_SUPPORTED",
-        message: "HTTP Version Not Supported",
+        name: 'HTTP_VERSION_NOT_SUPPORTED',
+        message: 'HTTP Version Not Supported',
     },
     507: {
-        name: "INSUFFICIENT_STORAGE",
-        message: "Insufficient Storage",
+        name: 'INSUFFICIENT_STORAGE',
+        message: 'Insufficient Storage',
     },
     511: {
-        name: "NETWORK_AUTHENTICATION_REQUIRED",
-        message: "Network Authentication Required",
+        name: 'NETWORK_AUTHENTICATION_REQUIRED',
+        message: 'Network Authentication Required',
     },
 };
 
 export async function handleH3Error(
     err: unknown,
     event: H3Event,
-    onError: ArriOptions["onError"],
+    onError: ArriOptions['onError'],
     debug: boolean,
 ) {
     let arriErr: arriError | undefined;
@@ -282,9 +282,9 @@ async function sendArriError(event: H3Event, error: arriError, debug: boolean) {
         data: error.data,
     };
     if (debug) {
-        payload.stack = error.stack?.split("\n").map((l) => l.trim()) as any;
+        payload.stack = error.stack?.split('\n').map((l) => l.trim()) as any;
     }
-    setResponseHeader(event, "Content-Type", "application/json");
+    setResponseHeader(event, 'Content-Type', 'application/json');
     setResponseStatus(event, error.code);
     return send(event, JSON.stringify(payload));
 }

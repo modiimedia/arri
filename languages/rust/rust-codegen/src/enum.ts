@@ -1,4 +1,4 @@
-import { SchemaFormEnum } from "@arrirpc/codegen-utils";
+import { SchemaFormEnum } from '@arrirpc/codegen-utils';
 
 import {
     formatDescriptionComment,
@@ -8,7 +8,7 @@ import {
     RustProperty,
     validRustIdentifier,
     validRustName,
-} from "./_common";
+} from './_common';
 
 export default function rustEnumFromSchema(
     schema: SchemaFormEnum,
@@ -17,7 +17,7 @@ export default function rustEnumFromSchema(
     const enumName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType ? `Option<${enumName}>` : enumName;
-    const defaultValue = isOptionType ? "None" : `${enumName}::default()`;
+    const defaultValue = isOptionType ? 'None' : `${enumName}::default()`;
     const result: RustProperty = {
         typeName,
         defaultValue,
@@ -64,12 +64,12 @@ export default function rustEnumFromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}.serial_value()))`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(enumName)) {
         return result;
     }
-    let defaultEnumValue: string = "";
+    let defaultEnumValue: string = '';
     const initializationParts: string[] = [];
     const fromStringParts: string[] = [];
     const serialValueParts: string[] = [];
@@ -85,7 +85,7 @@ export default function rustEnumFromSchema(
             `\t\t\t${enumName}::${valName} => "${val}".to_string(),`,
         );
     }
-    let leading = "";
+    let leading = '';
     if (schema.metadata?.description) {
         leading += `${formatDescriptionComment(schema.metadata.description)}\n`;
     }
@@ -94,7 +94,7 @@ export default function rustEnumFromSchema(
     }
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub enum ${enumName} {
-${initializationParts.join("\n")}
+${initializationParts.join('\n')}
 }
 
 impl ArriEnum for ${enumName} {
@@ -103,13 +103,13 @@ impl ArriEnum for ${enumName} {
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {
-${fromStringParts.join("\n")}
+${fromStringParts.join('\n')}
             _ => Self::default(),
         }
     }
     fn serial_value(&self) -> String {
         match &self {
-${serialValueParts.join("\n")}
+${serialValueParts.join('\n')}
         }
     }
 }`;

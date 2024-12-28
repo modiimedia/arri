@@ -1,11 +1,11 @@
-import { SchemaFormEnum } from "@arrirpc/codegen-utils";
+import { SchemaFormEnum } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
     TsProperty,
-} from "./common";
+} from './common';
 
 export function tsEnumFromSchema(
     schema: SchemaFormEnum,
@@ -21,7 +21,7 @@ export function tsEnumFromSchema(
         ? `${prefixedEnumName} | null`
         : prefixedEnumName;
     const defaultValue = schema.nullable
-        ? "null"
+        ? 'null'
         : `$$${prefixedEnumName}.new()`;
     const result: TsProperty = {
         typeName,
@@ -52,7 +52,7 @@ export function tsEnumFromSchema(
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`)`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(enumName)) {
         return result;
@@ -60,7 +60,7 @@ export function tsEnumFromSchema(
     const name = `${context.typePrefix}${enumName}`;
     const valuesName = `$$${name}Values`;
     result.content = `${getJsDocComment(schema.metadata)}export type ${name} = (typeof ${valuesName})[number];
-const ${valuesName} = [${schema.enum.map((val) => `"${val}"`).join(", ")}] as const;
+const ${valuesName} = [${schema.enum.map((val) => `"${val}"`).join(', ')}] as const;
 export const $$${name}: ArriEnumValidator<${name}> = {
     new(): ${name} {
         return ${valuesName}[0];

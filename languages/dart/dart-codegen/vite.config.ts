@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/arri-codegen-dart",
+    cacheDir: '../../../node_modules/.vite/arri-codegen-dart',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -20,18 +20,18 @@ export default defineConfig({
 
     test: {
         globals: true,
-        pool: "threads",
+        pool: 'threads',
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
-        reporters: ["default", "html"],
-        outputFile: ".temp/test-results/index.html",
+        reporters: ['default', 'html'],
+        outputFile: '.temp/test-results/index.html',
         cache: {
-            dir: "../../../node_modules/.vitest",
+            dir: '../../../node_modules/.vitest',
         },
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
 });

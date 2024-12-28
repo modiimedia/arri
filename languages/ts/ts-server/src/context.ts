@@ -1,4 +1,4 @@
-import { type ExtractParams } from "./middleware";
+import { type ExtractParams } from './middleware';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ArriEventContext extends Record<string, any> {}

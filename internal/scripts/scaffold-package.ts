@@ -1,32 +1,32 @@
-import { defineCommand, runMain } from "citty";
-import enquirer from "enquirer";
-import { existsSync, readFileSync } from "fs";
-import { mkdir, writeFile } from "fs/promises";
-import path from "pathe";
-import { kebabCase } from "scule";
+import { defineCommand, runMain } from 'citty';
+import enquirer from 'enquirer';
+import { existsSync, readFileSync } from 'fs';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'pathe';
+import { kebabCase } from 'scule';
 
 const main = defineCommand({
     async run() {
         const rootPackageJson = JSON.parse(
-            readFileSync(path.resolve(__dirname, "../../package.json"), {
-                encoding: "utf8",
+            readFileSync(path.resolve(__dirname, '../../package.json'), {
+                encoding: 'utf8',
             }),
         ) as Record<string, any>;
         const version =
-            "version" in rootPackageJson &&
-            typeof rootPackageJson.version === "string"
+            'version' in rootPackageJson &&
+            typeof rootPackageJson.version === 'string'
                 ? rootPackageJson.version
-                : "0.0.1";
+                : '0.0.1';
         const result = await enquirer.prompt<{
             name: string;
-            type: "codegen" | "tooling";
+            type: 'codegen' | 'tooling';
         }>([
             {
-                name: "type",
-                message: "Select a package type",
+                name: 'type',
+                message: 'Select a package type',
                 required: true,
-                type: "select",
-                choices: ["codegen", "tooling"],
+                type: 'select',
+                choices: ['codegen', 'tooling'],
             },
         ]);
         let projectName: string;
@@ -36,16 +36,16 @@ const main = defineCommand({
         let outDir: string;
         let isCodegen: boolean;
         switch (result.type) {
-            case "codegen":
+            case 'codegen':
                 {
                     const { language } = await enquirer.prompt<{
                         language: string;
                     }>([
                         {
-                            name: "language",
-                            message: "What programming language is this for?",
+                            name: 'language',
+                            message: 'What programming language is this for?',
                             required: true,
-                            type: "input",
+                            type: 'input',
                         },
                     ]);
                     isCodegen = true;
@@ -68,31 +68,31 @@ const main = defineCommand({
                     );
                 }
                 break;
-            case "tooling": {
+            case 'tooling': {
                 const inputResult = await enquirer.prompt<{ name: string }>([
                     {
-                        name: "name",
-                        message: "Name your package",
-                        type: "input",
+                        name: 'name',
+                        message: 'Name your package',
+                        type: 'input',
                         required: true,
                     },
                 ]);
                 isCodegen = false;
                 pkgName = kebabCase(inputResult.name);
                 projectName = kebabCase(
-                    inputResult.name.replace("@arrirpc/", ""),
+                    inputResult.name.replace('@arrirpc/', ''),
                 );
                 pkgLocation = `tooling/${pkgName}`;
                 depth = 2;
-                outDir = path.resolve(__dirname, "../../tooling", pkgName);
+                outDir = path.resolve(__dirname, '../../tooling', pkgName);
                 break;
             }
         }
         await mkdir(outDir);
-        await mkdir(path.resolve(outDir, "src"));
+        await mkdir(path.resolve(outDir, 'src'));
         await Promise.all([
             writeFile(
-                path.resolve(outDir, "src/_index.ts"),
+                path.resolve(outDir, 'src/_index.ts'),
                 isCodegen
                     ? `import { defineGeneratorPlugin } from "@arrirpc/codegen-utils";
 
@@ -118,27 +118,27 @@ export const myGenerator = defineGeneratorPlugin(
                     : `// ${pkgName} entry\n// todo`,
             ),
             writeFile(
-                path.resolve(outDir, "build.config.ts"),
+                path.resolve(outDir, 'build.config.ts'),
                 buildConfigTemplate(pkgName),
             ),
             writeFile(
-                path.resolve(outDir, "package.json"),
+                path.resolve(outDir, 'package.json'),
                 packageJsonTemplate(pkgName, pkgLocation, version, isCodegen),
             ),
             writeFile(
-                path.resolve(outDir, "project.json"),
+                path.resolve(outDir, 'project.json'),
                 projectJsonTemplate(projectName, pkgName, pkgLocation, depth),
             ),
             writeFile(
-                path.resolve(outDir, "README.md"),
+                path.resolve(outDir, 'README.md'),
                 readmeTemplate(pkgName),
             ),
             writeFile(
-                path.resolve(outDir, "tsconfig.json"),
+                path.resolve(outDir, 'tsconfig.json'),
                 tsConfigTemplate(depth),
             ),
             writeFile(
-                path.resolve(outDir, "vite.config.ts"),
+                path.resolve(outDir, 'vite.config.ts'),
                 viteConfigTemplate(pkgName, pkgLocation, depth),
             ),
         ]);
@@ -146,13 +146,13 @@ export const myGenerator = defineGeneratorPlugin(
             await mkdir(`${outDir}-reference`);
             await Promise.all([
                 writeFile(
-                    path.resolve(`${outDir}-reference`, "README.md"),
+                    path.resolve(`${outDir}-reference`, 'README.md'),
                     `# ${pkgName} Reference
 
 Use this directory to make a reference output based \`../../../tests/test-files/AppDefinition.json\` that can be used to test the output of your generator.`,
                 ),
                 writeFile(
-                    path.resolve(`${outDir}-reference`, "project.json"),
+                    path.resolve(`${outDir}-reference`, 'project.json'),
                     referenceProjectJsonTemplate(
                         projectName,
                         `${pkgLocation}-reference`,
@@ -212,7 +212,7 @@ function packageJsonTemplate(
         "dist"
     ],
     "dependencies": {
-      ${isCodegen ? `"@arrirpc/codegen-utils": "workspace:*"` : ""}
+      ${isCodegen ? `"@arrirpc/codegen-utils": "workspace:*"` : ''}
     },
     "devDependencies": {}
 }`;
@@ -224,9 +224,9 @@ function projectJsonTemplate(
     packageLocation: string,
     depth: number,
 ) {
-    let prefix = "";
+    let prefix = '';
     for (let i = 0; i < depth; i++) {
-        prefix += "../";
+        prefix += '../';
     }
     return `{
   "name": "${projectName}",
@@ -282,9 +282,9 @@ function referenceProjectJsonTemplate(
     packageLocation: string,
     depth: number,
 ) {
-    let prefix = "";
+    let prefix = '';
     for (let i = 0; i < depth; i++) {
-        prefix += "../";
+        prefix += '../';
     }
     return `{
   "name": "${projectName}-reference",
@@ -349,9 +349,9 @@ export default defineBuildConfig({
 }
 
 function tsConfigTemplate(depth: number) {
-    let prefix = "";
+    let prefix = '';
     for (let i = 0; i < depth; i++) {
-        prefix += "../";
+        prefix += '../';
     }
     return `{
   "extends": "${prefix}tsconfig.base.json",
@@ -367,9 +367,9 @@ function viteConfigTemplate(
     projectLocation: string,
     depth: number,
 ) {
-    let prefix = "";
+    let prefix = '';
     for (let i = 0; i < depth; i++) {
-        prefix += "../";
+        prefix += '../';
     }
     return `import { defineConfig } from "vitest/config";
 

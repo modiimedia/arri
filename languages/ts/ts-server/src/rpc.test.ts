@@ -1,9 +1,9 @@
-import { a } from "@arrirpc/schema";
+import { a } from '@arrirpc/schema';
 
-import { defineEventStreamRpc } from "./eventStreamRpc";
-import { createHttpRpcDefinition, defineRpc } from "./rpc";
-describe("Type Inference", () => {
-    it("infers types properly", async () => {
+import { defineEventStreamRpc } from './eventStreamRpc';
+import { createHttpRpcDefinition, defineRpc } from './rpc';
+describe('Type Inference', () => {
+    it('infers types properly', async () => {
         const Params = a.object({
             id: a.string(),
         });
@@ -17,7 +17,7 @@ describe("Type Inference", () => {
             params: Params,
             response: Response,
             handler({ params }) {
-                assertType<Params>({ id: "" });
+                assertType<Params>({ id: '' });
                 return {
                     id: params.id,
                     count: 1245313,
@@ -26,8 +26,8 @@ describe("Type Inference", () => {
         });
         const result = await rpc.handler(
             {
-                params: { id: "12314" },
-                rpcName: "",
+                params: { id: '12314' },
+                rpcName: '',
             },
 
             {} as any,
@@ -36,14 +36,14 @@ describe("Type Inference", () => {
     });
 });
 
-test("create rpc definition", () => {
+test('create rpc definition', () => {
     const rpc = defineRpc({
         params: undefined,
         response: undefined,
         handler() {},
     });
-    const rpcDef = createHttpRpcDefinition("hello.world", "/hello/world", rpc);
-    expect(rpcDef.method).toBe("post");
+    const rpcDef = createHttpRpcDefinition('hello.world', '/hello/world', rpc);
+    expect(rpcDef.method).toBe('post');
     expect(rpcDef.isEventStream).toBe(undefined);
     const eventStreamRpc = defineEventStreamRpc({
         params: undefined,
@@ -51,10 +51,10 @@ test("create rpc definition", () => {
         handler() {},
     });
     const eventStreamDef = createHttpRpcDefinition(
-        "hello.world",
-        "/hello/world",
+        'hello.world',
+        '/hello/world',
         eventStreamRpc,
     );
-    expect(eventStreamDef.method).toBe("get");
+    expect(eventStreamDef.method).toBe('get');
     expect(eventStreamDef.isEventStream).toBe(true);
 });

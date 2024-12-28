@@ -1,12 +1,12 @@
-import { SchemaFormValues } from "@arrirpc/codegen-utils";
+import { SchemaFormValues } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
     isNullableType,
     SwiftProperty,
     validSwiftKey,
-} from "./_common";
-import { swiftTypeFromSchema } from "./_index";
+} from './_common';
+import { swiftTypeFromSchema } from './_index';
 
 export function swiftDictionaryFromSchema(
     schema: SchemaFormValues,
@@ -37,7 +37,7 @@ export function swiftDictionaryFromSchema(
             for (__key, __value) in ${input}.dictionary ?? Dictionary() {
                 var __parsedValue: ${subType.typeName}
                 ${subType.fromJsonTemplate(`__value`, `__parsedValue`, `__parsedValue`)}
-                ${target}${isNullable ? "!" : ""}[__key] = __parsedValue            
+                ${target}${isNullable ? '!' : ''}[__key] = __parsedValue            
             }`;
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -53,12 +53,12 @@ ${mainContent}
         },
         toJsonTemplate(input, target) {
             const mainContent = `        ${target} += "{"
-            for (__index, (__key, __value)) in ${input}${isNullable ? "!" : ""}.enumerated() {
+            for (__index, (__key, __value)) in ${input}${isNullable ? '!' : ''}.enumerated() {
                 if __index > 0 {
                     ${target} += ","
                 }
                 ${target} += "\\(serializeString(input: __key)):"
-                ${subType.toJsonTemplate("__value", target)}
+                ${subType.toJsonTemplate('__value', target)}
             }
             ${target} += "}"`;
             if (schema.nullable) {
@@ -85,7 +85,7 @@ ${mainContent}
                     if ${input} != nil {
                         __${innerKey}Cloned = Dictionary()
                         for (__${innerKey}Key, __${innerKey}Value) in ${input}! {
-                            ${subTypeClonedResult?.bodyContent ?? ""}
+                            ${subTypeClonedResult?.bodyContent ?? ''}
                             __${innerKey}Cloned![__${innerKey}Key] = ${subTypeClonedResult?.fieldContent ?? `__${innerKey}Value`}
                         }          
                     }`,
@@ -95,7 +95,7 @@ ${mainContent}
             return {
                 bodyContent: `var __${innerKey}Cloned: ${typeName} = Dictionary()
                     for (__${innerKey}Key, __${innerKey}Value) in ${input} {
-                        ${subTypeClonedResult?.bodyContent ?? ""}
+                        ${subTypeClonedResult?.bodyContent ?? ''}
                         __${innerKey}Cloned[__${innerKey}Key] = ${subTypeClonedResult?.fieldContent ?? `__${innerKey}Value`}
                     }`,
                 fieldContent: `__${innerKey}Cloned`,

@@ -1,11 +1,11 @@
-import { camelCase, SchemaFormEnum } from "@arrirpc/codegen-utils";
+import { camelCase, SchemaFormEnum } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
     getTypeName,
     isNullableType,
     SwiftProperty,
-} from "./_common";
+} from './_common';
 
 export function swiftEnumFromSchema(
     schema: SchemaFormEnum,
@@ -21,7 +21,7 @@ export function swiftEnumFromSchema(
     const defaultEnumValue = camelCase(schema.enum[0]!, { normalize: true });
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
     const defaultValue = isNullable
-        ? ""
+        ? ''
         : `${prefixedTypeName}.${defaultEnumValue}`;
     const result: SwiftProperty = {
         typeName: isNullable ? `${typeName}?` : typeName,
@@ -70,13 +70,13 @@ export function swiftEnumFromSchema(
             }
             return `        ${target}.append(URLQueryItem(name: "${key}", value: ${input}.serialValue()))`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(typeName)) {
         return result;
     }
     result.content = `public enum ${prefixedTypeName}: ArriClientEnum {
-${schema.enum.map((val) => `    case ${camelCase(val, { normalize: true })}`).join("\n")}
+${schema.enum.map((val) => `    case ${camelCase(val, { normalize: true })}`).join('\n')}
     public init() {
         self = .${defaultEnumValue}
     }
@@ -88,7 +88,7 @@ ${schema.enum
                 self = .${camelCase(val, { normalize: true })}
                 break;`,
     )
-    .join("\n")}
+    .join('\n')}
             default:
                 self = .${defaultEnumValue}
         }
@@ -100,7 +100,7 @@ ${schema.enum
         (val) => `            case .${camelCase(val, { normalize: true })}:
                 return "${val}"`,
     )
-    .join("\n")}
+    .join('\n')}
         }
     }
 }`;

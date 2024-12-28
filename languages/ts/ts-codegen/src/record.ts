@@ -1,7 +1,7 @@
-import { SchemaFormValues } from "@arrirpc/codegen-utils";
+import { SchemaFormValues } from '@arrirpc/codegen-utils';
 
-import { tsTypeFromSchema } from "./_index";
-import { CodegenContext, TsProperty, validVarName } from "./common";
+import { tsTypeFromSchema } from './_index';
+import { CodegenContext, TsProperty, validVarName } from './common';
 
 export function tsRecordFromSchema(
     schema: SchemaFormValues,
@@ -13,21 +13,21 @@ export function tsRecordFromSchema(
         generatedTypes: context.generatedTypes,
         instancePath: `${context.instancePath}/[value]`,
         schemaPath: `${context.schemaPath}/values`,
-        discriminatorParent: "",
-        discriminatorKey: "",
-        discriminatorValue: "",
+        discriminatorParent: '',
+        discriminatorKey: '',
+        discriminatorValue: '',
         versionNumber: context.versionNumber,
         usedFeatures: context.usedFeatures,
         rpcGenerators: context.rpcGenerators,
     });
     const typeName = `Record<string, ${innerType.typeName}>`;
-    const defaultValue = schema.nullable ? "null" : "{}";
+    const defaultValue = schema.nullable ? 'null' : '{}';
     return {
         typeName: schema.nullable ? `${typeName} | null` : typeName,
         defaultValue,
         validationTemplate(input) {
             const mainPart = `isObject(${input}) && Object.values(${input}).every(
-                (_value) => ${innerType.validationTemplate("_value")},
+                (_value) => ${innerType.validationTemplate('_value')},
             )`;
             if (schema.nullable) {
                 return `((${mainPart}) || ${input} === null)`;
@@ -39,7 +39,7 @@ export function tsRecordFromSchema(
                 ${target} = {};
                 for (const [_key, _value] of Object.entries(${input})) {
                     let ${target}Value: ${innerType.typeName};
-                    ${innerType.fromJsonTemplate("_value", `${target}Value`)}
+                    ${innerType.fromJsonTemplate('_value', `${target}Value`)}
                     ${target}[_key] = ${target}Value;
                 }
             } else {
@@ -57,7 +57,7 @@ export function tsRecordFromSchema(
                             ${target} += ',';
                         }
                         ${target} += \`\${serializeString(_key)}:\`;
-                        ${innerType.toJsonTemplate("_value", target, "_key")}
+                        ${innerType.toJsonTemplate('_value', target, '_key')}
                         ${countVal}++;
                     }
                     ${target} += '}';
@@ -72,7 +72,7 @@ export function tsRecordFromSchema(
                     ${target} += ',';
                 }
                 ${target} += \`\${serializeString(_key)}:\`;
-                ${innerType.toJsonTemplate("_value", target, "_key")};
+                ${innerType.toJsonTemplate('_value', target, '_key')};
                 ${countVal}++;
             }
             ${target} += '}';

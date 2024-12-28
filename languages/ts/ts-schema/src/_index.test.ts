@@ -7,11 +7,11 @@ import {
     isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
-} from "@arrirpc/type-defs";
+} from '@arrirpc/type-defs';
 
-import { a } from "./_index";
+import { a } from './_index';
 
-test("isSchemaFormType", () => {
+test('isSchemaFormType', () => {
     const Schemas = [
         a.string(),
         a.float64(),
@@ -32,13 +32,13 @@ test("isSchemaFormType", () => {
         expect(isSchemaFormType(JSON.parse(JSON.stringify(schema))));
     }
 });
-test("isSchemaFormEnum", () => {
-    const Schema = a.stringEnum(["A", "B", "C"]);
+test('isSchemaFormEnum', () => {
+    const Schema = a.stringEnum(['A', 'B', 'C']);
     expect(isSchemaFormEnum(Schema));
     expect(isSchemaFormEnum(JSON.parse(JSON.stringify(Schema))));
 });
 
-test("isSchemaFormElements", () => {
+test('isSchemaFormElements', () => {
     const Schema = a.array(
         a.object({
             id: a.string(),
@@ -49,7 +49,7 @@ test("isSchemaFormElements", () => {
     expect(isSchemaFormElements(JSON.parse(JSON.stringify(Schema))));
 });
 
-test("isSchemaFormProperties", () => {
+test('isSchemaFormProperties', () => {
     const User = a.object(
         {
             id: a.string(),
@@ -57,12 +57,12 @@ test("isSchemaFormProperties", () => {
             date: a.timestamp(),
             description: a.string(),
         },
-        { id: "User" },
+        { id: 'User' },
     );
     const Schemas = [
         User,
         a.partial(User),
-        a.pick(User, ["id", "name"]),
+        a.pick(User, ['id', 'name']),
         a.extend(
             User,
             a.object({
@@ -76,8 +76,8 @@ test("isSchemaFormProperties", () => {
     }
 });
 
-test("isSchemaFormDiscriminator", () => {
-    const Schema = a.discriminator("type", {
+test('isSchemaFormDiscriminator', () => {
+    const Schema = a.discriminator('type', {
         A: a.object({
             id: a.string(),
         }),
@@ -90,7 +90,7 @@ test("isSchemaFormDiscriminator", () => {
     expect(isSchemaFormDiscriminator(JSON.parse(JSON.stringify(Schema))));
 });
 
-test("isSchemaFormValues", () => {
+test('isSchemaFormValues', () => {
     const Schema = a.record(
         a.object({
             id: a.string(),
@@ -101,15 +101,15 @@ test("isSchemaFormValues", () => {
     expect(isSchemaFormValues(JSON.parse(JSON.stringify(Schema))));
 });
 
-test("isSchemaFormEmpty", () => {
+test('isSchemaFormEmpty', () => {
     const Schema = a.any();
     expect(isSchemaFormEmpty(Schema));
     expect(isSchemaFormEmpty(JSON.parse(JSON.stringify(Schema))));
 });
 
-test("isSchemaFormRef", () => {
+test('isSchemaFormRef', () => {
     const Schema = {
-        ref: "A",
+        ref: 'A',
     };
     expect(isSchemaFormRef(Schema));
 });

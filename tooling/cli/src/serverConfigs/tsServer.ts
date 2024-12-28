@@ -1,30 +1,30 @@
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import * as fs from "node:fs/promises";
-import path from "node:path";
+import { execSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
 
-import { Generator, isAppDefinition } from "@arrirpc/codegen-utils";
+import { Generator, isAppDefinition } from '@arrirpc/codegen-utils';
 import {
     AppDefinition,
     camelCase,
     kebabCase,
     removeDisallowedChars,
-} from "@arrirpc/codegen-utils";
-import { listen, Listener } from "@joshmossas/listhen";
-import { FSWatcher } from "chokidar";
-import esbuild from "esbuild";
-import { replace } from "esbuild-plugin-replace";
-import { type globby } from "globby";
+} from '@arrirpc/codegen-utils';
+import { listen, Listener } from '@joshmossas/listhen';
+import { FSWatcher } from 'chokidar';
+import esbuild from 'esbuild';
+import { replace } from 'esbuild-plugin-replace';
+import { type globby } from 'globby';
 import {
     App,
     dynamicEventHandler,
     fromNodeMiddleware,
     toNodeListener,
-} from "h3";
-import prettier from "prettier";
+} from 'h3';
+import prettier from 'prettier';
 
-import { isInsideDir, logger } from "../common";
-import { defineServerConfig } from "./_config";
+import { isInsideDir, logger } from '../common';
+import { defineServerConfig } from './_config';
 
 export function tsServer(serverConfig?: TsServerConfig) {
     return defineServerConfig({
@@ -58,7 +58,7 @@ export function tsServer(serverConfig?: TsServerConfig) {
         async buildFn(args, generators) {
             const resolvedConfig: Required<TsServerConfig> = {
                 port: serverConfig?.port ?? 3000,
-                entry: serverConfig?.entry ?? "app.ts",
+                entry: serverConfig?.entry ?? 'app.ts',
                 serverEntry:
                     serverConfig?.serverEntry ??
                     defaultTsServerConfig.serverEntry,
@@ -105,13 +105,13 @@ export interface TsServerConfig {
     buildDir?: string;
     esbuild?: Omit<
         esbuild.BuildOptions,
-        | "bundle"
-        | "format"
-        | "outfile"
-        | "outdir"
-        | "entryNames"
-        | "entryPoints"
-        | "packages"
+        | 'bundle'
+        | 'format'
+        | 'outfile'
+        | 'outdir'
+        | 'entryNames'
+        | 'entryPoints'
+        | 'packages'
     >;
     https?:
         | {
@@ -136,13 +136,13 @@ export interface TsServerConfig {
 
 const defaultTsServerConfig: Required<TsServerConfig> = {
     port: 3000,
-    entry: "app.ts",
-    serverEntry: "",
-    rootDir: ".",
-    srcDir: "src",
-    procedureDir: "procedures",
-    procedureGlobPatterns: ["**/*.rpc.ts"],
-    buildDir: ".arri",
+    entry: 'app.ts',
+    serverEntry: '',
+    rootDir: '.',
+    srcDir: 'src',
+    procedureDir: 'procedures',
+    procedureGlobPatterns: ['**/*.rpc.ts'],
+    buildDir: '.arri',
     esbuild: {},
     https: false,
     http2: false,
@@ -160,7 +160,7 @@ export async function startBuild(
     serverConfig: Required<TsServerConfig>,
     skipCodeGen = false,
 ) {
-    logger.log("Bundling server....");
+    logger.log('Bundling server....');
     const appEntry = path.resolve(
         serverConfig.rootDir,
         serverConfig.srcDir,
@@ -185,22 +185,22 @@ export async function startBuild(
         createCodegenEntryFile(serverConfig),
     ]);
     await bundleAppEntry(serverConfig);
-    logger.log("Finished bundling");
+    logger.log('Finished bundling');
     const clientCount = generators.length ?? 0;
     const codegenModule = path.resolve(
         serverConfig.rootDir,
-        ".output",
+        '.output',
         OUT_CODEGEN,
     );
     if (!skipCodeGen) {
-        logger.log("Generating Arri app definition (__definition.json)");
+        logger.log('Generating Arri app definition (__definition.json)');
         execSync(`node ${codegenModule}`, { env: process.env });
         const defJson = path.resolve(
             serverConfig.rootDir,
-            ".output",
-            "__definition.json",
+            '.output',
+            '__definition.json',
         );
-        const def = JSON.parse(readFileSync(defJson, { encoding: "utf-8" }));
+        const def = JSON.parse(readFileSync(defJson, { encoding: 'utf-8' }));
         if (isAppDefinition(def) && clientCount > 0) {
             const startTime = new Date().getTime();
             logger.log(`Generating ${clientCount} client(s)...`);
@@ -212,13 +212,13 @@ export async function startBuild(
             );
         } else {
             logger.warn(
-                "No client generators specified. Skipping client codegen.",
+                'No client generators specified. Skipping client codegen.',
             );
         }
     } else {
-        logger.log("Skipping codegen");
+        logger.log('Skipping codegen');
     }
-    logger.log("Cleaning up files");
+    logger.log('Cleaning up files');
     await fs.rm(codegenModule);
     logger.success(
         `Build finished! You can start your server by running "node .output/${OUT_SERVER_ENTRY}"`,
@@ -237,11 +237,11 @@ async function bundleAppEntry(
     await esbuild.build({
         ...config.esbuild,
         entryPoints: [appEntry],
-        platform: config.esbuild.platform ?? "node",
-        target: config.esbuild.target ?? "node20",
+        platform: config.esbuild.platform ?? 'node',
+        target: config.esbuild.target ?? 'node20',
         bundle: true,
-        packages: "external",
-        format: "esm",
+        packages: 'external',
+        format: 'esm',
         sourcemap: config.esbuild.sourcemap ?? true,
         minify: config.esbuild.minify ?? true,
         banner: {
@@ -249,7 +249,7 @@ async function bundleAppEntry(
 const require = topLevelCreateRequire(import.meta.url);`,
         },
         allowOverwrite: true,
-        outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
+        outfile: path.resolve(config.rootDir, '.output', OUT_APP_FILE),
     });
 }
 
@@ -263,38 +263,38 @@ async function createServerEntryFile(config: Required<TsServerConfig>) {
         await esbuild.build({
             ...config.esbuild,
             entryPoints: [buildEntry],
-            platform: config.esbuild.platform ?? "node",
-            target: config.esbuild.target ?? "node20",
+            platform: config.esbuild.platform ?? 'node',
+            target: config.esbuild.target ?? 'node20',
             bundle: false,
-            packages: "external",
-            format: "esm",
+            packages: 'external',
+            format: 'esm',
             sourcemap: true,
             minifyWhitespace: true,
             banner: {
                 js: `import { createRequire as topLevelCreateRequire } from 'module';
 const require = topLevelCreateRequire(import.meta.url);`,
             },
-            plugins: [replace({ "virtual:arri/app": "./app.mjs" })],
+            plugins: [replace({ 'virtual:arri/app': './app.mjs' })],
             allowOverwrite: true,
-            outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+            outfile: path.resolve(config.rootDir, '.output', OUT_SERVER_ENTRY),
         });
         return;
     }
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
-        .split(".");
+        .split('.');
     appImportParts.pop();
     let httpsString = ``;
     if (config.https === true) {
         httpsString = `https: true,`;
-    } else if (typeof config.https === "object") {
+    } else if (typeof config.https === 'object') {
         httpsString = `https: { cert: '${config.https.cert}', key: '${
             config.https.key
         }', passphrase: ${
             config.https.passphrase
                 ? `'${config.https.passphrase}'`
-                : "undefined"
+                : 'undefined'
         }},`;
     }
     const virtualEntry = `import { toNodeListener } from '@arrirpc/server';
@@ -316,7 +316,7 @@ void listen(toNodeListener(app.h3App), {
     ${httpsString}
 });`;
     await fs.writeFile(
-        path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        path.resolve(config.rootDir, '.output', OUT_SERVER_ENTRY),
         virtualEntry,
     );
 }
@@ -325,7 +325,7 @@ async function createCodegenEntryFile(config: Required<TsServerConfig>) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
-        .split(".");
+        .split('.');
     appImportParts.pop();
     const virtualModule = await prettier.format(
         `
@@ -340,10 +340,10 @@ async function createCodegenEntryFile(config: Required<TsServerConfig>) {
         JSON.stringify(def),
     );
     process.exit(0);`,
-        { tabWidth: 4, parser: "typescript" },
+        { tabWidth: 4, parser: 'typescript' },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, ".output", OUT_CODEGEN),
+        path.resolve(config.rootDir, '.output', OUT_CODEGEN),
         virtualModule,
     );
 }
@@ -354,13 +354,13 @@ async function bundleFilesContext(config: Required<TsServerConfig>) {
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
         ],
-        outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
-        format: "esm",
+        outfile: path.resolve(config.rootDir, '.output', OUT_APP_FILE),
+        format: 'esm',
         bundle: true,
-        packages: "external",
+        packages: 'external',
         sourcemap: config.esbuild.sourcemap ?? true,
-        target: config.esbuild.target ?? "node20",
-        platform: config.esbuild.platform ?? "node",
+        target: config.esbuild.target ?? 'node20',
+        platform: config.esbuild.platform ?? 'node',
     });
 }
 
@@ -372,13 +372,13 @@ type ArriApp = {
 ///// DEV SERVER ////////
 
 async function createDevServer(config: Required<TsServerConfig>) {
-    const h3 = await import("h3");
+    const h3 = await import('h3');
     const app = h3.createApp();
     const dynamicHandler = dynamicEventHandler(
-        () => "<div>initializing server...</div>",
+        () => '<div>initializing server...</div>',
     );
     app.use(dynamicHandler);
-    let ws: App["websocket"] | undefined;
+    let ws: App['websocket'] | undefined;
     const listener = await listen(toNodeListener(app), {
         port: config.port,
         https: config.https,
@@ -420,7 +420,7 @@ async function createDevServer(config: Required<TsServerConfig>) {
             await import(
                 path.resolve(
                     config.rootDir,
-                    ".output",
+                    '.output',
                     `${OUT_APP_FILE}?version=${Date.now()}`,
                 )
             )
@@ -444,7 +444,7 @@ export async function startDevServer(
     generators: Generator<any>[],
 ) {
     await setupWorkingDir(config);
-    const watcher = await import("chokidar");
+    const watcher = await import('chokidar');
     let fileWatcher: FSWatcher | undefined;
     await createAppWithRoutesModule(config);
     const context = await bundleFilesContext(config);
@@ -461,16 +461,16 @@ export async function startDevServer(
     const cleanExit = async () => {
         process.exit();
     };
-    process.on("exit", async () => {
+    process.on('exit', async () => {
         await Promise.allSettled([fileWatcher?.close(), context.dispose()]);
     });
-    process.on("SIGINT", cleanExit);
-    process.on("SIGTERM", cleanExit);
+    process.on('SIGINT', cleanExit);
+    process.on('SIGTERM', cleanExit);
     async function load(_isRestart: boolean, _reason?: string) {
         if (fileWatcher) {
             await fileWatcher.close();
         }
-        const srcDir = path.resolve(config.rootDir ?? "", config.srcDir);
+        const srcDir = path.resolve(config.rootDir ?? '', config.srcDir);
         const dirsToWatch = [srcDir];
         if (config.esbuild.alias) {
             for (const key of Object.keys(config.esbuild.alias)) {
@@ -488,27 +488,27 @@ export async function startDevServer(
             }
         }
         const buildDir = path.resolve(config.rootDir, config.buildDir);
-        const outDir = path.resolve(config.rootDir, ".output");
+        const outDir = path.resolve(config.rootDir, '.output');
         fileWatcher = watcher.watch(dirsToWatch, {
             ignoreInitial: true,
             ignored: [
                 buildDir,
                 outDir,
-                "**/.output",
-                "**/dist/**",
-                "**/node_modules/**",
-                "**/.git/**",
+                '**/.output',
+                '**/dist/**',
+                '**/node_modules/**',
+                '**/.git/**',
             ],
         });
-        fileWatcher.on("all", async (eventName, _path) => {
-            if (eventName === "addDir" || eventName === "add") {
+        fileWatcher.on('all', async (eventName, _path) => {
+            if (eventName === 'addDir' || eventName === 'add') {
                 return;
             }
             await createAppWithRoutesModule(config);
             try {
                 const reloadStart = new Date().getTime();
                 logger.log(
-                    "Change detected. Bundling files and restarting server....",
+                    'Change detected. Bundling files and restarting server....',
                 );
                 await context.rebuild();
                 const newAppDef = await devServer.reload();
@@ -525,7 +525,7 @@ export async function startDevServer(
                     appDefStr = newAppDefStr;
                 }
             } catch (err) {
-                logger.error("ERROR", err);
+                logger.error('ERROR', err);
             }
         });
     }
@@ -549,7 +549,7 @@ async function generateClientsFromDefinition(
             generators.map((generator) => generator.run(appDef, true)),
         );
         logger.success(
-            `Generated ${clientCount} client${clientCount === 1 ? "" : "s"} in ${new Date().getTime() - startTime}ms`,
+            `Generated ${clientCount} client${clientCount === 1 ? '' : 's'} in ${new Date().getTime() - startTime}ms`,
         );
     } catch (err) {
         logger.error(err);
@@ -558,19 +558,19 @@ async function generateClientsFromDefinition(
 
 ////// SHARED UTILS ///////
 
-export const GEN_APP_FILE = "__arri_app.ts";
-export const GEN_SERVER_ENTRY_FILE = "__arri_server.ts";
-export const OUT_APP_FILE = "app.mjs";
-export const OUT_SERVER_ENTRY = "server.mjs";
-export const OUT_CODEGEN = "codegen.mjs";
+export const GEN_APP_FILE = '__arri_app.ts';
+export const GEN_SERVER_ENTRY_FILE = '__arri_server.ts';
+export const OUT_APP_FILE = 'app.mjs';
+export const OUT_SERVER_ENTRY = 'server.mjs';
+export const OUT_CODEGEN = 'codegen.mjs';
 
 export const VIRTUAL_MODULES = {
-    APP: "virtual:arri/app",
+    APP: 'virtual:arri/app',
 } as const;
 
 export async function setupWorkingDir(config: Required<TsServerConfig>) {
     const arriDir = path.resolve(config.rootDir, config.buildDir);
-    const outDir = path.resolve(config.rootDir, ".output");
+    const outDir = path.resolve(config.rootDir, '.output');
     if (existsSync(arriDir)) {
         await fs.rm(arriDir, { recursive: true, force: true });
     }
@@ -590,11 +590,11 @@ interface RpcRoute {
 export async function createAppWithRoutesModule(
     config: Required<TsServerConfig>,
 ) {
-    const glob = await import("globby");
+    const glob = await import('globby');
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.buildDir), appModule)
-        .split(".");
+        .split('.');
     appImportParts.pop();
     const routes: RpcRoute[] = [];
     const existingRoutes: string[] = [];
@@ -613,18 +613,18 @@ export async function createAppWithRoutesModule(
     const module = await prettier.format(
         `import sourceMapSupport from 'source-map-support';
         sourceMapSupport.install();
-        import app from '${appImportParts.join(".")}';
+        import app from '${appImportParts.join('.')}';
         ${routes
             .map(
                 (route) =>
                     `import ${route.importName} from '${route.importPath}';`,
             )
-            .join("\n")}
+            .join('\n')}
 
-        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`).join("\n")}
+        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`).join('\n')}
 
         export default app;`,
-        { parser: "typescript", tabWidth: 4 },
+        { parser: 'typescript', tabWidth: 4 },
     );
     await fs.writeFile(
         path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
@@ -642,10 +642,10 @@ export async function getFsRouteBatch(
     }
     const target =
         `${config.rootDir}/${config.srcDir}/${config.procedureDir}/${globPattern}`
-            .split("//")
-            .join("/")
-            .split("//")
-            .join("/");
+            .split('//')
+            .join('/')
+            .split('//')
+            .join('/');
     const files = await glob(target, {
         onlyFiles: true,
     });
@@ -655,19 +655,19 @@ export async function getFsRouteBatch(
         if (meta) {
             const importParts = path
                 .relative(path.resolve(config.rootDir, config.buildDir), file)
-                .split(".");
+                .split('.');
             importParts.pop();
             routes.push({
                 name: meta.id,
-                importName: camelCase(meta.id.split(".").join("_")),
-                importPath: `./${importParts.join(".")}`,
+                importName: camelCase(meta.id.split('.').join('_')),
+                importPath: `./${importParts.join('.')}`,
             });
         }
     }
     return routes;
 }
 
-const disallowedNameChars = "~`!@#$%^&*()-+=[]{}\\|:;\"'<>,./";
+const disallowedNameChars = '~`!@#$%^&*()-+=[]{}\\|:;"\'<>,./';
 
 export const getRpcMetaFromPath = (
     config: Required<TsServerConfig>,
@@ -676,8 +676,8 @@ export const getRpcMetaFromPath = (
     if (!config.procedureDir) {
         return undefined;
     }
-    const resolvedFilePath = filePath.split("./").join("/");
-    const parts = resolvedFilePath.split("/");
+    const resolvedFilePath = filePath.split('./').join('/');
+    const parts = resolvedFilePath.split('/');
     const reversedParts = [...parts].reverse();
     const nameParts: string[] = [];
 
@@ -687,11 +687,11 @@ export const getRpcMetaFromPath = (
         }
         nameParts.push(part);
     }
-    const fileName = nameParts.reverse().pop() ?? "";
+    const fileName = nameParts.reverse().pop() ?? '';
     const serviceParts = nameParts
         .filter((part) => part.trim().length > 0)
         .map((part) => removeDisallowedChars(part, disallowedNameChars));
-    const fileNameParts = fileName.split(".");
+    const fileNameParts = fileName.split('.');
     if (!fileNameParts.length) {
         return undefined;
     }
@@ -704,7 +704,7 @@ export const getRpcMetaFromPath = (
         kebabCase(rpcName),
     ];
     return {
-        id: [...serviceParts, rpcName].join("."),
-        httpPath: `/${httpParts.join("/")}`,
+        id: [...serviceParts, rpcName].join('.'),
+        httpPath: `/${httpParts.join('/')}`,
     };
 };

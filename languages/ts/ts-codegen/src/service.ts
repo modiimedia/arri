@@ -3,10 +3,10 @@ import {
     isServiceDefinition,
     pascalCase,
     ServiceDefinition,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
-import { CodegenContext, validVarName } from "./common";
-import { tsRpcFromDefinition } from "./rpc";
+import { CodegenContext, validVarName } from './common';
+import { tsRpcFromDefinition } from './rpc';
 
 export function tsServiceFromDefinition(
     def: ServiceDefinition,
@@ -25,9 +25,9 @@ export function tsServiceFromDefinition(
                 generatedTypes: context.generatedTypes,
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.instancePath}.${key}`,
-                discriminatorParent: "",
-                discriminatorKey: "",
-                discriminatorValue: "",
+                discriminatorParent: '',
+                discriminatorKey: '',
+                discriminatorValue: '',
                 versionNumber: context.versionNumber,
                 usedFeatures: context.usedFeatures,
                 rpcGenerators: context.rpcGenerators,
@@ -44,9 +44,9 @@ export function tsServiceFromDefinition(
                 generatedTypes: context.generatedTypes,
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
-                discriminatorParent: "",
-                discriminatorKey: "",
-                discriminatorValue: "",
+                discriminatorParent: '',
+                discriminatorKey: '',
+                discriminatorValue: '',
                 versionNumber: context.versionNumber,
                 usedFeatures: context.usedFeatures,
                 rpcGenerators: context.rpcGenerators,
@@ -64,7 +64,7 @@ export function tsServiceFromDefinition(
         return {
             key,
             name: serviceName,
-            content: "",
+            content: '',
         };
     }
     return {
@@ -74,7 +74,7 @@ export function tsServiceFromDefinition(
     private readonly _baseUrl: string;
     private readonly _headers: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void; 
-${subServices.map((service) => `    ${service.key}: ${service.name};`).join("\n")}
+${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
     constructor(
         options: {
             baseUrl?: string;
@@ -85,17 +85,17 @@ ${subServices.map((service) => `    ${service.key}: ${service.name};`).join("\n"
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
         this._onError = options.onError;
-${subServices.map((service) => `        this.${service.key} = new ${service.name}(options);`).join("\n")}
+${subServices.map((service) => `        this.${service.key} = new ${service.name}(options);`).join('\n')}
     }
-${rpcParts.map((rpc) => `    ${rpc}`).join("\n")}
+${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}
 }
 
-${subServices.map((service) => service.content).join("\n")}`,
+${subServices.map((service) => service.content).join('\n')}`,
     };
 }
 
 export function getServiceKey(context: CodegenContext): string {
-    const name = context.instancePath.split(".").pop() ?? "";
+    const name = context.instancePath.split('.').pop() ?? '';
     return validVarName(name);
 }
 
@@ -103,7 +103,7 @@ export function getServiceName(context: CodegenContext): string {
     if (context.instancePath.length === 0) {
         return context.clientName;
     }
-    const serviceName = pascalCase(context.instancePath.split(".").join("_"), {
+    const serviceName = pascalCase(context.instancePath.split('.').join('_'), {
         normalize: true,
     });
     return `${context.clientName}${serviceName}Service`;

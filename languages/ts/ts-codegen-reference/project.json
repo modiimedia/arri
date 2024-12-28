@@ -17,6 +17,13 @@
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/ts/ts-codegen-reference"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "languages/ts/ts-codegen-reference"
+      }
     }
   },
   "tags": []

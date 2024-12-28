@@ -3,8 +3,8 @@ import {
     removeDisallowedChars,
     Schema,
     snakeCase,
-} from "@arrirpc/codegen-utils";
-import path from "pathe";
+} from '@arrirpc/codegen-utils';
+import path from 'pathe';
 
 export interface GeneratorContext {
     clientVersion: string;
@@ -33,65 +33,65 @@ export interface RustProperty {
 }
 
 const reservedKeywords = [
-    "as",
-    "break",
-    "const",
-    "continue",
-    "crate",
-    "else",
-    "enum",
-    "extern",
-    "false",
-    "fn",
-    "for",
-    "if",
-    "impl",
-    "in",
-    "let",
-    "loop",
-    "match",
-    "mod",
-    "move",
-    "mut",
-    "pub",
-    "ref",
-    "return",
-    "self",
-    "Self",
-    "static",
-    "struct",
-    "super",
-    "trait",
-    "true",
-    "type",
-    "unsafe",
-    "use",
-    "where",
-    "while",
-    "async",
-    "await",
-    "dyn",
-    "abstract",
-    "become",
-    "box",
-    "do",
-    "final",
-    "macro",
-    "override",
-    "priv",
-    "typeof",
-    "unsized",
-    "virtual",
-    "yield",
-    "try",
-    "macro_rules",
-    "union",
+    'as',
+    'break',
+    'const',
+    'continue',
+    'crate',
+    'else',
+    'enum',
+    'extern',
+    'false',
+    'fn',
+    'for',
+    'if',
+    'impl',
+    'in',
+    'let',
+    'loop',
+    'match',
+    'mod',
+    'move',
+    'mut',
+    'pub',
+    'ref',
+    'return',
+    'self',
+    'Self',
+    'static',
+    'struct',
+    'super',
+    'trait',
+    'true',
+    'type',
+    'unsafe',
+    'use',
+    'where',
+    'while',
+    'async',
+    'await',
+    'dyn',
+    'abstract',
+    'become',
+    'box',
+    'do',
+    'final',
+    'macro',
+    'override',
+    'priv',
+    'typeof',
+    'unsized',
+    'virtual',
+    'yield',
+    'try',
+    'macro_rules',
+    'union',
     "'static",
-    "dyn",
+    'dyn',
 ];
 
-const illegalChars = ".!@#$%^&*()-+=\\][{}'\";?";
-const numberChars = "0123456789";
+const illegalChars = '.!@#$%^&*()-+=\\][{}\'";?';
+const numberChars = '0123456789';
 
 export function validRustIdentifier(key: string): string {
     const output = removeDisallowedChars(snakeCase(key), illegalChars);
@@ -118,7 +118,7 @@ export function validRustName(name: string): string {
     return output;
 }
 
-export const tmpDir = path.resolve(__dirname, "../.temp");
+export const tmpDir = path.resolve(__dirname, '../.temp');
 
 export function outputIsOptionType(
     schema: Schema,
@@ -132,21 +132,21 @@ export function getTypeName(schema: Schema, context: GeneratorContext): string {
         return validRustName(schema.metadata.id);
     }
     if (context.discriminatorKey && context.discriminatorValue) {
-        const parts = context.instancePath.split("/");
+        const parts = context.instancePath.split('/');
         const name = validRustName(
-            `${parts.join("_")}_${context.discriminatorValue}`,
+            `${parts.join('_')}_${context.discriminatorValue}`,
         );
         return name;
     }
-    return validRustName(context.instancePath.split("/").join("_"));
+    return validRustName(context.instancePath.split('/').join('_'));
 }
 
 export function formatDescriptionComment(
     description: string,
-    leading = "",
+    leading = '',
 ): string {
     return description
-        .split("\n")
+        .split('\n')
         .map((line) => `${leading}/// ${line}`)
-        .join("\n");
+        .join('\n');
 }

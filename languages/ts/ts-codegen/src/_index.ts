@@ -11,16 +11,16 @@ import {
     RpcDefinition,
     type Schema,
     unflattenProcedures,
-} from "@arrirpc/codegen-utils";
-import { writeFileSync } from "fs";
-import prettier from "prettier";
+} from '@arrirpc/codegen-utils';
+import { writeFileSync } from 'fs';
+import prettier from 'prettier';
 
-import { tsAnyFromSchema } from "./any";
-import { tsArrayFromSchema } from "./array";
-import { CodegenContext, TsProperty } from "./common";
-import { tsTaggedUnionFromSchema } from "./discriminator";
-import { tsEnumFromSchema } from "./enum";
-import { tsObjectFromSchema } from "./object";
+import { tsAnyFromSchema } from './any';
+import { tsArrayFromSchema } from './array';
+import { CodegenContext, TsProperty } from './common';
+import { tsTaggedUnionFromSchema } from './discriminator';
+import { tsEnumFromSchema } from './enum';
+import { tsObjectFromSchema } from './object';
 import {
     tsBigIntFromSchema,
     tsBooleanFromSchema,
@@ -28,34 +28,34 @@ import {
     tsFloatFromSchema,
     tsIntFromSchema,
     tsStringFromSchema,
-} from "./primitives";
-import { tsRecordFromSchema } from "./record";
-import { tsRefFromSchema } from "./ref";
-import { RpcGenerator } from "./rpc";
-import { tsServiceFromDefinition } from "./service";
+} from './primitives';
+import { tsRecordFromSchema } from './record';
+import { tsRefFromSchema } from './ref';
+import { RpcGenerator } from './rpc';
+import { tsServiceFromDefinition } from './service';
 
-export * from "./common";
-export * from "./rpc";
+export * from './common';
+export * from './rpc';
 
 export interface TypescriptGeneratorOptions {
     clientName: string;
     outputFile: string;
     typePrefix?: string;
-    prettierOptions?: Omit<prettier.Config, "parser">;
+    prettierOptions?: Omit<prettier.Config, 'parser'>;
     /**
      * Override the default functions used for creating procedures
      */
-    rpcGenerators?: Record<RpcDefinition["transport"], RpcGenerator>;
+    rpcGenerators?: Record<RpcDefinition['transport'], RpcGenerator>;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
     (options: TypescriptGeneratorOptions) => ({
         run: async (def) => {
             if (!options.clientName) {
-                throw new Error("Name is requires");
+                throw new Error('Name is requires');
             }
             if (!options.outputFile) {
-                throw new Error("No output file specified");
+                throw new Error('No output file specified');
             }
             if (Object.keys(def.procedures).length <= 0) {
                 console.warn(
@@ -76,14 +76,14 @@ export async function createTypescriptClient(
     const types: string[] = [];
     const context: CodegenContext = {
         clientName: options.clientName,
-        typePrefix: options.typePrefix ?? "",
+        typePrefix: options.typePrefix ?? '',
         generatedTypes: [],
-        instancePath: "",
-        schemaPath: "",
-        discriminatorParent: "",
-        discriminatorKey: "",
-        discriminatorValue: "",
-        versionNumber: def.info?.version ?? "",
+        instancePath: '',
+        schemaPath: '',
+        discriminatorParent: '',
+        discriminatorKey: '',
+        discriminatorValue: '',
+        versionNumber: def.info?.version ?? '',
         usedFeatures: {
             sse: false,
             ws: false,
@@ -100,9 +100,9 @@ export async function createTypescriptClient(
             generatedTypes: context.generatedTypes,
             instancePath: `/${key}`,
             schemaPath: `/${key}`,
-            discriminatorParent: "",
-            discriminatorKey: "",
-            discriminatorValue: "",
+            discriminatorParent: '',
+            discriminatorKey: '',
+            discriminatorValue: '',
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
             rpcGenerators: context.rpcGenerators,
@@ -120,9 +120,9 @@ import {
     ArriEnumValidator,
     ArriModelValidator,
     arriRequest,
-    ${context.usedFeatures.sse ? "arriSseRequest," : ""}
-    ${context.usedFeatures.ws ? "arriWsRequest," : ""}
-    ${context.usedFeatures.sse ? "type EventSourceController," : ""}
+    ${context.usedFeatures.sse ? 'arriSseRequest,' : ''}
+    ${context.usedFeatures.ws ? 'arriWsRequest,' : ''}
+    ${context.usedFeatures.sse ? 'type EventSourceController,' : ''}
     INT8_MAX,
     INT8_MIN,
     INT16_MAX,
@@ -133,32 +133,32 @@ import {
     INT64_MIN,
     isObject,
     serializeString,
-    ${context.usedFeatures.sse ? "type SseOptions," : ""}
+    ${context.usedFeatures.sse ? 'type SseOptions,' : ''}
     UINT8_MAX,
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
-    ${context.usedFeatures.ws ? "type WsController," : ""}
-    ${context.usedFeatures.ws ? "type WsOptions," : ""}
+    ${context.usedFeatures.ws ? 'type WsController,' : ''}
+    ${context.usedFeatures.ws ? 'type WsOptions,' : ''}
 } from "@arrirpc/client";
 
 type HeaderMap = Record<string, string | undefined>;`;
     if (!mainService.content) {
         const result = `${imports}
         
-${types.join("\n")}`;
+${types.join('\n')}`;
         return await prettier.format(result, {
             ...options.prettierOptions,
-            parser: "typescript",
+            parser: 'typescript',
         });
     }
     const result = `${imports}
 ${mainService.content}
 
-${types.join("\n")}`;
+${types.join('\n')}`;
     return await prettier.format(result, {
         ...options.prettierOptions,
-        parser: "typescript",
+        parser: 'typescript',
     });
 }
 
@@ -168,30 +168,30 @@ export function tsTypeFromSchema(
 ): TsProperty {
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
-            case "string":
+            case 'string':
                 return tsStringFromSchema(schema, context);
-            case "boolean":
+            case 'boolean':
                 return tsBooleanFromSchema(schema, context);
-            case "timestamp":
+            case 'timestamp':
                 return tsDateFromSchema(schema, context);
-            case "float32":
-            case "float64":
+            case 'float32':
+            case 'float64':
                 return tsFloatFromSchema(schema, context);
-            case "int8":
-                return tsIntFromSchema(schema, "int8", context);
-            case "uint8":
-                return tsIntFromSchema(schema, "uint8", context);
-            case "int16":
-                return tsIntFromSchema(schema, "int16", context);
-            case "uint16":
-                return tsIntFromSchema(schema, "uint16", context);
-            case "int32":
-                return tsIntFromSchema(schema, "int32", context);
-            case "uint32":
-                return tsIntFromSchema(schema, "uint32", context);
-            case "int64":
+            case 'int8':
+                return tsIntFromSchema(schema, 'int8', context);
+            case 'uint8':
+                return tsIntFromSchema(schema, 'uint8', context);
+            case 'int16':
+                return tsIntFromSchema(schema, 'int16', context);
+            case 'uint16':
+                return tsIntFromSchema(schema, 'uint16', context);
+            case 'int32':
+                return tsIntFromSchema(schema, 'int32', context);
+            case 'uint32':
+                return tsIntFromSchema(schema, 'uint32', context);
+            case 'int64':
                 return tsBigIntFromSchema(schema, false, context);
-            case "uint64":
+            case 'uint64':
                 return tsBigIntFromSchema(schema, true, context);
         }
     }

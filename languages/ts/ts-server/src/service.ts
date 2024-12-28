@@ -1,6 +1,6 @@
-import { DefinitionMap } from "./app";
-import { HttpRpc, NamedHttpRpc, Rpc } from "./rpc";
-import { NamedWebsocketRpc, WebsocketRpc } from "./websocketRpc";
+import { DefinitionMap } from './app';
+import { HttpRpc, NamedHttpRpc, Rpc } from './rpc';
+import { NamedWebsocketRpc, WebsocketRpc } from './websocketRpc';
 
 export class ArriService {
     name: string;

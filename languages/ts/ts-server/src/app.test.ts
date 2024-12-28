@@ -1,28 +1,28 @@
-import { type AppDefinition } from "@arrirpc/codegen-utils";
-import { a } from "@arrirpc/schema";
-import { getHeaders } from "h3";
+import { type AppDefinition } from '@arrirpc/codegen-utils';
+import { a } from '@arrirpc/schema';
+import { getHeaders } from 'h3';
 
-import { ArriApp } from "./app";
-import { defineEventStreamRpc } from "./eventStreamRpc";
-import { defineMiddleware } from "./middleware";
-import { defineRpc } from "./rpc";
+import { ArriApp } from './app';
+import { defineEventStreamRpc } from './eventStreamRpc';
+import { defineMiddleware } from './middleware';
+import { defineRpc } from './rpc';
 
-it("creates valid app definition", () => {
+it('creates valid app definition', () => {
     const app = new ArriApp();
     const SayHelloParams = a.object(
         {
             name: a.string(),
         },
-        { id: "SayHelloParams" },
+        { id: 'SayHelloParams' },
     );
     const SayHelloResponse = a.object(
         {
             message: a.string(),
         },
-        { id: "SayHelloResponse" },
+        { id: 'SayHelloResponse' },
     );
     app.rpc(
-        "sayHello",
+        'sayHello',
         defineRpc({
             params: SayHelloParams,
             response: SayHelloResponse,
@@ -34,7 +34,7 @@ it("creates valid app definition", () => {
         }),
     );
     app.rpc(
-        "sayHelloStream",
+        'sayHelloStream',
         defineEventStreamRpc({
             params: SayHelloParams,
             response: SayHelloResponse,
@@ -51,21 +51,21 @@ it("creates valid app definition", () => {
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        schemaVersion: "0.0.7",
+        schemaVersion: '0.0.7',
         procedures: {
             sayHello: {
-                transport: "http",
-                method: "post",
-                path: "/say-hello",
-                params: "SayHelloParams",
-                response: "SayHelloResponse",
+                transport: 'http',
+                method: 'post',
+                path: '/say-hello',
+                params: 'SayHelloParams',
+                response: 'SayHelloResponse',
             },
             sayHelloStream: {
-                transport: "http",
-                method: "get",
-                path: "/say-hello-stream",
-                params: "SayHelloParams",
-                response: "SayHelloResponse",
+                transport: 'http',
+                method: 'get',
+                path: '/say-hello-stream',
+                params: 'SayHelloParams',
+                response: 'SayHelloResponse',
                 isEventStream: true,
             },
         },
@@ -79,7 +79,7 @@ it("creates valid app definition", () => {
     );
 });
 
-it("allows for H3 Utilities in App Hooks", () => {
+it('allows for H3 Utilities in App Hooks', () => {
     const app = new ArriApp({
         onRequest(event) {
             getHeaders(event);
@@ -100,7 +100,7 @@ it("allows for H3 Utilities in App Hooks", () => {
         }),
     );
     app.rpc(
-        "myRpc",
+        'myRpc',
         defineRpc({
             params: a.object({
                 id: a.string(),
@@ -116,8 +116,8 @@ it("allows for H3 Utilities in App Hooks", () => {
         }),
     );
     app.route({
-        path: "/some-route",
-        method: "get",
+        path: '/some-route',
+        method: 'get',
         handler(event) {
             getHeaders(event);
         },

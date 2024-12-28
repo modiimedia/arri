@@ -1,6 +1,6 @@
-import "@arrirpc/server";
+import '@arrirpc/server';
 
-declare module "@arrirpc/server" {
+declare module '@arrirpc/server' {
     interface ArriEventContext {
         foo?: string;
     }

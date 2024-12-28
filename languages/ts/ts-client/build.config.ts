@@ -1,16 +1,16 @@
-import { defineBuildConfig } from "unbuild";
+import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
-    entries: [{ input: "./src/_index", name: "index" }],
+    entries: [{ input: './src/_index', name: 'index' }],
     rollup: {
         emitCJS: true,
         dts: {
             respectExternal: true,
         },
     },
-    outDir: "dist",
+    outDir: 'dist',
     clean: true,
     declaration: true,
     failOnWarn: true,
-    externals: ["ofetch", "@arrirpc/schema"],
+    externals: ['ofetch', '@arrirpc/schema'],
 });

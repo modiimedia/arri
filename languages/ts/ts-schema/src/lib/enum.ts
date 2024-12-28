@@ -2,7 +2,7 @@ import {
     type ASchemaOptions,
     type AStringEnumSchema,
     SCHEMA_METADATA,
-} from "../schemas";
+} from '../schemas';
 
 export const stringEnum = enumerator;
 
@@ -42,13 +42,13 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     paramA: TValues | string,
     paramB?: ASchemaOptions | TValues,
 ): AStringEnumSchema<TValues> {
-    const isIdShorthand = typeof paramA === "string";
+    const isIdShorthand = typeof paramA === 'string';
     const enumVal = isIdShorthand ? (paramB as TValues) : paramA;
     const meta = isIdShorthand
         ? { id: paramA }
         : (paramB as ASchemaOptions | undefined);
     const isType = (input: unknown): input is TKeys => {
-        if (typeof input !== "string") {
+        if (typeof input !== 'string') {
             return false;
         }
         for (const val of enumVal) {
@@ -65,7 +65,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
             description: meta?.description,
             isDeprecated: meta?.isDeprecated,
             [SCHEMA_METADATA]: {
-                output: paramA[0] ?? ("" as any),
+                output: paramA[0] ?? ('' as any),
                 parse(input, context) {
                     if (isType(input)) {
                         return input;
@@ -76,7 +76,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                         message: `Error at ${
                             context.instancePath
                         }. Invalid enum value. Expected one of the following values: [${enumVal.join(
-                            ", ",
+                            ', ',
                         )}]`,
                     });
                     return undefined;
@@ -91,7 +91,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                         message: `Error at ${
                             context.instancePath
                         }. Invalid enum value. Expected one of the following values: [${enumVal.join(
-                            ", ",
+                            ', ',
                         )}]`,
                     });
                     return undefined;

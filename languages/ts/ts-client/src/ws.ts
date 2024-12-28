@@ -1,11 +1,11 @@
-import { EventSourcePlusOptions } from "event-source-plus";
-import NodeWebsocket from "ws";
+import { EventSourcePlusOptions } from 'event-source-plus';
+import NodeWebsocket from 'ws';
 
-import { ArriErrorInstance } from "./errors";
-import { getHeaders } from "./utils";
+import { ArriErrorInstance } from './errors';
+import { getHeaders } from './utils';
 
 function isBrowser() {
-    return typeof window !== "undefined";
+    return typeof window !== 'undefined';
 }
 
 interface WsControllerOptions<TParams, TResponse> {
@@ -30,7 +30,7 @@ export interface WsOptions<TResponse> {
 
 interface ArriWsRequestOptions<TParams = any, TResponse = any> {
     url: string;
-    headers?: EventSourcePlusOptions["headers"];
+    headers?: EventSourcePlusOptions['headers'];
     params?: TParams;
     responseFromJson: (input: Record<string, unknown>) => TResponse;
     responseFromString: (input: string) => TResponse;
@@ -60,23 +60,23 @@ export async function arriWsRequest<
     retryCount = 0,
 ): Promise<WsController<TParams, TResponse>> {
     let url = opts.url
-        .replace("http://", "ws://")
-        .replace("https://", "wss://");
+        .replace('http://', 'ws://')
+        .replace('https://', 'wss://');
     const headers = await getHeaders(opts.headers);
     if (headers) {
-        if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
+        if (opts.clientVersion) headers['client-version'] = opts.clientVersion;
         const queryParts: string[] = [];
         for (const key of Object.keys(headers)) {
             queryParts.push(`${key}=${headers[key]}`);
         }
-        url += `?${queryParts.join("&")}`;
+        url += `?${queryParts.join('&')}`;
     }
     try {
         const controller = new WsController<TParams, TResponse>({
             url,
             responseFromJson: opts.responseFromJson,
             responseFromString: opts.responseFromString,
-            serializer: opts.serializer ?? ((_) => ""),
+            serializer: opts.serializer ?? ((_) => ''),
             onOpen: opts.onOpen,
             onClose: opts.onClose,
             onMessage: opts.onMessage,
@@ -132,8 +132,8 @@ export class WsController<TParams, TResponse> {
             this.onConnectionError?.(
                 new ArriErrorInstance({
                     code:
-                        "errno" in event.error &&
-                        typeof event.error.errno === "number"
+                        'errno' in event.error &&
+                        typeof event.error.errno === 'number'
                             ? event.error.errno
                             : 0,
                     message:
@@ -164,12 +164,12 @@ export class WsController<TParams, TResponse> {
     }
 
     private _handleMessage(msg: MessageEvent) {
-        if (typeof msg.data !== "string") {
+        if (typeof msg.data !== 'string') {
             return;
         }
         const response = parsedWsResponse(msg.data);
         switch (response.event) {
-            case "error": {
+            case 'error': {
                 if (!this.onErrorMessage) {
                     return;
                 }
@@ -177,7 +177,7 @@ export class WsController<TParams, TResponse> {
                 this.onErrorMessage(err);
                 break;
             }
-            case "message": {
+            case 'message': {
                 if (!this.onMessage) {
                     return;
                 }
@@ -186,33 +186,33 @@ export class WsController<TParams, TResponse> {
                 break;
             }
             default:
-                console.warn("Invalid response from server", msg);
+                console.warn('Invalid response from server', msg);
                 break;
         }
     }
 }
 
 export function parsedWsResponse(input: string): {
-    event: "message" | "error" | "unknown";
+    event: 'message' | 'error' | 'unknown';
     data: string;
 } {
-    const lines = input.split("\n");
-    let event: "message" | "error" | "unknown" = "unknown";
-    let data = "";
+    const lines = input.split('\n');
+    let event: 'message' | 'error' | 'unknown' = 'unknown';
+    let data = '';
     for (const line of lines) {
         const trimmedLine = line.trim();
-        if (trimmedLine.startsWith("event: ")) {
+        if (trimmedLine.startsWith('event: ')) {
             switch (trimmedLine.substring(6).trim()) {
-                case "error":
-                    event = "error";
+                case 'error':
+                    event = 'error';
                     break;
-                case "message":
-                    event = "message";
+                case 'message':
+                    event = 'message';
                     break;
             }
             continue;
         }
-        if (trimmedLine.startsWith("data: ")) {
+        if (trimmedLine.startsWith('data: ')) {
             data = trimmedLine.substring(5).trim();
             continue;
         }

@@ -1,4 +1,4 @@
-import { defineConfig, servers } from "arri";
+import { defineConfig, servers } from 'arri';
 
 export default defineConfig({
     server: servers.tsServer(),

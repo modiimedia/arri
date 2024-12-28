@@ -1,15 +1,15 @@
-import type { Linter } from "eslint";
+import type { Linter } from 'eslint';
 
-import noAnonymousDiscriminator from "./no-anonymous-discriminator";
-import noAnonymousEnumerator from "./no-anonymous-enumerator";
-import noAnonymousObject from "./no-anonymous-object";
-import noAnonymousRecursive from "./no-anonymous-recursive";
+import noAnonymousDiscriminator from './no-anonymous-discriminator';
+import noAnonymousEnumerator from './no-anonymous-enumerator';
+import noAnonymousObject from './no-anonymous-object';
+import noAnonymousRecursive from './no-anonymous-recursive';
 
 export const rules = {
-    "no-anonymous-discriminator": noAnonymousDiscriminator,
-    "no-anonymous-enumerator": noAnonymousEnumerator,
-    "no-anonymous-object": noAnonymousObject,
-    "no-anonymous-recursive": noAnonymousRecursive,
+    'no-anonymous-discriminator': noAnonymousDiscriminator,
+    'no-anonymous-enumerator': noAnonymousEnumerator,
+    'no-anonymous-object': noAnonymousObject,
+    'no-anonymous-recursive': noAnonymousRecursive,
 } as const;
 
 export type RuleName = keyof typeof rules;

@@ -5,7 +5,7 @@ import {
     type SchemaFormEnum,
     type SchemaFormProperties,
     type SchemaFormValues,
-} from "@arrirpc/type-defs";
+} from '@arrirpc/type-defs';
 
 import {
     isJsonSchemaArray,
@@ -21,8 +21,8 @@ import {
     JsonSchemaRef,
     type JsonSchemaScalarType,
     type JsonSchemaType,
-} from "./models";
-export * from "./models";
+} from './models';
+export * from './models';
 
 export interface JsonSchemaContext {
     parentRefs: string[];
@@ -72,7 +72,7 @@ export function jsonSchemaEnumToJtdEnum(
 ): Schema {
     const enumTypes = input.anyOf.map((val) => val.type);
     const isNotStringEnum =
-        enumTypes.includes("integer") || enumTypes.includes("number");
+        enumTypes.includes('integer') || enumTypes.includes('number');
     if (isNotStringEnum) {
         console.error(
             `WARNING: Cannot convert non string enums. This key will be treated as an "any" by generated clients.`,
@@ -99,41 +99,41 @@ export function jsonSchemaScalarToJtdScalar(
         description: input.description,
     };
     switch (input.type) {
-        case "Date":
+        case 'Date':
             return {
-                type: "timestamp",
+                type: 'timestamp',
                 nullable: input.nullable,
                 metadata: meta,
             };
-        case "bigint":
-        case "integer":
+        case 'bigint':
+        case 'integer':
             return {
-                type: "int32",
+                type: 'int32',
                 nullable: input.nullable,
                 metadata: meta,
             };
-        case "number":
+        case 'number':
             return {
-                type: "float64",
+                type: 'float64',
                 nullable: input.nullable,
                 metadata: meta,
             };
-        case "boolean":
+        case 'boolean':
             return {
-                type: "boolean",
+                type: 'boolean',
                 nullable: input.nullable,
                 metadata: meta,
             };
-        case "string":
-            if (input.format === "date-time") {
+        case 'string':
+            if (input.format === 'date-time') {
                 return {
-                    type: "timestamp",
+                    type: 'timestamp',
                     nullable: input.nullable,
                     metadata: meta,
                 };
             }
             return {
-                type: "string",
+                type: 'string',
                 nullable: input.nullable,
                 metadata: meta,
             };
@@ -150,7 +150,7 @@ export function jsonSchemaObjectToJtdObject(
         properties: {},
         nullable: input.nullable,
         strict:
-            typeof input.additionalProperties === "boolean"
+            typeof input.additionalProperties === 'boolean'
                 ? !input.additionalProperties
                 : undefined,
         metadata: {
@@ -238,7 +238,7 @@ export function jsonSchemaRefToJtdRef(
     context: JsonSchemaContext,
 ): Schema {
     if (context.parentRefs.includes(input.$ref)) {
-        const parts = input.$ref.split("/");
+        const parts = input.$ref.split('/');
         const refId = parts[parts.length - 1];
         if (!refId) return {};
         return {
@@ -246,10 +246,10 @@ export function jsonSchemaRefToJtdRef(
             ref: refId,
         };
     }
-    const parts = input.$ref.split("/");
+    const parts = input.$ref.split('/');
     let subSchema = context.rootSchema ?? {};
     for (const part of parts) {
-        if (part === "#") continue;
+        if (part === '#') continue;
         if (!subSchema[part]) return {};
         subSchema = subSchema[part];
     }

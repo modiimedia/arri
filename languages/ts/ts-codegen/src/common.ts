@@ -3,9 +3,9 @@ import {
     removeDisallowedChars,
     Schema,
     stringStartsWithNumber,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
-import { RpcGenerator } from "./rpc";
+import { RpcGenerator } from './rpc';
 
 export interface TsProperty {
     typeName: string;
@@ -38,27 +38,27 @@ export interface CodegenContext {
     rpcGenerators: Record<string, RpcGenerator>;
 }
 
-export function getJsDocComment(metadata: Schema["metadata"]) {
+export function getJsDocComment(metadata: Schema['metadata']) {
     const descriptionParts: string[] = [];
 
     if (metadata?.description?.length) {
-        const parts = metadata.description.split("\n");
+        const parts = metadata.description.split('\n');
         for (const part of parts) {
             descriptionParts.push(`* ${part}`);
         }
     }
     if (metadata?.isDeprecated) {
-        descriptionParts.push("* @deprecated");
+        descriptionParts.push('* @deprecated');
     }
     if (descriptionParts.length === 0) {
-        return "";
+        return '';
     }
     return `/**
-${descriptionParts.join("\n")}
+${descriptionParts.join('\n')}
 */\n`;
 }
 
-const illegalChars = "!#^&*()-+=?/][{}|\\~`'\"";
+const illegalChars = '!#^&*()-+=?/][{}|\\~`\'"';
 
 export function validVarName(name: string): string {
     if (stringStartsWithNumber(name)) {
@@ -81,12 +81,12 @@ export function getTsTypeName(schema: Schema, context: CodegenContext): string {
     }
     const name = pascalCase(
         context.instancePath
-            .split("/")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("_"),
+            .split('/')
+            .join('_')
+            .split('[')
+            .join('_')
+            .split(']')
+            .join('_'),
         {
             normalize: true,
         },

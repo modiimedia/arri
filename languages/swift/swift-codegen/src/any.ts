@@ -1,20 +1,20 @@
-import { Schema } from "@arrirpc/codegen-utils";
+import { Schema } from '@arrirpc/codegen-utils';
 
-import { GeneratorContext, isNullableType, SwiftProperty } from "./_common";
+import { GeneratorContext, isNullableType, SwiftProperty } from './_common';
 
 export function swiftAnyFromSchema(
     schema: Schema,
     context: GeneratorContext,
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
-    let defaultValue = "JSON()";
+    let defaultValue = 'JSON()';
     if (schema.nullable) {
         defaultValue = 'JSON(parseJSON: "null")';
     } else if (context.isOptional) {
-        defaultValue = "";
+        defaultValue = '';
     }
     return {
-        typeName: context.isOptional ? "JSON?" : "JSON",
+        typeName: context.isOptional ? 'JSON?' : 'JSON',
         defaultValue: defaultValue,
         isNullable,
         canBeQueryString: false,
@@ -36,6 +36,6 @@ export function swiftAnyFromSchema(
         toQueryPartTemplate(_, __, ___) {
             return `        print("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

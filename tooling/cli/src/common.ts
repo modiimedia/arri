@@ -1,9 +1,9 @@
-import { a, ValidationError } from "@arrirpc/schema";
-import { createConsola } from "consola";
-import { ofetch } from "ofetch";
-import path from "pathe";
+import { a, ValidationError } from '@arrirpc/schema';
+import { createConsola } from 'consola';
+import { ofetch } from 'ofetch';
+import path from 'pathe';
 
-export const logger = createConsola().withTag("arri");
+export const logger = createConsola().withTag('arri');
 
 export function isInsideDir(dir: string, parentDir: string) {
     if (path.resolve(dir).startsWith(path.resolve(parentDir))) {
@@ -13,13 +13,13 @@ export function isInsideDir(dir: string, parentDir: string) {
 }
 
 export async function getArriPackageMetadata() {
-    const npmPackageResponse = await ofetch("https://registry.npmjs.com/arri");
+    const npmPackageResponse = await ofetch('https://registry.npmjs.com/arri');
     const arriInfo = a.safeParse(NpmRegistryPackage, npmPackageResponse);
     if (!arriInfo.success) {
         const errors = a.errors(NpmRegistryPackage, npmPackageResponse);
         console.warn(errors);
         throw new ValidationError({
-            message: "Arri parsing response from registry",
+            message: 'Arri parsing response from registry',
             errors,
         });
     }
@@ -61,7 +61,7 @@ const NpmRegistryPackage = a.object({
     _rev: a.string(),
     name: a.string(),
     description: a.string(),
-    "dist-tags": a.record(a.string()),
+    'dist-tags': a.record(a.string()),
     versions: a.record(NpmPackageVersion),
     time: a.record(a.string()),
     maintainers: a.array(

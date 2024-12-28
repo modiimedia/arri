@@ -1,4 +1,4 @@
-import { a } from "../_index";
+import { a } from '../_index';
 
 interface BinaryTree {
     left: BinaryTree | null;
@@ -11,16 +11,16 @@ const BinaryTree = a.recursive<BinaryTree>(
             right: a.nullable(self),
         }),
     {
-        id: "BinaryTree",
+        id: 'BinaryTree',
     },
 );
 
 type RecursiveUnion =
-    | { type: "CHILD"; data: RecursiveUnion }
-    | { type: "CHILDREN"; data: RecursiveUnion[] }
-    | { type: "TEXT"; data: string }
+    | { type: 'CHILD'; data: RecursiveUnion }
+    | { type: 'CHILDREN'; data: RecursiveUnion[] }
+    | { type: 'TEXT'; data: string }
     | {
-          type: "SHAPE";
+          type: 'SHAPE';
           data: {
               width: number;
               height: number;
@@ -29,7 +29,7 @@ type RecursiveUnion =
       };
 const RecursiveUnion = a.recursive<RecursiveUnion>(
     (self) =>
-        a.discriminator("type", {
+        a.discriminator('type', {
             CHILD: a.object({
                 data: self,
             }),
@@ -48,15 +48,15 @@ const RecursiveUnion = a.recursive<RecursiveUnion>(
             }),
         }),
     {
-        id: "RecursiveUnion",
+        id: 'RecursiveUnion',
     },
 );
-test("type inference", () => {
+test('type inference', () => {
     // TODO: figure out how to infer recursive type without needing to pass in type parameter
 });
 
-describe("validation", () => {
-    test("Binary Tree", () => {
+describe('validation', () => {
+    test('Binary Tree', () => {
         const input: BinaryTree = {
             left: {
                 left: {
@@ -92,34 +92,34 @@ describe("validation", () => {
         };
         expect(a.validate(BinaryTree, input2)).toBe(false);
     });
-    test("Recursive Union", () => {
+    test('Recursive Union', () => {
         const input: RecursiveUnion = {
-            type: "CHILDREN",
+            type: 'CHILDREN',
             data: [
                 {
-                    type: "CHILD",
+                    type: 'CHILD',
                     data: {
-                        type: "TEXT",
-                        data: "Hello world",
+                        type: 'TEXT',
+                        data: 'Hello world',
                     },
                 },
                 {
-                    type: "SHAPE",
+                    type: 'SHAPE',
                     data: {
                         width: 1,
                         height: 1,
-                        color: "red",
+                        color: 'red',
                     },
                 },
                 {
-                    type: "CHILDREN",
+                    type: 'CHILDREN',
                     data: [
                         {
-                            type: "SHAPE",
+                            type: 'SHAPE',
                             data: {
                                 width: 2,
                                 height: 2,
-                                color: "blue",
+                                color: 'blue',
                             },
                         },
                     ],
@@ -128,32 +128,32 @@ describe("validation", () => {
         };
         expect(a.validate(RecursiveUnion, input)).toBe(true);
         const badInput = {
-            type: "CHILDREN",
+            type: 'CHILDREN',
             data: [
                 {
-                    type: "CHILD",
+                    type: 'CHILD',
                     data: {
-                        type: "TEXT",
-                        data: "Hello world",
+                        type: 'TEXT',
+                        data: 'Hello world',
                     },
                 },
                 {
-                    type: "SHAPE",
+                    type: 'SHAPE',
                     data: {
                         width: 1,
                         height: 1,
-                        color: "red",
+                        color: 'red',
                     },
                 },
                 {
-                    type: "CHILDREN",
+                    type: 'CHILDREN',
                     data: [
                         {
-                            type: "BLOCK",
+                            type: 'BLOCK',
                             data: {
                                 width: 2,
                                 height: 2,
-                                color: "blue",
+                                color: 'blue',
                             },
                         },
                     ],
@@ -164,8 +164,8 @@ describe("validation", () => {
     });
 });
 
-describe("parsing", () => {
-    test("Binary Tree", () => {
+describe('parsing', () => {
+    test('Binary Tree', () => {
         const input: BinaryTree = {
             left: {
                 left: {
@@ -205,14 +205,14 @@ describe("parsing", () => {
     });
 });
 
-test("overloaded functions produce the same result", () => {
+test('overloaded functions produce the same result', () => {
     const SchemaA = a.recursive<BinaryTree>(
         (self) => a.object({ left: a.nullable(self), right: a.nullable(self) }),
         {
-            id: "BTree",
+            id: 'BTree',
         },
     );
-    const SchemaB = a.recursive<BinaryTree>("BTree", (self) =>
+    const SchemaB = a.recursive<BinaryTree>('BTree', (self) =>
         a.object({ left: a.nullable(self), right: a.nullable(self) }),
     );
     expect(JSON.stringify(SchemaA)).toEqual(JSON.stringify(SchemaB));

@@ -1,19 +1,19 @@
-import { SchemaFormType } from "@arrirpc/codegen-utils";
+import { SchemaFormType } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
     outputIsOptionType,
     RustProperty,
     validRustIdentifier,
-} from "./_common";
+} from './_common';
 
 export function rustStringFromSchema(
     schema: SchemaFormType,
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const defaultValue = isOptionType ? "None" : '"".to_string()';
-    const typeName = isOptionType ? "Option<String>" : "String";
+    const defaultValue = isOptionType ? 'None' : '"".to_string()';
+    const typeName = isOptionType ? 'Option<String>' : 'String';
     return {
         typeName,
         defaultValue,
@@ -56,7 +56,7 @@ export function rustStringFromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -65,8 +65,8 @@ export function rustBooleanFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const defaultValue = isOptionType ? "None" : "false";
-    const typeName = isOptionType ? "Option<bool>" : "bool";
+    const defaultValue = isOptionType ? 'None' : 'false';
+    const typeName = isOptionType ? 'Option<bool>' : 'bool';
     return {
         typeName,
         defaultValue,
@@ -109,7 +109,7 @@ export function rustBooleanFromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -119,9 +119,9 @@ export function rustTimestampFromSchema(
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
-        ? "Option<DateTime<FixedOffset>>"
-        : "DateTime<FixedOffset>";
-    const defaultValue = isOptionType ? "None" : "DateTime::default()";
+        ? 'Option<DateTime<FixedOffset>>'
+        : 'DateTime<FixedOffset>';
+    const defaultValue = isOptionType ? 'None' : 'DateTime::default()';
     return {
         typeName,
         defaultValue,
@@ -181,7 +181,7 @@ export function rustTimestampFromSchema(
                 serialize_date_time(${input}, false)
             ))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -190,8 +190,8 @@ export function rustF32FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? `Option<f32>` : "f32";
-    const defaultValue = isOptionType ? `None` : "0.0";
+    const typeName = isOptionType ? `Option<f32>` : 'f32';
+    const defaultValue = isOptionType ? `None` : '0.0';
     return {
         typeName,
         defaultValue,
@@ -239,7 +239,7 @@ export function rustF32FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -248,8 +248,8 @@ export function rustF64FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? `Option<f64>` : "f64";
-    const defaultValue = isOptionType ? `None` : "0.0";
+    const typeName = isOptionType ? `Option<f64>` : 'f64';
+    const defaultValue = isOptionType ? `None` : '0.0';
     return {
         typeName,
         defaultValue,
@@ -297,7 +297,7 @@ export function rustF64FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -306,8 +306,8 @@ export function rustI8FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? `Option<i8>` : "i8";
-    const defaultValue = isOptionType ? `None` : "0";
+    const typeName = isOptionType ? `Option<i8>` : 'i8';
+    const defaultValue = isOptionType ? `None` : '0';
     return {
         typeName,
         defaultValue,
@@ -358,7 +358,7 @@ export function rustI8FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -367,8 +367,8 @@ export function rustU8FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<u8>" : "u8";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<u8>' : 'u8';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -419,7 +419,7 @@ export function rustU8FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -428,8 +428,8 @@ export function rustI16FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<i16>" : "i16";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<i16>' : 'i16';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -480,7 +480,7 @@ export function rustI16FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -489,8 +489,8 @@ export function rustU16FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<u16>" : "u16";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<u16>' : 'u16';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -541,7 +541,7 @@ export function rustU16FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -550,8 +550,8 @@ export function rustI32FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<i32>" : "i32";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<i32>' : 'i32';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -602,7 +602,7 @@ export function rustI32FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -611,8 +611,8 @@ export function rustU32FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<u32>" : "u32";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<u32>' : 'u32';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -663,7 +663,7 @@ export function rustU32FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -672,8 +672,8 @@ export function rustI64FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<i64>" : "i64";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<i64>' : 'i64';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -721,7 +721,7 @@ export function rustI64FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -730,8 +730,8 @@ export function rustU64FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? "Option<u64>" : "u64";
-    const defaultValue = isOptionType ? "None" : "0";
+    const typeName = isOptionType ? 'Option<u64>' : 'u64';
+    const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
         defaultValue,
@@ -779,6 +779,6 @@ export function rustU64FromSchema(
             }
             return `${target}.push(format!("${key}={}", ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }

@@ -1,7 +1,7 @@
-import { type Generator } from "@arrirpc/codegen-utils";
-import { ArgsDef } from "citty";
+import { type Generator } from '@arrirpc/codegen-utils';
+import { ArgsDef } from 'citty';
 
-import { isServerConfig, ServerConfig } from "./serverConfigs/_config";
+import { isServerConfig, ServerConfig } from './serverConfigs/_config';
 
 export interface ArriConfig<
     TDevArgs extends ArgsDef | undefined = any,
@@ -12,18 +12,18 @@ export interface ArriConfig<
 }
 
 export function isArriConfig(input: unknown): input is ArriConfig {
-    if (typeof input !== "object" || input === null) {
+    if (typeof input !== 'object' || input === null) {
         return false;
     }
-    if ("server" in input) {
+    if ('server' in input) {
         if (
-            typeof input.server !== "undefined" &&
+            typeof input.server !== 'undefined' &&
             !isServerConfig(input.server)
         ) {
             return false;
         }
     }
-    return "generators" in input && Array.isArray(input.generators);
+    return 'generators' in input && Array.isArray(input.generators);
 }
 
 export function defineConfig(config: ArriConfig): ArriConfig {

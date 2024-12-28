@@ -1,10 +1,10 @@
-import { RuleTester } from "eslint";
+import { RuleTester } from 'eslint';
 
-import noAnonymousRecursive from "./no-anonymous-recursive";
+import noAnonymousRecursive from './no-anonymous-recursive';
 
 const tester = new RuleTester();
 
-tester.run("no-anonymous-recursive", noAnonymousRecursive, {
+tester.run('no-anonymous-recursive', noAnonymousRecursive, {
     valid: [
         {
             code: `
@@ -65,13 +65,13 @@ const RecursiveTypeA = a.recursive(
     )`,
             errors: [
                 {
-                    message: "recursive schemas must specify an id",
+                    message: 'recursive schemas must specify an id',
                 },
                 {
-                    message: "recursive schemas must specify an id",
+                    message: 'recursive schemas must specify an id',
                 },
                 {
-                    message: "recursive schemas must specify an id",
+                    message: 'recursive schemas must specify an id',
                 },
             ],
         },

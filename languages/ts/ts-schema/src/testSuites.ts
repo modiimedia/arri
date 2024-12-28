@@ -1,5 +1,5 @@
-import { a } from "./_index";
-import { type ASchema } from "./schemas";
+import { a } from './_index';
+import { type ASchema } from './schemas';
 
 const User = a.object({
     id: a.string(),
@@ -12,7 +12,7 @@ const User = a.object({
     ),
 });
 
-const PostComment = a.discriminator("commentType", {
+const PostComment = a.discriminator('commentType', {
     TEXT: a.object({
         userId: a.string(),
         user: User,
@@ -35,7 +35,7 @@ const Post = a.object({
     isFeatured: a.boolean(),
     userId: a.string(),
     user: User,
-    type: a.stringEnum(["text", "image", "video"]),
+    type: a.stringEnum(['text', 'image', 'video']),
     title: a.string(),
     content: a.string(),
     tags: a.optional(a.array(a.string())),
@@ -69,14 +69,14 @@ const RecursiveObject = a.recursive<RecursiveObject>((self) =>
 );
 
 export type RecursiveUnion =
-    | { type: "CHILD"; data: RecursiveUnion }
-    | { type: "CHILDREN"; data: RecursiveUnion[] }
-    | { type: "TEXT"; data: string }
-    | { type: "SHAPE"; data: { width: number; height: number } };
+    | { type: 'CHILD'; data: RecursiveUnion }
+    | { type: 'CHILDREN'; data: RecursiveUnion[] }
+    | { type: 'TEXT'; data: string }
+    | { type: 'SHAPE'; data: { width: number; height: number } };
 export const RecursiveUnion = a.recursive<RecursiveUnion>(
-    "RecursiveUnion",
+    'RecursiveUnion',
     (self) =>
-        a.discriminator("type", {
+        a.discriminator('type', {
             CHILD: a.object({ data: self }),
             CHILDREN: a.object({
                 data: a.array(self),
@@ -105,68 +105,68 @@ export const validationTestSuites: Record<
     any: {
         schema: a.any(),
         goodInputs: [
-            "hello world",
+            'hello world',
             true,
             false,
             1,
             1.5,
             -100.5,
             [1, 2],
-            { a: { b: { c: "" } } },
+            { a: { b: { c: '' } } },
         ],
         badInputs: [],
     },
     string: {
         schema: a.string(),
         goodInputs: [
-            "hello world",
+            'hello world',
             `Hello "world"`,
             `Hello\nworld`,
             `Hello\tworld`,
         ],
         badInputs: [1, false, null, {}],
     },
-    "nullable string": {
+    'nullable string': {
         schema: a.nullable(a.string()),
-        goodInputs: ["hello world", null],
-        badInputs: [1, false, ["foo", "bar"], { foo: "foo" }],
+        goodInputs: ['hello world', null],
+        badInputs: [1, false, ['foo', 'bar'], { foo: 'foo' }],
     },
     boolean: {
         schema: a.boolean(),
         goodInputs: [true, false],
-        badInputs: [null, "hello world", {}, [true, false]],
+        badInputs: [null, 'hello world', {}, [true, false]],
     },
-    "nullable boolean": {
+    'nullable boolean': {
         schema: a.nullable(a.boolean()),
         goodInputs: [true, false, null],
-        badInputs: ["hello world", {}, [true, false, null]],
+        badInputs: ['hello world', {}, [true, false, null]],
     },
     float64: {
         schema: a.float64(),
         goodInputs: [131431.4134, -141341.1341],
-        badInputs: ["hello world", true, null],
+        badInputs: ['hello world', true, null],
     },
-    "nullable float64": {
+    'nullable float64': {
         schema: a.nullable(a.float64()),
         goodInputs: [null, 113511.5, -1351351.05],
-        badInputs: ["hello world", true],
+        badInputs: ['hello world', true],
     },
     float32: {
         schema: a.float64(),
         goodInputs: [1491.13941, -134918.134],
-        badInputs: ["hello world", true, null],
+        badInputs: ['hello world', true, null],
     },
-    "nullable float32": {
+    'nullable float32': {
         schema: a.nullable(a.float32()),
         goodInputs: [1351.5, -1151.315, null],
-        badInputs: ["hello world", true],
+        badInputs: ['hello world', true],
     },
     int64: {
         schema: a.int64(),
         goodInputs: [
-            BigInt("1"),
-            BigInt("9223372036854775807"),
-            BigInt("-9223372036854775808"),
+            BigInt('1'),
+            BigInt('9223372036854775807'),
+            BigInt('-9223372036854775808'),
         ],
         badInputs: [
             // BigInt("9223372036854775808"),
@@ -178,64 +178,64 @@ export const validationTestSuites: Record<
     int32: {
         schema: a.int32(),
         goodInputs: [491451, -13411],
-        badInputs: [999999999999999, -999999999999999, 199.5, "hello world"],
+        badInputs: [999999999999999, -999999999999999, 199.5, 'hello world'],
     },
     uint32: {
         schema: a.uint32(),
         goodInputs: [4815141, 100],
-        badInputs: [-1, 100.5, 1399999999999999, "hello world"],
+        badInputs: [-1, 100.5, 1399999999999999, 'hello world'],
     },
     int16: {
         schema: a.int16(),
         goodInputs: [-32768, 32767],
-        badInputs: ["hello world", null, {}, [], -32769, 32768, 1.5],
+        badInputs: ['hello world', null, {}, [], -32769, 32768, 1.5],
     },
     uint16: {
         schema: a.uint16(),
         goodInputs: [0, 65535],
-        badInputs: ["hello world", null, {}, [], -1, 65536, 1.5],
+        badInputs: ['hello world', null, {}, [], -1, 65536, 1.5],
     },
-    "nullable int16": {
+    'nullable int16': {
         schema: a.nullable(a.int16()),
         goodInputs: [null, -32768, 32767],
-        badInputs: [undefined, "hello world", 1.5],
+        badInputs: [undefined, 'hello world', 1.5],
     },
     int8: {
         schema: a.int8(),
         goodInputs: [-128, 127],
-        badInputs: [null, -129, 128, "hello world"],
+        badInputs: [null, -129, 128, 'hello world'],
     },
     uint8: {
         schema: a.uint8(),
         goodInputs: [0, 255],
-        badInputs: [null, -1, 1.5, 256, "hello world"],
+        badInputs: [null, -1, 1.5, 256, 'hello world'],
     },
-    "nullable uint8": {
+    'nullable uint8': {
         schema: a.nullable(a.uint8()),
         goodInputs: [0, 255, null],
-        badInputs: [undefined, -1, 1.5, "hello world"],
+        badInputs: [undefined, -1, 1.5, 'hello world'],
     },
     enum: {
-        schema: a.stringEnum(["A", "B", "C"]),
-        goodInputs: ["A", "B", "C"],
-        badInputs: ["a", "b", "c", "hello world", null, false, true, {}, []],
+        schema: a.stringEnum(['A', 'B', 'C']),
+        goodInputs: ['A', 'B', 'C'],
+        badInputs: ['a', 'b', 'c', 'hello world', null, false, true, {}, []],
     },
-    "nullable enum": {
-        schema: a.nullable(a.stringEnum(["A", "B", "C"])),
-        goodInputs: ["A", "B", "C", null],
-        badInputs: ["a", false, true, ["A", null]],
+    'nullable enum': {
+        schema: a.nullable(a.stringEnum(['A', 'B', 'C'])),
+        goodInputs: ['A', 'B', 'C', null],
+        badInputs: ['a', false, true, ['A', null]],
     },
     timestamp: {
         schema: a.timestamp(),
         goodInputs: [new Date()],
-        badInputs: [null, true, false, {}, "hello world"],
+        badInputs: [null, true, false, {}, 'hello world'],
     },
-    "nullable timestamp": {
+    'nullable timestamp': {
         schema: a.nullable(a.timestamp()),
         goodInputs: [new Date(), null],
-        badInputs: [true, false, {}, [], "hello world"],
+        badInputs: [true, false, {}, [], 'hello world'],
     },
-    "simple object": {
+    'simple object': {
         schema: a.object({
             id: a.string(),
             createdAt: a.timestamp(),
@@ -243,83 +243,83 @@ export const validationTestSuites: Record<
             isActive: a.boolean(),
         }),
         goodInputs: [
-            { id: "", createdAt: new Date(), count: 1, isActive: false },
+            { id: '', createdAt: new Date(), count: 1, isActive: false },
         ],
         badInputs: [
-            { id: "", createdAt: null, count: 1, isActive: true },
-            "hello world",
+            { id: '', createdAt: null, count: 1, isActive: true },
+            'hello world',
             null,
             [],
         ],
     },
-    "nullable object": {
+    'nullable object': {
         schema: a.nullable(
             a.object({
                 id: a.string(),
                 createdAt: a.timestamp(),
             }),
         ),
-        goodInputs: [{ id: "", createdAt: new Date() }, null],
+        goodInputs: [{ id: '', createdAt: new Date() }, null],
         badInputs: [true, false, { id: null, createdAt: null }],
     },
-    "complex object": {
+    'complex object': {
         schema: Post,
         goodInputs: [
             {
-                id: "1",
+                id: '1',
                 isFeatured: false,
-                userId: "1234",
+                userId: '1234',
                 user: {
-                    id: "2",
+                    id: '2',
                     photo: {
-                        url: "https://source.unsplash.com",
+                        url: 'https://source.unsplash.com',
                         width: null,
                         height: null,
                     },
                 },
-                type: "text",
-                title: "Hello World",
-                content: "Hello World",
+                type: 'text',
+                title: 'Hello World',
+                content: 'Hello World',
                 tags: undefined,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 numComments: 134,
                 numLikes: 1351351,
                 unknownField: {
-                    blah: "blah",
+                    blah: 'blah',
                     blahBlah: {
                         blahBlahBlah: null,
                     },
                 },
                 comments: [
                     {
-                        commentType: "TEXT",
-                        userId: "2",
+                        commentType: 'TEXT',
+                        userId: '2',
                         user: {
-                            id: "2",
+                            id: '2',
                             photo: undefined,
                         },
-                        text: "You suck",
+                        text: 'You suck',
                     },
                     {
-                        commentType: "IMAGE",
-                        userId: "3",
+                        commentType: 'IMAGE',
+                        userId: '3',
                         user: {
-                            id: "3",
+                            id: '3',
                             photo: undefined,
                         },
-                        imageUrl: "",
+                        imageUrl: '',
                     },
                 ],
                 numArray: [1, 2, 3],
-                stringArray: ["a", "b", "c"],
+                stringArray: ['a', 'b', 'c'],
                 metadata: {
                     hello: {
-                        key: "name",
+                        key: 'name',
                         createdAt: new Date(),
                     },
                     world: {
-                        key: "name",
+                        key: 'name',
                         createdAt: new Date(),
                     },
                 },
@@ -327,67 +327,67 @@ export const validationTestSuites: Record<
         ] satisfies Post[],
         badInputs: [
             {
-                id: "1",
+                id: '1',
                 isFeatured: false,
-                userId: "1234",
+                userId: '1234',
                 user: {
-                    id: "2",
+                    id: '2',
                     photo: {
-                        url: "https://source.unsplash.com",
+                        url: 'https://source.unsplash.com',
                         width: null,
                         height: null,
                     },
                 },
-                type: "text",
-                title: "Hello World",
-                content: "Hello World",
+                type: 'text',
+                title: 'Hello World',
+                content: 'Hello World',
                 tags: undefined,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 numComments: 134,
                 numLikes: 1351351,
                 unknownField: {
-                    blah: "blah",
+                    blah: 'blah',
                     blahBlah: {
                         blahBlahBlah: null,
                     },
                 },
                 comments: [
                     {
-                        commentType: "TEXT",
-                        userId: "2",
+                        commentType: 'TEXT',
+                        userId: '2',
                         user: {
-                            id: "2",
+                            id: '2',
                             photo: undefined,
                         },
-                        text: "You suck",
+                        text: 'You suck',
                     },
                     {
-                        commentType: "IMAGE",
-                        userId: "3",
+                        commentType: 'IMAGE',
+                        userId: '3',
                         user: {
-                            id: "3",
+                            id: '3',
                             photo: undefined,
                         },
-                        imageUrl: "",
+                        imageUrl: '',
                     },
                 ],
                 numArray: [1, 2, 3],
-                stringArray: ["a", "b", 0],
+                stringArray: ['a', 'b', 0],
                 metadata: {
                     hello: {
-                        key: "name",
+                        key: 'name',
                         createdAt: new Date(),
                     },
                     world: {
-                        key: "name",
+                        key: 'name',
                         createdAt: new Date(),
                     },
                 },
             },
         ],
     },
-    "object with nullable fields": {
+    'object with nullable fields': {
         schema: a.object({
             id: a.nullable(a.string()),
             createdAt: a.nullable(a.timestamp()),
@@ -408,14 +408,14 @@ export const validationTestSuites: Record<
                 unknown: null,
             },
             {
-                id: "",
+                id: '',
                 createdAt: new Date(),
                 count: 0,
                 isActive: true,
                 tags: [],
                 metadata: {
-                    a: "a",
-                    b: "b",
+                    a: 'a',
+                    b: 'b',
                 },
                 unknown: {
                     blah: true,
@@ -423,70 +423,70 @@ export const validationTestSuites: Record<
             },
         ],
         badInputs: [
-            "hello world",
+            'hello world',
             {
                 id: null,
-                createdAt: "hello world",
+                createdAt: 'hello world',
                 count: null,
                 isActive: null,
                 metadata: { a: false },
             },
         ],
     },
-    "object with optional fields": {
+    'object with optional fields': {
         schema: a.partial(
             a.object({
                 id: a.string(),
                 createdAt: a.timestamp(),
-                type: a.stringEnum(["a", "b"]),
+                type: a.stringEnum(['a', 'b']),
             }),
         ),
         goodInputs: [
             {
-                id: "",
+                id: '',
                 createdAt: new Date(),
-                type: "a",
+                type: 'a',
             },
-            { id: "" },
+            { id: '' },
             {},
         ],
         badInputs: [
             { id: 1, createdAt: null },
             null,
-            "hello world",
-            { id: "", createdAt: new Date(), type: "" },
+            'hello world',
+            { id: '', createdAt: new Date(), type: '' },
         ],
     },
-    "array of strings": {
+    'array of strings': {
         schema: a.array(a.string()),
-        goodInputs: [["hello world", "goodbye world"], ["a", "b", "c"], []],
-        badInputs: [["hello world", true], [1, 2, 3], {}, true, false],
+        goodInputs: [['hello world', 'goodbye world'], ['a', 'b', 'c'], []],
+        badInputs: [['hello world', true], [1, 2, 3], {}, true, false],
     },
-    "array of nullable strings": {
+    'array of nullable strings': {
         schema: a.array(a.nullable(a.string())),
         goodInputs: [
-            [null, "hello world"],
+            [null, 'hello world'],
             [null, null, null],
-            ["hello", "goodbye"],
+            ['hello', 'goodbye'],
         ],
         badInputs: [
             [null, null, true],
-            ["hello world", false],
+            ['hello world', false],
             {},
-            "hello world",
+            'hello world',
         ],
     },
-    "nullable array of strings": {
+    'nullable array of strings': {
         schema: a.nullable(a.array(a.string())),
-        goodInputs: [null, ["hello world", "goodbye world"], []],
-        badInputs: [["hello world", null], "hello world", true, false, {}],
+        goodInputs: [null, ['hello world', 'goodbye world'], []],
+        badInputs: [['hello world', null], 'hello world', true, false, {}],
     },
-    "array of numbers": {
+    'array of numbers': {
         schema: a.array(a.number()),
         goodInputs: [[1, 2, 3.5], [-1, -100, 100.5], []],
-        badInputs: [["hello world"], null, false, true, [true]],
+        badInputs: [['hello world'], null, false, true, [true]],
     },
-    "array of objects": {
+    'array of objects': {
         schema: a.array(
             a.object({
                 a: a.string(),
@@ -497,11 +497,11 @@ export const validationTestSuites: Record<
                 }),
             }),
         ),
-        goodInputs: [[{ a: "", b: new Date(), c: { a: "", b: BigInt("0") } }]],
+        goodInputs: [[{ a: '', b: new Date(), c: { a: '', b: BigInt('0') } }]],
         badInputs: [[null, {}]],
     },
     discriminator: {
-        schema: a.discriminator("type", {
+        schema: a.discriminator('type', {
             CREATED: a.object({
                 itemId: a.string(),
                 createdAt: a.timestamp(),
@@ -519,17 +519,17 @@ export const validationTestSuites: Record<
             }),
         }),
         goodInputs: [
-            { type: "CREATED", itemId: "1", createdAt: new Date() },
+            { type: 'CREATED', itemId: '1', createdAt: new Date() },
             {
-                type: "DELETED",
-                itemId: "2",
+                type: 'DELETED',
+                itemId: '2',
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 deletedAt: new Date(),
             },
             {
-                type: "UPDATED",
-                itemId: "3",
+                type: 'UPDATED',
+                itemId: '3',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -537,16 +537,16 @@ export const validationTestSuites: Record<
         badInputs: [
             false,
             true,
-            { type: "CREATED", createdAt: "01/01/2001" },
-            { type: "MOVED", itemId: "1", createdAt: new Date() },
+            { type: 'CREATED', createdAt: '01/01/2001' },
+            { type: 'MOVED', itemId: '1', createdAt: new Date() },
         ],
     },
-    "record with boolean values": {
+    'record with boolean values': {
         schema: a.record(a.boolean()),
         goodInputs: [{ a: true, b: false, [`"C"`]: true }, {}],
-        badInputs: [{ a: true, b: true, c: "true" }, { a: "null" }, null],
+        badInputs: [{ a: true, b: true, c: 'true' }, { a: 'null' }, null],
     },
-    "record with objects": {
+    'record with objects': {
         schema: a.record(
             a.object({
                 name: a.string(),
@@ -560,19 +560,19 @@ export const validationTestSuites: Record<
         goodInputs: [
             {
                 a: {
-                    name: "",
+                    name: '',
                     count: 1,
                     date: new Date(),
                     subObject: {
-                        a: "",
+                        a: '',
                     },
                 },
                 b: {
-                    name: "John",
+                    name: 'John',
                     count: 100.5,
                     date: new Date(),
                     subObject: {
-                        a: "",
+                        a: '',
                     },
                 },
             },
@@ -581,17 +581,17 @@ export const validationTestSuites: Record<
             null,
             {
                 a: {
-                    name: "",
+                    name: '',
                     count: null,
                     date: new Date(),
                     subObject: {
-                        a: "",
+                        a: '',
                     },
                 },
             },
         ],
     },
-    "record with nullable objects": {
+    'record with nullable objects': {
         schema: a.record(
             a.nullable(
                 a.object({
@@ -601,27 +601,27 @@ export const validationTestSuites: Record<
             ),
         ),
         goodInputs: [
-            { a: { id: "", url: "" }, b: { id: "", url: "" } },
-            { a: null, b: { id: "", url: "" } },
+            { a: { id: '', url: '' }, b: { id: '', url: '' } },
+            { a: null, b: { id: '', url: '' } },
         ],
         badInputs: [
-            { a: { id: 1, url: "" }, b: { id: "", url: "" } },
+            { a: { id: 1, url: '' }, b: { id: '', url: '' } },
             true,
             null,
         ],
     },
-    "record of int64s": {
+    'record of int64s': {
         schema: a.record(a.int64()),
         goodInputs: [
             {
-                a: BigInt("999999999"),
-                b: BigInt("-9999"),
+                a: BigInt('999999999'),
+                b: BigInt('-9999'),
             },
         ],
         badInputs: [
             {
-                a: "hi",
-                b: BigInt("0"),
+                a: 'hi',
+                b: BigInt('0'),
             },
             {
                 a: null,
@@ -630,7 +630,7 @@ export const validationTestSuites: Record<
             true,
         ],
     },
-    "object with nested modifiers": {
+    'object with nested modifiers': {
         schema: a.object({
             id: a.string(),
             data: a.partial(
@@ -640,22 +640,22 @@ export const validationTestSuites: Record<
                         description: a.string(),
                         createdAt: a.timestamp(),
                     }),
-                    ["name", "createdAt"],
+                    ['name', 'createdAt'],
                 ),
             ),
         }),
         goodInputs: [
-            { id: "12345", data: {} },
-            { id: "12345", data: { name: "john", createdAt: new Date() } },
-            { id: "1", data: { createdAt: new Date() } },
-            { id: "2", data: { name: "" } },
+            { id: '12345', data: {} },
+            { id: '12345', data: { name: 'john', createdAt: new Date() } },
+            { id: '1', data: { createdAt: new Date() } },
+            { id: '2', data: { name: '' } },
         ],
         badInputs: [
             { id: 1, data: true },
-            { id: "1", data: { name: "", createdAt: 1 } },
+            { id: '1', data: { name: '', createdAt: 1 } },
         ],
     },
-    "object with int64 and uint64": {
+    'object with int64 and uint64': {
         schema: a.object({
             id: a.string(),
             count: a.uint64(),
@@ -663,22 +663,22 @@ export const validationTestSuites: Record<
         }),
         goodInputs: [
             {
-                id: "1",
-                count: BigInt("10000"),
-                limit: BigInt("-1000"),
+                id: '1',
+                count: BigInt('10000'),
+                limit: BigInt('-1000'),
             },
         ],
         badInputs: [
             {
-                id: "1",
+                id: '1',
                 count: -1,
                 limit: null,
             },
             null,
-            { id: "1" },
+            { id: '1' },
         ],
     },
-    "object with strict true": {
+    'object with strict true': {
         schema: a.object(
             {
                 id: a.string(),
@@ -688,27 +688,27 @@ export const validationTestSuites: Record<
         ),
         goodInputs: [
             {
-                id: "1",
-                name: "john",
+                id: '1',
+                name: 'john',
             },
         ],
         badInputs: [
             {
-                id: "1",
-                name: "john",
+                id: '1',
+                name: 'john',
                 createdAt: new Date(),
             },
             {
-                id: "1",
-                name: "john",
-                description: "",
+                id: '1',
+                name: 'john',
+                description: '',
             },
             {},
             null,
             true,
         ],
     },
-    "object with strict false": {
+    'object with strict false': {
         schema: a.object(
             {
                 id: a.string(),
@@ -718,32 +718,32 @@ export const validationTestSuites: Record<
         ),
         goodInputs: [
             {
-                id: "",
-                name: "",
-                description: "",
+                id: '',
+                name: '',
+                description: '',
             },
             {
-                id: "",
-                name: "",
-                description: "",
+                id: '',
+                name: '',
+                description: '',
                 createdAt: new Date(),
             },
         ],
-        badInputs: [{}, null, { id: "" }],
+        badInputs: [{}, null, { id: '' }],
     },
-    "recursive object": {
+    'recursive object': {
         schema: RecursiveObject,
         goodInputs: [
             {
-                value: BigInt("1"),
+                value: BigInt('1'),
                 child: null,
             },
             {
-                value: BigInt("1"),
+                value: BigInt('1'),
                 child: {
-                    value: BigInt("2"),
+                    value: BigInt('2'),
                     child: {
-                        value: BigInt("3"),
+                        value: BigInt('3'),
                         child: null,
                     },
                 },
@@ -754,9 +754,9 @@ export const validationTestSuites: Record<
             false,
             {},
             {
-                value: BigInt("1"),
+                value: BigInt('1'),
                 child: {
-                    value: BigInt("2"),
+                    value: BigInt('2'),
                     child: {
                         value: null,
                         child: null,
@@ -764,41 +764,41 @@ export const validationTestSuites: Record<
                 },
             },
             {
-                value: BigInt("1"),
+                value: BigInt('1'),
                 child: {
-                    value: BigInt("2"),
+                    value: BigInt('2'),
                     child: {
-                        value: BigInt("3"),
+                        value: BigInt('3'),
                         child: true,
                     },
                 },
             },
         ],
     },
-    "recursive discriminator": {
+    'recursive discriminator': {
         schema: RecursiveUnion,
         goodInputs: [
             {
-                type: "CHILD",
+                type: 'CHILD',
                 data: {
-                    type: "CHILDREN",
+                    type: 'CHILDREN',
                     data: [
                         {
-                            type: "TEXT",
-                            data: "Hello world",
+                            type: 'TEXT',
+                            data: 'Hello world',
                         },
                         {
-                            type: "SHAPE",
+                            type: 'SHAPE',
                             data: {
                                 width: 1,
                                 height: 2,
                             },
                         },
                         {
-                            type: "CHILD",
+                            type: 'CHILD',
                             data: {
-                                type: "TEXT",
-                                data: "Hello world",
+                                type: 'TEXT',
+                                data: 'Hello world',
                             },
                         },
                     ],
@@ -809,12 +809,12 @@ export const validationTestSuites: Record<
             {},
             null,
             {
-                type: "CHILD",
+                type: 'CHILD',
                 data: {
-                    type: "CHILDREN",
+                    type: 'CHILDREN',
                     data: [
                         {
-                            type: "CIRCLE",
+                            type: 'CIRCLE',
                             data: {
                                 width: 1,
                                 height: 2,
@@ -830,7 +830,7 @@ export const validationTestSuites: Record<
 const ObjectSchema = a.object({
     string: a.string(),
     date: a.timestamp(),
-    enum: a.enumerator(["A", "B", "C"]),
+    enum: a.enumerator(['A', 'B', 'C']),
     int8: a.int8(),
     int16: a.int16(),
     int32: a.int32(),
@@ -843,7 +843,7 @@ const ObjectSchema = a.object({
     }),
     record: a.record(a.uint64()),
     array: a.array(a.boolean()),
-    taggedUnion: a.discriminator("type", {
+    taggedUnion: a.discriminator('type', {
         USER: a.object({
             id: a.string(),
             name: a.string(),
@@ -871,20 +871,20 @@ export const parsingTestSuites: Record<
     any: {
         schema: a.any(),
         goodInputs: [
-            "hello world",
-            "[]",
-            "[true, false]",
+            'hello world',
+            '[]',
+            '[true, false]',
             '{ "a": "a", "b": null }',
-            "true",
-            "false",
-            "1",
-            "null",
+            'true',
+            'false',
+            '1',
+            'null',
         ],
         expectedResults: [
-            "hello world",
+            'hello world',
             [],
             [true, false],
-            { a: "a", b: null },
+            { a: 'a', b: null },
             true,
             false,
             1,
@@ -892,21 +892,21 @@ export const parsingTestSuites: Record<
         ],
         badInputs: [],
     },
-    "nullable any": {
+    'nullable any': {
         schema: a.nullable(a.any()),
         goodInputs: [
-            "[]",
-            "[true, false]",
+            '[]',
+            '[true, false]',
             '{ "a": "a", "b": null }',
-            "true",
-            "false",
-            "1",
-            "null",
+            'true',
+            'false',
+            '1',
+            'null',
         ],
         expectedResults: [
             [],
             [true, false],
-            { a: "a", b: null },
+            { a: 'a', b: null },
             true,
             false,
             1,
@@ -916,37 +916,37 @@ export const parsingTestSuites: Record<
     },
     string: {
         schema: a.string(),
-        goodInputs: ["hello world"],
-        expectedResults: ["hello world"],
+        goodInputs: ['hello world'],
+        expectedResults: ['hello world'],
         badInputs: [],
     },
-    "nullable string": {
+    'nullable string': {
         schema: a.nullable(a.string()),
-        goodInputs: [null, "Hello World"],
-        expectedResults: [null, "Hello World"],
+        goodInputs: [null, 'Hello World'],
+        expectedResults: [null, 'Hello World'],
         badInputs: [false, true, {}],
     },
     timestamp: {
         schema: a.timestamp(),
-        goodInputs: ["2001/01/01", new Date("2001/01/01")],
-        expectedResults: [new Date("2001/01/01"), new Date("2001/01/01")],
+        goodInputs: ['2001/01/01', new Date('2001/01/01')],
+        expectedResults: [new Date('2001/01/01'), new Date('2001/01/01')],
         badInputs: [],
     },
     boolean: {
         schema: a.boolean(),
-        goodInputs: [true, false, "true", "false"],
+        goodInputs: [true, false, 'true', 'false'],
         badInputs: [],
         expectedResults: [true, false, true, false],
     },
     enum: {
-        schema: a.enumerator(["A", "B", "C"]),
-        goodInputs: ["A", "B", "C"],
-        expectedResults: ["A", "B", "C"],
-        badInputs: ["D", "F", null, false, {}],
+        schema: a.enumerator(['A', 'B', 'C']),
+        goodInputs: ['A', 'B', 'C'],
+        expectedResults: ['A', 'B', 'C'],
+        badInputs: ['D', 'F', null, false, {}],
     },
     int64: {
         schema: a.int64(),
-        goodInputs: [BigInt(1000), BigInt(-1000), 1000, -1000, "1000", "-1000"],
+        goodInputs: [BigInt(1000), BigInt(-1000), 1000, -1000, '1000', '-1000'],
         expectedResults: [
             BigInt(1000),
             BigInt(-1000),
@@ -957,15 +957,15 @@ export const parsingTestSuites: Record<
         ],
         badInputs: [null, true, []],
     },
-    "nullable int64": {
+    'nullable int64': {
         schema: a.nullable(a.int64()),
-        goodInputs: [null, BigInt(-1000), "-1000", "null"],
+        goodInputs: [null, BigInt(-1000), '-1000', 'null'],
         expectedResults: [null, BigInt(-1000), BigInt(-1000), null],
         badInputs: [true, false, {}],
     },
     uint64: {
         schema: a.uint64(),
-        goodInputs: [BigInt(0), BigInt(1000), "0", "1000", 0, 1000],
+        goodInputs: [BigInt(0), BigInt(1000), '0', '1000', 0, 1000],
         expectedResults: [
             BigInt(0),
             BigInt(1000),
@@ -974,9 +974,9 @@ export const parsingTestSuites: Record<
             BigInt(0),
             BigInt(1000),
         ],
-        badInputs: ["-1", "-1.5", "1.5", null],
+        badInputs: ['-1', '-1.5', '1.5', null],
     },
-    "object with large integers": {
+    'object with large integers': {
         schema: a.object({
             int64: a.int64(),
             uint64: a.uint64(),
@@ -991,10 +991,10 @@ export const parsingTestSuites: Record<
                 nullableUint64: 1,
             },
             {
-                int64: "-1",
-                uint64: "1",
-                nullableInt64: "-1",
-                nullableUint64: "1",
+                int64: '-1',
+                uint64: '1',
+                nullableInt64: '-1',
+                nullableUint64: '1',
             },
             {
                 int64: BigInt(-1),
@@ -1025,7 +1025,7 @@ export const parsingTestSuites: Record<
         ],
         badInputs: [],
     },
-    "object schema": {
+    'object schema': {
         schema: ObjectSchema,
         goodInputs: [
             `{
@@ -1058,9 +1058,9 @@ export const parsingTestSuites: Record<
                 }
             }`,
             {
-                string: "hello world",
-                date: new Date("2001/01/01"),
-                enum: "A",
+                string: 'hello world',
+                date: new Date('2001/01/01'),
+                enum: 'A',
                 int8: 1,
                 int16: 2,
                 int32: 3,
@@ -1068,7 +1068,7 @@ export const parsingTestSuites: Record<
                 uint64: BigInt(999),
                 boolean: true,
                 object: {
-                    id: "",
+                    id: '',
                     count: 1,
                 },
                 record: {
@@ -1077,23 +1077,23 @@ export const parsingTestSuites: Record<
                 },
                 array: [true, false, true],
                 taggedUnion: {
-                    type: "USER",
-                    id: "",
-                    name: "Hello",
+                    type: 'USER',
+                    id: '',
+                    name: 'Hello',
                 },
                 any: {
-                    a: "a",
-                    b: "b",
+                    a: 'a',
+                    b: 'b',
                 },
-                blah: "",
-                blah2: "",
+                blah: '',
+                blah2: '',
             },
         ],
         expectedResults: [
             {
-                string: "hello world",
-                date: new Date("2001/01/01"),
-                enum: "A",
+                string: 'hello world',
+                date: new Date('2001/01/01'),
+                enum: 'A',
                 int8: 1,
                 int16: 2,
                 int32: 3,
@@ -1101,7 +1101,7 @@ export const parsingTestSuites: Record<
                 uint64: BigInt(999),
                 boolean: true,
                 object: {
-                    id: "",
+                    id: '',
                     count: 1,
                 },
                 record: {
@@ -1110,19 +1110,19 @@ export const parsingTestSuites: Record<
                 },
                 array: [true, false, true],
                 taggedUnion: {
-                    type: "USER",
-                    id: "",
-                    name: "Hello",
+                    type: 'USER',
+                    id: '',
+                    name: 'Hello',
                 },
                 any: {
-                    a: "a",
-                    b: "b",
+                    a: 'a',
+                    b: 'b',
                 },
             },
             {
-                string: "hello world",
-                date: new Date("2001/01/01"),
-                enum: "A",
+                string: 'hello world',
+                date: new Date('2001/01/01'),
+                enum: 'A',
                 int8: 1,
                 int16: 2,
                 int32: 3,
@@ -1130,7 +1130,7 @@ export const parsingTestSuites: Record<
                 uint64: BigInt(999),
                 boolean: true,
                 object: {
-                    id: "",
+                    id: '',
                     count: 1,
                 },
                 record: {
@@ -1139,19 +1139,19 @@ export const parsingTestSuites: Record<
                 },
                 array: [true, false, true],
                 taggedUnion: {
-                    type: "USER",
-                    id: "",
-                    name: "Hello",
+                    type: 'USER',
+                    id: '',
+                    name: 'Hello',
                 },
                 any: {
-                    a: "a",
-                    b: "b",
+                    a: 'a',
+                    b: 'b',
                 },
             },
         ] satisfies ObjectSchema[],
         badInputs: [],
     },
-    "object with nullable any": {
+    'object with nullable any': {
         schema: a.object({
             any: a.any(),
             nullableAny: a.nullable(a.any()),
@@ -1165,7 +1165,7 @@ export const parsingTestSuites: Record<
             {
                 any: false,
                 nullableAny: {
-                    id: "hello",
+                    id: 'hello',
                 },
             },
             `{"any":false,"nullableAny":{"id":"hello"}}`,
@@ -1182,19 +1182,19 @@ export const parsingTestSuites: Record<
             {
                 any: false,
                 nullableAny: {
-                    id: "hello",
+                    id: 'hello',
                 },
             },
             {
                 any: false,
                 nullableAny: {
-                    id: "hello",
+                    id: 'hello',
                 },
             },
         ],
         badInputs: [],
     },
-    "recursive object": {
+    'recursive object': {
         schema: RecursiveObject,
         goodInputs: [
             `{"value": "1", "child": null}`,
@@ -1211,15 +1211,15 @@ export const parsingTestSuites: Record<
         ],
         expectedResults: [
             {
-                value: BigInt("1"),
+                value: BigInt('1'),
                 child: null,
             },
             {
-                value: BigInt("1"),
+                value: BigInt('1'),
                 child: {
-                    value: BigInt("2"),
+                    value: BigInt('2'),
                     child: {
-                        value: BigInt("3"),
+                        value: BigInt('3'),
                         child: null,
                     },
                 },
@@ -1244,13 +1244,13 @@ export const serializationTestSuites: Record<
     string,
     { schema: ASchema; inputs: any[] }
 > = {
-    "object with characters needing escaping": {
+    'object with characters needing escaping': {
         schema: a.object({
             description: a.string(),
         }),
         inputs: [
             { description: '"What are you doing?" said Veronica' },
-            { description: "hello\nworld\nhow are you\b\f\n\r\t" },
+            { description: 'hello\nworld\nhow are you\b\f\n\r\t' },
             {
                 description:
                     '\t\tShe say, "Hello Johnathon! How Are You?"\n"Fine..." He replied quietly.',
@@ -1320,23 +1320,23 @@ Sed in commodo libero. Vestibulum sit amet convallis libero. Aenean tincidunt so
             },
         ],
     },
-    "object with unicode characters": {
+    'object with unicode characters': {
         schema: a.object({
             description: a.string(),
         }),
         inputs: [
             {
-                description: "hello \u00ff",
+                description: 'hello \u00ff',
             },
         ],
     },
-    "record with quoted keys": {
+    'record with quoted keys': {
         schema: a.record(a.boolean()),
         inputs: [
             {
                 A: true,
                 '"B"': false,
-                "\tC": true,
+                '\tC': true,
             },
         ],
     },

@@ -1,4 +1,4 @@
-import { SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
+import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
 
 import {
     formatDescriptionComment,
@@ -8,8 +8,8 @@ import {
     RustProperty,
     validRustIdentifier,
     validRustName,
-} from "./_common";
-import { rustTypeFromSchema } from "./_index";
+} from './_common';
+import { rustTypeFromSchema } from './_index';
 
 export function rustTaggedUnionFromSchema(
     schema: SchemaFormDiscriminator,
@@ -17,7 +17,7 @@ export function rustTaggedUnionFromSchema(
 ): RustProperty {
     const enumName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
     const isOptionType = outputIsOptionType(schema, context);
-    const defaultValue = isOptionType ? "None" : `${enumName}::new()`;
+    const defaultValue = isOptionType ? 'None' : `${enumName}::new()`;
     const result: RustProperty = {
         typeName: isOptionType ? `Option<${enumName}>` : enumName,
         defaultValue,
@@ -51,7 +51,7 @@ export function rustTaggedUnionFromSchema(
         toQueryStringTemplate() {
             return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(enumName)) {
         return result;
@@ -89,7 +89,7 @@ export function rustTaggedUnionFromSchema(
             toJsonParts: [],
             toQueryParts: [],
             isDeprecated: subSchema.metadata?.isDeprecated ?? false,
-            description: subSchema.metadata?.description ?? "",
+            description: subSchema.metadata?.description ?? '',
         };
         fromJsonParts.push(`"${discriminatorValue}" => {`);
         const keyNames: string[] = [];
@@ -118,7 +118,7 @@ export function rustTaggedUnionFromSchema(
                 defaultValue: keyType.defaultValue,
                 typeName: keyType.typeName,
                 isDeprecated: keySchema.metadata?.isDeprecated ?? false,
-                description: keySchema.metadata?.description ?? "",
+                description: keySchema.metadata?.description ?? '',
             });
             keyNames.push(keyName);
             fromJsonParts.push(
@@ -131,7 +131,7 @@ export function rustTaggedUnionFromSchema(
                 const innerKey = validRustIdentifier(`${key}_val`);
                 subType.toJsonParts.push(`match ${keyName} {
                     Some(${innerKey}) => {
-                        ${keyType.toJsonTemplate(innerKey, "_json_output_")};
+                        ${keyType.toJsonTemplate(innerKey, '_json_output_')};
                     }
                     _ => {
                         _json_output_.push_str("null");
@@ -139,11 +139,11 @@ export function rustTaggedUnionFromSchema(
                 };`);
             } else {
                 subType.toJsonParts.push(
-                    `${keyType.toJsonTemplate(keyName, "_json_output_")};`,
+                    `${keyType.toJsonTemplate(keyName, '_json_output_')};`,
                 );
             }
             subType.toQueryParts.push(
-                `${keyType.toQueryStringTemplate(keyName, key, "_query_parts_")};`,
+                `${keyType.toQueryStringTemplate(keyName, key, '_query_parts_')};`,
             );
         }
         for (const key of Object.keys(subSchema.optionalProperties ?? {})) {
@@ -165,7 +165,7 @@ export function rustTaggedUnionFromSchema(
                 defaultValue: keyType.defaultValue,
                 typeName: keyType.typeName,
                 isDeprecated: keySchema.metadata?.isDeprecated ?? false,
-                description: keySchema.metadata?.description ?? "",
+                description: keySchema.metadata?.description ?? '',
             });
             keyNames.push(keyName);
             fromJsonParts.push(
@@ -178,7 +178,7 @@ export function rustTaggedUnionFromSchema(
                 const innerKey = validRustIdentifier(`${key}_val`);
                 subType.toJsonParts.push(`match ${keyName} {
                     Some(${innerKey}) => {
-                        ${keyType.toJsonTemplate(innerKey, "_json_output_")};
+                        ${keyType.toJsonTemplate(innerKey, '_json_output_')};
                     }
                     _ => {
                         _json_output_.push_str("null");
@@ -186,59 +186,59 @@ export function rustTaggedUnionFromSchema(
                 };`);
             } else {
                 subType.toJsonParts.push(
-                    `${keyType.toJsonTemplate(keyName, "_json_output_")};`,
+                    `${keyType.toJsonTemplate(keyName, '_json_output_')};`,
                 );
             }
         }
         fromJsonParts.push(`Self::${subTypeName} {
-            ${subType.properties.map((prop) => `${prop.name},`).join("\n")}    
+            ${subType.properties.map((prop) => `${prop.name},`).join('\n')}    
         }`);
         fromJsonParts.push(`}`);
         subTypes.push(subType);
     }
-    let leading = "";
+    let leading = '';
     if (schema.metadata?.description) {
         leading += formatDescriptionComment(schema.metadata.description);
-        leading += "\n";
+        leading += '\n';
     }
     if (schema.metadata?.isDeprecated) {
-        leading += "#[deprecated]\n";
+        leading += '#[deprecated]\n';
     }
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub enum ${enumName} {
     ${subTypes
         .map((type) => {
-            let leading = "";
+            let leading = '';
             if (type.description) {
                 leading += formatDescriptionComment(type.description);
-                leading += "\n";
+                leading += '\n';
             }
             if (type.isDeprecated) {
-                leading += "#[deprecated]\n";
+                leading += '#[deprecated]\n';
             }
             return `${leading}${type.name} {
         ${type.properties
             .map((prop) => {
-                let leading = "";
+                let leading = '';
                 if (prop.description) {
                     leading += formatDescriptionComment(prop.description);
-                    leading += "\n";
+                    leading += '\n';
                 }
                 if (prop.isDeprecated) {
-                    leading += "#[deprecated]\n";
+                    leading += '#[deprecated]\n';
                 }
                 return `${leading}${prop.name}: ${prop.typeName},`;
             })
-            .join("\n")}
+            .join('\n')}
     },`;
         })
-        .join("\n")}
+        .join('\n')}
 }
 
 impl ArriModel for ${enumName} {
     fn new() -> Self {
         Self::${subTypes[0]!.name} {
-            ${subTypes[0]?.properties.map((prop) => `${prop.name}: ${prop.defaultValue},`).join("\n")}
+            ${subTypes[0]?.properties.map((prop) => `${prop.name}: ${prop.defaultValue},`).join('\n')}
         }
     }
 
@@ -250,7 +250,7 @@ impl ArriModel for ${enumName} {
                     _ => "".to_string(),
                 };
                 match ${discriminatorKeyProperty}.as_str() {
-                    ${fromJsonParts.join("\n")}
+                    ${fromJsonParts.join('\n')}
                     _ => Self::new(),
                 }
             }
@@ -271,8 +271,8 @@ impl ArriModel for ${enumName} {
             ${subTypes.map(
                 (
                     type,
-                ) => `Self::${type.name} { ${type.properties.map((prop) => `${prop.name},`).join("\n")}} => {
-                ${type.toJsonParts.join("\n")}    
+                ) => `Self::${type.name} { ${type.properties.map((prop) => `${prop.name},`).join('\n')}} => {
+                ${type.toJsonParts.join('\n')}    
             }`,
             )}
         }
@@ -286,8 +286,8 @@ impl ArriModel for ${enumName} {
             ${subTypes.map(
                 (
                     type,
-                ) => `Self::${type.name} { ${type.properties.map((prop) => `${prop.name},`).join("\n")}} => {
-                ${type.toQueryParts.join("\n")}
+                ) => `Self::${type.name} { ${type.properties.map((prop) => `${prop.name},`).join('\n')}} => {
+                ${type.toQueryParts.join('\n')}
             }`,
             )}
         }
@@ -295,7 +295,7 @@ impl ArriModel for ${enumName} {
     }
 }
 
-${subTypeContent.join("\n\n")}`;
+${subTypeContent.join('\n\n')}`;
     context.generatedTypes.push(enumName);
     return result;
 }

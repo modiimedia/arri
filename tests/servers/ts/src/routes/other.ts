@@ -1,27 +1,27 @@
-import { a } from "@arrirpc/schema";
-import { ArriRouter, defineRpc, defineService } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { ArriRouter, defineRpc, defineService } from '@arrirpc/server';
 
 export const manualRouter = new ArriRouter();
-const DefaultPayload = a.object("DefaultPayload", {
+const DefaultPayload = a.object('DefaultPayload', {
     message: a.string(),
 });
 
 manualRouter.route({
-    path: "/routes/hello-world",
-    method: ["get", "post"],
+    path: '/routes/hello-world',
+    method: ['get', 'post'],
     handler(_) {
         return `hello world`;
     },
 });
 
-export const manualTestService = defineService("tests", {
+export const manualTestService = defineService('tests', {
     emptyParamsGetRequest: defineRpc({
-        method: "get",
+        method: 'get',
         params: undefined,
         response: DefaultPayload,
         handler() {
             return {
-                message: "ok",
+                message: 'ok',
             };
         },
     }),
@@ -30,12 +30,12 @@ export const manualTestService = defineService("tests", {
         response: DefaultPayload,
         handler() {
             return {
-                message: "ok",
+                message: 'ok',
             };
         },
     }),
     emptyResponseGetRequest: defineRpc({
-        method: "get",
+        method: 'get',
         params: DefaultPayload,
         response: undefined,
         handler() {},

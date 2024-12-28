@@ -1,12 +1,12 @@
-import { SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
+import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
     TsProperty,
-} from "./common";
-import { tsObjectFromSchema } from "./object";
+} from './common';
+import { tsObjectFromSchema } from './object';
 
 export function tsTaggedUnionFromSchema(
     schema: SchemaFormDiscriminator,
@@ -15,7 +15,7 @@ export function tsTaggedUnionFromSchema(
     const typeName = getTsTypeName(schema, context);
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
     const defaultValue = schema.nullable
-        ? "null"
+        ? 'null'
         : `$$${prefixedTypeName}.new()`;
 
     const result: TsProperty = {
@@ -50,7 +50,7 @@ export function tsTaggedUnionFromSchema(
         toQueryStringTemplate(_: string, __: string, ___: string): string {
             return `console.warn("[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.");`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(typeName)) return result;
     const subTypes: { value: string; data: TsProperty }[] = [];
@@ -72,7 +72,7 @@ export function tsTaggedUnionFromSchema(
         });
         subTypes.push({ value: key, data: subType });
     }
-    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(" |")};
+    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};
 export const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
     new(): ${prefixedTypeName} {
         return $$${subTypes[0]!.data.typeName}.new();
@@ -90,7 +90,7 @@ ${subTypes
         (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.validate(input);`,
     )
-    .join("\n")}
+    .join('\n')}
             default:
                 return false;
         }
@@ -102,7 +102,7 @@ ${subTypes
         (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.fromJson(input);`,
     )
-    .join("\n")}
+    .join('\n')}
             default:
                 return $$${subTypes[0]!.data.typeName}.new();
         }
@@ -117,7 +117,7 @@ ${subTypes
         (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.toJsonString(input);`,
     )
-    .join("\n")}
+    .join('\n')}
             default:
                 throw new Error(\`Unhandled case "\${(input as any).${discriminatorKey}}"\`);
         }
@@ -129,13 +129,13 @@ ${subTypes
         (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.toUrlQueryString(input);`,
     )
-    .join("\n")}
+    .join('\n')}
             default:
                 throw new Error('Unhandled case');
         }
     }
 }
-${subTypes.map((type) => type.data.content).join("\n")}
+${subTypes.map((type) => type.data.content).join('\n')}
 `;
     context.generatedTypes.push(typeName);
     return result;

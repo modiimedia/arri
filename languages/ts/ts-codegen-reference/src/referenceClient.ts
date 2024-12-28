@@ -27,7 +27,7 @@ import {
     UINT64_MAX,
     type WsController,
     type WsOptions,
-} from "@arrirpc/client";
+} from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
 
@@ -45,7 +45,7 @@ export class ExampleClient {
             onError?: (err: unknown) => void;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? "";
+        this._baseUrl = options.baseUrl ?? '';
         this._headers = options.headers ?? {};
         this._onError = options.onError;
         this.books = new ExampleClientBooksService(options);
@@ -54,14 +54,14 @@ export class ExampleClient {
     async sendObject(params: NestedObject): Promise<NestedObject> {
         return arriRequest<NestedObject, NestedObject>({
             url: `${this._baseUrl}/send-object`,
-            method: "post",
+            method: 'post',
             headers: this._headers,
             onError: this._onError,
             params: params,
             responseFromJson: $$NestedObject.fromJson,
             responseFromString: $$NestedObject.fromJsonString,
             serializer: $$NestedObject.toJsonString,
-            clientVersion: "20",
+            clientVersion: '20',
         });
     }
 }
@@ -79,7 +79,7 @@ export class ExampleClientBooksService {
             onError?: (err: unknown) => void;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? "";
+        this._baseUrl = options.baseUrl ?? '';
         this._headers = options.headers ?? {};
         this._onError = options.onError;
     }
@@ -89,14 +89,14 @@ export class ExampleClientBooksService {
     async getBook(params: BookParams): Promise<Book> {
         return arriRequest<Book, BookParams>({
             url: `${this._baseUrl}/books/get-book`,
-            method: "get",
+            method: 'get',
             headers: this._headers,
             onError: this._onError,
             params: params,
             responseFromJson: $$Book.fromJson,
             responseFromString: $$Book.fromJsonString,
             serializer: $$BookParams.toUrlQueryString,
-            clientVersion: "20",
+            clientVersion: '20',
         });
     }
     /**
@@ -106,14 +106,14 @@ export class ExampleClientBooksService {
     async createBook(params: Book): Promise<Book> {
         return arriRequest<Book, Book>({
             url: `${this._baseUrl}/books/create-book`,
-            method: "post",
+            method: 'post',
             headers: this._headers,
             onError: this._onError,
             params: params,
             responseFromJson: $$Book.fromJson,
             responseFromString: $$Book.fromJsonString,
             serializer: $$Book.toJsonString,
-            clientVersion: "20",
+            clientVersion: '20',
         });
     }
     /**
@@ -126,14 +126,14 @@ export class ExampleClientBooksService {
         return arriSseRequest<Book, BookParams>(
             {
                 url: `${this._baseUrl}/books/watch-book`,
-                method: "get",
+                method: 'get',
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$Book.fromJson,
                 responseFromString: $$Book.fromJsonString,
                 serializer: $$BookParams.toUrlQueryString,
-                clientVersion: "20",
+                clientVersion: '20',
             },
             options,
         );
@@ -152,7 +152,7 @@ export class ExampleClientBooksService {
             onError: options.onError,
             onConnectionError: options.onConnectionError,
             onMessage: options.onMessage,
-            clientVersion: "20",
+            clientVersion: '20',
         });
     }
 }
@@ -182,8 +182,8 @@ export interface Book {
 export const $$Book: ArriModelValidator<Book> = {
     new(): Book {
         return {
-            id: "",
-            name: "",
+            id: '',
+            name: '',
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -191,27 +191,27 @@ export const $$Book: ArriModelValidator<Book> = {
     validate(input): input is Book {
         return (
             isObject(input) &&
-            typeof input.id === "string" &&
-            typeof input.name === "string" &&
+            typeof input.id === 'string' &&
+            typeof input.name === 'string' &&
             input.createdAt instanceof Date &&
             input.updatedAt instanceof Date
         );
     },
     fromJson(input): Book {
         let _id: string;
-        if (typeof input.id === "string") {
+        if (typeof input.id === 'string') {
             _id = input.id;
         } else {
-            _id = "";
+            _id = '';
         }
         let _name: string;
-        if (typeof input.name === "string") {
+        if (typeof input.name === 'string') {
             _name = input.name;
         } else {
-            _name = "";
+            _name = '';
         }
         let _createdAt: Date;
-        if (typeof input.createdAt === "string") {
+        if (typeof input.createdAt === 'string') {
             _createdAt = new Date(input.createdAt);
         } else if (input.createdAt instanceof Date) {
             _createdAt = input.createdAt;
@@ -219,7 +219,7 @@ export const $$Book: ArriModelValidator<Book> = {
             _createdAt = new Date();
         }
         let _updatedAt: Date;
-        if (typeof input.updatedAt === "string") {
+        if (typeof input.updatedAt === 'string') {
             _updatedAt = new Date(input.updatedAt);
         } else if (input.updatedAt instanceof Date) {
             _updatedAt = input.updatedAt;
@@ -237,7 +237,7 @@ export const $$Book: ArriModelValidator<Book> = {
         return $$Book.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"id":';
         json += serializeString(input.id);
         json += ',"name":';
@@ -246,7 +246,7 @@ export const $$Book: ArriModelValidator<Book> = {
         json += `"${input.createdAt.toISOString()}"`;
         json += ',"updatedAt":';
         json += `"${input.updatedAt.toISOString()}"`;
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
@@ -255,7 +255,7 @@ export const $$Book: ArriModelValidator<Book> = {
         queryParts.push(`name=${input.name}`);
         queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
         queryParts.push(`updatedAt=${input.updatedAt.toISOString()}`);
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 
@@ -265,18 +265,18 @@ export interface BookParams {
 export const $$BookParams: ArriModelValidator<BookParams> = {
     new(): BookParams {
         return {
-            bookId: "",
+            bookId: '',
         };
     },
     validate(input): input is BookParams {
-        return isObject(input) && typeof input.bookId === "string";
+        return isObject(input) && typeof input.bookId === 'string';
     },
     fromJson(input): BookParams {
         let _bookId: string;
-        if (typeof input.bookId === "string") {
+        if (typeof input.bookId === 'string') {
             _bookId = input.bookId;
         } else {
-            _bookId = "";
+            _bookId = '';
         }
         return {
             bookId: _bookId,
@@ -286,16 +286,16 @@ export const $$BookParams: ArriModelValidator<BookParams> = {
         return $$BookParams.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"bookId":';
         json += serializeString(input.bookId);
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
         queryParts.push(`bookId=${input.bookId}`);
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 
@@ -306,29 +306,29 @@ export interface NestedObject {
 export const $$NestedObject: ArriModelValidator<NestedObject> = {
     new(): NestedObject {
         return {
-            id: "",
-            content: "",
+            id: '',
+            content: '',
         };
     },
     validate(input): input is NestedObject {
         return (
             isObject(input) &&
-            typeof input.id === "string" &&
-            typeof input.content === "string"
+            typeof input.id === 'string' &&
+            typeof input.content === 'string'
         );
     },
     fromJson(input): NestedObject {
         let _id: string;
-        if (typeof input.id === "string") {
+        if (typeof input.id === 'string') {
             _id = input.id;
         } else {
-            _id = "";
+            _id = '';
         }
         let _content: string;
-        if (typeof input.content === "string") {
+        if (typeof input.content === 'string') {
             _content = input.content;
         } else {
-            _content = "";
+            _content = '';
         }
         return {
             id: _id,
@@ -339,19 +339,19 @@ export const $$NestedObject: ArriModelValidator<NestedObject> = {
         return $$NestedObject.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"id":';
         json += serializeString(input.id);
         json += ',"content":';
         json += serializeString(input.content);
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
         queryParts.push(`id=${input.id}`);
         queryParts.push(`content=${input.content}`);
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 
@@ -379,7 +379,7 @@ export interface ObjectWithEveryType {
 export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
     new(): ObjectWithEveryType {
         return {
-            string: "",
+            string: '',
             boolean: false,
             timestamp: new Date(),
             float32: 0,
@@ -403,48 +403,48 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
     validate(input): input is ObjectWithEveryType {
         return (
             isObject(input) &&
-            typeof input.string === "string" &&
-            typeof input.boolean === "boolean" &&
+            typeof input.string === 'string' &&
+            typeof input.boolean === 'boolean' &&
             input.timestamp instanceof Date &&
-            typeof input.float32 === "number" &&
-            typeof input.float64 === "number" &&
-            typeof input.int8 === "number" &&
+            typeof input.float32 === 'number' &&
+            typeof input.float64 === 'number' &&
+            typeof input.int8 === 'number' &&
             Number.isInteger(input.int8) &&
             input.int8 >= INT8_MIN &&
             input.int8 <= INT8_MAX &&
-            typeof input.uint8 === "number" &&
+            typeof input.uint8 === 'number' &&
             Number.isInteger(input.uint8) &&
             input.uint8 >= 0 &&
             input.uint8 <= UINT8_MAX &&
-            typeof input.int16 === "number" &&
+            typeof input.int16 === 'number' &&
             Number.isInteger(input.int16) &&
             input.int16 >= INT16_MIN &&
             input.int16 <= INT16_MAX &&
-            typeof input.uint16 === "number" &&
+            typeof input.uint16 === 'number' &&
             Number.isInteger(input.uint16) &&
             input.uint16 >= 0 &&
             input.uint16 <= UINT16_MAX &&
-            typeof input.int32 === "number" &&
+            typeof input.int32 === 'number' &&
             Number.isInteger(input.int32) &&
             input.int32 >= INT32_MIN &&
             input.int32 <= INT32_MAX &&
-            typeof input.uint32 === "number" &&
+            typeof input.uint32 === 'number' &&
             Number.isInteger(input.uint32) &&
             input.uint32 >= 0 &&
             input.uint32 <= UINT32_MAX &&
-            typeof input.int64 === "bigint" &&
+            typeof input.int64 === 'bigint' &&
             input.int64 >= INT64_MIN &&
             input.int64 <= INT64_MAX &&
-            typeof input.uint64 === "bigint" &&
+            typeof input.uint64 === 'bigint' &&
             input.uint64 >= BigInt(0) &&
             input.uint64 <= UINT64_MAX &&
             $$Enumerator.validate(input.enum) &&
             $$NestedObject.validate(input.object) &&
             Array.isArray(input.array) &&
-            input.array.every((_element) => typeof _element === "boolean") &&
+            input.array.every((_element) => typeof _element === 'boolean') &&
             isObject(input.record) &&
             Object.values(input.record).every(
-                (_value) => typeof _value === "boolean",
+                (_value) => typeof _value === 'boolean',
             ) &&
             $$Discriminator.validate(input.discriminator) &&
             true
@@ -452,19 +452,19 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
     },
     fromJson(input): ObjectWithEveryType {
         let _string: string;
-        if (typeof input.string === "string") {
+        if (typeof input.string === 'string') {
             _string = input.string;
         } else {
-            _string = "";
+            _string = '';
         }
         let _boolean: boolean;
-        if (typeof input.boolean === "boolean") {
+        if (typeof input.boolean === 'boolean') {
             _boolean = input.boolean;
         } else {
             _boolean = false;
         }
         let _timestamp: Date;
-        if (typeof input.timestamp === "string") {
+        if (typeof input.timestamp === 'string') {
             _timestamp = new Date(input.timestamp);
         } else if (input.timestamp instanceof Date) {
             _timestamp = input.timestamp;
@@ -472,20 +472,20 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _timestamp = new Date();
         }
         let _float32: number;
-        if (typeof input.float32 === "number") {
+        if (typeof input.float32 === 'number') {
             _float32 = input.float32;
         } else {
             _float32 = 0;
         }
         let _float64: number;
-        if (typeof input.float64 === "number") {
+        if (typeof input.float64 === 'number') {
             _float64 = input.float64;
         } else {
             _float64 = 0;
         }
         let _int8: number;
         if (
-            typeof input.int8 === "number" &&
+            typeof input.int8 === 'number' &&
             Number.isInteger(input.int8) &&
             input.int8 >= INT8_MIN &&
             input.int8 <= INT8_MAX
@@ -496,7 +496,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         }
         let _uint8: number;
         if (
-            typeof input.uint8 === "number" &&
+            typeof input.uint8 === 'number' &&
             Number.isInteger(input.uint8) &&
             input.uint8 >= 0 &&
             input.uint8 <= UINT8_MAX
@@ -507,7 +507,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         }
         let _int16: number;
         if (
-            typeof input.int16 === "number" &&
+            typeof input.int16 === 'number' &&
             Number.isInteger(input.int16) &&
             input.int16 >= INT16_MIN &&
             input.int16 <= INT16_MAX
@@ -518,7 +518,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         }
         let _uint16: number;
         if (
-            typeof input.uint16 === "number" &&
+            typeof input.uint16 === 'number' &&
             Number.isInteger(input.uint16) &&
             input.uint16 >= 0 &&
             input.uint16 <= UINT16_MAX
@@ -529,7 +529,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         }
         let _int32: number;
         if (
-            typeof input.int32 === "number" &&
+            typeof input.int32 === 'number' &&
             Number.isInteger(input.int32) &&
             input.int32 >= INT32_MIN &&
             input.int32 <= INT32_MAX
@@ -540,7 +540,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         }
         let _uint32: number;
         if (
-            typeof input.uint32 === "number" &&
+            typeof input.uint32 === 'number' &&
             Number.isInteger(input.uint32) &&
             input.uint32 >= 0 &&
             input.uint32 <= UINT32_MAX
@@ -550,21 +550,21 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _uint32 = 0;
         }
         let _int64: bigint;
-        if (typeof input.int64 === "string") {
+        if (typeof input.int64 === 'string') {
             _int64 = BigInt(input.int64);
-        } else if (typeof input.int64 === "bigint") {
+        } else if (typeof input.int64 === 'bigint') {
             _int64 = input.int64;
         } else {
             _int64 = BigInt(0);
         }
         let _uint64: bigint;
         if (
-            typeof input.uint64 === "string" &&
+            typeof input.uint64 === 'string' &&
             BigInt(input.uint64) >= BigInt(0)
         ) {
             _uint64 = BigInt(input.uint64);
         } else if (
-            typeof input.uint64 === "bigint" &&
+            typeof input.uint64 === 'bigint' &&
             input.uint64 >= BigInt(0)
         ) {
             _uint64 = input.uint64;
@@ -572,7 +572,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _uint64 = BigInt(0);
         }
         let _enum: Enumerator;
-        if (typeof input.enum === "string") {
+        if (typeof input.enum === 'string') {
             _enum = $$Enumerator.fromSerialValue(input.enum);
         } else {
             _enum = $$Enumerator.new();
@@ -588,7 +588,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _array = [];
             for (const _arrayEl of input.array) {
                 let _arrayElValue: boolean;
-                if (typeof _arrayEl === "boolean") {
+                if (typeof _arrayEl === 'boolean') {
                     _arrayElValue = _arrayEl;
                 } else {
                     _arrayElValue = false;
@@ -603,7 +603,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _record = {};
             for (const [_key, _value] of Object.entries(input.record)) {
                 let _recordValue: boolean;
-                if (typeof _value === "boolean") {
+                if (typeof _value === 'boolean') {
                     _recordValue = _value;
                 } else {
                     _recordValue = false;
@@ -647,7 +647,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         return $$ObjectWithEveryType.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"string":';
         json += serializeString(input.string);
         json += ',"boolean":';
@@ -679,30 +679,30 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         json += ',"object":';
         json += $$NestedObject.toJsonString(input.object);
         json += ',"array":';
-        json += "[";
+        json += '[';
         for (let i = 0; i < input.array.length; i++) {
-            if (i !== 0) json += ",";
+            if (i !== 0) json += ',';
             const _inputArrayEl = input.array[i];
             json += `${_inputArrayEl}`;
         }
-        json += "]";
+        json += ']';
         json += ',"record":';
-        json += "{";
+        json += '{';
         let _recordPropertyCount = 0;
         for (const [_key, _value] of Object.entries(input.record)) {
             if (_recordPropertyCount !== 0) {
-                json += ",";
+                json += ',';
             }
             json += `${serializeString(_key)}:`;
             json += `${_value}`;
             _recordPropertyCount++;
         }
-        json += "}";
+        json += '}';
         json += ',"discriminator":';
         json += $$Discriminator.toJsonString(input.discriminator);
         json += ',"any":';
         json += JSON.stringify(input.any);
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
@@ -722,33 +722,33 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         queryParts.push(`uint64=${input.uint64}`);
         queryParts.push(`enum=${input.enum}`);
         console.warn(
-            "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.",
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.',
         );
         console.warn(
-            "[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.",
+            '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.',
         );
         console.warn(
-            "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.",
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
         );
         console.warn(
-            "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.",
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
         );
         console.warn(
             "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
         );
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 
 export type Enumerator = (typeof $$EnumeratorValues)[number];
-const $$EnumeratorValues = ["FOO", "BAR", "BAZ"] as const;
+const $$EnumeratorValues = ['FOO', 'BAR', 'BAZ'] as const;
 export const $$Enumerator: ArriEnumValidator<Enumerator> = {
     new(): Enumerator {
         return $$EnumeratorValues[0];
     },
     validate(input): input is Enumerator {
         return (
-            typeof input === "string" &&
+            typeof input === 'string' &&
             $$EnumeratorValues.includes(input as any)
         );
     },
@@ -763,7 +763,7 @@ export const $$Enumerator: ArriEnumValidator<Enumerator> = {
         if ($$EnumeratorValues.includes(input.toUpperCase() as any)) {
             return input.toUpperCase() as Enumerator;
         }
-        return "FOO";
+        return 'FOO';
     },
 };
 
@@ -776,15 +776,15 @@ export const $$Discriminator: ArriModelValidator<Discriminator> = {
         if (!isObject(input)) {
             return false;
         }
-        if (typeof input.typeName !== "string") {
+        if (typeof input.typeName !== 'string') {
             return false;
         }
         switch (input.typeName) {
-            case "A":
+            case 'A':
                 return $$DiscriminatorA.validate(input);
-            case "B":
+            case 'B':
                 return $$DiscriminatorB.validate(input);
-            case "C":
+            case 'C':
                 return $$DiscriminatorC.validate(input);
             default:
                 return false;
@@ -792,11 +792,11 @@ export const $$Discriminator: ArriModelValidator<Discriminator> = {
     },
     fromJson(input): Discriminator {
         switch (input.typeName) {
-            case "A":
+            case 'A':
                 return $$DiscriminatorA.fromJson(input);
-            case "B":
+            case 'B':
                 return $$DiscriminatorB.fromJson(input);
-            case "C":
+            case 'C':
                 return $$DiscriminatorC.fromJson(input);
             default:
                 return $$DiscriminatorA.new();
@@ -807,11 +807,11 @@ export const $$Discriminator: ArriModelValidator<Discriminator> = {
     },
     toJsonString(input): string {
         switch (input.typeName) {
-            case "A":
+            case 'A':
                 return $$DiscriminatorA.toJsonString(input);
-            case "B":
+            case 'B':
                 return $$DiscriminatorB.toJsonString(input);
-            case "C":
+            case 'C':
                 return $$DiscriminatorC.toJsonString(input);
             default:
                 throw new Error(`Unhandled case "${(input as any).typeName}"`);
@@ -819,42 +819,42 @@ export const $$Discriminator: ArriModelValidator<Discriminator> = {
     },
     toUrlQueryString(input): string {
         switch (input.typeName) {
-            case "A":
+            case 'A':
                 return $$DiscriminatorA.toUrlQueryString(input);
-            case "B":
+            case 'B':
                 return $$DiscriminatorB.toUrlQueryString(input);
-            case "C":
+            case 'C':
                 return $$DiscriminatorC.toUrlQueryString(input);
             default:
-                throw new Error("Unhandled case");
+                throw new Error('Unhandled case');
         }
     },
 };
 export interface DiscriminatorA {
-    typeName: "A";
+    typeName: 'A';
     id: string;
 }
 const $$DiscriminatorA: ArriModelValidator<DiscriminatorA> = {
     new(): DiscriminatorA {
         return {
-            typeName: "A",
-            id: "",
+            typeName: 'A',
+            id: '',
         };
     },
     validate(input): input is DiscriminatorA {
         return (
             isObject(input) &&
-            input.typeName === "A" &&
-            typeof input.id === "string"
+            input.typeName === 'A' &&
+            typeof input.id === 'string'
         );
     },
     fromJson(input): DiscriminatorA {
-        const _typeName = "A";
+        const _typeName = 'A';
         let _id: string;
-        if (typeof input.id === "string") {
+        if (typeof input.id === 'string') {
             _id = input.id;
         } else {
-            _id = "";
+            _id = '';
         }
         return {
             typeName: _typeName,
@@ -865,54 +865,54 @@ const $$DiscriminatorA: ArriModelValidator<DiscriminatorA> = {
         return $$DiscriminatorA.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"typeName":"A"';
         json += ',"id":';
         json += serializeString(input.id);
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
-        queryParts.push("typeName=A");
+        queryParts.push('typeName=A');
         queryParts.push(`id=${input.id}`);
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 export interface DiscriminatorB {
-    typeName: "B";
+    typeName: 'B';
     id: string;
     name: string;
 }
 const $$DiscriminatorB: ArriModelValidator<DiscriminatorB> = {
     new(): DiscriminatorB {
         return {
-            typeName: "B",
-            id: "",
-            name: "",
+            typeName: 'B',
+            id: '',
+            name: '',
         };
     },
     validate(input): input is DiscriminatorB {
         return (
             isObject(input) &&
-            input.typeName === "B" &&
-            typeof input.id === "string" &&
-            typeof input.name === "string"
+            input.typeName === 'B' &&
+            typeof input.id === 'string' &&
+            typeof input.name === 'string'
         );
     },
     fromJson(input): DiscriminatorB {
-        const _typeName = "B";
+        const _typeName = 'B';
         let _id: string;
-        if (typeof input.id === "string") {
+        if (typeof input.id === 'string') {
             _id = input.id;
         } else {
-            _id = "";
+            _id = '';
         }
         let _name: string;
-        if (typeof input.name === "string") {
+        if (typeof input.name === 'string') {
             _name = input.name;
         } else {
-            _name = "";
+            _name = '';
         }
         return {
             typeName: _typeName,
@@ -924,25 +924,25 @@ const $$DiscriminatorB: ArriModelValidator<DiscriminatorB> = {
         return $$DiscriminatorB.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"typeName":"B"';
         json += ',"id":';
         json += serializeString(input.id);
         json += ',"name":';
         json += serializeString(input.name);
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
-        queryParts.push("typeName=B");
+        queryParts.push('typeName=B');
         queryParts.push(`id=${input.id}`);
         queryParts.push(`name=${input.name}`);
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 export interface DiscriminatorC {
-    typeName: "C";
+    typeName: 'C';
     id: string;
     name: string;
     date: Date;
@@ -950,37 +950,37 @@ export interface DiscriminatorC {
 const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
     new(): DiscriminatorC {
         return {
-            typeName: "C",
-            id: "",
-            name: "",
+            typeName: 'C',
+            id: '',
+            name: '',
             date: new Date(),
         };
     },
     validate(input): input is DiscriminatorC {
         return (
             isObject(input) &&
-            input.typeName === "C" &&
-            typeof input.id === "string" &&
-            typeof input.name === "string" &&
+            input.typeName === 'C' &&
+            typeof input.id === 'string' &&
+            typeof input.name === 'string' &&
             input.date instanceof Date
         );
     },
     fromJson(input): DiscriminatorC {
-        const _typeName = "C";
+        const _typeName = 'C';
         let _id: string;
-        if (typeof input.id === "string") {
+        if (typeof input.id === 'string') {
             _id = input.id;
         } else {
-            _id = "";
+            _id = '';
         }
         let _name: string;
-        if (typeof input.name === "string") {
+        if (typeof input.name === 'string') {
             _name = input.name;
         } else {
-            _name = "";
+            _name = '';
         }
         let _date: Date;
-        if (typeof input.date === "string") {
+        if (typeof input.date === 'string') {
             _date = new Date(input.date);
         } else if (input.date instanceof Date) {
             _date = input.date;
@@ -998,7 +998,7 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
         return $$DiscriminatorC.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"typeName":"C"';
         json += ',"id":';
         json += serializeString(input.id);
@@ -1006,16 +1006,16 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
         json += serializeString(input.name);
         json += ',"date":';
         json += `"${input.date.toISOString()}"`;
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
-        queryParts.push("typeName=C");
+        queryParts.push('typeName=C');
         queryParts.push(`id=${input.id}`);
         queryParts.push(`name=${input.name}`);
         queryParts.push(`date=${input.date.toISOString()}`);
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };
 
@@ -1048,93 +1048,93 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
         validate(input): input is ObjectWithOptionalFields {
             return (
                 isObject(input) &&
-                (typeof input.string === "string" ||
-                    typeof input.string === "undefined") &&
-                (typeof input.boolean === "boolean" ||
-                    typeof input.boolean === "undefined") &&
+                (typeof input.string === 'string' ||
+                    typeof input.string === 'undefined') &&
+                (typeof input.boolean === 'boolean' ||
+                    typeof input.boolean === 'undefined') &&
                 (input.timestamp instanceof Date ||
-                    typeof input.timestamp === "undefined") &&
-                (typeof input.float32 === "number" ||
-                    typeof input.float32 === "undefined") &&
-                (typeof input.float64 === "number" ||
-                    typeof input.float64 === "undefined") &&
-                ((typeof input.int8 === "number" &&
+                    typeof input.timestamp === 'undefined') &&
+                (typeof input.float32 === 'number' ||
+                    typeof input.float32 === 'undefined') &&
+                (typeof input.float64 === 'number' ||
+                    typeof input.float64 === 'undefined') &&
+                ((typeof input.int8 === 'number' &&
                     Number.isInteger(input.int8) &&
                     input.int8 >= INT8_MIN &&
                     input.int8 <= INT8_MAX) ||
-                    typeof input.int8 === "undefined") &&
-                ((typeof input.uint8 === "number" &&
+                    typeof input.int8 === 'undefined') &&
+                ((typeof input.uint8 === 'number' &&
                     Number.isInteger(input.uint8) &&
                     input.uint8 >= 0 &&
                     input.uint8 <= UINT8_MAX) ||
-                    typeof input.uint8 === "undefined") &&
-                ((typeof input.int16 === "number" &&
+                    typeof input.uint8 === 'undefined') &&
+                ((typeof input.int16 === 'number' &&
                     Number.isInteger(input.int16) &&
                     input.int16 >= INT16_MIN &&
                     input.int16 <= INT16_MAX) ||
-                    typeof input.int16 === "undefined") &&
-                ((typeof input.uint16 === "number" &&
+                    typeof input.int16 === 'undefined') &&
+                ((typeof input.uint16 === 'number' &&
                     Number.isInteger(input.uint16) &&
                     input.uint16 >= 0 &&
                     input.uint16 <= UINT16_MAX) ||
-                    typeof input.uint16 === "undefined") &&
-                ((typeof input.int32 === "number" &&
+                    typeof input.uint16 === 'undefined') &&
+                ((typeof input.int32 === 'number' &&
                     Number.isInteger(input.int32) &&
                     input.int32 >= INT32_MIN &&
                     input.int32 <= INT32_MAX) ||
-                    typeof input.int32 === "undefined") &&
-                ((typeof input.uint32 === "number" &&
+                    typeof input.int32 === 'undefined') &&
+                ((typeof input.uint32 === 'number' &&
                     Number.isInteger(input.uint32) &&
                     input.uint32 >= 0 &&
                     input.uint32 <= UINT32_MAX) ||
-                    typeof input.uint32 === "undefined") &&
-                ((typeof input.int64 === "bigint" &&
+                    typeof input.uint32 === 'undefined') &&
+                ((typeof input.int64 === 'bigint' &&
                     input.int64 >= INT64_MIN &&
                     input.int64 <= INT64_MAX) ||
-                    typeof input.int64 === "undefined") &&
-                ((typeof input.uint64 === "bigint" &&
+                    typeof input.int64 === 'undefined') &&
+                ((typeof input.uint64 === 'bigint' &&
                     input.uint64 >= BigInt(0) &&
                     input.uint64 <= UINT64_MAX) ||
-                    typeof input.uint64 === "undefined") &&
+                    typeof input.uint64 === 'undefined') &&
                 ($$Enumerator.validate(input.enum) ||
-                    typeof input.enum === "undefined") &&
+                    typeof input.enum === 'undefined') &&
                 ($$NestedObject.validate(input.object) ||
-                    typeof input.object === "undefined") &&
+                    typeof input.object === 'undefined') &&
                 ((Array.isArray(input.array) &&
                     input.array.every(
-                        (_element) => typeof _element === "boolean",
+                        (_element) => typeof _element === 'boolean',
                     )) ||
-                    typeof input.array === "undefined") &&
+                    typeof input.array === 'undefined') &&
                 ((isObject(input.record) &&
                     Object.values(input.record).every(
-                        (_value) => typeof _value === "boolean",
+                        (_value) => typeof _value === 'boolean',
                     )) ||
-                    typeof input.record === "undefined") &&
+                    typeof input.record === 'undefined') &&
                 ($$Discriminator.validate(input.discriminator) ||
-                    typeof input.discriminator === "undefined") &&
-                (true || typeof input.any === "undefined")
+                    typeof input.discriminator === 'undefined') &&
+                (true || typeof input.any === 'undefined')
             );
         },
         fromJson(input): ObjectWithOptionalFields {
             let _string: string | undefined;
-            if (typeof input.string !== "undefined") {
-                if (typeof input.string === "string") {
+            if (typeof input.string !== 'undefined') {
+                if (typeof input.string === 'string') {
                     _string = input.string;
                 } else {
-                    _string = "";
+                    _string = '';
                 }
             }
             let _boolean: boolean | undefined;
-            if (typeof input.boolean !== "undefined") {
-                if (typeof input.boolean === "boolean") {
+            if (typeof input.boolean !== 'undefined') {
+                if (typeof input.boolean === 'boolean') {
                     _boolean = input.boolean;
                 } else {
                     _boolean = false;
                 }
             }
             let _timestamp: Date | undefined;
-            if (typeof input.timestamp !== "undefined") {
-                if (typeof input.timestamp === "string") {
+            if (typeof input.timestamp !== 'undefined') {
+                if (typeof input.timestamp === 'string') {
                     _timestamp = new Date(input.timestamp);
                 } else if (input.timestamp instanceof Date) {
                     _timestamp = input.timestamp;
@@ -1143,25 +1143,25 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _float32: number | undefined;
-            if (typeof input.float32 !== "undefined") {
-                if (typeof input.float32 === "number") {
+            if (typeof input.float32 !== 'undefined') {
+                if (typeof input.float32 === 'number') {
                     _float32 = input.float32;
                 } else {
                     _float32 = 0;
                 }
             }
             let _float64: number | undefined;
-            if (typeof input.float64 !== "undefined") {
-                if (typeof input.float64 === "number") {
+            if (typeof input.float64 !== 'undefined') {
+                if (typeof input.float64 === 'number') {
                     _float64 = input.float64;
                 } else {
                     _float64 = 0;
                 }
             }
             let _int8: number | undefined;
-            if (typeof input.int8 !== "undefined") {
+            if (typeof input.int8 !== 'undefined') {
                 if (
-                    typeof input.int8 === "number" &&
+                    typeof input.int8 === 'number' &&
                     Number.isInteger(input.int8) &&
                     input.int8 >= INT8_MIN &&
                     input.int8 <= INT8_MAX
@@ -1172,9 +1172,9 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _uint8: number | undefined;
-            if (typeof input.uint8 !== "undefined") {
+            if (typeof input.uint8 !== 'undefined') {
                 if (
-                    typeof input.uint8 === "number" &&
+                    typeof input.uint8 === 'number' &&
                     Number.isInteger(input.uint8) &&
                     input.uint8 >= 0 &&
                     input.uint8 <= UINT8_MAX
@@ -1185,9 +1185,9 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _int16: number | undefined;
-            if (typeof input.int16 !== "undefined") {
+            if (typeof input.int16 !== 'undefined') {
                 if (
-                    typeof input.int16 === "number" &&
+                    typeof input.int16 === 'number' &&
                     Number.isInteger(input.int16) &&
                     input.int16 >= INT16_MIN &&
                     input.int16 <= INT16_MAX
@@ -1198,9 +1198,9 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _uint16: number | undefined;
-            if (typeof input.uint16 !== "undefined") {
+            if (typeof input.uint16 !== 'undefined') {
                 if (
-                    typeof input.uint16 === "number" &&
+                    typeof input.uint16 === 'number' &&
                     Number.isInteger(input.uint16) &&
                     input.uint16 >= 0 &&
                     input.uint16 <= UINT16_MAX
@@ -1211,9 +1211,9 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _int32: number | undefined;
-            if (typeof input.int32 !== "undefined") {
+            if (typeof input.int32 !== 'undefined') {
                 if (
-                    typeof input.int32 === "number" &&
+                    typeof input.int32 === 'number' &&
                     Number.isInteger(input.int32) &&
                     input.int32 >= INT32_MIN &&
                     input.int32 <= INT32_MAX
@@ -1224,9 +1224,9 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _uint32: number | undefined;
-            if (typeof input.uint32 !== "undefined") {
+            if (typeof input.uint32 !== 'undefined') {
                 if (
-                    typeof input.uint32 === "number" &&
+                    typeof input.uint32 === 'number' &&
                     Number.isInteger(input.uint32) &&
                     input.uint32 >= 0 &&
                     input.uint32 <= UINT32_MAX
@@ -1237,24 +1237,24 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _int64: bigint | undefined;
-            if (typeof input.int64 !== "undefined") {
-                if (typeof input.int64 === "string") {
+            if (typeof input.int64 !== 'undefined') {
+                if (typeof input.int64 === 'string') {
                     _int64 = BigInt(input.int64);
-                } else if (typeof input.int64 === "bigint") {
+                } else if (typeof input.int64 === 'bigint') {
                     _int64 = input.int64;
                 } else {
                     _int64 = BigInt(0);
                 }
             }
             let _uint64: bigint | undefined;
-            if (typeof input.uint64 !== "undefined") {
+            if (typeof input.uint64 !== 'undefined') {
                 if (
-                    typeof input.uint64 === "string" &&
+                    typeof input.uint64 === 'string' &&
                     BigInt(input.uint64) >= BigInt(0)
                 ) {
                     _uint64 = BigInt(input.uint64);
                 } else if (
-                    typeof input.uint64 === "bigint" &&
+                    typeof input.uint64 === 'bigint' &&
                     input.uint64 >= BigInt(0)
                 ) {
                     _uint64 = input.uint64;
@@ -1263,15 +1263,15 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _enum: Enumerator | undefined;
-            if (typeof input.enum !== "undefined") {
-                if (typeof input.enum === "string") {
+            if (typeof input.enum !== 'undefined') {
+                if (typeof input.enum === 'string') {
                     _enum = $$Enumerator.fromSerialValue(input.enum);
                 } else {
                     _enum = $$Enumerator.new();
                 }
             }
             let _object: NestedObject | undefined;
-            if (typeof input.object !== "undefined") {
+            if (typeof input.object !== 'undefined') {
                 if (isObject(input.object)) {
                     _object = $$NestedObject.fromJson(input.object);
                 } else {
@@ -1279,12 +1279,12 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _array: boolean[] | undefined;
-            if (typeof input.array !== "undefined") {
+            if (typeof input.array !== 'undefined') {
                 if (Array.isArray(input.array)) {
                     _array = [];
                     for (const _arrayEl of input.array) {
                         let _arrayElValue: boolean;
-                        if (typeof _arrayEl === "boolean") {
+                        if (typeof _arrayEl === 'boolean') {
                             _arrayElValue = _arrayEl;
                         } else {
                             _arrayElValue = false;
@@ -1296,12 +1296,12 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _record: Record<string, boolean> | undefined;
-            if (typeof input.record !== "undefined") {
+            if (typeof input.record !== 'undefined') {
                 if (isObject(input.record)) {
                     _record = {};
                     for (const [_key, _value] of Object.entries(input.record)) {
                         let _recordValue: boolean;
-                        if (typeof _value === "boolean") {
+                        if (typeof _value === 'boolean') {
                             _recordValue = _value;
                         } else {
                             _recordValue = false;
@@ -1313,7 +1313,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _discriminator: Discriminator | undefined;
-            if (typeof input.discriminator !== "undefined") {
+            if (typeof input.discriminator !== 'undefined') {
                 if (isObject(input.discriminator)) {
                     _discriminator = $$Discriminator.fromJson(
                         input.discriminator,
@@ -1323,7 +1323,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 }
             }
             let _any: any | undefined;
-            if (typeof input.any !== "undefined") {
+            if (typeof input.any !== 'undefined') {
                 _any = input.any;
             }
             return {
@@ -1352,211 +1352,211 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
             return $$ObjectWithOptionalFields.fromJson(JSON.parse(input));
         },
         toJsonString(input): string {
-            let json = "{";
+            let json = '{';
             let _hasKey = false;
-            if (typeof input.string !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.string !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"string":';
                 json += serializeString(input.string);
                 _hasKey = true;
             }
-            if (typeof input.boolean !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.boolean !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"boolean":';
                 json += `${input.boolean}`;
                 _hasKey = true;
             }
-            if (typeof input.timestamp !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.timestamp !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"timestamp":';
                 json += `"${input.timestamp.toISOString()}"`;
                 _hasKey = true;
             }
-            if (typeof input.float32 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.float32 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"float32":';
                 json += `${input.float32}`;
                 _hasKey = true;
             }
-            if (typeof input.float64 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.float64 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"float64":';
                 json += `${input.float64}`;
                 _hasKey = true;
             }
-            if (typeof input.int8 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.int8 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"int8":';
                 json += `${input.int8}`;
                 _hasKey = true;
             }
-            if (typeof input.uint8 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.uint8 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"uint8":';
                 json += `${input.uint8}`;
                 _hasKey = true;
             }
-            if (typeof input.int16 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.int16 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"int16":';
                 json += `${input.int16}`;
                 _hasKey = true;
             }
-            if (typeof input.uint16 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.uint16 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"uint16":';
                 json += `${input.uint16}`;
                 _hasKey = true;
             }
-            if (typeof input.int32 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.int32 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"int32":';
                 json += `${input.int32}`;
                 _hasKey = true;
             }
-            if (typeof input.uint32 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.uint32 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"uint32":';
                 json += `${input.uint32}`;
                 _hasKey = true;
             }
-            if (typeof input.int64 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.int64 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"int64":';
                 json += `"${input.int64}"`;
                 _hasKey = true;
             }
-            if (typeof input.uint64 !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.uint64 !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"uint64":';
                 json += `"${input.uint64}"`;
                 _hasKey = true;
             }
-            if (typeof input.enum !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.enum !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"enum":';
                 json += `"${input.enum}"`;
                 _hasKey = true;
             }
-            if (typeof input.object !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.object !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"object":';
                 json += $$NestedObject.toJsonString(input.object);
                 _hasKey = true;
             }
-            if (typeof input.array !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.array !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"array":';
-                json += "[";
+                json += '[';
                 for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) json += ",";
+                    if (i !== 0) json += ',';
                     const _inputArrayEl = input.array[i];
                     json += `${_inputArrayEl}`;
                 }
-                json += "]";
+                json += ']';
                 _hasKey = true;
             }
-            if (typeof input.record !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.record !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"record":';
-                json += "{";
+                json += '{';
                 let _recordPropertyCount = 0;
                 for (const [_key, _value] of Object.entries(input.record)) {
                     if (_recordPropertyCount !== 0) {
-                        json += ",";
+                        json += ',';
                     }
                     json += `${serializeString(_key)}:`;
                     json += `${_value}`;
                     _recordPropertyCount++;
                 }
-                json += "}";
+                json += '}';
                 _hasKey = true;
             }
-            if (typeof input.discriminator !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.discriminator !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"discriminator":';
                 json += $$Discriminator.toJsonString(input.discriminator);
                 _hasKey = true;
             }
-            if (typeof input.any !== "undefined") {
-                if (_hasKey) json += ",";
+            if (typeof input.any !== 'undefined') {
+                if (_hasKey) json += ',';
                 json += '"any":';
                 json += JSON.stringify(input.any);
                 _hasKey = true;
             }
-            json += "}";
+            json += '}';
             return json;
         },
         toUrlQueryString(input): string {
             const queryParts: string[] = [];
-            if (typeof input.string !== "undefined") {
+            if (typeof input.string !== 'undefined') {
                 queryParts.push(`string=${input.string}`);
             }
-            if (typeof input.boolean !== "undefined") {
+            if (typeof input.boolean !== 'undefined') {
                 queryParts.push(`boolean=${input.boolean}`);
             }
-            if (typeof input.timestamp !== "undefined") {
+            if (typeof input.timestamp !== 'undefined') {
                 queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
             }
-            if (typeof input.float32 !== "undefined") {
+            if (typeof input.float32 !== 'undefined') {
                 queryParts.push(`float32=${input.float32}`);
             }
-            if (typeof input.float64 !== "undefined") {
+            if (typeof input.float64 !== 'undefined') {
                 queryParts.push(`float64=${input.float64}`);
             }
-            if (typeof input.int8 !== "undefined") {
+            if (typeof input.int8 !== 'undefined') {
                 queryParts.push(`int8=${input.int8}`);
             }
-            if (typeof input.uint8 !== "undefined") {
+            if (typeof input.uint8 !== 'undefined') {
                 queryParts.push(`uint8=${input.uint8}`);
             }
-            if (typeof input.int16 !== "undefined") {
+            if (typeof input.int16 !== 'undefined') {
                 queryParts.push(`int16=${input.int16}`);
             }
-            if (typeof input.uint16 !== "undefined") {
+            if (typeof input.uint16 !== 'undefined') {
                 queryParts.push(`uint16=${input.uint16}`);
             }
-            if (typeof input.int32 !== "undefined") {
+            if (typeof input.int32 !== 'undefined') {
                 queryParts.push(`int32=${input.int32}`);
             }
-            if (typeof input.uint32 !== "undefined") {
+            if (typeof input.uint32 !== 'undefined') {
                 queryParts.push(`uint32=${input.uint32}`);
             }
-            if (typeof input.int64 !== "undefined") {
+            if (typeof input.int64 !== 'undefined') {
                 queryParts.push(`int64=${input.int64}`);
             }
-            if (typeof input.uint64 !== "undefined") {
+            if (typeof input.uint64 !== 'undefined') {
                 queryParts.push(`uint64=${input.uint64}`);
             }
-            if (typeof input.enum !== "undefined") {
+            if (typeof input.enum !== 'undefined') {
                 queryParts.push(`enum=${input.enum}`);
             }
-            if (typeof input.object !== "undefined") {
+            if (typeof input.object !== 'undefined') {
                 console.warn(
-                    "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/object.",
+                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/object.',
                 );
             }
-            if (typeof input.array !== "undefined") {
+            if (typeof input.array !== 'undefined') {
                 console.warn(
-                    "[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithOptionalFields/array.",
+                    '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithOptionalFields/array.',
                 );
             }
-            if (typeof input.record !== "undefined") {
+            if (typeof input.record !== 'undefined') {
                 console.warn(
-                    "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.",
+                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.',
                 );
             }
-            if (typeof input.discriminator !== "undefined") {
+            if (typeof input.discriminator !== 'undefined') {
                 console.warn(
-                    "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/discriminator.",
+                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/discriminator.',
                 );
             }
-            if (typeof input.any !== "undefined") {
+            if (typeof input.any !== 'undefined') {
                 console.warn(
                     "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithOptionalFields/any.",
                 );
             }
-            return queryParts.join("&");
+            return queryParts.join('&');
         },
     };
 
@@ -1609,47 +1609,47 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
         validate(input): input is ObjectWithNullableFields {
             return (
                 isObject(input) &&
-                (typeof input.string === "string" || input.string === null) &&
-                (typeof input.boolean === "boolean" ||
+                (typeof input.string === 'string' || input.string === null) &&
+                (typeof input.boolean === 'boolean' ||
                     input.boolean === null) &&
                 (input.timestamp instanceof Date || input.timestamp === null) &&
-                (typeof input.float32 === "number" || input.float32 === null) &&
-                (typeof input.float64 === "number" || input.float64 === null) &&
-                ((typeof input.int8 === "number" &&
+                (typeof input.float32 === 'number' || input.float32 === null) &&
+                (typeof input.float64 === 'number' || input.float64 === null) &&
+                ((typeof input.int8 === 'number' &&
                     Number.isInteger(input.int8) &&
                     input.int8 >= INT8_MIN &&
                     input.int8 <= INT8_MAX) ||
                     input.int8 === null) &&
-                ((typeof input.uint8 === "number" &&
+                ((typeof input.uint8 === 'number' &&
                     Number.isInteger(input.uint8) &&
                     input.uint8 >= 0 &&
                     input.uint8 <= UINT8_MAX) ||
                     input.uint8 === null) &&
-                ((typeof input.int16 === "number" &&
+                ((typeof input.int16 === 'number' &&
                     Number.isInteger(input.int16) &&
                     input.int16 >= INT16_MIN &&
                     input.int16 <= INT16_MAX) ||
                     input.int16 === null) &&
-                ((typeof input.uint16 === "number" &&
+                ((typeof input.uint16 === 'number' &&
                     Number.isInteger(input.uint16) &&
                     input.uint16 >= 0 &&
                     input.uint16 <= UINT16_MAX) ||
                     input.uint16 === null) &&
-                ((typeof input.int32 === "number" &&
+                ((typeof input.int32 === 'number' &&
                     Number.isInteger(input.int32) &&
                     input.int32 >= INT32_MIN &&
                     input.int32 <= INT32_MAX) ||
                     input.int32 === null) &&
-                ((typeof input.uint32 === "number" &&
+                ((typeof input.uint32 === 'number' &&
                     Number.isInteger(input.uint32) &&
                     input.uint32 >= 0 &&
                     input.uint32 <= UINT32_MAX) ||
                     input.uint32 === null) &&
-                ((typeof input.int64 === "bigint" &&
+                ((typeof input.int64 === 'bigint' &&
                     input.int64 >= INT64_MIN &&
                     input.int64 <= INT64_MAX) ||
                     input.int64 === null) &&
-                ((typeof input.uint64 === "bigint" &&
+                ((typeof input.uint64 === 'bigint' &&
                     input.uint64 >= BigInt(0) &&
                     input.uint64 <= UINT64_MAX) ||
                     input.uint64 === null) &&
@@ -1658,12 +1658,12 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                     input.object === null) &&
                 ((Array.isArray(input.array) &&
                     input.array.every(
-                        (_element) => typeof _element === "boolean",
+                        (_element) => typeof _element === 'boolean',
                     )) ||
                     input.array === null) &&
                 ((isObject(input.record) &&
                     Object.values(input.record).every(
-                        (_value) => typeof _value === "boolean",
+                        (_value) => typeof _value === 'boolean',
                     )) ||
                     input.record === null) &&
                 ($$Discriminator.validate(input.discriminator) ||
@@ -1673,19 +1673,19 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
         },
         fromJson(input): ObjectWithNullableFields {
             let _string: string | null;
-            if (typeof input.string === "string") {
+            if (typeof input.string === 'string') {
                 _string = input.string;
             } else {
                 _string = null;
             }
             let _boolean: boolean | null;
-            if (typeof input.boolean === "boolean") {
+            if (typeof input.boolean === 'boolean') {
                 _boolean = input.boolean;
             } else {
                 _boolean = null;
             }
             let _timestamp: Date | null;
-            if (typeof input.timestamp === "string") {
+            if (typeof input.timestamp === 'string') {
                 _timestamp = new Date(input.timestamp);
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
@@ -1693,20 +1693,20 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _timestamp = null;
             }
             let _float32: number | null;
-            if (typeof input.float32 === "number") {
+            if (typeof input.float32 === 'number') {
                 _float32 = input.float32;
             } else {
                 _float32 = null;
             }
             let _float64: number | null;
-            if (typeof input.float64 === "number") {
+            if (typeof input.float64 === 'number') {
                 _float64 = input.float64;
             } else {
                 _float64 = null;
             }
             let _int8: number | null;
             if (
-                typeof input.int8 === "number" &&
+                typeof input.int8 === 'number' &&
                 Number.isInteger(input.int8) &&
                 input.int8 >= INT8_MIN &&
                 input.int8 <= INT8_MAX
@@ -1717,7 +1717,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             }
             let _uint8: number | null;
             if (
-                typeof input.uint8 === "number" &&
+                typeof input.uint8 === 'number' &&
                 Number.isInteger(input.uint8) &&
                 input.uint8 >= 0 &&
                 input.uint8 <= UINT8_MAX
@@ -1728,7 +1728,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             }
             let _int16: number | null;
             if (
-                typeof input.int16 === "number" &&
+                typeof input.int16 === 'number' &&
                 Number.isInteger(input.int16) &&
                 input.int16 >= INT16_MIN &&
                 input.int16 <= INT16_MAX
@@ -1739,7 +1739,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             }
             let _uint16: number | null;
             if (
-                typeof input.uint16 === "number" &&
+                typeof input.uint16 === 'number' &&
                 Number.isInteger(input.uint16) &&
                 input.uint16 >= 0 &&
                 input.uint16 <= UINT16_MAX
@@ -1750,7 +1750,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             }
             let _int32: number | null;
             if (
-                typeof input.int32 === "number" &&
+                typeof input.int32 === 'number' &&
                 Number.isInteger(input.int32) &&
                 input.int32 >= INT32_MIN &&
                 input.int32 <= INT32_MAX
@@ -1761,7 +1761,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             }
             let _uint32: number | null;
             if (
-                typeof input.uint32 === "number" &&
+                typeof input.uint32 === 'number' &&
                 Number.isInteger(input.uint32) &&
                 input.uint32 >= 0 &&
                 input.uint32 <= UINT32_MAX
@@ -1771,21 +1771,21 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _uint32 = null;
             }
             let _int64: bigint | null;
-            if (typeof input.int64 === "string") {
+            if (typeof input.int64 === 'string') {
                 _int64 = BigInt(input.int64);
-            } else if (typeof input.int64 === "bigint") {
+            } else if (typeof input.int64 === 'bigint') {
                 _int64 = input.int64;
             } else {
                 _int64 = null;
             }
             let _uint64: bigint | null;
             if (
-                typeof input.uint64 === "string" &&
+                typeof input.uint64 === 'string' &&
                 BigInt(input.uint64) >= BigInt(0)
             ) {
                 _uint64 = BigInt(input.uint64);
             } else if (
-                typeof input.uint64 === "bigint" &&
+                typeof input.uint64 === 'bigint' &&
                 input.uint64 >= BigInt(0)
             ) {
                 _uint64 = input.uint64;
@@ -1793,7 +1793,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _uint64 = null;
             }
             let _enum: Enumerator | null;
-            if (typeof input.enum === "string") {
+            if (typeof input.enum === 'string') {
                 _enum = $$Enumerator.fromSerialValue(input.enum);
             } else {
                 _enum = null;
@@ -1809,7 +1809,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _array = [];
                 for (const _arrayEl of input.array) {
                     let _arrayElValue: boolean;
-                    if (typeof _arrayEl === "boolean") {
+                    if (typeof _arrayEl === 'boolean') {
                         _arrayElValue = _arrayEl;
                     } else {
                         _arrayElValue = false;
@@ -1824,7 +1824,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _record = {};
                 for (const [_key, _value] of Object.entries(input.record)) {
                     let _recordValue: boolean;
-                    if (typeof _value === "boolean") {
+                    if (typeof _value === 'boolean') {
                         _recordValue = _value;
                     } else {
                         _recordValue = false;
@@ -1868,12 +1868,12 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             return $$ObjectWithNullableFields.fromJson(JSON.parse(input));
         },
         toJsonString(input): string {
-            let json = "{";
+            let json = '{';
             json += '"string":';
-            if (typeof input.string === "string") {
+            if (typeof input.string === 'string') {
                 json += serializeString(input.string);
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"boolean":';
             json += `${input.boolean}`;
@@ -1881,7 +1881,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             if (input.timestamp instanceof Date) {
                 json += `"${input.timestamp.toISOString()}"`;
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"float32":';
             json += `${input.float32}`;
@@ -1900,66 +1900,66 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             json += ',"uint32":';
             json += `${input.uint32}`;
             json += ',"int64":';
-            if (typeof input.int64 === "bigint") {
+            if (typeof input.int64 === 'bigint') {
                 json += `"${input.int64}"`;
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"uint64":';
-            if (typeof input.uint64 === "bigint") {
+            if (typeof input.uint64 === 'bigint') {
                 json += `"${input.uint64}"`;
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"enum":';
-            if (typeof input.enum === "string") {
+            if (typeof input.enum === 'string') {
                 json += `"${input.enum}"`;
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"object":';
             if (input.object !== null) {
                 json += $$NestedObject.toJsonString(input.object);
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"array":';
             if (input.array !== null) {
-                json += "[";
+                json += '[';
                 for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) json += ",";
+                    if (i !== 0) json += ',';
                     const _inputArrayEl = input.array[i];
                     json += `${_inputArrayEl}`;
                 }
-                json += "]";
+                json += ']';
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"record":';
             if (input.record !== null) {
-                json += "{";
+                json += '{';
                 let _recordPropertyCount = 0;
                 for (const [_key, _value] of Object.entries(input.record)) {
                     if (_recordPropertyCount !== 0) {
-                        json += ",";
+                        json += ',';
                     }
                     json += `${serializeString(_key)}:`;
                     json += `${_value}`;
                     _recordPropertyCount++;
                 }
-                json += "}";
+                json += '}';
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"discriminator":';
             if (input.discriminator != null) {
                 json += $$Discriminator.toJsonString(input.discriminator);
             } else {
-                json += "null";
+                json += 'null';
             }
             json += ',"any":';
             json += JSON.stringify(input.any);
-            json += "}";
+            json += '}';
             return json;
         },
         toUrlQueryString(input): string {
@@ -1979,21 +1979,21 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             queryParts.push(`uint64=${input.uint64}`);
             queryParts.push(`enum=${input.enum}`);
             console.warn(
-                "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/object.",
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/object.',
             );
             console.warn(
-                "[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithNullableFields/array.",
+                '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithNullableFields/array.',
             );
             console.warn(
-                "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.",
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.',
             );
             console.warn(
-                "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/discriminator.",
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/discriminator.',
             );
             console.warn(
                 "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",
             );
-            return queryParts.join("&");
+            return queryParts.join('&');
         },
     };
 
@@ -2037,30 +2037,30 @@ export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
         return $$RecursiveObject.fromJson(JSON.parse(input));
     },
     toJsonString(input): string {
-        let json = "{";
+        let json = '{';
         json += '"left":';
         if (input.left !== null) {
             json += $$RecursiveObject.toJsonString(input.left);
         } else {
-            json += "null";
+            json += 'null';
         }
         json += ',"right":';
         if (input.right !== null) {
             json += $$RecursiveObject.toJsonString(input.right);
         } else {
-            json += "null";
+            json += 'null';
         }
-        json += "}";
+        json += '}';
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
         console.warn(
-            "[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.",
+            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.',
         );
         console.warn(
-            "[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.",
+            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.',
         );
-        return queryParts.join("&");
+        return queryParts.join('&');
     },
 };

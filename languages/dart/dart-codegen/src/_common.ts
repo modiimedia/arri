@@ -3,7 +3,7 @@ import {
     pascalCase,
     removeDisallowedChars,
     Schema,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 export interface CodegenContext {
     clientName: string;
@@ -111,7 +111,7 @@ const reservedIdentifierKeywords: Record<string, 0 | 1 | 2 | 3> = {
 
 export function canUseIdentifier(input: string) {
     const reservedId = reservedIdentifierKeywords[input];
-    if (typeof reservedId === "undefined") {
+    if (typeof reservedId === 'undefined') {
         return true;
     }
     switch (reservedId) {
@@ -125,14 +125,14 @@ export function canUseIdentifier(input: string) {
             return true;
         default:
             reservedId satisfies never;
-            throw new Error("Unhandled case");
+            throw new Error('Unhandled case');
     }
 }
 
 export function sanitizeIdentifier(input: string): string {
-    const bannedCharacters = "!@#$%^&*()-=+[{}]\\|/?.><,;`~";
+    const bannedCharacters = '!@#$%^&*()-=+[{}]\\|/?.><,;`~';
     const result = removeDisallowedChars(input, bannedCharacters);
-    const numbers = "0123456789";
+    const numbers = '0123456789';
     if (numbers.includes(result.charAt(0))) {
         return `k_${result}`;
     }
@@ -141,7 +141,7 @@ export function sanitizeIdentifier(input: string): string {
 
 export function canUseClassName(input: string) {
     const reservedId = reservedIdentifierKeywords[input];
-    if (typeof reservedId === "undefined") {
+    if (typeof reservedId === 'undefined') {
         return true;
     }
     switch (reservedId) {
@@ -155,7 +155,7 @@ export function canUseClassName(input: string) {
             return true;
         default:
             reservedId satisfies never;
-            throw new Error("Unhandled case");
+            throw new Error('Unhandled case');
     }
 }
 
@@ -193,28 +193,28 @@ export function getDartClassName(
         );
     }
     return validDartClassName(
-        context.instancePath.split("/").join("_"),
+        context.instancePath.split('/').join('_'),
         context.modelPrefix,
     );
 }
 
 export function getCodeComments(
-    metadata?: Schema["metadata"],
+    metadata?: Schema['metadata'],
     leading?: string,
 ) {
-    if (!metadata?.description && !metadata?.isDeprecated) return "";
+    if (!metadata?.description && !metadata?.isDeprecated) return '';
     if (!metadata.description && metadata.isDeprecated) {
-        return `${leading ?? ""}@deprecated\n`;
+        return `${leading ?? ''}@deprecated\n`;
     }
     const descriptionString = metadata.description
-        ?.split("\n")
-        .map((line) => `${leading ?? ""}/// ${line}`)
-        .join("\n");
+        ?.split('\n')
+        .map((line) => `${leading ?? ''}/// ${line}`)
+        .join('\n');
     if (descriptionString && metadata.isDeprecated) {
-        return `${descriptionString}\n${leading ?? ""}@deprecated\n`;
+        return `${descriptionString}\n${leading ?? ''}@deprecated\n`;
     }
     if (descriptionString) {
         return `${descriptionString}\n`;
     }
-    return "";
+    return '';
 }

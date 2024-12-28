@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from 'vitest';
 
 import {
     $$Book,
@@ -16,48 +16,48 @@ import {
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
-} from "./referenceClient";
+} from './referenceClient';
 
-const testDate = new Date("2001-01-01T16:00:00.000Z");
-const referenceDir = path.resolve(__dirname, "../../../../tests/test-files");
+const testDate = new Date('2001-01-01T16:00:00.000Z');
+const referenceDir = path.resolve(__dirname, '../../../../tests/test-files');
 const testFile = (filename: string) =>
-    fs.readFileSync(path.resolve(referenceDir, filename), "utf8");
+    fs.readFileSync(path.resolve(referenceDir, filename), 'utf8');
 
-describe("Book", () => {
+describe('Book', () => {
     const targetValue: Book = {
-        id: "1",
-        name: "The Adventures of Tom Sawyer",
+        id: '1',
+        name: 'The Adventures of Tom Sawyer',
         createdAt: testDate,
         updatedAt: testDate,
     };
-    const jsonReference = testFile("Book.json");
-    test("JSON Parsing", () => {
+    const jsonReference = testFile('Book.json');
+    test('JSON Parsing', () => {
         const result = $$Book.fromJsonString(jsonReference);
         expect(result).toStrictEqual(targetValue);
     });
-    test("JSON Output", () => {
+    test('JSON Output', () => {
         expect($$Book.toJsonString(targetValue)).toEqual(jsonReference);
     });
-    test("URL Query String Output", () => {
+    test('URL Query String Output', () => {
         expect($$Book.toUrlQueryString(targetValue)).toEqual(
             `id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z`,
         );
     });
 });
 
-describe("NestedObject", () => {
+describe('NestedObject', () => {
     const noSpecialCharsTargetValue: NestedObject = {
-        id: "1",
-        content: "hello world",
+        id: '1',
+        content: 'hello world',
     };
-    const noSpecialCharsJson = testFile("NestedObject_NoSpecialChars.json");
+    const noSpecialCharsJson = testFile('NestedObject_NoSpecialChars.json');
     const specialCharsTargetValue: NestedObject = {
-        id: "1",
+        id: '1',
         content:
             'double-quote: " | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000',
     };
-    const specialCharsJson = testFile("NestedObject_SpecialChars.json");
-    test("JSON Parsing", () => {
+    const specialCharsJson = testFile('NestedObject_SpecialChars.json');
+    test('JSON Parsing', () => {
         expect($$NestedObject.fromJsonString(noSpecialCharsJson)).toStrictEqual(
             noSpecialCharsTargetValue,
         );
@@ -65,7 +65,7 @@ describe("NestedObject", () => {
             specialCharsTargetValue,
         );
     });
-    test("JSON Output", () => {
+    test('JSON Output', () => {
         expect($$NestedObject.toJsonString(noSpecialCharsTargetValue)).toEqual(
             noSpecialCharsJson,
         );
@@ -75,9 +75,9 @@ describe("NestedObject", () => {
     });
 });
 
-describe("ObjectWithEveryType", () => {
+describe('ObjectWithEveryType', () => {
     const targetValue: ObjectWithEveryType = {
-        string: "",
+        string: '',
         boolean: false,
         timestamp: testDate,
         float32: 1.5,
@@ -90,10 +90,10 @@ describe("ObjectWithEveryType", () => {
         uint32: 100,
         int64: 1000n,
         uint64: 1000n,
-        enum: "BAZ",
+        enum: 'BAZ',
         object: {
-            id: "1",
-            content: "hello world",
+            id: '1',
+            content: 'hello world',
         },
         array: [true, false, false],
         record: {
@@ -101,18 +101,18 @@ describe("ObjectWithEveryType", () => {
             B: false,
         },
         discriminator: {
-            typeName: "C",
-            id: "",
-            name: "",
+            typeName: 'C',
+            id: '',
+            name: '',
             date: testDate,
         },
-        any: "hello world",
+        any: 'hello world',
     };
-    const jsonReference = testFile("ObjectWithEveryType.json");
+    const jsonReference = testFile('ObjectWithEveryType.json');
     const emptyJsonReference = testFile(
-        "ObjectWithOptionalFields_AllUndefined.json",
+        'ObjectWithOptionalFields_AllUndefined.json',
     );
-    test("JSON parsing", () => {
+    test('JSON parsing', () => {
         const result = $$ObjectWithEveryType.fromJsonString(jsonReference);
         expect(result).toStrictEqual(targetValue);
 
@@ -120,14 +120,14 @@ describe("ObjectWithEveryType", () => {
             $$ObjectWithEveryType.fromJsonString(emptyJsonReference);
         expect(emptyJsonResult).toStrictEqual($$ObjectWithEveryType.new());
     });
-    test("JSON output", () => {
+    test('JSON output', () => {
         expect($$ObjectWithEveryType.toJsonString(targetValue)).toEqual(
             jsonReference,
         );
     });
 });
 
-describe("ObjectWithOptionalFields", () => {
+describe('ObjectWithOptionalFields', () => {
     const allUndefinedTargetValue: ObjectWithOptionalFields = {
         string: undefined,
         boolean: undefined,
@@ -150,7 +150,7 @@ describe("ObjectWithOptionalFields", () => {
         any: undefined,
     };
     const noUndefinedTargetValue: ObjectWithOptionalFields = {
-        string: "",
+        string: '',
         boolean: false,
         timestamp: testDate,
         float32: 1.5,
@@ -163,10 +163,10 @@ describe("ObjectWithOptionalFields", () => {
         uint32: 100,
         int64: 1000n,
         uint64: 1000n,
-        enum: "BAZ",
+        enum: 'BAZ',
         object: {
-            id: "1",
-            content: "hello world",
+            id: '1',
+            content: 'hello world',
         },
         array: [true, false, false],
         record: {
@@ -174,20 +174,20 @@ describe("ObjectWithOptionalFields", () => {
             B: false,
         },
         discriminator: {
-            typeName: "C",
-            id: "",
-            name: "",
+            typeName: 'C',
+            id: '',
+            name: '',
             date: testDate,
         },
-        any: "hello world",
+        any: 'hello world',
     };
     const allUndefinedJson = testFile(
-        "ObjectWithOptionalFields_AllUndefined.json",
+        'ObjectWithOptionalFields_AllUndefined.json',
     );
     const noUndefinedJson = testFile(
-        "ObjectWithOptionalFields_NoUndefined.json",
+        'ObjectWithOptionalFields_NoUndefined.json',
     );
-    test("JSON parsing", () => {
+    test('JSON parsing', () => {
         expect(
             $$ObjectWithOptionalFields.fromJsonString(allUndefinedJson),
         ).toStrictEqual(allUndefinedTargetValue);
@@ -195,7 +195,7 @@ describe("ObjectWithOptionalFields", () => {
             $$ObjectWithOptionalFields.fromJsonString(noUndefinedJson),
         ).toStrictEqual(noUndefinedTargetValue);
     });
-    test("JSON output", () => {
+    test('JSON output', () => {
         expect(
             $$ObjectWithOptionalFields.toJsonString(allUndefinedTargetValue),
         ).toEqual(allUndefinedJson);
@@ -205,7 +205,7 @@ describe("ObjectWithOptionalFields", () => {
     });
 });
 
-describe("ObjectWithNullableFields", () => {
+describe('ObjectWithNullableFields', () => {
     const allNullTargetValue: ObjectWithNullableFields = {
         string: null,
         boolean: null,
@@ -228,7 +228,7 @@ describe("ObjectWithNullableFields", () => {
         any: null,
     };
     const noNullTargetValue: ObjectWithNullableFields = {
-        string: "",
+        string: '',
         boolean: true,
         timestamp: testDate,
         float32: 1.5,
@@ -241,10 +241,10 @@ describe("ObjectWithNullableFields", () => {
         uint32: 100,
         int64: 1000n,
         uint64: 1000n,
-        enum: "BAZ",
+        enum: 'BAZ',
         object: {
-            id: "",
-            content: "",
+            id: '',
+            content: '',
         },
         array: [true, false, false],
         record: {
@@ -252,20 +252,20 @@ describe("ObjectWithNullableFields", () => {
             B: false,
         },
         discriminator: {
-            typeName: "C",
-            id: "",
-            name: "",
+            typeName: 'C',
+            id: '',
+            name: '',
             date: testDate,
         },
-        any: { message: "hello world" },
+        any: { message: 'hello world' },
     };
     const allNullJsonReference = testFile(
-        "ObjectWithNullableFields_AllNull.json",
+        'ObjectWithNullableFields_AllNull.json',
     );
     const noNullJsonReference = testFile(
-        "ObjectWithNullableFields_NoNull.json",
+        'ObjectWithNullableFields_NoNull.json',
     );
-    test("JSON parsing", () => {
+    test('JSON parsing', () => {
         const allNullResult =
             $$ObjectWithNullableFields.fromJsonString(allNullJsonReference);
         const noNullResult =
@@ -273,7 +273,7 @@ describe("ObjectWithNullableFields", () => {
         expect(allNullResult).toStrictEqual(allNullTargetValue);
         expect(noNullResult).toStrictEqual(noNullTargetValue);
     });
-    test("JSON output", () => {
+    test('JSON output', () => {
         expect(
             $$ObjectWithNullableFields.toJsonString(allNullTargetValue),
         ).toEqual(allNullJsonReference);
@@ -283,7 +283,7 @@ describe("ObjectWithNullableFields", () => {
     });
 });
 
-describe("RecursiveObject", () => {
+describe('RecursiveObject', () => {
     const targetValue: RecursiveObject = {
         left: {
             left: { left: null, right: { left: null, right: null } },
@@ -291,12 +291,12 @@ describe("RecursiveObject", () => {
         },
         right: { left: null, right: null },
     };
-    const jsonReference = testFile("RecursiveObject.json");
-    test("JSON parsing", () => {
+    const jsonReference = testFile('RecursiveObject.json');
+    test('JSON parsing', () => {
         const result = $$RecursiveObject.fromJsonString(jsonReference);
         expect(result).toStrictEqual(targetValue);
     });
-    test("JSON output", () => {
+    test('JSON output', () => {
         expect($$RecursiveObject.toJsonString(targetValue)).toEqual(
             jsonReference,
         );

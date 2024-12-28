@@ -1,7 +1,7 @@
-import { SchemaFormValues } from "@arrirpc/codegen-utils";
+import { SchemaFormValues } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, DartProperty, outputIsNullable } from "./_common";
-import { dartTypeFromSchema } from "./_index";
+import { CodegenContext, DartProperty, outputIsNullable } from './_common';
+import { dartTypeFromSchema } from './_index';
 
 export function dartMapFromSchema(
     schema: SchemaFormValues,
@@ -14,11 +14,12 @@ export function dartMapFromSchema(
         generatedTypes: context.generatedTypes,
         instancePath: `${context.instancePath}/[entry]`,
         schemaPath: `${context.schemaPath}/values`,
+        clientVersion: context.clientVersion,
     });
     const typeName = isNullable
         ? `Map<String, ${innerType.typeName}>?`
         : `Map<String, ${innerType.typeName}>`;
-    const defaultValue = isNullable ? "null" : "{}";
+    const defaultValue = isNullable ? 'null' : '{}';
     return {
         typeName,
         isNullable,
@@ -29,7 +30,7 @@ export function dartMapFromSchema(
                     ? (${input} as Map<String, dynamic>).map(
                         (_key_, _val_) => MapEntry(
                           _key_,
-                          ${innerType.fromJson("_val_")},
+                          ${innerType.fromJson('_val_')},
                         ),
                       )
                     : null`;
@@ -38,19 +39,19 @@ export function dartMapFromSchema(
                 ? (${input} as Map<String, dynamic>).map(
                     (_key_, _val_) => MapEntry(
                       _key_,
-                      ${innerType.fromJson("_val_")},
+                      ${innerType.fromJson('_val_')},
                     ),
                   )
                 : <String, ${innerType.typeName}>{}`;
         },
         toJson(input) {
             if (context.isOptional) {
-                return `${input}!.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")},),)`;
+                return `${input}!.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson('_val_', '', '')},),)`;
             }
             if (schema.nullable) {
-                return `${input}?.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")},),)`;
+                return `${input}?.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson('_val_', '', '')},),)`;
             }
-            return `${input}.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")},),)`;
+            return `${input}.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson('_val_', '', '')},),)`;
         },
         toQueryString() {
             return `print(

@@ -1,10 +1,10 @@
-import { RuleTester } from "eslint";
+import { RuleTester } from 'eslint';
 
-import noAnonymousObject from "./no-anonymous-object";
+import noAnonymousObject from './no-anonymous-object';
 
 const tester = new RuleTester();
 
-tester.run("no-anonymous-object", noAnonymousObject, {
+tester.run('no-anonymous-object', noAnonymousObject, {
     valid: [
         {
             code: `
@@ -57,16 +57,16 @@ const PickedObject = a.pick(
 `,
             errors: [
                 {
-                    message: "root object schemas should specify an id",
+                    message: 'root object schemas should specify an id',
                 },
                 {
-                    message: "root object schemas should specify an id",
+                    message: 'root object schemas should specify an id',
                 },
                 {
-                    message: "root object schemas should specify an id",
+                    message: 'root object schemas should specify an id',
                 },
                 {
-                    message: "root object schemas should specify an id",
+                    message: 'root object schemas should specify an id',
                 },
             ],
         },

@@ -1,10 +1,10 @@
-import { RuleTester } from "eslint";
+import { RuleTester } from 'eslint';
 
-import noAnonymousEnumerator from "./no-anonymous-enumerator";
+import noAnonymousEnumerator from './no-anonymous-enumerator';
 
 const tester = new RuleTester();
 
-tester.run("no-anonymous-enumerator", noAnonymousEnumerator, {
+tester.run('no-anonymous-enumerator', noAnonymousEnumerator, {
     valid: [
         {
             code: `
@@ -33,10 +33,10 @@ const MyEnum = a.enumerator(["A", "B", "C"]);
 const MyStringEnum = a.stringEnum(["A", "B", "C"]);`,
             errors: [
                 {
-                    message: "root enum schemas must specify an id",
+                    message: 'root enum schemas must specify an id',
                 },
                 {
-                    message: "root enum schemas must specify an id",
+                    message: 'root enum schemas must specify an id',
                 },
             ],
         },

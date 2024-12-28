@@ -1,18 +1,18 @@
-import { Schema } from "@arrirpc/codegen-utils";
+import { Schema } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, TsProperty } from "./common";
+import { CodegenContext, TsProperty } from './common';
 
 export function tsAnyFromSchema(
     schema: Schema,
     context: CodegenContext,
 ): TsProperty {
-    const typeName = "any";
-    const defaultValue = schema.nullable ? "null" : "undefined";
+    const typeName = 'any';
+    const defaultValue = schema.nullable ? 'null' : 'undefined';
     return {
         typeName,
         defaultValue,
         validationTemplate(_) {
-            return "true";
+            return 'true';
         },
         fromJsonTemplate(input, target) {
             return `${target} = ${input}`;
@@ -23,6 +23,6 @@ export function tsAnyFromSchema(
         toQueryStringTemplate(_input, _target, _key) {
             return `console.warn("[WARNING] Cannot serialize any's to query string. Skipping property at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

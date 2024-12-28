@@ -1,8 +1,8 @@
-import { isEqual } from "lodash";
+import { isEqual } from 'lodash';
 
-import { a } from "../_index";
-import { compile } from "../compile";
-import { parsingTestSuites, validationTestSuites } from "../testSuites";
+import { a } from '../_index';
+import { compile } from '../compile';
+import { parsingTestSuites, validationTestSuites } from '../testSuites';
 
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
@@ -10,7 +10,7 @@ for (const key of Object.keys(validationTestSuites)) {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
             expect(isEqual(Compiled.parse(input), input));
-            if (typeof input === "object") {
+            if (typeof input === 'object') {
                 expect(
                     isEqual(Compiled.parse(Compiled.serialize(input)), input),
                 );
@@ -23,7 +23,7 @@ for (const key of Object.keys(validationTestSuites)) {
     });
 }
 
-describe("parsing test suites", () => {
+describe('parsing test suites', () => {
     for (const key of Object.keys(parsingTestSuites)) {
         const suite = parsingTestSuites[key]!;
         test(key, () => {
@@ -34,7 +34,7 @@ describe("parsing test suites", () => {
                 const actualResult = Compiled.safeParse(input);
                 if (!actualResult.success) {
                     console.log(Compiled.compiledCode.parse);
-                    console.log(input, "Should parse");
+                    console.log(input, 'Should parse');
                 }
                 expect(actualResult.success).toBe(true);
                 if (actualResult.success) {
@@ -54,7 +54,7 @@ describe("parsing test suites", () => {
                 const result = Compiled.safeParse(input);
                 if (result.success) {
                     console.log(Compiled.compiledCode.parse);
-                    console.log(input, "Should NOT parse");
+                    console.log(input, 'Should NOT parse');
                 }
                 expect(result.success).toBe(false);
             }
@@ -62,39 +62,39 @@ describe("parsing test suites", () => {
     }
 });
 
-it("parses floats", () => {
+it('parses floats', () => {
     const Compiled = a.compile(a.number());
-    expect(Compiled.parse("1")).toBe(1);
+    expect(Compiled.parse('1')).toBe(1);
     expect(Compiled.parse(1)).toBe(1);
-    expect(Compiled.parse("1500.5")).toBe(1500.5);
-    expect(!Compiled.safeParse("hello world").success);
+    expect(Compiled.parse('1500.5')).toBe(1500.5);
+    expect(!Compiled.safeParse('hello world').success);
     expect(!Compiled.safeParse(true).success);
 });
 
-it("parses ints", () => {
+it('parses ints', () => {
     const Compiled = a.compile(a.uint32());
-    expect(Compiled.parse("1")).toBe(1);
+    expect(Compiled.parse('1')).toBe(1);
     expect(Compiled.parse(1)).toBe(1);
-    expect(!Compiled.safeParse("1500.5").success);
+    expect(!Compiled.safeParse('1500.5').success);
     expect(!Compiled.safeParse(-100).success);
     expect(!Compiled.safeParse(true).success);
 });
 
-it("parses timestamps", () => {
+it('parses timestamps', () => {
     const val = new Date();
     const Compiled = a.compile(a.timestamp());
     expect(Compiled.parse(val).getTime()).toBe(val.getTime());
     expect(Compiled.parse(val.toISOString()).getTime()).toBe(val.getTime());
 });
 
-it("parses arrays", () => {
+it('parses arrays', () => {
     const CompiledSimple = a.compile(a.array(a.int8()));
     expect(CompiledSimple.parse([1, 2, 3, 4, 5])).toStrictEqual([
         1, 2, 3, 4, 5,
     ]);
 });
 
-it("respects the strict option", () => {
+it('respects the strict option', () => {
     const LooseSchema = a.compile(
         a.object({
             id: a.string(),
@@ -111,13 +111,13 @@ it("respects the strict option", () => {
         ),
     );
     const input = {
-        id: "",
-        name: "",
+        id: '',
+        name: '',
     };
     const inputWithAdditionalFields = {
-        id: "",
-        name: "",
-        description: "",
+        id: '',
+        name: '',
+        description: '',
     };
     expect(LooseSchema.safeParse(input).success);
     expect(LooseSchema.safeParse(inputWithAdditionalFields).success);
@@ -125,8 +125,8 @@ it("respects the strict option", () => {
     expect(!StrictSchema.safeParse(inputWithAdditionalFields).success);
 });
 
-it("parses discriminated unions", () => {
-    const Schema = a.discriminator("eventType", {
+it('parses discriminated unions', () => {
+    const Schema = a.discriminator('eventType', {
         POST_CREATED: a.object({
             id: a.string(),
             date: a.timestamp(),
@@ -148,24 +148,24 @@ it("parses discriminated unions", () => {
     type Schema = a.infer<typeof Schema>;
     const inputs: Schema[] = [
         {
-            eventType: "POST_CREATED",
-            id: "1",
+            eventType: 'POST_CREATED',
+            id: '1',
             date: new Date(),
         },
         {
-            eventType: "POST_UPDATED",
-            id: "2",
+            eventType: 'POST_UPDATED',
+            id: '2',
             date: new Date(),
             data: {
-                title: "Hello World",
-                description: "Hello World!",
+                title: 'Hello World',
+                description: 'Hello World!',
             },
         },
         {
-            eventType: "POST_DELETED",
-            id: "3",
+            eventType: 'POST_DELETED',
+            id: '3',
             date: new Date(),
-            deletionReason: "",
+            deletionReason: '',
         },
     ];
     const CompiledValidator = a.compile(Schema);

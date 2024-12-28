@@ -1,11 +1,11 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
-import { defineBuildConfig } from "unbuild";
+import { defineBuildConfig } from 'unbuild';
 
 const packageJson = JSON.parse(
-    readFileSync(path.resolve(__dirname, "./package.json"), {
-        encoding: "utf-8",
+    readFileSync(path.resolve(__dirname, './package.json'), {
+        encoding: 'utf-8',
     }),
 );
 
@@ -14,8 +14,8 @@ const deps = Object.keys(packageJson.dependencies);
 export default defineBuildConfig({
     rootDir: __dirname,
     entries: [
-        { input: "./src/_index", name: "index" },
-        { input: "./src/_main", name: "cli" },
+        { input: './src/_index', name: 'index' },
+        { input: './src/_main', name: 'cli' },
     ],
     rollup: {
         emitCJS: true,
@@ -23,7 +23,7 @@ export default defineBuildConfig({
             respectExternal: true,
         },
     },
-    outDir: "dist",
+    outDir: 'dist',
     clean: true,
     declaration: true,
     failOnWarn: false,

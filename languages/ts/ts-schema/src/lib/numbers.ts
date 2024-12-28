@@ -4,7 +4,7 @@ import {
     type NumberType,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
+} from '../schemas';
 import {
     int8Max,
     int8Min,
@@ -22,7 +22,7 @@ import {
     uint32Min,
     uint64Max,
     uint64Min,
-} from "./numberConstants";
+} from './numberConstants';
 
 /**
  * Alias for float64 as that is the only number type that Javascript uses
@@ -36,7 +36,7 @@ export function number(opts: ASchemaOptions = {}) {
 }
 
 function coerceNumber(input: unknown, options: ValidationContext) {
-    if (typeof input === "string") {
+    if (typeof input === 'string') {
         const parsedInput = Number(input);
         if (Number.isNaN(parsedInput)) {
             options.errors.push({
@@ -54,21 +54,21 @@ function coerceNumber(input: unknown, options: ValidationContext) {
 }
 
 export function float32(opts: ASchemaOptions = {}) {
-    return numberScalarType("float32", opts, () => {
+    return numberScalarType('float32', opts, () => {
         return {
             success: true,
         };
     });
 }
 export function float64(opts: ASchemaOptions = {}) {
-    return numberScalarType("float64", opts, () => {
+    return numberScalarType('float64', opts, () => {
         return {
             success: true,
         };
     });
 }
 export function int8(opts: ASchemaOptions = {}) {
-    return numberScalarType("int8", opts, (input) => {
+    return numberScalarType('int8', opts, (input) => {
         const isValid = validateInt(input, int8Min, int8Max);
         if (isValid) {
             return {
@@ -82,7 +82,7 @@ export function int8(opts: ASchemaOptions = {}) {
     });
 }
 export function uint8(opts: ASchemaOptions = {}) {
-    return numberScalarType("uint8", opts, (input) => {
+    return numberScalarType('uint8', opts, (input) => {
         const isValid = validateInt(input, uint8Min, uint8Max);
         if (isValid) {
             return {
@@ -96,7 +96,7 @@ export function uint8(opts: ASchemaOptions = {}) {
     });
 }
 export function int16(opts: ASchemaOptions = {}) {
-    return numberScalarType("int16", opts, (input) => {
+    return numberScalarType('int16', opts, (input) => {
         const isValid = validateInt(input, int16Min, int16Max);
         if (isValid) {
             return {
@@ -110,7 +110,7 @@ export function int16(opts: ASchemaOptions = {}) {
     });
 }
 export function uint16(opts: ASchemaOptions = {}) {
-    return numberScalarType("uint16", opts, (input) => {
+    return numberScalarType('uint16', opts, (input) => {
         const isValid = validateInt(input, uint16Min, uint16Max);
         if (isValid) {
             return {
@@ -124,7 +124,7 @@ export function uint16(opts: ASchemaOptions = {}) {
     });
 }
 export function int32(opts: ASchemaOptions = {}) {
-    return numberScalarType("int32", opts, (input) => {
+    return numberScalarType('int32', opts, (input) => {
         const isValid = validateInt(input, int32Min, int32Max);
         if (isValid) {
             return {
@@ -138,7 +138,7 @@ export function int32(opts: ASchemaOptions = {}) {
     });
 }
 export function uint32(opts: ASchemaOptions = {}) {
-    return numberScalarType("uint32", opts, (input) => {
+    return numberScalarType('uint32', opts, (input) => {
         const isValid = validateInt(input, uint32Min, uint32Max);
         if (isValid) {
             return { success: true };
@@ -152,17 +152,17 @@ export function uint32(opts: ASchemaOptions = {}) {
 
 export function int64(
     opts: ASchemaOptions = {},
-): AScalarSchema<"int64", bigint> {
+): AScalarSchema<'int64', bigint> {
     function isType(input: unknown): input is bigint {
         return (
-            typeof input === "bigint" && input >= int64Min && input <= int64Max
+            typeof input === 'bigint' && input >= int64Min && input <= int64Max
         );
     }
     function parse(
         input: unknown,
         data: ValidationContext,
     ): bigint | undefined {
-        if (typeof input === "string" || typeof input === "number") {
+        if (typeof input === 'string' || typeof input === 'number') {
             try {
                 const val = BigInt(input);
                 if (isType(val)) {
@@ -194,13 +194,13 @@ export function int64(
         return undefined;
     }
     return {
-        type: "int64",
+        type: 'int64',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
-                output: BigInt("0"),
+                output: BigInt('0'),
                 validate: isType,
                 parse,
                 coerce: parse,
@@ -217,10 +217,10 @@ export function int64(
 
 export function uint64(
     opts: ASchemaOptions = {},
-): AScalarSchema<"uint64", bigint> {
+): AScalarSchema<'uint64', bigint> {
     function isType(input: unknown): input is bigint {
         return (
-            typeof input === "bigint" &&
+            typeof input === 'bigint' &&
             input >= uint64Min &&
             input <= uint64Max
         );
@@ -229,7 +229,7 @@ export function uint64(
         input: unknown,
         data: ValidationContext,
     ): bigint | undefined {
-        if (typeof input === "string" || typeof input === "number") {
+        if (typeof input === 'string' || typeof input === 'number') {
             try {
                 const val = BigInt(input);
                 if (isType(val)) {
@@ -261,13 +261,13 @@ export function uint64(
         return undefined;
     }
     return {
-        type: "uint64",
+        type: 'uint64',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
-                output: BigInt("0"),
+                output: BigInt('0'),
                 validate: isType,
                 parse,
                 coerce: parse,
@@ -283,7 +283,7 @@ export function uint64(
 }
 
 function validateNumber(input: unknown): input is number {
-    return typeof input === "number" || !Number.isNaN(input);
+    return typeof input === 'number' || !Number.isNaN(input);
 }
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
@@ -292,7 +292,7 @@ function serializeNumber(input: number, _data: ValidationContext): string {
     return input.toString();
 }
 function parseNumber(input: unknown, options: ValidationContext) {
-    if (options.instancePath.length === 0 && typeof input === "string") {
+    if (options.instancePath.length === 0 && typeof input === 'string') {
         const result = Number(input);
         if (Number.isNaN(result)) {
             options?.errors.push({
@@ -304,7 +304,7 @@ function parseNumber(input: unknown, options: ValidationContext) {
         }
         return result;
     }
-    if (typeof input === "number" && !Number.isNaN(input)) {
+    if (typeof input === 'number' && !Number.isNaN(input)) {
         return input;
     }
     options?.errors.push({
@@ -342,7 +342,7 @@ function numberScalarType<TType extends NumberType>(
                     if (options.errors.length) {
                         return undefined;
                     }
-                    if (typeof result !== "number") {
+                    if (typeof result !== 'number') {
                         options?.errors.push({
                             instancePath: options.instancePath,
                             schemaPath: `${options.schemaPath}/type`,
@@ -364,7 +364,7 @@ function numberScalarType<TType extends NumberType>(
                 serialize: serializeNumber,
                 coerce(input, options) {
                     const result = coerceNumber(input, options);
-                    if (typeof result !== "number") {
+                    if (typeof result !== 'number') {
                         options.errors.push({
                             instancePath: options.instancePath,
                             schemaPath: `${options.schemaPath}/type`,

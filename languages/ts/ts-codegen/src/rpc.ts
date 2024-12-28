@@ -3,9 +3,9 @@ import {
     pascalCase,
     RpcDefinition,
     WsRpcDefinition,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
-import { CodegenContext, getJsDocComment, validVarName } from "./common";
+import { CodegenContext, getJsDocComment, validVarName } from './common';
 
 export type RpcGenerator = (
     def: RpcDefinition,
@@ -23,15 +23,15 @@ export function tsRpcFromDefinition(
     const customFn = context.rpcGenerators[def.transport];
     if (customFn) return customFn(def, context);
     switch (def.transport) {
-        case "http":
+        case 'http':
             return httpRpcFromDefinition(def, context);
-        case "ws":
+        case 'ws':
             return wsRpcFromDefinition(def, context);
         default:
             console.warn(
                 `[ts-codegen] Warning: unsupported transport "${def.transport}". Ignoring ${context.instancePath}.`,
             );
-            return "";
+            return '';
     }
 }
 
@@ -47,23 +47,23 @@ export function httpRpcFromDefinition(
         ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
         : undefined;
     const serializerMethod =
-        def.method === "get" ? "toUrlQueryString" : "toJsonString";
+        def.method === 'get' ? 'toUrlQueryString' : 'toJsonString';
     if (def.isEventStream) {
         context.usedFeatures.sse = true;
         return `${getJsDocComment({
             description: def.description,
             isDeprecated: def.isDeprecated,
-        })}    ${key}(${params ? `params: ${params},` : ""} options: SseOptions<${response ?? "undefined"}> = {}): EventSourceController {
-        return arriSseRequest<${response ?? "undefined"}, ${params ?? "undefined"}>(
+        })}    ${key}(${params ? `params: ${params},` : ''} options: SseOptions<${response ?? 'undefined'}> = {}): EventSourceController {
+        return arriSseRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>(
             {
                 url: \`\${this._baseUrl}${def.path}\`,
                 method: "${def.method.toLowerCase()}",
                 headers: this._headers,
                 onError: this._onError,
-                ${params ? "params: params," : ""}
-                responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
-                responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
-                serializer: ${params ? `$$${params}.${serializerMethod}` : "() => {}"},
+                ${params ? 'params: params,' : ''}
+                responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
+                responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
+                serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
                 clientVersion: "${context.versionNumber}",
             },
             options,
@@ -73,16 +73,16 @@ export function httpRpcFromDefinition(
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(${params ? `params: ${params}` : ""}): Promise<${response ?? "undefined"}> {
-        return arriRequest<${response ?? "undefined"}, ${params ?? "undefined"}>({
+    })}    async ${key}(${params ? `params: ${params}` : ''}): Promise<${response ?? 'undefined'}> {
+        return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
             method: "${def.method.toLowerCase()}",
             headers: this._headers,
             onError: this._onError,
-            ${params ? "params: params," : ""}
-            responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
-            serializer: ${params ? `$$${params}.${serializerMethod}` : "() => {}"},
+            ${params ? 'params: params,' : ''}
+            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
+            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
+            serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
             clientVersion: "${context.versionNumber}",
         });
     }`;
@@ -103,13 +103,13 @@ export function wsRpcFromDefinition(
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(options: WsOptions<${response ?? "undefined"}> = {}): Promise<WsController<${params ?? "undefined"},${response ?? "undefined"}>> {
-        return arriWsRequest<${params ?? "undefined"}, ${response ?? "undefined"}>({
+    })}    async ${key}(options: WsOptions<${response ?? 'undefined'}> = {}): Promise<WsController<${params ?? 'undefined'},${response ?? 'undefined'}>> {
+        return arriWsRequest<${params ?? 'undefined'}, ${response ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
             headers: this._headers,
-            responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
-            serializer: ${params ? `$$${params}.toJsonString` : "() => {}"},
+            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
+            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
+            serializer: ${params ? `$$${params}.toJsonString` : '() => {}'},
             onOpen: options.onOpen,
             onClose: options.onClose,
             onError: options.onError,
@@ -121,6 +121,6 @@ export function wsRpcFromDefinition(
 }
 
 export function getRpcKey(context: CodegenContext): string {
-    const name = context.instancePath.split(".").pop() ?? "";
+    const name = context.instancePath.split('.').pop() ?? '';
     return validVarName(name);
 }

@@ -1,54 +1,54 @@
-import { defineConfig, generators, servers } from "arri";
-import { readFileSync } from "fs";
-import path from "path";
+import { defineConfig, generators, servers } from 'arri';
+import { readFileSync } from 'fs';
+import path from 'path';
 
 const prettierConfig = JSON.parse(
-    readFileSync(path.resolve(__dirname, "../../../.prettierrc"), {
-        encoding: "utf-8",
+    readFileSync(path.resolve(__dirname, '../../../.prettierrc'), {
+        encoding: 'utf-8',
     }),
 );
 
 export default defineConfig({
     server: servers.tsServer({
-        serverEntry: "server.ts",
+        serverEntry: 'server.ts',
         http2: true,
         port: 2020,
     }),
     generators: [
         generators.typescriptClient({
-            clientName: "TestClient",
+            clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                "../../clients/ts/testClient.rpc.ts",
+                '../../clients/ts/testClient.rpc.ts',
             ),
             prettierOptions: prettierConfig,
         }),
         generators.dartClient({
-            clientName: "TestClient",
+            clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                "../../clients/dart/lib/test_client.rpc.dart",
+                '../../clients/dart/lib/test_client.rpc.dart',
             ),
         }),
         generators.kotlinClient({
-            clientName: "TestClient",
+            clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                "../../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
+                '../../clients/kotlin/src/main/kotlin/TestClient.rpc.kt',
             ),
         }),
         generators.rustClient({
-            clientName: "TestClient",
+            clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                "../../clients/rust/src/test_client.g.rs",
+                '../../clients/rust/src/test_client.g.rs',
             ),
         }),
         generators.swiftClient({
-            clientName: "TestClient",
+            clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                "../../clients/swift/Sources/TestClient.g.swift",
+                '../../clients/swift/Sources/TestClient.g.swift',
             ),
         }),
     ],

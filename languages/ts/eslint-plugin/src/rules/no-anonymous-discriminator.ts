@@ -1,32 +1,32 @@
-import { type Rule } from "eslint";
+import { type Rule } from 'eslint';
 
-import { argHasIdKey, isNestedInSchema } from "./_common";
+import { argHasIdKey, isNestedInSchema } from './_common';
 
 const noAnonymousDiscriminator: Rule.RuleModule = {
     meta: {
-        type: "suggestion",
+        type: 'suggestion',
     },
     create(context) {
         return {
             CallExpression(node) {
                 if (
-                    node.callee.type !== "MemberExpression" ||
-                    node.callee.object.type !== "Identifier" ||
-                    node.callee.object.name !== "a" ||
-                    node.callee.property.type !== "Identifier"
+                    node.callee.type !== 'MemberExpression' ||
+                    node.callee.object.type !== 'Identifier' ||
+                    node.callee.object.name !== 'a' ||
+                    node.callee.property.type !== 'Identifier'
                 ) {
                     return;
                 }
                 const propName = node.callee.property.name;
-                if (propName !== "discriminator") {
+                if (propName !== 'discriminator') {
                     return;
                 }
-                if (isNestedInSchema(node as any, ["recursive"], context)) {
+                if (isNestedInSchema(node as any, ['recursive'], context)) {
                     return;
                 }
                 if (node.arguments.length < 3) {
                     context.report({
-                        message: "discriminator schemas must specify an id",
+                        message: 'discriminator schemas must specify an id',
                         node,
                     });
                     return;
@@ -35,9 +35,9 @@ const noAnonymousDiscriminator: Rule.RuleModule = {
                 const arg2 = node.arguments[1]!;
                 const arg3 = node.arguments[2]!;
                 if (
-                    arg1.type === "Literal" &&
+                    arg1.type === 'Literal' &&
                     (arg1.value?.toString().length ?? 0) > 0 &&
-                    arg2.type === "Literal" &&
+                    arg2.type === 'Literal' &&
                     (arg2.value?.toString().length ?? 0) > 0
                 ) {
                     // using ID shorthand so safe to exit
@@ -47,7 +47,7 @@ const noAnonymousDiscriminator: Rule.RuleModule = {
                     return;
                 }
                 context.report({
-                    message: "discriminator schemas must specify an id",
+                    message: 'discriminator schemas must specify an id',
                     node,
                 });
             },

@@ -1,4 +1,4 @@
-import { SchemaFormProperties } from "@arrirpc/codegen-utils";
+import { SchemaFormProperties } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
@@ -7,8 +7,8 @@ import {
     getDartClassName,
     outputIsNullable,
     validDartIdentifier,
-} from "./_common";
-import { dartTypeFromSchema } from "./_index";
+} from './_common';
+import { dartTypeFromSchema } from './_index';
 
 export function dartClassFromSchema(
     schema: SchemaFormProperties,
@@ -18,7 +18,7 @@ export function dartClassFromSchema(
     const className = getDartClassName(schema, context);
     const finalClassName = `${context.modelPrefix}${className}`;
     const typeName = isNullable ? `${finalClassName}?` : finalClassName;
-    const defaultValue = isNullable ? "null" : `${finalClassName}.empty()`;
+    const defaultValue = isNullable ? 'null' : `${finalClassName}.empty()`;
     const result: DartProperty = {
         typeName,
         isNullable,
@@ -46,7 +46,7 @@ export function dartClassFromSchema(
             return `print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(className)) {
         return result;
@@ -80,6 +80,7 @@ export function dartClassFromSchema(
             generatedTypes: context.generatedTypes,
             instancePath: `/${className}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
+            clientVersion: context.clientVersion,
         });
 
         const propName = validDartIdentifier(key);
@@ -87,7 +88,7 @@ export function dartClassFromSchema(
         fieldParts.push(
             `${getCodeComments(
                 innerSchema.metadata,
-                "  ",
+                '  ',
             )}  final ${typeResult.typeName} ${propName};`,
         );
         constructorParts.push(`    required this.${propName},`);
@@ -96,10 +97,10 @@ export function dartClassFromSchema(
             `    final ${propName} = ${typeResult.fromJson(`_input_["${key}"]`, key)};`,
         );
         toJsonRequiredParts.push(
-            `      "${key}": ${typeResult.toJson(propName, "", key)},`,
+            `      "${key}": ${typeResult.toJson(propName, '', key)},`,
         );
         toUrlQueryParts.push(
-            `    ${typeResult.toQueryString(propName, "_queryParts_", key)};`,
+            `    ${typeResult.toQueryString(propName, '_queryParts_', key)};`,
         );
         if (typeResult.isNullable) {
             copyWithParamParts.push(
@@ -110,7 +111,7 @@ export function dartClassFromSchema(
             );
         } else {
             copyWithParamParts.push(
-                `    ${typeResult.typeName}${typeResult.typeName !== "dynamic" ? "?" : ""} ${propName},`,
+                `    ${typeResult.typeName}${typeResult.typeName !== 'dynamic' ? '?' : ''} ${propName},`,
             );
             copyWithReturnParts.push(
                 `      ${propName}: ${propName} ?? this.${propName},`,
@@ -129,22 +130,23 @@ export function dartClassFromSchema(
             instancePath: `/${className}/${key}`,
             schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
             isOptional: true,
+            clientVersion: context.clientVersion,
         });
 
         const propName = validDartIdentifier(key);
         propNames.push(propName);
         fieldParts.push(
-            `${getCodeComments(innerSchema.metadata, "  ")}  final ${typeResult.typeName} ${propName};`,
+            `${getCodeComments(innerSchema.metadata, '  ')}  final ${typeResult.typeName} ${propName};`,
         );
         constructorParts.push(`    this.${propName},`);
         fromJsonParts.push(
             `    final ${propName} = ${typeResult.fromJson(`_input_["${key}"]`, key)};`,
         );
         toJsonOptionalParts.push(
-            `    if (${propName} != null) _output_["${key}"] = ${typeResult.toJson(propName, "_output_", key)};`,
+            `    if (${propName} != null) _output_["${key}"] = ${typeResult.toJson(propName, '_output_', key)};`,
         );
         toUrlQueryParts.push(
-            `    ${typeResult.toQueryString(propName, "_queryParts_", key)};`,
+            `    ${typeResult.toQueryString(propName, '_queryParts_', key)};`,
         );
         copyWithParamParts.push(
             `  ${typeResult.typeName} Function()? ${propName},`,
@@ -156,7 +158,7 @@ export function dartClassFromSchema(
             subContentParts.push(typeResult.content);
         }
     }
-    let discriminatorPart = "";
+    let discriminatorPart = '';
     if (context.discriminatorKey && context.discriminatorValue) {
         discriminatorPart = `
     @override
@@ -164,22 +166,22 @@ export function dartClassFromSchema(
 `;
     }
 
-    result.content = `${getCodeComments(schema.metadata)}class ${finalClassName} implements ${context.discriminatorParentId ?? "ArriModel"} {
-${fieldParts.join("\n")}
+    result.content = `${getCodeComments(schema.metadata)}class ${finalClassName} implements ${context.discriminatorParentId ?? 'ArriModel'} {
+${fieldParts.join('\n')}
   const ${finalClassName}({
-${constructorParts.join("\n")}
+${constructorParts.join('\n')}
   });
 ${discriminatorPart}
   factory ${finalClassName}.empty() {
     return ${finalClassName}(
-    ${defaultParts.join("\n")}
+    ${defaultParts.join('\n')}
     );
   }
 
   factory ${finalClassName}.fromJson(Map<String, dynamic> _input_) {
-${fromJsonParts.join("\n")}
+${fromJsonParts.join('\n')}
     return ${finalClassName}(
-${propNames.map((prop) => `      ${prop}: ${prop},`).join("\n")}
+${propNames.map((prop) => `      ${prop}: ${prop},`).join('\n')}
     );
   }
 
@@ -190,9 +192,9 @@ ${propNames.map((prop) => `      ${prop}: ${prop},`).join("\n")}
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
-${toJsonRequiredParts.join("\n")}
+${toJsonRequiredParts.join('\n')}
     };
-${toJsonOptionalParts.join("\n")}
+${toJsonOptionalParts.join('\n')}
     return _output_;
   }
 
@@ -204,22 +206,22 @@ ${toJsonOptionalParts.join("\n")}
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-${toUrlQueryParts.join("\n")}
+${toUrlQueryParts.join('\n')}
     return _queryParts_.join("&");
   }
 
   @override
   ${finalClassName} copyWith({
-${copyWithParamParts.join("\n")}
+${copyWithParamParts.join('\n')}
   }) {
     return ${finalClassName}(
-${copyWithReturnParts.join("\n")}
+${copyWithReturnParts.join('\n')}
     );
   }
 
   @override
   List<Object?> get props => [
-${propNames.map((prop) => `        ${prop},`).join("\n")}
+${propNames.map((prop) => `        ${prop},`).join('\n')}
       ];
 
   @override
@@ -237,7 +239,7 @@ ${propNames.map((prop) => `        ${prop},`).join("\n")}
   }
 }
   
-${subContentParts.join("\n\n")}`;
+${subContentParts.join('\n\n')}`;
     context.generatedTypes.push(className);
     return result;
 }

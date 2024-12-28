@@ -1,5 +1,5 @@
-import { Generator } from "@arrirpc/codegen-utils";
-import { ArgsDef, ParsedArgs } from "citty";
+import { Generator } from '@arrirpc/codegen-utils';
+import { ArgsDef, ParsedArgs } from 'citty';
 
 export interface ServerConfig<
     TDevArgs extends ArgsDef | undefined = any,
@@ -24,14 +24,14 @@ export interface ServerConfig<
 export function isServerConfig(
     input: unknown,
 ): input is ServerConfig<any, any> {
-    if (typeof input !== "object" || input === null) {
+    if (typeof input !== 'object' || input === null) {
         return false;
     }
     return (
-        "devFn" in input &&
-        typeof input.devFn === "function" &&
-        "buildFn" in input &&
-        typeof input.buildFn === "function"
+        'devFn' in input &&
+        typeof input.devFn === 'function' &&
+        'buildFn' in input &&
+        typeof input.buildFn === 'function'
     );
 }
 

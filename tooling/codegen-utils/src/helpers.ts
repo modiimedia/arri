@@ -2,10 +2,10 @@ import {
     AppDefinition,
     RpcDefinition,
     ServiceDefinition,
-} from "@arrirpc/type-defs";
+} from '@arrirpc/type-defs';
 
 export function unflattenProcedures(
-    procedures: AppDefinition["procedures"],
+    procedures: AppDefinition['procedures'],
 ): Record<string, RpcDefinition | ServiceDefinition> {
     return unflattenObject(procedures);
 }
@@ -16,7 +16,7 @@ export function unflattenObject(data: Record<string, any>) {
     const result: Record<any, any> = {};
     for (const p in data) {
         let cur = result;
-        let prop = "";
+        let prop = '';
         let m: any;
         while ((m = regex.exec(p))) {
             cur = cur[prop] || (cur[prop] = m[2] ? [] : {});
@@ -24,7 +24,7 @@ export function unflattenObject(data: Record<string, any>) {
         }
         cur[prop] = data[p];
     }
-    return result[""] || result;
+    return result[''] || result;
 }
 
 export const removeDisallowedChars = (
@@ -34,7 +34,7 @@ export const removeDisallowedChars = (
     let result = input;
     for (const char of disallowedChars) {
         if (result.includes(char)) {
-            result = result.split(char).join("");
+            result = result.split(char).join('');
         }
     }
     return result;
@@ -48,7 +48,7 @@ export function setNestedObjectProperty<T>(
     value: T,
     object: Record<any, any>,
 ) {
-    const parts = targetProp.split(".");
+    const parts = targetProp.split('.');
     let current = object;
     for (let i = 0; i < parts.length; i++) {
         const key = parts[i]!;
@@ -65,16 +65,16 @@ export function setNestedObjectProperty<T>(
 }
 
 export function normalizeWhitespace(input: string) {
-    if (input.includes("\n\n")) {
-        return normalizeWhitespace(input.split("\n\n").join("\n"));
+    if (input.includes('\n\n')) {
+        return normalizeWhitespace(input.split('\n\n').join('\n'));
     }
     const lines: string[] = [];
-    for (const line of input.split("\n")) {
+    for (const line of input.split('\n')) {
         lines.push(line.trim());
     }
-    const result = lines.join("\n").trim();
-    if (result.includes("\n\n")) {
-        return normalizeWhitespace(result.split("\n\n").join("\n"));
+    const result = lines.join('\n').trim();
+    if (result.includes('\n\n')) {
+        return normalizeWhitespace(result.split('\n\n').join('\n'));
     }
     return result;
 }

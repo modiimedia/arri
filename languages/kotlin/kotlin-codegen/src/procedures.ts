@@ -6,29 +6,29 @@ import {
     type RpcDefinition,
     type ServiceDefinition,
     type WsRpcDefinition,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     getCodeComment,
     kotlinClassName,
     kotlinIdentifier,
-} from "./_common";
+} from './_common';
 
 export function kotlinProcedureFromSchema(
     schema: RpcDefinition,
     context: CodegenContext,
 ): string {
     switch (schema.transport) {
-        case "http":
+        case 'http':
             return kotlinHttpRpcFromSchema(schema, context);
-        case "ws":
+        case 'ws':
             return kotlinWsRpcFromSchema(schema, context);
         default:
             console.warn(
                 `[codegen-kotlin] Unknown transport type "${schema.transport}". Skipping "${context.instancePath}".`,
             );
-            return "";
+            return '';
     }
 }
 
@@ -48,27 +48,27 @@ export function kotlinHttpRpcFromSchema(
             description: schema.description,
             isDeprecated: schema.isDeprecated,
         },
-        "",
-        "method",
+        '',
+        'method',
     );
 
     if (schema.isEventStream) {
         return `${codeComment}suspend fun ${name}(
-            ${params ? `params: ${params},` : ""}
+            ${params ? `params: ${params},` : ''}
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: ${context.clientName}Error) -> Unit) = {},
-            onData: ((${response ? `data: ${response}` : ""}) -> Unit) = {},
+            onData: ((${response ? `data: ${response}` : ''}) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl${schema.path}",
                 method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-                params = ${params ? "params" : "null"},
+                params = ${params ? 'params' : 'null'},
                 headers = headers,
                 backoffTime = 0,
                 maxBackoffTime = maxBackoffTime ?: 30000L,
@@ -80,8 +80,8 @@ export function kotlinHttpRpcFromSchema(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    ${response ? `val data = ${response}.fromJson(str)` : ""}
-                    onData(${response ? "data" : ""})
+                    ${response ? `val data = ${response}.fromJson(str)` : ''}
+                    onData(${response ? 'data' : ''})
                 }
             )
         }`;
@@ -94,18 +94,18 @@ export function kotlinHttpRpcFromSchema(
                 stack = null,
             )
         }`;
-    return `${codeComment}suspend fun ${name}(${params ? `params: ${params}` : ""}): ${response ?? "Unit"} {
+    return `${codeComment}suspend fun ${name}(${params ? `params: ${params}` : ''}): ${response ?? 'Unit'} {
         try {
             val response = __prepareRequest(
                 client = httpClient,
                 url = "$baseUrl${schema.path}",
                 method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-                params = ${params ? "params" : null},
+                params = ${params ? 'params' : null},
                 headers = headers?.invoke(),
             ).execute()
-            ${response ? headingCheck : ""}
+            ${response ? headingCheck : ''}
             if (response.status.value in 200..299) {
-                return ${response ? `${response}.fromJson(response.bodyAsText())` : ""}
+                return ${response ? `${response}.fromJson(response.bodyAsText())` : ''}
             }
             throw ${context.clientName}Error.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
@@ -119,7 +119,7 @@ export function kotlinWsRpcFromSchema(
     _schema: WsRpcDefinition,
     _context: CodegenContext,
 ): string {
-    return "";
+    return '';
 }
 
 export interface KotlinService {
@@ -172,19 +172,19 @@ export function kotlinServiceFromSchema(
     private val headers: headersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    ${procedureParts.join("\n\n    ")}
+    ${procedureParts.join('\n\n    ')}
 }
 
-${subServiceParts.join("\n\n")}`,
+${subServiceParts.join('\n\n')}`,
     };
 }
 
 export function getProcedureName(context: CodegenContext): string {
-    const name = context.instancePath.split(".").pop() ?? "";
+    const name = context.instancePath.split('.').pop() ?? '';
     return kotlinIdentifier(name);
 }
 
 export function getServiceName(context: CodegenContext): string {
-    const name = pascalCase(context.instancePath.split(".").join("_"));
+    const name = pascalCase(context.instancePath.split('.').join('_'));
     return `${context.clientName}${name}Service`;
 }

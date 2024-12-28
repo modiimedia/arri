@@ -1,17 +1,17 @@
 export const JsonSchemaScalarTypeValues = [
-    "integer",
-    "number",
-    "bigint",
-    "string",
-    "boolean",
-    "Date",
+    'integer',
+    'number',
+    'bigint',
+    'string',
+    'boolean',
+    'Date',
 ] as const;
-export const JsonSchemaNullTypeValues = ["null", "undefined"] as const;
+export const JsonSchemaNullTypeValues = ['null', 'undefined'] as const;
 export const JsonSchemaComplexTypeValues = [
-    "object",
-    "list",
-    "array",
-    "Uint8Array",
+    'object',
+    'list',
+    'array',
+    'Uint8Array',
 ] as const;
 
 export type JsonSchemaType =
@@ -38,10 +38,10 @@ export interface JsonSchemaScalarType extends JsonSchemaTypeBase {
 export function isJsonSchemaScalarType(
     input: unknown,
 ): input is JsonSchemaScalarType {
-    if (typeof input !== "object" || input === null) {
+    if (typeof input !== 'object' || input === null) {
         return false;
     }
-    if (!("type" in input)) {
+    if (!('type' in input)) {
         return false;
     }
 
@@ -52,10 +52,10 @@ export interface JsonSchemaNullType extends JsonSchemaTypeBase {
     type: (typeof JsonSchemaNullTypeValues)[number];
 }
 export function isJsonSchemaNullType(input: any): input is JsonSchemaNullType {
-    if (typeof input !== "object" || input === null) {
+    if (typeof input !== 'object' || input === null) {
         return false;
     }
-    if (!("type" in input)) {
+    if (!('type' in input)) {
         return false;
     }
 
@@ -67,79 +67,79 @@ export type JsonSchemaComplexType =
     | JsonSchemaArray
     | JsonSchemaRecord;
 export interface JsonSchemaObject extends JsonSchemaTypeBase {
-    type: "object";
+    type: 'object';
     properties: Record<string, JsonSchemaType>;
     required?: string[];
     additionalProperties?: boolean;
 }
 export const isJsonSchemaObject = (input: any): input is JsonSchemaObject => {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
     return (
-        "type" in input &&
-        input.type === "object" &&
-        "properties" in input &&
-        typeof input.properties === "object"
+        'type' in input &&
+        input.type === 'object' &&
+        'properties' in input &&
+        typeof input.properties === 'object'
     );
 };
 export interface JsonSchemaRecord extends JsonSchemaTypeBase {
-    type: "object";
+    type: 'object';
     patternProperties?: Record<string, JsonSchemaType>;
     additionalProperties?: JsonSchemaType;
 }
 export const isJsonSchemaRecord = (input: any): input is JsonSchemaRecord => {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
-    if ("type" in input && input.type === "object") {
+    if ('type' in input && input.type === 'object') {
         return (
-            ("patternProperties" in input &&
-                typeof input.patternProperties === "object") ||
-            ("additionalProperties" in input &&
-                typeof input.additionalProperties === "object")
+            ('patternProperties' in input &&
+                typeof input.patternProperties === 'object') ||
+            ('additionalProperties' in input &&
+                typeof input.additionalProperties === 'object')
         );
     }
     return false;
 };
 export interface JsonSchemaArray extends JsonSchemaTypeBase {
-    type: "array";
+    type: 'array';
     items: JsonSchemaType;
 }
 export function isJsonSchemaArray(input: any): input is JsonSchemaArray {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
-    if ("type" in input && input.type === "array") {
+    if ('type' in input && input.type === 'array') {
         return true;
     }
     return false;
 }
 export interface JsonSchemaUint8Array extends JsonSchemaTypeBase {
-    type: "Uint8Array";
+    type: 'Uint8Array';
 }
 export interface JsonSchemaEnum extends JsonSchemaTypeBase {
     anyOf:
-        | Array<{ type: "string"; const: string }>
-        | Array<{ type: "number"; const: number }>
-        | Array<{ type: "integer"; const: number }>;
+        | Array<{ type: 'string'; const: string }>
+        | Array<{ type: 'number'; const: number }>
+        | Array<{ type: 'integer'; const: number }>;
 }
 export function isJsonSchemaEnum(input: any): input is JsonSchemaEnum {
-    if (typeof input !== "object") {
+    if (typeof input !== 'object') {
         return false;
     }
-    if (!("anyOf" in input) || !Array.isArray(input.anyOf)) {
+    if (!('anyOf' in input) || !Array.isArray(input.anyOf)) {
         return false;
     }
-    let prevType: "string" | "integer" | "number" | undefined;
+    let prevType: 'string' | 'integer' | 'number' | undefined;
     for (const item of input.anyOf) {
         if (!isJsonSchemaScalarType(item)) {
             return false;
         }
         if (
-            item.type !== "string" &&
-            item.type !== "integer" &&
-            item.type !== "number"
+            item.type !== 'string' &&
+            item.type !== 'integer' &&
+            item.type !== 'number'
         ) {
             return false;
         }
@@ -155,8 +155,8 @@ export interface JsonSchemaRef extends JsonSchemaTypeBase {
     $ref: string;
 }
 export function isJsonSchemaRef(input: unknown): input is JsonSchemaRef {
-    if (typeof input !== "object" || !input) {
+    if (typeof input !== 'object' || !input) {
         return false;
     }
-    return "$ref" in input && typeof input.$ref === "string";
+    return '$ref' in input && typeof input.$ref === 'string';
 }

@@ -1,6 +1,6 @@
-import { SchemaFormEmpty } from "@arrirpc/codegen-utils";
+import { SchemaFormEmpty } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, DartProperty, outputIsNullable } from "./_common";
+import { CodegenContext, DartProperty, outputIsNullable } from './_common';
 
 export function dartAnyFromSchema(
     schema: SchemaFormEmpty,
@@ -22,6 +22,6 @@ export function dartAnyFromSchema(
         toQueryString() {
             return `print("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
 }

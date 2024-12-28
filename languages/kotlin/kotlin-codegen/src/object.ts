@@ -1,4 +1,4 @@
-import { type SchemaFormProperties } from "@arrirpc/codegen-utils";
+import { type SchemaFormProperties } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
@@ -7,8 +7,8 @@ import {
     isNullable,
     kotlinIdentifier,
     type KotlinProperty,
-} from "./_common";
-import { kotlinTypeFromSchema } from "./_index";
+} from './_common';
+import { kotlinTypeFromSchema } from './_index';
 
 export function kotlinObjectFromSchema(
     schema: SchemaFormProperties,
@@ -16,7 +16,7 @@ export function kotlinObjectFromSchema(
 ): KotlinProperty {
     const className = getClassName(schema, context);
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : `${className}.new()`;
+    const defaultValue = nullable ? 'null' : `${className}.new()`;
     const result: KotlinProperty = {
         typeName: className,
         isNullable: nullable,
@@ -49,7 +49,7 @@ export function kotlinObjectFromSchema(
         toQueryString() {
             return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: '',
     };
     if (context.existingTypeIds.includes(className)) {
         return result;
@@ -59,7 +59,7 @@ export function kotlinObjectFromSchema(
     const fieldParts: string[] = [];
     const defaultParts: string[] = [];
     const toJsonParts: string[] = [`var output = "{"`];
-    const toQueryParts: string[] = ["val queryParts = mutableListOf<String>()"];
+    const toQueryParts: string[] = ['val queryParts = mutableListOf<String>()'];
     const fromJsonParts: string[] = [];
     const requiredKeys = Object.keys(schema.properties);
     const optionalKeys = Object.keys(schema.optionalProperties ?? {});
@@ -67,7 +67,7 @@ export function kotlinObjectFromSchema(
         requiredKeys.length > 0 ||
         (context.discriminatorKey && context.discriminatorValue);
     if (!hasKnownKeys) {
-        toJsonParts.push("var hasProperties = false");
+        toJsonParts.push('var hasProperties = false');
     }
 
     if (context.discriminatorKey && context.discriminatorValue) {
@@ -96,17 +96,17 @@ export function kotlinObjectFromSchema(
             subContent.push(type.content);
         }
         fieldParts.push(
-            `${getCodeComment(prop.metadata, "    ", "field")}    val ${kotlinKey}: ${type.typeName}${type.isNullable ? "?" : ""},`,
+            `${getCodeComment(prop.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.typeName}${type.isNullable ? '?' : ''},`,
         );
         if (i === 0 && !context.discriminatorKey) {
             toJsonParts.push(`output += "\\"${key}\\":"`);
         } else {
             toJsonParts.push(`output += ",\\"${key}\\":"`);
         }
-        toJsonParts.push(type.toJson(kotlinKey, "output"));
-        toQueryParts.push(type.toQueryString(kotlinKey, "queryParts", key));
+        toJsonParts.push(type.toJson(kotlinKey, 'output'));
+        toQueryParts.push(type.toQueryString(kotlinKey, 'queryParts', key));
         fromJsonParts.push(
-            `val ${kotlinKey}: ${type.typeName}${type.isNullable ? "?" : ""} = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
+            `val ${kotlinKey}: ${type.typeName}${type.isNullable ? '?' : ''} = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
         );
         defaultParts.push(
             `                ${kotlinKey} = ${type.defaultValue},`,
@@ -134,54 +134,54 @@ export function kotlinObjectFromSchema(
             subContent.push(type.content);
         }
         const addCommaPart = isFirst
-            ? ""
+            ? ''
             : `\n        if (hasProperties) output += ","\n`;
         fieldParts.push(
-            `${getCodeComment(schema.optionalProperties![key]!.metadata, "    ", "field")}    val ${kotlinKey}: ${type.typeName}? = null,`,
+            `${getCodeComment(schema.optionalProperties![key]!.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.typeName}? = null,`,
         );
         if (hasKnownKeys) {
             toJsonParts.push(`if (${kotlinKey} != null) {
                 output += ",\\"${key}\\":"
-                ${type.toJson(kotlinKey, "output")}
+                ${type.toJson(kotlinKey, 'output')}
             }`);
         } else {
             toJsonParts.push(`if (${kotlinKey} != null) {${addCommaPart}
     output += "\\"${key}\\":"
-    ${type.toJson(kotlinKey, "output")}
-${isLast ? "" : "    hasProperties = true"}\n}`);
+    ${type.toJson(kotlinKey, 'output')}
+${isLast ? '' : '    hasProperties = true'}\n}`);
         }
 
-        toQueryParts.push(type.toQueryString(kotlinKey, "queryParts", key));
+        toQueryParts.push(type.toQueryString(kotlinKey, 'queryParts', key));
         fromJsonParts.push(
             `val ${kotlinKey}: ${type.typeName}? = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
         );
     }
 
     toJsonParts.push('output += "}"');
-    toJsonParts.push("return output");
+    toJsonParts.push('return output');
     toQueryParts.push('return queryParts.joinToString("&")');
     const implementedClass =
         context.discriminatorParentId ?? `${context.clientName}Model`;
-    let discriminatorField = "";
+    let discriminatorField = '';
     if (context.discriminatorKey && context.discriminatorValue) {
         discriminatorField = `\n    override val ${kotlinIdentifier(context.discriminatorKey)} get() = "${context.discriminatorValue}"\n`;
     }
-    const content = `${getCodeComment(schema.metadata, "", "class")}data class ${className}(
-${fieldParts.join("\n")}
+    const content = `${getCodeComment(schema.metadata, '', 'class')}data class ${className}(
+${fieldParts.join('\n')}
 ) : ${implementedClass} {${discriminatorField}
     override fun toJson(): String {
-${toJsonParts.join("\n")}    
+${toJsonParts.join('\n')}    
     }
 
     override fun toUrlQueryParams(): String {
-${toQueryParts.join("\n")}
+${toQueryParts.join('\n')}
     }
 
     companion object Factory : ${context.clientName}ModelFactory<${className}> {
         @JvmStatic
         override fun new(): ${className} {
             return ${className}(
-${defaultParts.join("\n")}
+${defaultParts.join('\n')}
             )
         }
 
@@ -196,15 +196,15 @@ ${defaultParts.join("\n")}
                 __logError("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
-${fromJsonParts.join("\n")}
+${fromJsonParts.join('\n')}
             return ${className}(
-                ${kotlinKeys.join(",\n                ")},
+                ${kotlinKeys.join(',\n                ')},
             )
         }
     }
 }
 
-${subContent.join("\n\n")}`;
+${subContent.join('\n\n')}`;
     context.existingTypeIds.push(className);
     return {
         ...result,

@@ -4,7 +4,7 @@ import {
     removeDisallowedChars,
     type RpcDefinition,
     type RpcHttpMethod,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 import {
     a,
     type ADiscriminatorSchema,
@@ -15,7 +15,7 @@ import {
     isADiscriminatorSchema,
     isAObjectSchema,
     validatorFromAdaptedSchema,
-} from "@arrirpc/schema";
+} from '@arrirpc/schema';
 import {
     eventHandler,
     getValidatedQuery,
@@ -25,18 +25,18 @@ import {
     type Router,
     send,
     setResponseHeader,
-} from "h3";
-import { kebabCase, pascalCase } from "scule";
+} from 'h3';
+import { kebabCase, pascalCase } from 'scule';
 
-import { type RpcEventContext, type RpcPostEventContext } from "./context";
-import { defineError, handleH3Error } from "./errors";
+import { type RpcEventContext, type RpcPostEventContext } from './context';
+import { defineError, handleH3Error } from './errors';
 import {
     type EventStreamRpc,
     type EventStreamRpcHandler,
-} from "./eventStreamRpc";
-import { type MiddlewareEvent } from "./middleware";
-import { type RouteOptions } from "./route";
-import { type WebsocketRpc } from "./websocketRpc";
+} from './eventStreamRpc';
+import { type MiddlewareEvent } from './middleware';
+import { type RouteOptions } from './route';
+import { type WebsocketRpc } from './websocketRpc';
 
 export type RpcParamSchema<TObjectInner = any, TDiscriminatorInner = any> =
     | AObjectSchema<TObjectInner>
@@ -67,7 +67,7 @@ export interface HttpRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
 > {
-    transport: "http";
+    transport: 'http';
     method?: RpcHttpMethod;
     path?: string;
     description?: string;
@@ -98,12 +98,12 @@ export interface HttpRpc<
 }
 
 export interface RpcEvent<TParams = undefined>
-    extends Omit<H3Event, "context"> {
+    extends Omit<H3Event, 'context'> {
     context: RpcEventContext<TParams>;
 }
 
 export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
-    extends Omit<H3Event, "context"> {
+    extends Omit<H3Event, 'context'> {
     context: RpcPostEventContext<TParams, TResponse>;
 }
 
@@ -119,12 +119,12 @@ export type RpcPostHandler<TParams, TResponse> = (
 
 export function isRpc(input: unknown): input is HttpRpc<any, any> {
     return (
-        typeof input === "object" &&
+        typeof input === 'object' &&
         input !== null &&
-        "method" in input &&
+        'method' in input &&
         isRpcHttpMethod(input.method) &&
-        "handler" in input &&
-        typeof input.handler === "function"
+        'handler' in input &&
+        typeof input.handler === 'function'
     );
 }
 
@@ -134,10 +134,10 @@ export function defineRpc<
 >(
     config: Omit<
         HttpRpc<false, TParams, TResponse>,
-        "transport" | "isEventStream"
+        'transport' | 'isEventStream'
     >,
 ): HttpRpc<false, TParams, TResponse> {
-    (config as any).transport = "http";
+    (config as any).transport = 'http';
     return config as any;
 }
 
@@ -148,12 +148,12 @@ export function createHttpRpcDefinition(
 ): HttpRpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
-        method = procedure.method ?? "get";
+        method = procedure.method ?? 'get';
     } else {
-        method = procedure.method ?? "post";
+        method = procedure.method ?? 'post';
     }
     return {
-        transport: "http",
+        transport: 'http',
         description: procedure.description,
         path: httpPath,
         method,
@@ -164,16 +164,16 @@ export function createHttpRpcDefinition(
     };
 }
 
-export function getRpcPath(rpcName: string, prefix = ""): string {
+export function getRpcPath(rpcName: string, prefix = ''): string {
     const path = rpcName
-        .split(".")
+        .split('.')
         .map((part) =>
             removeDisallowedChars(
                 kebabCase(part),
-                "!@#$%^&*()+=[]{}|\\;:'\"<>,./?",
+                '!@#$%^&*()+=[]{}|\\;:\'"<>,./?',
             ),
         )
-        .join("/");
+        .join('/');
     const finalPath = prefix ? `/${prefix}/${path}` : `/${path}`;
     return finalPath;
 }
@@ -186,9 +186,9 @@ export function getRpcParamName(
         return undefined;
     }
     const nameParts = rpcName
-        .split(".")
+        .split('.')
         .map((part) =>
-            removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
+            removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
         );
     const paramName =
         procedure.params.metadata.id ??
@@ -204,13 +204,13 @@ export function getRpcResponseName(
         return undefined;
     }
     const nameParts = rpcName
-        .split(".")
+        .split('.')
         .map((part) =>
-            removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
+            removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
         );
     const responseName =
         procedure.response.metadata.id ??
-        pascalCase(`${nameParts.join("_")}_response`);
+        pascalCase(`${nameParts.join('_')}_response`);
     return responseName;
 }
 
@@ -220,7 +220,7 @@ function getRpcResponseDefinition(
         | HttpRpc<any, any>
         | EventStreamRpc<any, any>
         | WebsocketRpc<any, any>,
-): RpcDefinition["response"] {
+): RpcDefinition['response'] {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
     }
@@ -238,16 +238,16 @@ export function registerRpc(
     opts: RouteOptions,
 ) {
     const paramValidator = procedure.params
-        ? getSchemaValidator(procedure.name, "params", procedure.params)
+        ? getSchemaValidator(procedure.name, 'params', procedure.params)
         : undefined;
     const responseValidator = procedure.response
-        ? getSchemaValidator(procedure.name, "response", procedure.response)
+        ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
-    const httpMethod = procedure.method ?? "post";
+    const httpMethod = procedure.method ?? 'post';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
-            return "ok";
+            return 'ok';
         }
         try {
             if (opts.onRequest) {
@@ -276,23 +276,23 @@ export function registerRpc(
             if (opts.onBeforeResponse) {
                 await opts.onBeforeResponse(event);
             }
-            if (typeof response === "object") {
+            if (typeof response === 'object') {
                 if (!responseValidator?.validate(response)) {
                     const errors = a.errors(procedure.response, response);
                     throw defineError(500, {
                         message:
-                            "Failed to serialize response. Response does not match specified schema",
+                            'Failed to serialize response. Response does not match specified schema',
                         data: errors,
                     });
                 }
-                setResponseHeader(event, "Content-Type", "application/json");
+                setResponseHeader(event, 'Content-Type', 'application/json');
                 await send(
                     event,
                     responseValidator?.serialize(response) ??
                         JSON.stringify(response),
                 );
             } else {
-                setResponseHeader(event, "Content-Type", "application/json");
+                setResponseHeader(event, 'Content-Type', 'application/json');
                 await send(event, `{}`);
             }
             if (opts.onAfterResponse) {
@@ -307,22 +307,22 @@ export function registerRpc(
         } catch (err) {
             await handleH3Error(err, event, opts.onError, opts.debug ?? false);
         }
-        return "";
+        return '';
     });
     switch (httpMethod) {
-        case "get":
+        case 'get':
             router.get(path, handler);
             break;
-        case "delete":
+        case 'delete':
             router.delete(path, handler);
             break;
-        case "patch":
+        case 'patch':
             router.patch(path, handler);
             break;
-        case "put":
+        case 'put':
             router.put(path, handler);
             break;
-        case "post":
+        case 'post':
         default:
             router.post(path, handler);
             break;
@@ -336,7 +336,7 @@ export async function validateRpcRequestInput(
     validator: ReturnType<typeof a.compile>,
 ) {
     switch (httpMethod) {
-        case "get": {
+        case 'get': {
             const parsedParams = await getValidatedQuery(event, (input) =>
                 a.safeCoerce(schema, input),
             );
@@ -345,15 +345,15 @@ export async function validateRpcRequestInput(
             } else {
                 const errParts: string[] = [];
                 for (const err of parsedParams.error.errors) {
-                    const errPath = err.instancePath.split("/");
+                    const errPath = err.instancePath.split('/');
                     errPath.shift();
-                    const propName = errPath.join(".");
+                    const propName = errPath.join('.');
                     if (!errParts.includes(propName)) {
                         errParts.push(propName);
                     }
                 }
                 const message = `Missing or invalid url query parameters: [${errParts.join(
-                    ", ",
+                    ', ',
                 )}]`;
                 throw defineError(400, {
                     message,
@@ -362,10 +362,10 @@ export async function validateRpcRequestInput(
             }
             break;
         }
-        case "delete":
-        case "patch":
-        case "post":
-        case "put": {
+        case 'delete':
+        case 'patch':
+        case 'post':
+        case 'put': {
             const body = await readRawBody(event);
             if (!body) {
                 throw defineError(400, {
@@ -376,15 +376,15 @@ export async function validateRpcRequestInput(
             if (!parsedParams?.success) {
                 const errorParts: string[] = [];
                 for (const err of parsedParams.error.errors) {
-                    const errPath = err.instancePath.split("/");
+                    const errPath = err.instancePath.split('/');
                     errPath.shift();
-                    if (!errorParts.includes(errPath.join("."))) {
-                        errorParts.push(errPath.join("."));
+                    if (!errorParts.includes(errPath.join('.'))) {
+                        errorParts.push(errPath.join('.'));
                     }
                 }
                 throw defineError(400, {
                     message: `Invalid request body. Affected properties [${errorParts.join(
-                        ", ",
+                        ', ',
                     )}]`,
                     data: parsedParams.error,
                 });
@@ -399,7 +399,7 @@ export async function validateRpcRequestInput(
 
 export function getSchemaValidator(
     rpcName: string,
-    type: "params" | "response",
+    type: 'params' | 'response',
     schema: ASchema<any>,
 ): ReturnType<typeof a.compile> | undefined {
     try {

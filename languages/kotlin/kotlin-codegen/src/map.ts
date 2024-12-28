@@ -1,11 +1,11 @@
-import { type SchemaFormValues } from "@arrirpc/codegen-utils";
+import { type SchemaFormValues } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     isNullable,
     type KotlinProperty,
-} from "./_common";
-import { kotlinTypeFromSchema } from "./_index";
+} from './_common';
+import { kotlinTypeFromSchema } from './_index';
 
 export function kotlinMapFromSchema(
     schema: SchemaFormValues,
@@ -21,8 +21,8 @@ export function kotlinMapFromSchema(
         existingTypeIds: context.existingTypeIds,
     });
 
-    const typeName = `MutableMap<String, ${subType.typeName}${subType.isNullable ? "?" : ""}>`;
-    const defaultValue = nullable ? "null" : "mutableMapOf()";
+    const typeName = `MutableMap<String, ${subType.typeName}${subType.isNullable ? '?' : ''}>`;
+    const defaultValue = nullable ? 'null' : 'mutableMapOf()';
     return {
         typeName,
         isNullable: nullable,
@@ -32,7 +32,7 @@ export function kotlinMapFromSchema(
                 is JsonObject -> {
                     val __value: ${typeName} = mutableMapOf()
                     for (__entry in ${input}!!.jsonObject.entries) {
-                        __value[__entry.key] = ${subType.fromJson("__entry.value", key)}
+                        __value[__entry.key] = ${subType.fromJson('__entry.value', key)}
                     }
                     __value
                 }
@@ -51,7 +51,7 @@ export function kotlinMapFromSchema(
                             ${target} += ","
                         }
                         ${target} += "\${buildString { printQuoted(__entry.key) }}:"
-                        ${subType.toJson("__entry.value", target)}
+                        ${subType.toJson('__entry.value', target)}
                     }
                     ${target} += "}"
                 }`;
@@ -62,7 +62,7 @@ export function kotlinMapFromSchema(
                     ${target} += ","
                 }
                 ${target} += "\${buildString { printQuoted(__entry.key) }}:"
-                ${subType.toJson("__entry.value", target)}
+                ${subType.toJson('__entry.value', target)}
             }
             ${target} += "}"`;
         },

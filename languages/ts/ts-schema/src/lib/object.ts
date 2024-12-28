@@ -1,4 +1,4 @@
-import { type SchemaFormProperties } from "@arrirpc/type-defs";
+import { type SchemaFormProperties } from '@arrirpc/type-defs';
 
 import {
     type AObjectSchema,
@@ -10,8 +10,8 @@ import {
     type ResolveObject,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
-import { optional } from "./modifiers";
+} from '../schemas';
+import { optional } from './modifiers';
 
 /**
  * Create an object schema
@@ -46,7 +46,7 @@ export function object<
     propA: TInput | string,
     propB?: TInput | AObjectSchemaOptions<TAdditionalProps>,
 ): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps> {
-    const isIdShorthand = typeof propA === "string";
+    const isIdShorthand = typeof propA === 'string';
     const input = isIdShorthand ? (propB as TInput) : propA;
     const options = isIdShorthand
         ? { id: propA }
@@ -54,7 +54,7 @@ export function object<
     const schema: SchemaFormProperties = {
         properties: {},
     };
-    if (typeof options.strict === "boolean") {
+    if (typeof options.strict === 'boolean') {
         schema.strict = options.strict;
     }
     for (const key of Object.keys(input)) {
@@ -115,7 +115,7 @@ export function parseObjectSchema<T>(
     coerce = false,
 ): T | undefined {
     let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === 'string') {
         try {
             const result = JSON.parse(input);
             parsedInput = result;
@@ -193,7 +193,7 @@ export function parseObjectSchema<T>(
             });
             continue;
         }
-        if (typeof val !== "undefined") {
+        if (typeof val !== 'undefined') {
             result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
@@ -256,7 +256,7 @@ export function pick<
         properties: {},
         nullable: inputSchema.nullable,
     };
-    if (typeof options.strict === "boolean") {
+    if (typeof options.strict === 'boolean') {
         schema.strict = options.strict;
     }
 
@@ -342,7 +342,7 @@ export function omit<
         },
         nullable: inputSchema.nullable,
     };
-    if (typeof options.strict === "boolean") {
+    if (typeof options.strict === 'boolean') {
         schema.strict = options.strict;
     }
     Object.keys(inputSchema.properties).forEach((key) => {
@@ -407,7 +407,7 @@ export function serializeObject(
     for (const key of Object.keys(schema.properties)) {
         const prop = schema.properties[key]!;
         const val = input[key];
-        if (typeof val !== "undefined") {
+        if (typeof val !== 'undefined') {
             strParts.push(
                 `"${key}":${prop.metadata[SCHEMA_METADATA].serialize(val, {
                     instancePath: `${data.instancePath}/${key}`,
@@ -421,7 +421,7 @@ export function serializeObject(
         for (const key of Object.keys(schema.optionalProperties)) {
             const prop = schema.optionalProperties[key]!;
             const val = input[key];
-            if (typeof val !== "undefined") {
+            if (typeof val !== 'undefined') {
                 strParts.push(
                     `"${key}":${prop.metadata[SCHEMA_METADATA].serialize(val, {
                         instancePath: `${data.instancePath}/${key}`,
@@ -432,7 +432,7 @@ export function serializeObject(
             }
         }
     }
-    return `{${strParts.join(",")}}`;
+    return `{${strParts.join(',')}}`;
 }
 
 export function extend<
@@ -457,7 +457,7 @@ export function extend<
             ...inputSchema.optionalProperties,
         },
     };
-    if (typeof options.strict === "boolean") {
+    if (typeof options.strict === 'boolean') {
         schema.strict = options.strict;
     }
 
@@ -465,7 +465,7 @@ export function extend<
         input: unknown,
     ): input is InferType<TBaseSchema> & InferType<TSchema> =>
         validateObjectSchema(schema as any, input);
-    const meta: ASchema["metadata"] = {
+    const meta: ASchema['metadata'] = {
         id: options.id,
         description: options.description,
         [SCHEMA_METADATA]: {
@@ -498,7 +498,7 @@ export function partial<
         optionalProperties: {},
         nullable: schema.nullable,
     };
-    if (typeof options.strict === "boolean") {
+    if (typeof options.strict === 'boolean') {
         schema.strict = options.strict;
     }
     for (const key of Object.keys(schema.properties)) {
@@ -515,7 +515,7 @@ export function partial<
             }
         }
     }
-    const meta: ASchema["metadata"] = {
+    const meta: ASchema['metadata'] = {
         id: options.id,
         description: options.description,
         [SCHEMA_METADATA]: {

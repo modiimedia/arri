@@ -2,38 +2,38 @@ import {
     type SchemaFormProperties,
     type SchemaFormType,
     SchemaFormValues,
-} from "@arrirpc/type-defs";
+} from '@arrirpc/type-defs';
 
-import { jsonSchemaToJtdSchema } from "./index";
+import { jsonSchemaToJtdSchema } from './index';
 import {
     type JsonSchemaObject,
     JsonSchemaRecord,
     type JsonSchemaScalarType,
-} from "./models";
+} from './models';
 
 const emptyMetadata = {
     id: undefined,
     description: undefined,
 };
 
-it("Converts integers", () => {
+it('Converts integers', () => {
     const integerSchema: JsonSchemaScalarType = {
-        type: "integer",
+        type: 'integer',
     };
     const expectedOutput: SchemaFormType = {
-        type: "int32",
+        type: 'int32',
         metadata: emptyMetadata,
         nullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(integerSchema)).toStrictEqual(expectedOutput);
 });
 
-it("Converts strings", () => {
+it('Converts strings', () => {
     const input: JsonSchemaScalarType = {
-        type: "string",
+        type: 'string',
     };
     const expectedOutput: SchemaFormType = {
-        type: "string",
+        type: 'string',
         metadata: emptyMetadata,
         nullable: undefined,
     };
@@ -42,66 +42,66 @@ it("Converts strings", () => {
 
 it('Converts strings that are marked as format "date-time"', () => {
     const input: JsonSchemaScalarType = {
-        type: "string",
-        format: "date-time",
+        type: 'string',
+        format: 'date-time',
     };
     const expectedOutput: SchemaFormType = {
-        type: "timestamp",
+        type: 'timestamp',
         metadata: emptyMetadata,
         nullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
     const input2: JsonSchemaScalarType = {
-        type: "string",
-        format: "date-time",
+        type: 'string',
+        format: 'date-time',
         nullable: true,
     };
     const expectedOutput2: SchemaFormType = {
-        type: "timestamp",
+        type: 'timestamp',
         metadata: emptyMetadata,
         nullable: true,
     };
     expect(jsonSchemaToJtdSchema(input2)).toStrictEqual(expectedOutput2);
 });
 
-it("Converts objects", () => {
+it('Converts objects', () => {
     const input: JsonSchemaObject = {
-        type: "object",
+        type: 'object',
         properties: {
             id: {
-                type: "string",
+                type: 'string',
             },
             title: {
-                type: "string",
+                type: 'string',
             },
             numLikes: {
-                type: "integer",
+                type: 'integer',
             },
             createdAt: {
-                type: "integer",
+                type: 'integer',
             },
         },
-        required: ["id", "title", "numLikes", "createdAt"],
+        required: ['id', 'title', 'numLikes', 'createdAt'],
     };
     const expectedOutput: SchemaFormProperties = {
         properties: {
             id: {
-                type: "string",
+                type: 'string',
                 metadata: emptyMetadata,
                 nullable: undefined,
             },
             title: {
-                type: "string",
+                type: 'string',
                 metadata: emptyMetadata,
                 nullable: undefined,
             },
             numLikes: {
-                type: "int32",
+                type: 'int32',
                 metadata: emptyMetadata,
                 nullable: undefined,
             },
             createdAt: {
-                type: "int32",
+                type: 'int32',
                 metadata: emptyMetadata,
                 nullable: undefined,
             },
@@ -113,30 +113,30 @@ it("Converts objects", () => {
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
 
-it("Converts objects with optional values", () => {
+it('Converts objects with optional values', () => {
     const input: JsonSchemaObject = {
-        type: "object",
+        type: 'object',
         properties: {
             id: {
-                type: "string",
+                type: 'string',
             },
             name: {
-                type: "string",
+                type: 'string',
             },
         },
-        required: ["id"],
+        required: ['id'],
     };
     const expectedOutput: SchemaFormProperties = {
         properties: {
             id: {
-                type: "string",
+                type: 'string',
                 nullable: undefined,
                 metadata: emptyMetadata,
             },
         },
         optionalProperties: {
             name: {
-                type: "string",
+                type: 'string',
                 metadata: emptyMetadata,
                 nullable: undefined,
             },
@@ -148,18 +148,18 @@ it("Converts objects with optional values", () => {
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
 
-it("Converts dictionary types", () => {
+it('Converts dictionary types', () => {
     const input1: JsonSchemaRecord = {
-        type: "object",
+        type: 'object',
         patternProperties: {
             a: {
-                type: "string",
+                type: 'string',
             },
         },
     };
     const expectedOutput1: SchemaFormValues = {
         values: {
-            type: "string",
+            type: 'string',
             nullable: undefined,
             metadata: emptyMetadata,
         },
@@ -168,17 +168,17 @@ it("Converts dictionary types", () => {
     };
     expect(jsonSchemaToJtdSchema(input1)).toStrictEqual(expectedOutput1);
     const input2: JsonSchemaRecord = {
-        type: "object",
+        type: 'object',
         nullable: undefined,
         additionalProperties: {
-            type: "object",
+            type: 'object',
             properties: {
                 id: {
-                    type: "string",
+                    type: 'string',
                     nullable: undefined,
                 },
                 name: {
-                    type: "string",
+                    type: 'string',
                     nullable: true,
                 },
             },
@@ -189,12 +189,12 @@ it("Converts dictionary types", () => {
             properties: {},
             optionalProperties: {
                 id: {
-                    type: "string",
+                    type: 'string',
                     nullable: undefined,
                     metadata: emptyMetadata,
                 },
                 name: {
-                    type: "string",
+                    type: 'string',
                     nullable: true,
                     metadata: emptyMetadata,
                 },

@@ -1,4 +1,4 @@
-import { a, type InferType, type ValueError } from "@arrirpc/schema";
+import { a, type InferType, type ValueError } from '@arrirpc/schema';
 import {
     createEventStream,
     eventHandler,
@@ -8,12 +8,12 @@ import {
     type H3Event,
     isPreflightRequest,
     type Router,
-} from "h3";
+} from 'h3';
 
-import { type RpcEventContext } from "./context";
-import { handleH3Error } from "./errors";
-import { type MiddlewareEvent } from "./middleware";
-import { type RouteOptions } from "./route";
+import { type RpcEventContext } from './context';
+import { handleH3Error } from './errors';
+import { type MiddlewareEvent } from './middleware';
+import { type RouteOptions } from './route';
 import {
     getSchemaValidator,
     type HttpRpc,
@@ -22,7 +22,7 @@ import {
     type RpcEvent,
     type RpcParamSchema,
     validateRpcRequestInput,
-} from "./rpc";
+} from './rpc';
 
 export function defineEventStreamRpc<
     TParams extends RpcParamSchema | undefined = undefined,
@@ -30,14 +30,14 @@ export function defineEventStreamRpc<
 >(
     config: Omit<
         EventStreamRpc<TParams, TResponse>,
-        "isEventStream" | "transport"
+        'isEventStream' | 'transport'
     >,
 ): EventStreamRpc<TParams, TResponse> {
     return {
         ...config,
-        method: config.method ?? "get",
+        method: config.method ?? 'get',
         isEventStream: true,
-        transport: "http",
+        transport: 'http',
     };
 }
 
@@ -45,14 +45,14 @@ export function isEventStreamRpc(
     input: unknown,
 ): input is EventStreamRpc<any, any> {
     return (
-        isRpc(input) && "isEventStream" in input && input.isEventStream === true
+        isRpc(input) && 'isEventStream' in input && input.isEventStream === true
     );
 }
 
 export interface EventStreamRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> extends Omit<HttpRpc<true, TParams, TResponse>, "handler" | "postHandler"> {
+> extends Omit<HttpRpc<true, TParams, TResponse>, 'handler' | 'postHandler'> {
     isEventStream: true;
     handler: EventStreamRpcHandler<
         TParams extends RpcParamSchema ? InferType<TParams> : undefined,
@@ -89,7 +89,7 @@ export class EventStreamConnection<TData> {
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.eventStream = createEventStream(event);
-        this.lastEventId = getHeader(event, "Last-Event-Id");
+        this.lastEventId = getHeader(event, 'Last-Event-Id');
         this.pingIntervalMs = opts.pingInterval ?? 60000;
         this.serializer = opts.serializer;
         this.validator = opts.validator;
@@ -106,8 +106,8 @@ export class EventStreamConnection<TData> {
         void this.eventStream.send();
         this.pingInterval = setInterval(async () => {
             await this.eventStream.push({
-                event: "ping",
-                data: "",
+                event: 'ping',
+                data: '',
             });
         }, this.pingIntervalMs);
     }
@@ -125,7 +125,7 @@ export class EventStreamConnection<TData> {
                 if (this.validator(item)) {
                     events.push({
                         id: eventId,
-                        event: "message",
+                        event: 'message',
                         data: this.serializer(item),
                     });
                     results.push({ success: true });
@@ -143,7 +143,7 @@ export class EventStreamConnection<TData> {
         if (this.validator(data)) {
             await this.eventStream.push({
                 id: eventId,
-                event: "message",
+                event: 'message',
                 data: this.serializer(data),
             });
 
@@ -168,8 +168,8 @@ export class EventStreamConnection<TData> {
     async close() {
         await this.eventStream
             .push({
-                event: "done",
-                data: "this stream has ended",
+                event: 'done',
+                data: 'this stream has ended',
             })
             .catch();
         await this.eventStream.close();
@@ -193,16 +193,16 @@ export function registerEventStreamRpc(
     opts: RouteOptions,
 ) {
     const paramValidator = procedure.params
-        ? getSchemaValidator(procedure.name, "params", procedure.params)
+        ? getSchemaValidator(procedure.name, 'params', procedure.params)
         : undefined;
     const responseValidator = procedure.response
-        ? getSchemaValidator(procedure.name, "response", procedure.response)
+        ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
-    const httpMethod = procedure.method ?? "get";
+    const httpMethod = procedure.method ?? 'get';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
-            return "ok";
+            return 'ok';
         }
         try {
             if (opts.onRequest) {
@@ -231,7 +231,7 @@ export function registerEventStreamRpc(
                 serializer:
                     responseValidator?.serialize ??
                     function (_) {
-                        return "";
+                        return '';
                     },
                 validationErrors(input) {
                     if (procedure.response) {
@@ -251,22 +251,22 @@ export function registerEventStreamRpc(
         } catch (err) {
             await handleH3Error(err, event, opts.onError, opts.debug ?? false);
         }
-        return "";
+        return '';
     });
     switch (httpMethod) {
-        case "get":
+        case 'get':
             router.get(path, handler);
             break;
-        case "delete":
+        case 'delete':
             router.delete(path, handler);
             break;
-        case "patch":
+        case 'patch':
             router.patch(path, handler);
             break;
-        case "put":
+        case 'put':
             router.put(path, handler);
             break;
-        case "post":
+        case 'post':
         default:
             router.post(path, handler);
             break;

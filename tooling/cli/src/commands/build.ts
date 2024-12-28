@@ -1,21 +1,21 @@
-import { loadConfig } from "c12";
-import { defineCommand, runCommand } from "citty";
+import { loadConfig } from 'c12';
+import { defineCommand, runCommand } from 'citty';
 
-import { isArriConfig } from "../config";
+import { isArriConfig } from '../config';
 
 export default defineCommand({
     meta: {
-        description: "Build the arri TS server",
+        description: 'Build the arri TS server',
     },
     args: {
         config: {
-            type: "string",
-            description: "Path to the arri config file",
-            alias: "c",
-            default: "./arri.config.ts",
+            type: 'string',
+            description: 'Path to the arri config file',
+            alias: 'c',
+            default: './arri.config.ts',
         },
         skipCodegen: {
-            type: "boolean",
+            type: 'boolean',
             default: false,
         },
     },
@@ -24,19 +24,19 @@ export default defineCommand({
             configFile: args.config,
         });
         if (!config) {
-            throw new Error("Unable to find arri config");
+            throw new Error('Unable to find arri config');
         }
         if (!isArriConfig(config)) {
             throw new Error(`Invalid arri config at ${args.config}`);
         }
         if (!config.server) {
             throw new Error(
-                "No server specified in config file. Cannot run build.",
+                'No server specified in config file. Cannot run build.',
             );
         }
         const subArgs = config.server.buildArgs ?? {};
         subArgs.skipCodegen = {
-            type: "boolean",
+            type: 'boolean',
             default: false,
         };
         const subCommand = defineCommand({

@@ -1,11 +1,11 @@
-import { SchemaFormRef } from "@arrirpc/codegen-utils";
+import { SchemaFormRef } from '@arrirpc/codegen-utils';
 
 import {
     GeneratorContext,
     isNullableType,
     SwiftProperty,
     validTypeName,
-} from "./_common";
+} from './_common';
 
 export function swiftRefFromSchema(
     schema: SchemaFormRef,
@@ -35,7 +35,7 @@ export function swiftRefFromSchema(
             return `${target} = ${prefixedTypeName}(json: ${input})`;
         },
         toJsonTemplate(input, target) {
-            const mainContent = `${target} += ${input}${isNullable ? "!" : ""}.toJSONString()`;
+            const mainContent = `${target} += ${input}${isNullable ? '!' : ''}.toJSONString()`;
             if (schema.nullable) {
                 return `if ${input} != nil {
                     ${mainContent}
@@ -50,10 +50,10 @@ export function swiftRefFromSchema(
         },
         cloneTemplate(input, _) {
             return {
-                bodyContent: "",
-                fieldContent: `${input}${isNullable ? "?" : ""}.clone()`,
+                bodyContent: '',
+                fieldContent: `${input}${isNullable ? '?' : ''}.clone()`,
             };
         },
-        content: "",
+        content: '',
     };
 }

@@ -5,7 +5,7 @@ import {
     type ASchemaOptions,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
+} from '../schemas';
 
 let recursiveTypeCount = 0;
 
@@ -60,7 +60,7 @@ export function recursive<T = any>(
     propA: RecursiveCallback<T> | string,
     propB?: ASchemaOptions | RecursiveCallback<T>,
 ): AObjectSchema<T> | ADiscriminatorSchema<T> {
-    const isIdShorthand = typeof propA === "string";
+    const isIdShorthand = typeof propA === 'string';
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
     const options = isIdShorthand
         ? { id: propA }
@@ -85,7 +85,7 @@ export function recursive<T = any>(
         ref: id,
         metadata: {
             [SCHEMA_METADATA]: {
-                output: "" as T,
+                output: '' as T,
                 parse(input, context) {
                     if (recursiveFns[id]) {
                         return recursiveFns[id]!.parse(input, context);
@@ -95,7 +95,7 @@ export function recursive<T = any>(
                     if (recursiveFns[id]) {
                         return recursiveFns[id]!.serialize(input, context);
                     }
-                    return "";
+                    return '';
                 },
                 validate(input): input is T {
                     if (recursiveFns[id]) {

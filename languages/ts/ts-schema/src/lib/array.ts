@@ -5,7 +5,7 @@ import {
     type InferType,
     SCHEMA_METADATA,
     type ValidationContext,
-} from "../schemas";
+} from '../schemas';
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     schema: TInnerSchema,
@@ -42,7 +42,7 @@ export function array<TInnerSchema extends ASchema<any> = any>(
                             }),
                         );
                     }
-                    return `[${strParts.join(",")}]`;
+                    return `[${strParts.join(',')}]`;
                 },
             },
         },
@@ -69,7 +69,7 @@ function parse<T>(
     coerce = false,
 ): T[] | undefined {
     let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === 'string') {
         try {
             parsedInput = JSON.parse(input);
         } catch (_) {

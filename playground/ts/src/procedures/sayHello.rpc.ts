@@ -1,8 +1,8 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
 export default defineRpc({
-    method: "post",
+    method: 'post',
     params: a.object({
         name: a.string(),
     }),

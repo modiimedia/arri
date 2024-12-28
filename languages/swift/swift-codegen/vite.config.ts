@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/languages/swift/swift-codegen",
+    cacheDir: '../../../node_modules/.vite/languages/swift/swift-codegen',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -20,10 +20,10 @@ export default defineConfig({
 
     test: {
         globals: true,
-        reporters: ["default", "html"],
-        outputFile: ".temp/test-results/index.html",
-        pool: "threads",
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        reporters: ['default', 'html'],
+        outputFile: '.temp/test-results/index.html',
+        pool: 'threads',
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
 });

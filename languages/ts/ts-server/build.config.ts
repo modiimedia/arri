@@ -1,11 +1,11 @@
-import fs from "node:fs";
+import fs from 'node:fs';
 
-import path from "pathe";
-import { defineBuildConfig } from "unbuild";
+import path from 'pathe';
+import { defineBuildConfig } from 'unbuild';
 
 const packageJson = JSON.parse(
-    fs.readFileSync(path.resolve(__dirname, "./package.json"), {
-        encoding: "utf-8",
+    fs.readFileSync(path.resolve(__dirname, './package.json'), {
+        encoding: 'utf-8',
     }),
 );
 
@@ -15,14 +15,14 @@ const deps = Object.keys(
 
 export default defineBuildConfig({
     rootDir: __dirname,
-    entries: [{ input: "./src/_index.ts", name: "index" }],
+    entries: [{ input: './src/_index.ts', name: 'index' }],
     rollup: {
         emitCJS: true,
         dts: {
             respectExternal: true,
         },
     },
-    outDir: "dist",
+    outDir: 'dist',
     clean: true,
     declaration: true,
     failOnWarn: true,

@@ -1,28 +1,28 @@
-import { AppDefinition, normalizeWhitespace } from "@arrirpc/codegen-utils";
-import fs from "fs";
-import path from "path";
-import { expect, test } from "vitest";
+import { AppDefinition, normalizeWhitespace } from '@arrirpc/codegen-utils';
+import fs from 'fs';
+import path from 'path';
+import { expect, test } from 'vitest';
 
-import { createTypescriptClient } from "./_index";
+import { createTypescriptClient } from './_index';
 
-const testDir = path.resolve(__dirname, "../../../../tests/test-files");
+const testDir = path.resolve(__dirname, '../../../../tests/test-files');
 const appDef = JSON.parse(
-    fs.readFileSync(path.resolve(testDir, "AppDefinition.json"), "utf8"),
+    fs.readFileSync(path.resolve(testDir, 'AppDefinition.json'), 'utf8'),
 ) as AppDefinition;
 const referenceFile = fs.readFileSync(
     path.resolve(
         __dirname,
-        "../../ts-codegen-reference/src/referenceClient.ts",
+        '../../ts-codegen-reference/src/referenceClient.ts',
     ),
-    "utf8",
+    'utf8',
 );
-test("Output matches reference file", async () => {
+test('Output matches reference file', async () => {
     const result = await createTypescriptClient(appDef, {
-        clientName: "ExampleClient",
-        outputFile: "",
+        clientName: 'ExampleClient',
+        outputFile: '',
         prettierOptions: {
             tabWidth: 4,
-            endOfLine: "lf",
+            endOfLine: 'lf',
         },
     });
     expect(normalizeWhitespace(result)).toEqual(

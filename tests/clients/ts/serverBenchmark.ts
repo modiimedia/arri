@@ -1,5 +1,5 @@
-import { execSync } from "child_process";
-import { consola } from "consola";
+import { execSync } from 'child_process';
+import { consola } from 'consola';
 
 import {
     $$ObjectWithEveryNullableType,
@@ -8,15 +8,15 @@ import {
     ObjectWithEveryNullableType,
     ObjectWithEveryOptionalType,
     ObjectWithEveryType,
-} from "./testClient.rpc";
+} from './testClient.rpc';
 
 const now = new Date();
 
 async function main() {
     const input1: ObjectWithEveryType = {
-        any: { "hello world": "hello world" },
+        any: { 'hello world': 'hello world' },
         boolean: false,
-        string: "",
+        string: '',
         timestamp: now,
         float32: 1.5,
         float64: 1.5,
@@ -28,39 +28,39 @@ async function main() {
         uint32: 100,
         int64: 1000n,
         uint64: 1000n,
-        enumerator: "A",
+        enumerator: 'A',
         array: [true, false, false],
         object: {
             boolean: false,
             timestamp: now,
-            string: "hello world",
+            string: 'hello world',
         },
         record: {
             a: 1n,
             b: 0n,
         },
         discriminator: {
-            type: "B",
-            title: "hello world",
-            description: "",
+            type: 'B',
+            title: 'hello world',
+            description: '',
         },
         nestedObject: {
-            id: "",
+            id: '',
             data: {
-                id: "",
+                id: '',
                 timestamp: now,
                 data: {
-                    id: "",
+                    id: '',
                     timestamp: now,
                 },
             },
             timestamp: now,
         },
         nestedArray: [
-            [{ id: "", timestamp: now }],
+            [{ id: '', timestamp: now }],
             [
-                { id: "1", timestamp: now },
-                { id: "2", timestamp: now },
+                { id: '1', timestamp: now },
+                { id: '2', timestamp: now },
             ],
         ],
     };
@@ -69,7 +69,7 @@ async function main() {
     execSync(
         `pnpm autocannon -m POST -H x-test-header=autocannon -b '${payload1}' http://127.0.0.1:2020/rpcs/tests/send-object`,
         {
-            stdio: "inherit",
+            stdio: 'inherit',
         },
     );
     const input2: ObjectWithEveryNullableType = {
@@ -78,10 +78,10 @@ async function main() {
         object: { boolean: false, string: null, timestamp: now },
         string: null,
         nestedObject: {
-            id: "1",
+            id: '1',
             timestamp: now,
             data: {
-                id: "",
+                id: '',
                 timestamp: null,
                 data: {
                     id: null,
@@ -95,7 +95,7 @@ async function main() {
     execSync(
         `pnpm autocannon -m POST -H x-test-header=autocannon -b '${payload2}' http://127.0.0.1:2020/rpcs/tests/send-object-with-nullable-fields`,
         {
-            stdio: "inherit",
+            stdio: 'inherit',
         },
     );
     const input3: ObjectWithEveryOptionalType = {
@@ -108,7 +108,7 @@ async function main() {
     consola.info(`Benchmarking SendPartialObject`);
     execSync(
         `pnpm autocannon -m POST -H x-test-header=autocannon -b '${payload3}' http://127.0.0.1:2020/rpcs/tests/send-partial-object`,
-        { stdio: "inherit" },
+        { stdio: 'inherit' },
     );
 }
 

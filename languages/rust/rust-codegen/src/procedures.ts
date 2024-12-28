@@ -5,30 +5,30 @@ import {
     RpcDefinition,
     ServiceDefinition,
     WsRpcDefinition,
-} from "@arrirpc/codegen-utils";
-import assert from "assert";
+} from '@arrirpc/codegen-utils';
+import assert from 'assert';
 
 import {
     formatDescriptionComment,
     GeneratorContext,
     validRustIdentifier,
     validRustName,
-} from "./_common";
+} from './_common';
 
 export function rustRpcFromSchema(
     schema: RpcDefinition,
     context: GeneratorContext,
 ): string {
     switch (schema.transport) {
-        case "http":
+        case 'http':
             return rustHttpRpcFromSchema(schema, context);
-        case "ws":
+        case 'ws':
             return rustWsRpcFromSchema(schema, context);
         default:
             console.warn(
                 `[rust-codegen] Unknown transport type "${schema.transport}". Skipping ${context.instancePath}.`,
             );
-            return "";
+            return '';
     }
 }
 
@@ -37,13 +37,13 @@ export function rustHttpRpcFromSchema(
     context: GeneratorContext,
 ): string {
     const functionName = getFunctionName(context.instancePath);
-    let leading = "";
+    let leading = '';
     if (schema.description) {
         leading += formatDescriptionComment(schema.description);
-        leading += "\n";
+        leading += '\n';
     }
     if (schema.isDeprecated) {
-        leading += "#[deprecated]\n";
+        leading += '#[deprecated]\n';
     }
     const params = schema.params ? validRustName(schema.params) : undefined;
     const response = schema.response
@@ -52,12 +52,12 @@ export function rustHttpRpcFromSchema(
     if (schema.isEventStream) {
         return `${leading}pub async fn ${functionName}<OnEvent>(
             &self,
-            ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
+            ${params ? `params: ${context.typeNamePrefix}${params},` : ''}
             on_event: &mut OnEvent,
             max_retry_count: Option<u64>,
             max_retry_interval: Option<u64>,
         ) where
-            OnEvent: FnMut(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>, &mut SseController) + std::marker::Send + std::marker::Sync,
+            OnEvent: FnMut(SseEvent<${response ? `${context.typeNamePrefix}${response}` : 'EmptyArriModel'}>, &mut SseController) + std::marker::Send + std::marker::Sync,
         {
             parsed_arri_sse_request(
                 ArriParsedSseRequestOptions {
@@ -69,7 +69,7 @@ export function rustHttpRpcFromSchema(
                     max_retry_count,
                     max_retry_interval,
                 },
-                ${params ? `Some(params)` : "None::<EmptyArriModel>"},
+                ${params ? `Some(params)` : 'None::<EmptyArriModel>'},
                 on_event,
             )
             .await;
@@ -77,8 +77,8 @@ export function rustHttpRpcFromSchema(
     }
     return `${leading}pub async fn ${functionName}(
         &self,
-        ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
-    ) -> Result<${context.typeNamePrefix}${response ?? "()"}, ArriError> {
+        ${params ? `params: ${context.typeNamePrefix}${params},` : ''}
+    ) -> Result<${context.typeNamePrefix}${response ?? '()'}, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -87,8 +87,8 @@ export function rustHttpRpcFromSchema(
                 headers: self._config.headers.clone(),
                 client_version: "${context.clientVersion}".to_string(),
             },
-            ${params ? `Some(params)` : "None::<EmptyArriModel>"},
-            |body| ${response ? `return ${context.typeNamePrefix}${response}::from_json_string(body)` : "{}"},
+            ${params ? `Some(params)` : 'None::<EmptyArriModel>'},
+            |body| ${response ? `return ${context.typeNamePrefix}${response}::from_json_string(body)` : '{}'},
         )
         .await
     }`;
@@ -101,12 +101,12 @@ export function rustWsRpcFromSchema(
     console.warn(
         `[rust-codegen] WS RPCs are not supported at this time. Skipping ${context.instancePath}.`,
     );
-    return "";
+    return '';
 }
 
 export function getFunctionName(instancePath: string): string {
     assert(instancePath.length > 0);
-    const name = instancePath.split(".").pop() ?? "";
+    const name = instancePath.split('.').pop() ?? '';
     return validRustIdentifier(name);
 }
 
@@ -115,7 +115,7 @@ export function getServiceName(
     context: GeneratorContext,
 ): string {
     assert(instancePath.length > 0);
-    const name = instancePath.split(".").join("_");
+    const name = instancePath.split('.').join('_');
     return validRustName(`${context.clientName}_${name}_Service`);
 }
 
@@ -164,34 +164,34 @@ export function rustServiceFromSchema(
             `[rust-codegen] Invalid schema at /procedures/${context.instancePath}.`,
         );
     }
-    const paramSuffix = subServices.length > 0 ? ".clone()" : "";
+    const paramSuffix = subServices.length > 0 ? '.clone()' : '';
     return {
         name: serviceName,
         content: `#[derive(Clone)]
 pub struct ${serviceName} {
     _config: InternalArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
+${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join('\n')}
 }
 
 impl ArriClientService for ${serviceName} {
     fn create(config: ArriClientConfig) -> Self {
         Self {
             _config: InternalArriClientConfig::from(config${paramSuffix}),
-${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? "" : ".clone()"}),`).join("\n")}
+${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? '' : '.clone()'}),`).join('\n')}
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
         let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
-${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? "" : ".clone()"});`).join("\n")}
+${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? '' : '.clone()'});`).join('\n')}
     }
 }
 
 impl ${serviceName} {
-${rpcParts.join("\n")}
+${rpcParts.join('\n')}
 }
 
-${subServiceContent.join("\n\n")}
+${subServiceContent.join('\n\n')}
 `,
     };
 }

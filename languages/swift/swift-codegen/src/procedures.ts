@@ -5,29 +5,29 @@ import {
     RpcDefinition,
     ServiceDefinition,
     WsRpcDefinition,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 import {
     codeComments,
     GeneratorContext,
     validSwiftKey,
     validTypeName,
-} from "./_common";
+} from './_common';
 
 export function swiftProcedureFromSchema(
     schema: RpcDefinition,
     context: GeneratorContext,
 ): string {
     switch (schema.transport) {
-        case "http":
+        case 'http':
             return swiftHttpProcedureFromSchema(schema, context);
-        case "ws":
+        case 'ws':
             return swiftWsProcedureFromSchema(schema, context);
         default:
             console.warn(
                 `[swift-codegen] Unsupported transport type at ${context.instancePath}`,
             );
-            return "";
+            return '';
     }
 }
 
@@ -43,7 +43,7 @@ export function swiftHttpProcedureFromSchema(
                 isDeprecated: schema.isDeprecated,
             },
         },
-        "    ",
+        '    ',
     );
     const params = schema.params
         ? `${context.typePrefix}${validTypeName(schema.params)}`
@@ -52,13 +52,13 @@ export function swiftHttpProcedureFromSchema(
         ? `${context.typePrefix}${validTypeName(schema.response)}`
         : undefined;
     if (schema.isEventStream) {
-        return `${comments}    public func ${rpcName}(${params ? `_ params: ${params}, ` : ""}options: EventSourceOptions<${response ?? "EmptyArriModel"}>) -> Task<(), Never> {
+        return `${comments}    public func ${rpcName}(${params ? `_ params: ${params}, ` : ''}options: EventSourceOptions<${response ?? 'EmptyArriModel'}>) -> Task<(), Never> {
         let task = Task {
-            var eventSource = EventSource<${response ?? "EmptyArriModel"}>(
+            var eventSource = EventSource<${response ?? 'EmptyArriModel'}>(
                 url: "\\(self.baseURL)${schema.path}",
                 method: "${schema.method.toUpperCase()}",
                 headers: self.headers,
-                params: ${params ? "params" : "nil"},
+                params: ${params ? 'params' : 'nil'},
                 delegate: self.delegate,
                 clientVersion: "${context.clientVersion}",
                 options: options
@@ -68,22 +68,22 @@ export function swiftHttpProcedureFromSchema(
         return task
     }`;
     }
-    return `${comments}    public func ${rpcName}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
-        ${response ? `let result: ${response} = ` : "let _: EmptyArriModel = "}try await parsedArriHttpRequest(
+    return `${comments}    public func ${rpcName}(${params ? `_ params: ${params}` : ''}) async throws -> ${response ?? '()'} {
+        ${response ? `let result: ${response} = ` : 'let _: EmptyArriModel = '}try await parsedArriHttpRequest(
             delegate: self.delegate,
             url: "\\(self.baseURL)${schema.path}",
             method: "${schema.method.toUpperCase()}",
             headers: self.headers,
             clientVersion: "${context.clientVersion}",
-            ${params ? `params: params` : "params: EmptyArriModel()"},
+            ${params ? `params: params` : 'params: EmptyArriModel()'},
             onError: onError
         )
-        ${response ? `return result` : ""}
+        ${response ? `return result` : ''}
     }`;
 }
 
 export function getRpcName(instancePath: string) {
-    const part = instancePath.split(".").pop();
+    const part = instancePath.split('.').pop();
     if (!part) {
         throw new Error(`Error determining procedure name at ${instancePath}`);
     }
@@ -95,7 +95,7 @@ export function swiftWsProcedureFromSchema(
     context: GeneratorContext,
 ): string {
     console.warn(
-        "[swift-codegen] Websocket procedures are not supported at this time.",
+        '[swift-codegen] Websocket procedures are not supported at this time.',
     );
     const name = getRpcName(context.instancePath);
     const params = schema.params
@@ -113,7 +113,7 @@ export function swiftWsProcedureFromSchema(
         },
         `    `,
     );
-    return `${comments}    public func ${name}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
+    return `${comments}    public func ${name}(${params ? `_ params: ${params}` : ''}) async throws -> ${response ?? '()'} {
         throw ArriRequestError.notImplemented
     }`;
 }
@@ -177,7 +177,7 @@ public class ${serviceName} {
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
     let onError: (Error) -> Void
-${services.map((service) => `    public let ${service.key}: ${service.typeName}`).join("\n")}
+${services.map((service) => `    public let ${service.key}: ${service.typeName}`).join('\n')}
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
@@ -197,19 +197,19 @@ ${services
             onError: onError
         )`,
     )
-    .join("\n")}    
+    .join('\n')}    
     }
-${procedureParts.join("\n")}
+${procedureParts.join('\n')}
         
 }
 
-${subContent.join("\n")}`;
+${subContent.join('\n')}`;
 }
 
 export function getServiceName(instancePath: string, clientName: string) {
     if (instancePath.length === 0) {
         return clientName;
     }
-    const name = `${clientName}${validTypeName(instancePath.split(".").join("_"))}Service`;
+    const name = `${clientName}${validTypeName(instancePath.split('.').join('_'))}Service`;
     return name;
 }

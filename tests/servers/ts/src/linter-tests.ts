@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from '@arrirpc/schema';
 
 // eslint-disable-next-line arri/no-anonymous-object
 const ObjectSchema = a.object({
@@ -11,13 +11,13 @@ const ObjectSchema = a.object({
 });
 
 // eslint-disable-next-line arri/no-anonymous-object
-a.pick(ObjectSchema, ["a", "c"]);
+a.pick(ObjectSchema, ['a', 'c']);
 
 // eslint-disable-next-line arri/no-anonymous-object
 a.extend(ObjectSchema, a.object({ d: a.number() }));
 
 // eslint-disable-next-line arri/no-anonymous-discriminator
-a.discriminator("type", {
+a.discriminator('type', {
     A: a.object({
         a: a.string(),
     }),
@@ -37,7 +37,7 @@ a.recursive((self) =>
 
 // eslint-disable-next-line arri/no-anonymous-recursive
 a.recursive((self) =>
-    a.discriminator("type", {
+    a.discriminator('type', {
         TEXT: a.object({
             data: a.string(),
         }),
@@ -51,4 +51,4 @@ a.recursive((self) =>
 );
 
 // eslint-disable-next-line arri/no-anonymous-enumerator
-a.enumerator(["A", "B", "C"]);
+a.enumerator(['A', 'B', 'C']);

@@ -1,10 +1,10 @@
-import { type Schema, type SchemaFormType } from "@arrirpc/codegen-utils";
+import { type Schema, type SchemaFormType } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     isNullable,
     type KotlinProperty,
-} from "./_common";
+} from './_common';
 
 function defaultToQueryString(
     context: CodegenContext,
@@ -33,9 +33,9 @@ export function kotlinStringFromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : '""';
+    const defaultValue = nullable ? 'null' : '""';
     return {
-        typeName: "String",
+        typeName: 'String',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -62,7 +62,7 @@ export function kotlinStringFromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -71,9 +71,9 @@ export function kotlinBooleanFromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "false";
+    const defaultValue = nullable ? 'null' : 'false';
     return {
-        typeName: "Boolean",
+        typeName: 'Boolean',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -94,7 +94,7 @@ export function kotlinBooleanFromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -103,9 +103,9 @@ export function kotlinTimestampFromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "Instant.now()";
+    const defaultValue = nullable ? 'null' : 'Instant.now()';
     return {
-        typeName: "Instant",
+        typeName: 'Instant',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -153,7 +153,7 @@ export function kotlinTimestampFromSchema(
                 }"
         )`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -162,9 +162,9 @@ export function kotlinFloat32FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0.0F";
+    const defaultValue = nullable ? 'null' : '0.0F';
     return {
-        typeName: "Float",
+        typeName: 'Float',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -185,7 +185,7 @@ export function kotlinFloat32FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -194,9 +194,9 @@ export function kotlinFloat64FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0.0";
+    const defaultValue = nullable ? 'null' : '0.0';
     return {
-        typeName: "Double",
+        typeName: 'Double',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -217,7 +217,7 @@ export function kotlinFloat64FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -226,9 +226,9 @@ export function kotlinInt8FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0";
+    const defaultValue = nullable ? 'null' : '0';
     return {
-        typeName: "Byte",
+        typeName: 'Byte',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -249,7 +249,7 @@ export function kotlinInt8FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -258,9 +258,9 @@ export function kotlinInt16FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0";
+    const defaultValue = nullable ? 'null' : '0';
     return {
-        typeName: "Short",
+        typeName: 'Short',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -281,7 +281,7 @@ export function kotlinInt16FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -290,9 +290,9 @@ export function kotlinInt32FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0";
+    const defaultValue = nullable ? 'null' : '0';
     return {
-        typeName: "Int",
+        typeName: 'Int',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -313,7 +313,7 @@ export function kotlinInt32FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -322,9 +322,9 @@ export function kotlinInt64FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0L";
+    const defaultValue = nullable ? 'null' : '0L';
     return {
-        typeName: "Long",
+        typeName: 'Long',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -351,7 +351,7 @@ export function kotlinInt64FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -360,9 +360,9 @@ export function kotlinUint8FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0u";
+    const defaultValue = nullable ? 'null' : '0u';
     return {
-        typeName: "UByte",
+        typeName: 'UByte',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -383,7 +383,7 @@ export function kotlinUint8FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -392,9 +392,9 @@ export function kotlinUint16FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0u";
+    const defaultValue = nullable ? 'null' : '0u';
     return {
-        typeName: "UShort",
+        typeName: 'UShort',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -415,7 +415,7 @@ export function kotlinUint16FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -424,9 +424,9 @@ export function kotlinUint32FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0u";
+    const defaultValue = nullable ? 'null' : '0u';
     return {
-        typeName: "UInt",
+        typeName: 'UInt',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -447,7 +447,7 @@ export function kotlinUint32FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -456,9 +456,9 @@ export function kotlinUint64FromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "0UL";
+    const defaultValue = nullable ? 'null' : '0UL';
     return {
-        typeName: "ULong",
+        typeName: 'ULong',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -485,6 +485,6 @@ export function kotlinUint64FromSchema(
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
         },
-        content: "",
+        content: '',
     };
 }

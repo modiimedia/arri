@@ -1,10 +1,10 @@
-import { a } from "@arrirpc/schema";
-import { defineEventStreamRpc, defineRpc } from "@arrirpc/server";
-import { type Static, Type } from "@sinclair/typebox";
+import { a } from '@arrirpc/schema';
+import { defineEventStreamRpc, defineRpc } from '@arrirpc/server';
+import { type Static, Type } from '@sinclair/typebox';
 
-import { typeboxAdapter } from "./index";
+import { typeboxAdapter } from './index';
 
-it("infers types correctly", () => {
+it('infers types correctly', () => {
     const Schema = typeboxAdapter(
         Type.Object({
             id: Type.String(),
@@ -14,8 +14,8 @@ it("infers types correctly", () => {
     );
     type Schema = a.infer<typeof Schema>;
     assertType<Schema>({
-        id: "string",
-        email: "string",
+        id: 'string',
+        email: 'string',
         createdAt: 0,
     });
     const SchemaWithOptionals = typeboxAdapter(
@@ -23,8 +23,8 @@ it("infers types correctly", () => {
             id: Type.String(),
             email: Type.Optional(Type.String()),
             role: Type.Enum({
-                standard: "standard",
-                admin: "admin",
+                standard: 'standard',
+                admin: 'admin',
             }),
             posts: Type.Array(
                 Type.Object({
@@ -38,19 +38,19 @@ it("infers types correctly", () => {
     );
     type SchemaWithOptionals = a.infer<typeof SchemaWithOptionals>;
     assertType<SchemaWithOptionals>({
-        id: "12345",
+        id: '12345',
         email: undefined,
-        role: "admin",
+        role: 'admin',
         posts: [
             {
-                id: "123455",
-                title: "",
+                id: '123455',
+                title: '',
                 numComments: 2,
                 numLikes: 5,
             },
             {
-                id: "123j5",
-                title: "1324lk14j",
+                id: '123j5',
+                title: '1324lk14j',
             },
         ],
     });
@@ -66,12 +66,12 @@ it("infers types correctly", () => {
     });
 });
 
-it("creates matching jtd schemas", () => {
+it('creates matching jtd schemas', () => {
     const ObjectSchema = Type.Object({
         id: Type.String(),
         role: Type.Enum({
-            standard: "STANDARD",
-            admin: "ADMIN",
+            standard: 'STANDARD',
+            admin: 'ADMIN',
         }),
         created: Type.Integer(),
         bio: Type.Optional(Type.String()),
@@ -79,7 +79,7 @@ it("creates matching jtd schemas", () => {
     const ConvertedSchema = typeboxAdapter(ObjectSchema);
     const ExpectedSchema = a.object({
         id: a.string(),
-        role: a.stringEnum(["STANDARD", "ADMIN"]),
+        role: a.stringEnum(['STANDARD', 'ADMIN']),
         created: a.int32(),
         bio: a.optional(a.string()),
     });
@@ -88,7 +88,7 @@ it("creates matching jtd schemas", () => {
     );
 });
 
-it("parses objects in the expected way", () => {
+it('parses objects in the expected way', () => {
     const UserSchema = Type.Object({
         id: Type.String(),
         name: Type.String(),
@@ -110,12 +110,12 @@ it("parses objects in the expected way", () => {
     });
     const ConvertedUserSchema = typeboxAdapter(UserSchema);
     const goodInput = {
-        id: "12345",
-        name: "john doe",
+        id: '12345',
+        name: 'john doe',
         isAdmin: false,
         posts: [
             {
-                id: "12345",
+                id: '12345',
                 date: 0,
             },
             {
@@ -128,7 +128,7 @@ it("parses objects in the expected way", () => {
     expect(a.safeParse(ConvertedUserSchema, goodInput).success);
     expect(a.safeParse(ConvertedUserSchema, JSON.stringify(goodInput)).success);
     const badInput = {
-        id: "12345",
+        id: '12345',
         name: 12345131,
         isAdmin: true,
         posts: [],
@@ -139,8 +139,8 @@ it("parses objects in the expected way", () => {
     expect(!a.safeParse(ConvertedUserSchema, JSON.stringify(badInput)).success);
 });
 
-describe("arri inference", () => {
-    test("object parameters", () => {
+describe('arri inference', () => {
+    test('object parameters', () => {
         const Schema = Type.Object({
             id: Type.String(),
             name: Type.String(),
@@ -152,8 +152,8 @@ describe("arri inference", () => {
             handler({ params }) {
                 assertType<Schema>(params);
                 return {
-                    id: "",
-                    name: "",
+                    id: '',
+                    name: '',
                 };
             },
         });
@@ -163,7 +163,7 @@ describe("arri inference", () => {
             handler({ params, stream }) {
                 assertType<Schema>(params);
                 stream.send();
-                void stream.push({ id: "", name: "" });
+                void stream.push({ id: '', name: '' });
             },
         });
     });

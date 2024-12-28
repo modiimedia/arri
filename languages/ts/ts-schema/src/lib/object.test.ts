@@ -1,4 +1,4 @@
-import * as a from "./_namespace";
+import * as a from './_namespace';
 
 const UserSchema = a.object({
     id: a.string(),
@@ -21,13 +21,13 @@ const PostSchema = a.object({
 
 type PostSchema = a.infer<typeof PostSchema>;
 
-describe("a.object()", () => {
-    describe("type inference", () => {
-        it("infers basic objects", () => {
+describe('a.object()', () => {
+    describe('type inference', () => {
+        it('infers basic objects', () => {
             const SomeObject = a.object({
                 id: a.string(),
                 email: a.string(),
-                type: a.stringEnum(["a", "b", "c"]),
+                type: a.stringEnum(['a', 'b', 'c']),
                 _metadata: a.object({
                     createdAt: a.timestamp(),
                     updatedAt: a.timestamp(),
@@ -36,20 +36,20 @@ describe("a.object()", () => {
 
             type SomeObject = a.infer<typeof SomeObject>;
             assertType<SomeObject>({
-                id: "12345",
-                email: "johndoe@gmail",
-                type: "b",
+                id: '12345',
+                email: 'johndoe@gmail',
+                type: 'b',
                 _metadata: {
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 },
             });
         });
-        it("infers objects with optional and null properties", () => {
+        it('infers objects with optional and null properties', () => {
             const SomeObject = a.object({
                 id: a.string(),
                 email: a.optional(a.string()),
-                type: a.stringEnum(["a", "b", "c"]),
+                type: a.stringEnum(['a', 'b', 'c']),
                 _metadata: a.optional(
                     a.object({
                         createdAt: a.timestamp(),
@@ -60,15 +60,15 @@ describe("a.object()", () => {
             });
             type SomeObject = a.infer<typeof SomeObject>;
             assertType<SomeObject>({
-                id: "12345",
-                type: "b",
+                id: '12345',
+                type: 'b',
                 email: undefined,
                 _metadata: undefined,
             });
             assertType<SomeObject>({
-                id: "12345",
-                email: "1231351",
-                type: "a",
+                id: '12345',
+                email: '1231351',
+                type: 'a',
                 _metadata: {
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -76,7 +76,7 @@ describe("a.object()", () => {
                 },
             });
         });
-        it("infers extended objects", () => {
+        it('infers extended objects', () => {
             const SomeObject = a.object({
                 id: a.string(),
                 email: a.string(),
@@ -88,17 +88,17 @@ describe("a.object()", () => {
             const CombinedObject = a.extend(SomeObject, SomeOtherObject);
             type CombinedObject = a.infer<typeof CombinedObject>;
             assertType<CombinedObject>({
-                id: "13245",
-                email: "johndoe@gmail.com",
-                name: "John Doe",
+                id: '13245',
+                email: 'johndoe@gmail.com',
+                name: 'John Doe',
                 createdAt: new Date(),
             });
         });
     });
-    test("parses good input", () => {
+    test('parses good input', () => {
         const goodInput = {
-            id: "12345",
-            name: "john doe",
+            id: '12345',
+            name: 'john doe',
             email: null,
             createdAt: new Date(),
             isAdmin: false,
@@ -117,22 +117,22 @@ describe("a.object()", () => {
     });
     test("doesn't parse bad input", () => {
         const badInput = {
-            blah: "123513",
-            name: "john doe",
+            blah: '123513',
+            name: 'john doe',
         };
         const badJsonInput = JSON.stringify(badInput);
         expect(a.safeParse(UserSchema, badInput).success).toBe(false);
         expect(a.safeParse(UserSchema, badJsonInput).success).toBe(false);
     });
-    test("parses nested objects", () => {
+    test('parses nested objects', () => {
         const badInput = {
-            id: "12345",
-            title: "Some Title",
+            id: '12345',
+            title: 'Some Title',
             createdAt: new Date(),
-            userId: "12345",
+            userId: '12345',
             user: {
-                id: "12345",
-                name: "John Doe",
+                id: '12345',
+                name: 'John Doe',
                 email: null,
                 createdAt: 123456,
                 isAdmin: true,
@@ -146,14 +146,14 @@ describe("a.object()", () => {
         expect(badInputResult.success).toBe(false);
         expect(a.safeParse(PostSchema, badJsonInput).success).toBe(false);
         const goodInput: PostSchema = {
-            id: "1234456",
-            title: "Hello World",
+            id: '1234456',
+            title: 'Hello World',
             createdAt: new Date(),
-            userId: "123456",
-            tags: ["A", "B", "C"],
+            userId: '123456',
+            tags: ['A', 'B', 'C'],
             user: {
-                id: "123456",
-                name: "John Doe",
+                id: '123456',
+                name: 'John Doe',
                 email: null,
                 createdAt: new Date(),
                 isAdmin: false,
@@ -171,7 +171,7 @@ describe("a.object()", () => {
             expect(jsonResult.value).toStrictEqual(goodInput);
         }
     });
-    it("produces valid jtd schema", () => {
+    it('produces valid jtd schema', () => {
         const result = JSON.stringify(
             a.object({
                 id: a.string(),
@@ -183,23 +183,23 @@ describe("a.object()", () => {
         expect(JSON.parse(result)).toStrictEqual({
             properties: {
                 id: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                 },
                 name: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                     nullable: true,
                 },
                 createdAt: {
-                    type: "timestamp",
+                    type: 'timestamp',
                     metadata: {},
                 },
             },
             optionalProperties: {
                 favorites: {
                     elements: {
-                        type: "string",
+                        type: 'string',
                         metadata: {},
                     },
                     metadata: {},
@@ -208,7 +208,7 @@ describe("a.object()", () => {
             metadata: {},
         });
     });
-    it("serializes a simple object", () => {
+    it('serializes a simple object', () => {
         const SimpleObject = a.object({
             limit: a.number(),
             isActive: a.boolean(),
@@ -220,20 +220,20 @@ describe("a.object()", () => {
             limit: 1,
             isActive: true,
             createdAt: new Date(),
-            name: "John Doe",
+            name: 'John Doe',
         };
         const result = a.serialize(SimpleObject, input);
         expect(a.parse(SimpleObject, result)).toStrictEqual(input);
         JSON.parse(result);
     });
-    it("serializes nested object", () => {
+    it('serializes nested object', () => {
         const NestedObject = a.object({
             limit: a.number(),
             isActive: a.boolean(),
             date: a.timestamp(),
             nestedObject: a.object({
                 name: a.string(),
-                enum: a.stringEnum(["A", "B"]),
+                enum: a.stringEnum(['A', 'B']),
                 date: a.timestamp(),
             }),
         });
@@ -243,8 +243,8 @@ describe("a.object()", () => {
             isActive: false,
             date: new Date(),
             nestedObject: {
-                name: "",
-                enum: "A",
+                name: '',
+                enum: 'A',
                 date: new Date(),
             },
         };
@@ -252,7 +252,7 @@ describe("a.object()", () => {
         JSON.parse(result);
         expect(a.parse(NestedObject, result)).toStrictEqual(input);
     });
-    it("has consistent output across function overloads", () => {
+    it('has consistent output across function overloads', () => {
         const User1 = a.object(
             {
                 id: a.string(),
@@ -260,22 +260,22 @@ describe("a.object()", () => {
                 createdAt: a.timestamp(),
             },
             {
-                id: "User",
+                id: 'User',
             },
         );
-        const User2 = a.object("User", {
+        const User2 = a.object('User', {
             id: a.string(),
             name: a.string(),
             createdAt: a.timestamp(),
         });
         expect(JSON.stringify(User1)).toBe(JSON.stringify(User2));
-        const input = { id: "", name: "", createdAt: new Date() };
+        const input = { id: '', name: '', createdAt: new Date() };
         expect(a.validate(User1, input)).toEqual(a.validate(User2, input));
         expect(a.serialize(User1, input)).toEqual(a.serialize(User2, input));
     });
 });
 
-describe("a.object() -> Coersion", () => {
+describe('a.object() -> Coersion', () => {
     const SimpleObject = a.object({
         limit: a.number(),
         isActive: a.boolean(),
@@ -286,7 +286,7 @@ describe("a.object() -> Coersion", () => {
         a.object({
             data: a.object({
                 id: a.optional(a.number()),
-                type: a.stringEnum(["event", "notification"]),
+                type: a.stringEnum(['event', 'notification']),
                 date: a.timestamp(),
                 items: a.array(a.int32()),
             }),
@@ -295,11 +295,11 @@ describe("a.object() -> Coersion", () => {
     const coerceSimple = (input: unknown) => a.safeCoerce(SimpleObject, input);
     const coerceComplex = (input: unknown) =>
         a.safeCoerce(ComplexObject, input);
-    it("coerces good input", () => {
+    it('coerces good input', () => {
         const simpleInput = {
-            limit: "100.5",
+            limit: '100.5',
             isActive: 0,
-            createdAt: "01/01/2001",
+            createdAt: '01/01/2001',
         };
         const simpleResult = coerceSimple(simpleInput);
         if (!simpleResult.success) {
@@ -310,18 +310,18 @@ describe("a.object() -> Coersion", () => {
             expect(simpleResult.value).toStrictEqual({
                 limit: 100.5,
                 isActive: false,
-                createdAt: new Date("01/01/2001"),
+                createdAt: new Date('01/01/2001'),
             });
         }
         const complexInput = {
-            limit: "100.5",
+            limit: '100.5',
             isActive: 0,
-            createdAt: "01/01/2001",
+            createdAt: '01/01/2001',
             data: {
-                id: "1",
-                type: "event",
+                id: '1',
+                type: 'event',
                 date: 0,
-                items: ["1", "2", "3"],
+                items: ['1', '2', '3'],
             },
         };
         const complexResult = coerceComplex(complexInput);
@@ -333,10 +333,10 @@ describe("a.object() -> Coersion", () => {
             expect(complexResult.value).toStrictEqual({
                 limit: 100.5,
                 isActive: false,
-                createdAt: new Date("01/01/2001"),
+                createdAt: new Date('01/01/2001'),
                 data: {
                     id: 1,
-                    type: "event",
+                    type: 'event',
                     date: new Date(0),
                     items: [1, 2, 3],
                 },
@@ -345,47 +345,47 @@ describe("a.object() -> Coersion", () => {
     });
 });
 
-describe("a.pick()", () => {
-    const UserSubsetSchema = a.pick(UserSchema, ["name", "email"]);
+describe('a.pick()', () => {
+    const UserSubsetSchema = a.pick(UserSchema, ['name', 'email']);
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
 
-    it("infers specified subset of properties", () => {
-        assertType<UserSubsetSchema>({ name: "John Doe", email: null });
+    it('infers specified subset of properties', () => {
+        assertType<UserSubsetSchema>({ name: 'John Doe', email: null });
     });
-    it("parses good input", () => {
+    it('parses good input', () => {
         const input: UserSubsetSchema = {
-            name: "john doe",
-            email: "johndoe@gmail.com",
+            name: 'john doe',
+            email: 'johndoe@gmail.com',
         };
         const result = a.safeParse(UserSubsetSchema, input);
         expect(result.success);
         if (result.success) {
             expect(result.value).toStrictEqual({
-                name: "john doe",
-                email: "johndoe@gmail.com",
+                name: 'john doe',
+                email: 'johndoe@gmail.com',
             });
         }
     });
     it("doesn't parse bad input", () => {
         const input: UserSchema = {
-            id: "123115",
-            name: "John Doe",
-            email: "johndoe@gmail.com",
+            id: '123115',
+            name: 'John Doe',
+            email: 'johndoe@gmail.com',
             isAdmin: false,
             createdAt: undefined,
         };
         const result = a.safeParse(UserSubsetSchema, input);
         expect(!result.success);
     });
-    it("produces jtd object schema with picked properties", () => {
+    it('produces jtd object schema with picked properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
             properties: {
                 name: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                 },
                 email: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                     nullable: true,
                 },
@@ -396,22 +396,22 @@ describe("a.pick()", () => {
     });
 });
 
-describe("a.omit()", () => {
-    const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"], {
+describe('a.omit()', () => {
+    const UserSubsetSchema = a.omit(UserSchema, ['id', 'isAdmin'], {
         strict: true,
     });
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
     const parse = (input: unknown) => a.safeParse(UserSubsetSchema, input);
-    it("infers object with omitted fields", () => {
+    it('infers object with omitted fields', () => {
         assertType<UserSubsetSchema>({
-            name: "john doe",
+            name: 'john doe',
             email: null,
             createdAt: new Date(),
         });
     });
-    it("parses good input", () => {
+    it('parses good input', () => {
         const subsetInput: UserSubsetSchema = {
-            name: "John Doe",
+            name: 'John Doe',
             email: null,
             createdAt: new Date(),
         };
@@ -423,8 +423,8 @@ describe("a.omit()", () => {
     });
     it("doesn't parse bad input", () => {
         const unomittedInput: UserSchema = {
-            id: "234142",
-            name: "John Doe",
+            id: '234142',
+            name: 'John Doe',
             isAdmin: false,
             email: null,
             createdAt: new Date(),
@@ -435,22 +435,22 @@ describe("a.omit()", () => {
         }
         expect(badResult.success).toBe(false);
     });
-    it("produces jtd schema without omitted properties", () => {
+    it('produces jtd schema without omitted properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
             properties: {
                 name: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                 },
                 email: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                     nullable: true,
                 },
             },
             optionalProperties: {
                 createdAt: {
-                    type: "timestamp",
+                    type: 'timestamp',
                     metadata: {},
                 },
             },
@@ -460,40 +460,40 @@ describe("a.omit()", () => {
     });
 });
 
-describe("a.partial()", () => {
+describe('a.partial()', () => {
     const RootObject = a.object({
         string: a.string(),
         date: a.timestamp(),
         count: a.nullable(a.number()),
         stringArray: a.array(a.string()),
-        stringEnum: a.stringEnum(["a", "b"]),
+        stringEnum: a.stringEnum(['a', 'b']),
     });
     const PartialObject = a.partial(RootObject);
     type PartialObject = a.infer<typeof PartialObject>;
 
-    it("infers partial types", () => {
+    it('infers partial types', () => {
         assertType<PartialObject>({});
         assertType<PartialObject>({
-            string: "12341",
+            string: '12341',
         });
         assertType<PartialObject>({
-            stringEnum: "a",
+            stringEnum: 'a',
         });
     });
 
-    it("validates good input", () => {
+    it('validates good input', () => {
         const input1: PartialObject = {};
         const result1 = a.validate(PartialObject, input1);
         expect(result1);
         const input2: PartialObject = {
             date: new Date(),
-            stringEnum: "a",
+            stringEnum: 'a',
         };
         const result2 = a.validate(PartialObject, input2);
         expect(result2);
     });
 
-    it("parses good input", () => {
+    it('parses good input', () => {
         const input1: PartialObject = {};
         const result1 = a.safeParse(PartialObject, input1);
         expect(result1.success);
@@ -502,18 +502,18 @@ describe("a.partial()", () => {
         }
         const input2: PartialObject = {
             date: new Date(),
-            stringEnum: "b",
+            stringEnum: 'b',
         };
         const result2 = a.safeParse(PartialObject, input2);
         if (result2.success) {
             expect(result2.value).toStrictEqual(input2);
         }
         const input3: PartialObject = {
-            string: "",
+            string: '',
             date: new Date(),
             count: null,
-            stringArray: ["1", "2"],
-            stringEnum: "b",
+            stringArray: ['1', '2'],
+            stringEnum: 'b',
         };
         const result3 = a.safeParse(PartialObject, input3);
         if (result3.success) {
@@ -523,19 +523,19 @@ describe("a.partial()", () => {
 
     it("doesn't parse bad input", () => {
         const input1 = {
-            stringEnum: "1",
+            stringEnum: '1',
         };
         const result1 = a.safeParse(PartialObject, input1);
         expect(!result1.success);
 
         const input2 = {
-            foo: "",
+            foo: '',
         };
         const result2 = a.safeParse(PartialObject, input2);
         expect(!result2.success);
     });
 
-    it("produces jdt object schema will all optional properties", () => {
+    it('produces jdt object schema will all optional properties', () => {
         const result = JSON.stringify(
             a.partial(
                 a.object({
@@ -550,21 +550,21 @@ describe("a.partial()", () => {
             properties: {},
             optionalProperties: {
                 id: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                 },
                 name: {
-                    type: "string",
+                    type: 'string',
                     metadata: {},
                     nullable: true,
                 },
                 createdAt: {
-                    type: "timestamp",
+                    type: 'timestamp',
                     metadata: {},
                 },
                 favorites: {
                     elements: {
-                        type: "string",
+                        type: 'string',
                         metadata: {},
                     },
                     metadata: {},

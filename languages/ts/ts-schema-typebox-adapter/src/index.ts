@@ -4,16 +4,16 @@ import {
     SCHEMA_METADATA,
     ValidationError,
     type ValueError,
-} from "@arrirpc/schema";
+} from '@arrirpc/schema';
 import {
     OptionalKind,
     type Static,
     type TObject,
     TSchema,
-} from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
-import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
-import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-atd";
+} from '@sinclair/typebox';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
+import { Value, type ValueErrorIterator } from '@sinclair/typebox/value';
+import { jsonSchemaToJtdSchema, type JsonSchemaType } from 'json-schema-to-atd';
 
 export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,
@@ -30,9 +30,9 @@ export function typeboxAdapter<TInput extends TSchema>(
             [SCHEMA_METADATA]: {
                 _isAdapted: true,
                 output: {} as any as Static<TInput>,
-                optional: input[OptionalKind] === "Optional",
+                optional: input[OptionalKind] === 'Optional',
                 parse(val: unknown) {
-                    if (typeof val === "string") {
+                    if (typeof val === 'string') {
                         const parsedVal = JSON.parse(val);
                         if (compiled.Check(parsedVal)) {
                             return parsedVal;
@@ -47,7 +47,7 @@ export function typeboxAdapter<TInput extends TSchema>(
                     throw typeboxErrorsToArriError(compiled.Errors(val));
                 },
                 coerce(val: unknown): any {
-                    return Value.Cast(input, val);
+                    return Value.Cast(input as any, val);
                 },
                 validate(val: unknown): val is Static<TInput> {
                     return compiled.Check(val);
@@ -66,13 +66,13 @@ function typeboxErrorsToArriError(errs: ValueErrorIterator): ValidationError {
         const obj: ValueError = {
             message: err.message,
             instancePath: err.path,
-            schemaPath: "",
+            schemaPath: '',
             data: err.value,
         };
         mappedErrs.push(obj);
     }
     return new ValidationError({
-        message: "Error validating input",
+        message: 'Error validating input',
         errors: mappedErrs,
     });
 }

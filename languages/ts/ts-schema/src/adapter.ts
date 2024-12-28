@@ -1,6 +1,6 @@
-import { ValidationError } from "./_index";
-import { type compile } from "./compile";
-import { type ASchema, SCHEMA_METADATA, ValidationContext } from "./schemas";
+import { ValidationError } from './_index';
+import { type compile } from './compile';
+import { type ASchema, SCHEMA_METADATA, ValidationContext } from './schemas';
 
 export type ValidationAdapter = <T>(input: any) => ASchema<T>;
 
@@ -13,23 +13,23 @@ export function validatorFromAdaptedSchema(
 ): ReturnType<typeof compile> {
     return {
         compiledCode: {
-            parse: "",
-            serialize: "",
-            validate: "",
+            parse: '',
+            serialize: '',
+            validate: '',
         },
         validate: schema.metadata[SCHEMA_METADATA].validate,
         parse(input) {
             const context: ValidationContext = {
-                instancePath: "",
-                schemaPath: "",
+                instancePath: '',
+                schemaPath: '',
                 errors: [],
             };
             return schema.metadata[SCHEMA_METADATA].parse(input, context);
         },
         safeParse(input) {
             const context: ValidationContext = {
-                instancePath: "",
-                schemaPath: "",
+                instancePath: '',
+                schemaPath: '',
                 errors: [],
             };
             try {
@@ -61,8 +61,8 @@ export function validatorFromAdaptedSchema(
         },
         serialize(input) {
             const context: ValidationContext = {
-                instancePath: "",
-                schemaPath: "",
+                instancePath: '',
+                schemaPath: '',
                 errors: [],
             };
             return schema.metadata[SCHEMA_METADATA].serialize(input, context);

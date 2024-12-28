@@ -1,5 +1,5 @@
-import { execSync } from "node:child_process";
-import fs from "node:fs";
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 
 import {
     type AppDefinition,
@@ -15,20 +15,20 @@ import {
     isServiceDefinition,
     type Schema,
     unflattenProcedures,
-} from "@arrirpc/codegen-utils";
-import path from "pathe";
+} from '@arrirpc/codegen-utils';
+import path from 'pathe';
 
 import {
     GeneratorContext,
     RustProperty,
     validRustIdentifier,
     validRustName,
-} from "./_common";
-import rustAnyFromSchema from "./any";
-import rustArrayFromSchema from "./array";
-import { rustTaggedUnionFromSchema } from "./discriminator";
-import rustEnumFromSchema from "./enum";
-import rustObjectFromSchema from "./object";
+} from './_common';
+import rustAnyFromSchema from './any';
+import rustArrayFromSchema from './array';
+import { rustTaggedUnionFromSchema } from './discriminator';
+import rustEnumFromSchema from './enum';
+import rustObjectFromSchema from './object';
 import {
     rustBooleanFromSchema,
     rustF32FromSchema,
@@ -43,10 +43,10 @@ import {
     rustU16FromSchema,
     rustU32FromSchema,
     rustU64FromSchema,
-} from "./primitives";
-import { rustRpcFromSchema, rustServiceFromSchema } from "./procedures";
-import rustRecordFromSchema from "./record";
-import rustRefFromSchema from "./ref";
+} from './primitives';
+import { rustRpcFromSchema, rustServiceFromSchema } from './procedures';
+import rustRecordFromSchema from './record';
+import rustRefFromSchema from './ref';
 
 export interface RustClientGeneratorOptions {
     clientName?: string;
@@ -61,11 +61,11 @@ export const rustClientGenerator = defineGeneratorPlugin(
             options,
             run(def) {
                 const context: GeneratorContext = {
-                    clientVersion: def.info?.version ?? "",
-                    clientName: options.clientName ?? "Client",
-                    typeNamePrefix: options.typePrefix ?? "",
-                    instancePath: "",
-                    schemaPath: "",
+                    clientVersion: def.info?.version ?? '',
+                    clientName: options.clientName ?? 'Client',
+                    typeNamePrefix: options.typePrefix ?? '',
+                    instancePath: '',
+                    schemaPath: '',
                     generatedTypes: [],
                 };
                 const client = createRustClient(def, {
@@ -77,7 +77,7 @@ export const rustClientGenerator = defineGeneratorPlugin(
                 if (shouldFormat) {
                     try {
                         execSync(`rustfmt ${outputFile} --edition 2021`, {
-                            stdio: "inherit",
+                            stdio: 'inherit',
                         });
                     } catch (err) {
                         console.error(`Error formatting`, err);
@@ -90,7 +90,7 @@ export const rustClientGenerator = defineGeneratorPlugin(
 
 export function createRustClient(
     def: AppDefinition,
-    context: Omit<GeneratorContext, "clientVersion">,
+    context: Omit<GeneratorContext, 'clientVersion'>,
 ): string {
     const services = unflattenProcedures(def.procedures);
     const rpcParts: string[] = [];
@@ -100,7 +100,7 @@ export function createRustClient(
         const subDef = services[key];
         if (isServiceDefinition(subDef)) {
             const service = rustServiceFromSchema(subDef, {
-                clientVersion: def.info?.version ?? "",
+                clientVersion: def.info?.version ?? '',
                 clientName: context.clientName,
                 typeNamePrefix: context.typeNamePrefix,
                 instancePath: key,
@@ -118,7 +118,7 @@ export function createRustClient(
         }
         if (isRpcDefinition(subDef)) {
             const rpc = rustRpcFromSchema(subDef, {
-                clientVersion: def.info?.version ?? "",
+                clientVersion: def.info?.version ?? '',
                 clientName: context.clientName,
                 typeNamePrefix: context.typeNamePrefix,
                 instancePath: key,
@@ -135,9 +135,9 @@ export function createRustClient(
     for (const key of Object.keys(def.definitions)) {
         const result = rustTypeFromSchema(def.definitions[key]!, {
             ...context,
-            clientVersion: def.info?.version ?? "",
+            clientVersion: def.info?.version ?? '',
             instancePath: key,
-            schemaPath: "",
+            schemaPath: '',
         });
         if (result.content) {
             modelParts.push(result.content);
@@ -152,10 +152,10 @@ use arri_client::{
     ArriEnum, ArriModel,
 };
 use std::collections::{BTreeMap, HashMap};
-${modelParts.join("\n\n")}`;
+${modelParts.join('\n\n')}`;
     }
     const clientName = validRustName(context.clientName);
-    const paramSuffix = subServices.length > 0 ? ".clone()" : "";
+    const paramSuffix = subServices.length > 0 ? '.clone()' : '';
     return `#![allow(
     dead_code,
     unused_imports,
@@ -178,30 +178,30 @@ use std::collections::{BTreeMap, HashMap};
 #[derive(Clone)]
 pub struct ${clientName} {
     _config: InternalArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
+${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join('\n')}
 }
 
 impl ArriClientService for ${clientName} {
     fn create(config: ArriClientConfig) -> Self {
         Self {
             _config: InternalArriClientConfig::from(config${paramSuffix}),
-${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? "" : ".clone()"}),`).join("\n")}
+${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? '' : '.clone()'}),`).join('\n')}
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
-${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? "" : ".clone()"});`).join("\n")}
+${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? '' : '.clone()'});`).join('\n')}
     }
 }
 
 impl ${clientName} {
-${rpcParts.join("\n")}
+${rpcParts.join('\n')}
 }
 
-${subServiceContent.join("\n\n")}
+${subServiceContent.join('\n\n')}
 
-${modelParts.join("\n\n")}`;
+${modelParts.join('\n\n')}`;
 }
 
 export function rustTypeFromSchema(
@@ -210,31 +210,31 @@ export function rustTypeFromSchema(
 ): RustProperty {
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
-            case "string":
+            case 'string':
                 return rustStringFromSchema(schema, context);
-            case "boolean":
+            case 'boolean':
                 return rustBooleanFromSchema(schema, context);
-            case "timestamp":
+            case 'timestamp':
                 return rustTimestampFromSchema(schema, context);
-            case "float32":
+            case 'float32':
                 return rustF32FromSchema(schema, context);
-            case "float64":
+            case 'float64':
                 return rustF64FromSchema(schema, context);
-            case "int8":
+            case 'int8':
                 return rustI8FromSchema(schema, context);
-            case "uint8":
+            case 'uint8':
                 return rustU8FromSchema(schema, context);
-            case "int16":
+            case 'int16':
                 return rustI16FromSchema(schema, context);
-            case "uint16":
+            case 'uint16':
                 return rustU16FromSchema(schema, context);
-            case "int32":
+            case 'int32':
                 return rustI32FromSchema(schema, context);
-            case "uint32":
+            case 'uint32':
                 return rustU32FromSchema(schema, context);
-            case "int64":
+            case 'int64':
                 return rustI64FromSchema(schema, context);
-            case "uint64":
+            case 'uint64':
                 return rustU64FromSchema(schema, context);
             default:
                 schema.type satisfies never;

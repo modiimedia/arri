@@ -1,5 +1,5 @@
 export function isObject(input: unknown): input is Record<any, any> {
-    return typeof input === "object" && input !== null;
+    return typeof input === 'object' && input !== null;
 }
 
 export interface SchemaMetadata {
@@ -19,19 +19,19 @@ export type Schema =
     | SchemaFormRef;
 export function isSchema(input: unknown): input is Schema {
     const allowedProperties = [
-        "metadata",
-        "nullable",
-        "type",
-        "enum",
-        "elements",
-        "values",
-        "properties",
-        "optionalProperties",
-        "strict",
-        "discriminator",
-        "mapping",
-        "ref",
-        "definitions",
+        'metadata',
+        'nullable',
+        'type',
+        'enum',
+        'elements',
+        'values',
+        'properties',
+        'optionalProperties',
+        'strict',
+        'discriminator',
+        'mapping',
+        'ref',
+        'definitions',
     ];
     if (!isObject(input)) {
         return false;
@@ -59,8 +59,8 @@ export function isSchemaFormEmpty(input: unknown): input is SchemaFormEmpty {
     }
     if (
         keys.length === 1 &&
-        "metadata" in input &&
-        typeof input.metadata === "object" &&
+        'metadata' in input &&
+        typeof input.metadata === 'object' &&
         input.metadata !== null
     ) {
         return true;
@@ -70,19 +70,19 @@ export function isSchemaFormEmpty(input: unknown): input is SchemaFormEmpty {
 
 // BASIC TYPES //
 export const TypeValues = [
-    "boolean",
-    "float32",
-    "float64",
-    "int8",
-    "uint8",
-    "int16",
-    "uint16",
-    "int32",
-    "uint32",
-    "int64",
-    "uint64",
-    "string",
-    "timestamp",
+    'boolean',
+    'float32',
+    'float64',
+    'int8',
+    'uint8',
+    'int16',
+    'uint16',
+    'int32',
+    'uint32',
+    'int64',
+    'uint64',
+    'string',
+    'timestamp',
 ] as const;
 export type Type = (typeof TypeValues)[number];
 export interface SchemaFormType extends SchemaFormEmpty {
@@ -106,7 +106,7 @@ export function isSchemaFormEnum(input: unknown): input is SchemaFormEnum {
     }
     return (
         Array.isArray(input.enum) &&
-        input.enum.every((val) => typeof val === "string")
+        input.enum.every((val) => typeof val === 'string')
     );
 }
 
@@ -120,7 +120,7 @@ export function isSchemaFormElements(
     if (!isObject(input)) {
         return false;
     }
-    return "elements" in input;
+    return 'elements' in input;
 }
 
 // OBJECTS //
@@ -136,8 +136,8 @@ export function isSchemaFormProperties(
         return false;
     }
     if (
-        "properties" in input &&
-        typeof input.properties === "object" &&
+        'properties' in input &&
+        typeof input.properties === 'object' &&
         input.properties !== null
     ) {
         const keys = Object.keys(input.properties);
@@ -157,7 +157,7 @@ export function isSchemaFormValues(input: unknown): input is SchemaFormValues {
     if (!isObject(input)) {
         return false;
     }
-    return "values" in input && isSchema(input.values);
+    return 'values' in input && isSchema(input.values);
 }
 
 // TAGGED UNIONS //
@@ -172,10 +172,10 @@ export function isSchemaFormDiscriminator(
         return false;
     }
     if (
-        "discriminator" in input &&
-        typeof input.discriminator === "string" &&
+        'discriminator' in input &&
+        typeof input.discriminator === 'string' &&
         input.discriminator.length > 0 &&
-        typeof input.mapping === "object" &&
+        typeof input.mapping === 'object' &&
         input.mapping !== null
     ) {
         for (const key of Object.keys(input.mapping)) {
@@ -194,10 +194,10 @@ export interface SchemaFormRef extends SchemaFormEmpty {
 }
 export function isSchemaFormRef(input: unknown): input is SchemaFormRef {
     return (
-        typeof input === "object" &&
+        typeof input === 'object' &&
         input !== null &&
-        "ref" in input &&
-        typeof input.ref === "string" &&
+        'ref' in input &&
+        typeof input.ref === 'string' &&
         input.ref.length > 0
     );
 }

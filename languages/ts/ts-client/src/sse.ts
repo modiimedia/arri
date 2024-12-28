@@ -5,11 +5,11 @@ import {
     type OnRequestErrorContext,
     type OnResponseContext,
     type OnResponseErrorContext,
-} from "event-source-plus";
+} from 'event-source-plus';
 
-import { ArriErrorInstance } from "./errors";
-import { type ArriRequestOpts } from "./request";
-import { getHeaders } from "./utils";
+import { ArriErrorInstance } from './errors';
+import { type ArriRequestOpts } from './request';
+import { getHeaders } from './utils';
 
 export interface SseEvent<TData = string> {
     id?: string;
@@ -21,13 +21,13 @@ export interface SseOptions<TData> {
     onMessage?: (data: TData) => any;
     onRequest?: (context: OnRequestContext) => any;
     onRequestError?: (
-        context: Omit<OnRequestErrorContext, "error"> & {
+        context: Omit<OnRequestErrorContext, 'error'> & {
             error: ArriErrorInstance;
         },
     ) => any;
     onResponse?: (context: OnResponseContext) => any;
     onResponseError?: (
-        context: Omit<OnResponseErrorContext, "error"> & {
+        context: Omit<OnResponseErrorContext, 'error'> & {
             error: ArriErrorInstance;
         },
     ) => any;
@@ -46,30 +46,30 @@ export function arriSseRequest<
     let url = opts.url;
     let body: undefined | string;
     switch (opts.method) {
-        case "get":
-        case "head":
+        case 'get':
+        case 'head':
             if (
                 opts.params &&
-                typeof opts.params === "object" &&
+                typeof opts.params === 'object' &&
                 opts.params !== null
             ) {
                 url = `${opts.url}?${opts.serializer(opts.params)}`;
             }
             break;
         default:
-            if (opts.params && typeof opts.params === "object") {
+            if (opts.params && typeof opts.params === 'object') {
                 body = opts.serializer(opts.params);
             }
             break;
     }
 
     const eventSource = new EventSourcePlus(url, {
-        method: opts.method ?? "get",
+        method: opts.method ?? 'get',
         headers: async () => {
             const headers: Record<string, string> =
                 (await getHeaders(opts.headers)) ?? {};
             if (opts.clientVersion) {
-                headers["client-version"] = opts.clientVersion;
+                headers['client-version'] = opts.clientVersion;
             }
             return headers;
         },
@@ -80,14 +80,14 @@ export function arriSseRequest<
     const controller = eventSource.listen({
         onMessage(message) {
             if (
-                message.event === "message" ||
+                message.event === 'message' ||
                 message.event === undefined ||
-                message.event === ""
+                message.event === ''
             ) {
                 options.onMessage?.(opts.responseFromString(message.data));
                 return;
             }
-            if (message.event === "done") {
+            if (message.event === 'done') {
                 controller.abort();
             }
         },

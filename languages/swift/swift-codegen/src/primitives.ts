@@ -1,14 +1,14 @@
-import { SchemaFormType } from "@arrirpc/codegen-utils";
+import { SchemaFormType } from '@arrirpc/codegen-utils';
 
-import { GeneratorContext, isNullableType, SwiftProperty } from "./_common";
+import { GeneratorContext, isNullableType, SwiftProperty } from './_common';
 
 export function swiftStringFromSchema(
     schema: SchemaFormType,
     context: GeneratorContext,
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
-    const typeName = isNullable ? "String?" : "String";
-    const defaultValue = isNullable ? "" : '""';
+    const typeName = isNullable ? 'String?' : 'String';
+    const defaultValue = isNullable ? '' : '""';
     return {
         typeName,
         isNullable,
@@ -56,7 +56,7 @@ export function swiftStringFromSchema(
             }
             return `        ${target}.append(URLQueryItem(name: "${key}", value: ${input}))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -65,8 +65,8 @@ export function swiftBooleanFromSchema(
     context: GeneratorContext,
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
-    const typeName = isNullable ? "Bool?" : "Bool";
-    const defaultValue = isNullable ? "" : "false";
+    const typeName = isNullable ? 'Bool?' : 'Bool';
+    const defaultValue = isNullable ? '' : 'false';
     return {
         typeName,
         isNullable,
@@ -114,7 +114,7 @@ export function swiftBooleanFromSchema(
             }
             return `        ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input})"))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -123,8 +123,8 @@ export function swiftTimestampFromSchema(
     context: GeneratorContext,
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
-    const typeName = isNullable ? "Date?" : "Date";
-    const defaultValue = isNullable ? "" : "Date()";
+    const typeName = isNullable ? 'Date?' : 'Date';
+    const defaultValue = isNullable ? '' : 'Date()';
     return {
         typeName,
         defaultValue,
@@ -172,7 +172,7 @@ export function swiftTimestampFromSchema(
             }
             return `        ${target}.append(URLQueryItem(name: "${key}", value: serializeDate(${input}, withQuotes: false)))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -186,7 +186,7 @@ export function swiftNumberFromSchema(
     const isNullable = isNullableType(schema, context);
     return {
         typeName: isNullable ? `${typeName}?` : typeName,
-        defaultValue: isNullable ? "" : defaultValue,
+        defaultValue: isNullable ? '' : defaultValue,
         isNullable,
         canBeQueryString: true,
         hasRequiredRef: false,
@@ -231,7 +231,7 @@ export function swiftNumberFromSchema(
             }
             return `        ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input})"))`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -243,7 +243,7 @@ export function swiftLargeIntFromSchema(
     const isNullable = isNullableType(schema, context);
     return {
         typeName: isNullable ? `${typeName}?` : typeName,
-        defaultValue: isNullable ? "" : "0",
+        defaultValue: isNullable ? '' : '0',
         isNullable,
         canBeQueryString: true,
         hasRequiredRef: false,
@@ -288,6 +288,6 @@ export function swiftLargeIntFromSchema(
             }
             return `        ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input})"))`;
         },
-        content: "",
+        content: '',
     };
 }

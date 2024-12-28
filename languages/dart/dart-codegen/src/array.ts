@@ -1,7 +1,7 @@
-import { SchemaFormElements } from "@arrirpc/codegen-utils";
+import { SchemaFormElements } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, DartProperty, outputIsNullable } from "./_common";
-import { dartTypeFromSchema } from "./_index";
+import { CodegenContext, DartProperty, outputIsNullable } from './_common';
+import { dartTypeFromSchema } from './_index';
 
 export function dartListFromSchema(
     schema: SchemaFormElements,
@@ -19,7 +19,7 @@ export function dartListFromSchema(
     const typeName = isNullable
         ? `List<${innerType.typeName}>?`
         : `List<${innerType.typeName}>`;
-    const defaultValue = isNullable ? "null" : "[]";
+    const defaultValue = isNullable ? 'null' : '[]';
     return {
         typeName,
         isNullable,
@@ -40,12 +40,12 @@ export function dartListFromSchema(
         },
         toJson(input) {
             if (context.isOptional) {
-                return `${input}!.map((_el_) => ${innerType.toJson("_el_", "", "")}).toList()`;
+                return `${input}!.map((_el_) => ${innerType.toJson('_el_', '', '')}).toList()`;
             }
             if (schema.nullable) {
-                return `${input}?.map((_el_) => ${innerType.toJson("_el_", "", "")}).toList()`;
+                return `${input}?.map((_el_) => ${innerType.toJson('_el_', '', '')}).toList()`;
             }
-            return `${input}.map((_el_) => ${innerType.toJson("_el_", "", "")}).toList()`;
+            return `${input}.map((_el_) => ${innerType.toJson('_el_', '', '')}).toList()`;
         },
         toQueryString() {
             return `print(

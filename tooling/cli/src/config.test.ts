@@ -1,7 +1,7 @@
-import { test } from "vitest";
+import { test } from 'vitest';
 
-import { type ArriConfig, isArriConfig } from "./config";
-test("isArriConfig()", () => {
+import { type ArriConfig, isArriConfig } from './config';
+test('isArriConfig()', () => {
     const config: ArriConfig = {
         generators: [],
     };

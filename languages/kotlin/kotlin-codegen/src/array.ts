@@ -1,18 +1,18 @@
-import { type SchemaFormElements } from "@arrirpc/codegen-utils";
+import { type SchemaFormElements } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
     isNullable,
     type KotlinProperty,
-} from "./_common";
-import { kotlinTypeFromSchema } from "./_index";
+} from './_common';
+import { kotlinTypeFromSchema } from './_index';
 
 export function kotlinArrayFromSchema(
     schema: SchemaFormElements,
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? "null" : "mutableListOf()";
+    const defaultValue = nullable ? 'null' : 'mutableListOf()';
     const subType = kotlinTypeFromSchema(schema.elements, {
         typePrefix: context.typePrefix,
         clientName: context.clientName,
@@ -21,7 +21,7 @@ export function kotlinArrayFromSchema(
         schemaPath: `${context.schemaPath}/elements`,
         existingTypeIds: context.existingTypeIds,
     });
-    const typeName = `MutableList<${subType.typeName}${subType.isNullable ? "?" : ""}>`;
+    const typeName = `MutableList<${subType.typeName}${subType.isNullable ? '?' : ''}>`;
     return {
         typeName,
         isNullable: nullable,
@@ -33,7 +33,7 @@ export function kotlinArrayFromSchema(
                         val __value: ${typeName} = mutableListOf()
                         for (__element in ${input}!!.jsonArray) {
                             __value.add(
-                                ${subType.fromJson("__element")}
+                                ${subType.fromJson('__element')}
                             )
                         }
                         __value
@@ -47,7 +47,7 @@ export function kotlinArrayFromSchema(
                     val __value: ${typeName} = mutableListOf()
                     for (__element in ${input}!!.jsonArray) {
                         __value.add(
-                            ${subType.fromJson("__element")}
+                            ${subType.fromJson('__element')}
                         )
                     }
                     __value
@@ -66,7 +66,7 @@ export function kotlinArrayFromSchema(
                         if (__index != 0) {
                             ${target} += ","
                         }
-                        ${subType.toJson("__element", target)}
+                        ${subType.toJson('__element', target)}
                     }
                     ${target} += "]"
                 }`;
@@ -76,7 +76,7 @@ export function kotlinArrayFromSchema(
                     if (__index != 0) {
                         ${target} += ","
                     }
-                    ${subType.toJson("__element", target)}
+                    ${subType.toJson('__element', target)}
                 }
                 ${target} += "]"`;
         },

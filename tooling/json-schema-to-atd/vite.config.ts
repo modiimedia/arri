@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/json-schema-to-atd",
+    cacheDir: '../../node_modules/.vite/json-schema-to-atd',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -19,15 +19,15 @@ export default defineConfig({
     // },
 
     test: {
-        pool: "threads",
+        pool: 'threads',
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
         globals: true,
-        reporters: ["default"],
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        reporters: ['default'],
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
 });

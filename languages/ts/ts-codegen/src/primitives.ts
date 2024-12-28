@@ -1,13 +1,13 @@
-import { SchemaFormType } from "@arrirpc/codegen-utils";
+import { SchemaFormType } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, TsProperty } from "./common";
+import { CodegenContext, TsProperty } from './common';
 
 export function tsStringFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? "string | null" : "string";
-    const defaultValue = schema.nullable ? "null" : '""';
+    const typeName = schema.nullable ? 'string | null' : 'string';
+    const defaultValue = schema.nullable ? 'null' : '""';
     return {
         typeName,
         defaultValue,
@@ -37,7 +37,7 @@ export function tsStringFromSchema(
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`);`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -45,8 +45,8 @@ export function tsBooleanFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? `boolean | null` : "boolean";
-    const defaultValue = schema.nullable ? `null` : "false";
+    const typeName = schema.nullable ? `boolean | null` : 'boolean';
+    const defaultValue = schema.nullable ? `null` : 'false';
     return {
         typeName,
         defaultValue,
@@ -69,7 +69,7 @@ export function tsBooleanFromSchema(
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`);`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -77,8 +77,8 @@ export function tsDateFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? `Date | null` : "Date";
-    const defaultValue = schema.nullable ? `null` : "new Date()";
+    const typeName = schema.nullable ? `Date | null` : 'Date';
+    const defaultValue = schema.nullable ? `null` : 'new Date()';
     return {
         typeName,
         defaultValue,
@@ -113,7 +113,7 @@ export function tsDateFromSchema(
             }
             return `${target}.push(\`${key}=\${${input}.toISOString()}\`)`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -121,8 +121,8 @@ export function tsFloatFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? "number | null" : "number";
-    const defaultValue = schema.nullable ? "null" : "0";
+    const typeName = schema.nullable ? 'number | null' : 'number';
+    const defaultValue = schema.nullable ? 'null' : '0';
     return {
         typeName,
         defaultValue,
@@ -145,43 +145,43 @@ export function tsFloatFromSchema(
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`)`;
         },
-        content: "",
+        content: '',
     };
 }
 
 export function tsIntFromSchema(
     schema: SchemaFormType,
-    intType: "int8" | "uint8" | "int16" | "uint16" | "int32" | "uint32",
+    intType: 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'uint32',
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? "number | null" : "number";
-    const defaultValue = schema.nullable ? "null" : "0";
+    const typeName = schema.nullable ? 'number | null' : 'number';
+    const defaultValue = schema.nullable ? 'null' : '0';
     let min: string;
     let max: string;
     switch (intType) {
-        case "int8":
-            min = "INT8_MIN";
-            max = "INT8_MAX";
+        case 'int8':
+            min = 'INT8_MIN';
+            max = 'INT8_MAX';
             break;
-        case "uint8":
-            min = "0";
-            max = "UINT8_MAX";
+        case 'uint8':
+            min = '0';
+            max = 'UINT8_MAX';
             break;
-        case "int16":
-            min = "INT16_MIN";
-            max = "INT16_MAX";
+        case 'int16':
+            min = 'INT16_MIN';
+            max = 'INT16_MAX';
             break;
-        case "uint16":
-            min = "0";
-            max = "UINT16_MAX";
+        case 'uint16':
+            min = '0';
+            max = 'UINT16_MAX';
             break;
-        case "int32":
-            min = "INT32_MIN";
-            max = "INT32_MAX";
+        case 'int32':
+            min = 'INT32_MIN';
+            max = 'INT32_MAX';
             break;
-        case "uint32":
-            min = "0";
-            max = "UINT32_MAX";
+        case 'uint32':
+            min = '0';
+            max = 'UINT32_MAX';
             break;
         default:
             intType satisfies never;
@@ -215,7 +215,7 @@ export function tsIntFromSchema(
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`)`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -225,7 +225,7 @@ export function tsBigIntFromSchema(
     _context: CodegenContext,
 ): TsProperty {
     const typeName = schema.nullable ? `bigint | null` : `bigint`;
-    const defaultValue = schema.nullable ? `null` : "BigInt(0)";
+    const defaultValue = schema.nullable ? `null` : 'BigInt(0)';
     return {
         typeName,
         defaultValue,
@@ -270,6 +270,6 @@ export function tsBigIntFromSchema(
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`)`;
         },
-        content: "",
+        content: '',
     };
 }

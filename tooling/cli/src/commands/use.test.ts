@@ -3,10 +3,10 @@ import {
     updateGoMod,
     updatePackageJson,
     updatePubspecYaml,
-} from "./use";
+} from './use';
 
-describe("updatePackageJson()", () => {
-    it("updates relevant lines and preserves formatting", () => {
+describe('updatePackageJson()', () => {
+    it('updates relevant lines and preserves formatting', () => {
         const input = `{
     "dependencies": {
         "arri": "^0.1.1",
@@ -27,11 +27,11 @@ describe("updatePackageJson()", () => {
         "@arrirpc/eslint-plugin": "^2.0.0"
     }
 }`;
-        const output = updatePackageJson(input, "2.0.0");
+        const output = updatePackageJson(input, '2.0.0');
         expect(output.content).toBe(expectedOutput);
         expect(output.updated).toBe(true);
     });
-    it("updates relevant lines and preserves jsonc comments", () => {
+    it('updates relevant lines and preserves jsonc comments', () => {
         const input = `{
     "dependencies": {
         "arri": "^0.1.1", // this is a comment
@@ -52,14 +52,14 @@ describe("updatePackageJson()", () => {
         "@arrirpc/eslint-plugin": "^2.0.0", // this is "another comment"
     },
 }`;
-        const output = updatePackageJson(input, "2.0.0");
+        const output = updatePackageJson(input, '2.0.0');
         expect(output.content).toBe(expectedOutput);
         expect(output.updated).toBe(true);
     });
 });
 
-describe("updatePubspecYaml()", () => {
-    it("updates relevant lines while preserving formatting and comments", () => {
+describe('updatePubspecYaml()', () => {
+    it('updates relevant lines while preserving formatting and comments', () => {
         const input = `dependencies:
     arri_client: 0.1.0 # this is a comment
     http: 1.0.1
@@ -68,14 +68,14 @@ describe("updatePubspecYaml()", () => {
     arri_client: ^2.0.0 # this is a comment
     http: 1.0.1
     # this is another comment`;
-        const output = updatePubspecYaml(input, "2.0.0");
+        const output = updatePubspecYaml(input, '2.0.0');
         expect(output.content).toBe(expectedOutput);
         expect(output.updated).toBe(true);
     });
 });
 
-describe("updateCargoToml()", () => {
-    it("updates relevant lines while preserving formatting and comments", () => {
+describe('updateCargoToml()', () => {
+    it('updates relevant lines while preserving formatting and comments', () => {
         const input1 = `[package]
 name = "rust"
 version = "0.0.1"
@@ -94,7 +94,7 @@ edition = "2021"
 [dependencies]
 arri_client = "2.0.0" # this is another comment
 tokio = { version = "1.39.2", features = ["full"] }`;
-        const output = updateCargoToml(input1, "2.0.0");
+        const output = updateCargoToml(input1, '2.0.0');
         expect(output.content).toBe(expectedOutput1);
         expect(output.updated).toBe(true);
         const input2 = `[package]
@@ -115,14 +115,14 @@ edition = "2021"
 [dependencies]
 arri_client = { version = '2.1.1' } # this is another comment
 tokio = { version = "1.39.2", features = ["full"] }`;
-        const output2 = updateCargoToml(input2, "2.1.1");
+        const output2 = updateCargoToml(input2, '2.1.1');
         expect(output2.content).toBe(expectedOutput2);
         expect(output.updated).toBe(true);
     });
 });
 
-describe("updateGoMod()", () => {
-    it("updates relevant lines", () => {
+describe('updateGoMod()', () => {
+    it('updates relevant lines', () => {
         const input = `module main
 
 go 1.23.3
@@ -149,10 +149,10 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 )
 `;
-        const output = updateGoMod(input, "1.12.0");
+        const output = updateGoMod(input, '1.12.0');
         expect(output.content).toBe(expectedOutput);
     });
-    it("updates relevant lines and preserves comments", () => {
+    it('updates relevant lines and preserves comments', () => {
         const input = `module main
 
 go 1.23.3
@@ -179,7 +179,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 )
 `;
-        const output = updateGoMod(input, "1.12.0");
+        const output = updateGoMod(input, '1.12.0');
         expect(output.content).toBe(expectedOutput);
     });
 });

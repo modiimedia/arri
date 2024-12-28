@@ -1,4 +1,4 @@
-import { SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
+import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
 
 import {
     codeComments,
@@ -7,8 +7,8 @@ import {
     isNullableType,
     SwiftProperty,
     validSwiftKey,
-} from "./_common";
-import { swiftObjectFromSchema } from "./object";
+} from './_common';
+import { swiftObjectFromSchema } from './object';
 
 type DiscriminatorPart = {
     discriminatorValue: string;
@@ -63,11 +63,11 @@ export function swiftTaggedUnionFromSchema(
         },
         cloneTemplate(input, _) {
             return {
-                fieldContent: `${input}${isNullable ? "?" : ""}.clone()`,
-                bodyContent: "",
+                fieldContent: `${input}${isNullable ? '?' : ''}.clone()`,
+                bodyContent: '',
             };
         },
-        content: "",
+        content: '',
     };
     if (context.generatedTypes.includes(typeName)) {
         return result;
@@ -94,7 +94,7 @@ export function swiftTaggedUnionFromSchema(
             discriminatorValue: discriminatorValue,
             discriminatorCase: discriminatorCase,
             hasRequiredRef: subType.hasRequiredRef,
-            typeName: subType.typeName.replace("?", ""),
+            typeName: subType.typeName.replace('?', ''),
             content: subType.content,
         };
         discriminatorParts.push(discriminatorPart);
@@ -116,7 +116,7 @@ export function swiftTaggedUnionFromSchema(
         );
     }
     result.content = `${codeComments(schema)}public enum ${prefixedTypeName}: ArriClientModel {
-${discriminatorParts.map((part) => `    case ${part.discriminatorCase}(${part.typeName})`).join("\n")}
+${discriminatorParts.map((part) => `    case ${part.discriminatorCase}(${part.typeName})`).join('\n')}
     public init() {
         self = .${defaultPart.discriminatorCase}(${defaultPart.typeName}())
     }
@@ -129,7 +129,7 @@ ${discriminatorParts
                 self = .${part.discriminatorCase}(${part.typeName}(json: json))
                 break`,
     )
-    .join("\n")}
+    .join('\n')}
             default:
                 self = .${defaultPart.discriminatorCase}(${defaultPart.typeName}())
                 break
@@ -160,7 +160,7 @@ ${discriminatorParts
         (part) => `            case .${part.discriminatorCase}(let __innerVal):
                 return __innerVal.toJSONString()`,
     )
-    .join("\n")}
+    .join('\n')}
         }
     }
     public func toURLQueryParts() -> [URLQueryItem] {
@@ -170,7 +170,7 @@ ${discriminatorParts
         (part) => `            case .${part.discriminatorCase}(let __innerVal):
                 return __innerVal.toURLQueryParts()`,
     )
-    .join("\n")}
+    .join('\n')}
         }
     }
     public func clone() -> ${prefixedTypeName} {
@@ -180,12 +180,12 @@ ${discriminatorParts
         (part) => `            case .${part.discriminatorCase}(let __innerVal):
                 return .${part.discriminatorCase}(__innerVal.clone())`,
     )
-    .join("\n")}
+    .join('\n')}
         }
     }
 }
     
-${discriminatorParts.map((part) => part.content).join("\n")}`;
+${discriminatorParts.map((part) => part.content).join('\n')}`;
     context.generatedTypes.push(typeName);
     return result;
 }

@@ -1,7 +1,7 @@
-import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
+import { type AObjectSchema, type ASchema } from '@arrirpc/schema';
 
-import { type DefinitionMap } from "./app";
-import { type ArriRoute } from "./route";
+import { type DefinitionMap } from './app';
+import { type ArriRoute } from './route';
 
 export class ArriRouter {
     private readonly routes: Array<ArriRoute<any>> = [];
@@ -9,7 +9,7 @@ export class ArriRouter {
 
     prefix: string;
 
-    constructor(routePrefix = "") {
+    constructor(routePrefix = '') {
         this.prefix = routePrefix;
     }
 

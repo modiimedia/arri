@@ -3,7 +3,7 @@ import {
     type ASchemaOptions,
     SCHEMA_METADATA,
     type ValidationContext as ValidationContext,
-} from "../schemas";
+} from '../schemas';
 
 /**
  * @example
@@ -13,15 +13,15 @@ import {
  */
 export function string(
     opts: ASchemaOptions = {},
-): AScalarSchema<"string", string> {
+): AScalarSchema<'string', string> {
     return {
-        type: "string",
+        type: 'string',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
-                output: "",
+                output: '',
                 parse,
                 coerce,
                 validate,
@@ -53,7 +53,7 @@ export function serializeString(input: string) {
 }
 
 function validate(input: unknown): input is string {
-    return typeof input === "string";
+    return typeof input === 'string';
 }
 
 function parse(input: unknown, context: ValidationContext) {
@@ -81,7 +81,7 @@ export const STR_ESCAPE =
     /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
 export function serializeSmallString(input: string) {
     const len = input.length;
-    let result = "";
+    let result = '';
     let last = -1;
     let point = 255;
 
@@ -98,7 +98,7 @@ export function serializeSmallString(input: string) {
             if (last === -1) {
                 last = 0;
             }
-            result += input.slice(last, i) + "\\";
+            result += input.slice(last, i) + '\\';
             last = i;
         }
     }

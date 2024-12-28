@@ -5,8 +5,8 @@ import {
     type SchemaFormDiscriminator,
     type SchemaFormProperties,
     type SchemaFormValues,
-} from "@arrirpc/codegen-utils";
-import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
+} from '@arrirpc/codegen-utils';
+import { type AObjectSchema, type ASchema } from '@arrirpc/schema';
 import {
     type App,
     createApp,
@@ -17,14 +17,14 @@ import {
     type Router,
     setResponseHeader,
     setResponseStatus,
-} from "h3";
+} from 'h3';
 
-import { RequestHookContext } from "./context";
-import { type arriError, defineError, handleH3Error } from "./errors";
-import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
-import { type Middleware, MiddlewareEvent } from "./middleware";
-import { type ArriRoute, registerRoute } from "./route";
-import { ArriRouter } from "./router";
+import { RequestHookContext } from './context';
+import { type arriError, defineError, handleH3Error } from './errors';
+import { isEventStreamRpc, registerEventStreamRpc } from './eventStreamRpc';
+import { type Middleware, MiddlewareEvent } from './middleware';
+import { type ArriRoute, registerRoute } from './route';
+import { ArriRouter } from './router';
 import {
     createHttpRpcDefinition,
     getRpcParamName,
@@ -34,13 +34,13 @@ import {
     type NamedHttpRpc,
     registerRpc,
     Rpc,
-} from "./rpc";
-import { ArriService } from "./service";
+} from './rpc';
+import { ArriService } from './service';
 import {
     createWsRpcDefinition,
     type NamedWebsocketRpc,
     registerWebsocketRpc,
-} from "./websocketRpc";
+} from './websocketRpc';
 
 export type DefinitionMap = Record<
     string,
@@ -55,14 +55,14 @@ export class ArriApp {
     readonly h3Router: Router = createRouter();
     private readonly _rpcDefinitionPath: string;
     private readonly _rpcRoutePrefix: string;
-    appInfo: AppDefinition["info"];
+    appInfo: AppDefinition['info'];
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: DefinitionMap = {};
     private readonly _middlewares: Middleware[] = [];
-    private readonly _onRequest: ArriOptions["onRequest"];
-    private readonly _onAfterResponse: ArriOptions["onAfterResponse"];
-    private readonly _onBeforeResponse: ArriOptions["onBeforeResponse"];
-    private readonly _onError: ArriOptions["onError"];
+    private readonly _onRequest: ArriOptions['onRequest'];
+    private readonly _onAfterResponse: ArriOptions['onAfterResponse'];
+    private readonly _onBeforeResponse: ArriOptions['onBeforeResponse'];
+    private readonly _onError: ArriOptions['onError'];
     private readonly _debug: boolean;
     readonly definitionPath: string;
 
@@ -76,13 +76,13 @@ export class ArriApp {
         this._onError = opts.onError;
         this._onAfterResponse = opts.onAfterResponse;
         this._onBeforeResponse = opts.onBeforeResponse;
-        this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
-        this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
+        this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? '';
+        this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? '__definition';
         this.h3App.use(this.h3Router);
         this.definitionPath = this._rpcRoutePrefix
             ? `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`
-                  .split("//")
-                  .join("/")
+                  .split('//')
+                  .join('/')
             : `/${this._rpcDefinitionPath}`;
         if (!opts.disableDefinitionRoute) {
             this.h3Router.get(
@@ -90,8 +90,8 @@ export class ArriApp {
                 defineEventHandler((event) => {
                     setResponseHeader(
                         event,
-                        "Content-Type",
-                        "application/json",
+                        'Content-Type',
+                        'application/json',
                     );
                     return this.getAppDefinition();
                 }),
@@ -99,14 +99,14 @@ export class ArriApp {
         }
         if (!opts.disableDefaultRoute) {
             this.route({
-                method: ["get", "head"],
-                path: "/",
+                method: ['get', 'head'],
+                path: '/',
                 handler: async (_) => {
                     const response: Record<string, string> = {
-                        title: this.appInfo?.title ?? "Arri-RPC Server",
+                        title: this.appInfo?.title ?? 'Arri-RPC Server',
                         description:
                             this.appInfo?.description ??
-                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
+                            'This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.',
                         ...this.appInfo,
                     };
                     if (opts.disableDefinitionRoute) {
@@ -139,7 +139,7 @@ export class ArriApp {
         // }
         // default fallback route
         this.h3Router.use(
-            "/**",
+            '/**',
             eventHandler(async (event) => {
                 setResponseStatus(event, 404);
                 const error = defineError(404);
@@ -161,14 +161,14 @@ export class ArriApp {
     use(input: ArriRouter): void;
     use(input: ArriService): void;
     use(input: Middleware | ArriRouter | ArriService): void {
-        if (typeof input === "object" && input instanceof ArriRouter) {
+        if (typeof input === 'object' && input instanceof ArriRouter) {
             for (const route of input.getRoutes()) {
                 this.route(route);
             }
             this.registerDefinitions(input.getDefinitions());
             return;
         }
-        if (typeof input === "object" && input instanceof ArriService) {
+        if (typeof input === 'object' && input instanceof ArriService) {
             for (const rpc of input.getProcedures()) {
                 this.rpc(rpc.name, rpc);
             }
@@ -182,9 +182,9 @@ export class ArriApp {
         (procedure as any).name = name;
         const p = procedure as NamedHttpRpc | NamedWebsocketRpc;
         const path = p.path ?? getRpcPath(p.name, this._rpcRoutePrefix);
-        if (p.transport === "http") {
+        if (p.transport === 'http') {
             this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
-        } else if (p.transport === "ws") {
+        } else if (p.transport === 'ws') {
             this._procedures[p.name] = createWsRpcDefinition(p.name, path, p);
         }
 
@@ -200,7 +200,7 @@ export class ArriApp {
                 this._definitions[responseName] = p.response;
             }
         }
-        if (p.transport === "http") {
+        if (p.transport === 'http') {
             if (isEventStreamRpc(p)) {
                 registerEventStreamRpc(this.h3Router, path, p, {
                     middleware: this._middlewares,
@@ -222,7 +222,7 @@ export class ArriApp {
             });
             return;
         }
-        if (p.transport === "ws") {
+        if (p.transport === 'ws') {
             registerWebsocketRpc(this.h3Router, path, p);
         }
     }
@@ -269,7 +269,7 @@ export interface ArriOptions {
     /**
      * Metadata to display in the __definition.json file
      */
-    appInfo?: AppDefinition["info"];
+    appInfo?: AppDefinition['info'];
     rpcRoutePrefix?: string;
     /**
      * Defaults to /__definitions
@@ -287,6 +287,6 @@ export interface ArriOptions {
     ) => void | Promise<void>;
 }
 
-export interface RequestHookEvent extends Omit<H3Event, "context"> {
+export interface RequestHookEvent extends Omit<H3Event, 'context'> {
     context: RequestHookContext;
 }

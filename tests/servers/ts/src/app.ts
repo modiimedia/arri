@@ -1,34 +1,34 @@
-import { a } from "@arrirpc/schema";
+import { a } from '@arrirpc/schema';
 import {
     ArriApp,
     defineError,
     defineMiddleware,
     getHeader,
     handleCors,
-} from "@arrirpc/server";
+} from '@arrirpc/server';
 
-import { manualRouter, manualTestService } from "./routes/other";
+import { manualRouter, manualTestService } from './routes/other';
 
 const app = new ArriApp({
-    rpcRoutePrefix: "rpcs",
+    rpcRoutePrefix: 'rpcs',
     appInfo: {
-        version: "10",
+        version: '10',
     },
     onRequest(event) {
         handleCors(event, {
-            origin: "*",
+            origin: '*',
         });
     },
 });
 
 app.use(
     defineMiddleware(async (event) => {
-        const authHeader = getHeader(event, "x-test-header");
+        const authHeader = getHeader(event, 'x-test-header');
         if (
             !authHeader?.length &&
-            event.path !== "/" &&
-            event.path !== "/status" &&
-            event.path !== "/favicon.ico"
+            event.path !== '/' &&
+            event.path !== '/status' &&
+            event.path !== '/favicon.ico'
         ) {
             throw defineError(401, {
                 message: "Missing test auth header 'x-test-header'",
@@ -38,10 +38,10 @@ app.use(
 );
 
 app.route({
-    path: "/status",
-    method: "get",
+    path: '/status',
+    method: 'get',
     handler() {
-        return "ok";
+        return 'ok';
     },
 });
 

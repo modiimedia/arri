@@ -1,7 +1,7 @@
-import { camelCase, SchemaFormElements } from "@arrirpc/codegen-utils";
+import { camelCase, SchemaFormElements } from '@arrirpc/codegen-utils';
 
-import { tsTypeFromSchema } from "./_index";
-import { CodegenContext, TsProperty, validVarName } from "./common";
+import { tsTypeFromSchema } from './_index';
+import { CodegenContext, TsProperty, validVarName } from './common';
 
 export function tsArrayFromSchema(
     schema: SchemaFormElements,
@@ -13,22 +13,22 @@ export function tsArrayFromSchema(
         generatedTypes: context.generatedTypes,
         instancePath: `${context.instancePath}/[element]`,
         schemaPath: `${context.schemaPath}/elements`,
-        discriminatorParent: "",
-        discriminatorKey: "",
-        discriminatorValue: "",
+        discriminatorParent: '',
+        discriminatorKey: '',
+        discriminatorValue: '',
         versionNumber: context.versionNumber,
         usedFeatures: context.usedFeatures,
         rpcGenerators: context.rpcGenerators,
     });
     const typeName = `(${innerType.typeName})[]`;
-    const defaultValue = schema.nullable ? "null" : "[]";
+    const defaultValue = schema.nullable ? 'null' : '[]';
     return {
         typeName: schema.nullable ? `${typeName} | null` : typeName,
         defaultValue,
         validationTemplate(input) {
             const mainPart = `Array.isArray(${input}) 
                 && ${input}.every(
-                    (_element) => ${innerType.validationTemplate("_element")}
+                    (_element) => ${innerType.validationTemplate('_element')}
             )`;
             if (schema.nullable) {
                 return `((${mainPart}) || 
@@ -49,7 +49,7 @@ export function tsArrayFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            const elVar = `_${camelCase(validVarName(input.split(".").join("_")), { normalize: true })}El`;
+            const elVar = `_${camelCase(validVarName(input.split('.').join('_')), { normalize: true })}El`;
             const elKeyVar = `${elVar}Key`;
             if (schema.nullable) {
                 return `if (${input} !== null) {

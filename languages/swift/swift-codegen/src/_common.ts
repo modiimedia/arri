@@ -4,7 +4,7 @@ import {
     removeDisallowedChars,
     Schema,
     stringStartsWithNumber,
-} from "@arrirpc/codegen-utils";
+} from '@arrirpc/codegen-utils';
 
 export interface GeneratorContext {
     clientVersion: string;
@@ -48,7 +48,7 @@ export function isNullableType(
 
 export function validTypeName(input: string): string {
     const formatted = removeDisallowedChars(
-        pascalCase(input.split("[").join("_").split("]").join("_"), {
+        pascalCase(input.split('[').join('_').split(']').join('_'), {
             normalize: true,
         }),
         illegalPropertyChars,
@@ -73,7 +73,7 @@ export function getTypeName(schema: Schema, context: GeneratorContext): string {
         );
         return typeName;
     }
-    const typeName = validTypeName(context.instancePath.split("/").join("_"));
+    const typeName = validTypeName(context.instancePath.split('/').join('_'));
     return typeName;
 }
 
@@ -132,7 +132,7 @@ const reservedKeywords: Record<string, boolean> = {
     try: true,
 };
 
-const illegalPropertyChars = "!@#$%^&*()+=[]{}\\|;:'\",./?><`~";
+const illegalPropertyChars = '!@#$%^&*()+=[]{}\\|;:\'",./?><`~';
 
 export function validSwiftKey(input: string) {
     const key = removeDisallowedChars(
@@ -148,11 +148,11 @@ export function validSwiftKey(input: string) {
     return key;
 }
 
-export function codeComments(schema: Schema, leading = "") {
+export function codeComments(schema: Schema, leading = '') {
     const description = schema.metadata?.description
-        ?.split("\n")
+        ?.split('\n')
         .map((line) => `${leading}/// ${line}`)
-        .join("\n");
+        .join('\n');
     if (description && schema.metadata?.isDeprecated) {
         return `${description}\n${leading}@available(*, deprecated)\n`;
     }
@@ -162,5 +162,5 @@ export function codeComments(schema: Schema, leading = "") {
     if (schema.metadata?.isDeprecated) {
         return `${leading}@available(*, deprecated)\n`;
     }
-    return "";
+    return '';
 }

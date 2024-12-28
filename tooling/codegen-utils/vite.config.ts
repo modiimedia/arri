@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/@arrirpc/codegen-utils",
+    cacheDir: '../../node_modules/.vite/@arrirpc/codegen-utils',
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -19,15 +19,15 @@ export default defineConfig({
     // },
 
     test: {
-        pool: "threads",
+        pool: 'threads',
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
-        reporters: ["default"],
+        reporters: ['default'],
         globals: true,
-        environment: "node",
-        include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        environment: 'node',
+        include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
 });

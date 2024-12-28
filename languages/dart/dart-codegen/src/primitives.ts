@@ -1,14 +1,14 @@
-import { SchemaFormType } from "@arrirpc/codegen-utils";
+import { SchemaFormType } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, DartProperty, outputIsNullable } from "./_common";
+import { CodegenContext, DartProperty, outputIsNullable } from './_common';
 
 export function dartStringFromSchema(
     schema: SchemaFormType,
     context: CodegenContext,
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
-    const typeName = isNullable ? `String?` : "String";
-    const defaultValue = isNullable ? "null" : '""';
+    const typeName = isNullable ? `String?` : 'String';
+    const defaultValue = isNullable ? 'null' : '""';
     return {
         typeName,
         isNullable,
@@ -28,7 +28,7 @@ export function dartStringFromSchema(
             }
             return `${target}.add("${key}=$${input}")`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -37,8 +37,8 @@ export function dartBoolFromSchema(
     context: CodegenContext,
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
-    const typeName = isNullable ? "bool?" : "bool";
-    const defaultValue = isNullable ? "null" : "false";
+    const typeName = isNullable ? 'bool?' : 'bool';
+    const defaultValue = isNullable ? 'null' : 'false';
     return {
         typeName,
         isNullable,
@@ -58,7 +58,7 @@ export function dartBoolFromSchema(
             }
             return `${target}.add("${key}=$${input}")`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -67,8 +67,8 @@ export function dartDateTimeFromSchema(
     context: CodegenContext,
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
-    const typeName = isNullable ? "DateTime?" : "DateTime";
-    const defaultValue = isNullable ? "null" : "DateTime.now()";
+    const typeName = isNullable ? 'DateTime?' : 'DateTime';
+    const defaultValue = isNullable ? 'null' : 'DateTime.now()';
     return {
         typeName,
         isNullable,
@@ -98,7 +98,7 @@ export function dartDateTimeFromSchema(
             }
             return `${target}.add("${key}=\${${input}.toUtc().toIso8601String()}")`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -107,8 +107,8 @@ export function dartDoubleFromSchema(
     context: CodegenContext,
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
-    const typeName = isNullable ? "double?" : "double";
-    const defaultValue = isNullable ? "null" : "0.0";
+    const typeName = isNullable ? 'double?' : 'double';
+    const defaultValue = isNullable ? 'null' : '0.0';
     return {
         typeName,
         isNullable,
@@ -128,7 +128,7 @@ export function dartDoubleFromSchema(
             }
             return `${target}.add("${key}=$${input}")`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -137,8 +137,8 @@ export function dartIntFromSchema(
     context: CodegenContext,
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
-    const typeName = isNullable ? "int?" : "int";
-    const defaultValue = isNullable ? "null" : "0";
+    const typeName = isNullable ? 'int?' : 'int';
+    const defaultValue = isNullable ? 'null' : '0';
     return {
         typeName,
         isNullable,
@@ -158,7 +158,7 @@ export function dartIntFromSchema(
             }
             return `${target}.add("${key}=$${input}")`;
         },
-        content: "",
+        content: '',
     };
 }
 
@@ -167,8 +167,8 @@ export function dartBigIntFromSchema(
     context: CodegenContext,
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
-    const typeName = isNullable ? "BigInt?" : "BigInt";
-    const defaultValue = isNullable ? "null" : "BigInt.zero";
+    const typeName = isNullable ? 'BigInt?' : 'BigInt';
+    const defaultValue = isNullable ? 'null' : 'BigInt.zero';
     return {
         typeName,
         isNullable,
@@ -194,6 +194,6 @@ export function dartBigIntFromSchema(
             }
             return `${target}.add("${key}=$${input}")`;
         },
-        content: "",
+        content: '',
     };
 }

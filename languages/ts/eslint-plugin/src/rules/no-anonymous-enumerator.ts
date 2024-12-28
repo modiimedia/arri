@@ -1,30 +1,30 @@
-import { type Rule } from "eslint";
+import { type Rule } from 'eslint';
 
-import { argHasIdKey, isNestedInSchema } from "./_common";
+import { argHasIdKey, isNestedInSchema } from './_common';
 
 const noAnonymousEnumerator: Rule.RuleModule = {
     meta: {
-        type: "suggestion",
+        type: 'suggestion',
     },
     create(context) {
         return {
             CallExpression(node) {
                 if (
-                    node.callee.type !== "MemberExpression" ||
-                    node.callee.object.type !== "Identifier" ||
-                    node.callee.object.name !== "a" ||
-                    node.callee.property.type !== "Identifier"
+                    node.callee.type !== 'MemberExpression' ||
+                    node.callee.object.type !== 'Identifier' ||
+                    node.callee.object.name !== 'a' ||
+                    node.callee.property.type !== 'Identifier'
                 ) {
                     return;
                 }
                 const propName = node.callee.property.name;
-                if (propName !== "enumerator" && propName !== "stringEnum") {
+                if (propName !== 'enumerator' && propName !== 'stringEnum') {
                     return;
                 }
                 if (
                     isNestedInSchema(
                         node as any,
-                        ["object", "discriminator", "recursive"],
+                        ['object', 'discriminator', 'recursive'],
                         context,
                     )
                 ) {
@@ -32,7 +32,7 @@ const noAnonymousEnumerator: Rule.RuleModule = {
                 }
                 if (node.arguments.length < 2) {
                     context.report({
-                        message: "root enum schemas must specify an id",
+                        message: 'root enum schemas must specify an id',
                         node,
                     });
                     return;
@@ -40,7 +40,7 @@ const noAnonymousEnumerator: Rule.RuleModule = {
                 const arg1 = node.arguments[0]!;
                 const arg2 = node.arguments[1]!;
                 if (
-                    arg1.type === "Literal" &&
+                    arg1.type === 'Literal' &&
                     (arg1.value?.toString().length ?? 0) > 0
                 ) {
                     // Using ID shorthand
@@ -50,7 +50,7 @@ const noAnonymousEnumerator: Rule.RuleModule = {
                     return;
                 }
                 context.report({
-                    message: "root enum schemas must specify an id",
+                    message: 'root enum schemas must specify an id',
                     node,
                 });
             },

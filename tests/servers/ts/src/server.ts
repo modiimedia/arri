@@ -1,6 +1,6 @@
-import { toNodeListener } from "@arrirpc/server";
-import { listen } from "@joshmossas/listhen";
-import app from "virtual:arri/app";
+import { toNodeListener } from '@arrirpc/server';
+import { listen } from '@joshmossas/listhen';
+import app from 'virtual:arri/app';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 void listen(toNodeListener(app.h3App), {
