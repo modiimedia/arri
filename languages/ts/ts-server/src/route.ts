@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { type HttpMethod } from "@arrirpc/codegen-utils";
 import {
     a,

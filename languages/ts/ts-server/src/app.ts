@@ -189,14 +189,12 @@ export class ArriApp {
         }
 
         if (isRpcParamSchema(p.params)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const paramName = getRpcParamName(p.name, p);
             if (paramName) {
                 this._definitions[paramName] = p.params;
             }
         }
         if (isRpcParamSchema(p.response)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const responseName = getRpcResponseName(p.name, p as any);
             if (responseName) {
                 this._definitions[responseName] = p.response;

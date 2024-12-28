@@ -14,6 +14,7 @@ export function dartListFromSchema(
         generatedTypes: context.generatedTypes,
         instancePath: `${context.instancePath}/[Element]`,
         schemaPath: `${context.schemaPath}/elements`,
+        clientVersion: context.clientVersion,
     });
     const typeName = isNullable
         ? `List<${innerType.typeName}>?`

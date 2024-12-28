@@ -29,7 +29,7 @@ describe("Type Inference", () => {
                 params: { id: "12314" },
                 rpcName: "",
             },
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             {} as any,
         );
         assertType<Response>(result);

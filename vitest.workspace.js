@@ -8,10 +8,10 @@ export default defineWorkspace([
     "./languages/ts/ts-server/vite.config.ts",
     "./tooling/cli/vite.config.ts",
     "./tooling/codegen-utils/vite.config.ts",
-    "./tooling/eslint-plugin/vite.config.ts",
-    "./tooling/json-schema-to-jtd/vite.config.ts",
+    "./languages/ts/eslint-plugin/vite.config.ts",
+    "./tooling/json-schema-to-atd/vite.config.ts",
     "./tooling/jtd-utils/vite.config.ts",
-    "./tooling/schema/vite.config.ts",
+    "./languages/ts/ts-schema/vite.config.ts",
     "./tooling/schema-typebox-adapter/vite.config.ts",
     "./tests/clients/ts/vite.config.ts",
 ]);

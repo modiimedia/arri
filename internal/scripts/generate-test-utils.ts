@@ -2,8 +2,8 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
 
+import { a } from "../../languages/ts/ts-schema/src/_index";
 import { createAppDefinition } from "../../tooling/codegen-utils/src";
-import { a } from "../../tooling/schema/src/_index";
 
 const Enumerator = a.enumerator(["FOO", "BAR", "BAZ"], { id: "Enumerator" });
 type Enumerator = a.infer<typeof Enumerator>;

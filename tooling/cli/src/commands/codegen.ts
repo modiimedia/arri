@@ -152,7 +152,7 @@ async function runGenerators(
     logger.info(`Generating ${generators?.length} client(s)`);
     await Promise.allSettled(
         generators.map((gen) =>
-            gen.generator(
+            gen.run(
                 def ?? {
                     schemaVersion: "0.0.7",
                     procedures: {},

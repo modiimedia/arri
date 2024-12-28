@@ -13,7 +13,7 @@ import {
 } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
-import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-jtd";
+import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-atd";
 
 export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,

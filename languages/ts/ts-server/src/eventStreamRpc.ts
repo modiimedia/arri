@@ -158,7 +158,6 @@ export class EventStreamConnection<TData> {
 
     private cleanup() {
         if (this.pingInterval) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearInterval(this.pingInterval);
         }
     }
@@ -230,14 +229,12 @@ export function registerEventStreamRpc(
                         return true;
                     } as any),
                 serializer:
-                    // eslint-disable-next-line @typescript-eslint/unbound-method
                     responseValidator?.serialize ??
                     function (_) {
                         return "";
                     },
                 validationErrors(input) {
                     if (procedure.response) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         return a.errors(procedure.response, input);
                     }
                     return [];

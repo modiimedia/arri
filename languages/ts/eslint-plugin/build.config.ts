@@ -9,23 +9,19 @@ const packageJson = JSON.parse(
     }),
 );
 
-const deps = Object.keys(packageJson.dependencies);
+const deps = Object.keys(packageJson.dependencies ?? {});
 
 export default defineBuildConfig({
-    rootDir: __dirname,
-    entries: [
-        { input: "./src/_index", name: "index" },
-        { input: "./src/_main", name: "cli" },
-    ],
+    entries: ["./src/plugin.ts", "./src/configs.ts"],
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: true,
+            respectExternal: false,
         },
     },
     outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
+    failOnWarn: true,
     externals: deps,
 });
