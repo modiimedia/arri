@@ -16,7 +16,7 @@ import {
     type SchemaFormRef,
     type SchemaFormType,
     type SchemaFormValues,
-} from "jtd-utils";
+} from "@arrirpc/type-defs";
 import { camelCase } from "scule";
 
 import {

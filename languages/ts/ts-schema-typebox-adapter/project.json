@@ -1,7 +1,7 @@
 {
-  "name": "schema-typebox-adapter",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/schema-typebox-adapter/src",
+  "name": "ts-schema-typebox-adapter",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/ts-schema-typebox-adapter/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,21 +9,21 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/schema-typebox-adapter"
+        "cwd": "languages/ts/ts-schema-typebox-adapter"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/schema-typebox-adapter"
+        "cwd": "languages/ts/ts-schema-typebox-adapter"
       },
       "dependsOn": ["build"]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint tooling/schema-typebox-adapter"
+        "command": "pnpm eslint languages/ts/ts-schema-typebox-adapter"
       }
     },
     "test": {
@@ -31,7 +31,7 @@
       "outputs": ["{workspaceRoot}/coverage/tooling/schema"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "tooling/schema-typebox-adapter"
+        "cwd": "languages/ts/ts-schema-typebox-adapter"
       }
     },
 
@@ -39,7 +39,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "tooling/schema-typebox-adapter"
+        "cwd": "languages/ts/ts-schema-typebox-adapter"
       }
     }
   },

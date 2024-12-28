@@ -1,7 +1,7 @@
 {
-  "name": "jtd-utils",
+  "name": "type-defs",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/jtd-utils/src",
+  "sourceRoot": "tooling/type-defs/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,36 +9,36 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/jtd-utils"
+        "cwd": "tooling/type-defs"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/jtd-utils"
+        "cwd": "tooling/type-defs"
       },
       "dependsOn": ["build"]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint tooling/jtd-utils"
+        "command": "pnpm eslint tooling/type-defs"
       }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/tooling/jtd-utils"],
+      "outputs": ["{workspaceRoot}/coverage/tooling/type-defs"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "tooling/jtd-utils"
+        "cwd": "tooling/type-defs"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "tooling/jtd-utils"
+        "cwd": "tooling/type-defs"
       }
     }
   },

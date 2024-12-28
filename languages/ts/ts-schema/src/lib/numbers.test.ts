@@ -1,4 +1,4 @@
-import { type SchemaFormType } from "jtd-utils";
+import { type SchemaFormType } from "@arrirpc/type-defs";
 
 import * as a from "./_namespace";
 

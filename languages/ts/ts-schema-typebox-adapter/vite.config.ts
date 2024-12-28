@@ -1,12 +1,13 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/@arrirpc/eslint-plugin",
+    cacheDir:
+        "../../../node_modules/.vite/languages-ts-ts-schema-typebox-adapter",
 
     // plugins: [
     //     viteTsConfigPaths({
     //         root: "../../",
-    //     }),
+    //     }) as any,
     // ],
 
     // Uncomment this if you are using workers.
@@ -19,18 +20,14 @@ export default defineConfig({
     // },
 
     test: {
-        globals: true,
-        reporters: ["default"],
         pool: "threads",
-        passWithNoTests: true,
         poolOptions: {
             threads: {
                 singleThread: true,
             },
         },
-        cache: {
-            dir: "../../node_modules/.vitest",
-        },
+        globals: true,
+        reporters: ["default"],
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     },

@@ -1,4 +1,4 @@
-import { isSchemaFormEnum, isSchemaFormType } from "jtd-utils";
+import { isSchemaFormEnum, isSchemaFormType } from "@arrirpc/type-defs";
 
 import {
     type ASchema,

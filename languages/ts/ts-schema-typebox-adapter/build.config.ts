@@ -12,7 +12,7 @@ const packageJson = JSON.parse(
 const deps = Object.keys(packageJson.dependencies as Record<string, string>);
 
 export default defineBuildConfig({
-    entries: ["./src/index"],
+    entries: ["./src/index.ts"],
     rollup: {
         emitCJS: true,
         dts: {

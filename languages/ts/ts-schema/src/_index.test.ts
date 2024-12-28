@@ -7,7 +7,7 @@ import {
     isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
-} from "jtd-utils";
+} from "@arrirpc/type-defs";
 
 import { a } from "./_index";
 

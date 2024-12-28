@@ -1,4 +1,4 @@
-import { type Type } from "jtd-utils";
+import { type Type } from "@arrirpc/type-defs";
 
 import {
     int8Max,

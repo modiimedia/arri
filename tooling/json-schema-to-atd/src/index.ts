@@ -5,7 +5,7 @@ import {
     type SchemaFormEnum,
     type SchemaFormProperties,
     type SchemaFormValues,
-} from "jtd-utils";
+} from "@arrirpc/type-defs";
 
 import {
     isJsonSchemaArray,

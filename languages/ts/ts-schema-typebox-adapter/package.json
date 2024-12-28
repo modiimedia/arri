@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
-    "directory": "tooling/schema-typebox-adapter"
+    "directory": "languages/ts/ts-schema-typebox-adapter"
   },
   "dependencies": {
     "@arrirpc/schema": "workspace:*",

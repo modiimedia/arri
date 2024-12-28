@@ -2,7 +2,7 @@ import {
     type SchemaFormProperties,
     type SchemaFormType,
     SchemaFormValues,
-} from "jtd-utils";
+} from "@arrirpc/type-defs";
 
 import { jsonSchemaToJtdSchema } from "./index";
 import {

@@ -7,7 +7,7 @@ import {
     isSchemaFormValues,
     type Type as JtdType,
     TypeValues,
-} from "jtd-utils";
+} from "@arrirpc/type-defs";
 
 import { type ValueError } from "./lib/validation";
 
