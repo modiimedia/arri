@@ -1,4 +1,4 @@
-import type { Schema } from "jtd-utils";
+import type { Schema } from "@arrirpc/type-defs";
 
 export interface TemplateInput<TSchema extends Schema = any> {
     val: string;

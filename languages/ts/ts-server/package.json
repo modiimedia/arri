@@ -22,9 +22,6 @@
     "directory": "languages/ts/ts-server"
   },
   "dependencies": {
-    "@arrirpc/codegen-dart": "workspace:*",
-    "@arrirpc/codegen-kotlin": "workspace:*",
-    "@arrirpc/codegen-ts": "workspace:*",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "@types/source-map-support": "^0.5.10",

@@ -92,7 +92,7 @@ export function isSchemaFormType(input: unknown): input is SchemaFormType {
     if (!isObject(input)) {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     return TypeValues.includes(input.type);
 }
 
@@ -140,7 +140,6 @@ export function isSchemaFormProperties(
         typeof input.properties === "object" &&
         input.properties !== null
     ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const keys = Object.keys(input.properties);
         if (keys[0]) {
             return isSchema(input.properties[keys[0]]);
@@ -179,7 +178,6 @@ export function isSchemaFormDiscriminator(
         typeof input.mapping === "object" &&
         input.mapping !== null
     ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         for (const key of Object.keys(input.mapping)) {
             if (!isSchemaFormProperties(input.mapping[key])) {
                 return false;

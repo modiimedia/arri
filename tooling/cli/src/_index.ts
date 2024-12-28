@@ -1,8 +1,8 @@
-import { dartClientGenerator } from "@arrirpc/codegen-dart";
-import { kotlinClientGenerator } from "@arrirpc/codegen-kotlin";
-import { rustClientGenerator } from "@arrirpc/codegen-rust";
-import { swiftClientGenerator } from "@arrirpc/codegen-swift";
-import { typescriptClientGenerator } from "@arrirpc/codegen-ts";
+import * as dartCodegen from "@arrirpc/codegen-dart";
+import * as kotlinCodegen from "@arrirpc/codegen-kotlin";
+import * as rustCodegen from "@arrirpc/codegen-rust";
+import * as swiftCodegen from "@arrirpc/codegen-swift";
+import * as typescriptCodegen from "@arrirpc/codegen-ts";
 
 export { DEV_DEFINITION_ENDPOINT } from "./commands/dev";
 export * from "./config";
@@ -14,9 +14,17 @@ export {
 } from "@arrirpc/codegen-utils";
 
 export const generators = {
-    dartClient: dartClientGenerator,
-    kotlinClient: kotlinClientGenerator,
-    rustClient: rustClientGenerator,
-    typescriptClient: typescriptClientGenerator,
-    swiftClient: swiftClientGenerator,
+    dartClient: dartCodegen.dartClientGenerator,
+    kotlinClient: kotlinCodegen.kotlinClientGenerator,
+    rustClient: rustCodegen.rustClientGenerator,
+    typescriptClient: typescriptCodegen.typescriptClientGenerator,
+    swiftClient: swiftCodegen.swiftClientGenerator,
 } as const;
+
+export const codegen = {
+    dart: dartCodegen,
+    kotlin: kotlinCodegen,
+    rust: rustCodegen,
+    swift: swiftCodegen,
+    ts: typescriptCodegen,
+};

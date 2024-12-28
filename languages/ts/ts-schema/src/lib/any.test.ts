@@ -1,4 +1,4 @@
-import { type Schema } from "jtd-utils";
+import { type Schema } from "@arrirpc/type-defs";
 
 import { a } from "../_index";
 

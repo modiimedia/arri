@@ -1,4 +1,4 @@
-import { type SchemaFormProperties } from "jtd-utils";
+import { type SchemaFormProperties } from "@arrirpc/type-defs";
 
 import {
     type AObjectSchema,
