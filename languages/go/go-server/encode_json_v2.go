@@ -1,9 +1,9 @@
 package arri
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"unsafe"
@@ -14,31 +14,11 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type EncodingV2State struct {
-	bytes.Buffer
-
-	ptrLevel uint
-	ptrSeen  map[any]struct{}
-}
-
 const startDetectingCyclesAfter = 1000
 
 var encodeStatePool sync.Pool
 
 type encoder func(*buffer, unsafe.Pointer) error
-
-func newEncodeSate() *EncodingV2State {
-	if v := encodeStatePool.Get(); v != nil {
-		e := v.(*EncodingV2State)
-		e.Reset()
-		if len(e.ptrSeen) > 0 {
-			panic("ptrEncoder.encode should have emptied ptrSeen via defers")
-		}
-		e.ptrLevel = 0
-		return e
-	}
-	return &EncodingV2State{ptrSeen: map[any]struct{}{}}
-}
 
 var (
 	typeToEncoderMap sync.Map
@@ -52,16 +32,33 @@ var (
 )
 
 type buffer struct {
-	b []byte
+	b            []byte
+	currentDepth uint32
+}
+
+type compileEncoderCtx struct {
+	maxDepth           uint32
+	discriminatorKey   string
+	discriminatorValue string
+	enumValues         []string
+}
+
+func newCompileEncoderCtx() *compileEncoderCtx {
+	return &compileEncoderCtx{
+		maxDepth:           1000,
+		discriminatorKey:   "",
+		discriminatorValue: "",
+		enumValues:         []string{},
+	}
 }
 
 func EncodeJSONV2(input any, options EncodingOptions) ([]byte, error) {
 	typ, ptr := reflect.TypeAndPtrOf(input)
 	typeID := reflect.TypeID(typ)
-
-	buf := bufpool.Get().(*buffer)
-	buf.b = buf.b[:0]
-	defer bufpool.Put(buf)
+	buf := &buffer{b: []byte{}}
+	// buf := bufpool.Get().(*buffer)
+	// buf.b = buf.b[:0]
+	// defer bufpool.Put(buf)
 	if enc, ok := typeToEncoderMap.Load(typeID); ok {
 		if err := enc.(encoder)(buf, ptr); err != nil {
 			return nil, err
@@ -75,7 +72,7 @@ func EncodeJSONV2(input any, options EncodingOptions) ([]byte, error) {
 
 	// First time,
 	// builds a optimized path by type and caches it with typeID.
-	enc, err := compile(typ)
+	enc, err := compile(typ, compileEncoderCtx{})
 	if err != nil {
 		return nil, err
 	}
@@ -90,9 +87,8 @@ func EncodeJSONV2(input any, options EncodingOptions) ([]byte, error) {
 	return b, nil
 }
 
-func compile(typ reflect.Type) (encoder, error) {
+func compile(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	switch typ.Kind() {
-
 	case reflect.String:
 		return compileString(typ)
 	case reflect.Bool:
@@ -123,24 +119,27 @@ func compile(typ reflect.Type) (encoder, error) {
 		return compileUint64(typ)
 	case reflect.Struct:
 		if typ.Name() == "Time" {
-			return compileDateTime(typ)
+			return compileDateTime(typ, ctx)
 		}
-		return compileStruct(typ)
+		if isDiscriminatorStructV2(typ, ctx) {
+			return compileDiscriminator(typ, ctx)
+		}
+		return compileStruct(typ, ctx)
 	case reflect.Slice:
-		return compileSlice(typ)
+		return compileSlice(typ, ctx)
 	case reflect.Array:
-		return compileArray(typ)
+		return compileArray(typ, ctx)
 	case reflect.Map:
-		return compileMap(typ)
+		return compileMap(typ, ctx)
 	case reflect.Ptr:
-		return compilePtr(typ)
+		return compilePtr(typ, ctx)
 	case reflect.Interface:
-		return compileAny(typ)
+		return compileAny(typ, ctx)
 	}
 	return nil, fmt.Errorf("unsupported type: %+v", typ)
 }
 
-func compileDateTime(_ reflect.Type) (encoder, error) {
+func compileDateTime(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*time.Time)(p)
 		output := value.Format("2006-01-02T15:04:05.000Z")
@@ -271,24 +270,29 @@ func compileBool(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileStruct(typ reflect.Type) (encoder, error) {
+func compileStruct(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	encoders := []encoder{}
+	hasDiscriminator := len(ctx.discriminatorKey) > 0 && len(ctx.discriminatorValue) > 0
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		enc, err := compile(field.Type)
+		enc, err := compile(field.Type, ctx)
 		if err != nil {
 			return nil, err
 		}
 		offset := field.Offset
 		encoders = append(encoders, func(buf *buffer, p unsafe.Pointer) error {
-			if i > 0 {
+			if hasDiscriminator {
+				buf.b = append(buf.b, "\""+ctx.discriminatorKey+"\":\""+ctx.discriminatorValue+"\""...)
+			}
+			if hasDiscriminator || i > 0 {
 				buf.b = append(buf.b, ',')
 			}
 			buf.b = append(buf.b, '"')
 			buf.b = append(buf.b, strcase.ToLowerCamel(field.Name)...)
 			buf.b = append(buf.b, '"')
 			buf.b = append(buf.b, ':')
-			return enc(buf, unsafe.Pointer(uintptr(p)+offset))
+			innerPtr := unsafe.Pointer(uintptr(p) + offset)
+			return enc(buf, innerPtr)
 		})
 	}
 	return func(buf *buffer, p unsafe.Pointer) error {
@@ -303,30 +307,9 @@ func compileStruct(typ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileSlice(typ reflect.Type) (encoder, error) {
+func compileSlice(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	el := typ.Elem()
-	_, err := compile(el)
-	if err != nil {
-		return nil, err
-	}
-	return func(buf *buffer, p unsafe.Pointer) error {
-		val := *(*[]any)(p)
-		_ = unsafe.Sizeof(p)
-		buf.b = append(buf.b, '[')
-		for i := 0; i < len(val); i++ {
-			if i > 0 {
-				buf.b = append(buf.b, ',')
-			}
-			// elEncoder(buf, unsafe.Add(p, uintptr(i)*size))
-		}
-		buf.b = append(buf.b, ']')
-		return nil
-	}, nil
-}
-
-func compileArray(typ reflect.Type) (encoder, error) {
-	el := typ.Elem()
-	elEncoder, err := compile(el)
+	elEncoder, err := compile(el, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -345,52 +328,179 @@ func compileArray(typ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileMap(typ reflect.Type) (encoder, error) {
+func compileArray(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+	el := typ.Elem()
+	elEncoder, err := compile(el, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return func(buf *buffer, p unsafe.Pointer) error {
+		val := *(*[]any)(p)
+		size := unsafe.Sizeof(p)
+		buf.b = append(buf.b, '[')
+		for i := 0; i < len(val); i++ {
+			if i > 0 {
+				buf.b = append(buf.b, ',')
+			}
+			err := elEncoder(buf, unsafe.Add(p, uintptr(i)*size))
+			if err != nil {
+				return err
+			}
+		}
+		buf.b = append(buf.b, ']')
+		return nil
+	}, nil
+}
+
+func compileMap(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	if typ.Key().Kind() != reflect.String {
 		return nil, fmt.Errorf("only string keys are supported in maps")
 	}
 	el := typ.Elem()
-	_, err := compile(el)
+	elEncoder, err := compile(el, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return func(buf *buffer, p unsafe.Pointer) error {
 		val := *(*map[string]any)(p)
-		size := unsafe.Sizeof(p)
 		if val == nil {
 			buf.b = append(buf.b, '{')
 			buf.b = append(buf.b, '}')
 			return nil
 		}
 		buf.b = append(buf.b, '{')
-		for i := 0; i < len(val); i++ {
-			_ = unsafe.Add(p, uintptr(i)*size)
-			// fmt.Println(innerPtr, *(*string)(innerPtr))
+		hasKeys := false
+		for k, v := range val {
+			if hasKeys {
+				buf.b = append(buf.b, ',')
+			}
+			buf.b = AppendNormalizedStringV2(buf.b, k)
+			buf.b = append(buf.b, ':')
+			innerPtr := unsafe.Pointer(&v)
+			err := elEncoder(buf, innerPtr)
+			if err != nil {
+				return err
+			}
+			hasKeys = true
 		}
+
 		buf.b = append(buf.b, '}')
 		return nil
 	}, nil
 }
 
-func compilePtr(typ reflect.Type) (encoder, error) {
+func compilePtr(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	el := typ.Elem()
-	_, err := compile(el)
+	elEncoder, err := compile(el, ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	return func(buf *buffer, p unsafe.Pointer) error {
-		// fmt.Println("POINTER", p)
+		val := *(**any)(p)
+		if val == nil {
+			buf.b = append(buf.b, "null"...)
+			return nil
+		}
+		innerPtr := unsafe.Pointer(val)
+		err := elEncoder(buf, innerPtr)
+		if err != nil {
+			return err
+		}
 		return nil
 	}, nil
 }
 
-func compileAny(_ reflect.Type) (encoder, error) {
-	return func(b *buffer, p unsafe.Pointer) error {
-		return nil
+func compileAny(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+	return func(buf *buffer, p unsafe.Pointer) error {
+		// return nil
 		val := (*any)(p)
 		// fmt.Println("VAL", val)
 		v := ogreflect.ValueOf(val)
-		encodeValueToJSON(v, &EncodingContext{Buffer: b.b, KeyCasing: KeyCasingCamelCase})
+		encodeValueToJSON(v, &EncodingContext{Buffer: buf.b, KeyCasing: KeyCasingCamelCase})
 		return nil
 	}, nil
+}
+
+func compileDiscriminator(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+	discriminatorKey := "type"
+	encoders := []encoder{}
+	offsetsToCheck := []uintptr{}
+	fallbackSet := false
+	fallback := buffer{b: []byte{}}
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		if field.Name == "DiscriminatorKey" {
+			keyName := field.Tag.Get("discriminatorKey")
+			if len(keyName) > 0 {
+				discriminatorKey = keyName
+			}
+			continue
+		}
+		discriminatorValue := strings.TrimSpace(field.Tag.Get("discriminator"))
+		ctx.discriminatorKey = discriminatorKey
+		ctx.discriminatorValue = discriminatorValue
+		enc, err := compile(field.Type.Elem(), ctx)
+		if err != nil {
+			return nil, err
+		}
+		if !fallbackSet {
+			// 	fallbackValue := reflect.Zero(field.Type.Elem()).Interface()
+			// 	fmt.Println("FALLBACK_VAL", fallbackValue)
+			// 	fmt.Println("FALLBACK_ADDR", &fallbackValue)
+			// 	err := enc(&fallback, unsafe.Pointer(&fallbackValue))
+			// 	if err != nil {
+			// 		return nil, err
+			// 	}
+			// 	fallbackSet = true
+		}
+		offset := field.Offset
+		offsetsToCheck = append(offsetsToCheck, offset)
+		encoders = append(encoders, enc)
+		ctx.discriminatorKey = ""
+		ctx.discriminatorValue = ""
+	}
+	return func(buf *buffer, p unsafe.Pointer) error {
+		innerPtr, enc := getDiscriminatorEncoder(p, encoders, offsetsToCheck)
+		if innerPtr == nil && enc == nil {
+			buf.b = append(buf.b, fallback.b...)
+			return nil
+		}
+		return enc(buf, innerPtr)
+	}, nil
+}
+
+func getDiscriminatorEncoder(p unsafe.Pointer, encoders []encoder, offsetsToCheck []uintptr) (unsafe.Pointer, encoder) {
+	for i := 0; i < len(offsetsToCheck); i++ {
+		offset := offsetsToCheck[i]
+		innerPtr := unsafe.Pointer(uintptr(p) + offset)
+		if innerPtr != nil {
+			return innerPtr, encoders[i]
+		}
+	}
+	panic("invalid discriminator")
+}
+
+func isDiscriminatorStructV2(typ reflect.Type, ctx compileEncoderCtx) bool {
+	kind := typ.Kind()
+	if kind != reflect.Struct {
+		return false
+	}
+	fieldLen := typ.NumField()
+	for i := 0; i < fieldLen; i++ {
+		field := typ.Field(i)
+		if field.Name == "DiscriminatorKey" {
+			continue
+		}
+		if field.Type.Kind() != reflect.Ptr {
+			return false
+		}
+		if field.Type.Elem().Kind() != reflect.Struct {
+			return false
+		}
+		if len(field.Tag.Get("discriminator")) == 0 {
+			return false
+		}
+	}
+	return true
 }

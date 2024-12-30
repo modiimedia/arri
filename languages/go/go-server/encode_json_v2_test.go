@@ -37,8 +37,8 @@ func BenchmarkEncodeJSONV2(b *testing.B) {
 	}
 }
 
-func BenchmarkEncodeUserV2(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		arri.EncodeJSONV2(_benchUserEncodingInput, options)
-	}
-}
+// func BenchmarkEncodeUserV2(b *testing.B) {
+// 	for i := 0; i < b.N; i++ {
+// 		arri.EncodeJSONV2(_benchUserEncodingInput, options)
+// 	}
+// }
