@@ -20,6 +20,24 @@ var encodeStatePool sync.Pool
 
 type encoder func(*buffer, unsafe.Pointer) error
 
+type EncodeState struct {
+	Bytes        []byte
+	SchemaPath   string
+	InstancePath string
+	CurrentDepth uint32
+	MaxDepth     uint32
+}
+
+func NewEncodeState() *EncodeState {
+	return &EncodeState{
+		Bytes:        []byte{},
+		SchemaPath:   "",
+		InstancePath: "",
+		CurrentDepth: 0,
+		MaxDepth:     5000,
+	}
+}
+
 var (
 	typeToEncoderMap sync.Map
 	bufpool          = sync.Pool{

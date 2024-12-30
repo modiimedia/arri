@@ -1,3 +1,3 @@
 module arri_go_playground
 
-go 1.22.5
+go 1.23.3
