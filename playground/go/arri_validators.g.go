@@ -5,10 +5,11 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func (_input_ *SayHelloParams) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) *arri.ValidationError {
+func (_input_ *SayHelloParams) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) {
 	if _data_.Type != gjson.JSON {
 		_err_ := arri.NewValidationError("expected object got "+_data_.Type.String(), _dc_.InstancePath, _dc_.SchemaPath)
-		return &_err_
+		_dc_.Errors = append(_dc_.Errors, _err_)
+		return
 	}
 
 	name := _data_.Get("name")
@@ -17,7 +18,7 @@ func (_input_ *SayHelloParams) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *ar
 	} else {
 		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expected string", _dc_.InstancePath+"/name", _dc_.SchemaPath+"/properties/name"))
 	}
-	return nil
+	return
 }
 
 func (_input_ SayHelloParams) CompiledEncodeJSON(_state_ *arri.EncodeState) error {
@@ -28,11 +29,11 @@ func (_input_ SayHelloParams) CompiledEncodeJSON(_state_ *arri.EncodeState) erro
 	return nil
 }
 
-func (_input_ *SayHelloResponse) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) *arri.ValidationError {
+func (_input_ *SayHelloResponse) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) {
 	if _data_.Type != gjson.JSON {
 		_err_ := arri.NewValidationError("expected object got "+_data_.Type.String(), _dc_.InstancePath, _dc_.SchemaPath)
 		_dc_.Errors = append(_dc_.Errors, _err_)
-		return &_err_
+		return
 	}
 	message := _data_.Get("message")
 	if message.Type == gjson.String {
@@ -40,7 +41,7 @@ func (_input_ *SayHelloResponse) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *
 	} else {
 		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expected string", _dc_.InstancePath+"/message", _dc_.SchemaPath+"/properties/message"))
 	}
-	return nil
+	return
 }
 
 func (_input_ SayHelloResponse) CompiledEncodeJSON(_state_ *arri.EncodeState) error {

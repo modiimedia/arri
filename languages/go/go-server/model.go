@@ -19,7 +19,7 @@ func IsArriModel(input ArriModel) bool {
 
 type CompiledArriModel interface {
 	CompiledEncodeJSON(state *EncodeState) error
-	CompiledDecodeJSON(data *gjson.Result, dc *DecoderContext) *ValidationError
+	CompiledDecodeJSON(data *gjson.Result, dc *DecoderContext)
 }
 
 func IsCompiledArriModel(input CompiledArriModel) bool {
@@ -38,13 +38,9 @@ func CompiledDecodeJSON(target CompiledArriModel, data []byte) *DecoderError {
 		EnumValues:   []string{},
 	}
 
-	err := target.CompiledDecodeJSON(&parsedData, &dc)
+	target.CompiledDecodeJSON(&parsedData, &dc)
 	if len(dc.Errors) > 0 {
 		finalErr := NewDecoderError(dc.Errors)
-		return &finalErr
-	}
-	if err != nil {
-		finalErr := NewDecoderError([]ValidationError{*err})
 		return &finalErr
 	}
 	return nil

@@ -56,6 +56,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	paramsName := getModelName(rpcName, params.Name(), "Params")
 	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
+		app.types[params] = true
 		paramsDefContext := newTypeDefContext(encodingOpts)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
 		if paramsSchemaErr != nil {
@@ -76,6 +77,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	responseName := getModelName(rpcName, response.Name(), "Response")
 	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
+		app.types[response] = true
 		responseDefContext := newTypeDefContext(encodingOpts)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {

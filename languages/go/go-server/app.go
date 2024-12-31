@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 )
 
 type App[TEvent Event] struct {
@@ -15,6 +16,7 @@ type App[TEvent Event] struct {
 	middleware           []Middleware[TEvent]
 	procedures           *OrderedMap[RpcDef]
 	definitions          *OrderedMap[TypeDef]
+	types                map[reflect.Type]bool
 }
 
 func (app *App[TEvent]) GetAppDefinition() AppDef {
@@ -62,11 +64,22 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 		case "def", "definition":
 			appDefCmd.Parse(os.Args[2:])
 			return appDefToFile(app.GetAppDefinition(), *appDefOutput, encodingOptions)
+		case "compile-validators":
+			return PrecompileDecoderAndEncoderFunctions(
+				app.types,
+				EncodingOptions{
+					KeyCasing: app.options.KeyCasing,
+					MaxDepth:  app.options.MaxDepth,
+				},
+			)
 		}
+		// this isn't needed when the server is running so we can clear it out
+		app.types = nil
 	}
 	if len(os.Args) > 1 {
 		flag.Parse()
 	}
+
 	if len(*defOutput) > 0 {
 		err := appDefToFile(app.GetAppDefinition(), *defOutput, encodingOptions)
 		if err != nil {
@@ -155,6 +168,7 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		middleware:           []Middleware[TEvent]{},
 		procedures:           &OrderedMap[RpcDef]{},
 		definitions:          &OrderedMap[TypeDef]{},
+		types:                map[reflect.Type]bool{},
 	}
 	defPath := app.options.RpcRoutePrefix + "/__definition"
 	encodingOptions := EncodingOptions{

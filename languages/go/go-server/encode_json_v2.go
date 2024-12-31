@@ -90,7 +90,7 @@ func EncodeJSONV2(input any, options EncodingOptions) ([]byte, error) {
 
 	// First time,
 	// builds a optimized path by type and caches it with typeID.
-	enc, err := compile(typ, compileEncoderCtx{})
+	enc, err := compileJSONEncoder(typ, compileEncoderCtx{})
 	if err != nil {
 		return nil, err
 	}
@@ -105,59 +105,59 @@ func EncodeJSONV2(input any, options EncodingOptions) ([]byte, error) {
 	return b, nil
 }
 
-func compile(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	switch typ.Kind() {
 	case reflect.String:
-		return compileString(typ)
+		return compileStringJSONEncoder(typ)
 	case reflect.Bool:
-		return compileBool(typ)
+		return compileBoolJSONEncoder(typ)
 	case reflect.Float32:
-		return compileFloat32(typ)
+		return compileFloat32JSONEncoder(typ)
 	case reflect.Float64:
-		return compileFloat64(typ)
+		return compileFloat64JSONEncoder(typ)
 	case reflect.Int8:
-		return compileInt8(typ)
+		return compileInt8JSONEncoder(typ)
 	case reflect.Uint8:
-		return compileUint8(typ)
+		return compileUint8JSONEncoder(typ)
 	case reflect.Int16:
-		return compileInt16(typ)
+		return compileInt16JSONEncoder(typ)
 	case reflect.Uint16:
-		return compileUint16(typ)
+		return compileUint16JSONEncoder(typ)
 	case reflect.Int32:
-		return compileInt32(typ)
+		return compileInt32JSONEncoder(typ)
 	case reflect.Uint32:
-		return compileUint32(typ)
+		return compileUint32JSONEncoder(typ)
 	case reflect.Int:
-		return compileInt(typ)
+		return compileIntJSONEncoder(typ)
 	case reflect.Int64:
-		return compileInt64(typ)
+		return compileInt64JSONEncoder(typ)
 	case reflect.Uint:
-		return compileUint(typ)
+		return compileUintJSONEncoder(typ)
 	case reflect.Uint64:
-		return compileUint64(typ)
+		return compileUint64JSONEncoder(typ)
 	case reflect.Struct:
 		if typ.Name() == "Time" {
-			return compileDateTime(typ, ctx)
+			return compileDateTimeJSONEncoder(typ, ctx)
 		}
 		if isDiscriminatorStructV2(typ, ctx) {
-			return compileDiscriminator(typ, ctx)
+			return compileDiscriminatorJSONEncoder(typ, ctx)
 		}
-		return compileStruct(typ, ctx)
+		return compileStructJSONEncoder(typ, ctx)
 	case reflect.Slice:
-		return compileSlice(typ, ctx)
+		return compileSliceJSONEncoder(typ, ctx)
 	case reflect.Array:
-		return compileArray(typ, ctx)
+		return compileArrayJSONEncoder(typ, ctx)
 	case reflect.Map:
-		return compileMap(typ, ctx)
+		return compileMapJSONEncoder(typ, ctx)
 	case reflect.Ptr:
-		return compilePtr(typ, ctx)
+		return compilePtrJSONEncoder(typ, ctx)
 	case reflect.Interface:
-		return compileAny(typ, ctx)
+		return compileAnyJSONEncoder(typ, ctx)
 	}
 	return nil, fmt.Errorf("unsupported type: %+v", typ)
 }
 
-func compileDateTime(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileDateTimeJSONEncoder(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*time.Time)(p)
 		output := value.Format("2006-01-02T15:04:05.000Z")
@@ -168,7 +168,7 @@ func compileDateTime(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compileString(_ reflect.Type) (encoder, error) {
+func compileStringJSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*string)(p)
 		buf.b = AppendNormalizedStringV2(buf.b, value)
@@ -176,7 +176,7 @@ func compileString(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileFloat32(_ reflect.Type) (encoder, error) {
+func compileFloat32JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*float32)(p)
 		buf.b = append(buf.b, strconv.FormatFloat(float64(value), 'f', -1, 64)...)
@@ -184,7 +184,7 @@ func compileFloat32(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileFloat64(_ reflect.Type) (encoder, error) {
+func compileFloat64JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*float64)(p)
 		buf.b = append(buf.b, strconv.FormatFloat(value, 'f', -1, 64)...)
@@ -192,7 +192,7 @@ func compileFloat64(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileInt8(_ reflect.Type) (encoder, error) {
+func compileInt8JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int8)(p)
 		buf.b = strconv.AppendInt(buf.b, int64(value), 10)
@@ -200,7 +200,7 @@ func compileInt8(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileUint8(_ reflect.Type) (encoder, error) {
+func compileUint8JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*uint8)(p)
 		buf.b = strconv.AppendUint(buf.b, uint64(value), 10)
@@ -208,7 +208,7 @@ func compileUint8(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileInt16(_ reflect.Type) (encoder, error) {
+func compileInt16JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int16)(p)
 		buf.b = strconv.AppendInt(buf.b, int64(value), 10)
@@ -216,7 +216,7 @@ func compileInt16(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileUint16(_ reflect.Type) (encoder, error) {
+func compileUint16JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int16)(p)
 		buf.b = strconv.AppendUint(buf.b, uint64(value), 10)
@@ -224,7 +224,7 @@ func compileUint16(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileInt32(_ reflect.Type) (encoder, error) {
+func compileInt32JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int32)(p)
 		buf.b = strconv.AppendInt(buf.b, int64(value), 10)
@@ -232,7 +232,7 @@ func compileInt32(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileUint32(_ reflect.Type) (encoder, error) {
+func compileUint32JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int32)(p)
 		buf.b = strconv.AppendUint(buf.b, uint64(value), 10)
@@ -240,7 +240,7 @@ func compileUint32(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileInt(_ reflect.Type) (encoder, error) {
+func compileIntJSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int)(p)
 		buf.b = append(buf.b, '"')
@@ -250,7 +250,7 @@ func compileInt(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileUint(_ reflect.Type) (encoder, error) {
+func compileUintJSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*uint)(p)
 		buf.b = append(buf.b, '"')
@@ -260,7 +260,7 @@ func compileUint(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileInt64(_ reflect.Type) (encoder, error) {
+func compileInt64JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*int64)(p)
 		buf.b = append(buf.b, '"')
@@ -270,7 +270,7 @@ func compileInt64(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileUint64(_ reflect.Type) (encoder, error) {
+func compileUint64JSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*uint64)(p)
 		buf.b = append(buf.b, '"')
@@ -280,7 +280,7 @@ func compileUint64(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileBool(_ reflect.Type) (encoder, error) {
+func compileBoolJSONEncoder(_ reflect.Type) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		value := *(*bool)(p)
 		buf.b = strconv.AppendBool(buf.b, value)
@@ -288,12 +288,12 @@ func compileBool(_ reflect.Type) (encoder, error) {
 	}, nil
 }
 
-func compileStruct(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileStructJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	encoders := []encoder{}
 	hasDiscriminator := len(ctx.discriminatorKey) > 0 && len(ctx.discriminatorValue) > 0
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		enc, err := compile(field.Type, ctx)
+		enc, err := compileJSONEncoder(field.Type, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -325,9 +325,9 @@ func compileStruct(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compileSlice(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileSliceJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	el := typ.Elem()
-	elEncoder, err := compile(el, ctx)
+	elEncoder, err := compileJSONEncoder(el, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -346,9 +346,9 @@ func compileSlice(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compileArray(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileArrayJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	el := typ.Elem()
-	elEncoder, err := compile(el, ctx)
+	elEncoder, err := compileJSONEncoder(el, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -370,12 +370,12 @@ func compileArray(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compileMap(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileMapJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	if typ.Key().Kind() != reflect.String {
 		return nil, fmt.Errorf("only string keys are supported in maps")
 	}
 	el := typ.Elem()
-	elEncoder, err := compile(el, ctx)
+	elEncoder, err := compileJSONEncoder(el, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -407,9 +407,9 @@ func compileMap(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compilePtr(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compilePtrJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	el := typ.Elem()
-	elEncoder, err := compile(el, ctx)
+	elEncoder, err := compileJSONEncoder(el, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +429,7 @@ func compilePtr(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compileAny(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileAnyJSONEncoder(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	return func(buf *buffer, p unsafe.Pointer) error {
 		// return nil
 		val := (*any)(p)
@@ -440,7 +440,7 @@ func compileAny(_ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	}, nil
 }
 
-func compileDiscriminator(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
+func compileDiscriminatorJSONEncoder(typ reflect.Type, ctx compileEncoderCtx) (encoder, error) {
 	discriminatorKey := "type"
 	encoders := []encoder{}
 	offsetsToCheck := []uintptr{}
@@ -458,7 +458,7 @@ func compileDiscriminator(typ reflect.Type, ctx compileEncoderCtx) (encoder, err
 		discriminatorValue := strings.TrimSpace(field.Tag.Get("discriminator"))
 		ctx.discriminatorKey = discriminatorKey
 		ctx.discriminatorValue = discriminatorValue
-		enc, err := compile(field.Type.Elem(), ctx)
+		enc, err := compileJSONEncoder(field.Type.Elem(), ctx)
 		if err != nil {
 			return nil, err
 		}

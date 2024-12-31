@@ -7,7 +7,7 @@ import (
 	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
-var json = []byte("{\"id\":\"12345\",\"name\":\"John Doe\"}")
+var json = []byte("{\"id\":\"12345\",\"name\":\"John Doe\",\"settings\":{\"prefersDarkMode\":false}}")
 
 func BenchmarkUserDecodeJSON(b *testing.B) {
 	for i := 0; i < b.N; i++ {
