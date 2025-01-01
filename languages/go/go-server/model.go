@@ -30,7 +30,7 @@ func CompiledDecodeJSON(target CompiledArriModel, data []byte) *DecoderError {
 	parsedData := gjson.ParseBytes(data)
 	dc := DecoderContext{
 		MaxDepth:     5000,
-		CurrentDepth: 0,
+		Depth:        0,
 		SchemaPath:   "",
 		InstancePath: "",
 		KeyCasing:    KeyCasingCamelCase,

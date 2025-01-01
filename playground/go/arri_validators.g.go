@@ -1,3 +1,4 @@
+// cspell:disable
 package main
 
 import (
@@ -6,49 +7,52 @@ import (
 )
 
 func (_input_ *SayHelloParams) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) {
-	if _data_.Type != gjson.JSON {
-		_err_ := arri.NewValidationError("expected object got "+_data_.Type.String(), _dc_.InstancePath, _dc_.SchemaPath)
-		_dc_.Errors = append(_dc_.Errors, _err_)
+	if _dc_.Depth > _dc_.MaxDepth {
+		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("exceeded max depth", _dc_.InstancePath, _dc_.SchemaPath))
 		return
 	}
-
-	name := _data_.Get("name")
-	if name.Type == gjson.String {
-		_input_.Name = name.String()
+	_depth_ := _dc_.Depth
+	_instancePath_ := _dc_.InstancePath
+	_schemaPath_ := _dc_.SchemaPath
+	_Name_ := _data_.Get("name")
+	if _Name_.Type == gjson.String {
+		_input_.Name = _Name_.String()
 	} else {
-		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expected string", _dc_.InstancePath+"/name", _dc_.SchemaPath+"/properties/name"))
+		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expected string", _dc_.InstancePath, _dc_.SchemaPath))
 	}
-	return
+
+	_dc_.Depth = _depth_
+	_dc_.InstancePath = _instancePath_
+	_dc_.SchemaPath = _schemaPath_
 }
 
 func (_input_ SayHelloParams) CompiledEncodeJSON(_state_ *arri.EncodeState) error {
-	_state_.Bytes = append(_state_.Bytes, '{')
-	_state_.Bytes = append(_state_.Bytes, "\"name\":"...)
 	_state_.Bytes = arri.AppendNormalizedStringV2(_state_.Bytes, _input_.Name)
-	_state_.Bytes = append(_state_.Bytes, '}')
 	return nil
 }
 
 func (_input_ *SayHelloResponse) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) {
-	if _data_.Type != gjson.JSON {
-		_err_ := arri.NewValidationError("expected object got "+_data_.Type.String(), _dc_.InstancePath, _dc_.SchemaPath)
-		_dc_.Errors = append(_dc_.Errors, _err_)
+	if _dc_.Depth > _dc_.MaxDepth {
+		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("exceeded max depth", _dc_.InstancePath, _dc_.SchemaPath))
 		return
 	}
-	message := _data_.Get("message")
-	if message.Type == gjson.String {
-		_input_.Message = message.String()
+	_depth_ := _dc_.Depth
+	_instancePath_ := _dc_.InstancePath
+	_schemaPath_ := _dc_.SchemaPath
+	_Message_ := _data_.Get("message")
+	if _Message_.Type == gjson.String {
+		_input_.Message = _Message_.String()
 	} else {
-		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expected string", _dc_.InstancePath+"/message", _dc_.SchemaPath+"/properties/message"))
+		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expected string", _dc_.InstancePath, _dc_.SchemaPath))
 	}
-	return
+
+	_dc_.Depth = _depth_
+	_dc_.InstancePath = _instancePath_
+	_dc_.SchemaPath = _schemaPath_
 }
 
 func (_input_ SayHelloResponse) CompiledEncodeJSON(_state_ *arri.EncodeState) error {
-	_state_.Bytes = append(_state_.Bytes, '{')
-	_state_.Bytes = append(_state_.Bytes, "\"message\":"...)
 	_state_.Bytes = arri.AppendNormalizedStringV2(_state_.Bytes, _input_.Message)
-	_state_.Bytes = append(_state_.Bytes, '}')
 	return nil
 }
 

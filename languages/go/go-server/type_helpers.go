@@ -340,7 +340,7 @@ func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, dc *
 	instancePath := dc.InstancePath
 	schemaPath := dc.SchemaPath
 	dc.SchemaPath = dc.SchemaPath + "/values"
-	dc.CurrentDepth++
+	dc.Depth++
 	for key, value := range gjsonMap {
 		valueTarget := reflect.New(reflect.TypeFor[T]())
 		dc.InstancePath = instancePath + "/" + key
@@ -353,7 +353,7 @@ func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, dc *
 	}
 	dc.InstancePath = instancePath
 	dc.SchemaPath = schemaPath
-	dc.CurrentDepth--
+	dc.Depth--
 	result := OrderedMap[T]{
 		keys:   keysResult,
 		values: valuesResult,

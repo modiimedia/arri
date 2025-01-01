@@ -68,8 +68,8 @@ func NewValidationError(message string, instancePath string, schemaPath string) 
 }
 
 type DecoderContext struct {
+	Depth        uint32
 	MaxDepth     uint32
-	CurrentDepth uint32
 	InstancePath string
 	SchemaPath   string
 	EnumValues   []string
@@ -77,14 +77,14 @@ type DecoderContext struct {
 	Errors       []ValidationError
 }
 
-func (c DecoderContext) copyWith(CurrentDepth Option[uint32], EnumValues Option[[]string], InstancePath Option[string], SchemaPath Option[string]) DecoderContext {
-	currentDepth := CurrentDepth.UnwrapOr(c.CurrentDepth)
+func (c DecoderContext) copyWith(Depth Option[uint32], EnumValues Option[[]string], InstancePath Option[string], SchemaPath Option[string]) DecoderContext {
+	currentDepth := Depth.UnwrapOr(c.Depth)
 	enumValues := EnumValues.UnwrapOr(c.EnumValues)
 	instancePath := InstancePath.UnwrapOr(c.InstancePath)
 	schemaPath := SchemaPath.UnwrapOr(c.SchemaPath)
 	return DecoderContext{
 		MaxDepth:     c.MaxDepth,
-		CurrentDepth: currentDepth,
+		Depth:        currentDepth,
 		EnumValues:   enumValues,
 		InstancePath: instancePath,
 		SchemaPath:   schemaPath,
@@ -141,7 +141,7 @@ func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError
 }
 
 func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
-	if context.CurrentDepth > context.MaxDepth {
+	if context.Depth > context.MaxDepth {
 		context.Errors = append(
 			context.Errors,
 			NewValidationError(
@@ -555,7 +555,7 @@ func arrayFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCon
 	for i := 0; i < numItems; i++ {
 		element := json[i]
 		subTarget := target.Index(i)
-		ctx := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), Some(context.InstancePath+"/"+fmt.Sprint(i)), Some(context.SchemaPath+"/elements"))
+		ctx := context.copyWith(Some(context.Depth+1), None[[]string](), Some(context.InstancePath+"/"+fmt.Sprint(i)), Some(context.SchemaPath+"/elements"))
 		success := typeFromJSON(&element, subTarget, &ctx)
 		if !success {
 			hasErr = true
@@ -587,7 +587,7 @@ func mapFromJSON(data *gjson.Result, target reflect.Value, context *DecoderConte
 		keyVal := reflect.ValueOf(key)
 		v := reflect.New(target.Type().Elem())
 		innerTarget := v
-		innerContext := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), Some(context.InstancePath+"/"+key), Some(context.SchemaPath+"/values"))
+		innerContext := context.copyWith(Some(context.Depth+1), None[[]string](), Some(context.InstancePath+"/"+key), Some(context.SchemaPath+"/values"))
 		success := typeFromJSON(&value, innerTarget, &innerContext)
 		if !success {
 			hasError = true
@@ -649,7 +649,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
 			ctx := c.copyWith(
-				Some(c.CurrentDepth+1),
+				Some(c.Depth+1),
 				enumValues,
 				Some(c.InstancePath+"/"+fieldName),
 				Some(c.SchemaPath+"/optionalProperties/"+fieldName),
@@ -661,7 +661,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 			continue
 		}
 		ctx := c.copyWith(
-			Some(c.CurrentDepth+1),
+			Some(c.Depth+1),
 			enumValues,
 			Some(c.InstancePath+"/"+fieldName),
 			Some(c.SchemaPath+"/properties/"+fieldName),
@@ -762,7 +762,7 @@ func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, conte
 			continue
 		}
 		innerTarget := reflect.New(field.Type().Elem())
-		ctx := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), None[string](), Some(context.SchemaPath+"/mapping/"+discriminatorValue))
+		ctx := context.copyWith(Some(context.Depth+1), None[[]string](), None[string](), Some(context.SchemaPath+"/mapping/"+discriminatorValue))
 		typeFromJSON(data, innerTarget, &ctx)
 		field.Set(innerTarget)
 		return true

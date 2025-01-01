@@ -55,6 +55,10 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 	defOutput := flag.String("def-out", "", "definition-out")
 	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
 	appDefOutput := appDefCmd.String("output", "__definition.json", "output")
+
+	compileValidatorCmd := flag.NewFlagSet("compile-validators", flag.ExitOnError)
+	compileValidatorOutput := compileValidatorCmd.String("dir", ".", "dir")
+
 	encodingOptions := EncodingOptions{
 		KeyCasing: app.options.KeyCasing,
 		MaxDepth:  app.options.MaxDepth,
@@ -65,7 +69,9 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 			appDefCmd.Parse(os.Args[2:])
 			return appDefToFile(app.GetAppDefinition(), *appDefOutput, encodingOptions)
 		case "compile-validators":
+			compileValidatorCmd.Parse(os.Args[2:])
 			return PrecompileDecoderAndEncoderFunctions(
+				*compileValidatorOutput,
 				app.types,
 				EncodingOptions{
 					KeyCasing: app.options.KeyCasing,
@@ -306,7 +312,9 @@ func RegisterDef[TEvent Event](app *App[TEvent], input any, options DefOptions) 
 		KeyCasing: app.options.KeyCasing,
 		MaxDepth:  app.options.MaxDepth,
 	}
-	def, err := ToTypeDef(input, encodingOpts)
+	t := reflect.TypeOf(input)
+	ctx := newTypeDefContext(encodingOpts)
+	def, err := typeToTypeDef(t, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -320,4 +328,5 @@ func RegisterDef[TEvent Event](app *App[TEvent], input any, options DefOptions) 
 		def.Metadata.Value.Description = Some(options.Description)
 	}
 	app.definitions.Set(def.Metadata.Unwrap().Id.Unwrap(), *def)
+	app.types[t] = true
 }

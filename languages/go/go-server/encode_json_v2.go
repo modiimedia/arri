@@ -50,8 +50,8 @@ var (
 )
 
 type buffer struct {
-	b            []byte
-	currentDepth uint32
+	b     []byte
+	depth uint32
 }
 
 type compileEncoderCtx struct {

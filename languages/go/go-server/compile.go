@@ -2,6 +2,8 @@ package arri
 
 import (
 	"fmt"
+	"go/format"
+	"os"
 	"reflect"
 	"strings"
 
@@ -15,28 +17,51 @@ type CompilerCxt struct {
 	CompiledTypes map[reflect.Type]GoType
 	MaxDepth      uint32
 	Depth         uint32
-	Imports       []string
+	Imports       map[string]bool
 	EnumValues    map[string][]string
 }
 
 type GoType struct {
 	TypeName           string
+	PackagePath        string
 	EncodeJSONTemplate func(input string, target string) string
 	DecodeJSONTemplate func(input string, target string, context string, isOptional bool, isNullable bool) string
 	Content            string
 }
 
-func PrecompileDecoderAndEncoderFunctions(types map[reflect.Type]bool, options EncodingOptions) error {
+func CleanedPackageName(pkgPath string) string {
+	if strings.Contains(pkgPath, ".") {
+		return ""
+	}
+	if strings.Contains(pkgPath, "/") {
+		parts := strings.Split(pkgPath, "/")
+		parts = parts[1:]
+		return strings.Join(parts, "/")
+	}
+	return pkgPath
+}
+
+func PrecompileDecoderAndEncoderFunctions(
+	dir string,
+	types map[reflect.Type]bool,
+	options EncodingOptions,
+) error {
+	pkgs, err := GetPackages(dir)
+	fmt.Println("PACKAGES", pkgs)
+	if err != nil {
+		return err
+	}
 	ctx := CompilerCxt{
 		Depth:         0,
 		MaxDepth:      options.MaxDepth,
 		KeyCasing:     options.KeyCasing,
 		CompiledTypes: map[reflect.Type]GoType{},
-		Imports:       []string{},
+		Imports:       map[string]bool{},
 		EnumValues:    map[string][]string{},
 	}
+	ctx.Imports["\"github.com/tidwall/gjson\""] = true
+	ctx.Imports["arri \"github.com/modiimedia/arri/languages/go/go-server\""] = true
 	for t := range types {
-		fmt.Println("COMPILING", t)
 		ctx.Depth = 0
 		ctx.EnumValues = map[string][]string{}
 		_, err := compileType(t, ctx)
@@ -44,11 +69,65 @@ func PrecompileDecoderAndEncoderFunctions(types map[reflect.Type]bool, options E
 			return err
 		}
 	}
+	fileContents := map[string]string{}
+	fileContentTests := map[string][]string{}
+	for t, v := range ctx.CompiledTypes {
+		if len(v.Content) == 0 {
+			continue
+		}
+		cleanedName := CleanedPackageName(v.PackagePath)
+		dirName, ok := pkgs[cleanedName]
+		if !ok {
+			continue
+		}
+		fileName := dirName + "/arri_validators.g.go"
+		fmt.Println("TYPE", t, "DIRNAME", dirName, "FILENAME", fileName)
+		_, ok = fileContents[fileName]
+		if !ok {
+			content := "// cspell:disable\npackage " + cleanedName + "\n\n"
+			content += "import (\n"
+			for k, v := range ctx.Imports {
+				if !v {
+					continue
+				}
+				content += "    " + k + "\n"
+			}
+			content += ")\n\n"
+			fileContents[fileName] = content
+			fileContentTests[fileName] = []string{}
+		}
+		fileContents[fileName] += v.Content
+		fmt.Println(fileContents[fileName])
+		if t.Kind() == reflect.Struct {
+			fileContentTests[fileName] = append(fileContentTests[fileName], "arri.IsCompiledArriModel(&"+v.TypeName+"{})")
+		}
+	}
 
-	for k, v := range ctx.CompiledTypes {
-		if len(v.Content) > 0 {
-			fmt.Println("TYPE", k.Name())
-			fmt.Println(v.Content)
+	for k, v := range fileContents {
+		fmt.Println("FILE_NAME", k)
+		file, err := os.Create(k)
+		if err != nil {
+			return err
+		}
+		content := v
+		content += "func TestIsCompiledArriModel() {\n"
+		for _, testContent := range fileContentTests[k] {
+			content += "    " + testContent + "\n"
+		}
+		content += "}"
+		formattedContent, err := format.Source([]byte(content))
+		if err != nil {
+			// _, _ = file.WriteString(content)
+			// return nil
+			os.Remove(file.Name())
+			return err
+		}
+		if len(formattedContent) == 0 {
+			continue
+		}
+		_, err = file.Write(formattedContent)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -101,9 +180,10 @@ func compileType(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 
 func compileString(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	result := GoType{
-		TypeName: "string",
+		TypeName:    "string",
+		PackagePath: t.PkgPath(),
 		EncodeJSONTemplate: func(input string, target string) string {
-			return fmt.Sprintf("%s = arri.AppendNormalizedStringV2(%s, %s)", target, target, input)
+			return fmt.Sprintf("%s.Bytes = arri.AppendNormalizedStringV2(%s.Bytes, %s)", target, target, input)
 		},
 		DecodeJSONTemplate: func(input string, target string, context string, isOptional, isNullable bool) string {
 			if isOptional && isNullable {
@@ -119,9 +199,9 @@ func compileString(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                 } else if %s.Type == gjson.Null {
                     // do nothing 
                 } else {
-                    %s.Errors = append(%s.Errors, arri.NewValidationError("expected string or null", %s)) 
+                    %s.Errors = append(%s.Errors, arri.NewValidationError("expected string or null", %s.InstancePath, %s.SchemaPath)) 
                 }`,
-					input, target, input, input, context, context, context,
+					input, target, input, input, context, context, context, context,
 				)
 			}
 			if isOptional {
@@ -132,9 +212,9 @@ func compileString(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 			return fmt.Sprintf(`if %s.Type == gjson.String {
                 %s = %s.String()
             } else {
-                %s.Errors = append(%s.Errors, arri.NewValidationError("expected string", %s)) 
+                %s.Errors = append(%s.Errors, arri.NewValidationError("expected string", %s.InstancePath, %s.SchemaPath)) 
             }`,
-				input, target, input, context, context, context,
+				input, target, input, context, context, context, context,
 			)
 		},
 		Content: "",
@@ -145,9 +225,10 @@ func compileString(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 
 func compileBool(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	result := GoType{
-		TypeName: "bool",
+		TypeName:    "bool",
+		PackagePath: t.PkgPath(),
 		EncodeJSONTemplate: func(input, target string) string {
-			output := fmt.Sprintf(`%s = strconv.AppendBool(%s, %s)`, target, target, input)
+			output := fmt.Sprintf(`%s.Bytes = strconv.AppendBool(%s.Bytes, %s)`, target, target, input)
 			return output
 		},
 		DecodeJSONTemplate: func(input, target, context string, isOptional, isNullable bool) string {
@@ -168,8 +249,8 @@ func compileBool(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                 } else if %s.Type == gjson.Null {
                     // do nothing 
                 } else {
-                    %s.Errors = append(%s.Errors, arri.NewValidationError("expected bool or null", %s))
-                }`, input, target, input, target, input, context, context, context)
+                    %s.Errors = append(%s.Errors, arri.NewValidationError("expected bool or null", %s.InstancePath, %s.SchemaPath))
+                }`, input, target, input, target, input, context, context, context, context)
 
 			}
 			if isOptional {
@@ -181,25 +262,27 @@ func compileBool(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 			}
 			return fmt.Sprintf(`if %s.Type == gjson.True {
                 %s = true
-            } else if %s.Type. == gjson.False {
+            } else if %s.Type == gjson.False {
                 %s = false 
             } else {
-                %s.Errors = append(%s.Errors, arri.NewValidationError("expected bool", %s))
-            }`, input, target, input, target, context, context, context)
+                %s.Errors = append(%s.Errors, arri.NewValidationError("expected bool", %s.InstancePath, %s.SchemaPath))
+            }`, input, target, input, target, context, context, context, context)
 		},
 		Content: "",
 	}
 	ctx.CompiledTypes[t] = result
+	ctx.Imports["\"strconv\""] = true
 	return result, nil
 }
 
 func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	output := GoType{
-		TypeName: "time.Time",
+		TypeName:    "time.Time",
+		PackagePath: t.PkgPath(),
 		EncodeJSONTemplate: func(input, target string) string {
-			return fmt.Sprintf(`%s = append(%s, '"')
-            %s = append(%s, %s.Format("2006-01-02T15:04:05.000Z")...)
-            %s = append(%s, '"')`, target, target, target, target, input, target, target)
+			return fmt.Sprintf(`%s.Bytes = append(%s.Bytes, '"')
+            %s.Bytes = append(%s.Bytes, %s.Format("2006-01-02T15:04:05.000Z")...)
+            %s.Bytes = append(%s.Bytes, '"')`, target, target, target, target, input, target, target)
 		},
 		DecodeJSONTemplate: func(input, target, context string, isOptional, isNullable bool) string {
 			if isOptional && isNullable {
@@ -210,7 +293,8 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                             %s.Errors,
                             arri.NewValidationError(
                                 _err_.Error(),
-                                %s,
+                                %s.InstancePath,
+								%s.SchemaPath,
                             ),
                         )
                     } else {
@@ -218,7 +302,7 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                     }
                 } else if %s.Type == gjson.Null {
                     %s.Set(arri.Null[time.Time]()) 
-                }`, input, input, context, context, context, target, input, target)
+                }`, input, input, context, context, context, context, target, input, target)
 			}
 			if isNullable {
 				return fmt.Sprintf(`if %s.Type == gjson.String {
@@ -228,7 +312,8 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                             %s.Errors,
                             arri.NewValidationError(
                                 _err_.Error(),
-                                %s,
+                                %s.InstancePath,
+								%s.SchemaPath,
                             )
                         )
                     } else {
@@ -239,10 +324,10 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                 } else {
                     %s.Errors = append(
                         %s.Errors,
-                        arri.NewValidationError("expected RFC3339 date-time string or null", %s)
+                        arri.NewValidationError("expected RFC3339 date-time string or null", %s.InstancePath, %s.SchemaPath)
                     )
                 }`,
-					input, input, context, context, context, target, input, context, context, context)
+					input, input, context, context, context, context, target, input, context, context, context, context)
 			}
 			if isOptional {
 				return fmt.Sprintf(`if %s.Type == gjson.String {
@@ -252,13 +337,14 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                             %s.Errors,
                             arri.NewValidationError(
                                 _err_.Error(),
-                                %s,
+                                %s.InstancePath,
+								%s.SchemaPath,
                             )
                         )
                     } else {
                         %s.Set(_value_) 
                     }
-                }`, input, input, context, context, context, target)
+                }`, input, input, context, context, context, context, target)
 			}
 			return fmt.Sprintf(`if %s.Type == gjson.String {
                 _value_, _err_ := time.ParseInLocation(time.RFC3339, %s.String(), time.UTC)
@@ -267,7 +353,8 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
                         %s.Errors,
                         arri.NewValidationError(
                             _err_.Error(),
-                            %s,
+                            %s.InstancePath,
+							%s.SchemaPath,
                         )
                     )
                 } else {
@@ -276,13 +363,14 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
             } else {
                 %s.Errors = append(
                     %s.Errors,
-                    arri.NewValidationError("expected RFC3339 date time string", %s),
+                    arri.NewValidationError("expected RFC3339 date time string", %s.InstancePath, %s.SchemaPath),
                 ) 
-            }`, input, input, context, context, context, target, context, context, context)
+            }`, input, input, context, context, context, context, target, context, context, context, context)
 		},
 		Content: "",
 	}
 	ctx.CompiledTypes[t] = output
+	ctx.Imports["\"time\""] = true
 	return output, nil
 }
 
@@ -292,7 +380,8 @@ func compileOption(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		return GoType{}, nil
 	}
 	output := GoType{
-		TypeName: "arri.Option[" + innerType.TypeName + "]",
+		TypeName:    "arri.Option[" + innerType.TypeName + "]",
+		PackagePath: t.PkgPath(),
 		EncodeJSONTemplate: func(input, target string) string {
 			return innerType.EncodeJSONTemplate(
 				fmt.Sprintf("%s.Unwrap()", input),
@@ -317,13 +406,16 @@ func compileNullable(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		return GoType{}, err
 	}
 	output := GoType{
-		TypeName: "arri.Nullable[" + innerType.TypeName + "]",
+		TypeName:    "arri.Nullable[" + innerType.TypeName + "]",
+		PackagePath: t.PkgPath(),
 		EncodeJSONTemplate: func(input, target string) string {
 			return fmt.Sprintf(`if %s.IsNull() {
-                %s = append(%s, "null"...)  
+                %s.Bytes = append(%s.Bytes, "null"...)  
             } else {
                 %s 
             }`,
+				input,
+				target,
 				input,
 				innerType.EncodeJSONTemplate(
 					fmt.Sprintf("%s.Unwrap()", input),
@@ -344,15 +436,17 @@ func removeChars(s string, illegalChars string) string {
 	chars := strings.Split(illegalChars, "")
 	for i := 0; i < len(chars); i++ {
 		char := chars[i]
-		strings.ReplaceAll(output, char, "")
+		output = strings.ReplaceAll(output, char, "")
 	}
 	return output
 }
 
+var illegalChars = "!@#$%^&*()-+=`~;:'\\\",.<>/?"
+
 func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	decodeJSONParts := []string{}
 	encodeJSONParts := []string{}
-	currentDepth := ctx.Depth
+	depth := ctx.Depth
 	_ = ctx.EnumValues
 	instancePath := ctx.InstancePath
 	schemaPath := ctx.SchemaPath
@@ -363,7 +457,7 @@ func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		}
 		isOptionalField := utils.IsOptionalType(field.Type)
 		serialKey := utils.GetSerialKey(&field, ctx.KeyCasing)
-		ctx.Depth = currentDepth + 1
+		ctx.Depth = depth + 1
 		ctx.InstancePath = instancePath + "/" + serialKey
 		if isOptionalField {
 			ctx.SchemaPath = schemaPath + "/optionalProperties/" + serialKey
@@ -374,11 +468,12 @@ func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		if err != nil {
 			return GoType{}, err
 		}
-		decodeJSONParts = append(decodeJSONParts, field.Name+":= _data_.Get(\""+serialKey+"\")")
+		tempDataVar := "_" + field.Name + "_"
+		decodeJSONParts = append(decodeJSONParts, tempDataVar+":= _data_.Get(\""+serialKey+"\")")
 		decodeJSONParts = append(
 			decodeJSONParts,
 			innerType.DecodeJSONTemplate(
-				field.Name,
+				tempDataVar,
 				"_input_."+field.Name,
 				"_dc_",
 				false,
@@ -394,39 +489,71 @@ func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		}
 	}
 
-	decodeFnName := removeChars(
-		"__compileDecodeJSON"+t.PkgPath()+t.Name(),
-		"&!@#$%^&*()-+=[]{};:\"'<>,.?/`~",
-	)
-
 	decodeJSONFnBody := fmt.Sprintf(`func (_input_ *%s) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) {
-    if _dc_.CurrentDepth > _dc_.MaxDepth {
-        _dc_.Errors = append(_dc_.Errors, arri.NewValidationError("exceeded max depth", _dc_))
+    if _dc_.Depth > _dc_.MaxDepth {
+        _dc_.Errors = append(_dc_.Errors, arri.NewValidationError("exceeded max depth", _dc_.InstancePath, _dc_.SchemaPath))
         return
     }
-    currentDepth := _dc_.CurrentDepth
-    instancePath := _dc_.InstancePath
-    schemaPath := _dc_.SchemaPath
+    _depth_ := _dc_.Depth
+    _instancePath_ := _dc_.InstancePath
+    _schemaPath_ := _dc_.SchemaPath
     %s
+
+	_dc_.Depth = _depth_
+	_dc_.InstancePath = _instancePath_
+	_dc_.SchemaPath = _schemaPath_
 }`, t.Name(), strings.Join(decodeJSONParts, "\n"))
 
 	encodeJSONFnBody := fmt.Sprintf(`func (_input_ %s) CompiledEncodeJSON(_state_ *arri.EncodeState) error {
     %s
     return nil
 }`, t.Name(), strings.Join(encodeJSONParts, "\n"))
-
+	tempDataName := "_" + removeChars(ctx.InstancePath, illegalChars) + "Data_"
 	output := GoType{
-		TypeName: t.Name(),
+		TypeName:    t.Name(),
+		PackagePath: t.PkgPath(),
 		EncodeJSONTemplate: func(input, target string) string {
-			return fmt.Sprintf("%s.EncodeJSON(_state_)", input)
+			return fmt.Sprintf("%s.CompiledEncodeJSON(_state_)", input)
 		},
 		DecodeJSONTemplate: func(input, target, context string, isOptional, isNullable bool) string {
-			return fmt.Sprintf("%s = %s(%s, %s)", target, decodeFnName, input, context)
+			if isOptional && isNullable {
+				return fmt.Sprintf(`if %s.Type == gjson.JSON {
+					%s := %s{}
+					%s.CompiledDecodeJSON(&%s, %s),
+					%s.Set(arri.NotNull(%s))
+				} else if %s.Type == gjson.Null {
+					%s.Set(arri.Null[%s]()) 
+				}`, input, tempDataName, t.Name(), tempDataName, input, context, target, tempDataName, input, target, t.Name())
+			}
+			if isNullable {
+				return fmt.Sprintf(`if %s.Type == gjson.JSON {
+					%s := %s{}
+					%s.CompiledDecodeJSON(&%s, %s)
+					%s.Set(%s)
+				} else if %s.Type == gjson.Null {
+					// do nothing 
+				} else {
+					%s.Errors = append(%s.Errors, arri.NewValidationError("expected object or null", %s.InstancePath, %s.SchemaPath)) 
+				}`,
+					input, tempDataName, t.Name(), tempDataName, input, context, target, tempDataName, input, context, context, context, context)
+			}
+			if isOptional {
+				return fmt.Sprintf(`if %s.Type == gjson.JSON {
+					%s := %s{}
+					%s.CompiledDecodeJSON(&%s, %s)
+					%s.Set(%s)
+				}`, input, tempDataName, t.Name(), tempDataName, t.Name(), context, input, tempDataName)
+			}
+			return fmt.Sprintf(`if %s.Type == gjson.JSON {
+				%s.CompiledDecodeJSON(&%s, %s)
+			} else {
+				%s.Errors = append(%s.Errors, arri.NewValidationError("expect object", %s.InstancePath, %s.SchemaPath)) 
+			}`, input, target, input, context, context, context, context, context)
 		},
 		Content: decodeJSONFnBody + "\n\n" + encodeJSONFnBody + "\n\n",
 	}
 	ctx.CompiledTypes[t] = output
-	ctx.Depth = currentDepth
+	ctx.Depth = depth
 	ctx.InstancePath = instancePath
 	ctx.SchemaPath = schemaPath
 	return output, nil

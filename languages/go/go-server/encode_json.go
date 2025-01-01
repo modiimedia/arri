@@ -16,7 +16,7 @@ type EncodingContext struct {
 	Buffer             []byte
 	InstancePath       string
 	SchemaPath         string
-	CurrentDepth       uint32
+	Depth              uint32
 	HasKeys            bool
 	EnumValues         map[string][]string
 	DiscriminatorKey   string
@@ -193,7 +193,7 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 	oldInstancePath := c.InstancePath
 	oldSchemaPath := c.SchemaPath
 	c.HasKeys = isDiscriminatorSubType
-	c.CurrentDepth++
+	c.Depth++
 	c.Buffer = append(c.Buffer, '{')
 	if isDiscriminatorSubType {
 		c.Buffer = append(c.Buffer, "\""+discriminatorKey+"\":\""+discriminatorValue+"\""...)
@@ -249,7 +249,7 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 	}
 	c.Buffer = append(c.Buffer, '}')
 	c.HasKeys = false
-	c.CurrentDepth--
+	c.Depth--
 	return nil
 }
 
@@ -277,7 +277,7 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 	discriminatorKey := "type"
 	schemaPath := c.SchemaPath
 	instancePath := c.InstancePath
-	c.CurrentDepth++
+	c.Depth++
 	var firstFieldVal = None[reflect.Value]()
 	var firstFieldDiscriminatorValue string = ""
 	for i := 0; i < t.NumField(); i++ {
@@ -308,7 +308,7 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 		}
 		c.SchemaPath = schemaPath
 		c.InstancePath = instancePath
-		c.CurrentDepth--
+		c.Depth--
 		c.DiscriminatorKey = ""
 		c.DiscriminatorValue = ""
 		return nil
@@ -324,7 +324,7 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 		}
 		c.SchemaPath = schemaPath
 		c.InstancePath = instancePath
-		c.CurrentDepth--
+		c.Depth--
 		c.DiscriminatorKey = ""
 		c.DiscriminatorValue = ""
 		return nil
@@ -335,7 +335,7 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 func encodeArrayToJSON(v reflect.Value, c *EncodingContext) error {
 	instancePath := c.InstancePath
 	schemaPath := c.SchemaPath
-	c.CurrentDepth++
+	c.Depth++
 	if v.IsNil() {
 		c.Buffer = append(c.Buffer, "[]"...)
 		return nil
@@ -354,7 +354,7 @@ func encodeArrayToJSON(v reflect.Value, c *EncodingContext) error {
 		}
 	}
 	c.Buffer = append(c.Buffer, ']')
-	c.CurrentDepth--
+	c.Depth--
 	c.InstancePath = instancePath
 	c.SchemaPath = schemaPath
 	return nil
@@ -364,7 +364,7 @@ func encodeMapToJSON(v reflect.Value, c *EncodingContext) error {
 	instancePath := c.InstancePath
 	schemaPath := c.SchemaPath
 	c.SchemaPath = schemaPath + "/values"
-	c.CurrentDepth++
+	c.Depth++
 	keys := map[string]reflect.Value{}
 	keyVals := []string{}
 	for _, key := range v.MapKeys() {
@@ -391,7 +391,7 @@ func encodeMapToJSON(v reflect.Value, c *EncodingContext) error {
 		}
 	}
 	c.Buffer = append(c.Buffer, '}')
-	c.CurrentDepth--
+	c.Depth--
 	c.InstancePath = instancePath
 	c.SchemaPath = schemaPath
 	return nil

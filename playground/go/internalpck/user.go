@@ -3,12 +3,12 @@ package internalpck
 import arri "github.com/modiimedia/arri/languages/go/go-server"
 
 type User struct {
-	Id       string
-	Name     string
-	IsAdmin  arri.Option[bool]
-	Settings Settings
+	Id       string            `json:"id"`
+	Name     string            `json:"name"`
+	IsAdmin  arri.Option[bool] `json:"isAdmin"`
+	Settings Settings          `json:"settings"`
 }
 
 type Settings struct {
-	PrefersDarkMode bool
+	PrefersDarkMode bool `json:"prefersDarkMode"`
 }
