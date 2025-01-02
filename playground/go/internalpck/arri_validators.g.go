@@ -2,9 +2,10 @@
 package internalpck
 
 import (
+	"strconv"
+
 	arri "github.com/modiimedia/arri/languages/go/go-server"
 	"github.com/tidwall/gjson"
-	"strconv"
 )
 
 func (_input_ *User) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.DecoderContext) {
@@ -35,9 +36,7 @@ func (_input_ *User) CompiledDecodeJSON(_data_ *gjson.Result, _dc_ *arri.Decoder
 	}
 	_Settings_ := _data_.Get("settings")
 	if _Settings_.Type == gjson.JSON {
-		_settingsprefersDarkModeData_ := Settings{}
-		_settingsprefersDarkModeData_.CompiledDecodeJSON(&_Settings_, _dc_)
-		_input_.Settings = _settingsprefersDarkModeData_
+		_input_.Settings.CompiledDecodeJSON(&_Settings_, _dc_)
 	} else {
 		_dc_.Errors = append(_dc_.Errors, arri.NewValidationError("expect object", _dc_.InstancePath, _dc_.SchemaPath))
 	}

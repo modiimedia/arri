@@ -11,14 +11,36 @@ import (
 )
 
 type CompilerCxt struct {
-	KeyCasing     KeyCasing
-	InstancePath  string
-	SchemaPath    string
-	CompiledTypes map[reflect.Type]GoType
-	MaxDepth      uint32
-	Depth         uint32
-	Imports       map[string]bool
-	EnumValues    map[string][]string
+	KeyCasing      KeyCasing
+	InstancePath   string
+	SchemaPath     string
+	PackageImports map[string][]string
+	CompiledTypes  map[reflect.Type]GoType
+	MaxDepth       uint32
+	Depth          uint32
+	EnumValues     map[string][]string
+	PackageName    string
+}
+
+func appendPackageImport(imports map[string][]string, packageName string, importStr string) map[string][]string {
+	_, ok := imports[packageName]
+	if !ok {
+		imports[packageName] = []string{}
+	}
+	if contains(imports[packageName], importStr) {
+		return imports
+	}
+	imports[packageName] = append(imports[packageName], importStr)
+	return imports
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 type GoType struct {
@@ -47,20 +69,17 @@ func PrecompileDecoderAndEncoderFunctions(
 	options EncodingOptions,
 ) error {
 	pkgs, err := GetPackages(dir)
-	fmt.Println("PACKAGES", pkgs)
 	if err != nil {
 		return err
 	}
 	ctx := CompilerCxt{
-		Depth:         0,
-		MaxDepth:      options.MaxDepth,
-		KeyCasing:     options.KeyCasing,
-		CompiledTypes: map[reflect.Type]GoType{},
-		Imports:       map[string]bool{},
-		EnumValues:    map[string][]string{},
+		Depth:          0,
+		MaxDepth:       options.MaxDepth,
+		KeyCasing:      options.KeyCasing,
+		CompiledTypes:  map[reflect.Type]GoType{},
+		PackageImports: map[string][]string{},
+		EnumValues:     map[string][]string{},
 	}
-	ctx.Imports["\"github.com/tidwall/gjson\""] = true
-	ctx.Imports["arri \"github.com/modiimedia/arri/languages/go/go-server\""] = true
 	for t := range types {
 		ctx.Depth = 0
 		ctx.EnumValues = map[string][]string{}
@@ -81,30 +100,27 @@ func PrecompileDecoderAndEncoderFunctions(
 			continue
 		}
 		fileName := dirName + "/arri_validators.g.go"
-		fmt.Println("TYPE", t, "DIRNAME", dirName, "FILENAME", fileName)
 		_, ok = fileContents[fileName]
 		if !ok {
 			content := "// cspell:disable\npackage " + cleanedName + "\n\n"
 			content += "import (\n"
-			for k, v := range ctx.Imports {
-				if !v {
-					continue
-				}
-				content += "    " + k + "\n"
+			for _, v := range ctx.PackageImports[v.PackagePath] {
+				content += "    " + v + "\n"
 			}
+			content += "\n"
+			content += "	arri \"github.com/modiimedia/arri/languages/go/go-server\"\n"
+			content += "    \"github.com/tidwall/gjson\"\n"
 			content += ")\n\n"
 			fileContents[fileName] = content
 			fileContentTests[fileName] = []string{}
 		}
 		fileContents[fileName] += v.Content
-		fmt.Println(fileContents[fileName])
 		if t.Kind() == reflect.Struct {
 			fileContentTests[fileName] = append(fileContentTests[fileName], "arri.IsCompiledArriModel(&"+v.TypeName+"{})")
 		}
 	}
 
 	for k, v := range fileContents {
-		fmt.Println("FILE_NAME", k)
 		file, err := os.Create(k)
 		if err != nil {
 			return err
@@ -117,8 +133,6 @@ func PrecompileDecoderAndEncoderFunctions(
 		content += "}"
 		formattedContent, err := format.Source([]byte(content))
 		if err != nil {
-			// _, _ = file.WriteString(content)
-			// return nil
 			os.Remove(file.Name())
 			return err
 		}
@@ -178,7 +192,7 @@ func compileType(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	return compileAny(t, ctx)
 }
 
-func compileString(t reflect.Type, ctx CompilerCxt) (GoType, error) {
+func compileString(t reflect.Type, _ CompilerCxt) (GoType, error) {
 	result := GoType{
 		TypeName:    "string",
 		PackagePath: t.PkgPath(),
@@ -219,7 +233,6 @@ func compileString(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		},
 		Content: "",
 	}
-	ctx.CompiledTypes[t] = result
 	return result, nil
 }
 
@@ -270,8 +283,7 @@ func compileBool(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		},
 		Content: "",
 	}
-	ctx.CompiledTypes[t] = result
-	ctx.Imports["\"strconv\""] = true
+	ctx.PackageImports = appendPackageImport(ctx.PackageImports, ctx.PackageName, "\"strconv\"")
 	return result, nil
 }
 
@@ -369,8 +381,7 @@ func compileTimestamp(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		},
 		Content: "",
 	}
-	ctx.CompiledTypes[t] = output
-	ctx.Imports["\"time\""] = true
+	ctx.PackageImports = appendPackageImport(ctx.PackageImports, ctx.PackageName, "\"time\"")
 	return output, nil
 }
 
@@ -396,7 +407,6 @@ func compileOption(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		},
 		Content: "",
 	}
-	ctx.CompiledTypes[t] = output
 	return output, nil
 }
 
@@ -427,7 +437,6 @@ func compileNullable(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		},
 		Content: "",
 	}
-	ctx.CompiledTypes[t] = output
 	return output, nil
 }
 
@@ -446,6 +455,7 @@ var illegalChars = "!@#$%^&*()-+=`~;:'\\\",.<>/?"
 func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	decodeJSONParts := []string{}
 	encodeJSONParts := []string{}
+	pckName := ctx.PackageName
 	depth := ctx.Depth
 	_ = ctx.EnumValues
 	instancePath := ctx.InstancePath
@@ -459,6 +469,7 @@ func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 		serialKey := utils.GetSerialKey(&field, ctx.KeyCasing)
 		ctx.Depth = depth + 1
 		ctx.InstancePath = instancePath + "/" + serialKey
+		ctx.PackageName = t.PkgPath()
 		if isOptionalField {
 			ctx.SchemaPath = schemaPath + "/optionalProperties/" + serialKey
 		} else {
@@ -556,6 +567,7 @@ func compileStruct(t reflect.Type, ctx CompilerCxt) (GoType, error) {
 	ctx.Depth = depth
 	ctx.InstancePath = instancePath
 	ctx.SchemaPath = schemaPath
+	ctx.PackageName = pckName
 	return output, nil
 }
 
