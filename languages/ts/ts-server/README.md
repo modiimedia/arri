@@ -2,28 +2,36 @@
 
 Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
 
-Parameters and responses are defined using [@arrirpc/schema](/tooling/schema/README.md) for automatic validation and serialization of inputs and outputs and to generate Arri Type Definitions for client generators.
+Parameters and responses are defined using [@arrirpc/schema](/languages/ts/ts-schema/README.md) for automatic validation and serialization of inputs and outputs and to generate Arri Type Definitions for client generators.
+
+## Related Libraries
+
+| Name                                                            | Description                                                                                                                                              |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [arri](/tooling/cli/README.md)                                  | The Arri CLI                                                                                                                                             |
+| [@arrirpc/schema](/languages/ts/ts-schema/README.md)            | High performance validation library used to define the inputs and outputs of procedures. Can also be used standalone as a generic TS validation library. |
+| [@arrirpc/eslint-plugin](/languages/ts/eslint-plugin/README.md) | Eslint rules for Arri RPC                                                                                                                                |
 
 ## Table of Contents
 
--   [Quickstart](#quickstart)
--   [Manual Setup](#manual-setup)
-    -   [Install Dependencies](#install-dependencies)
-    -   [Scaffold Your Project](#scaffold-your-project)
--   [Usage](#usage)
-    -   [Creating Procedures](#creating-procedures)
-        -   [File-Based Routing](#file-based-routing)
-        -   [Manual Routing](#manual-routing)
-        -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
-        -   [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
-            -   [Adding to the RPC Context](#adding-to-the-rpc-context)
-    -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
-    -   [Adding Middleware](#adding-middleware)
--   [Key Concepts](#key-concepts)
-    -   [Arri Definition File](#arri-definition-file)
-    -   [How Procedures Map To Endpoints](#how-procedures-map-to-endpoints)
-    -   [H3 Support](#h3-support)
--   [Arri CLI](#arri-cli)
+- [Quickstart](#quickstart)
+- [Manual Setup](#manual-setup)
+    - [Install Dependencies](#install-dependencies)
+    - [Scaffold Your Project](#scaffold-your-project)
+- [Usage](#usage)
+    - [Creating Procedures](#creating-procedures)
+        - [File-Based Routing](#file-based-routing)
+        - [Manual Routing](#manual-routing)
+        - [Creating Event Stream Procedures](#creating-event-stream-procedures)
+        - [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
+            - [Adding to the RPC Context](#adding-to-the-rpc-context)
+    - [Adding Non-RPC Routes](#adding-non-rpc-routes)
+    - [Adding Middleware](#adding-middleware)
+- [Key Concepts](#key-concepts)
+    - [Arri Definition File](#arri-definition-file)
+    - [How Procedures Map To Endpoints](#how-procedures-map-to-endpoints)
+    - [H3 Support](#h3-support)
+- [Arri CLI](#arri-cli)
 
 ## Quickstart
 
@@ -47,10 +55,12 @@ pnpm run dev
 
 ```bash
 # npm
-npm install arri @arrirpc/server @arrirpc/schema
+npm install -D arri
+npm install @arrirpc/server @arrirpc/schema
 
 # pnpm
-pnpm install arri @arrirpc/server @arrirpc/schema
+pnpm install -D arri
+pnpm install @arrirpc/server @arrirpc/schema
 ```
 
 ### Scaffold Your Project
@@ -84,7 +94,7 @@ Create an `arri.config.ts` in the project directory
 
 ```ts
 // arri.config.ts
-import { defineConfig, servers, generators } from "arri";
+import { defineConfig, servers, generators } from 'arri';
 
 export default defineConfig({
     server: servers.tsServer(),
@@ -105,7 +115,7 @@ Create an app entry file in your src directory. The name of the file must match 
 
 ```ts
 // ./src/app.ts
-import { ArriApp } from "arri";
+import { ArriApp } from 'arri';
 
 const app = new ArriApp();
 
@@ -154,8 +164,8 @@ Example `.rpc.ts` file
 
 ```ts
 // ./src/users/getUser.rpc.ts
-import { defineRpc } from "@arrirpc/server";
-import { a } from "@arrirpc/schema";
+import { defineRpc } from '@arrirpc/server';
+import { a } from '@arrirpc/schema';
 
 export default defineRpc({
     params: a.object({
@@ -177,8 +187,8 @@ export default defineRpc({
 ```ts
 export default defineConfig({
     servers: servers.tsServer({
-        procedureDir: "procedures", // change which directory to look for procedures (This is relative to the srcDir)
-        procedureGlobPatterns: ["**/*.rpc.ts"], // change the file name glob pattern for finding rpcs
+        procedureDir: 'procedures', // change which directory to look for procedures (This is relative to the srcDir)
+        procedureGlobPatterns: ['**/*.rpc.ts'], // change the file name glob pattern for finding rpcs
     }),
     // rest of config
 });
@@ -221,23 +231,23 @@ Event stream procedures make use of [Server Sent Events](https://developer.mozil
 
 Arri Event streams sent the following event types:
 
--   `message` - A standard message with the response data serialized as JSON
--   `done` - A message to tell clients that there will be no more events
--   `ping` - A message periodically sent by the server to keep the connection alive.
+- `message` - A standard message with the response data serialized as JSON
+- `done` - A message to tell clients that there will be no more events
+- `ping` - A message periodically sent by the server to keep the connection alive.
 
 ```ts
 /// message event ///
 id: string | undefined;
-event: "message";
+event: 'message';
 data: Response; // whatever you have specified as the response serialized to json
 
 /// done event ///
-event: "done";
-data: "this stream has ended";
+event: 'done';
+data: 'this stream has ended';
 
 /// ping event ///
-event: "ping";
-data: "";
+event: 'ping';
+data: '';
 ```
 
 ##### Example Usage:
@@ -261,15 +271,15 @@ export default defineEventStreamRpc({
         // send a message every second
         const interval = setInterval(async () => {
             await stream.push({
-                id: "1",
-                name: "John Doe",
+                id: '1',
+                name: 'John Doe',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
         }, 1000);
 
         // cleanup when the client disconnects
-        stream.on("close", () => {
+        stream.on('close', () => {
             clearInterval(interval);
         });
     },
@@ -412,12 +422,12 @@ const authMiddleware = defineMiddleware(async (event) => {
     // assume you did something to get the user from the request
     event.context.user = {
         id: 1,
-        name: "John Doe",
-        email: "johndoe@gmail.com",
+        name: 'John Doe',
+        email: 'johndoe@gmail.com',
     };
 });
 
-app.rpc("sayHello", {
+app.rpc('sayHello', {
     params: undefined,
     response: a.object({
         message: a.string(),
@@ -434,9 +444,9 @@ app.rpc("sayHello", {
 To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arrirpc/server`
 
 ```ts
-import "@arrirpc/server";
+import '@arrirpc/server';
 
-declare module "@arrirpc/server" {
+declare module '@arrirpc/server' {
     interface ArriEventContext {
         user?: {
             id: number;
@@ -538,18 +548,18 @@ By default all procedures will become post requests, but you can change this whe
 ```ts
 // procedures/users/getUser.rpc.ts
 export default defineRpc({
-    method: "get",
+    method: 'get',
     // rest of config
 });
 ```
 
 The supported HTTP methods are as follows:
 
--   post
--   get
--   delete
--   patch
--   put
+- post
+- get
+- delete
+- patch
+- put
 
 When using a get method the RPC params will be mapped as query parameters which will be coerced into their type using the `a.coerce` method from `arri-validate`. Get methods support all basic scalar types however arrays and nested objects are not supported.
 
@@ -562,7 +572,7 @@ Arri is built on top of [H3](https://h3.unjs.io/utils/request#getrequestipevent)
 Arri re-eports all of the H3 utilities.
 
 ```ts
-import { getRequestIP, setResponseHeader } from "@arrirpc/server";
+import { getRequestIP, setResponseHeader } from '@arrirpc/server';
 ```
 
 #### Accessing H3 Events
@@ -592,8 +602,8 @@ defineEventStreamRpc({
 Arri server is just an H3 app under the hood so you can start it the same way you would start an H3 app. Although you should note that currently the filed based router only works when using the Arri CLI.
 
 ```ts
-import { createServer } from "node:http";
-import { ArriApp, toNodeListener } from "@arrirpc/server";
+import { createServer } from 'node:http';
+import { ArriApp, toNodeListener } from '@arrirpc/server';
 
 const app = new ArriApp();
 

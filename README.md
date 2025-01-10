@@ -12,22 +12,22 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 
 ## Table of Contents
 
--   [Server Implementations](#server-implementations)
--   [Client Generators](#client-generators)
--   [Other Tooling](#other-tooling)
--   [Manually Creating An App Definition](#manually-creating-an-app-definition)
--   [How To Contribute](#how-to-contribute)
+- [Server Implementations](#server-implementations)
+- [Client Generators](#client-generators)
+- [Other Tooling](#other-tooling)
+- [Manually Creating An App Definition](#manually-creating-an-app-definition)
+- [How To Contribute](#how-to-contribute)
 
 ## Server Implementations
 
--   [Typescript](/languages/ts/ts-server/README.md)
--   [Go (Experimental)](/languages/go/go-server/README.md)
+- [Typescript](/languages/ts/ts-server/README.md)
+- [Go (Experimental)](/languages/go/go-server/README.md)
 
 I'm currently finishing up the Go server implementation. After that is stable I have the following languages on my shortlist for the next potential server implementation:
 
--   rust
--   dart
--   zig
+- rust
+- dart
+- zig
 
 See this [guide](/docs/implementing-an-arri-server.md) for information on how to implement your own Arri server
 
@@ -53,9 +53,7 @@ Below are the language client generators that are planned to have first party su
 
 ## Other Tooling
 
--   [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
--   [@arrirpc/schema](tooling/schema/README.md) - Arri type builder used to define types that can be generated in multiple languages. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
--   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
+- [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
 
 ## Manually Creating an App Definition
 
@@ -75,7 +73,7 @@ Before running this command. Make sure you have an arri config created already.
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
@@ -98,23 +96,23 @@ Arri comes with some useful helpers that reduces the boilerplate of manually cre
 
 ```ts
 // AppDefinition.ts
-import { createAppDefinition } from "arri";
-import { a } from "@arrirpc/schema";
+import { createAppDefinition } from 'arri';
+import { a } from '@arrirpc/schema';
 
-const HelloParams = a.object("HelloParams", {
+const HelloParams = a.object('HelloParams', {
     message: a.string(),
 });
 
-const HelloResponse = a.object("HelloResponse", {
+const HelloResponse = a.object('HelloResponse', {
     message: a.string(),
 });
 
 export default createAppDefinition({
     procedures: {
         sayHello: {
-            transport: "http",
-            method: "post",
-            path: "/say-hello",
+            transport: 'http',
+            method: 'post',
+            path: '/say-hello',
             params: HelloParams,
             response: HelloResponse,
         },
@@ -126,14 +124,14 @@ Additionally if you only need cross language types, you can skip defining proced
 
 ```ts
 // AppDefinition.ts
-import { createAppDefinition } from "arri";
-import { a } from "@arrirpc/schema";
+import { createAppDefinition } from 'arri';
+import { a } from '@arrirpc/schema';
 
-const HelloParams = a.object("HelloParams", {
+const HelloParams = a.object('HelloParams', {
     message: a.string(),
 });
 
-const HelloResponse = a.object("HelloResponse", {
+const HelloResponse = a.object('HelloResponse', {
     message: a.string(),
 });
 
