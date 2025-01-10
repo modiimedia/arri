@@ -8,16 +8,18 @@
       "executor": "nx:run-commands",
       "inputs": ["{projectRoot}/**/*.go"],
       "options": {
-        "command": "go test",
-        "cwd": "languages/go/go-server"
+        "command": "go test ./... ",
+        "cwd": "languages/go/go-server",
+        "parallel": false
       }
     },
     "benchmark": {
       "executor": "nx:run-commands",
       "inputs": ["{projectRoot}/**/*.go"],
       "options": {
-        "command": "go test -bench=.",
-        "cwd": "languages/go/go-server"
+        "command": "go test ./... -bench=.",
+        "cwd": "languages/go/go-server",
+        "parallel": false
       }
     }
   }

@@ -63,3 +63,11 @@ func TestIsNullableType(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func BenchmarkIsNullableType(b *testing.B) {
+	v := reflect.TypeOf("")
+	for i := 0; i < b.N; i++ {
+		utils.IsNullableType(v)
+	}
+
+}
