@@ -2,6 +2,8 @@
 
 A type builder and validation library for [Arri Type Definitions](/specifications/arri_type_definition.md). A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
 
+This library also supports [standard-schema](https://github.com/standard-schema/standard-schema) meaning it can be used with any third-party library that accepts standard schema.
+
 ## Project Philosophy
 
 The goals of this project are as follows:
@@ -66,7 +68,7 @@ pnpm install @arrirpc/schema
 ## Basic Example
 
 ```ts
-import { a } from "@arrirpc/schema";
+import { a } from '@arrirpc/schema';
 
 const User = a.object({
     id: a.string(),
@@ -81,12 +83,12 @@ a.parse(User, `{"id": "1", "name": "John Doe"}`);
 a.parse(User, `{"id": "1", "name": null}`);
 
 // returns true
-a.validate(User, { id: "1", name: "John Doe" });
+a.validate(User, { id: '1', name: 'John Doe' });
 // returns false
-a.validate(User, { id: "1", name: null });
+a.validate(User, { id: '1', name: null });
 
 // outputs valid json
-a.serialize(User, { id: "1", name: "John Doe" });
+a.serialize(User, { id: '1', name: 'John Doe' });
 ```
 
 ## Usage With @arrirpc/server
@@ -94,8 +96,8 @@ a.serialize(User, { id: "1", name: "John Doe" });
 See [here](/languages/ts/ts-server/README.md) for full details.
 
 ```ts
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
 export default defineRpc({
     params: a.object({
@@ -141,11 +143,11 @@ Enum schemas allow you to specify a predefine list of accepted strings
 **Usage**
 
 ```ts
-const Status = a.enumerator(["ACTIVE", "INACTIVE", "UNKNOWN"]);
+const Status = a.enumerator(['ACTIVE', 'INACTIVE', 'UNKNOWN']);
 type Status = a.infer<typeof Status>; // "ACTIVE" | "INACTIVE" | "UNKNOWN";
 
-a.validate(Status, "BLAH"); // false
-a.validate(Status, "ACTIVE"); // true
+a.validate(Status, 'BLAH'); // false
+a.validate(Status, 'ACTIVE'); // true
 ```
 
 **Outputted JTD**
@@ -165,7 +167,7 @@ const MyList = a.array(a.string());
 type MyList = a.infer<typeof MyList>; // string[];
 
 a.validate(MyList, [1, 2]); // false
-a.validate(MyList, ["hello", "world"]); // true
+a.validate(MyList, ['hello', 'world']); // true
 ```
 
 **Outputted JTD**
@@ -191,12 +193,12 @@ const User = a.object({
 type User = a.infer<typeof User>; // { id: string; email: string; created: Date; }
 
 a.validate({
-    id: "1",
-    email: "johndoe@example.com",
+    id: '1',
+    email: 'johndoe@example.com',
     created: new Date(),
 }); // true
 a.validate({
-    id: "1",
+    id: '1',
     email: null,
     created: new Date(),
 }); // false
@@ -237,10 +239,10 @@ const UserStrict = a.object(
 );
 
 a.parse(UserStrict, {
-    id: "1",
-    name: "johndoe",
+    id: '1',
+    name: 'johndoe',
     created: new Date(),
-    bio: "my name is joe",
+    bio: 'my name is joe',
 }); // fails parsing because of the additional field "bio"
 ```
 
@@ -276,7 +278,7 @@ a.validate(R, {
     world: false,
 }); // true;
 a.validate(R, {
-    hello: "world",
+    hello: 'world',
 }); // false;
 ```
 
@@ -295,7 +297,7 @@ a.validate(R, {
 **Usage**
 
 ```ts
-const Shape = a.discriminator("type", {
+const Shape = a.discriminator('type', {
     RECTANGLE: a.object({
         width: a.float32(),
         height: a.float32(),
@@ -307,20 +309,20 @@ const Shape = a.discriminator("type", {
 type Shape = a.infer<typeof Shape>; // { type: "RECTANGLE"; width: number; height: number; } | { type: "CIRCLE"; radius: number; }
 
 // Infer specific sub types of the union
-type ShapeTypeRectangle = a.inferSubType<Shape, "type", "RECTANGLE">; // { type "RECTANGLE"; width: number; height: number; };
-type ShapeTypeCircle = a.inferSubType<Shape, "type", "CIRCLE">; // { type "CIRCLE"; radius: number; }
+type ShapeTypeRectangle = a.inferSubType<Shape, 'type', 'RECTANGLE'>; // { type "RECTANGLE"; width: number; height: number; };
+type ShapeTypeCircle = a.inferSubType<Shape, 'type', 'CIRCLE'>; // { type "CIRCLE"; radius: number; }
 
 a.validate(Shape, {
-    type: "RECTANGLE",
+    type: 'RECTANGLE',
     width: 1,
     height: 1.5,
 }); // true
 a.validate(Shape, {
-    type: "CIRCLE",
+    type: 'CIRCLE',
     radius: 5,
 }); // true
 a.validate(Shape, {
-    type: "CIRCLE",
+    type: 'CIRCLE',
     width: 1,
     height: 1.5,
 }); // false
@@ -385,7 +387,7 @@ const BinaryTree = a.recursive<BinaryTree>(
             right: a.nullable(self),
         }),
     {
-        id: "BinaryTree",
+        id: 'BinaryTree',
     },
 );
 
@@ -506,7 +508,7 @@ const A = a.object(
         a: a.string(),
         b: a.float32(),
     },
-    { id: "A" },
+    { id: 'A' },
 );
 console.log(A.metadata.id); // "A"
 
@@ -545,7 +547,7 @@ const A = a.object({
 });
 // { a: string; b: number; }
 
-const B = a.omit(A, ["a"]);
+const B = a.omit(A, ['a']);
 // { b: number; }
 ```
 
@@ -561,7 +563,7 @@ const A = a.object({
 });
 // { a: string; b: number; c: Date; }
 
-const B = a.pick(A, ["a", "c"]);
+const B = a.pick(A, ['a', 'c']);
 // { a: string; c: Date; }
 ```
 
@@ -593,7 +595,7 @@ const User = a.object({
     name: a.string(),
 });
 a.validate(User, true); // false
-a.validate(User, { id: "1", name: "john doe" }); // true
+a.validate(User, { id: '1', name: 'john doe' }); // true
 
 if (a.validate(User, someInput)) {
     console.log(someInput.id); // intellisense works here
@@ -644,9 +646,9 @@ const A = a.object({
 });
 
 a.coerce(A, {
-    a: "1",
-    b: "true",
-    c: "500.24",
+    a: '1',
+    b: 'true',
+    c: '500.24',
 });
 // { a: "1", b: true, c: 500.24 };
 ```
@@ -681,7 +683,7 @@ const User = a.object({
     name: a.string(),
 });
 
-a.serialize(User, { id: "1", name: "john doe" });
+a.serialize(User, { id: '1', name: 'john doe' });
 // {"id":"1","name":"john doe"}
 ```
 
@@ -697,7 +699,7 @@ const User = a.object({
     date: a.timestamp(),
 });
 
-a.errors(User, { id: 1, date: "hello world" });
+a.errors(User, { id: 1, date: 'hello world' });
 /**
  * [
  *   {
@@ -730,7 +732,7 @@ const $$User = a.compile(User);
 
 $$User.validate(someInput);
 $$User.parse(someJson);
-$$User.serialize({ id: "1", email: null, created: new Date() });
+$$User.serialize({ id: '1', email: null, created: new Date() });
 ```
 
 In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
@@ -764,8 +766,8 @@ const BookSchema = a.object(
         publishDate: a.timestamp(),
     },
     {
-        id: "Book",
-        description: "This is a book",
+        id: 'Book',
+        description: 'This is a book',
     },
 );
 ```
@@ -831,14 +833,14 @@ Because IDs are really important for producing concise type names. Arri validate
 
 ```ts
 // ID will be set to "Book"
-const BookSchema = a.object("Book", {
+const BookSchema = a.object('Book', {
     title: a.string(),
     author: a.string(),
     publishDate: a.timestamp(),
 });
 
 // ID will be set to "Message"
-const MessageSchema = a.discriminator("Message", "type", {
+const MessageSchema = a.discriminator('Message', 'type', {
     TEXT: a.object({
         userId: a.string(),
         content: a.string(),
@@ -850,7 +852,7 @@ const MessageSchema = a.discriminator("Message", "type", {
 });
 
 // ID will be set to "BTree"
-const BinaryTreeSchema = a.recursive("BTree", (self) =>
+const BinaryTreeSchema = a.recursive('BTree', (self) =>
     a.object({
         left: a.nullable(self),
         right: a.nullable(self),
