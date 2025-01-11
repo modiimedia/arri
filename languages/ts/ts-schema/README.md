@@ -227,7 +227,7 @@ a.validate(Status, 'BLAH'); // false
 a.validate(Status, 'ACTIVE'); // true
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -247,7 +247,7 @@ a.validate(MyList, [1, 2]); // false
 a.validate(MyList, ['hello', 'world']); // true
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -281,7 +281,7 @@ a.validate({
 }); // false
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -323,7 +323,7 @@ a.parse(UserStrict, {
 }); // fails parsing because of the additional field "bio"
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -359,7 +359,7 @@ a.validate(R, {
 }); // false;
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -405,7 +405,7 @@ a.validate(Shape, {
 }); // false
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -490,7 +490,7 @@ a.validate(BinaryTree, {
 }); // false
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -533,7 +533,7 @@ const User = a.object({
  */
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -566,7 +566,7 @@ const name = a.nullable(a.string());
  */
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
