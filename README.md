@@ -13,6 +13,9 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 ## Table of Contents
 
 - [Server Implementations](#server-implementations)
+    - [Typescript](#typescript)
+    - [Go](#go)
+    - [Server Language Roadmap](#server-language-roadmap)
 - [Client Generators](#client-generators)
 - [Other Tooling](#other-tooling)
 - [Manually Creating An App Definition](#manually-creating-an-app-definition)
@@ -20,8 +23,23 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 
 ## Server Implementations
 
-- [Typescript](/languages/ts/ts-server/README.md)
-- [Go (Experimental)](/languages/go/go-server/README.md)
+### Typescript
+
+Click [here](/languages/ts/ts-server/README.md) to get started with a Typescript server.
+
+#### Relevant Libraries
+
+| Name                                                            | Description                                                                                                                                                                    |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [@arrirpc/server](/languages/ts/ts-server/README.md)            | TS Server framework for Arri RPC                                                                                                                                               |
+| [@arrirpc/schema](/languages/ts/ts-schema/README.md)            | High performance schema builder for validating procedure inputs and outputs. Can also be used as a standalone TS validation library or to generated types for other languages. |
+| [@arrirpc/eslint-plugin](/languages/ts/eslint-plugin/README.md) | Lint rules for building Arri RPC schemas                                                                                                                                       |
+
+### Go
+
+Be aware that go support is still in early stages. Click [here](/languages/go/go-server/README.md) to get started.
+
+### Server Language Roadmap
 
 I'm currently finishing up the Go server implementation. After that is stable I have the following languages on my shortlist for the next potential server implementation:
 

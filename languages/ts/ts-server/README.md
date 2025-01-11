@@ -4,14 +4,6 @@ Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](h
 
 Parameters and responses are defined using [@arrirpc/schema](/languages/ts/ts-schema/README.md) for automatic validation and serialization of inputs and outputs and to generate Arri Type Definitions for client generators.
 
-## Related Libraries
-
-| Name                                                            | Description                                                                                                                                              |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [arri](/tooling/cli/README.md)                                  | The Arri CLI                                                                                                                                             |
-| [@arrirpc/schema](/languages/ts/ts-schema/README.md)            | High performance validation library used to define the inputs and outputs of procedures. Can also be used standalone as a generic TS validation library. |
-| [@arrirpc/eslint-plugin](/languages/ts/eslint-plugin/README.md) | Eslint rules for Arri RPC                                                                                                                                |
-
 ## Table of Contents
 
 - [Quickstart](#quickstart)

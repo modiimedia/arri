@@ -1,8 +1,8 @@
 # Arri Schema
 
-A type builder and validation library for [Arri Type Definitions](/specifications/arri_type_definition.md). A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
+A Typescript validator and schema builder that can be compiled to other languages. A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library. This library also supports [standard-schema](https://github.com/standard-schema/standard-schema) meaning it can be used with any third-party library that accepts standard schema.
 
-This library also supports [standard-schema](https://github.com/standard-schema/standard-schema) meaning it can be used with any third-party library that accepts standard schema.
+Under the hood this library constructs [Arri Type Definitions (ATD)](/specifications/arri_type_definition.md). These definitions can be passed to the [Arri CLI](/tooling/cli//README.md) to generate code for any of the client languages that Arri supports. Lastly, this library also comes with a [JIT compiler](#compiled-validators) which produces precompiled validators more than 100x faster than Zod.
 
 ## Project Philosophy
 
@@ -26,7 +26,8 @@ Originally this library was created as a way for building schemas for [Json Type
 
 - [Installation](#installation)
 - [Basic Example](#basic-example)
-- [Usage With @arrirpc/server](#usage-with-arrirpcserver)
+- [Usage with @arrirpc/server](#usage-with-arrirpcserver)
+- [Compiling to other languages](#compiling-to-other-languages)
 - [Supported Types](#supported-types)
     - [Primitives](#primitives)
     - [Enums](#enums)
@@ -50,8 +51,8 @@ Originally this library was created as a way for building schemas for [Json Type
     - [Safe Coerce](#safe-coerce)
     - [Serialize](#serialize)
     - [Errors](#errors)
-- [Compiled Validators](#compiled-validators)
 - [Metadata](#metadata)
+- [Compiled Validators](#compiled-validators)
 - [Benchmarks](#benchmarks)
 - [Development](#development)
 
@@ -114,6 +115,82 @@ export default defineRpc({
     },
 });
 ```
+
+## Compiling To Other Languages
+
+All schemas defined with this library can be compiled to other languages using the [Arri CLI](/tooling/cli/README.md).
+
+### Install the Arri ClI
+
+```bash
+# npm
+npm i --save-dev arri
+
+# pnpm
+pnpm i --save-dev arri
+```
+
+### Create You Arri Config
+
+```ts
+import { defineConfig, generators } from 'arri';
+
+export default defineConfig({
+    generators: [
+        // add your generators here
+        generators.rustClient({
+            // options
+        }),
+        generators.dartClient({
+            // options
+        }),
+    ],
+});
+```
+
+### Use the `createAppDefinition()` helper and export it
+
+```ts
+// definitions.ts
+import { createAppDefinition } from 'arri';
+import { a } from '@arrirpc/schema';
+
+export const User = a.object('User', {
+    id: a.string(),
+    name: a.string(),
+    email: a.nullable(a.string()),
+});
+export type User = a.infer<typeof User>;
+
+export const Post = a.object('Post', {
+    id: a.string(),
+    userId: a.string(),
+    title: a.string(),
+    content: a.string(),
+    isDraft: a.boolean(),
+    createdAt: a.timestamp(),
+});
+export type Post = a.infer<typeof Post>;
+
+export default createAppDefinition({
+    definitions: {
+        User,
+        Post,
+    },
+});
+```
+
+### Run the Code Generator
+
+```bash
+# npm
+npx arri codegen ./definitions.ts
+
+# pnpm
+pnpm arri codegen ./definitions.ts
+```
+
+And your done. Now you can rerun this command whenever any of your schemas get updated.
 
 ## Supported Types
 
@@ -717,34 +794,6 @@ a.errors(User, { id: 1, date: 'hello world' });
  */
 ```
 
-## Compiled Validators
-
-`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions.
-
-```ts
-const User = a.object({
-    id: a.string(),
-    email: a.nullable(a.string()),
-    created: a.timestamp(),
-});
-
-const $$User = a.compile(User);
-
-$$User.validate(someInput);
-$$User.parse(someJson);
-$$User.serialize({ id: '1', email: null, created: new Date() });
-```
-
-In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
-
-You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
-
-```ts
-$$User.compiledCode.validate; // the generated validation code
-$$User.compiledCode.parse; // the generated parsing code
-$$User.compiledCode.serialize; // the generated serialization code
-```
-
 ## Metadata
 
 Metadata is used during cross-language code generation. Arri schemas allow you to specify the following metadata fields:
@@ -827,9 +876,9 @@ data class Book(
 )
 ```
 
-### ID Shorthand (Experimental)
+### ID Shorthand
 
-Because IDs are really important for producing concise type names. Arri validate also provides an _experimental\*_ shorthand for defining IDs of objects, discriminators, and recursive types.
+Because IDs are really important for producing concise type names. Arri validate also provides shorthand for defining IDs of objects, discriminators, and recursive types.
 
 ```ts
 // ID will be set to "Book"
@@ -860,7 +909,33 @@ const BinaryTreeSchema = a.recursive('BTree', (self) =>
 );
 ```
 
-\* Because this is experimental it may be removed in the future. The main thing I'm testings is whether added convenience is worth the overhead of maintaining 2 versions of each of these functions. The shorthand could also introduce unintended confusion for users of this library as it creates two places to look for an id.
+## Compiled Validators
+
+`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions. The result of the compilation also implements the [standard-schema](https://github.com/standard-schema/standard-schema) interface, meaning it can be passed into any library that accepts standard-schema.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    email: a.nullable(a.string()),
+    created: a.timestamp(),
+});
+
+const $$User = a.compile(User);
+
+$$User.validate(someInput);
+$$User.parse(someJson);
+$$User.serialize({ id: '1', email: null, created: new Date() });
+```
+
+In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods are created using [`new Function()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
+
+You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
+
+```ts
+$$User.compiledCode.validate; // the generated validation code
+$$User.compiledCode.parse; // the generated parsing code
+$$User.compiledCode.serialize; // the generated serialization code
+```
 
 ## Benchmarks
 
