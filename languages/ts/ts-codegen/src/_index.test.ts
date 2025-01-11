@@ -17,13 +17,13 @@ const referenceFile = fs.readFileSync(
     'utf8',
 );
 test('Output matches reference file', async () => {
+    const prettierConfig = JSON.parse(
+        fs.readFileSync(path.resolve('../../../.prettierrc'), 'utf8'),
+    );
     const result = await createTypescriptClient(appDef, {
         clientName: 'ExampleClient',
         outputFile: '',
-        prettierOptions: {
-            tabWidth: 4,
-            endOfLine: 'lf',
-        },
+        prettierOptions: prettierConfig,
     });
     expect(normalizeWhitespace(result)).toEqual(
         normalizeWhitespace(referenceFile),

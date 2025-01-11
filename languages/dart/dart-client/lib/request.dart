@@ -143,8 +143,6 @@ Future<T> parsedArriRequest<T, E extends Exception>(
       clientVersion: clientVersion,
     );
     if (result.statusCode >= 200 && result.statusCode <= 299) {
-      final b = utf8.decode(result.bodyBytes);
-      print("BODY: $b");
       return parser(utf8.decode(result.bodyBytes));
     }
   } catch (err) {
