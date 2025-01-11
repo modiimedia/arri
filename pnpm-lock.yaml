@@ -175,6 +175,9 @@ importers:
       '@arrirpc/type-defs':
         specifier: workspace:*
         version: link:../../../tooling/type-defs
+      '@standard-schema/spec':
+        specifier: 1.0.0-rc.0
+        version: 1.0.0-rc.0
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -182,9 +185,6 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
     devDependencies:
-      '@standard-schema/spec':
-        specifier: 1.0.0-rc.0
-        version: 1.0.0-rc.0
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
