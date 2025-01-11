@@ -148,34 +148,26 @@ export default defineConfig({
 });
 ```
 
-### Use the `createAppDefinition()` helper and export it
+### Create And Export Your Schemas
+
+Use the `createAppDefinition` helper to export your schemas for the Arri CLI.
 
 ```ts
 // definitions.ts
 import { createAppDefinition } from 'arri';
 import { a } from '@arrirpc/schema';
 
-export const User = a.object('User', {
+const User = a.object('User', {
     id: a.string(),
-    name: a.string(),
+    name: a.optional(string()),
     email: a.nullable(a.string()),
+    createdAt: a.timestamp({ description: 'When the user was created' }),
+    updatedAt: a.timestamp(),
 });
-export type User = a.infer<typeof User>;
-
-export const Post = a.object('Post', {
-    id: a.string(),
-    userId: a.string(),
-    title: a.string(),
-    content: a.string(),
-    isDraft: a.boolean(),
-    createdAt: a.timestamp(),
-});
-export type Post = a.infer<typeof Post>;
 
 export default createAppDefinition({
     definitions: {
         User,
-        Post,
     },
 });
 ```
@@ -191,6 +183,67 @@ pnpm arri codegen ./definitions.ts
 ```
 
 And your done. Now you can rerun this command whenever any of your schemas get updated.
+
+### Example Output
+
+```dart
+// dart output
+
+class User {
+  final String id;
+  final String? name;
+  final String? email;
+  /// when the user was created
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const User({
+     required this.id,
+     this.name,
+     required this.email,
+     required this.createdAt,
+     required this.updatedAt,
+  });
+
+  // implementation details
+}
+```
+
+```rust
+// rust output
+
+pub struct User {
+  id: String,
+  name: String,
+  name: Option<String>,
+  email: Option<String>,
+  // when the user was created
+  created_at: DateTime<FixedOffset>,
+  updated_at: DateTime<FixedOffset>,
+}
+
+impl ArriModel for User {
+  // implementation details
+}
+```
+
+```kotlin
+// kotlin output
+
+data class User(
+  val id: String,
+  val name: String?,
+  val email: String? = null,
+  /**
+   * When the user was created
+   */
+  val createdAt: Instant,
+  val updatedAt: Instance,
+) {
+  // implementation details
+}
+```
+
+See [here](/README.md#client-generators) for a list of all officially supported language generators.
 
 ## Supported Types
 
