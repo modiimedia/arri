@@ -10,6 +10,9 @@ const packageJson = JSON.parse(
 );
 
 const deps = Object.keys(packageJson.dependencies as Record<string, string>);
+const peerDeps = Object.keys(
+    packageJson.peerDependencies as Record<string, string>,
+);
 
 export default defineBuildConfig({
     entries: ['./src/index.ts'],
@@ -23,5 +26,5 @@ export default defineBuildConfig({
     clean: true,
     declaration: true,
     failOnWarn: false,
-    externals: deps,
+    externals: [...deps, ...peerDeps],
 });
