@@ -48,7 +48,7 @@ export function tsTaggedUnionFromSchema(
             return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
         },
         toQueryStringTemplate(_: string, __: string, ___: string): string {
-            return `console.warn("[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.");`;
+            return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.');`;
         },
         content: '',
     };

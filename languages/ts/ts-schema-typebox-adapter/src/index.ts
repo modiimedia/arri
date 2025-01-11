@@ -1,6 +1,7 @@
 import {
     AObjectSchema,
     ASchema,
+    hideInvalidProperties,
     SCHEMA_METADATA,
     ValidationError,
     type ValueError,
@@ -22,7 +23,7 @@ export function typeboxAdapter<TInput extends TSchema>(
     : ASchema<Static<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as unknown as JsonSchemaType);
     const compiled = TypeCompiler.Compile<any>(input);
-    return {
+    const result = {
         ...schema,
         metadata: {
             id: input.$id ?? input.title,
@@ -57,7 +58,35 @@ export function typeboxAdapter<TInput extends TSchema>(
                 },
             },
         },
+        '~standard': {
+            version: 1,
+            vendor: 'arri-typebox',
+            validate(value: unknown) {
+                if (compiled.Check(value)) {
+                    return {
+                        value,
+                    };
+                }
+                if (typeof value === 'string') {
+                    const parsedVal = JSON.parse(value);
+                    if (compiled.Check(parsedVal)) {
+                        return parsedVal;
+                    }
+                }
+                const errors = typeboxErrorsToArriError(compiled.Errors(value));
+                return {
+                    issues: errors.errors.map((err) => ({
+                        message: err.message ?? 'Unknown error',
+                        path: err.instancePath
+                            .split('/')
+                            .filter((item) => item.length > 0),
+                    })),
+                };
+            },
+        },
     } satisfies ASchema<Static<TInput>> as any;
+    hideInvalidProperties(result);
+    return result;
 }
 
 function typeboxErrorsToArriError(errs: ValueErrorIterator): ValidationError {

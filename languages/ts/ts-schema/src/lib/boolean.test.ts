@@ -1,4 +1,5 @@
 import { type SchemaFormType } from '@arrirpc/type-defs';
+import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 describe('parsing', () => {
@@ -56,7 +57,7 @@ describe('coercion', () => {
     });
 });
 
-it('produces valid JTD schema', () => {
+it('produces valid ATD schema', () => {
     const Schema = a.boolean();
     expect(JSON.parse(JSON.stringify(Schema))).toStrictEqual({
         type: 'boolean',
@@ -70,4 +71,12 @@ it('produces valid JTD schema', () => {
         type: 'boolean',
         metadata: { id: 'Bool', description: 'Boolean value' },
     } satisfies SchemaFormType);
+});
+
+describe('standard-schema support', () => {
+    it('properly infers types', async () => {
+        assertType<StandardSchemaV1<boolean>>(a.boolean());
+        const result = await a.boolean()['~standard'].validate('');
+        if (!result.issues) assertType<boolean>(result.value);
+    });
 });

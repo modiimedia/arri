@@ -8,6 +8,10 @@ import {
     SCHEMA_METADATA,
     type ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 import { ValidationError } from './validation';
 
 /**
@@ -86,6 +90,15 @@ export function discriminator<
         JoinedDiscriminator<TDiscriminatorKey, TMapping>
     >
 > {
+    type T = InferType<
+        ADiscriminatorSchema<
+            InferDiscriminatorType<
+                TDiscriminatorKey,
+                TMapping,
+                JoinedDiscriminator<TDiscriminatorKey, TMapping>
+            >
+        >
+    >;
     const isIdShorthand = typeof propB === 'string';
     const discriminator = isIdShorthand ? propB : propA;
     const mapping = (isIdShorthand ? propC : propB) as TMapping;
@@ -95,7 +108,22 @@ export function discriminator<
     if (isIdShorthand) {
         opts.id = propA;
     }
-    return {
+    const isType = (input: unknown): input is T => {
+        return validate(discriminator, mapping, input);
+    };
+    const parseType = (
+        input: unknown,
+        context: ValidationContext,
+    ): T | undefined => {
+        return parse(discriminator, mapping, input, context, false);
+    };
+    const result: ADiscriminatorSchema<
+        InferDiscriminatorType<
+            TDiscriminatorKey,
+            TMapping,
+            JoinedDiscriminator<TDiscriminatorKey, TMapping>
+        >
+    > = {
         discriminator,
         mapping,
         metadata: {
@@ -104,22 +132,8 @@ export function discriminator<
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any,
-                validate(
-                    input,
-                ): input is InferType<
-                    ADiscriminatorSchema<
-                        InferDiscriminatorType<
-                            TDiscriminatorKey,
-                            TMapping,
-                            JoinedDiscriminator<TDiscriminatorKey, TMapping>
-                        >
-                    >
-                > {
-                    return validate(discriminator, mapping, input);
-                },
-                parse(input, context) {
-                    return parse(discriminator, mapping, input, context, false);
-                },
+                validate: isType,
+                parse: parseType,
                 coerce: (input, context) => {
                     return parse(discriminator, mapping, input, context, true);
                 },
@@ -145,7 +159,10 @@ export function discriminator<
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(isType, parseType),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 type JoinedDiscriminator<

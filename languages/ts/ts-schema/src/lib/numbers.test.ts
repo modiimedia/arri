@@ -1,4 +1,5 @@
 import { type SchemaFormType } from '@arrirpc/type-defs';
+import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 
@@ -206,5 +207,27 @@ describe('jtd schema production', () => {
                 description: 'A 64 bit integer',
             },
         } satisfies SchemaFormType);
+    });
+});
+
+describe('standard-schema support', () => {
+    it('properly infers types', async () => {
+        const Schema = a.number();
+        type Schema = a.infer<typeof Schema>;
+        assertType<StandardSchemaV1<Schema>>(Schema);
+        const result = await Schema['~standard'].validate('');
+        if (!result.issues) assertType<Schema>(result.value);
+
+        assertType<StandardSchemaV1<number>>(a.number());
+        assertType<StandardSchemaV1<number>>(a.float32());
+        assertType<StandardSchemaV1<number>>(a.float64());
+        assertType<StandardSchemaV1<number>>(a.int8());
+        assertType<StandardSchemaV1<number>>(a.uint8());
+        assertType<StandardSchemaV1<number>>(a.int16());
+        assertType<StandardSchemaV1<number>>(a.uint16());
+        assertType<StandardSchemaV1<number>>(a.int32());
+        assertType<StandardSchemaV1<number>>(a.uint32());
+        assertType<StandardSchemaV1<bigint>>(a.int64());
+        assertType<StandardSchemaV1<bigint>>(a.uint64());
     });
 });

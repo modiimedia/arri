@@ -1,4 +1,5 @@
 import { type SchemaFormElements } from '@arrirpc/type-defs';
+import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 
@@ -165,7 +166,7 @@ describe('Serialization', () => {
     });
 });
 
-it('Produces Valid JTD Schema', () => {
+it('Produces Valid ATD', () => {
     const SimpleSchema = a.array(a.number(), {
         id: 'ArraySchema',
         description: 'hello world',
@@ -180,4 +181,12 @@ it('Produces Valid JTD Schema', () => {
             description: 'hello world',
         },
     } satisfies SchemaFormElements);
+});
+
+describe('standard-schema support', async () => {
+    it('properly infers types', async () => {
+        assertType<StandardSchemaV1<string[]>>(a.array(a.string()));
+        const result = await a.array(a.string())['~standard'].validate('');
+        if (!result.issues) assertType<string[]>(result.value);
+    });
 });

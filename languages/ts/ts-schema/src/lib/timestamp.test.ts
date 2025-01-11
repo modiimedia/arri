@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 it('infers types', () => {
@@ -29,5 +31,32 @@ describe('parsing', () => {
         expect(!parse('hello world'));
         expect(!parse(13431531));
         expect(!parse({ hello: 'hello' }));
+    });
+});
+
+it('produces valid ATD schema', () => {
+    const result = JSON.parse(JSON.stringify(a.timestamp()));
+    expect(result).toStrictEqual({
+        type: 'timestamp',
+        metadata: {},
+    });
+});
+
+describe('standard-schema support', () => {
+    it('conforms to the standard-schema interface', () => {
+        assertType<StandardSchemaV1<Date>>(a.timestamp());
+    });
+    it('properly validates Dates through the standard schema interface', async () => {
+        const input = new Date();
+        const result = await a.timestamp()['~standard'].validate(input);
+        expect(typeof result.issues).toBe('undefined');
+        if (result.issues) {
+            throw new Error(result.issues.join(', '));
+        }
+        expect(result.value instanceof Date).toBe(true);
+    });
+    it('excludes standard property from JSON output', () => {
+        const result = JSON.stringify(a.timestamp());
+        expect(!result.includes('"~standard":{')).toBe(true);
     });
 });

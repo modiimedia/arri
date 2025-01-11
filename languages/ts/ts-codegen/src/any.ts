@@ -21,7 +21,7 @@ export function tsAnyFromSchema(
             return `${target} += JSON.stringify(${input})`;
         },
         toQueryStringTemplate(_input, _target, _key) {
-            return `console.warn("[WARNING] Cannot serialize any's to query string. Skipping property at ${context.instancePath}.")`;
+            return `console.warn('[WARNING] Cannot serialize any\\'s to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: '',
     };

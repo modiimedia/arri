@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 const NumberRecordSchema = a.record(a.int32());
@@ -67,6 +69,17 @@ describe('Parsing', () => {
     });
 });
 
+it('produces valid ATD schema', () => {
+    const output = JSON.parse(JSON.stringify(a.record(a.float64())));
+    expect(output).toStrictEqual({
+        values: {
+            type: 'float64',
+            metadata: {},
+        },
+        metadata: {},
+    });
+});
+
 describe('Serialization', () => {
     it('Creates Valid JSON', () => {
         const inputs: NumberRecordSchema = {
@@ -80,5 +93,32 @@ describe('Serialization', () => {
         expect(result).toBe(
             `{"Foo":0,"Bar":1,"Baz":2,"\\"Foo\\" \\"Bar\\" \\"Baz\\"":3}`,
         );
+    });
+});
+
+describe('standard-schema support', () => {
+    const Schema = a.record(a.float64());
+    type Schema = a.infer<typeof Schema>;
+    it('properly infers types', async () => {
+        assertType<StandardSchemaV1<Schema>>(Schema);
+        const result = await Schema['~standard'].validate('');
+        if (!result.issues) assertType<Schema>(result.value);
+    });
+    it('outputs the same result via the standard interface', async () => {
+        const input: any = {
+            FOO: 1,
+            BAR: 2,
+        };
+        expect(a.validate(Schema, input)).toBe(true);
+        let standardResult = await Schema['~standard'].validate(input);
+        expect(typeof standardResult.issues).toBe('undefined');
+        if (!standardResult.issues) {
+            expect(standardResult.value).toStrictEqual(input);
+        }
+        input.BAZ = 'hello world';
+        expect(a.validate(Schema, input)).toBe(false);
+        standardResult = await Schema['~standard'].validate(input);
+        expect(standardResult.issues?.length).toBe(1);
+        expect(standardResult.issues?.[0]?.path).toStrictEqual(['BAZ']);
     });
 });

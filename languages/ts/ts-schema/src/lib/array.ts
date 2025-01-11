@@ -6,12 +6,27 @@ import {
     SCHEMA_METADATA,
     type ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
 ): AArraySchema<TInnerSchema> {
-    return {
+    const validateType = (
+        input: unknown,
+    ): input is InferType<AArraySchema<TInnerSchema>> => {
+        return validate(schema, input);
+    };
+    const parseType = (
+        input: unknown,
+        context: ValidationContext,
+    ): InferType<AArraySchema<TInnerSchema>> | undefined => {
+        return parse(schema, input, context, false);
+    };
+    const result: AArraySchema<TInnerSchema> = {
         elements: schema,
         metadata: {
             id: opts.id,
@@ -19,17 +34,11 @@ export function array<TInnerSchema extends ASchema<any> = any>(
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: [] as any,
-                parse(input, context) {
-                    return parse(schema, input, context, false);
-                },
+                parse: parseType,
                 coerce(input, context) {
                     return parse(schema, input, context, true);
                 },
-                validate(
-                    input,
-                ): input is InferType<AArraySchema<TInnerSchema>> {
-                    return validate(schema, input);
-                },
+                validate: validateType,
                 serialize(input, context) {
                     const strParts: string[] = [];
                     for (let i = 0; i < input.length; i++) {
@@ -46,7 +55,10 @@ export function array<TInnerSchema extends ASchema<any> = any>(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(validateType, parseType),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 function validate<T>(innerSchema: ASchema<T>, input: unknown): input is T[] {
