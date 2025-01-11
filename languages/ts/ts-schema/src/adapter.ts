@@ -1,6 +1,7 @@
 import { ValidationError } from './_index';
 import { type compile } from './compile';
 import { type ASchema, SCHEMA_METADATA, ValidationContext } from './schemas';
+import { createStandardSchemaProperty } from './standardSchema';
 
 export type ValidationAdapter = <T>(input: any) => ASchema<T>;
 
@@ -11,7 +12,7 @@ export function isAdaptedSchema(input: ASchema) {
 export function validatorFromAdaptedSchema(
     schema: ASchema,
 ): ReturnType<typeof compile> {
-    return {
+    const result: ReturnType<typeof compile> = {
         compiledCode: {
             parse: '',
             serialize: '',
@@ -67,5 +68,10 @@ export function validatorFromAdaptedSchema(
             };
             return schema.metadata[SCHEMA_METADATA].serialize(input, context);
         },
+        '~standard': createStandardSchemaProperty(
+            schema.metadata[SCHEMA_METADATA].validate,
+            schema.metadata[SCHEMA_METADATA].parse,
+        ),
     };
+    return result;
 }
