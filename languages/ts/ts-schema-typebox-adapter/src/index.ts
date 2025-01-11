@@ -57,6 +57,32 @@ export function typeboxAdapter<TInput extends TSchema>(
                 },
             },
         },
+        '~standard': {
+            version: 1,
+            vendor: 'arri-typebox',
+            validate(value: unknown) {
+                if (compiled.Check(value)) {
+                    return {
+                        value,
+                    };
+                }
+                if (typeof value === 'string') {
+                    const parsedVal = JSON.parse(value);
+                    if (compiled.Check(parsedVal)) {
+                        return parsedVal;
+                    }
+                }
+                const errors = typeboxErrorsToArriError(compiled.Errors(value));
+                return {
+                    issues: errors.errors.map((err) => ({
+                        message: err.message ?? 'Unknown error',
+                        path: err.instancePath
+                            .split('/')
+                            .filter((item) => item.length > 0),
+                    })),
+                };
+            },
+        },
     } satisfies ASchema<Static<TInput>> as any;
 }
 
