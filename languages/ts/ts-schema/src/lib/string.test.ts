@@ -1,3 +1,5 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 describe('parsing', () => {
@@ -13,4 +15,8 @@ describe('parsing', () => {
         expect(!parse({ message: 'hello world' }));
         expect(!parse(true));
     });
+});
+
+it('supports standard-schema', () => {
+    assertType<StandardSchemaV1<string>>(a.string());
 });

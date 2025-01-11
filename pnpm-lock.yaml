@@ -182,6 +182,9 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
     devDependencies:
+      '@standard-schema/spec':
+        specifier: 1.0.0-rc.0
+        version: 1.0.0-rc.0
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -1241,6 +1244,9 @@ packages:
   '@sindresorhus/merge-streams@2.3.0':
     resolution: {integrity: sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==}
     engines: {node: '>=18'}
+
+  '@standard-schema/spec@1.0.0-rc.0':
+    resolution: {integrity: sha512-DcY/ICFcZIESNTLTexIT108HOqd1FtxsiLV4ZYGluySWyjF6TZ6troNyXjiqoHU6j0wN3A6SmYnTA5CHQp9blw==}
 
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
@@ -4226,6 +4232,8 @@ snapshots:
   '@sinclair/typebox@0.34.13': {}
 
   '@sindresorhus/merge-streams@2.3.0': {}
+
+  '@standard-schema/spec@1.0.0-rc.0': {}
 
   '@trysound/sax@0.2.0': {}
 
