@@ -8,6 +8,7 @@ import {
     type Type as JtdType,
     TypeValues,
 } from '@arrirpc/type-defs';
+import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import { type ValueError } from './lib/validation';
 
@@ -44,7 +45,7 @@ export interface SchemaMetadata<T> {
     [SCHEMA_METADATA]: SchemaValidator<T>;
 }
 
-export interface ASchema<T = any> {
+export interface ASchema<T = any> extends StandardSchemaV1<T> {
     metadata: SchemaMetadata<T>;
     nullable?: boolean;
 }

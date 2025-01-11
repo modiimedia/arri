@@ -7,6 +7,10 @@ import {
     SCHEMA_METADATA,
     type ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 import { serializeString } from './string';
 
 /**
@@ -30,7 +34,28 @@ export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
 ): ARecordSchema<TInnerSchema> {
-    return {
+    const validateFn = (
+        input: unknown,
+    ): input is InferRecordType<TInnerSchema> => {
+        if (!isObject(input)) {
+            return false;
+        }
+        for (const key of Object.keys(input)) {
+            const val = input[key];
+            const isValid = schema.metadata[SCHEMA_METADATA].validate(val);
+            if (!isValid) {
+                return false;
+            }
+        }
+        return true;
+    };
+    const parseFn = (
+        input: unknown,
+        ctx: ValidationContext,
+    ): InferRecordType<TInnerSchema> | undefined => {
+        return parse(schema, input, ctx, false);
+    };
+    const result: ARecordSchema<TInnerSchema> = {
         values: schema,
         metadata: {
             id: opts.id,
@@ -38,23 +63,8 @@ export function record<TInnerSchema extends ASchema<any>>(
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {},
-                validate(input): input is InferRecordType<TInnerSchema> {
-                    if (!isObject(input)) {
-                        return false;
-                    }
-                    for (const key of Object.keys(input)) {
-                        const val = input[key];
-                        const isValid =
-                            schema.metadata[SCHEMA_METADATA].validate(val);
-                        if (!isValid) {
-                            return false;
-                        }
-                    }
-                    return true;
-                },
-                parse(input, context) {
-                    return parse(schema, input, context, false);
-                },
+                validate: validateFn,
+                parse: parseFn,
                 coerce(input: unknown, data) {
                     return parse(schema, input, data, true);
                 },
@@ -81,7 +91,10 @@ export function record<TInnerSchema extends ASchema<any>>(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(validateFn, parseFn),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 function parse<T>(

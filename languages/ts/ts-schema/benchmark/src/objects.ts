@@ -35,7 +35,7 @@ const ArriUser = a.object({
         }),
     ),
 });
-const ArriUserValidator = a.compile(ArriUser);
+const $$ArriUser = a.compile(ArriUser);
 type ArriUser = a.infer<typeof ArriUser>;
 
 const input: ArriUser = {
@@ -253,7 +253,13 @@ void benny.suite(
         a.validate(ArriUser, input);
     }),
     benny.add('Arri (Compiled)', () => {
-        ArriUserValidator.validate(input);
+        $$ArriUser.validate(input);
+    }),
+    benny.add('Arri (Standard-Schema)', () => {
+        ArriUser['~standard'].validate(input);
+    }),
+    benny.add('Arri (Compiled + Standard Schema)', () => {
+        $$ArriUser['~standard'].validate(input);
     }),
     benny.add('Ajv - JTD', () => {
         ajvJtd.validate(ArriUser, input);
@@ -296,7 +302,7 @@ void benny.suite(
         a.parse(ArriUser, inputJson);
     }),
     benny.add('Arri (Compiled)', () => {
-        ArriUserValidator.parse(inputJson);
+        $$ArriUser.parse(inputJson);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         AjvJtdUserParser(inputJson);
@@ -349,11 +355,11 @@ void benny.suite(
         a.serialize(ArriUser, input);
     }),
     benny.add('Arri (Compiled)', () => {
-        ArriUserValidator.serialize(input);
+        $$ArriUser.serialize(input);
     }),
     benny.add('Arri (Compiled) Validate and Serialize', () => {
-        if (ArriUserValidator.validate(input)) {
-            ArriUserValidator.serialize(input);
+        if ($$ArriUser.validate(input)) {
+            $$ArriUser.serialize(input);
         }
     }),
     benny.add('Ajv - JTD (Compiled)', () => {

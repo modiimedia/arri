@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { a } from '../../src/_index';
 
 const IntSchema = a.int32();
-const IntSchemaValidator = a.compile(IntSchema);
+const $$IntSchema = a.compile(IntSchema);
 const TypeBoxIntSchema = Type.Integer();
 const TypeBoxIntValidator = TypeCompiler.Compile(TypeBoxIntSchema);
 const ajv = new Ajv({ strict: false });
@@ -34,7 +34,13 @@ void benny.suite(
         a.validate(IntSchema, intInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        IntSchemaValidator.validate(intInput);
+        $$IntSchema.validate(intInput);
+    }),
+    benny.add('Arri (Standard Schema)', () => {
+        IntSchema['~standard'].validate(intInput);
+    }),
+    benny.add('Arri (Compiled + Standard Schema', () => {
+        $$IntSchema['~standard'].validate(intInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
         ajv.validate(TypeBoxIntSchema, intInput);
@@ -77,7 +83,7 @@ void benny.suite(
         a.parse(IntSchema, intStringInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        IntSchemaValidator.parse(intStringInput);
+        $$IntSchema.parse(intStringInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         ajvJtdParser(intStringInput);
@@ -133,7 +139,7 @@ void benny.suite(
         a.serialize(IntSchema, intInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        IntSchemaValidator.serialize(intInput);
+        $$IntSchema.serialize(intInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         ajvJtdSerializer(intInput);

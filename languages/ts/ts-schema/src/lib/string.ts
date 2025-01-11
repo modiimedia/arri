@@ -4,6 +4,10 @@ import {
     SCHEMA_METADATA,
     type ValidationContext as ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 
 /**
  * @example
@@ -14,7 +18,7 @@ import {
 export function string(
     opts: ASchemaOptions = {},
 ): AScalarSchema<'string', string> {
-    return {
+    const result: AScalarSchema<'string', string> = {
         type: 'string',
         metadata: {
             id: opts.id,
@@ -39,7 +43,10 @@ export function string(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty<string>(validate, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 export function serializeString(input: string) {

@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 const DiscriminatorSchema = a.discriminator(
@@ -113,4 +115,101 @@ test('overloaded functions produce the same result', () => {
     expect(JSON.stringify(SchemaA)).toBe(JSON.stringify(SchemaB));
     expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
     expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+});
+
+it('produces valid ATD', () => {
+    const result = JSON.parse(
+        JSON.stringify(
+            a.discriminator('Message', 'type', {
+                TEXT: a.object({
+                    content: a.string(),
+                }),
+                IMAGE: a.object({
+                    url: a.string(),
+                }),
+                VIDEO: a.object({
+                    url: a.string(),
+                    length: a.uint64(),
+                }),
+            }),
+        ),
+    );
+    expect(result).toStrictEqual({
+        discriminator: 'type',
+        mapping: {
+            TEXT: {
+                properties: {
+                    content: {
+                        type: 'string',
+                        metadata: {},
+                    },
+                },
+                metadata: {},
+            },
+            IMAGE: {
+                properties: {
+                    url: {
+                        type: 'string',
+                        metadata: {},
+                    },
+                },
+                metadata: {},
+            },
+            VIDEO: {
+                properties: {
+                    url: {
+                        type: 'string',
+                        metadata: {},
+                    },
+                    length: {
+                        type: 'uint64',
+                        metadata: {},
+                    },
+                },
+                metadata: {},
+            },
+        },
+        metadata: {
+            id: 'Message',
+        },
+    });
+});
+
+describe('standard-schema support', () => {
+    const Message = a.discriminator('Message', 'msgType', {
+        TEXT: a.object({
+            userId: a.string(),
+            content: a.string(),
+        }),
+        IMAGE: a.object({
+            userId: a.string(),
+            imageUrl: a.string(),
+        }),
+    });
+    type Message = a.infer<typeof Message>;
+    it('properly infers types', async () => {
+        assertType<StandardSchemaV1<Message>>(Message);
+        const result = await Message['~standard'].validate('');
+        if (!result.issues) {
+            assertType<Message>(result.value);
+        }
+    });
+    it('produces the same result via the standard-schema interface', async () => {
+        const input: Message = {
+            msgType: 'IMAGE',
+            userId: '12345',
+            imageUrl: 'foo',
+        };
+        expect(a.validate(Message, input)).toBe(true);
+        let standardResult = await Message['~standard'].validate(input);
+        expect(typeof standardResult.issues).toBe('undefined');
+        if (!standardResult.issues) {
+            expect(standardResult.value).toStrictEqual(input);
+        }
+        (input as any).msgType = 'VIDEO';
+        expect(a.validate(Message, input)).toBe(false);
+        standardResult = await Message['~standard'].validate(input);
+        expect(standardResult.issues?.length).toBe(1);
+        expect(standardResult.issues?.[0]?.path).toStrictEqual(['msgType']);
+    });
 });

@@ -1,4 +1,5 @@
 import { isSchemaFormEnum, isSchemaFormType } from '@arrirpc/type-defs';
+import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import {
     type ASchema,
@@ -24,6 +25,7 @@ import {
     uint32Max,
     uint32Min,
 } from './lib/numberConstants';
+import { createStandardSchemaProperty } from './standardSchema';
 
 export {
     getSchemaParsingCode,
@@ -31,7 +33,8 @@ export {
     getSchemaValidationCode,
 };
 
-export interface CompiledValidator<TSchema extends ASchema<any>> {
+export interface CompiledValidator<TSchema extends ASchema<any>>
+    extends StandardSchemaV1<InferType<TSchema>> {
     /**
      * Determine if a type matches a schema. This is a type guard.
      */
@@ -67,30 +70,29 @@ export function compile<TSchema extends ASchema<any>>(
     const serializer = getCompiledSerializer(schema);
 
     const serializeFn = serializer.fn;
-    const validate = new Function(
-        'input',
-        validateCode,
-    ) as CompiledValidator<TSchema>['validate'];
-
-    return {
-        validate,
-        parse(input) {
-            try {
-                return parseFn(input);
-            } catch (err) {
-                const errors = getInputErrors(schema, input);
-                let errorMessage = err instanceof Error ? err.message : '';
-                if (errors.length) {
-                    errorMessage =
-                        errors[0]!.message ??
-                        `Parsing error at ${errors[0]!.instancePath}`;
-                }
-                throw new ValidationError({
-                    message: errorMessage,
-                    errors,
-                });
+    const validate = new Function('input', validateCode) as (
+        input: unknown,
+    ) => input is InferType<TSchema>;
+    const parse = (input: unknown): InferType<TSchema> => {
+        try {
+            return parseFn(input);
+        } catch (err) {
+            const errors = getInputErrors(schema, input);
+            let errorMessage = err instanceof Error ? err.message : '';
+            if (errors.length) {
+                errorMessage =
+                    errors[0]!.message ??
+                    `Parsing error at ${errors[0]!.instancePath}`;
             }
-        },
+            throw new ValidationError({
+                message: errorMessage,
+                errors,
+            });
+        }
+    };
+    const result: CompiledValidator<TSchema> = {
+        validate,
+        parse: parse,
         safeParse(input) {
             try {
                 const result = parseFn(input);
@@ -115,7 +117,6 @@ export function compile<TSchema extends ASchema<any>>(
                 };
             }
         },
-
         serialize(input) {
             try {
                 return serializeFn(input);
@@ -135,7 +136,9 @@ export function compile<TSchema extends ASchema<any>>(
             parse: parser.code,
             serialize: serializer.code,
         },
+        '~standard': createStandardSchemaProperty(validate, parse),
     };
+    return result;
 }
 
 type CompiledParser<TSchema extends ASchema<any>> =
