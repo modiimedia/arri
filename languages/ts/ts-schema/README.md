@@ -90,6 +90,12 @@ a.validate(User, { id: '1', name: null });
 
 // outputs valid json
 a.serialize(User, { id: '1', name: 'John Doe' });
+
+// JIT compiled validator (faster but server-side only)
+const $$User = a.compile(User);
+$$User.validate({ id: '1', name: 'John Doe' });
+$$User.parse(`{"id": "1", "name": "John Doe"}`);
+$$User.serialize({ id: '1', name: 'John Doe' });
 ```
 
 ## Usage With @arrirpc/server
