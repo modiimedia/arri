@@ -2,7 +2,7 @@
 
 A Typescript validator and schema builder that can be compiled to other languages. A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library. This library also supports [standard-schema](https://github.com/standard-schema/standard-schema) meaning it can be used with any third-party library that accepts standard schema.
 
-Under the hood this library constructs [Arri Type Definitions (ATD)](/specifications/arri_type_definition.md). These definitions can be passed to the [Arri CLI](/tooling/cli//README.md) to generate code for any of the client languages that Arri supports. Lastly, this library also comes with a [JIT compiler](#compiled-validators) which produces precompiled validators more than 100x faster than Zod.
+Under the hood this library constructs [Arri Type Definitions (ATD)](/specifications/arri_type_definition.md). These definitions can be passed to the [Arri CLI](/tooling/cli//README.md) to generate code for any of the client languages that Arri supports. Lastly, this library also comes with a [JIT compiler](#compiled-validators) which produces precompiled validators that are more than 100x faster than Zod.
 
 ## Project Philosophy
 
