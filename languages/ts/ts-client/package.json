@@ -1,21 +1,14 @@
 {
   "name": "@arrirpc/client",
-  "version": "0.71.0",
+  "version": "0.71.1",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -27,7 +20,5 @@
     "ofetch": "^1.4.1",
     "ws": "^8.18.0"
   },
-  "devDependencies": {
-    "@types/ws": "^8.5.13"
-  }
+  "devDependencies": { "@types/ws": "^8.5.13" }
 }
