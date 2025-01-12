@@ -22,7 +22,7 @@ export function createStandardSchemaProperty<T>(
             };
             try {
                 const result = parse(input, ctx);
-                if (!result || ctx.errors.length) {
+                if (ctx.errors.length) {
                     return {
                         issues: ctx.errors.map((err) => ({
                             message: err.message ?? 'Unknown error',
@@ -33,7 +33,7 @@ export function createStandardSchemaProperty<T>(
                     };
                 }
                 return {
-                    value: result,
+                    value: result!,
                 };
             } catch (err) {
                 return {
