@@ -11,14 +11,12 @@ import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value, type ValueErrorIterator } from '@sinclair/typebox/value';
 import { jsonSchemaToJtdSchema, type JsonSchemaType } from 'json-schema-to-atd';
 
-export { Kind } from '@sinclair/typebox';
-
 // strip out Typebox symbols so to prevent TS inference errors
-type CleanedSchema = Omit<TSchema, symbol>;
+type CleanedTSchema = Omit<TSchema, symbol>;
 
 // infer the static type of a Typebox schema that has had its symbols omitted
 export type CleanedStatic<
-    T extends CleanedSchema,
+    T extends CleanedTSchema,
     P extends unknown[] = [],
 > = (T & {
     params: P;
@@ -26,7 +24,7 @@ export type CleanedStatic<
 
 type CleanedTObject = Omit<TObject, symbol>;
 
-export function typeboxAdapter<TInput extends CleanedSchema>(
+export function typeboxAdapter<TInput extends CleanedTSchema>(
     input: TInput,
 ): TInput extends CleanedTObject
     ? AObjectSchema<CleanedStatic<TInput>>

@@ -57,17 +57,4 @@ app.registerDefinitions({
 app.use(manualRouter);
 app.use(manualTestService);
 
-app.rpc(
-    'HelloTypebox',
-    defineRpc({
-        params: typeboxAdapter(
-            Type.Object({
-                id: Type.String(),
-            }),
-        ),
-        response: undefined,
-        async handler() {},
-    }),
-);
-
 export default app;
