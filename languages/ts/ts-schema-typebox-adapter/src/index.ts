@@ -6,21 +6,31 @@ import {
     ValidationError,
     type ValueError,
 } from '@arrirpc/schema';
-import {
-    OptionalKind,
-    type Static,
-    type TObject,
-    TSchema,
-} from '@sinclair/typebox';
+import { OptionalKind, type TObject, TSchema } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value, type ValueErrorIterator } from '@sinclair/typebox/value';
 import { jsonSchemaToJtdSchema, type JsonSchemaType } from 'json-schema-to-atd';
 
-export function typeboxAdapter<TInput extends TSchema>(
+export { Kind } from '@sinclair/typebox';
+
+// strip out Typebox symbols so to prevent TS inference errors
+type CleanedSchema = Omit<TSchema, symbol>;
+
+// infer the static type of a Typebox schema that has had its symbols omitted
+export type CleanedStatic<
+    T extends CleanedSchema,
+    P extends unknown[] = [],
+> = (T & {
+    params: P;
+})['static'];
+
+type CleanedTObject = Omit<TObject, symbol>;
+
+export function typeboxAdapter<TInput extends CleanedSchema>(
     input: TInput,
-): TInput extends TObject
-    ? AObjectSchema<Static<TInput>>
-    : ASchema<Static<TInput>> {
+): TInput extends CleanedTObject
+    ? AObjectSchema<CleanedStatic<TInput>>
+    : ASchema<CleanedStatic<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as unknown as JsonSchemaType);
     const compiled = TypeCompiler.Compile<any>(input);
     const result = {
@@ -30,8 +40,8 @@ export function typeboxAdapter<TInput extends TSchema>(
             description: input.description,
             [SCHEMA_METADATA]: {
                 _isAdapted: true,
-                output: {} as any as Static<TInput>,
-                optional: input[OptionalKind] === 'Optional',
+                output: {} as any as CleanedStatic<TInput>,
+                optional: (input as any)[OptionalKind] === 'Optional',
                 parse(val: unknown) {
                     if (typeof val === 'string') {
                         const parsedVal = JSON.parse(val);
@@ -50,10 +60,10 @@ export function typeboxAdapter<TInput extends TSchema>(
                 coerce(val: unknown): any {
                     return Value.Cast(input as any, val);
                 },
-                validate(val: unknown): val is Static<TInput> {
+                validate(val: unknown): val is CleanedStatic<TInput> {
                     return compiled.Check(val);
                 },
-                serialize(val: Static<TInput>) {
+                serialize(val: CleanedStatic<TInput>) {
                     return compiled.Encode(val);
                 },
             },
@@ -84,7 +94,7 @@ export function typeboxAdapter<TInput extends TSchema>(
                 };
             },
         },
-    } satisfies ASchema<Static<TInput>> as any;
+    } satisfies ASchema<CleanedStatic<TInput>> as any;
     hideInvalidProperties(result);
     return result;
 }

@@ -3,9 +3,12 @@ import {
     ArriApp,
     defineError,
     defineMiddleware,
+    defineRpc,
     getHeader,
     handleCors,
 } from '@arrirpc/server';
+import { typeboxAdapter } from '@arrirpc/typebox-adapter';
+import { Type } from '@sinclair/typebox';
 
 import { manualRouter, manualTestService } from './routes/other';
 
@@ -53,5 +56,18 @@ app.registerDefinitions({
 
 app.use(manualRouter);
 app.use(manualTestService);
+
+app.rpc(
+    'HelloTypebox',
+    defineRpc({
+        params: typeboxAdapter(
+            Type.Object({
+                id: Type.String(),
+            }),
+        ),
+        response: undefined,
+        async handler() {},
+    }),
+);
 
 export default app;
