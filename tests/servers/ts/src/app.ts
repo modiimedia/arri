@@ -3,12 +3,9 @@ import {
     ArriApp,
     defineError,
     defineMiddleware,
-    defineRpc,
     getHeader,
     handleCors,
 } from '@arrirpc/server';
-import { typeboxAdapter } from '@arrirpc/typebox-adapter';
-import { Type } from '@sinclair/typebox';
 
 import { manualRouter, manualTestService } from './routes/other';
 
