@@ -1,13 +1,13 @@
 import {
-    type AScalarSchema,
-    type ASchemaOptions,
-    validatorKey,
-    type ValidationContext,
-} from '../schemas';
-import {
     createStandardSchemaProperty,
     hideInvalidProperties,
 } from '../adapters';
+import {
+    type AScalarSchema,
+    type ASchemaOptions,
+    type ValidationContext,
+    validatorKey,
+} from '../schemas';
 
 /**
  * @example
