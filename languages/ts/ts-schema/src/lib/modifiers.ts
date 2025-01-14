@@ -1,13 +1,13 @@
 import {
     type ASchema,
     type ASchemaOptions,
-    SCHEMA_METADATA,
+    validatorKey,
     ValidationContext,
 } from '../schemas';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
 
 /**
  * Transforms a schema into a nullable type
@@ -29,7 +29,7 @@ export function nullable<T>(
         if (val === null) {
             return true;
         }
-        return schema.metadata[SCHEMA_METADATA].validate(val);
+        return schema.metadata[validatorKey].validate(val);
     };
     const parse = (
         val: unknown,
@@ -45,7 +45,7 @@ export function nullable<T>(
         if (val === null) {
             return null;
         }
-        return schema.metadata[SCHEMA_METADATA].parse(val, data);
+        return schema.metadata[validatorKey].decode(val, data);
     };
     const result: ASchema<T | null> = {
         ...schema,
@@ -54,11 +54,11 @@ export function nullable<T>(
             id: opts.id ?? schema.metadata.id,
             description: opts.description ?? schema.metadata.description,
             isDeprecated: opts.isDeprecated ?? schema.metadata.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: null as T | null,
-                optional: schema.metadata[SCHEMA_METADATA].optional,
+                optional: schema.metadata[validatorKey].optional,
                 validate: isType,
-                parse: parse,
+                decode: parse,
                 coerce(val, data) {
                     if (val === null) {
                         return null;
@@ -66,16 +66,13 @@ export function nullable<T>(
                     if (val === 'null') {
                         return null;
                     }
-                    return schema.metadata[SCHEMA_METADATA].coerce(val, data);
+                    return schema.metadata[validatorKey].coerce(val, data);
                 },
-                serialize(val, data) {
+                encode(val, data) {
                     if (val === null) {
                         return 'null';
                     }
-                    return schema.metadata[SCHEMA_METADATA].serialize(
-                        val,
-                        data,
-                    );
+                    return schema.metadata[validatorKey].encode(val, data);
                 },
             },
         },
@@ -104,7 +101,7 @@ export function optional<T>(
         if (val === undefined) {
             return true;
         }
-        return input.metadata[SCHEMA_METADATA].validate(val);
+        return input.metadata[validatorKey].validate(val);
     };
     const parse = (val: unknown, context: ValidationContext): T | undefined => {
         if (typeof val === 'undefined') {
@@ -113,7 +110,7 @@ export function optional<T>(
         if (context.instancePath.length === 0 && val === 'undefined') {
             return undefined;
         }
-        return input.metadata[SCHEMA_METADATA].parse(val, context);
+        return input.metadata[validatorKey].decode(val, context);
     };
     const result: ASchema<T | undefined> = {
         ...input,
@@ -121,11 +118,11 @@ export function optional<T>(
             id: opts.id ?? input.metadata.id,
             description: opts.description ?? input.metadata.description,
             isDeprecated: opts.isDeprecated ?? input.metadata.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: undefined as T | undefined,
                 optional: true,
                 validate: isType,
-                parse: parse,
+                decode: parse,
                 coerce: (val, data) => {
                     if (typeof val === 'undefined') {
                         return undefined;
@@ -133,13 +130,13 @@ export function optional<T>(
                     if (val === 'undefined') {
                         return undefined;
                     }
-                    return input.metadata[SCHEMA_METADATA].coerce(val, data);
+                    return input.metadata[validatorKey].coerce(val, data);
                 },
-                serialize: (val, data) => {
+                encode: (val, data) => {
                     if (typeof val === 'undefined') {
                         return 'undefined';
                     }
-                    return input.metadata[SCHEMA_METADATA].serialize(val, data);
+                    return input.metadata[validatorKey].encode(val, data);
                 },
             },
         },
@@ -159,8 +156,8 @@ export function clone<T>(
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                ...input.metadata[SCHEMA_METADATA],
+            [validatorKey]: {
+                ...input.metadata[validatorKey],
             },
         },
         '~standard': input['~standard'],

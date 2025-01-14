@@ -1,8 +1,11 @@
 import {
-    type ASchema,
-    SCHEMA_METADATA,
-    type ValidationContext,
-} from '../schemas';
+    isValidationError,
+    Result,
+    ValidationError,
+    ValueError,
+} from '@arrirpc/schema-interface';
+
+import { type ASchema, type ValidationContext, validatorKey } from '../schemas';
 
 export function sanitizeJson(json: string) {
     return json
@@ -20,15 +23,15 @@ export function validate<T = any>(
     schema: ASchema<T>,
     input: unknown,
 ): input is T {
-    return schema.metadata[SCHEMA_METADATA].validate(input);
+    return schema[validatorKey].validate(input);
 }
 
 /**
  * Parse a JSON string or the result of JSON.parse(). Throws a ValidationError if parsing fails.
  */
-export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
+export function decodeUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
     const errors: ValueError[] = [];
-    const result = schema.metadata[SCHEMA_METADATA].parse(input, {
+    const result = schema[validatorKey].decode(input, {
         schemaPath: '',
         instancePath: '',
         errors,
@@ -43,14 +46,11 @@ export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
 }
 
 /**
- * Parse a value without throwing an error.
+ * Decode a value without throwing an error.
  */
-export function safeParse<T = any>(
-    schema: ASchema<T>,
-    input: unknown,
-): SafeResult<T> {
+export function decode<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
     try {
-        const result = parse(schema, input);
+        const result = decodeUnsafe(schema, input);
         return {
             success: true,
             value: result,
@@ -59,15 +59,18 @@ export function safeParse<T = any>(
         if (isValidationError(err)) {
             return {
                 success: false,
-                error: err,
+                errors: err.errors,
             };
         }
         return {
             success: false,
-            error: new ValidationError({
-                message: 'Unable to parse input',
-                errors: [],
-            }),
+            errors: [
+                {
+                    instancePath: '',
+                    schemaPath: '',
+                    message: 'Unable to parse input',
+                },
+            ],
         };
     }
 }
@@ -75,9 +78,9 @@ export function safeParse<T = any>(
 /**
  * Try to convert input to match the specified schema. Throws a ValidationError if conversion fails.
  */
-export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
+export function coerceUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
     const errors: ValueError[] = [];
-    const result = schema.metadata[SCHEMA_METADATA].coerce(input, {
+    const result = schema[validatorKey].coerce(input, {
         schemaPath: '',
         instancePath: '',
         errors,
@@ -91,19 +94,12 @@ export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
     return result as T;
 }
 
-export type SafeResult<T> =
-    | { success: true; value: T }
-    | { success: false; error: ValidationError };
-
 /**
  * Convert a value into the specified schema without throwing an error.
  */
-export function safeCoerce<T = any>(
-    schema: ASchema<T>,
-    input: unknown,
-): SafeResult<T> {
+export function coerce<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
     try {
-        const result = coerce(schema, input);
+        const result = coerceUnsafe(schema, input);
         return {
             success: true,
             value: result,
@@ -112,15 +108,18 @@ export function safeCoerce<T = any>(
         if (isValidationError(err)) {
             return {
                 success: false,
-                error: err,
+                errors: err.errors,
             };
         }
         return {
             success: false,
-            error: new ValidationError({
-                message: 'Unable to coerce input',
-                errors: [],
-            }),
+            errors: [
+                {
+                    instancePath: '',
+                    schemaPath: '',
+                    message: 'Unable to coerce input',
+                },
+            ],
         };
     }
 }
@@ -128,19 +127,19 @@ export function safeCoerce<T = any>(
 /**
  * Serialize a value into a JSON string
  */
-export function serialize<T = any>(schema: ASchema<T>, input: T) {
+export function encode<T = any>(schema: ASchema<T>, input: T) {
     const context: ValidationContext = {
         instancePath: '',
         schemaPath: '',
         errors: [],
     };
-    return schema.metadata[SCHEMA_METADATA].serialize(input, context);
+    return schema[validatorKey].encode(input, context);
 }
 
 export function errors(schema: ASchema, input: unknown): ValueError[] {
     const errorList: ValueError[] = [];
     try {
-        schema.metadata[SCHEMA_METADATA].parse(input, {
+        schema[validatorKey].decode(input, {
             errors: errorList,
             instancePath: '',
             schemaPath: '',
@@ -149,32 +148,4 @@ export function errors(schema: ASchema, input: unknown): ValueError[] {
         errorList.push({ instancePath: '', schemaPath: '', message: `${err}` });
     }
     return errorList;
-}
-
-export interface ValueError {
-    instancePath: string;
-    schemaPath: string;
-    message?: string;
-    data?: any;
-}
-
-export class ValidationError extends Error {
-    errors: ValueError[];
-
-    constructor(options: { message: string; errors: ValueError[] }) {
-        super(options.message);
-        this.errors = options.errors;
-    }
-}
-
-export function isValidationError(input: unknown): input is ValidationError {
-    if (typeof input !== 'object' || !input) {
-        return false;
-    }
-    return (
-        'message' in input &&
-        typeof input.message === 'string' &&
-        'errors' in input &&
-        Array.isArray(input.errors)
-    );
 }

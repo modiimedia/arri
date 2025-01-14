@@ -302,7 +302,7 @@ void benny.suite(
         a.parse(ArriUser, inputJson);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.parse(inputJson);
+        $$ArriUser.decodeJson(inputJson);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         AjvJtdUserParser(inputJson);
@@ -355,11 +355,11 @@ void benny.suite(
         a.serialize(ArriUser, input);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.serialize(input);
+        $$ArriUser.encode(input);
     }),
     benny.add('Arri (Compiled) Validate and Serialize', () => {
         if ($$ArriUser.validate(input)) {
-            $$ArriUser.serialize(input);
+            $$ArriUser.encode(input);
         }
     }),
     benny.add('Ajv - JTD (Compiled)', () => {

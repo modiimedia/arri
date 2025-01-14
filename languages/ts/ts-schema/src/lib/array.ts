@@ -3,13 +3,13 @@ import {
     type ASchema,
     type ASchemaOptions,
     type InferType,
-    SCHEMA_METADATA,
+    validatorKey,
     type ValidationContext,
 } from '../schemas';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     schema: TInnerSchema,
@@ -32,19 +32,19 @@ export function array<TInnerSchema extends ASchema<any> = any>(
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: [] as any,
-                parse: parseType,
+                decode: parseType,
                 coerce(input, context) {
                     return parse(schema, input, context, true);
                 },
                 validate: validateType,
-                serialize(input, context) {
+                encode(input, context) {
                     const strParts: string[] = [];
                     for (let i = 0; i < input.length; i++) {
                         const item = input[i];
                         strParts.push(
-                            schema.metadata[SCHEMA_METADATA].serialize(item, {
+                            schema.metadata[validatorKey].encode(item, {
                                 instancePath: `${context.instancePath}/${i}`,
                                 schemaPath: `${context.schemaPath}/elements`,
                                 errors: context.errors,
@@ -66,7 +66,7 @@ function validate<T>(innerSchema: ASchema<T>, input: unknown): input is T[] {
         return false;
     }
     for (const item of input) {
-        const isValid = innerSchema.metadata[SCHEMA_METADATA].validate(item);
+        const isValid = innerSchema.metadata[validatorKey].validate(item);
         if (!isValid) {
             return false;
         }
@@ -107,27 +107,21 @@ function parse<T>(
     for (let i = 0; i < parsedInput.length; i++) {
         const item = parsedInput[i];
         if (coerce) {
-            const parsedItem = innerSchema.metadata[SCHEMA_METADATA].coerce(
-                item,
-                {
-                    instancePath: `${data.instancePath}/${i}`,
-                    schemaPath: `${data.schemaPath}/elements`,
-                    errors: data.errors,
-                },
-            );
+            const parsedItem = innerSchema.metadata[validatorKey].coerce(item, {
+                instancePath: `${data.instancePath}/${i}`,
+                schemaPath: `${data.schemaPath}/elements`,
+                errors: data.errors,
+            });
             // if (data.errors.length) {
             //     return undefined;
             // }
             result.push(parsedItem as any);
         } else {
-            const parsedItem = innerSchema.metadata[SCHEMA_METADATA].parse(
-                item,
-                {
-                    instancePath: `${data.instancePath}/${i}`,
-                    schemaPath: `${data.schemaPath}/elements`,
-                    errors: data.errors,
-                },
-            );
+            const parsedItem = innerSchema.metadata[validatorKey].decode(item, {
+                instancePath: `${data.instancePath}/${i}`,
+                schemaPath: `${data.schemaPath}/elements`,
+                errors: data.errors,
+            });
             // if (data.errors.length) {
             //     return undefined;
             // }

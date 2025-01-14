@@ -1,14 +1,18 @@
+import { v1 } from '@arrirpc/schema-interface';
+
+import {
+    createArriInterfaceProperty,
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
 import {
     type AScalarSchema,
     type ASchemaOptions,
     type NumberType,
-    SCHEMA_METADATA,
+    SchemaValidator,
     type ValidationContext,
+    validatorKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../standardSchema';
 import {
     int8Max,
     int8Min,
@@ -41,8 +45,8 @@ export function number(opts: ASchemaOptions = {}) {
 
 function coerceNumber(input: unknown, options: ValidationContext) {
     if (typeof input === 'string') {
-        const parsedInput = Number(input);
-        if (Number.isNaN(parsedInput)) {
+        const decodedInput = Number(input);
+        if (Number.isNaN(decodedInput)) {
             options.errors.push({
                 instancePath: `${options.instancePath}`,
                 schemaPath: `${options.schemaPath}/type`,
@@ -52,9 +56,9 @@ function coerceNumber(input: unknown, options: ValidationContext) {
             });
             return undefined;
         }
-        return parseNumber(parsedInput, options);
+        return decodeNumber(decodedInput, options);
     }
-    return parseNumber(input, options);
+    return decodeNumber(input, options);
 }
 
 export function float32(opts: ASchemaOptions = {}) {
@@ -164,7 +168,7 @@ export function int64(
     }
     function parse(
         input: unknown,
-        data: ValidationContext,
+        context: ValidationContext,
     ): bigint | undefined {
         if (typeof input === 'string' || typeof input === 'number') {
             try {
@@ -172,17 +176,17 @@ export function int64(
                 if (isType(val)) {
                     return val;
                 }
-                data.errors.push({
-                    message: `Error at ${data.instancePath}. Invalid int64.`,
-                    schemaPath: `${data.schemaPath}/type`,
-                    instancePath: data.instancePath,
+                context.errors.push({
+                    message: `Error at ${context.instancePath}. Invalid int64.`,
+                    schemaPath: `${context.schemaPath}/type`,
+                    instancePath: context.instancePath,
                 });
                 return undefined;
             } catch (_) {
-                data.errors.push({
-                    message: `Error at ${data.instancePath}. Unable to transform ${input} to BigInt`,
-                    schemaPath: `${data.schemaPath}/type`,
-                    instancePath: data.instancePath,
+                context.errors.push({
+                    message: `Error at ${context.instancePath}. Unable to transform ${input} to BigInt`,
+                    schemaPath: `${context.schemaPath}/type`,
+                    instancePath: context.instancePath,
                 });
                 return undefined;
             }
@@ -190,32 +194,34 @@ export function int64(
         if (isType(input)) {
             return input;
         }
-        data.errors.push({
-            message: `Error at ${data.instancePath}. Expected BigInt or integer string`,
-            schemaPath: `${data.schemaPath}/type`,
-            instancePath: data.instancePath,
+        context.errors.push({
+            message: `Error at ${context.instancePath}. Expected BigInt or integer string`,
+            schemaPath: `${context.schemaPath}/type`,
+            instancePath: context.instancePath,
         });
         return undefined;
     }
+    const validator: SchemaValidator<bigint> = {
+        output: BigInt('0'),
+        validate: isType,
+        decode: parse,
+        coerce: parse,
+        encode(input, context) {
+            if (context.instancePath.length === 0) {
+                return input.toString();
+            }
+            return `"${input.toString()}"`;
+        },
+    };
     const result: AScalarSchema<'int64', bigint> = {
         type: 'int64',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: BigInt('0'),
-                validate: isType,
-                parse,
-                coerce: parse,
-                serialize(input, context) {
-                    if (context.instancePath.length === 0) {
-                        return input.toString();
-                    }
-                    return `"${input.toString()}"`;
-                },
-            },
         },
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -234,7 +240,7 @@ export function uint64(
     }
     function parse(
         input: unknown,
-        data: ValidationContext,
+        context: ValidationContext,
     ): bigint | undefined {
         if (typeof input === 'string' || typeof input === 'number') {
             try {
@@ -242,17 +248,17 @@ export function uint64(
                 if (isType(val)) {
                     return val;
                 }
-                data.errors.push({
-                    message: `Error at ${data.instancePath}. Invalid uint64.`,
-                    schemaPath: `${data.schemaPath}/type`,
-                    instancePath: data.instancePath,
+                context.errors.push({
+                    message: `Error at ${context.instancePath}. Invalid uint64.`,
+                    schemaPath: `${context.schemaPath}/type`,
+                    instancePath: context.instancePath,
                 });
                 return undefined;
             } catch (_) {
-                data.errors.push({
-                    message: `Error at ${data.instancePath}. Unable to transform ${input} to BigInt.`,
-                    schemaPath: `${data.schemaPath}/type`,
-                    instancePath: data.instancePath,
+                context.errors.push({
+                    message: `Error at ${context.instancePath}. Unable to transform ${input} to BigInt.`,
+                    schemaPath: `${context.schemaPath}/type`,
+                    instancePath: context.instancePath,
                 });
                 return undefined;
             }
@@ -260,32 +266,34 @@ export function uint64(
         if (isType(input)) {
             return input;
         }
-        data.errors.push({
-            message: `Error at ${data.instancePath}. Expected BigInt or integer string.`,
-            schemaPath: `${data.schemaPath}/type`,
-            instancePath: data.instancePath,
+        context.errors.push({
+            message: `Error at ${context.instancePath}. Expected BigInt or integer string.`,
+            schemaPath: `${context.schemaPath}/type`,
+            instancePath: context.instancePath,
         });
         return undefined;
     }
+    const validator: SchemaValidator<bigint> = {
+        output: BigInt('0'),
+        validate: isType,
+        decode: parse,
+        coerce: parse,
+        encode(input, context) {
+            if (context.instancePath.length === 0) {
+                return input.toString();
+            }
+            return `"${input.toString()}"`;
+        },
+    };
     const result: AScalarSchema<'uint64', bigint> = {
         type: 'uint64',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: BigInt('0'),
-                validate: isType,
-                parse,
-                coerce: parse,
-                serialize(input, context) {
-                    if (context.instancePath.length === 0) {
-                        return input.toString();
-                    }
-                    return `"${input.toString()}"`;
-                },
-            },
         },
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -298,17 +306,17 @@ function validateNumber(input: unknown): input is number {
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number, _data: ValidationContext): string {
+function serializeNumber(input: number, _context: ValidationContext): string {
     return input.toString();
 }
-function parseNumber(input: unknown, options: ValidationContext) {
-    if (options.instancePath.length === 0 && typeof input === 'string') {
+function decodeNumber(input: unknown, context: ValidationContext) {
+    if (context.instancePath.length === 0 && typeof input === 'string') {
         const result = Number(input);
         if (Number.isNaN(result)) {
-            options?.errors.push({
-                instancePath: options.instancePath,
-                schemaPath: `${options.schemaPath}/type`,
-                message: `Error at ${options.instancePath}. Invalid number.`,
+            context?.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/type`,
+                message: `Error at ${context.instancePath}. Invalid number.`,
             });
             return undefined;
         }
@@ -317,10 +325,10 @@ function parseNumber(input: unknown, options: ValidationContext) {
     if (typeof input === 'number' && !Number.isNaN(input)) {
         return input;
     }
-    options?.errors.push({
-        instancePath: options.instancePath,
-        schemaPath: `${options.schemaPath}/type`,
-        message: `Error at ${options.instancePath}. Invalid number.`,
+    context?.errors.push({
+        instancePath: context.instancePath,
+        schemaPath: `${context.schemaPath}/type`,
+        message: `Error at ${context.instancePath}. Invalid number.`,
     });
     return undefined;
 }
@@ -343,7 +351,7 @@ function numberScalarType<TType extends NumberType>(
         input: unknown,
         context: ValidationContext,
     ): number | undefined => {
-        const result = parseNumber(input, context);
+        const result = decodeNumber(input, context);
         if (context.errors.length) {
             return undefined;
         }
@@ -366,42 +374,44 @@ function numberScalarType<TType extends NumberType>(
         });
         return undefined;
     };
+    const validator: SchemaValidator<number> = {
+        output: 0,
+        validate,
+        decode: parse,
+        encode: serializeNumber,
+        coerce(input, options) {
+            const result = coerceNumber(input, options);
+            if (typeof result !== 'number') {
+                options.errors.push({
+                    instancePath: options.instancePath,
+                    schemaPath: `${options.schemaPath}/type`,
+                    message: `Error at ${
+                        options.instancePath
+                    }. Unable to coerce ${typeof input} to ${type}.`,
+                });
+                return undefined;
+            }
+            const matchResult = numTypeMatcher(result);
+            if (matchResult.success) {
+                return result;
+            }
+            options.errors.push({
+                instancePath: options.instancePath,
+                schemaPath: `${options.schemaPath}/type`,
+                message: `Error at ${options.instancePath}. ${matchResult.message}`,
+            });
+            return undefined;
+        },
+    };
     const result: AScalarSchema<TType, number> = {
         type,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: 0,
-                validate,
-                parse,
-                serialize: serializeNumber,
-                coerce(input, options) {
-                    const result = coerceNumber(input, options);
-                    if (typeof result !== 'number') {
-                        options.errors.push({
-                            instancePath: options.instancePath,
-                            schemaPath: `${options.schemaPath}/type`,
-                            message: `Error at ${
-                                options.instancePath
-                            }. Unable to coerce ${typeof input} to ${type}.`,
-                        });
-                        return undefined;
-                    }
-                    const matchResult = numTypeMatcher(result);
-                    if (matchResult.success) {
-                        return result;
-                    }
-                    options.errors.push({
-                        instancePath: options.instancePath,
-                        schemaPath: `${options.schemaPath}/type`,
-                        message: `Error at ${options.instancePath}. ${matchResult.message}`,
-                    });
-                    return undefined;
-                },
-            },
         },
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

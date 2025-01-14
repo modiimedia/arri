@@ -17,7 +17,7 @@ describe('parsing', () => {
 
     it('rejects bad inputs', () => {
         const badInput1 = parse('ADMIN');
-        expect(!badInput1.success && badInput1.error.errors.length > 0);
+        expect(!badInput1.success && badInput1.errors.length > 0);
         expect(!parse('STANDARD').success);
         expect(!parse(0).success);
         expect(!parse('aldskjfa').success);

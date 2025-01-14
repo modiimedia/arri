@@ -5,13 +5,13 @@ import {
     type InferType,
     isObject,
     type ResolveObject,
-    SCHEMA_METADATA,
+    validatorKey,
     type ValidationContext,
 } from '../schemas';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
 import { ValidationError } from './validation';
 
 /**
@@ -130,14 +130,14 @@ export function discriminator<
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: {} as any,
                 validate: isType,
-                parse: parseType,
+                decode: parseType,
                 coerce: (input, context) => {
                     return parse(discriminator, mapping, input, context, true);
                 },
-                serialize(input, context) {
+                encode(input, context) {
                     const discriminatorVal = input[discriminator] ?? '';
                     const targetSchema = mapping[discriminatorVal];
                     if (!targetSchema) {
@@ -146,15 +146,16 @@ export function discriminator<
                             context,
                         );
                     }
-                    const result = targetSchema.metadata[
-                        SCHEMA_METADATA
-                    ].serialize(input, {
-                        instancePath: context.instancePath,
-                        schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
-                        errors: context.errors,
-                        discriminatorKey: discriminator,
-                        discriminatorValue: discriminatorVal,
-                    });
+                    const result = targetSchema.metadata[validatorKey].encode(
+                        input,
+                        {
+                            instancePath: context.instancePath,
+                            schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
+                            errors: context.errors,
+                            discriminatorKey: discriminator,
+                            discriminatorValue: discriminatorVal,
+                        },
+                    );
                     return result;
                 },
             },
@@ -197,7 +198,7 @@ function validate(
     if (!targetSchema) {
         return false;
     }
-    return targetSchema.metadata[SCHEMA_METADATA].validate(input);
+    return targetSchema.metadata[validatorKey].validate(input);
 }
 
 function parse(
@@ -252,19 +253,16 @@ function parse(
         throw discriminatorMappingError(discriminatorVal, data);
     }
     if (coerce) {
-        const result = targetSchema.metadata[SCHEMA_METADATA].coerce(
-            parsedInput,
-            {
-                instancePath: data.instancePath,
-                schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
-                errors: data.errors,
-                discriminatorKey: discriminator,
-                discriminatorValue: discriminatorVal,
-            },
-        );
+        const result = targetSchema.metadata[validatorKey].coerce(parsedInput, {
+            instancePath: data.instancePath,
+            schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
+            errors: data.errors,
+            discriminatorKey: discriminator,
+            discriminatorValue: discriminatorVal,
+        });
         return result;
     }
-    const result = targetSchema.metadata[SCHEMA_METADATA].parse(parsedInput, {
+    const result = targetSchema.metadata[validatorKey].decode(parsedInput, {
         instancePath: data.instancePath,
         schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
         errors: data.errors,

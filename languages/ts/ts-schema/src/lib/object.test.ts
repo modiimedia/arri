@@ -395,7 +395,7 @@ describe('a.object() -> Coersion', () => {
         };
         const simpleResult = coerceSimple(simpleInput);
         if (!simpleResult.success) {
-            console.error(simpleResult.error);
+            console.error(simpleResult.errors);
         }
         expect(simpleResult.success);
         if (simpleResult.success) {
@@ -418,7 +418,7 @@ describe('a.object() -> Coersion', () => {
         };
         const complexResult = coerceComplex(complexInput);
         if (!complexResult.success) {
-            console.error(complexResult.error);
+            console.error(complexResult.errors);
         }
         expect(complexResult.success);
         if (complexResult.success) {
@@ -547,7 +547,7 @@ describe('a.omit()', () => {
         };
         const goodResult = parse(subsetInput);
         if (!goodResult.success) {
-            console.error(goodResult.error);
+            console.error(goodResult.errors);
         }
         expect(goodResult.success);
     });

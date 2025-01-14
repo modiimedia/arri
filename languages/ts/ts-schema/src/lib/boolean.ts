@@ -1,13 +1,13 @@
 import {
     type AScalarSchema,
     type ASchemaOptions,
-    SCHEMA_METADATA,
+    validatorKey,
     type ValidationContext,
 } from '../schemas';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
 
 /**
  * @example
@@ -24,11 +24,11 @@ export function boolean(
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: false,
-                parse,
+                decode: parse,
                 validate,
-                serialize,
+                encode: serialize,
                 coerce(input, context) {
                     if (validate(input)) {
                         return input;

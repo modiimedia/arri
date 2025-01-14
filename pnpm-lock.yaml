@@ -172,6 +172,9 @@ importers:
 
   languages/ts/ts-schema:
     dependencies:
+      '@arrirpc/schema-interface':
+        specifier: workspace:*
+        version: link:../ts-schema-interface
       '@arrirpc/type-defs':
         specifier: workspace:*
         version: link:../../../tooling/type-defs
@@ -191,6 +194,12 @@ importers:
       benny:
         specifier: ^3.7.1
         version: 3.7.1
+
+  languages/ts/ts-schema-interface:
+    dependencies:
+      '@arrirpc/type-defs':
+        specifier: workspace:*
+        version: link:../../../tooling/type-defs
 
   languages/ts/ts-schema-typebox-adapter:
     dependencies:

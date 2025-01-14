@@ -1,13 +1,16 @@
-import {
-    type AScalarSchema,
-    type ASchemaOptions,
-    SCHEMA_METADATA,
-    type ValidationContext,
-} from '../schemas';
+import { v1 } from '@arrirpc/schema-interface';
+
 import {
     createStandardSchemaProperty as createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
+import {
+    type AScalarSchema,
+    type ASchemaOptions,
+    newValidationContext,
+    type ValidationContext,
+    validatorKey as arriValidations,
+} from '../schemas';
 /**
  * Create a Date schema
  *
@@ -24,15 +27,86 @@ export function timestamp(
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: new Date(),
-                validate,
-                parse,
-                coerce,
-                serialize,
-            },
+        },
+        [arriValidations]: {
+            output: new Date(),
+            validate,
+            decode: parse,
+            coerce,
+            encode: serialize,
         },
         '~standard': createStandardSchemaProperty(validate, parse),
+        [v1]: {
+            isAtd: true,
+            validate,
+            decodeJson(input) {
+                const ctx: ValidationContext = {
+                    instancePath: '',
+                    schemaPath: '',
+                    errors: [],
+                };
+                const result = parse(input, ctx);
+                if (!result || ctx.errors.length) {
+                    return {
+                        success: false,
+                        errors: ctx.errors.length
+                            ? ctx.errors
+                            : [
+                                  {
+                                      instancePath: '',
+                                      schemaPath: '',
+                                      message: 'error decoding date',
+                                  },
+                              ],
+                    };
+                }
+                return {
+                    success: true,
+                    value: result,
+                };
+            },
+            encodeJson(input) {
+                try {
+                    return {
+                        success: true,
+                        value: serialize(input, {
+                            instancePath: '',
+                            schemaPath: '',
+                            errors: [],
+                        }),
+                    };
+                } catch (err) {
+                    return {
+                        success: false,
+                        errors: [
+                            {
+                                instancePath: '',
+                                schemaPath: '',
+                                message:
+                                    err instanceof Error
+                                        ? err.message
+                                        : `${err}`,
+                                data: err,
+                            },
+                        ],
+                    };
+                }
+            },
+            decodeQueryString(input) {
+                const ctx = newValidationContext();
+                const result = coerce(input, ctx);
+                if (!result || ctx.errors.length) {
+                    return {
+                        success: false,
+                        errors: ctx.errors,
+                    };
+                }
+                return {
+                    success: true,
+                    value: result,
+                };
+            },
+        },
     };
     hideInvalidProperties(result);
     return result;

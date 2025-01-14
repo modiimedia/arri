@@ -9,7 +9,7 @@ for (const key of Object.keys(validationTestSuites)) {
         const input = suite.goodInputs[i]!;
         test(`${key} - ${i + 1}`, () => {
             try {
-                const result = Compiled.serialize(input);
+                const result = Compiled.encodeUnsafe(input);
                 expect(typeof result === 'string').toBe(true);
                 if (
                     !isAScalarSchema(suite.schema) &&
@@ -25,13 +25,13 @@ for (const key of Object.keys(validationTestSuites)) {
                 const parseResult = a.safeParse(suite.schema, result);
                 expect(parseResult.success).toBe(true);
                 if (!parseResult.success) {
-                    console.error(parseResult.error);
-                    console.error(Compiled.compiledCode.serialize);
+                    console.error(parseResult.errors);
+                    console.error(Compiled.compiledCode.encode);
                     console.error(result, 'SHOULD BE VALID');
                 }
             } catch (err) {
                 console.error(err);
-                console.log(Compiled.compiledCode.serialize);
+                console.log(Compiled.compiledCode.encode);
                 console.log(input, 'SHOULD NOT THROW');
                 throw err;
             }
@@ -46,7 +46,7 @@ for (const key of Object.keys(serializationTestSuites)) {
         const input = suite.inputs[i]!;
         test(`${key} - ${i + 1}`, () => {
             try {
-                const result = Compiled.serialize(input);
+                const result = Compiled.encodeUnsafe(input);
                 expect(typeof result).toBe('string');
                 if (
                     !isAScalarSchema(suite.schema) ||
@@ -54,11 +54,11 @@ for (const key of Object.keys(serializationTestSuites)) {
                 ) {
                     JSON.parse(result);
                 }
-                const parsedResult = Compiled.safeParse(result);
+                const parsedResult = Compiled.decodeUnsafe(result);
                 expect(parsedResult.success).toBe(true);
             } catch (err) {
                 console.error(err);
-                console.log(Compiled.compiledCode.serialize);
+                console.log(Compiled.compiledCode.encode);
                 console.log(input, 'SHOULD NOT THROW');
                 throw err;
             }
@@ -68,27 +68,27 @@ for (const key of Object.keys(serializationTestSuites)) {
 
 it('serializes strings', () => {
     const Compiled = compile(a.string());
-    expect(Compiled.serialize('Hello World')).toBe('Hello World');
+    expect(Compiled.encode('Hello World')).toBe('Hello World');
 });
 it('serializes timestamp', () => {
     const Compiled = compile(a.timestamp());
     const input = new Date();
-    expect(Compiled.serialize(input)).toBe(input.toISOString());
+    expect(Compiled.encode(input)).toBe(input.toISOString());
 });
 it('serializes boolean', () => {
     const Compiled = compile(a.boolean());
-    expect(Compiled.serialize(true)).toBe('true');
+    expect(Compiled.encode(true)).toBe('true');
 });
 it('serializes enum', () => {
     const Compiled = compile(a.stringEnum(['ADMIN', 'STANDARD', 'MODERATOR']));
-    expect(Compiled.serialize('ADMIN')).toBe('ADMIN');
+    expect(Compiled.encode('ADMIN')).toBe('ADMIN');
 });
 it("doesn't serialize NaN", () => {
     const Schema = a.object({ num: a.number(), int: a.int32() });
     const Compiled = compile(Schema);
     const input = { num: NaN, int: NaN };
     try {
-        expect(Compiled.serialize(input));
+        expect(Compiled.encode(input));
         expect(a.serialize(Schema, input));
     } catch (_) {
         expect(true).toBe(true);
@@ -106,7 +106,7 @@ it('serializes objects', () => {
     );
     const inputDate = new Date();
     expect(
-        Compiled.serialize({
+        Compiled.encode({
             a: 'hello world',
             b: 'B',
             c: 10,
@@ -133,7 +133,7 @@ it('serializes objects will nullable fields', () => {
     );
     const inputDate = new Date();
     expect(
-        Compiled.serialize({
+        Compiled.encode({
             a: 'hello world',
             b: 'B',
             c: 10,
@@ -144,7 +144,7 @@ it('serializes objects will nullable fields', () => {
         `{"a":"hello world","b":"B","c":10,"d":false,"e":"${inputDate.toISOString()}"}`,
     );
     expect(
-        Compiled.serialize({ a: null, b: null, c: null, d: null, e: null }),
+        Compiled.encode({ a: null, b: null, c: null, d: null, e: null }),
     ).toBe(`{"a":null,"b":null,"c":null,"d":null,"e":null}`);
 });
 
@@ -163,6 +163,6 @@ it('serializes any object', () => {
         },
         string: '',
     };
-    const result = Compiled.serialize(input);
-    expect(Compiled.parse(result)).toStrictEqual(input);
+    const result = Compiled.encode(input);
+    expect(Compiled.decodeUnsafe(result)).toStrictEqual(input);
 });

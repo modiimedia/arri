@@ -1,5 +1,5 @@
 {
-  "name": "@arrirpc/schema",
+  "name": "@arrirpc/schema-interface",
   "version": "0.71.1",
   "type": "module",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
-    "directory": "languages/ts/ts-schema"
+    "directory": "languages/ts/ts-schema-interface"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -22,14 +22,7 @@
     "dist"
   ],
   "dependencies": {
-    "@arrirpc/type-defs": "workspace:*",
-    "@arrirpc/schema-interface": "workspace:*",
-    "scule": "^1.3.0",
-    "uncrypto": "^0.1.3",
-    "@standard-schema/spec": "1.0.0-rc.0"
+    "@arrirpc/type-defs": "workspace:*"
   },
-  "devDependencies": {
-    "ajv": "^8.17.1",
-    "benny": "^3.7.1"
-  }
+  "devDependencies": {}
 }

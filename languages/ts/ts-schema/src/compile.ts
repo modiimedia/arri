@@ -1,3 +1,4 @@
+import { Result, ValidationError } from '@arrirpc/schema-interface';
 import { isSchemaFormEnum, isSchemaFormType } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -5,10 +6,9 @@ import {
     type ASchema,
     errors as getInputErrors,
     type InferType,
-    type SafeResult,
-    ValidationError,
 } from './_index';
-import { createParsingTemplate as getSchemaParsingCode } from './compiler/parse';
+import { createStandardSchemaProperty } from './adapters';
+import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
 import { createSerializationV2Template as getSchemaSerializationCode } from './compiler/serialize';
 import { createValidationTemplate as getSchemaValidationCode } from './compiler/validate';
 import {
@@ -25,10 +25,9 @@ import {
     uint32Max,
     uint32Min,
 } from './lib/numberConstants';
-import { createStandardSchemaProperty } from './standardSchema';
 
 export {
-    getSchemaParsingCode,
+    getSchemaDecodingCode as getSchemaParsingCode,
     getSchemaSerializationCode,
     getSchemaValidationCode,
 };
@@ -42,40 +41,43 @@ export interface CompiledValidator<TSchema extends ASchema<any>>
     /**
      * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
      */
-    parse: (input: unknown) => InferType<TSchema>;
+    decode: (input: unknown) => Result<InferType<TSchema>>;
     /**
-     * Parse a JSON string or the result of JSON.parse() without throwing an error
+     * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
      */
-    safeParse: (input: unknown) => SafeResult<InferType<TSchema>>;
+    decodeUnsafe: (input: unknown) => InferType<TSchema>;
     /**
      * Serialize to JSON
      */
-    serialize: (input: InferType<TSchema>) => string;
+    encode: (input: InferType<TSchema>) => Result<string>;
+    /**
+     * Serialize to JSON. Throws an error if it fails.
+     */
+    encodeUnsafe: (input: InferType<TSchema>) => string;
     compiledCode: {
-        serialize: string;
-        parse: string;
+        decode: string;
+        encode: string;
         validate: string;
     };
 }
 
 /**
- * Create compiled versions of the `parse()`, `validate()`, and `serialize()` functions
+ * Create compiled versions of the `decode()`, `validate()`, and `serialize()` functions
  */
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
     const validateCode = getSchemaValidationCode('input', schema);
-    const parser = getCompiledParser('input', schema);
-    const parseFn = parser.fn;
-    const serializer = getCompiledSerializer(schema);
-
-    const serializeFn = serializer.fn;
+    const decoder = getCompiledDecoder('input', schema);
+    const decoderFn = decoder.fn;
+    const encoder = getCompiledEncoder(schema);
+    const encoderFn = encoder.fn;
     const validate = new Function('input', validateCode) as (
         input: unknown,
     ) => input is InferType<TSchema>;
-    const parse = (input: unknown): InferType<TSchema> => {
+    const decodeUnsafe = (input: unknown): InferType<TSchema> => {
         try {
-            return parseFn(input);
+            return decoderFn(input);
         } catch (err) {
             const errors = getInputErrors(schema, input);
             let errorMessage = err instanceof Error ? err.message : '';
@@ -92,14 +94,57 @@ export function compile<TSchema extends ASchema<any>>(
     };
     const result: CompiledValidator<TSchema> = {
         validate,
-        parse: parse,
-        safeParse(input) {
+        decode: (input) => {
             try {
-                const result = parseFn(input);
+                const result = decoderFn(input);
                 return {
                     success: true,
                     value: result,
                 };
+            } catch (err) {
+                const errors = getInputErrors(schema, input);
+                const errorMessage = err instanceof Error ? err.message : '';
+                if (errors.length === 0) {
+                    errors.push({
+                        instancePath: '',
+                        schemaPath: '',
+                        message: errorMessage,
+                        data: err,
+                    });
+                }
+                return {
+                    success: false,
+                    errors: errors,
+                };
+            }
+        },
+        decodeUnsafe: decodeUnsafe,
+        encode(input) {
+            try {
+                const result = encoderFn(input);
+                return {
+                    success: true,
+                    value: result,
+                };
+            } catch (err) {
+                const errors = getInputErrors(schema, input);
+                if (errors.length === 0) {
+                    errors.push({
+                        instancePath: '',
+                        schemaPath: '',
+                        message: err instanceof Error ? err.message : `${err}`,
+                        data: err,
+                    });
+                }
+                return {
+                    success: false,
+                    errors: errors,
+                };
+            }
+        },
+        encodeUnsafe(input) {
+            try {
+                return encoderFn(input);
             } catch (err) {
                 const errors = getInputErrors(schema, input);
                 let errorMessage = err instanceof Error ? err.message : '';
@@ -108,65 +153,48 @@ export function compile<TSchema extends ASchema<any>>(
                         errors[0]!.message ??
                         `Parsing error at ${errors[0]!.instancePath}`;
                 }
-                return {
-                    success: false,
-                    error: new ValidationError({
-                        message: errorMessage,
-                        errors,
-                    }),
-                };
-            }
-        },
-        serialize(input) {
-            try {
-                return serializeFn(input);
-            } catch (err) {
-                const errors = getInputErrors(schema, input);
-                let errorMessage = err instanceof Error ? err.message : '';
-                if (errors.length) {
-                    errorMessage =
-                        errors[0]!.message ??
-                        `Serialization error at ${errors[0]!.instancePath}`;
-                }
-                throw new ValidationError({ message: errorMessage, errors });
+                throw new ValidationError({
+                    message: errorMessage,
+                    errors,
+                });
             }
         },
         compiledCode: {
             validate: validateCode,
-            parse: parser.code,
-            serialize: serializer.code,
+            decode: decoder.code,
+            encode: encoder.code,
         },
-        '~standard': createStandardSchemaProperty(validate, parse),
+        '~standard': createStandardSchemaProperty(validate, decodeUnsafe),
     };
     return result;
 }
 
-type CompiledParser<TSchema extends ASchema<any>> =
-    CompiledValidator<TSchema>['parse'];
+type CompiledDecoder<TSchema extends ASchema<any>> =
+    CompiledValidator<TSchema>['decodeUnsafe'];
 
-export function getCompiledParser<TSchema extends ASchema<any>>(
+export function getCompiledDecoder<TSchema extends ASchema<any>>(
     input: string,
     schema: TSchema,
-): { fn: CompiledParser<TSchema>; code: string } {
-    const code = getSchemaParsingCode(input, schema);
+): { fn: CompiledDecoder<TSchema>; code: string } {
+    const code = getSchemaDecodingCode(input, schema);
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'float32':
             case 'float64':
                 if (schema.nullable) {
                     return {
-                        fn: nullableFloatParser,
+                        fn: nullableFloatDecoder,
                         code,
                     };
                 }
                 return {
-                    fn: compiledFloatParser,
+                    fn: compiledFloatDecoder,
                     code,
                 };
             case 'int64':
                 return {
                     fn(input) {
-                        return bigIntParser(
+                        return bigIntDecoder(
                             input,
                             false,
                             schema.nullable ?? false,
@@ -177,7 +205,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
             case 'uint64':
                 return {
                     fn(input) {
-                        return bigIntParser(
+                        return bigIntDecoder(
                             input,
                             true,
                             schema.nullable ?? false,
@@ -189,14 +217,18 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         fn(input) {
-                            return nullableIntParser(input, int32Min, int32Max);
+                            return nullableIntDecoder(
+                                input,
+                                int32Min,
+                                int32Max,
+                            );
                         },
                         code,
                     };
                 }
                 return {
                     fn(input) {
-                        return intParser(input, int32Min, int32Max);
+                        return intDecoder(input, int32Min, int32Max);
                     },
                     code,
                 };
@@ -204,14 +236,18 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         fn(input) {
-                            return nullableIntParser(input, int16Min, int16Max);
+                            return nullableIntDecoder(
+                                input,
+                                int16Min,
+                                int16Max,
+                            );
                         },
                         code,
                     };
                 }
                 return {
                     fn(input) {
-                        return intParser(input, int16Min, int16Max);
+                        return intDecoder(input, int16Min, int16Max);
                     },
                     code,
                 };
@@ -219,14 +255,14 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         fn(input) {
-                            return nullableIntParser(input, int8Min, int8Max);
+                            return nullableIntDecoder(input, int8Min, int8Max);
                         },
                         code,
                     };
                 }
                 return {
                     fn(input) {
-                        return intParser(input, int8Min, int8Max);
+                        return intDecoder(input, int8Min, int8Max);
                     },
                     code,
                 };
@@ -234,7 +270,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         fn(input) {
-                            return nullableIntParser(
+                            return nullableIntDecoder(
                                 input,
                                 uint32Min,
                                 uint32Max,
@@ -245,7 +281,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 }
                 return {
                     fn(input) {
-                        return intParser(input, uint32Min, uint32Max);
+                        return intDecoder(input, uint32Min, uint32Max);
                     },
                     code,
                 };
@@ -253,7 +289,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         fn(input) {
-                            return nullableIntParser(
+                            return nullableIntDecoder(
                                 input,
                                 uint16Min,
                                 uint16Max,
@@ -264,7 +300,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 }
                 return {
                     fn(input: unknown) {
-                        return intParser(input, uint16Min, uint16Max);
+                        return intDecoder(input, uint16Min, uint16Max);
                     },
                     code,
                 };
@@ -272,14 +308,18 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         fn(input) {
-                            return nullableIntParser(input, uint8Min, uint8Max);
+                            return nullableIntDecoder(
+                                input,
+                                uint8Min,
+                                uint8Max,
+                            );
                         },
                         code,
                     };
                 }
                 return {
                     fn(input: unknown) {
-                        return intParser(input, uint8Min, uint8Max);
+                        return intDecoder(input, uint8Min, uint8Max);
                     },
                     code,
                 };
@@ -390,9 +430,9 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     return {
                         fn(input) {
                             if (typeof input === 'string') {
-                                const parsedInput = new Date(input);
-                                if (!Number.isNaN(parsedInput.getMonth())) {
-                                    return parsedInput;
+                                const decodedInput = new Date(input);
+                                if (!Number.isNaN(decodedInput.getMonth())) {
+                                    return decodedInput;
                                 }
                                 if (input === 'null') {
                                     return null;
@@ -423,9 +463,9 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 return {
                     fn(input: unknown) {
                         if (typeof input === 'string') {
-                            const parsedInput = new Date(input);
-                            if (!Number.isNaN(parsedInput.getMonth())) {
-                                return parsedInput;
+                            const decodedInput = new Date(input);
+                            if (!Number.isNaN(decodedInput.getMonth())) {
+                                return decodedInput;
                             }
                         }
                         if (
@@ -510,14 +550,14 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     return { fn: new Function(input, code) as any, code };
 }
 
-function compiledFloatParser(input: unknown): number {
+function compiledFloatDecoder(input: unknown): number {
     if (typeof input === 'string') {
-        const parsedVal = Number(input);
-        if (!Number.isNaN(parsedVal)) {
-            return parsedVal;
+        const decodedVal = Number(input);
+        if (!Number.isNaN(decodedVal)) {
+            return decodedVal;
         }
         throw new ValidationError({
-            message: `Unable to parse number from ${input}`,
+            message: `Unable to decode number from ${input}`,
             errors: [
                 {
                     instancePath: '',
@@ -540,17 +580,17 @@ function compiledFloatParser(input: unknown): number {
     });
 }
 
-function nullableFloatParser(input: unknown): number | null {
+function nullableFloatDecoder(input: unknown): number | null {
     if (typeof input === 'string') {
-        const parsedVal = Number(input);
-        if (!Number.isNaN(parsedVal)) {
-            return parsedVal;
+        const decodedVal = Number(input);
+        if (!Number.isNaN(decodedVal)) {
+            return decodedVal;
         }
         if (input === 'null') {
             return null;
         }
         throw new ValidationError({
-            message: `Unable to parse number from ${input}`,
+            message: `Unable to decode number from ${input}`,
             errors: [
                 {
                     instancePath: '',
@@ -576,7 +616,7 @@ function nullableFloatParser(input: unknown): number | null {
     });
 }
 
-function bigIntParser(
+function bigIntDecoder(
     input: unknown,
     isUnsigned: boolean,
     isNullable: boolean,
@@ -649,19 +689,19 @@ function bigIntParser(
     });
 }
 
-function nullableIntParser(
+function nullableIntDecoder(
     input: unknown,
     minNum: number,
     maxNum: number,
 ): number | null {
     if (typeof input === 'string') {
-        const parsedInput = Number(input);
+        const decodedInput = Number(input);
         if (
-            Number.isInteger(parsedInput) &&
-            parsedInput >= minNum &&
-            parsedInput <= maxNum
+            Number.isInteger(decodedInput) &&
+            decodedInput >= minNum &&
+            decodedInput <= maxNum
         ) {
-            return parsedInput;
+            return decodedInput;
         }
         if (input === 'null') {
             return null;
@@ -689,15 +729,15 @@ function nullableIntParser(
     });
 }
 
-function intParser(input: unknown, minNum: number, maxNum: number): any {
+function intDecoder(input: unknown, minNum: number, maxNum: number): any {
     if (typeof input === 'string') {
-        const parsedInput = Number(input);
+        const decodedInput = Number(input);
         if (
-            Number.isInteger(parsedInput) &&
-            parsedInput >= minNum &&
-            parsedInput <= maxNum
+            Number.isInteger(decodedInput) &&
+            decodedInput >= minNum &&
+            decodedInput <= maxNum
         ) {
-            return parsedInput;
+            return decodedInput;
         }
     }
     if (
@@ -719,7 +759,7 @@ function intParser(input: unknown, minNum: number, maxNum: number): any {
     });
 }
 
-export function getCompiledSerializer<TSchema extends ASchema>(
+export function getCompiledEncoder<TSchema extends ASchema>(
     schema: TSchema,
 ): { fn: (input: InferType<TSchema>) => string; code: string } {
     const code = getSchemaSerializationCode('input', schema);

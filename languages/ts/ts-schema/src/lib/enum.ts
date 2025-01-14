@@ -1,13 +1,13 @@
 import {
     type ASchemaOptions,
     type AStringEnumSchema,
-    SCHEMA_METADATA,
+    validatorKey,
     ValidationContext,
 } from '../schemas';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
 
 export const stringEnum = enumerator;
 
@@ -84,9 +84,9 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
             id: meta?.id,
             description: meta?.description,
             isDeprecated: meta?.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: paramA[0] ?? ('' as any),
-                parse,
+                decode: parse,
                 coerce: (input, context) => {
                     if (isType(input)) {
                         return input;
@@ -103,7 +103,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                     return undefined;
                 },
                 validate: isType,
-                serialize(input, context) {
+                encode(input, context) {
                     if (context.instancePath.length === 0) {
                         return input;
                     }

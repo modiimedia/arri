@@ -1,16 +1,20 @@
+import { v1 } from '@arrirpc/schema-interface';
+
+import {
+    createArriInterfaceProperty,
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
 import {
     type ARecordSchema,
     type ASchema,
     type ASchemaOptions,
     type InferType,
     isObject,
-    SCHEMA_METADATA,
+    SchemaValidator,
     type ValidationContext,
+    validatorKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../standardSchema';
 import { serializeString } from './string';
 
 /**
@@ -42,7 +46,7 @@ export function record<TInnerSchema extends ASchema<any>>(
         }
         for (const key of Object.keys(input)) {
             const val = input[key];
-            const isValid = schema.metadata[SCHEMA_METADATA].validate(val);
+            const isValid = schema[validatorKey].validate(val);
             if (!isValid) {
                 return false;
             }
@@ -55,42 +59,41 @@ export function record<TInnerSchema extends ASchema<any>>(
     ): InferRecordType<TInnerSchema> | undefined => {
         return parse(schema, input, ctx, false);
     };
+    const validator: SchemaValidator<InferRecordType<TInnerSchema>> = {
+        output: {},
+        validate: validateFn,
+        decode: parseFn,
+        coerce(input: unknown, data) {
+            return parse(schema, input, data, true);
+        },
+        encode(input, context) {
+            let result = '{';
+            const keys = Object.keys(input);
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i]!;
+                const val = input[key];
+                if (i > 0) result += ',';
+                result += serializeString(key);
+                result += ':';
+                result += schema[validatorKey].encode(val, {
+                    instancePath: `${context.instancePath}/${key}`,
+                    schemaPath: `${context.schemaPath}/values`,
+                    errors: context.errors,
+                });
+            }
+            result += '}';
+            return result;
+        },
+    };
     const result: ARecordSchema<TInnerSchema> = {
         values: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: {},
-                validate: validateFn,
-                parse: parseFn,
-                coerce(input: unknown, data) {
-                    return parse(schema, input, data, true);
-                },
-                serialize(input, context) {
-                    let result = '{';
-                    const keys = Object.keys(input);
-                    for (let i = 0; i < keys.length; i++) {
-                        const key = keys[i]!;
-                        const val = input[key];
-                        if (i > 0) result += ',';
-                        result += serializeString(key);
-                        result += ':';
-                        result += schema.metadata[SCHEMA_METADATA].serialize(
-                            val,
-                            {
-                                instancePath: `${context.instancePath}/${key}`,
-                                schemaPath: `${context.schemaPath}/values`,
-                                errors: context.errors,
-                            },
-                        );
-                    }
-                    result += '}';
-                    return result;
-                },
-            },
         },
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
         '~standard': createStandardSchemaProperty(validateFn, parseFn),
     };
     hideInvalidProperties(result);
@@ -119,13 +122,13 @@ function parse<T>(
     for (const key of Object.keys(parsedInput)) {
         const val = parsedInput[key];
         if (coerce) {
-            result[key] = schema.metadata[SCHEMA_METADATA].coerce(val, {
+            result[key] = schema[validatorKey].coerce(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,
             });
         } else {
-            result[key] = schema.metadata[SCHEMA_METADATA].parse(val, {
+            result[key] = schema[validatorKey].decode(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,

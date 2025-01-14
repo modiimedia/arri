@@ -1,13 +1,13 @@
 import {
     type ASchema,
     type ASchemaOptions,
-    SCHEMA_METADATA,
+    validatorKey,
     ValidationContext,
 } from '../schemas';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
 
 /**
  * Create a schema that accepts anything
@@ -32,9 +32,9 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
             id: options.id,
             description: options.description,
             isDeprecated: options.isDeprecated,
-            [SCHEMA_METADATA]: {
+            [validatorKey]: {
                 output: undefined as any,
-                parse,
+                decode: parse,
                 coerce: (input, context) => {
                     if (
                         context.instancePath.length === 0 &&
@@ -49,7 +49,7 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
                     return input;
                 },
                 validate,
-                serialize(input) {
+                encode(input) {
                     return JSON.stringify(input);
                 },
             },

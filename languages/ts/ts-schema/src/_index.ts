@@ -3,5 +3,5 @@ export * from './adapter';
 export * from './compile';
 export * from './lib/_index';
 export * from './schemas';
-export * from './standardSchema';
+export * from './adapters';
 export { a };

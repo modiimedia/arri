@@ -47,7 +47,7 @@ describe('serialization test suites', () => {
 
                 const parseResult = a.safeParse(suite.schema, result);
                 if (!parseResult.success) {
-                    console.error(parseResult.error);
+                    console.error(parseResult.errors);
                     console.log(result);
                 }
 

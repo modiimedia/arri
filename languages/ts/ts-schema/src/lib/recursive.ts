@@ -1,16 +1,19 @@
+import { v1 } from '@arrirpc/schema-interface';
+
+import {
+    createArriInterfaceProperty,
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
 import {
     type ADiscriminatorSchema,
     type AObjectSchema,
     type ARefSchema,
     type ASchemaOptions,
-    SCHEMA_METADATA,
-    SchemaMetadata,
+    SchemaValidator,
     type ValidationContext,
+    validatorKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../standardSchema';
 
 let recursiveTypeCount = 0;
 
@@ -86,53 +89,53 @@ export function recursive<T = any>(
         );
     }
     const id = options.id ?? `TypeRef${recursiveTypeCount}`;
-    const metadata: SchemaMetadata<T> = {
-        [SCHEMA_METADATA]: {
-            output: '' as T,
-            parse(input, context) {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.parse(input, context);
-                }
-            },
-            serialize(input, context) {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.serialize(input, context);
-                }
-                return '';
-            },
-            validate(input): input is T {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.validate(input);
-                }
-                return false;
-            },
-            coerce(input, context) {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.coerce(input, context);
-                }
-            },
+    const validator: SchemaValidator<T> = {
+        output: '' as T,
+        decode(input, context) {
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.parse(input, context);
+            }
+        },
+        encode(input, context) {
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.serialize(input, context);
+            }
+            return '';
+        },
+        validate(input): input is T {
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.validate(input);
+            }
+            return false;
+        },
+        coerce(input, context) {
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.coerce(input, context);
+            }
         },
     };
     const schema: ARefSchema<T> = {
         ref: id,
-        metadata: metadata,
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
         '~standard': createStandardSchemaProperty(
-            metadata[SCHEMA_METADATA].validate,
-            metadata[SCHEMA_METADATA].parse,
+            validator.validate,
+            validator.decode,
         ),
     };
     hideInvalidProperties(schema);
     const mainSchema = callback(schema);
+    if (!mainSchema.metadata) mainSchema.metadata = {};
     mainSchema.metadata.id = id;
     mainSchema.metadata.description =
         options?.description ?? mainSchema.metadata.description;
     mainSchema.metadata.isDeprecated =
         options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
-        validate: mainSchema.metadata[SCHEMA_METADATA].validate,
-        parse: mainSchema.metadata[SCHEMA_METADATA].parse,
-        serialize: mainSchema.metadata[SCHEMA_METADATA].serialize as any,
-        coerce: mainSchema.metadata[SCHEMA_METADATA].coerce,
+        validate: validator.validate,
+        parse: validator.decode,
+        serialize: validator.encode as any,
+        coerce: validator.coerce,
     };
 
     return mainSchema;

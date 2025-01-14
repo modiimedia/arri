@@ -1,13 +1,16 @@
+import { v1 } from '@arrirpc/schema-interface';
+
+import {
+    createArriInterfaceProperty,
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
 import {
     type AScalarSchema,
     type ASchemaOptions,
-    SCHEMA_METADATA,
     type ValidationContext as ValidationContext,
+    validatorKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../standardSchema';
 
 /**
  * @example
@@ -18,31 +21,33 @@ import {
 export function string(
     opts: ASchemaOptions = {},
 ): AScalarSchema<'string', string> {
+    const validator: AScalarSchema<'string', string>[typeof validatorKey] = {
+        output: '',
+        decode: parse,
+        coerce,
+        validate,
+        encode(input, context) {
+            if (context.instancePath.length === 0) {
+                return input;
+            }
+            if (input.length < 42) {
+                return serializeSmallString(input);
+            }
+            if (input.length < 5000 && !STR_ESCAPE.test(input)) {
+                return `"${input}"`;
+            }
+            return JSON.stringify(input);
+        },
+    };
     const result: AScalarSchema<'string', string> = {
         type: 'string',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: '',
-                parse,
-                coerce,
-                validate,
-                serialize(input, context) {
-                    if (context.instancePath.length === 0) {
-                        return input;
-                    }
-                    if (input.length < 42) {
-                        return serializeSmallString(input);
-                    }
-                    if (input.length < 5000 && !STR_ESCAPE.test(input)) {
-                        return `"${input}"`;
-                    }
-                    return JSON.stringify(input);
-                },
-            },
         },
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
         '~standard': createStandardSchemaProperty<string>(validate, parse),
     };
     hideInvalidProperties(result);

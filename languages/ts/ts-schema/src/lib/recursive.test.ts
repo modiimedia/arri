@@ -191,10 +191,10 @@ describe('parsing', () => {
         const result = a.safeParse(BinaryTree, input);
         const jsonResult = a.safeParse(BinaryTree, JSON.stringify(input));
         if (!result.success) {
-            console.error(result.error);
+            console.error(result.errors);
         }
         if (!jsonResult.success) {
-            console.error(jsonResult.error);
+            console.error(jsonResult.errors);
         }
         expect(result.success).toBe(true);
         expect(jsonResult.success).toBe(true);

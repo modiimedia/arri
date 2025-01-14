@@ -127,13 +127,13 @@ describe('nullable', () => {
         });
         it('rejects bad input', () => {
             const numResult = parseNum('hello world');
-            expect(!numResult.success && numResult.error.errors.length > 0);
+            expect(!numResult.success && numResult.errors.length > 0);
             const objResult = parseObject({
                 id: '12355',
                 name: undefined,
                 createdAt: new Date(),
             });
-            expect(!objResult.success && objResult.error.errors.length > 0);
+            expect(!objResult.success && objResult.errors.length > 0);
         });
     });
     describe('standard-schema support', () => {
