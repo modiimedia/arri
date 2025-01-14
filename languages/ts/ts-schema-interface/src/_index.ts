@@ -1,78 +1,70 @@
 export * from './errors';
 
-import type { Schema } from '@arrirpc/type-defs';
-
 import { ValueError } from './errors';
 
 function secretSymbol<T extends string>(key: T) {
     return Symbol.for(key) as any as ` Symbol.for(${T})`;
 }
 
-export const v1 = secretSymbol('arri/validator/v1');
+export const v1 = secretSymbol('universal-validator/v1');
 
-export type ArriValidator<T> =
-    | ArriNativeValidator<T>
-    | ArriTransformedValidator<T>;
+type RequireKeys<T extends object, K extends keyof T> = Required<Pick<T, K>> &
+    Omit<T, K>;
 
-/**
- * A "native" schema means that the object itself conforms to the [Arri Type Definition]("https://github.com/modiimedia/arri/blob/master/specifications/arri_type_definition.md") specification
- * This interface does not type check to ensure the rest of the object matches. It exists for ATD schema builders like `@arrirpc/schema` to tell `@arrirpc/server` how to validate/decode/encode
- *
- * @example ```ts
- * // SchemaFormType
- * const Foo = { type: "boolean" };
- *
- * // SchemaFormProperties
- * const Bar = { properties: { foo: { type: "string" } } };
- * ```
- */
-export interface ArriNativeValidator<T> {
-    readonly [v1]: {
-        /**
-         * When set to true that means that the parent object is a valid Arri Type Definition.
-         * So it does not need to be transformed
-         */
-        readonly isAtd: true;
-        /**
-         * A type guard for T
-         */
-        readonly validate: (input: unknown) => input is T;
-        /**
-         * Take a JSON string or an untransformed Javascript object and attempt to transform it to T
-         */
-        readonly decodeJson: (input: unknown) => Result<T>;
-        /**
-         * Transform T into a JSON string
-         */
-        readonly encodeJson: (input: T) => Result<string>;
-        /**
-         * Take an object string key/values and convert them into T
-         */
-        readonly decodeQueryString: (
-            input: Record<string, string>,
-        ) => Result<T>;
-        /**
-         * Inferred type associated with the validator
-         */
-        readonly type?: T;
-    };
+export interface Validator<T> {
+    readonly [v1]: ValidatorMethods<T>;
 }
 
-export interface ArriTransformedValidator<T> {
-    readonly [v1]: {
-        readonly isAtd: false;
-        readonly validate: (input: unknown) => input is T;
-        readonly decodeJson: (input: unknown) => Result<T>;
-        readonly encodeJson: (input: T) => Result<string>;
-        readonly decodeQueryString: (input: unknown) => Result<T>;
-        readonly toAtd: () => Schema;
-        /**
-         * Inferred type associated with the validator
-         */
-        readonly type?: T;
-    };
+export interface ValidatorWithFeatures<
+    TOut,
+    K extends keyof ValidatorMethods<TOut, TIn>,
+    TIn = unknown,
+> {
+    readonly [v1]: RequireKeys<ValidatorMethods<TOut, TIn>, K>;
+}
+
+interface ValidatorMethods<TOut, TIn = unknown> {
+    /**
+     * The inferred type
+     */
+    readonly type?: TOut;
+    /**
+     * The library that has implemented this interface
+     */
+    readonly vendor: string;
+    /**
+     * Return all the errors with an input
+     */
+    readonly errors?: (input: TIn) => ValueError[];
+    /**
+     * A type guard that returns true if the input matches the specified type.
+     */
+    readonly isType?: (input: unknown) => input is TOut;
+    /**
+     * Transform an object or JSON string into T
+     */
+    readonly decodeJSON?: (input: TIn, omitErrors?: boolean) => Result<TOut>;
+    /**
+     * Transform T into a JSON string
+     */
+    readonly encodeJSON?: (input: TOut, omitErrors?: boolean) => Result<string>;
+    /**
+     * Attempt to coerce an input into T
+     */
+    readonly coerce?: (input: TIn, omitErrors?: boolean) => Result<TOut>;
+    /**
+     * Return a valid JSON schema representing T
+     */
+    readonly toJSONSchema?: () => any;
+    /**
+     * Return a valid Arri Type Definition representing T
+     */
+    readonly toATD?: () => any;
 }
 
 export type Result<T> =
     | { success: true; value: T }
     | { success: false; errors: ValueError[] };
+
+export type Infer<TSchema extends ValidatorWithFeatures<any, any, 'type'>> =
+    Required<TSchema[typeof v1]>['type'];

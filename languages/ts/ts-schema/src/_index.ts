@@ -1,7 +1,6 @@
 import * as a from './lib/_namespace';
-export * from './adapter';
+export * from './adapters';
 export * from './compile';
 export * from './lib/_index';
 export * from './schemas';
-export * from './adapters';
 export { a };

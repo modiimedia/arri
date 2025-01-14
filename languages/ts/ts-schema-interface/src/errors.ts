@@ -1,6 +1,6 @@
 export interface ValueError {
     instancePath: string;
-    schemaPath: string;
+    schemaPath?: string;
     message?: string;
     data?: any;
 }
@@ -12,8 +12,8 @@ export function isValueError(input: unknown): input is ValueError {
     return (
         'instancePath' in input &&
         typeof input.instancePath === 'string' &&
-        'schemaPath' in input &&
-        typeof input.schemaPath === 'string' &&
+        (typeof (input as any).schemaPath === 'undefined' ||
+            typeof (input as any).schemaPath === 'string') &&
         (typeof (input as any).message === 'undefined' ||
             typeof (input as any).message === 'string')
     );

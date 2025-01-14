@@ -1,6 +1,6 @@
 import {
-    ArriNativeValidator,
     ValidationError,
+    ValidatorWithFeatures,
 } from '@arrirpc/schema-interface';
 import { v1 } from '@arrirpc/schema-interface';
 import { StandardSchemaV1 } from '@standard-schema/spec';
@@ -78,11 +78,13 @@ export function hideInvalidProperties(schema: ASchema) {
 
 export function createArriInterfaceProperty<T>(
     validator: ASchema<T>[typeof validatorKey],
-): ArriNativeValidator<T>[typeof v1] {
-    const result: ArriNativeValidator<T>[typeof v1] = {
-        isAtd: true,
-        validate: validator.validate,
-        decodeJson(input) {
+): ValidatorWithFeatures<T, 'decodeJSON' | 'encodeJSON' | 'coerce'>[typeof v1] {
+    const result: ValidatorWithFeatures<
+        T,
+        'decodeJSON' | 'encodeJSON' | 'coerce'
+    >[typeof v1] = {
+        vendor: 'arri',
+        decodeJSON(input) {
             const ctx = newValidationContext();
             const result = validator.decode(input, ctx);
             if (
@@ -99,7 +101,7 @@ export function createArriInterfaceProperty<T>(
                 value: result!,
             };
         },
-        encodeJson(input) {
+        encodeJSON(input) {
             try {
                 const ctx = newValidationContext();
                 const result = validator.encode(input, ctx);
@@ -145,7 +147,7 @@ export function createArriInterfaceProperty<T>(
                 };
             }
         },
-        decodeQueryString(input) {
+        coerce(input) {
             const ctx = newValidationContext();
             const result = validator.coerce(input, ctx);
             if (ctx.errors.length || (!result && !validator.optional)) {
