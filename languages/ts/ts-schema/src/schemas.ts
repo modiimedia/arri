@@ -39,7 +39,7 @@ export function newValidationContext(): ValidationContext {
 export const validatorKey = secretSymbol('arri/schema/validator/v1');
 
 export interface SchemaValidator<T> {
-    output?: T;
+    output: T;
     optional?: boolean;
     validate: (input: unknown) => input is T;
     decode: (input: unknown, context: ValidationContext) => T | undefined;
@@ -235,11 +235,9 @@ export type InferObjectOutput<TInput = any> = ResolveObject<
 export type InferObjectRawType<TInput> =
     TInput extends Record<any, any>
         ? {
-              [TKey in keyof TInput]: TInput[TKey]['metadata'][typeof validatorKey]['optional'] extends true
-                  ?
-                        | TInput[TKey]['metadata'][typeof validatorKey]['output']
-                        | undefined
-                  : TInput[TKey]['metadata'][typeof validatorKey]['output'];
+              [TKey in keyof TInput]: TInput[TKey][typeof validatorKey]['optional'] extends true
+                  ? TInput[TKey][typeof validatorKey]['output'] | undefined
+                  : TInput[TKey][typeof validatorKey]['output'];
           }
         : never;
 

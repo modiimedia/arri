@@ -495,6 +495,7 @@ export function extend<
     ): input is InferType<TBaseSchema> & InferType<TSchema> =>
         validateObjectSchema(schema as any, input);
     const validator: ASchema[typeof validatorKey] = {
+        output: {},
         decode(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, false);
         },
@@ -530,6 +531,10 @@ export function partial<
         properties: {},
         optionalProperties: {},
         nullable: schema.nullable,
+        metadata: {
+            id: options.id,
+            description: options.description,
+        },
     };
     if (typeof options.strict === 'boolean') {
         schema.strict = options.strict;
@@ -557,32 +562,27 @@ export function partial<
     ): Partial<InferType<TSchema>> | undefined => {
         return decodeObjectSchema(newSchema as any, input, context, false);
     };
-    const meta: ASchema['metadata'] = {
-        id: options.id,
-        description: options.description,
-        [validatorKey]: {
-            output: {} as any,
-            optional: schema[validatorKey].optional,
-            validate,
-            decode: parse,
-            coerce(input, context) {
-                return decodeObjectSchema(
-                    newSchema as any,
-                    input,
-                    context,
-                    true,
-                );
-            },
-            encode(input, context) {
-                return serializeObject(schema, input, context);
-            },
+    const validator: SchemaValidator<any> = {
+        output: {} as any,
+        optional: schema[validatorKey].optional,
+        validate,
+        decode: parse,
+        coerce(input, context) {
+            return decodeObjectSchema(newSchema as any, input, context, true);
+        },
+        encode(input, context) {
+            return serializeObject(schema, input, context);
         },
     };
-    newSchema.metadata = meta;
-    (newSchema as any)['~standard'] = createStandardSchemaProperty(
-        validate,
-        parse,
-    );
-    hideInvalidProperties(newSchema as any);
+    const result: ASchema = {
+        ...schema,
+        [validatorKey]: validator,
+        [v1]: createArriInterfaceProperty(validator),
+        ['~standard']: createStandardSchemaProperty(
+            validator.validate,
+            validator.decode,
+        ),
+    };
+    hideInvalidProperties(result as any);
     return newSchema as any;
 }
