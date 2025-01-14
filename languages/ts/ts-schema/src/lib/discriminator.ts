@@ -1,18 +1,17 @@
 import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
+import {
     type ADiscriminatorSchema,
     type AObjectSchema,
     type ASchemaOptions,
     type InferType,
     isObject,
     type ResolveObject,
-    validatorKey,
     type ValidationContext,
+    validatorKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../adapters';
-import { ValidationError } from './validation';
 
 /**
  * Create a discriminated union / tagged union

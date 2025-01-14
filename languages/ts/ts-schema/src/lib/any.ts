@@ -1,13 +1,13 @@
 import {
-    type ASchema,
-    type ASchemaOptions,
-    validatorKey,
-    ValidationContext,
-} from '../schemas';
-import {
     createStandardSchemaProperty,
     hideInvalidProperties,
 } from '../adapters';
+import {
+    type ASchema,
+    type ASchemaOptions,
+    ValidationContext,
+    validatorKey,
+} from '../schemas';
 
 /**
  * Create a schema that accepts anything

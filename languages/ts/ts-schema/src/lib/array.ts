@@ -1,15 +1,15 @@
 import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
+import {
     type AArraySchema,
     type ASchema,
     type ASchemaOptions,
     type InferType,
-    validatorKey,
     type ValidationContext,
+    validatorKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../adapters';
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     schema: TInnerSchema,

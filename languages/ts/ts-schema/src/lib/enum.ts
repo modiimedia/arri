@@ -1,13 +1,13 @@
 import {
-    type ASchemaOptions,
-    type AStringEnumSchema,
-    validatorKey,
-    ValidationContext,
-} from '../schemas';
-import {
     createStandardSchemaProperty,
     hideInvalidProperties,
 } from '../adapters';
+import {
+    type ASchemaOptions,
+    type AStringEnumSchema,
+    ValidationContext,
+    validatorKey,
+} from '../schemas';
 
 export const stringEnum = enumerator;
 
