@@ -302,7 +302,6 @@ const ValidbotUser = v.object({
         ]),
     ),
 });
-// type ValibotUser = v.InferInput<typeof ValidbotUser>;
 
 void benny.suite(
     'Object Validation - Good Input',
@@ -316,10 +315,16 @@ void benny.suite(
         $$ArriUser.validate(input);
     }),
     benny.add('Arri (Standard-Schema)', () => {
-        ArriUser['~standard'].validate(input);
+        const result = ArriUser['~standard'].validate(input);
+        if (result instanceof Promise) {
+            throw new Error('Should not return a promise');
+        }
     }),
     benny.add('Arri (Compiled + Standard Schema)', () => {
-        $$ArriUser['~standard'].validate(input);
+        const result = $$ArriUser['~standard'].validate(input);
+        if (result instanceof Promise) {
+            throw new Error('Should not return a promise');
+        }
     }),
     benny.add('Ajv - JTD', () => {
         ajvJtd.validate(ArriUser, input);
@@ -377,12 +382,20 @@ void benny.suite(
         }
     }),
     benny.add('Arri (Standard-Schema)', () => {
-        if (ArriUser['~standard'].validate(badInput)) {
+        const result = ArriUser['~standard'].validate(badInput);
+        if (result instanceof Promise) {
+            throw new Error('Expected not to be a promise');
+        }
+        if (typeof result.issues === 'undefined') {
             throw new Error('Expected to fail');
         }
     }),
     benny.add('Arri (Compiled + Standard Schema)', () => {
-        if ($$ArriUser['~standard'].validate(badInput)) {
+        const result = $$ArriUser['~standard'].validate(badInput);
+        if (result instanceof Promise) {
+            throw new Error('Expected not to be a promise');
+        }
+        if (typeof result.issues === 'undefined') {
             throw new Error('Expected to fail');
         }
     }),

@@ -17,11 +17,6 @@ export function createStandardSchemaProperty<T>(
         version: 1,
         vendor: 'arri',
         validate(input): StandardSchemaV1.Result<T> {
-            if (validate(input)) {
-                return {
-                    value: input,
-                };
-            }
             const ctx = newValidationContext();
             const result = parse(input, ctx);
             if (ctx.errors.length) {
