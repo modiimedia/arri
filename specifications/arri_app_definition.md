@@ -6,9 +6,9 @@ This documents defines the app definition specification for Arri RPC. The curren
 
 ## Table of Contents
 
--   [Overview](#overview)
--   [Fields](#fields)
--   [Complete Example](#complete-example)
+- [Overview](#overview)
+- [Fields](#fields)
+- [Complete Example](#complete-example)
 
 ## Overview
 
@@ -78,9 +78,9 @@ Tells client generators that `getUser()` and `createUser()` are functions that s
 
 These two examples show HTTP procedure schemas. However there are multiple procedure schema forms. They are:
 
--   HTTP Procedure
--   WS Procedure (Very Experimental)
--   Custom
+- HTTP Procedure
+- WS Procedure (Very Experimental)
+- Custom
 
 The `transport` field is used to determine what schema form is being used.
 
