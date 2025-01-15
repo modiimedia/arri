@@ -1,9 +1,11 @@
+import * as UValidator from '@arrirpc/schema-interface';
 import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
 import benny from 'benny';
+import * as v from 'valibot';
 import { z } from 'zod';
 
 import { a } from '../../src/_index';
@@ -61,6 +63,30 @@ const input: ArriUser = {
             userId: '1',
             commentText: '',
         },
+    ],
+};
+const badInput: ArriUser = {
+    id: 12345,
+    role: 'moderator',
+    name: 'John Doe',
+    email: null,
+    createdAt: 0,
+    updatedAt: 0,
+    settings: {
+        preferredTheme: 'system',
+        allowNotifications: true,
+    },
+    recentNotifications: [
+        {
+            type: 'POST_LIKE',
+            postId: '1',
+            userId: '2',
+        },
+        {
+            type: 'POST_BOOKMARK',
+            postId: '1',
+            userId: '2',
+        } as any,
     ],
 };
 const inputJson = JSON.stringify(input);
@@ -247,10 +273,44 @@ const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
 const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
 const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
 
+const ValidbotUser = v.object({
+    id: v.pipe(v.number(), v.integer()),
+    role: v.picklist(['standard', 'admin', 'moderator']),
+    name: v.string(),
+    email: v.nullable(v.string()),
+    createdAt: v.pipe(v.number(), v.integer()),
+    updatedAt: v.pipe(v.number(), v.integer()),
+    settings: v.optional(
+        v.object({
+            preferredTheme: v.picklist(['light', 'dark']),
+            allowNotifications: v.boolean(),
+        }),
+    ),
+    recentNotifications: v.array(
+        v.variant('type', [
+            v.object({
+                type: v.literal('POST_LIKE'),
+                userId: v.string(),
+                postId: v.string(),
+            }),
+            v.object({
+                type: v.literal('POST_COMMENT'),
+                userId: v.string(),
+                postId: v.string(),
+                commentText: v.string(),
+            }),
+        ]),
+    ),
+});
+// type ValibotUser = v.InferInput<typeof ValidbotUser>;
+
 void benny.suite(
-    'Object Validation',
+    'Object Validation - Good Input',
     benny.add('Arri', () => {
         a.validate(ArriUser, input);
+    }),
+    benny.add('Arri (UValidator)', () => {
+        ArriUser[UValidator.v1].isValid(input);
     }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.validate(input);
@@ -282,15 +342,102 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodUser.parse(input);
     }),
+    benny.add('Valibot', () => {
+        v.is(ValidbotUser, input);
+    }),
     benny.cycle(),
     benny.complete(),
     benny.save({
-        file: 'objects-validation',
+        file: 'objects-validation-good-input',
         format: 'chart.html',
         folder: 'benchmark/dist',
     }),
     benny.save({
-        file: 'objects-validation',
+        file: 'objects-validation-good-input',
+        format: 'json',
+        folder: 'benchmark/dist',
+    }),
+);
+
+void benny.suite(
+    'Object Validation - Bad Input',
+    benny.add('Arri', () => {
+        if (a.validate(ArriUser, badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Arri (UValidator)', () => {
+        if (ArriUser[UValidator.v1].isValid(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Arri (Compiled)', () => {
+        if ($$ArriUser.validate(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Arri (Standard-Schema)', () => {
+        if (ArriUser['~standard'].validate(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Arri (Compiled + Standard Schema)', () => {
+        if ($$ArriUser['~standard'].validate(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Ajv - JTD', () => {
+        if (ajvJtd.validate(ArriUser, badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Ajv - JTD (Compiled)', () => {
+        if (AjvJtdUserValidator(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Ajv - JSON Schema', () => {
+        if (ajv.validate(TypeBoxUser, badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Ajv - JSON Schema (Compiled)', () => {
+        if (AjvUserValidator(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('TypeBox', () => {
+        if (Value.Check(TypeBoxUser, badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('TypeBox (Compiled)', () => {
+        if (TypeBoxUserValidator.Check(badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Zod', () => {
+        try {
+            ZodUser.parse(badInput);
+            throw new Error('Expected to fail');
+        } catch (_) {
+            // do nothing
+        }
+    }),
+    benny.add('Valibot', () => {
+        if (v.is(ValidbotUser, badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
+        file: 'objects-validation-bad-input',
+        format: 'chart.html',
+        folder: 'benchmark/dist',
+    }),
+    benny.save({
+        file: 'objects-validation-bad-input',
         format: 'json',
         folder: 'benchmark/dist',
     }),
@@ -299,9 +446,18 @@ void benny.suite(
 void benny.suite(
     'Object Parsing',
     benny.add('Arri', () => {
+        a.decode(ArriUser, inputJson);
+    }),
+    benny.add('Arri Unsafe', () => {
         a.decodeUnsafe(ArriUser, inputJson);
     }),
+    benny.add('Arri (UValidator)', () => {
+        ArriUser[UValidator.v1].decodeJSON(inputJson);
+    }),
     benny.add('Arri (Compiled)', () => {
+        $$ArriUser.decode(inputJson);
+    }),
+    benny.add('Arri (Compiled) Unsafe', () => {
         $$ArriUser.decodeUnsafe(inputJson);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {

@@ -86,6 +86,9 @@ importers:
       unbuild:
         specifier: ^3.3.1
         version: 3.3.1(typescript@5.7.3)
+      valibot:
+        specifier: 1.0.0-beta.11
+        version: 1.0.0-beta.11(typescript@5.7.3)
       vite:
         specifier: 6.0.7
         version: 6.0.7(@types/node@22.10.6)(jiti@2.4.2)(yaml@2.7.0)
@@ -3405,6 +3408,14 @@ packages:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
 
+  valibot@1.0.0-beta.11:
+    resolution: {integrity: sha512-Ztl5Iks1Ql7Z6CwkS5oyqguN3G8tmUiNlsHpqbDt6DLMpm+eu+n8Q7f921gI3uHvNZ8xDVkd4cEJP5t+lELOfw==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   vite-node@2.1.8:
     resolution: {integrity: sha512-uPAwSr57kYjAUux+8E2j0q0Fxpn8M9VoyfGiRI8Kfktz9NcYMCenwY5RnZxnF1WTu3TGiYipirIzacLL3VVGFg==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -6570,6 +6581,10 @@ snapshots:
   uuid-parse@1.1.0: {}
 
   uuid@8.3.2: {}
+
+  valibot@1.0.0-beta.11(typescript@5.7.3):
+    optionalDependencies:
+      typescript: 5.7.3
 
   vite-node@2.1.8(@types/node@22.10.6):
     dependencies:
