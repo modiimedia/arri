@@ -225,6 +225,9 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../ts-schema
+      '@arrirpc/schema-interface':
+        specifier: workspace:*
+        version: link:../ts-schema-interface
       '@types/source-map-support':
         specifier: ^0.5.10
         version: 0.5.10

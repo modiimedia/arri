@@ -11,10 +11,8 @@ import {
     type AObjectSchema,
     type ASchema,
     type InferType,
-    isAdaptedSchema,
     isADiscriminatorSchema,
     isAObjectSchema,
-    validatorFromAdaptedSchema,
 } from '@arrirpc/schema';
 import {
     eventHandler,
@@ -191,7 +189,7 @@ export function getRpcParamName(
             removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
         );
     const paramName =
-        procedure.params.metadata.id ??
+        procedure.params.metadata?.id ??
         pascalCase(`${nameParts.join(`_`)}_params`);
     return paramName;
 }
@@ -209,7 +207,7 @@ export function getRpcResponseName(
             removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
         );
     const responseName =
-        procedure.response.metadata.id ??
+        procedure.response.metadata?.id ??
         pascalCase(`${nameParts.join('_')}_response`);
     return responseName;
 }
@@ -288,7 +286,7 @@ export function registerRpc(
                 setResponseHeader(event, 'Content-Type', 'application/json');
                 await send(
                     event,
-                    responseValidator?.serialize(response) ??
+                    responseValidator?.encodeUnsafe(response) ??
                         JSON.stringify(response),
                 );
             } else {
@@ -338,17 +336,17 @@ export async function validateRpcRequestInput(
     switch (httpMethod) {
         case 'get': {
             const parsedParams = await getValidatedQuery(event, (input) =>
-                a.safeCoerce(schema, input),
+                a.coerce(schema, input),
             );
             if (parsedParams.success) {
                 event.context.params = parsedParams.value;
             } else {
                 const errParts: string[] = [];
-                for (const err of parsedParams.error.errors) {
-                    const errPath = err.instancePath.split('/');
-                    errPath.shift();
-                    const propName = errPath.join('.');
-                    if (!errParts.includes(propName)) {
+                for (const err of parsedParams.errors) {
+                    const errPath = err.instancePath?.split('/');
+                    errPath?.shift();
+                    const propName = errPath?.join('.');
+                    if (propName && !errParts.includes(propName)) {
                         errParts.push(propName);
                     }
                 }
@@ -357,7 +355,7 @@ export async function validateRpcRequestInput(
                 )}]`;
                 throw defineError(400, {
                     message,
-                    data: parsedParams.error,
+                    data: parsedParams.errors,
                 });
             }
             break;
@@ -372,13 +370,13 @@ export async function validateRpcRequestInput(
                     message: `Invalid request body. Expected object. Got undefined.`,
                 });
             }
-            const parsedParams = validator.safeParse(body);
+            const parsedParams = validator.decode(body);
             if (!parsedParams?.success) {
                 const errorParts: string[] = [];
-                for (const err of parsedParams.error.errors) {
-                    const errPath = err.instancePath.split('/');
-                    errPath.shift();
-                    if (!errorParts.includes(errPath.join('.'))) {
+                for (const err of parsedParams.errors) {
+                    const errPath = err.instancePath?.split('/');
+                    errPath?.shift();
+                    if (errPath && !errorParts.includes(errPath.join('.'))) {
                         errorParts.push(errPath.join('.'));
                     }
                 }
@@ -386,7 +384,7 @@ export async function validateRpcRequestInput(
                     message: `Invalid request body. Affected properties [${errorParts.join(
                         ', ',
                     )}]`,
-                    data: parsedParams.error,
+                    data: parsedParams.errors,
                 });
             }
             event.context.params = parsedParams.value;
@@ -403,9 +401,6 @@ export function getSchemaValidator(
     schema: ASchema<any>,
 ): ReturnType<typeof a.compile> | undefined {
     try {
-        if (isAdaptedSchema(schema)) {
-            return validatorFromAdaptedSchema(schema);
-        }
         return a.compile(schema);
     } catch (_) {
         console.error(`Error compiling ${type} validator for ${rpcName}`);
