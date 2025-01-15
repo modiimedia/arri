@@ -29,11 +29,12 @@ export { recursive } from './recursive';
 export { string } from './string';
 export { timestamp } from './timestamp';
 export {
-    coerceUnsafe as coerce,
+    coerce,
+    coerceUnsafe,
+    decode,
+    decodeUnsafe,
+    encode,
+    encodeUnsafe,
     errors,
-    decodeUnsafe as parse,
-    coerce as safeCoerce,
-    decode as safeParse,
-    encode as serialize,
     validate,
 } from './validation';

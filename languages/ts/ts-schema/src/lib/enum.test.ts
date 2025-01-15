@@ -9,7 +9,7 @@ test('type inference', () => {
     assertType<UserRolesSchema>('standard');
 });
 describe('parsing', () => {
-    const parse = (input: unknown) => a.safeParse(UserRolesSchema, input);
+    const parse = (input: unknown) => a.decode(UserRolesSchema, input);
     it('accepts good inputs', () => {
         expect(parse('admin'));
         expect(parse('standard'));
@@ -49,7 +49,7 @@ test('ID shorthand matches standard function', () => {
     const input: SchemaA = 'A';
     assertType<SchemaA>(input);
     assertType<SchemaB>(input);
-    expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+    expect(a.encodeUnsafe(SchemaA, input)).toBe(a.encodeUnsafe(SchemaB, input));
     const goodInputs = ['A', 'B', 'C'];
     const badInputs = ['Hello world', 'D', 'a', 'b'];
     for (const val of goodInputs) {

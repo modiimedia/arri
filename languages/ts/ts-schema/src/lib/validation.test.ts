@@ -12,12 +12,12 @@ for (const key of Object.keys(validationTestSuites)) {
     test(key, () => {
         for (const input of suite.goodInputs) {
             expect(a.validate(suite.schema, input));
-            const json = a.serialize(suite.schema, input);
-            expect(isEqual(a.parse(suite.schema, json), input));
+            const json = a.encodeUnsafe(suite.schema, input);
+            expect(isEqual(a.decodeUnsafe(suite.schema, json), input));
         }
         for (const input of suite.badInputs) {
             expect(!a.validate(suite.schema, input));
-            expect(!a.safeParse(suite.schema, input).success);
+            expect(!a.decode(suite.schema, input).success);
         }
     });
 }
@@ -29,10 +29,15 @@ describe('parsing test suites', () => {
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
                 const expectedResult = suite.expectedResults[i];
-                expect(isEqual(a.parse(suite.schema, input), expectedResult));
+                expect(
+                    isEqual(
+                        a.decodeUnsafe(suite.schema, input),
+                        expectedResult,
+                    ),
+                );
             }
             for (const input of suite.badInputs) {
-                expect(!a.safeParse(suite.schema, input).success);
+                expect(!a.decode(suite.schema, input).success);
             }
         });
     }
@@ -43,14 +48,12 @@ describe('serialization test suites', () => {
         const suite = serializationTestSuites[key]!;
         test(key, () => {
             for (const input of suite.inputs) {
-                const result = a.serialize(suite.schema, input);
-
-                const parseResult = a.safeParse(suite.schema, result);
+                const result = a.encodeUnsafe(suite.schema, input);
+                const parseResult = a.decode(suite.schema, result);
                 if (!parseResult.success) {
                     console.error(parseResult.errors);
                     console.log(result);
                 }
-
                 expect(parseResult.success).toBe(true);
                 JSON.parse(result);
             }

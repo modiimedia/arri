@@ -1,5 +1,8 @@
+import * as UValidator from '@arrirpc/schema-interface';
+
 import {
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
@@ -9,8 +12,9 @@ import {
     type InferType,
     isObject,
     type ResolveObject,
+    SchemaValidator,
     type ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 
 /**
@@ -116,6 +120,38 @@ export function discriminator<
     ): T | undefined => {
         return parse(discriminator, mapping, input, context, false);
     };
+    const validator: SchemaValidator<
+        InferDiscriminatorType<
+            TDiscriminatorKey,
+            TMapping,
+            JoinedDiscriminator<TDiscriminatorKey, TMapping>
+        >
+    > = {
+        output: {} as any,
+        validate: isType,
+        decode: parseType,
+        coerce: (input, context) => {
+            return parse(discriminator, mapping, input, context, true);
+        },
+        encode(input, context) {
+            const discriminatorVal = input[discriminator] ?? '';
+            const targetSchema = mapping[discriminatorVal];
+            if (!targetSchema) {
+                throw discriminatorMappingError(discriminatorVal, context);
+            }
+            const result = targetSchema[ValidationsKey].encode(input, {
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
+                errors: context.errors,
+                discriminatorKey: discriminator,
+                discriminatorValue: discriminatorVal,
+                depth: context.depth,
+                maxDepth: context.maxDepth,
+                exitOnFirstError: context.exitOnFirstError,
+            });
+            return result;
+        },
+    };
     const result: ADiscriminatorSchema<
         InferDiscriminatorType<
             TDiscriminatorKey,
@@ -129,36 +165,9 @@ export function discriminator<
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [validatorKey]: {
-                output: {} as any,
-                validate: isType,
-                decode: parseType,
-                coerce: (input, context) => {
-                    return parse(discriminator, mapping, input, context, true);
-                },
-                encode(input, context) {
-                    const discriminatorVal = input[discriminator] ?? '';
-                    const targetSchema = mapping[discriminatorVal];
-                    if (!targetSchema) {
-                        throw discriminatorMappingError(
-                            discriminatorVal,
-                            context,
-                        );
-                    }
-                    const result = targetSchema.metadata[validatorKey].encode(
-                        input,
-                        {
-                            instancePath: context.instancePath,
-                            schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
-                            errors: context.errors,
-                            discriminatorKey: discriminator,
-                            discriminatorValue: discriminatorVal,
-                        },
-                    );
-                    return result;
-                },
-            },
         },
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parseType),
     };
     hideInvalidProperties(result);
@@ -197,49 +206,49 @@ function validate(
     if (!targetSchema) {
         return false;
     }
-    return targetSchema.metadata[validatorKey].validate(input);
+    return targetSchema[ValidationsKey].validate(input);
 }
 
 function parse(
     discriminator: string,
     mapping: Record<string, AObjectSchema<any>>,
     input: unknown,
-    data: ValidationContext,
+    context: ValidationContext,
     coerce = false,
 ) {
     let parsedInput = input;
     if (
         typeof input === 'string' &&
         input.length &&
-        data.instancePath.length === 0
+        context.instancePath.length === 0
     ) {
         parsedInput = JSON.parse(input);
     }
     if (!isObject(parsedInput)) {
-        data.errors.push({
-            instancePath: data.instancePath,
-            schemaPath: `${data.schemaPath}/discriminator`,
+        context.errors.push({
+            instancePath: context.instancePath,
+            schemaPath: `${context.schemaPath}/discriminator`,
             message: `Error at ${
-                data.instancePath
+                context.instancePath
             }. Expected object. Got ${typeof parsedInput}.`,
         });
         return undefined;
     }
     if (!(discriminator in parsedInput)) {
-        data.errors.push({
-            instancePath: `${data.instancePath}/${discriminator}`,
-            schemaPath: `${data.schemaPath}/discriminator`,
-            message: `Error at ${data.instancePath}/${discriminator}. Discriminator field "${discriminator}" cannot be undefined`,
+        context.errors.push({
+            instancePath: `${context.instancePath}/${discriminator}`,
+            schemaPath: `${context.schemaPath}/discriminator`,
+            message: `Error at ${context.instancePath}/${discriminator}. Discriminator field "${discriminator}" cannot be undefined`,
         });
         return undefined;
     }
     const acceptedDiscriminatorVals = Object.keys(mapping);
     const discriminatorVal = parsedInput[discriminator];
     if (!acceptedDiscriminatorVals.includes(discriminatorVal)) {
-        data.errors.push({
-            instancePath: `${data.instancePath}/${discriminator}`,
-            schemaPath: `${data.schemaPath}/discriminator`,
-            message: `Error at ${data.instancePath}/${discriminator}. "${
+        context.errors.push({
+            instancePath: `${context.instancePath}/${discriminator}`,
+            schemaPath: `${context.schemaPath}/discriminator`,
+            message: `Error at ${context.instancePath}/${discriminator}. "${
                 parsedInput[discriminator]
             }" is not one of the accepted discriminator values: [${acceptedDiscriminatorVals.join(
                 ', ',
@@ -249,24 +258,30 @@ function parse(
     }
     const targetSchema = mapping[parsedInput[discriminator]];
     if (!targetSchema) {
-        throw discriminatorMappingError(discriminatorVal, data);
+        return undefined;
     }
     if (coerce) {
-        const result = targetSchema.metadata[validatorKey].coerce(parsedInput, {
-            instancePath: data.instancePath,
-            schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
-            errors: data.errors,
+        const result = targetSchema[ValidationsKey].coerce(parsedInput, {
+            instancePath: context.instancePath,
+            schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
+            errors: context.errors,
             discriminatorKey: discriminator,
             discriminatorValue: discriminatorVal,
+            depth: context.depth + 1,
+            maxDepth: context.maxDepth,
+            exitOnFirstError: context.exitOnFirstError,
         });
         return result;
     }
-    const result = targetSchema.metadata[validatorKey].decode(parsedInput, {
-        instancePath: data.instancePath,
-        schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
-        errors: data.errors,
+    const result = targetSchema[ValidationsKey].decode(parsedInput, {
+        instancePath: context.instancePath,
+        schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
+        errors: context.errors,
         discriminatorKey: discriminator,
         discriminatorValue: discriminatorVal,
+        depth: context.depth + 1,
+        maxDepth: context.maxDepth,
+        exitOnFirstError: context.exitOnFirstError,
     });
     return result;
 }
@@ -275,14 +290,9 @@ function discriminatorMappingError(
     discriminatorVal: string,
     data: ValidationContext,
 ) {
-    return new ValidationError({
-        message: `Error fetching discriminator schema for "${discriminatorVal}"`,
-        errors: [
-            {
-                message: 'Error fetching discriminator schema',
-                instancePath: data.instancePath,
-                schemaPath: data.schemaPath,
-            },
-        ],
-    });
+    return {
+        message: `Error fetching discriminator schema. Mapping for "${discriminatorVal} is undefined.`,
+        instancePath: data.instancePath,
+        schemaPath: data.schemaPath,
+    } satisfies UValidator.ValueError;
 }

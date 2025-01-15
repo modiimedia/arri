@@ -3,7 +3,7 @@ import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 describe('parsing', () => {
-    const parse = (input: unknown) => a.safeParse(a.boolean(), input).success;
+    const parse = (input: unknown) => a.decode(a.boolean(), input).success;
     it('accepts good input', () => {
         expect(parse(true));
         expect(parse(false));
@@ -38,7 +38,7 @@ describe('validation', () => {
 });
 
 describe('coercion', () => {
-    const coerce = (input: unknown) => a.safeCoerce(a.boolean(), input).success;
+    const coerce = (input: unknown) => a.coerce(a.boolean(), input).success;
     it('coerces good input', () => {
         expect(!coerce('true'));
         expect(!coerce('TRUE'));

@@ -187,9 +187,9 @@ describe('parsing', () => {
                 right: null,
             },
         };
-        a.parse(BinaryTree, input);
-        const result = a.safeParse(BinaryTree, input);
-        const jsonResult = a.safeParse(BinaryTree, JSON.stringify(input));
+        a.decodeUnsafe(BinaryTree, input);
+        const result = a.decode(BinaryTree, input);
+        const jsonResult = a.decode(BinaryTree, JSON.stringify(input));
         if (!result.success) {
             console.error(result.errors);
         }
@@ -229,7 +229,7 @@ test('overloaded functions produce the same result', () => {
         right: null,
     };
     expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
-    expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+    expect(a.encode(SchemaA, input)).toBe(a.encode(SchemaB, input));
 });
 
 it('produces valid ATD', () => {

@@ -1,7 +1,7 @@
 export interface ValueError {
-    instancePath: string;
+    message: string;
+    instancePath?: string;
     schemaPath?: string;
-    message?: string;
     data?: any;
 }
 
@@ -10,16 +10,16 @@ export function isValueError(input: unknown): input is ValueError {
         return false;
     }
     return (
-        'instancePath' in input &&
-        typeof input.instancePath === 'string' &&
+        'message' in input &&
+        typeof input.message === 'string' &&
+        (typeof (input as any).instancePath === 'undefined' ||
+            typeof (input as any).instancePath === 'string') &&
         (typeof (input as any).schemaPath === 'undefined' ||
-            typeof (input as any).schemaPath === 'string') &&
-        (typeof (input as any).message === 'undefined' ||
-            typeof (input as any).message === 'string')
+            typeof (input as any).schemaPath === 'string')
     );
 }
 
-export class ValidationError extends Error {
+export class ValidationException extends Error {
     errors: ValueError[];
 
     constructor(options: { message: string; errors: ValueError[] }) {
@@ -28,14 +28,8 @@ export class ValidationError extends Error {
     }
 }
 
-export function isValidationError(input: unknown): input is ValidationError {
-    if (typeof input !== 'object' || !input) {
-        return false;
-    }
-    return (
-        'message' in input &&
-        typeof input.message === 'string' &&
-        'errors' in input &&
-        Array.isArray(input.errors)
-    );
+export function isValidationException(
+    input: unknown,
+): input is ValidationException {
+    return input instanceof ValidationException;
 }

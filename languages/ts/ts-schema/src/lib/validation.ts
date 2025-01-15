@@ -1,11 +1,10 @@
 import {
-    isValidationError,
     Result,
-    ValidationError,
+    ValidationException,
     ValueError,
 } from '@arrirpc/schema-interface';
 
-import { type ASchema, type ValidationContext, validatorKey } from '../schemas';
+import { type ASchema, newValidationContext, ValidationsKey } from '../schemas';
 
 export function sanitizeJson(json: string) {
     return json
@@ -23,72 +22,40 @@ export function validate<T = any>(
     schema: ASchema<T>,
     input: unknown,
 ): input is T {
-    return schema[validatorKey].validate(input);
-}
-
-/**
- * Parse a JSON string or the result of JSON.parse(). Throws a ValidationError if parsing fails.
- */
-export function decodeUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
-    const errors: ValueError[] = [];
-    const result = schema[validatorKey].decode(input, {
-        schemaPath: '',
-        instancePath: '',
-        errors,
-    });
-    if (errors.length) {
-        throw new ValidationError({
-            message: `Unable to parse input. ${errors[0]!.message}`,
-            errors,
-        });
+    if (!schema[ValidationsKey]) {
+        console.log('SCHEMA', schema);
     }
-    return result as T;
+    return schema[ValidationsKey].validate(input);
 }
 
 /**
  * Decode a value without throwing an error.
  */
 export function decode<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
-    try {
-        const result = decodeUnsafe(schema, input);
-        return {
-            success: true,
-            value: result,
-        };
-    } catch (err) {
-        if (isValidationError(err)) {
-            return {
-                success: false,
-                errors: err.errors,
-            };
-        }
+    const ctx = newValidationContext();
+    const result = schema[ValidationsKey].decode(input, ctx);
+    if (ctx.errors.length) {
         return {
             success: false,
-            errors: [
-                {
-                    instancePath: '',
-                    schemaPath: '',
-                    message: 'Unable to parse input',
-                },
-            ],
+            errors: ctx.errors,
         };
     }
+    return {
+        success: true,
+        value: result as T,
+    };
 }
 
 /**
- * Try to convert input to match the specified schema. Throws a ValidationError if conversion fails.
+ * Parse a JSON string or the result of JSON.parse(). Throws a [ValidationException] if parsing fails.
  */
-export function coerceUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
-    const errors: ValueError[] = [];
-    const result = schema[validatorKey].coerce(input, {
-        schemaPath: '',
-        instancePath: '',
-        errors,
-    });
-    if (errors.length) {
-        throw new ValidationError({
-            message: `Unable to coerce input. ${errors[0]?.message}`,
-            errors,
+export function decodeUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
+    const ctx = newValidationContext();
+    const result = schema[ValidationsKey].decode(input, ctx);
+    if (ctx.errors.length) {
+        throw new ValidationException({
+            message: `Unable to parse input. ${ctx.errors[0]!.message}`,
+            errors: ctx.errors,
         });
     }
     return result as T;
@@ -98,51 +65,101 @@ export function coerceUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
  * Convert a value into the specified schema without throwing an error.
  */
 export function coerce<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
+    const ctx = newValidationContext();
+    const result = schema[ValidationsKey].coerce(input, ctx);
+    if (ctx.errors.length) {
+        return {
+            success: false,
+            errors: ctx.errors,
+        };
+    }
+    return {
+        success: true,
+        value: result as T,
+    };
+}
+
+/**
+ * Try to convert input to match the specified schema. Throws a [ValidationException] if conversion fails.
+ */
+export function coerceUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
+    const ctx = newValidationContext();
+    const result = schema[ValidationsKey].coerce(input, ctx);
+    if (ctx.errors.length) {
+        throw new ValidationException({
+            message: `Unable to coerce input. ${ctx.errors[0]?.message}`,
+            errors: ctx.errors,
+        });
+    }
+    return result as T;
+}
+
+/**
+ * Serialize a value into a JSON string.
+ */
+export function encode<T = any>(schema: ASchema<T>, input: T): Result<string> {
     try {
-        const result = coerceUnsafe(schema, input);
+        const context = newValidationContext();
+        const result = schema[ValidationsKey].encode(input, context);
+        if (context.errors.length || typeof result === 'undefined') {
+            return {
+                success: false,
+                errors: context.errors,
+            };
+        }
         return {
             success: true,
             value: result,
         };
     } catch (err) {
-        if (isValidationError(err)) {
+        if (err instanceof ValidationException) {
             return {
                 success: false,
                 errors: err.errors,
+            };
+        }
+        const errList = errors(schema, input);
+        if (errList.length) {
+            return {
+                success: false,
+                errors: errList,
             };
         }
         return {
             success: false,
             errors: [
                 {
-                    instancePath: '',
-                    schemaPath: '',
-                    message: 'Unable to coerce input',
+                    message: err instanceof Error ? err.message : `${err}`,
+                    data: err,
                 },
             ],
         };
     }
 }
 
-/**
- * Serialize a value into a JSON string
- */
-export function encode<T = any>(schema: ASchema<T>, input: T) {
-    const context: ValidationContext = {
-        instancePath: '',
-        schemaPath: '',
-        errors: [],
-    };
-    return schema[validatorKey].encode(input, context);
+export function encodeUnsafe<T = any>(schema: ASchema<T>, input: T): string {
+    const result = encode(schema, input);
+    if (!result.success) {
+        throw new ValidationException({
+            message: result.errors.length
+                ? result.errors[0]!.message
+                : `Unknown error`,
+            errors: result.errors,
+        });
+    }
+    return result.value;
 }
 
 export function errors(schema: ASchema, input: unknown): ValueError[] {
     const errorList: ValueError[] = [];
     try {
-        schema[validatorKey].decode(input, {
+        schema[ValidationsKey].decode(input, {
             errors: errorList,
             instancePath: '',
             schemaPath: '',
+            depth: 0,
+            maxDepth: 500,
+            exitOnFirstError: false,
         });
     } catch (err) {
         errorList.push({ instancePath: '', schemaPath: '', message: `${err}` });

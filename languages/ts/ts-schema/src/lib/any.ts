@@ -1,12 +1,16 @@
+import * as UValidator from '@arrirpc/schema-interface';
+
 import {
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
     type ASchema,
     type ASchemaOptions,
+    SchemaValidator,
     ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 
 /**
@@ -27,33 +31,35 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
         }
         return input;
     };
+    const validator: SchemaValidator<any> = {
+        output: undefined as any,
+        decode: parse,
+        coerce: (input, context) => {
+            if (
+                context.instancePath.length === 0 &&
+                typeof input === 'string'
+            ) {
+                try {
+                    return JSON.parse(input);
+                } catch {
+                    return input;
+                }
+            }
+            return input;
+        },
+        validate,
+        encode(input) {
+            return JSON.stringify(input);
+        },
+    };
     const result: ASchema<any> = {
         metadata: {
             id: options.id,
             description: options.description,
             isDeprecated: options.isDeprecated,
-            [validatorKey]: {
-                output: undefined as any,
-                decode: parse,
-                coerce: (input, context) => {
-                    if (
-                        context.instancePath.length === 0 &&
-                        typeof input === 'string'
-                    ) {
-                        try {
-                            return JSON.parse(input);
-                        } catch {
-                            return input;
-                        }
-                    }
-                    return input;
-                },
-                validate,
-                encode(input) {
-                    return JSON.stringify(input);
-                },
-            },
         },
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

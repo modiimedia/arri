@@ -1,4 +1,4 @@
-import { Result, ValidationError } from '@arrirpc/schema-interface';
+import { Result, ValidationException } from '@arrirpc/schema-interface';
 import { isSchemaFormEnum, isSchemaFormType } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -86,7 +86,7 @@ export function compile<TSchema extends ASchema<any>>(
                     errors[0]!.message ??
                     `Parsing error at ${errors[0]!.instancePath}`;
             }
-            throw new ValidationError({
+            throw new ValidationException({
                 message: errorMessage,
                 errors,
             });
@@ -153,7 +153,7 @@ export function compile<TSchema extends ASchema<any>>(
                         errors[0]!.message ??
                         `Parsing error at ${errors[0]!.instancePath}`;
                 }
-                throw new ValidationError({
+                throw new ValidationException({
                     message: errorMessage,
                     errors,
                 });
@@ -345,12 +345,13 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                             if (input === null) {
                                 return null;
                             }
-                            throw new ValidationError({
+                            throw new ValidationException({
                                 message: `Expected boolean. Got ${typeof input}`,
                                 errors: [
                                     {
                                         instancePath: '',
                                         schemaPath: '/type',
+                                        message: `Expected boolean. Got ${typeof input}`,
                                     },
                                 ],
                             });
@@ -370,12 +371,13 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                         if (typeof input === 'boolean') {
                             return input;
                         }
-                        throw new ValidationError({
+                        throw new ValidationException({
                             message: `Expected boolean. Got ${typeof input}`,
                             errors: [
                                 {
                                     instancePath: '',
                                     schemaPath: '/type',
+                                    message: `Expected boolean. Got ${typeof input}`,
                                 },
                             ],
                         });
@@ -395,12 +397,13 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                             if (input === null) {
                                 return null;
                             }
-                            throw new ValidationError({
+                            throw new ValidationException({
                                 message: `Expected string or null. Got ${typeof input}.`,
                                 errors: [
                                     {
                                         instancePath: '',
                                         schemaPath: '/type',
+                                        message: `Expected string or null. Got ${typeof input}.`,
                                     },
                                 ],
                             });
@@ -413,12 +416,13 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                         if (typeof input === 'string') {
                             return input;
                         }
-                        throw new ValidationError({
+                        throw new ValidationException({
                             message: `Expected string. Got ${typeof input}.`,
                             errors: [
                                 {
                                     instancePath: '',
                                     schemaPath: '/type',
+                                    message: `Expected string. Got ${typeof input}.`,
                                 },
                             ],
                         });
@@ -447,12 +451,13 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                             if (input === null) {
                                 return null;
                             }
-                            throw new ValidationError({
+                            throw new ValidationException({
                                 message: `Expected instanceof Date, ISO Date string, or null. Got ${typeof input}.`,
                                 errors: [
                                     {
                                         instancePath: '',
                                         schemaPath: '/type',
+                                        message: `Expected instanceof Date, ISO Date string, or null. Got ${typeof input}.`,
                                     },
                                 ],
                             });
@@ -474,12 +479,13 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                         ) {
                             return input;
                         }
-                        throw new ValidationError({
+                        throw new ValidationException({
                             message: `Expected instance of Date or ISO date string. Got ${typeof input}.`,
                             errors: [
                                 {
                                     instancePath: '',
                                     schemaPath: '/type',
+                                    message: `Expected instance of Date or ISO date string. Got ${typeof input}.`,
                                 },
                             ],
                         });
@@ -507,7 +513,7 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                     if (input === null) {
                         return null;
                     }
-                    throw new ValidationError({
+                    throw new ValidationException({
                         message: `Expected one of the following values: [${schema.enum.join(
                             ', ',
                         )}] or null. Got ${typeof input}.`,
@@ -515,6 +521,9 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                             {
                                 instancePath: '',
                                 schemaPath: '/enum',
+                                message: `Expected one of the following values: [${schema.enum.join(
+                                    ', ',
+                                )}] or null. Got ${typeof input}.`,
                             },
                         ],
                     });
@@ -531,7 +540,7 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                         }
                     }
                 }
-                throw new ValidationError({
+                throw new ValidationException({
                     message: `Expected one of the following values: [${schema.enum.join(
                         ', ',
                     )}]. Got ${typeof input}.`,
@@ -539,6 +548,9 @@ export function getCompiledDecoder<TSchema extends ASchema<any>>(
                         {
                             instancePath: '',
                             schemaPath: '/enum',
+                            message: `Expected one of the following values: [${schema.enum.join(
+                                ', ',
+                            )}]. Got ${typeof input}.`,
                         },
                     ],
                 });
@@ -556,12 +568,13 @@ function compiledFloatDecoder(input: unknown): number {
         if (!Number.isNaN(decodedVal)) {
             return decodedVal;
         }
-        throw new ValidationError({
+        throw new ValidationException({
             message: `Unable to decode number from ${input}`,
             errors: [
                 {
                     instancePath: '',
                     schemaPath: '/type',
+                    message: `Unable to decode number from ${input}`,
                 },
             ],
         });
@@ -569,12 +582,13 @@ function compiledFloatDecoder(input: unknown): number {
     if (typeof input === 'number' && !Number.isNaN(input)) {
         return input;
     }
-    throw new ValidationError({
+    throw new ValidationException({
         message: `Expected number. Got ${typeof input}`,
         errors: [
             {
                 instancePath: '',
                 schemaPath: '/type',
+                message: `Expected number. Got ${typeof input}`,
             },
         ],
     });
@@ -589,12 +603,13 @@ function nullableFloatDecoder(input: unknown): number | null {
         if (input === 'null') {
             return null;
         }
-        throw new ValidationError({
+        throw new ValidationException({
             message: `Unable to decode number from ${input}`,
             errors: [
                 {
                     instancePath: '',
                     schemaPath: '/type',
+                    message: `Unable to decode number from ${input}`,
                 },
             ],
         });
@@ -605,12 +620,13 @@ function nullableFloatDecoder(input: unknown): number | null {
     if (input === null) {
         return null;
     }
-    throw new ValidationError({
+    throw new ValidationException({
         message: `Expected number or null. Got ${typeof input}`,
         errors: [
             {
                 instancePath: '',
                 schemaPath: '/type',
+                message: `Expected number or null. Got ${typeof input}`,
             },
         ],
     });
@@ -631,7 +647,7 @@ function bigIntDecoder(
                 if (val >= BigInt('0')) {
                     return val;
                 }
-                throw new ValidationError({
+                throw new ValidationException({
                     message: 'uint64 must be greater than or equal to 0',
                     errors: [
                         {
@@ -645,13 +661,14 @@ function bigIntDecoder(
             }
             return val;
         } catch (err) {
-            throw new ValidationError({
+            throw new ValidationException({
                 message: `Error transforming ${input} to BigInt`,
                 errors: [
                     {
                         schemaPath: '/type',
                         instancePath: '',
                         data: err,
+                        message: `Error transforming ${input} to BigInt`,
                     },
                 ],
             });
@@ -662,7 +679,7 @@ function bigIntDecoder(
             if (input >= BigInt('0')) {
                 return input;
             }
-            throw new ValidationError({
+            throw new ValidationException({
                 message: 'uint64 must be greater than or equal to 0',
                 errors: [
                     {
@@ -678,12 +695,13 @@ function bigIntDecoder(
     if (isNullable && input === null) {
         return null;
     }
-    throw new ValidationError({
+    throw new ValidationException({
         message: 'Expected BigInt or Integer string',
         errors: [
             {
                 schemaPath: '/type',
                 instancePath: '',
+                message: 'Expected BigInt or Integer string',
             },
         ],
     });
@@ -718,12 +736,13 @@ function nullableIntDecoder(
     if (input === null) {
         return null;
     }
-    throw new ValidationError({
+    throw new ValidationException({
         message: `Expected valid integer between ${minNum} & ${maxNum} or null. Got ${typeof input}.`,
         errors: [
             {
                 instancePath: '',
                 schemaPath: '/type',
+                message: `Expected valid integer between ${minNum} & ${maxNum} or null. Got ${typeof input}.`,
             },
         ],
     });
@@ -748,12 +767,13 @@ function intDecoder(input: unknown, minNum: number, maxNum: number): any {
     ) {
         return input;
     }
-    throw new ValidationError({
+    throw new ValidationException({
         message: `Expected valid integer between ${minNum} & ${maxNum}`,
         errors: [
             {
                 instancePath: '',
                 schemaPath: '/type',
+                message: `Expected valid integer between ${minNum} & ${maxNum}`,
             },
         ],
     });

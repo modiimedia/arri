@@ -2,8 +2,8 @@ import { v1 } from '@arrirpc/schema-interface';
 import { type SchemaFormProperties } from '@arrirpc/type-defs';
 
 import {
-    createArriInterfaceProperty,
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
@@ -16,7 +16,7 @@ import {
     type ResolveObject,
     SchemaValidator,
     type ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 import { optional } from './modifiers';
 
@@ -66,7 +66,7 @@ export function object<
     }
     for (const key of Object.keys(input)) {
         const prop = input[key]!;
-        if (prop[validatorKey].optional) {
+        if (prop[ValidationsKey].optional) {
             if (!schema.optionalProperties) {
                 schema.optionalProperties = {};
             }
@@ -112,8 +112,8 @@ export function object<
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        [ValidationsKey]: validator,
+        [v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(validate, decode),
     };
     hideInvalidProperties(result);
@@ -123,28 +123,28 @@ export function object<
 export function decodeObjectSchema<T>(
     schema: AObjectSchema<T>,
     input: unknown,
-    data: ValidationContext,
+    context: ValidationContext,
     coerce = false,
 ): T | undefined {
     let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === 'string') {
+    if (context.instancePath.length === 0 && typeof input === 'string') {
         try {
             const result = JSON.parse(input);
             parsedInput = result;
         } catch (_err) {
-            data.errors.push({
-                instancePath: data.instancePath,
-                schemaPath: `${data.schemaPath}/properties`,
-                message: `Error at ${data.instancePath}. Invalid JSON.`,
+            context.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/properties`,
+                message: `Error at ${context.instancePath}. Invalid JSON.`,
             });
             return undefined;
         }
     }
     if (!isObject(parsedInput)) {
-        data.errors.push({
-            instancePath: data.instancePath,
-            schemaPath: `${data.schemaPath}/properties`,
-            message: `Error at ${data.instancePath}. Expected object`,
+        context.errors.push({
+            instancePath: context.instancePath,
+            schemaPath: `${context.schemaPath}/properties`,
+            message: `Error at ${context.instancePath}. Expected object`,
         });
         return undefined;
     }
@@ -158,37 +158,43 @@ export function decodeObjectSchema<T>(
             if (
                 !requiredKeys.includes(key) &&
                 !optionalKeys.includes(key) &&
-                key !== data.discriminatorKey
+                key !== context.discriminatorKey
             ) {
-                data.errors.push({
-                    instancePath: `${data.instancePath}/${key}`,
-                    schemaPath: `${data.schemaPath}/strict`,
-                    message: `Error at ${data.instancePath}/${key}. Key '${key}' is not included in the schema. To allow additional input properties set strict to 'false'.`,
+                context.errors.push({
+                    instancePath: `${context.instancePath}/${key}`,
+                    schemaPath: `${context.schemaPath}/strict`,
+                    message: `Error at ${context.instancePath}/${key}. Key '${key}' is not included in the schema. To allow additional input properties set strict to 'false'.`,
                 });
             }
         }
     }
-    if (data.errors.length) {
+    if (context.errors.length) {
         return undefined;
     }
-    if (data.discriminatorKey) {
-        result[data.discriminatorKey] = data.discriminatorValue;
+    if (context.discriminatorKey) {
+        result[context.discriminatorKey] = context.discriminatorValue;
     }
     for (const key of requiredKeys) {
         const val = parsedInput[key];
         const prop = schema.properties[key]!;
         if (coerce) {
-            result[key] = prop[validatorKey].coerce(val, {
-                instancePath: `${data.instancePath}/${key}`,
-                schemaPath: `${data.schemaPath}/properties/${key}`,
-                errors: data.errors,
+            result[key] = prop[ValidationsKey].coerce(val, {
+                instancePath: `${context.instancePath}/${key}`,
+                schemaPath: `${context.schemaPath}/properties/${key}`,
+                errors: context.errors,
+                depth: context.depth + 1,
+                maxDepth: context.maxDepth,
+                exitOnFirstError: context.exitOnFirstError,
             });
             continue;
         }
-        result[key] = prop[validatorKey].decode(val, {
-            instancePath: `${data.instancePath}/${key}`,
-            schemaPath: `${data.schemaPath}/properties/${key}`,
-            errors: data.errors,
+        result[key] = prop[ValidationsKey].decode(val, {
+            instancePath: `${context.instancePath}/${key}`,
+            schemaPath: `${context.schemaPath}/properties/${key}`,
+            errors: context.errors,
+            depth: context.depth + 1,
+            maxDepth: context.maxDepth,
+            exitOnFirstError: context.exitOnFirstError,
         });
     }
     for (const key of optionalKeys) {
@@ -198,22 +204,28 @@ export function decodeObjectSchema<T>(
             continue;
         }
         if (coerce) {
-            result[key] = prop[validatorKey].coerce(val, {
-                instancePath: `${data.instancePath}/${key}`,
-                schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
-                errors: data.errors,
+            result[key] = prop[ValidationsKey].coerce(val, {
+                instancePath: `${context.instancePath}/${key}`,
+                schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
+                errors: context.errors,
+                depth: context.depth + 1,
+                maxDepth: context.maxDepth,
+                exitOnFirstError: context.exitOnFirstError,
             });
             continue;
         }
         if (typeof val !== 'undefined') {
-            result[key] = prop[validatorKey].decode(val, {
-                instancePath: `${data.instancePath}/${key}`,
-                schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
-                errors: data.errors,
+            result[key] = prop[ValidationsKey].decode(val, {
+                instancePath: `${context.instancePath}/${key}`,
+                schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
+                errors: context.errors,
+                depth: context.depth + 1,
+                maxDepth: context.maxDepth,
+                exitOnFirstError: context.exitOnFirstError,
             });
         }
     }
-    if (data.errors.length) {
+    if (context.errors.length) {
         return undefined;
     }
     return result;
@@ -229,14 +241,14 @@ export function validateObjectSchema(
     const allowedKeys: string[] | undefined = schema.strict ? [] : undefined;
     for (const key of Object.keys(schema.properties)) {
         const propSchema = schema.properties[key]!;
-        const isValid = propSchema[validatorKey].validate(input[key]);
+        const isValid = propSchema[ValidationsKey].validate(input[key]);
         if (!isValid) return false;
         allowedKeys?.push(key);
     }
     if (schema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
             const propsSchema = schema.optionalProperties[key]!;
-            const isValid = propsSchema[validatorKey].validate(input[key]);
+            const isValid = propsSchema[ValidationsKey].validate(input[key]);
             if (!isValid) return false;
             allowedKeys?.push(key);
         }
@@ -318,7 +330,7 @@ export function pick<
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [validatorKey]: {
+        [ValidationsKey]: {
             output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
             decode: parse,
             coerce(input, context) {
@@ -401,7 +413,7 @@ export function omit<
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [validatorKey]: {
+        [ValidationsKey]: {
             output: {} as any,
             validate,
             decode: parse,
@@ -421,12 +433,12 @@ export function omit<
 export function serializeObject(
     schema: AObjectSchema,
     input: any,
-    data: ValidationContext,
+    context: ValidationContext,
 ) {
     const strParts: string[] = [];
-    if (data.discriminatorKey && data.discriminatorValue) {
+    if (context.discriminatorKey && context.discriminatorValue) {
         strParts.push(
-            `"${data.discriminatorKey}":"${data.discriminatorValue}"`,
+            `"${context.discriminatorKey}":"${context.discriminatorValue}"`,
         );
     }
     for (const key of Object.keys(schema.properties)) {
@@ -434,10 +446,13 @@ export function serializeObject(
         const val = input[key];
         if (typeof val !== 'undefined') {
             strParts.push(
-                `"${key}":${prop[validatorKey].encode(val, {
-                    instancePath: `${data.instancePath}/${key}`,
-                    schemaPath: `${data.schemaPath}/properties/${key}`,
-                    errors: data.errors,
+                `"${key}":${prop[ValidationsKey].encode(val, {
+                    instancePath: `${context.instancePath}/${key}`,
+                    schemaPath: `${context.schemaPath}/properties/${key}`,
+                    errors: context.errors,
+                    depth: context.depth + 1,
+                    maxDepth: context.maxDepth,
+                    exitOnFirstError: context.exitOnFirstError,
                 })}`,
             );
         }
@@ -448,10 +463,13 @@ export function serializeObject(
             const val = input[key];
             if (typeof val !== 'undefined') {
                 strParts.push(
-                    `"${key}":${prop[validatorKey].encode(val, {
-                        instancePath: `${data.instancePath}/${key}`,
-                        schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
-                        errors: data.errors,
+                    `"${key}":${prop[ValidationsKey].encode(val, {
+                        instancePath: `${context.instancePath}/${key}`,
+                        schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
+                        errors: context.errors,
+                        depth: context.depth + 1,
+                        maxDepth: context.maxDepth,
+                        exitOnFirstError: context.exitOnFirstError,
                     })}`,
                 );
             }
@@ -494,7 +512,7 @@ export function extend<
         input: unknown,
     ): input is InferType<TBaseSchema> & InferType<TSchema> =>
         validateObjectSchema(schema as any, input);
-    const validator: ASchema[typeof validatorKey] = {
+    const validator: ASchema[typeof ValidationsKey] = {
         output: {},
         decode(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, false);
@@ -509,8 +527,8 @@ export function extend<
     };
     const result: ASchema<any> = {
         ...schema,
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        [ValidationsKey]: validator,
+        [v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
             validator.decode,
@@ -546,7 +564,7 @@ export function partial<
     if (schema.optionalProperties && newSchema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
             const prop = schema.optionalProperties[key]!;
-            if (prop[validatorKey].optional) {
+            if (prop[ValidationsKey].optional) {
                 newSchema.optionalProperties[key] = prop;
             } else {
                 newSchema.optionalProperties[key] = optional(prop);
@@ -564,7 +582,7 @@ export function partial<
     };
     const validator: SchemaValidator<any> = {
         output: {} as any,
-        optional: schema[validatorKey].optional,
+        optional: schema[ValidationsKey].optional,
         validate,
         decode: parse,
         coerce(input, context) {
@@ -575,14 +593,14 @@ export function partial<
         },
     };
     const result: ASchema = {
-        ...schema,
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        ...newSchema,
+        [ValidationsKey]: validator,
+        [v1]: createUValidatorProperty(validator),
         ['~standard']: createStandardSchemaProperty(
             validator.validate,
             validator.decode,
         ),
     };
     hideInvalidProperties(result as any);
-    return newSchema as any;
+    return result as any;
 }

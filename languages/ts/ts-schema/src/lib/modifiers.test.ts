@@ -103,9 +103,8 @@ describe('nullable', () => {
         });
     });
     describe('parsing', () => {
-        const parseNum = (input: unknown) => a.safeParse(NullableNum, input);
-        const parseObject = (input: unknown) =>
-            a.safeParse(NullableObject, input);
+        const parseNum = (input: unknown) => a.decode(NullableNum, input);
+        const parseObject = (input: unknown) => a.decode(NullableObject, input);
         it('accepts good input', () => {
             expect(parseNum('1').success);
             expect(parseNum(null).success);
@@ -238,13 +237,13 @@ describe('clone()', () => {
         const ClonedStringSchema = a.clone(StringSchema);
         type ClonedStringSchema = a.infer<typeof ClonedStringSchema>;
         assertType<ClonedStringSchema>('hello world');
-        expect(ClonedStringSchema.metadata.id).toBe(undefined);
+        expect(ClonedStringSchema.metadata?.id).toBe(undefined);
         const ModifiedStringSchema = a.clone(StringSchema, {
             id: 'cloned_string_schema',
         });
         type ModifiedStringSchema = a.infer<typeof ModifiedStringSchema>;
         assertType<ModifiedStringSchema>('hello world');
-        expect(ModifiedStringSchema.metadata.id).toBe('cloned_string_schema');
+        expect(ModifiedStringSchema.metadata?.id).toBe('cloned_string_schema');
     });
 
     describe('standard-schema support', () => {

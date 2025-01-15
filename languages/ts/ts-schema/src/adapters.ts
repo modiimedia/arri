@@ -1,5 +1,5 @@
 import {
-    ValidationError,
+    ValidationException,
     ValidatorWithFeatures,
 } from '@arrirpc/schema-interface';
 import { v1 } from '@arrirpc/schema-interface';
@@ -9,7 +9,7 @@ import {
     ASchema,
     newValidationContext,
     ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from './schemas';
 
 export function createStandardSchemaProperty<T>(
@@ -25,46 +25,21 @@ export function createStandardSchemaProperty<T>(
                     value: input,
                 };
             }
-            const ctx: ValidationContext = {
-                instancePath: '',
-                schemaPath: '',
-                errors: [],
-            };
-            try {
-                const result = parse(input, ctx);
-                if (ctx.errors.length) {
-                    return {
-                        issues: ctx.errors.map((err) => ({
-                            message: err.message ?? 'Unknown error',
-                            path: err.instancePath
-                                .split('/')
-                                .filter((val) => val.length > 0),
-                        })),
-                    };
-                }
+            const ctx = newValidationContext();
+            const result = parse(input, ctx);
+            if (ctx.errors.length) {
                 return {
-                    value: result!,
-                };
-            } catch (err) {
-                if (err instanceof ValidationError) {
-                    return {
-                        issues: err.errors.map((err) => ({
-                            message: err.message ?? 'Unknown error',
-                            path: err.instancePath
-                                .split('/')
-                                .filter((item) => item.length > 0),
-                        })),
-                    };
-                }
-                return {
-                    issues: [
-                        {
-                            message:
-                                err instanceof Error ? err.message : `${err}`,
-                        },
-                    ],
+                    issues: ctx.errors.map((err) => ({
+                        message: err.message ?? 'Unknown error',
+                        path: err.instancePath
+                            ?.split('/')
+                            .filter((val) => val.length > 0),
+                    })),
                 };
             }
+            return {
+                value: result as T,
+            };
         },
     };
 }
@@ -76,14 +51,18 @@ export function hideInvalidProperties(schema: ASchema) {
     Object.defineProperty(schema, '~standard', { enumerable: false });
 }
 
-export function createArriInterfaceProperty<T>(
-    validator: ASchema<T>[typeof validatorKey],
-): ValidatorWithFeatures<T, 'decodeJSON' | 'encodeJSON' | 'coerce'>[typeof v1] {
+export function createUValidatorProperty<T>(
+    validator: ASchema<T>[typeof ValidationsKey],
+): ValidatorWithFeatures<
+    T,
+    'decodeJSON' | 'encodeJSON' | 'coerce' | 'isType' | 'errors'
+>[typeof v1] {
     const result: ValidatorWithFeatures<
         T,
-        'decodeJSON' | 'encodeJSON' | 'coerce'
+        'decodeJSON' | 'encodeJSON' | 'coerce' | 'isType' | 'errors'
     >[typeof v1] = {
         vendor: 'arri',
+        isType: validator.validate,
         decodeJSON(input) {
             const ctx = newValidationContext();
             const result = validator.decode(input, ctx);
@@ -105,7 +84,7 @@ export function createArriInterfaceProperty<T>(
             try {
                 const ctx = newValidationContext();
                 const result = validator.encode(input, ctx);
-                if (ctx.errors.length) {
+                if (ctx.errors.length || typeof result === 'undefined') {
                     return {
                         success: false,
                         errors: ctx.errors,
@@ -116,7 +95,7 @@ export function createArriInterfaceProperty<T>(
                     value: result,
                 };
             } catch (err) {
-                if (err instanceof ValidationError) {
+                if (err instanceof ValidationException) {
                     return {
                         success: false,
                         errors: err.errors,
@@ -160,6 +139,19 @@ export function createArriInterfaceProperty<T>(
                 success: true,
                 value: result!,
             };
+        },
+        errors(input) {
+            const ctx = newValidationContext();
+            try {
+                validator.decode(input, ctx);
+            } catch (err) {
+                ctx.errors.push({
+                    instancePath: '',
+                    schemaPath: '',
+                    message: `${err}`,
+                });
+            }
+            return ctx.errors;
         },
     };
     return result;

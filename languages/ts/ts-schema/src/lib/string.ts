@@ -1,15 +1,15 @@
-import { v1 } from '@arrirpc/schema-interface';
+import * as UValidator from '@arrirpc/schema-interface';
 
 import {
-    createArriInterfaceProperty,
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
     type AScalarSchema,
     type ASchemaOptions,
     type ValidationContext as ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 
 /**
@@ -21,9 +21,9 @@ import {
 export function string(
     opts: ASchemaOptions = {},
 ): AScalarSchema<'string', string> {
-    const validator: AScalarSchema<'string', string>[typeof validatorKey] = {
+    const validator: AScalarSchema<'string', string>[typeof ValidationsKey] = {
         output: '',
-        decode: parse,
+        decode: decode,
         coerce,
         validate,
         encode(input, context) {
@@ -46,9 +46,9 @@ export function string(
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
-        '~standard': createStandardSchemaProperty<string>(validate, parse),
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
+        '~standard': createStandardSchemaProperty<string>(validate, decode),
     };
     hideInvalidProperties(result);
     return result;
@@ -68,7 +68,7 @@ function validate(input: unknown): input is string {
     return typeof input === 'string';
 }
 
-function parse(input: unknown, context: ValidationContext) {
+function decode(input: unknown, context: ValidationContext) {
     if (validate(input)) {
         return input;
     }
@@ -83,7 +83,7 @@ function parse(input: unknown, context: ValidationContext) {
 }
 
 function coerce(input: unknown, context: ValidationContext) {
-    return parse(input, context);
+    return decode(input, context);
 }
 
 // Everything below was taken from https://github.com/fastify/fast-json-stringify in "./lib/serializer.js"

@@ -299,10 +299,10 @@ void benny.suite(
 void benny.suite(
     'Object Parsing',
     benny.add('Arri', () => {
-        a.parse(ArriUser, inputJson);
+        a.decodeUnsafe(ArriUser, inputJson);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.decodeJson(inputJson);
+        $$ArriUser.decodeUnsafe(inputJson);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         AjvJtdUserParser(inputJson);
@@ -327,7 +327,7 @@ void benny.suite(
 void benny.suite(
     'Object Coercion',
     benny.add('Arri', () => {
-        a.coerce(ArriUser, inputWithStringKeys);
+        a.coerceUnsafe(ArriUser, inputWithStringKeys);
     }),
     benny.add('TypeBox', () => {
         Value.Convert(TypeBoxUser, inputWithStringKeys);
@@ -352,7 +352,7 @@ void benny.suite(
 void benny.suite(
     'Object Serialization',
     benny.add('Arri', () => {
-        a.serialize(ArriUser, input);
+        a.encode(ArriUser, input);
     }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.encode(input);

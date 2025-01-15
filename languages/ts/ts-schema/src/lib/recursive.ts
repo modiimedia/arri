@@ -1,8 +1,8 @@
-import { v1 } from '@arrirpc/schema-interface';
+import * as UValidator from '@arrirpc/schema-interface';
 
 import {
-    createArriInterfaceProperty,
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
@@ -11,8 +11,7 @@ import {
     type ARefSchema,
     type ASchemaOptions,
     SchemaValidator,
-    type ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 
 let recursiveTypeCount = 0;
@@ -20,6 +19,8 @@ let recursiveTypeCount = 0;
 type RecursiveCallback<T> = (
     self: ARefSchema<T>,
 ) => AObjectSchema<T> | ADiscriminatorSchema<T>;
+
+const recursiveFns: Record<string, Omit<SchemaValidator<any>, 'output'>> = {};
 
 /**
  * @example
@@ -73,15 +74,7 @@ export function recursive<T = any>(
     const options = isIdShorthand
         ? { id: propA }
         : ((propB ?? {}) as ASchemaOptions);
-    const recursiveFns: Record<
-        string,
-        {
-            validate: (input: unknown) => any;
-            parse: (input: unknown, data: ValidationContext) => any;
-            coerce: (input: unknown, data: ValidationContext) => any;
-            serialize: (input: unknown, data: ValidationContext) => any;
-        }
-    > = {};
+
     if (!options.id) {
         recursiveTypeCount++;
         console.warn(
@@ -92,13 +85,32 @@ export function recursive<T = any>(
     const validator: SchemaValidator<T> = {
         output: '' as T,
         decode(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    message: 'Max depth exceeded',
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                });
+                return undefined;
+            }
             if (recursiveFns[id]) {
-                return recursiveFns[id]!.parse(input, context);
+                return recursiveFns[id]!.decode(input, {
+                    ...context,
+                    depth: context.depth + 1,
+                });
             }
         },
         encode(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    message: 'Max depth exceeded',
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                });
+                return undefined;
+            }
             if (recursiveFns[id]) {
-                return recursiveFns[id]!.serialize(input, context);
+                return recursiveFns[id]!.encode(input, context);
             }
             return '';
         },
@@ -109,6 +121,14 @@ export function recursive<T = any>(
             return false;
         },
         coerce(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    message: 'Max depth exceeded',
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                });
+                return undefined;
+            }
             if (recursiveFns[id]) {
                 return recursiveFns[id]!.coerce(input, context);
             }
@@ -116,8 +136,8 @@ export function recursive<T = any>(
     };
     const schema: ARefSchema<T> = {
         ref: id,
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
             validator.decode,
@@ -133,8 +153,8 @@ export function recursive<T = any>(
         options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
         validate: validator.validate,
-        parse: validator.decode,
-        serialize: validator.encode as any,
+        decode: validator.decode,
+        encode: validator.encode as any,
         coerce: validator.coerce,
     };
 

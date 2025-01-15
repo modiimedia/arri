@@ -1,12 +1,16 @@
+import * as UValidator from '@arrirpc/schema-interface';
+
 import {
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
     type ASchemaOptions,
     type AStringEnumSchema,
+    SchemaValidator,
     ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 
 export const stringEnum = enumerator;
@@ -78,39 +82,41 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
         });
         return undefined;
     };
+    const validator: SchemaValidator<TKeys> = {
+        output: paramA[0] ?? ('' as any),
+        decode: parse,
+        coerce: (input, context) => {
+            if (isType(input)) {
+                return input;
+            }
+            context.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/enum`,
+                message: `Error at ${
+                    context.instancePath
+                }. Invalid enum value. Expected one of the following values: [${enumVal.join(
+                    ', ',
+                )}]`,
+            });
+            return undefined;
+        },
+        validate: isType,
+        encode(input, context) {
+            if (context.instancePath.length === 0) {
+                return input;
+            }
+            return `"${input}"`;
+        },
+    };
     const result: AStringEnumSchema<TValues> = {
         enum: enumVal,
         metadata: {
             id: meta?.id,
             description: meta?.description,
             isDeprecated: meta?.isDeprecated,
-            [validatorKey]: {
-                output: paramA[0] ?? ('' as any),
-                decode: parse,
-                coerce: (input, context) => {
-                    if (isType(input)) {
-                        return input;
-                    }
-                    context.errors.push({
-                        instancePath: context.instancePath,
-                        schemaPath: `${context.schemaPath}/enum`,
-                        message: `Error at ${
-                            context.instancePath
-                        }. Invalid enum value. Expected one of the following values: [${enumVal.join(
-                            ', ',
-                        )}]`,
-                    });
-                    return undefined;
-                },
-                validate: isType,
-                encode(input, context) {
-                    if (context.instancePath.length === 0) {
-                        return input;
-                    }
-                    return `"${input}"`;
-                },
-            },
         },
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);

@@ -21,7 +21,7 @@ for (const key of Object.keys(validationTestSuites)) {
         }
         for (const input of suite.badInputs) {
             expect(Compiled.decodeUnsafe(input).success).toBe(false);
-            expect(a.safeParse(suite.schema, input).success).toBe(false);
+            expect(a.decode(suite.schema, input).success).toBe(false);
         }
     });
 }
@@ -49,7 +49,7 @@ describe('parsing test suites', () => {
                         Compiled.decodeUnsafe(serializedResult),
                     ).toStrictEqual(expectedResult);
                     expect(actualResult.value).toStrictEqual(
-                        a.parse(suite.schema, input),
+                        a.decodeUnsafe(suite.schema, input),
                     );
                 }
             }

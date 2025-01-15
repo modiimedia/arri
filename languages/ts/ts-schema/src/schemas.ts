@@ -1,4 +1,4 @@
-import { ArriNativeValidator, ValueError } from '@arrirpc/schema-interface';
+import { ValidatorWithFeatures, ValueError } from '@arrirpc/schema-interface';
 import {
     isSchemaFormDiscriminator,
     isSchemaFormElements,
@@ -24,19 +24,28 @@ export interface ValidationContext {
     instancePath: string;
     schemaPath: string;
     errors: ValueError[];
+    exitOnFirstError: boolean;
+    depth: number;
+    maxDepth: number;
     discriminatorKey?: string;
     discriminatorValue?: string;
 }
 
-export function newValidationContext(): ValidationContext {
+export function newValidationContext(
+    exitOnFirstError = false,
+    maxDepth = 500,
+): ValidationContext {
     return {
         instancePath: '',
         schemaPath: '',
         errors: [],
+        exitOnFirstError,
+        depth: 0,
+        maxDepth,
     };
 }
 
-export const validatorKey = secretSymbol('arri/schema/validator/v1');
+export const ValidationsKey = secretSymbol('arri/schema/validator/v1');
 
 export interface SchemaValidator<T> {
     output: T;
@@ -44,7 +53,7 @@ export interface SchemaValidator<T> {
     validate: (input: unknown) => input is T;
     decode: (input: unknown, context: ValidationContext) => T | undefined;
     coerce: (input: unknown, context: ValidationContext) => T | undefined;
-    encode: (input: T, context: ValidationContext) => string;
+    encode: (input: T, context: ValidationContext) => string | undefined;
 }
 
 export interface SchemaMetadata {
@@ -55,32 +64,47 @@ export interface SchemaMetadata {
 }
 
 export interface ASchema<T = any>
-    extends ArriNativeValidator<T>,
+    extends ValidatorWithFeatures<
+            T,
+            'decodeJSON' | 'encodeJSON' | 'coerce' | 'isType' | 'errors'
+        >,
         StandardSchemaV1<T> {
     metadata?: SchemaMetadata;
     nullable?: boolean;
-    [validatorKey]: SchemaValidator<T>;
+    [ValidationsKey]: SchemaValidator<T>;
 }
 export function isASchema(input: unknown): input is ASchema {
-    if (typeof input !== 'object') {
-        return false;
-    }
-    if (!input || !('metadata' in input)) {
+    if (typeof input !== 'object' || !input) {
         return false;
     }
     if (
-        !input.metadata ||
-        typeof input.metadata !== 'object' ||
-        !(validatorKey in input.metadata) ||
-        !input.metadata[validatorKey] ||
-        typeof input.metadata[validatorKey] !== 'object'
+        'metadata' in input &&
+        typeof input.metadata === 'object' &&
+        input.metadata
     ) {
-        return false;
+        if (
+            'id' in input.metadata &&
+            typeof input.metadata.id !== 'string' &&
+            typeof input.metadata.id !== 'undefined'
+        ) {
+            return false;
+        }
+        if (
+            'description' in input.metadata &&
+            typeof input.metadata.description !== 'string' &&
+            typeof input.metadata.description !== 'undefined'
+        ) {
+            return false;
+        }
+        if (
+            'isDeprecated' in input.metadata &&
+            typeof input.metadata.isDeprecated !== 'boolean' &&
+            typeof input.metadata.isDeprecated !== 'undefined'
+        ) {
+            return false;
+        }
     }
-    return (
-        'parse' in input.metadata[validatorKey] &&
-        typeof input.metadata[validatorKey] === 'object'
-    );
+    return ValidationsKey in input;
 }
 
 export interface ASchemaOptions {
@@ -94,7 +118,7 @@ export type ResolveObject<T> = Resolve<{ [k in keyof T]: T[k] }>;
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type InferType<TInput extends ASchema<any>> = Resolve<
-    TInput[typeof validatorKey]['output']
+    TInput[typeof ValidationsKey]['output']
 >;
 
 /**
@@ -235,9 +259,9 @@ export type InferObjectOutput<TInput = any> = ResolveObject<
 export type InferObjectRawType<TInput> =
     TInput extends Record<any, any>
         ? {
-              [TKey in keyof TInput]: TInput[TKey][typeof validatorKey]['optional'] extends true
-                  ? TInput[TKey][typeof validatorKey]['output'] | undefined
-                  : TInput[TKey][typeof validatorKey]['output'];
+              [TKey in keyof TInput]: TInput[TKey][typeof ValidationsKey]['optional'] extends true
+                  ? TInput[TKey][typeof ValidationsKey]['output'] | undefined
+                  : TInput[TKey][typeof ValidationsKey]['output'];
           }
         : never;
 

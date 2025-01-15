@@ -1,12 +1,16 @@
+import * as UValidator from '@arrirpc/schema-interface';
+
 import {
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
     type AScalarSchema,
     type ASchemaOptions,
+    SchemaValidator,
     type ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 
 /**
@@ -18,46 +22,48 @@ import {
 export function boolean(
     opts: ASchemaOptions = {},
 ): AScalarSchema<'boolean', boolean> {
+    const validator: SchemaValidator<boolean> = {
+        output: false,
+        decode: parse,
+        validate,
+        encode: serialize,
+        coerce(input, context) {
+            if (validate(input)) {
+                return input;
+            }
+            switch (input) {
+                case 'true':
+                case 'TRUE':
+                case '1':
+                case 1:
+                    return true;
+                case 'false':
+                case 'FALSE':
+                case '0':
+                case 0:
+                    return false;
+                default:
+                    break;
+            }
+            context.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: context.schemaPath,
+                message: `Error at ${
+                    context.instancePath
+                }. Unable to coerce ${input as any} to boolean.`,
+            });
+            return undefined;
+        },
+    };
     const result: AScalarSchema<'boolean', boolean> = {
         type: 'boolean',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [validatorKey]: {
-                output: false,
-                decode: parse,
-                validate,
-                encode: serialize,
-                coerce(input, context) {
-                    if (validate(input)) {
-                        return input;
-                    }
-                    switch (input) {
-                        case 'true':
-                        case 'TRUE':
-                        case '1':
-                        case 1:
-                            return true;
-                        case 'false':
-                        case 'FALSE':
-                        case '0':
-                        case 0:
-                            return false;
-                        default:
-                            break;
-                    }
-                    context.errors.push({
-                        instancePath: context.instancePath,
-                        schemaPath: context.schemaPath,
-                        message: `Error at ${
-                            context.instancePath
-                        }. Unable to coerce ${input as any} to boolean.`,
-                    });
-                    return undefined;
-                },
-            },
         },
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

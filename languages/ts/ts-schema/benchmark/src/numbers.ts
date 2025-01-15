@@ -80,10 +80,10 @@ void benny.suite(
 void benny.suite(
     'Int Parsing',
     benny.add('Arri', () => {
-        a.parse(IntSchema, intStringInput);
+        a.decodeUnsafe(IntSchema, intStringInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$IntSchema.decodeJson(intStringInput);
+        $$IntSchema.decodeUnsafe(intStringInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         ajvJtdParser(intStringInput);
@@ -108,7 +108,7 @@ void benny.suite(
 void benny.suite(
     'Int Coercion',
     benny.add('Arri', () => {
-        a.coerce(IntSchema, intStringInput);
+        a.coerceUnsafe(IntSchema, intStringInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
         ajvCoerce.validate(TypeBoxIntSchema, intStringInput);
@@ -136,7 +136,7 @@ void benny.suite(
 void benny.suite(
     'Int Serialization',
     benny.add('Arri', () => {
-        a.serialize(IntSchema, intInput);
+        a.encode(IntSchema, intInput);
     }),
     benny.add('Arri (Compiled)', () => {
         $$IntSchema.encode(intInput);

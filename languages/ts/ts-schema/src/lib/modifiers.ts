@@ -1,13 +1,17 @@
+import * as UValidator from '@arrirpc/schema-interface';
+
+import {
+    createStandardSchemaProperty,
+    createUValidatorProperty,
+    hideInvalidProperties,
+} from '../adapters';
 import {
     type ASchema,
     type ASchemaOptions,
-    validatorKey,
+    SchemaValidator,
     ValidationContext,
+    ValidationsKey,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../adapters';
 
 /**
  * Transforms a schema into a nullable type
@@ -29,7 +33,7 @@ export function nullable<T>(
         if (val === null) {
             return true;
         }
-        return schema.metadata[validatorKey].validate(val);
+        return schema[ValidationsKey].validate(val);
     };
     const parse = (
         val: unknown,
@@ -45,37 +49,43 @@ export function nullable<T>(
         if (val === null) {
             return null;
         }
-        return schema.metadata[validatorKey].decode(val, data);
+        return schema[ValidationsKey].decode(val, data);
+    };
+    const validator: SchemaValidator<T | null> = {
+        output: null as T | null,
+        optional: schema[ValidationsKey].optional,
+        validate: isType,
+        decode: parse,
+        coerce(val, data) {
+            if (val === null) {
+                return null;
+            }
+            if (val === 'null') {
+                return null;
+            }
+            return schema[ValidationsKey].coerce(val, data);
+        },
+        encode(val, data) {
+            if (val === null) {
+                return 'null';
+            }
+            return schema[ValidationsKey].encode(val, data);
+        },
     };
     const result: ASchema<T | null> = {
         ...schema,
         nullable: true,
         metadata: {
-            id: opts.id ?? schema.metadata.id,
-            description: opts.description ?? schema.metadata.description,
-            isDeprecated: opts.isDeprecated ?? schema.metadata.isDeprecated,
-            [validatorKey]: {
-                output: null as T | null,
-                optional: schema.metadata[validatorKey].optional,
-                validate: isType,
-                decode: parse,
-                coerce(val, data) {
-                    if (val === null) {
-                        return null;
-                    }
-                    if (val === 'null') {
-                        return null;
-                    }
-                    return schema.metadata[validatorKey].coerce(val, data);
-                },
-                encode(val, data) {
-                    if (val === null) {
-                        return 'null';
-                    }
-                    return schema.metadata[validatorKey].encode(val, data);
-                },
-            },
+            id: opts.id ?? schema.metadata?.id,
+            description: opts.description ?? schema.metadata?.description,
+            isDeprecated: opts.isDeprecated ?? schema.metadata?.isDeprecated,
         },
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
+        '~standard': createStandardSchemaProperty(
+            validator.validate,
+            validator.decode,
+        ),
     };
     hideInvalidProperties(result);
     return result;
@@ -101,7 +111,7 @@ export function optional<T>(
         if (val === undefined) {
             return true;
         }
-        return input.metadata[validatorKey].validate(val);
+        return input[ValidationsKey].validate(val);
     };
     const parse = (val: unknown, context: ValidationContext): T | undefined => {
         if (typeof val === 'undefined') {
@@ -110,36 +120,38 @@ export function optional<T>(
         if (context.instancePath.length === 0 && val === 'undefined') {
             return undefined;
         }
-        return input.metadata[validatorKey].decode(val, context);
+        return input[ValidationsKey].decode(val, context);
+    };
+    const validator: SchemaValidator<T | undefined> = {
+        output: undefined as T | undefined,
+        optional: true,
+        validate: isType,
+        decode: parse,
+        coerce: (val, data) => {
+            if (typeof val === 'undefined') {
+                return undefined;
+            }
+            if (val === 'undefined') {
+                return undefined;
+            }
+            return input[ValidationsKey].coerce(val, data);
+        },
+        encode: (val, data) => {
+            if (typeof val === 'undefined') {
+                return 'undefined';
+            }
+            return input[ValidationsKey].encode(val, data);
+        },
     };
     const result: ASchema<T | undefined> = {
         ...input,
         metadata: {
-            id: opts.id ?? input.metadata.id,
-            description: opts.description ?? input.metadata.description,
-            isDeprecated: opts.isDeprecated ?? input.metadata.isDeprecated,
-            [validatorKey]: {
-                output: undefined as T | undefined,
-                optional: true,
-                validate: isType,
-                decode: parse,
-                coerce: (val, data) => {
-                    if (typeof val === 'undefined') {
-                        return undefined;
-                    }
-                    if (val === 'undefined') {
-                        return undefined;
-                    }
-                    return input.metadata[validatorKey].coerce(val, data);
-                },
-                encode: (val, data) => {
-                    if (typeof val === 'undefined') {
-                        return 'undefined';
-                    }
-                    return input.metadata[validatorKey].encode(val, data);
-                },
-            },
+            id: opts.id ?? input.metadata?.id,
+            description: opts.description ?? input.metadata?.description,
+            isDeprecated: opts.isDeprecated ?? input.metadata?.isDeprecated,
         },
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -150,17 +162,22 @@ export function clone<T>(
     input: ASchema<T>,
     opts: ASchemaOptions = {},
 ): ASchema<T> {
+    const validator = {
+        ...input[ValidationsKey],
+    };
     const schema: ASchema<T> = {
         ...input,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [validatorKey]: {
-                ...input.metadata[validatorKey],
-            },
         },
-        '~standard': input['~standard'],
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
+        '~standard': createStandardSchemaProperty(
+            validator.validate,
+            validator.decode,
+        ),
     };
     hideInvalidProperties(schema);
     return schema;

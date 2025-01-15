@@ -11,23 +11,31 @@ export const v1 = secretSymbol('universal-validator/v1');
 type RequireKeys<T extends object, K extends keyof T> = Required<Pick<T, K>> &
     Omit<T, K>;
 
-export interface Validator<T> {
-    readonly [v1]: ValidatorMethods<T>;
+export interface UValidator<T> {
+    readonly [v1]: UValidatorMethods<T>;
 }
 
-export interface ValidatorWithFeatures<
+export interface UValidatorWith<
     TOut,
-    K extends keyof ValidatorMethods<TOut, TIn>,
+    K extends keyof UValidatorMethods<TOut, TIn>,
     TIn = unknown,
 > {
-    readonly [v1]: RequireKeys<ValidatorMethods<TOut, TIn>, K>;
+    readonly [v1]: RequireKeys<UValidatorMethods<TOut, TIn>, K>;
 }
 
-interface ValidatorMethods<TOut, TIn = unknown> {
+export interface UniValidatorAll<TOut, TIn = unknown> {
+    readonly [v1]: Required<UValidatorMethods<TOut, TIn>>;
+}
+
+interface UValidatorMethods<TOut, TIn = unknown> {
     /**
-     * The inferred type
+     * The inferred output type
      */
-    readonly type?: TOut;
+    readonly output?: TOut;
+    /**
+     * The inferred input type
+     */
+    readonly input?: TIn;
     /**
      * The library that has implemented this interface
      */
@@ -39,7 +47,7 @@ interface ValidatorMethods<TOut, TIn = unknown> {
     /**
      * A type guard that returns true if the input matches the specified type.
      */
-    readonly isType?: (input: unknown) => input is TOut;
+    readonly isValid?: (input: unknown) => input is TOut;
     /**
      * Transform an object or JSON string into T
      */
@@ -66,5 +74,10 @@ export type Result<T> =
     | { success: true; value: T }
     | { success: false; errors: ValueError[] };
 
-export type Infer<TSchema extends ValidatorWithFeatures<any, any, 'type'>> =
-    Required<TSchema[typeof v1]>['type'];
+export type Infer<TSchema extends UValidator<any>> = Required<
+    TSchema[typeof v1]
+>['output'];
+
+export type InferInput<TSchema extends UValidator<any>> = Required<
+    TSchema[typeof v1]
+>['input'];

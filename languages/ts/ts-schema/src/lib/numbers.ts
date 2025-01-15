@@ -1,8 +1,8 @@
-import { v1 } from '@arrirpc/schema-interface';
+import * as UValidator from '@arrirpc/schema-interface';
 
 import {
-    createArriInterfaceProperty,
     createStandardSchemaProperty,
+    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
@@ -11,7 +11,7 @@ import {
     type NumberType,
     SchemaValidator,
     type ValidationContext,
-    validatorKey,
+    ValidationsKey,
 } from '../schemas';
 import {
     int8Max,
@@ -220,8 +220,8 @@ export function int64(
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -292,8 +292,8 @@ export function uint64(
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -410,8 +410,8 @@ function numberScalarType<TType extends NumberType>(
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [validatorKey]: validator,
-        [v1]: createArriInterfaceProperty(validator),
+        [ValidationsKey]: validator,
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);
