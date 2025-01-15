@@ -1,4 +1,4 @@
-import { v1 } from '@arrirpc/schema-interface';
+import * as UValidator from '@arrirpc/schema-interface';
 import { type SchemaFormProperties } from '@arrirpc/type-defs';
 
 import {
@@ -113,7 +113,7 @@ export function object<
             isDeprecated: options.isDeprecated,
         },
         [ValidationsKey]: validator,
-        [v1]: createUValidatorProperty(validator),
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(validate, decode),
     };
     hideInvalidProperties(result);
@@ -528,7 +528,7 @@ export function extend<
     const result: ASchema<any> = {
         ...schema,
         [ValidationsKey]: validator,
-        [v1]: createUValidatorProperty(validator),
+        [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
             validator.decode,
@@ -595,7 +595,7 @@ export function partial<
     const result: ASchema = {
         ...newSchema,
         [ValidationsKey]: validator,
-        [v1]: createUValidatorProperty(validator),
+        [UValidator.v1]: createUValidatorProperty(validator),
         ['~standard']: createStandardSchemaProperty(
             validator.validate,
             validator.decode,

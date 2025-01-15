@@ -20,8 +20,6 @@ type RecursiveCallback<T> = (
     self: ARefSchema<T>,
 ) => AObjectSchema<T> | ADiscriminatorSchema<T>;
 
-const recursiveFns: Record<string, Omit<SchemaValidator<any>, 'output'>> = {};
-
 /**
  * @example
  * ```ts
@@ -82,6 +80,10 @@ export function recursive<T = any>(
         );
     }
     const id = options.id ?? `TypeRef${recursiveTypeCount}`;
+    const recursiveFns: Record<
+        string,
+        Omit<SchemaValidator<any>, 'output'>
+    > = {};
     const validator: SchemaValidator<T> = {
         output: '' as T,
         decode(input, context) {
@@ -94,7 +96,7 @@ export function recursive<T = any>(
                 return undefined;
             }
             if (recursiveFns[id]) {
-                return recursiveFns[id]!.decode(input, {
+                return recursiveFns[id].decode(input, {
                     ...context,
                     depth: context.depth + 1,
                 });
@@ -134,7 +136,8 @@ export function recursive<T = any>(
             }
         },
     };
-    const schema: ARefSchema<T> = {
+
+    const refSchema: ARefSchema<T> = {
         ref: id,
         [ValidationsKey]: validator,
         [UValidator.v1]: createUValidatorProperty(validator),
@@ -143,8 +146,8 @@ export function recursive<T = any>(
             validator.decode,
         ),
     };
-    hideInvalidProperties(schema);
-    const mainSchema = callback(schema);
+    hideInvalidProperties(refSchema);
+    const mainSchema = callback(refSchema);
     if (!mainSchema.metadata) mainSchema.metadata = {};
     mainSchema.metadata.id = id;
     mainSchema.metadata.description =
@@ -152,11 +155,10 @@ export function recursive<T = any>(
     mainSchema.metadata.isDeprecated =
         options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
-        validate: validator.validate,
-        decode: validator.decode,
-        encode: validator.encode as any,
-        coerce: validator.coerce,
+        validate: mainSchema[ValidationsKey].validate,
+        decode: mainSchema[ValidationsKey].decode,
+        encode: mainSchema[ValidationsKey].encode,
+        coerce: mainSchema[ValidationsKey].coerce,
     };
-
     return mainSchema;
 }

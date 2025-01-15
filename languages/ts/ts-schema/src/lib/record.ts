@@ -131,7 +131,17 @@ function parse<T>(
         typeof input === 'string' &&
         input.length > 0
     ) {
-        parsedInput = JSON.parse(input);
+        try {
+            parsedInput = JSON.parse(input);
+        } catch (err) {
+            data.errors.push({
+                message: err instanceof Error ? err.message : `${err}`,
+                instancePath: data.instancePath,
+                schemaPath: data.schemaPath,
+                data: err,
+            });
+            return undefined;
+        }
     }
     if (!isObject(parsedInput)) {
         data.errors.push({

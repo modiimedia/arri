@@ -1,4 +1,4 @@
-import { ValidatorWithFeatures, ValueError } from '@arrirpc/schema-interface';
+import { UValidatorWith, ValueError } from '@arrirpc/schema-interface';
 import {
     isSchemaFormDiscriminator,
     isSchemaFormElements,
@@ -64,9 +64,9 @@ export interface SchemaMetadata {
 }
 
 export interface ASchema<T = any>
-    extends ValidatorWithFeatures<
+    extends UValidatorWith<
             T,
-            'decodeJSON' | 'encodeJSON' | 'coerce' | 'isType' | 'errors'
+            'decodeJSON' | 'encodeJSON' | 'coerce' | 'isValid' | 'errors'
         >,
         StandardSchemaV1<T> {
     metadata?: SchemaMetadata;

@@ -48,27 +48,37 @@ function validate(input: unknown): input is Date {
     return typeof input === 'object' && input instanceof Date;
 }
 function parse(input: unknown, data: ValidationContext): Date | undefined {
-    if (validate(input)) {
-        return input;
-    }
-    if (typeof input === 'string') {
-        const result = Date.parse(input);
-        if (Number.isNaN(result)) {
-            data?.errors.push({
-                message: `Error at ${data.instancePath}. Invalid date string.`,
-                instancePath: data.instancePath,
-                schemaPath: `${data.schemaPath}/type`,
-            });
-            return undefined;
+    try {
+        if (validate(input)) {
+            return input;
         }
-        return new Date(result);
+        if (typeof input === 'string') {
+            const result = Date.parse(input);
+            if (Number.isNaN(result)) {
+                data?.errors.push({
+                    message: `Error at ${data.instancePath}. Invalid date string.`,
+                    instancePath: data.instancePath,
+                    schemaPath: `${data.schemaPath}/type`,
+                });
+                return undefined;
+            }
+            return new Date(result);
+        }
+        data.errors.push({
+            message: `Error at ${data.instancePath}. Invalid date.`,
+            instancePath: data.instancePath,
+            schemaPath: `${data.schemaPath}/type`,
+        });
+        return undefined;
+    } catch (err) {
+        data.errors.push({
+            message: err instanceof Error ? err.message : `${err}`,
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            data: err,
+        });
+        return undefined;
     }
-    data.errors.push({
-        message: `Error at ${data.instancePath}. Invalid date.`,
-        instancePath: data.instancePath,
-        schemaPath: `${data.schemaPath}/type`,
-    });
-    return undefined;
 }
 function coerce(input: unknown, options: ValidationContext): Date | undefined {
     if (typeof input === 'number') {

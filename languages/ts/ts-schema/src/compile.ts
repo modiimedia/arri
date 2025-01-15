@@ -27,7 +27,7 @@ import {
 } from './lib/numberConstants';
 
 export {
-    getSchemaDecodingCode as getSchemaParsingCode,
+    getSchemaDecodingCode,
     getSchemaSerializationCode,
     getSchemaValidationCode,
 };
@@ -75,50 +75,40 @@ export function compile<TSchema extends ASchema<any>>(
     const validate = new Function('input', validateCode) as (
         input: unknown,
     ) => input is InferType<TSchema>;
-    const decodeUnsafe = (input: unknown): InferType<TSchema> => {
+    const decode = (input: unknown): Result<InferType<TSchema>> => {
         try {
-            return decoderFn(input);
+            const result = decoderFn(input);
+            return {
+                success: true,
+                value: result,
+            };
         } catch (err) {
             const errors = getInputErrors(schema, input);
-            let errorMessage = err instanceof Error ? err.message : '';
-            if (errors.length) {
-                errorMessage =
-                    errors[0]!.message ??
-                    `Parsing error at ${errors[0]!.instancePath}`;
+            if (!errors.length) {
+                errors.push({
+                    message: err instanceof Error ? err.message : '',
+                });
             }
-            throw new ValidationException({
-                message: errorMessage,
-                errors,
-            });
+            return {
+                success: false,
+                errors: errors,
+            };
         }
     };
     const result: CompiledValidator<TSchema> = {
         validate,
-        decode: (input) => {
-            try {
-                const result = decoderFn(input);
-                return {
-                    success: true,
-                    value: result,
-                };
-            } catch (err) {
-                const errors = getInputErrors(schema, input);
-                const errorMessage = err instanceof Error ? err.message : '';
-                if (errors.length === 0) {
-                    errors.push({
-                        instancePath: '',
-                        schemaPath: '',
-                        message: errorMessage,
-                        data: err,
-                    });
-                }
-                return {
-                    success: false,
-                    errors: errors,
-                };
+        decode: decode,
+        decodeUnsafe(input) {
+            const result = decode(input);
+            if (!result.success) {
+                throw new ValidationException({
+                    message:
+                        result.errors[0]?.message ?? 'Error decoding input',
+                    errors: result.errors,
+                });
             }
+            return result.value;
         },
-        decodeUnsafe: decodeUnsafe,
         encode(input) {
             try {
                 const result = encoderFn(input);
@@ -164,7 +154,14 @@ export function compile<TSchema extends ASchema<any>>(
             decode: decoder.code,
             encode: encoder.code,
         },
-        '~standard': createStandardSchemaProperty(validate, decodeUnsafe),
+        '~standard': createStandardSchemaProperty(validate, (input, ctx) => {
+            const result = decode(input);
+            if (!result.success) {
+                ctx.errors = result.errors;
+                return undefined;
+            }
+            return result.value;
+        }),
     };
     return result;
 }

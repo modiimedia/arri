@@ -137,7 +137,10 @@ export function discriminator<
             const discriminatorVal = input[discriminator] ?? '';
             const targetSchema = mapping[discriminatorVal];
             if (!targetSchema) {
-                throw discriminatorMappingError(discriminatorVal, context);
+                context.errors.push(
+                    discriminatorMappingError(discriminatorVal, context),
+                );
+                return undefined;
             }
             const result = targetSchema[ValidationsKey].encode(input, {
                 instancePath: context.instancePath,
@@ -222,7 +225,17 @@ function parse(
         input.length &&
         context.instancePath.length === 0
     ) {
-        parsedInput = JSON.parse(input);
+        try {
+            parsedInput = JSON.parse(input);
+        } catch (err) {
+            context.errors.push({
+                message: err instanceof Error ? err.message : `${err}`,
+                data: err,
+                instancePath: context.instancePath,
+                schemaPath: context.schemaPath,
+            });
+            return undefined;
+        }
     }
     if (!isObject(parsedInput)) {
         context.errors.push({

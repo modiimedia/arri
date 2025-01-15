@@ -37,6 +37,7 @@ describe('standard-schema support', () => {
         delete (input as any).createdAt;
         expect($$User.validate(input)).toBe(false);
         standardResult = await $$User['~standard'].validate(input);
+        console.log(standardResult);
         expect(standardResult.issues?.length).toBe(1);
         expect(standardResult.issues?.[0]?.path).toStrictEqual(['createdAt']);
     });

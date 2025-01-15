@@ -1,7 +1,4 @@
-import {
-    ValidationException,
-    ValidatorWithFeatures,
-} from '@arrirpc/schema-interface';
+import { UValidatorWith, ValidationException } from '@arrirpc/schema-interface';
 import { v1 } from '@arrirpc/schema-interface';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -53,16 +50,16 @@ export function hideInvalidProperties(schema: ASchema) {
 
 export function createUValidatorProperty<T>(
     validator: ASchema<T>[typeof ValidationsKey],
-): ValidatorWithFeatures<
+): UValidatorWith<
     T,
-    'decodeJSON' | 'encodeJSON' | 'coerce' | 'isType' | 'errors'
+    'decodeJSON' | 'encodeJSON' | 'coerce' | 'isValid' | 'errors'
 >[typeof v1] {
-    const result: ValidatorWithFeatures<
+    const result: UValidatorWith<
         T,
-        'decodeJSON' | 'encodeJSON' | 'coerce' | 'isType' | 'errors'
+        'decodeJSON' | 'encodeJSON' | 'coerce' | 'isValid' | 'errors'
     >[typeof v1] = {
         vendor: 'arri',
-        isType: validator.validate,
+        isValid: validator.validate,
         decodeJSON(input) {
             const ctx = newValidationContext();
             const result = validator.decode(input, ctx);

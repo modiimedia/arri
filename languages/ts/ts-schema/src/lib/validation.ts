@@ -22,9 +22,6 @@ export function validate<T = any>(
     schema: ASchema<T>,
     input: unknown,
 ): input is T {
-    if (!schema[ValidationsKey]) {
-        console.log('SCHEMA', schema);
-    }
     return schema[ValidationsKey].validate(input);
 }
 

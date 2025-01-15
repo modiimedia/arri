@@ -229,7 +229,7 @@ test('overloaded functions produce the same result', () => {
         right: null,
     };
     expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
-    expect(a.encode(SchemaA, input)).toBe(a.encode(SchemaB, input));
+    expect(a.encodeUnsafe(SchemaA, input)).toBe(a.encodeUnsafe(SchemaB, input));
 });
 
 it('produces valid ATD', () => {
