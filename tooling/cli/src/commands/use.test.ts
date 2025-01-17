@@ -99,7 +99,7 @@ describe('updatePubspecYaml()', () => {
         expect(output.updated).toBe(true);
     });
 
-    it('updates relevant lines without preserving strict version numbers', () => {
+    it('updates relevant lines without implementing strict version numbers', () => {
         const input = `dependencies:
     arri_client: ^0.1.0 # this is a comment
     http: 1.0.1
