@@ -19,12 +19,12 @@ describe('updatePackageJson()', () => {
 }`;
         const expectedOutput = `{
     "dependencies": {
-        "arri": "^2.0.0",
-        "@arrirpc/client": "^2.0.0",
+        "arri": "2.0.0",
+        "@arrirpc/client": "2.0.0",
         "express": "^1.0.0"
     },
     "devDependencies": {
-        "@arrirpc/eslint-plugin": "^2.0.0"
+        "@arrirpc/eslint-plugin": "2.0.0"
     }
 }`;
         const output = updatePackageJson(input, '2.0.0');
@@ -44,15 +44,41 @@ describe('updatePackageJson()', () => {
 }`;
         const expectedOutput = `{
     "dependencies": {
-        "arri": "^2.0.0", // this is a comment
+        "arri": "2.0.0", // this is a comment
         "express": "^1.0.0",
-        "@arrirpc/server": "^2.0.0",
+        "@arrirpc/server": "2.0.0",
     },
     "devDependencies": {
-        "@arrirpc/eslint-plugin": "^2.0.0", // this is "another comment"
+        "@arrirpc/eslint-plugin": "2.0.0", // this is "another comment"
     },
 }`;
         const output = updatePackageJson(input, '2.0.0');
+        expect(output.content).toBe(expectedOutput);
+        expect(output.updated).toBe(true);
+    });
+
+    it('updates relevant lines without implementing strict versions', () => {
+        const input = `{
+            "dependencies": {
+                "arri": "^0.1.1", // this is a comment
+                "express": "^1.0.0",
+                "@arrirpc/server": "^0.1.1",
+            },
+            "devDependencies": {
+                "@arrirpc/eslint-plugin": "^0.1.1", // this is "another comment"
+            },
+        }`;
+        const expectedOutput = `{
+            "dependencies": {
+                "arri": "^3.0.0", // this is a comment
+                "express": "^1.0.0",
+                "@arrirpc/server": "^3.0.0",
+            },
+            "devDependencies": {
+                "@arrirpc/eslint-plugin": "^3.0.0", // this is "another comment"
+            },
+        }`;
+        const output = updatePackageJson(input, '3.0.0', false);
         expect(output.content).toBe(expectedOutput);
         expect(output.updated).toBe(true);
     });
@@ -65,10 +91,24 @@ describe('updatePubspecYaml()', () => {
     http: 1.0.1
     # this is another comment`;
         const expectedOutput = `dependencies:
-    arri_client: ^2.0.0 # this is a comment
+    arri_client: 2.0.0 # this is a comment
     http: 1.0.1
     # this is another comment`;
         const output = updatePubspecYaml(input, '2.0.0');
+        expect(output.content).toBe(expectedOutput);
+        expect(output.updated).toBe(true);
+    });
+
+    it('updates relevant lines without implementing strict version numbers', () => {
+        const input = `dependencies:
+    arri_client: ^0.1.0 # this is a comment
+    http: 1.0.1
+    # this is another comment`;
+        const expectedOutput = `dependencies:
+    arri_client: ^3.0.0 # this is a comment
+    http: 1.0.1
+    # this is another comment`;
+        const output = updatePubspecYaml(input, '3.0.0', false);
         expect(output.content).toBe(expectedOutput);
         expect(output.updated).toBe(true);
     });

@@ -145,6 +145,7 @@ export default defineCommand({
 export function updatePackageJson(
     fileContent: string,
     targetVersion: string,
+    strict: boolean = true,
 ): { updated: boolean; content: string } {
     const lines = fileContent.split('\n');
     const output: string[] = [];
@@ -168,7 +169,7 @@ export function updatePackageJson(
             return line;
         }
         const targetParts = parts[1]!.split('"');
-        targetParts[1] = `^${targetVersion}`;
+        targetParts[1] = strict ? `${targetVersion}` : `^${targetVersion}`;
         parts[1] = targetParts.join('"');
         return parts.join('":');
     }
@@ -210,6 +211,7 @@ export async function getDartPackageMeta() {
 export function updatePubspecYaml(
     fileContent: string,
     version: string,
+    strict: boolean = true,
 ): {
     updated: boolean;
     content: string;
@@ -226,7 +228,7 @@ export function updatePubspecYaml(
             }
             const targetPart = parts[1];
             const subParts = targetPart!.split(' ');
-            subParts[0] = `^${version}`;
+            subParts[0] = strict ? `${version}` : `^${version}`;
             parts[1] = subParts.join(' ');
             output.push(parts.join(': '));
             updated = true;
