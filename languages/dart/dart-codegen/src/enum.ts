@@ -13,7 +13,9 @@ export function dartEnumFromSchema(
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
     const enumName = getDartClassName(schema, context);
-    const typeName = isNullable ? `${enumName}?` : enumName;
+    const typeName = isNullable
+        ? `${context.modelPrefix}${enumName}?`
+        : `${context.modelPrefix}${enumName}`;
     const enumValues = schema.enum.map((val) => ({
         name: camelCase(val, { normalize: true }),
         serialValue: val,
@@ -75,7 +77,7 @@ ${enumValues.map((val) => `  ${val.name}("${val.serialValue}")`).join(',\n')};
   }
 
   @override
-  int compareTo(${enumName} other) => name.compareTo(other.name);
+  int compareTo(${context.modelPrefix}${enumName} other) => name.compareTo(other.name);
 }`;
     context.generatedTypes.push(enumName);
     return output;
