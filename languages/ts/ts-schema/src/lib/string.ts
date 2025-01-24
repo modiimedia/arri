@@ -23,10 +23,10 @@ export function string(
 ): AScalarSchema<'string', string> {
     const validator: AScalarSchema<'string', string>[typeof ValidationsKey] = {
         output: '',
-        decode: decode,
+        parse: decode,
         coerce,
         validate,
-        encode(input, context) {
+        serialize(input, context) {
             if (context.instancePath.length === 0) {
                 return input;
             }

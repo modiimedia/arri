@@ -204,9 +204,9 @@ export function int64(
     const validator: SchemaValidator<bigint> = {
         output: BigInt('0'),
         validate: isType,
-        decode: parse,
+        parse: parse,
         coerce: parse,
-        encode(input, context) {
+        serialize(input, context) {
             if (context.instancePath.length === 0) {
                 return input.toString();
             }
@@ -276,9 +276,9 @@ export function uint64(
     const validator: SchemaValidator<bigint> = {
         output: BigInt('0'),
         validate: isType,
-        decode: parse,
+        parse: parse,
         coerce: parse,
-        encode(input, context) {
+        serialize(input, context) {
             if (context.instancePath.length === 0) {
                 return input.toString();
             }
@@ -377,8 +377,8 @@ function numberScalarType<TType extends NumberType>(
     const validator: SchemaValidator<number> = {
         output: 0,
         validate,
-        decode: parse,
-        encode: serializeNumber,
+        parse: parse,
+        serialize: serializeNumber,
         coerce(input, options) {
             const result = coerceNumber(input, options);
             if (typeof result !== 'number') {

@@ -86,7 +86,7 @@ export function recursive<T = any>(
     > = {};
     const validator: SchemaValidator<T> = {
         output: '' as T,
-        decode(input, context) {
+        parse(input, context) {
             if (context.depth >= context.maxDepth) {
                 context.errors.push({
                     message: 'Max depth exceeded',
@@ -96,13 +96,13 @@ export function recursive<T = any>(
                 return undefined;
             }
             if (recursiveFns[id]) {
-                return recursiveFns[id].decode(input, {
+                return recursiveFns[id].parse(input, {
                     ...context,
                     depth: context.depth + 1,
                 });
             }
         },
-        encode(input, context) {
+        serialize(input, context) {
             if (context.depth >= context.maxDepth) {
                 context.errors.push({
                     message: 'Max depth exceeded',
@@ -112,7 +112,7 @@ export function recursive<T = any>(
                 return undefined;
             }
             if (recursiveFns[id]) {
-                return recursiveFns[id]!.encode(input, context);
+                return recursiveFns[id]!.serialize(input, context);
             }
             return '';
         },
@@ -143,7 +143,7 @@ export function recursive<T = any>(
         [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
-            validator.decode,
+            validator.parse,
         ),
     };
     hideInvalidProperties(refSchema);
@@ -156,8 +156,8 @@ export function recursive<T = any>(
         options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
         validate: mainSchema[ValidationsKey].validate,
-        decode: mainSchema[ValidationsKey].decode,
-        encode: mainSchema[ValidationsKey].encode,
+        parse: mainSchema[ValidationsKey].parse,
+        serialize: mainSchema[ValidationsKey].serialize,
         coerce: mainSchema[ValidationsKey].coerce,
     };
     return mainSchema;

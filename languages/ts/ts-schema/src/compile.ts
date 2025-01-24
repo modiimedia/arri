@@ -1,4 +1,9 @@
-import { Result, ValidationException } from '@arrirpc/schema-interface';
+import {
+    Result,
+    UValidatorWith,
+    ValidationException,
+} from '@arrirpc/schema-interface';
+import * as UValidator from '@arrirpc/schema-interface';
 import { isSchemaFormEnum, isSchemaFormType } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -33,7 +38,11 @@ export {
 };
 
 export interface CompiledValidator<TSchema extends ASchema<any>>
-    extends StandardSchemaV1<InferType<TSchema>> {
+    extends StandardSchemaV1<InferType<TSchema>>,
+        UValidatorWith<
+            InferType<TSchema>,
+            'coerce' | 'parse' | 'serialize' | 'validate' | 'toATD'
+        > {
     /**
      * Determine if a type matches a schema. This is a type guard.
      */
@@ -41,22 +50,22 @@ export interface CompiledValidator<TSchema extends ASchema<any>>
     /**
      * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
      */
-    decode: (input: unknown) => Result<InferType<TSchema>>;
+    parse: (input: unknown) => Result<InferType<TSchema>>;
     /**
      * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
      */
-    decodeUnsafe: (input: unknown) => InferType<TSchema>;
+    parseUnsafe: (input: unknown) => InferType<TSchema>;
     /**
      * Serialize to JSON
      */
-    encode: (input: InferType<TSchema>) => Result<string>;
+    serialize: (input: InferType<TSchema>) => Result<string>;
     /**
      * Serialize to JSON. Throws an error if it fails.
      */
-    encodeUnsafe: (input: InferType<TSchema>) => string;
+    serializeUnsafe: (input: InferType<TSchema>) => string;
     compiledCode: {
-        decode: string;
-        encode: string;
+        parse: string;
+        serialize: string;
         validate: string;
     };
 }
@@ -68,22 +77,45 @@ export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
     const validateCode = getSchemaValidationCode('input', schema);
-    const decoder = getCompiledDecoder('input', schema);
-    const decoderFn = decoder.fn;
-    const encoder = getCompiledEncoder(schema);
-    const encoderFn = encoder.fn;
-    const validate = new Function('input', validateCode) as (
-        input: unknown,
-    ) => input is InferType<TSchema>;
-    const decode = (input: unknown): Result<InferType<TSchema>> => {
+    const parser = getCompiledParser('input', schema);
+    const parserFn = parser.fn;
+    const serializer = getCompiledSerializer(schema);
+    const serializeFn = serializer.fn;
+    const serialize = (input: InferType<TSchema>): Result<string> => {
         try {
-            const result = decoderFn(input);
+            const result = serializeFn(input);
             return {
                 success: true,
                 value: result,
             };
         } catch (err) {
-            const errors = getInputErrors(schema, input);
+            const errors = getInputErrors(schema, input, true);
+            if (errors.length === 0) {
+                errors.push({
+                    instancePath: '',
+                    schemaPath: '',
+                    message: err instanceof Error ? err.message : `${err}`,
+                    data: err,
+                });
+            }
+            return {
+                success: false,
+                errors: errors,
+            };
+        }
+    };
+    const validate = new Function('input', validateCode) as (
+        input: unknown,
+    ) => input is InferType<TSchema>;
+    const parse = (input: unknown): Result<InferType<TSchema>> => {
+        try {
+            const result = parserFn(input);
+            return {
+                success: true,
+                value: result,
+            };
+        } catch (err) {
+            const errors = getInputErrors(schema, input, true);
             if (!errors.length) {
                 errors.push({
                     message: err instanceof Error ? err.message : '',
@@ -95,11 +127,12 @@ export function compile<TSchema extends ASchema<any>>(
             };
         }
     };
+    const atd = JSON.parse(JSON.stringify(schema));
     const result: CompiledValidator<TSchema> = {
         validate,
-        decode: decode,
-        decodeUnsafe(input) {
-            const result = decode(input);
+        parse: parse,
+        parseUnsafe(input) {
+            const result = parse(input);
             if (!result.success) {
                 throw new ValidationException({
                     message:
@@ -109,32 +142,10 @@ export function compile<TSchema extends ASchema<any>>(
             }
             return result.value;
         },
-        encode(input) {
+        serialize,
+        serializeUnsafe(input) {
             try {
-                const result = encoderFn(input);
-                return {
-                    success: true,
-                    value: result,
-                };
-            } catch (err) {
-                const errors = getInputErrors(schema, input);
-                if (errors.length === 0) {
-                    errors.push({
-                        instancePath: '',
-                        schemaPath: '',
-                        message: err instanceof Error ? err.message : `${err}`,
-                        data: err,
-                    });
-                }
-                return {
-                    success: false,
-                    errors: errors,
-                };
-            }
-        },
-        encodeUnsafe(input) {
-            try {
-                return encoderFn(input);
+                return serializeFn(input);
             } catch (err) {
                 const errors = getInputErrors(schema, input);
                 let errorMessage = err instanceof Error ? err.message : '';
@@ -151,25 +162,33 @@ export function compile<TSchema extends ASchema<any>>(
         },
         compiledCode: {
             validate: validateCode,
-            decode: decoder.code,
-            encode: encoder.code,
+            parse: parser.code,
+            serialize: serializer.code,
         },
         '~standard': createStandardSchemaProperty(validate, (input, ctx) => {
-            const result = decode(input);
+            const result = parse(input);
             if (!result.success) {
                 ctx.errors = result.errors;
                 return undefined;
             }
             return result.value;
         }),
+        [UValidator.v1]: {
+            vendor: 'arri/compiled',
+            validate,
+            parse,
+            serialize,
+            coerce: schema[UValidator.v1].coerce,
+            toATD: () => atd,
+        },
     };
     return result;
 }
 
 type CompiledDecoder<TSchema extends ASchema<any>> =
-    CompiledValidator<TSchema>['decodeUnsafe'];
+    CompiledValidator<TSchema>['parseUnsafe'];
 
-export function getCompiledDecoder<TSchema extends ASchema<any>>(
+export function getCompiledParser<TSchema extends ASchema<any>>(
     input: string,
     schema: TSchema,
 ): { fn: CompiledDecoder<TSchema>; code: string } {
@@ -776,7 +795,7 @@ function intDecoder(input: unknown, minNum: number, maxNum: number): any {
     });
 }
 
-export function getCompiledEncoder<TSchema extends ASchema>(
+export function getCompiledSerializer<TSchema extends ASchema>(
     schema: TSchema,
 ): { fn: (input: InferType<TSchema>) => string; code: string } {
     const code = getSchemaSerializationCode('input', schema);

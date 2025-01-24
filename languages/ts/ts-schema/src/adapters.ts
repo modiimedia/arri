@@ -17,7 +17,7 @@ export function createStandardSchemaProperty<T>(
         version: 1,
         vendor: 'arri',
         validate(input): StandardSchemaV1.Result<T> {
-            const ctx = newValidationContext();
+            const ctx = newValidationContext(true);
             const result = parse(input, ctx);
             if (ctx.errors.length) {
                 return {
@@ -47,17 +47,17 @@ export function createUValidatorProperty<T>(
     validator: ASchema<T>[typeof ValidationsKey],
 ): UValidatorWith<
     T,
-    'decodeJSON' | 'encodeJSON' | 'coerce' | 'isValid' | 'errors'
+    'parse' | 'serialize' | 'coerce' | 'validate' | 'errors'
 >[typeof v1] {
     const result: UValidatorWith<
         T,
-        'decodeJSON' | 'encodeJSON' | 'coerce' | 'isValid' | 'errors'
+        'parse' | 'serialize' | 'coerce' | 'validate' | 'errors'
     >[typeof v1] = {
         vendor: 'arri',
-        isValid: validator.validate,
-        decodeJSON(input) {
-            const ctx = newValidationContext();
-            const result = validator.decode(input, ctx);
+        validate: validator.validate,
+        parse(input) {
+            const ctx = newValidationContext(true);
+            const result = validator.parse(input, ctx);
             if (
                 ctx.errors.length ||
                 (typeof result === 'undefined' && !validator.optional)
@@ -72,10 +72,10 @@ export function createUValidatorProperty<T>(
                 value: result!,
             };
         },
-        encodeJSON(input) {
+        serialize(input) {
             try {
-                const ctx = newValidationContext();
-                const result = validator.encode(input, ctx);
+                const ctx = newValidationContext(true);
+                const result = validator.serialize(input, ctx);
                 if (ctx.errors.length || typeof result === 'undefined') {
                     return {
                         success: false,
@@ -119,7 +119,7 @@ export function createUValidatorProperty<T>(
             }
         },
         coerce(input) {
-            const ctx = newValidationContext();
+            const ctx = newValidationContext(true);
             const result = validator.coerce(input, ctx);
             if (ctx.errors.length || (!result && !validator.optional)) {
                 return {
@@ -135,7 +135,7 @@ export function createUValidatorProperty<T>(
         errors(input) {
             const ctx = newValidationContext();
             try {
-                validator.decode(input, ctx);
+                validator.parse(input, ctx);
             } catch (err) {
                 ctx.errors.push({
                     instancePath: '',

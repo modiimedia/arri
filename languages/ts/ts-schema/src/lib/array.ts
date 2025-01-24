@@ -32,16 +32,16 @@ export function array<TInnerSchema extends ASchema<any> = any>(
     };
     const validator: SchemaValidator<InferType<AArraySchema<TInnerSchema>>> = {
         output: [] as any,
-        decode: parseType,
+        parse: parseType,
         coerce(input, context) {
             return parse(schema, input, context, true);
         },
         validate: validateType,
-        encode(input, context) {
+        serialize(input, context) {
             const strParts: string[] = [];
             for (let i = 0; i < input.length; i++) {
                 const item = input[i];
-                const part = schema[ValidationsKey].encode(item, {
+                const part = schema[ValidationsKey].serialize(item, {
                     instancePath: `${context.instancePath}/${i}`,
                     schemaPath: `${context.schemaPath}/elements`,
                     errors: context.errors,
@@ -131,7 +131,7 @@ function parse<T>(
             // }
             result.push(parsedItem as any);
         } else {
-            const parsedItem = innerSchema[ValidationsKey].decode(item, {
+            const parsedItem = innerSchema[ValidationsKey].parse(item, {
                 instancePath: `${context.instancePath}/${i}`,
                 schemaPath: `${context.schemaPath}/elements`,
                 errors: context.errors,

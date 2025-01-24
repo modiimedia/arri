@@ -129,11 +129,11 @@ export function discriminator<
     > = {
         output: {} as any,
         validate: isType,
-        decode: parseType,
+        parse: parseType,
         coerce: (input, context) => {
             return parse(discriminator, mapping, input, context, true);
         },
-        encode(input, context) {
+        serialize(input, context) {
             const discriminatorVal = input[discriminator] ?? '';
             const targetSchema = mapping[discriminatorVal];
             if (!targetSchema) {
@@ -142,7 +142,7 @@ export function discriminator<
                 );
                 return undefined;
             }
-            const result = targetSchema[ValidationsKey].encode(input, {
+            const result = targetSchema[ValidationsKey].serialize(input, {
                 instancePath: context.instancePath,
                 schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
                 errors: context.errors,
@@ -286,7 +286,7 @@ function parse(
         });
         return result;
     }
-    const result = targetSchema[ValidationsKey].decode(parsedInput, {
+    const result = targetSchema[ValidationsKey].parse(parsedInput, {
         instancePath: context.instancePath,
         schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
         errors: context.errors,

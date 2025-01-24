@@ -33,7 +33,7 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
     };
     const validator: SchemaValidator<any> = {
         output: undefined as any,
-        decode: parse,
+        parse: parse,
         coerce: (input, context) => {
             if (
                 context.instancePath.length === 0 &&
@@ -48,7 +48,7 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
             return input;
         },
         validate,
-        encode(input) {
+        serialize(input) {
             return JSON.stringify(input);
         },
     };

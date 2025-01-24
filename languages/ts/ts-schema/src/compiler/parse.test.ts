@@ -11,10 +11,13 @@ for (const key of Object.keys(validationTestSuites)) {
         for (let i = 0; i < suite.goodInputs.length; i++) {
             test(`Good Input - ${i + 1}`, () => {
                 const input = suite.goodInputs[i];
-                expect(isEqual(Compiled.decode(input), input));
+                expect(isEqual(Compiled.parse(input), input));
                 if (typeof input === 'object') {
                     expect(
-                        isEqual(Compiled.decode(Compiled.encode(input)), input),
+                        isEqual(
+                            Compiled.parse(Compiled.serialize(input)),
+                            input,
+                        ),
                     );
                 }
             });
@@ -22,7 +25,7 @@ for (const key of Object.keys(validationTestSuites)) {
         for (let i = 0; i < suite.badInputs.length; i++) {
             test(`Bad input - ${i + 1}`, () => {
                 const input = suite.badInputs[i];
-                expect(Compiled.decode(input).success).toBe(false);
+                expect(Compiled.parse(input).success).toBe(false);
                 expect(a.decode(suite.schema, input).success).toBe(false);
             });
         }
@@ -38,21 +41,21 @@ describe('parsing test suites', () => {
                 test(`${key} - Good Input ${i}`, () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
-                    const actualResult = Compiled.decode(input);
+                    const actualResult = Compiled.parse(input);
                     if (!actualResult.success) {
-                        console.log(Compiled.compiledCode.decode);
+                        console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should parse');
                     }
                     expect(actualResult.success).toBe(true);
                     if (!actualResult.success) return;
-                    const serializedResult = Compiled.encode(
+                    const serializedResult = Compiled.serialize(
                         actualResult.value,
                     );
                     expect(serializedResult.success).toBe(true);
                     if (!serializedResult.success) return;
                     expect(actualResult.value).toStrictEqual(expectedResult);
                     expect(
-                        Compiled.decodeUnsafe(serializedResult.value),
+                        Compiled.parseUnsafe(serializedResult.value),
                     ).toStrictEqual(expectedResult);
                     expect(actualResult.value).toStrictEqual(
                         a.decodeUnsafe(suite.schema, input),
@@ -62,9 +65,9 @@ describe('parsing test suites', () => {
             for (let i = 0; i < suite.badInputs.length; i++) {
                 test(`${key} - Bad Input ${i}`, () => {
                     const input = suite.badInputs[i];
-                    const result = Compiled.decode(input);
+                    const result = Compiled.parse(input);
                     if (result.success) {
-                        console.log(Compiled.compiledCode.decode);
+                        console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should NOT parse');
                     }
                     expect(result.success).toBe(false);
@@ -76,34 +79,34 @@ describe('parsing test suites', () => {
 
 it('parses floats', () => {
     const Compiled = a.compile(a.number());
-    expect(Compiled.decodeUnsafe('1')).toBe(1);
-    expect(Compiled.decodeUnsafe(1)).toBe(1);
-    expect(Compiled.decodeUnsafe('1500.5')).toBe(1500.5);
-    expect(!Compiled.decode('hello world').success);
-    expect(!Compiled.decode(true).success);
+    expect(Compiled.parseUnsafe('1')).toBe(1);
+    expect(Compiled.parseUnsafe(1)).toBe(1);
+    expect(Compiled.parseUnsafe('1500.5')).toBe(1500.5);
+    expect(!Compiled.parse('hello world').success);
+    expect(!Compiled.parse(true).success);
 });
 
 it('parses ints', () => {
     const Compiled = a.compile(a.uint32());
-    expect(Compiled.decodeUnsafe('1')).toBe(1);
-    expect(Compiled.decodeUnsafe(1)).toBe(1);
-    expect(!Compiled.decode('1500.5').success);
-    expect(!Compiled.decode(-100).success);
-    expect(!Compiled.decode(true).success);
+    expect(Compiled.parseUnsafe('1')).toBe(1);
+    expect(Compiled.parseUnsafe(1)).toBe(1);
+    expect(!Compiled.parse('1500.5').success);
+    expect(!Compiled.parse(-100).success);
+    expect(!Compiled.parse(true).success);
 });
 
 it('parses timestamps', () => {
     const val = new Date();
     const Compiled = a.compile(a.timestamp());
-    expect(Compiled.decodeUnsafe(val).getTime()).toBe(val.getTime());
-    expect(Compiled.decodeUnsafe(val.toISOString()).getTime()).toBe(
+    expect(Compiled.parseUnsafe(val).getTime()).toBe(val.getTime());
+    expect(Compiled.parseUnsafe(val.toISOString()).getTime()).toBe(
         val.getTime(),
     );
 });
 
 it('parses arrays', () => {
     const CompiledSimple = a.compile(a.array(a.int8()));
-    expect(CompiledSimple.decodeUnsafe([1, 2, 3, 4, 5])).toStrictEqual([
+    expect(CompiledSimple.parseUnsafe([1, 2, 3, 4, 5])).toStrictEqual([
         1, 2, 3, 4, 5,
     ]);
 });
@@ -133,10 +136,10 @@ it('respects the strict option', () => {
         name: '',
         description: '',
     };
-    expect(LooseSchema.decode(input).success);
-    expect(LooseSchema.decode(inputWithAdditionalFields).success);
-    expect(StrictSchema.decode(input).success);
-    expect(!StrictSchema.decode(inputWithAdditionalFields).success);
+    expect(LooseSchema.parse(input).success);
+    expect(LooseSchema.parse(inputWithAdditionalFields).success);
+    expect(StrictSchema.parse(input).success);
+    expect(!StrictSchema.parse(inputWithAdditionalFields).success);
 });
 
 it('parses discriminated unions', () => {
@@ -184,10 +187,10 @@ it('parses discriminated unions', () => {
     ];
     const CompiledValidator = a.compile(Schema);
     for (const input of inputs) {
-        expect(CompiledValidator.decodeUnsafe(input)).toStrictEqual(input);
+        expect(CompiledValidator.parseUnsafe(input)).toStrictEqual(input);
         expect(
-            CompiledValidator.decodeUnsafe(
-                CompiledValidator.encodeUnsafe(input),
+            CompiledValidator.parseUnsafe(
+                CompiledValidator.serializeUnsafe(input),
             ),
         ).toStrictEqual(input);
     }

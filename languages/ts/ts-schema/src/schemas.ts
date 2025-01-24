@@ -51,9 +51,9 @@ export interface SchemaValidator<T> {
     output: T;
     optional?: boolean;
     validate: (input: unknown) => input is T;
-    decode: (input: unknown, context: ValidationContext) => T | undefined;
+    parse: (input: unknown, context: ValidationContext) => T | undefined;
     coerce: (input: unknown, context: ValidationContext) => T | undefined;
-    encode: (input: T, context: ValidationContext) => string | undefined;
+    serialize: (input: T, context: ValidationContext) => string | undefined;
 }
 
 export interface SchemaMetadata {
@@ -66,7 +66,7 @@ export interface SchemaMetadata {
 export interface ASchema<T = any>
     extends UValidatorWith<
             T,
-            'decodeJSON' | 'encodeJSON' | 'coerce' | 'isValid' | 'errors'
+            'parse' | 'serialize' | 'coerce' | 'validate' | 'errors'
         >,
         StandardSchemaV1<T> {
     metadata?: SchemaMetadata;

@@ -49,13 +49,13 @@ export function nullable<T>(
         if (val === null) {
             return null;
         }
-        return schema[ValidationsKey].decode(val, data);
+        return schema[ValidationsKey].parse(val, data);
     };
     const validator: SchemaValidator<T | null> = {
         output: null as T | null,
         optional: schema[ValidationsKey].optional,
         validate: isType,
-        decode: parse,
+        parse: parse,
         coerce(val, data) {
             if (val === null) {
                 return null;
@@ -65,11 +65,11 @@ export function nullable<T>(
             }
             return schema[ValidationsKey].coerce(val, data);
         },
-        encode(val, data) {
+        serialize(val, data) {
             if (val === null) {
                 return 'null';
             }
-            return schema[ValidationsKey].encode(val, data);
+            return schema[ValidationsKey].serialize(val, data);
         },
     };
     const result: ASchema<T | null> = {
@@ -84,7 +84,7 @@ export function nullable<T>(
         [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
-            validator.decode,
+            validator.parse,
         ),
     };
     hideInvalidProperties(result);
@@ -120,13 +120,13 @@ export function optional<T>(
         if (context.instancePath.length === 0 && val === 'undefined') {
             return undefined;
         }
-        return input[ValidationsKey].decode(val, context);
+        return input[ValidationsKey].parse(val, context);
     };
     const validator: SchemaValidator<T | undefined> = {
         output: undefined as T | undefined,
         optional: true,
         validate: isType,
-        decode: parse,
+        parse: parse,
         coerce: (val, data) => {
             if (typeof val === 'undefined') {
                 return undefined;
@@ -136,11 +136,11 @@ export function optional<T>(
             }
             return input[ValidationsKey].coerce(val, data);
         },
-        encode: (val, data) => {
+        serialize: (val, data) => {
             if (typeof val === 'undefined') {
                 return 'undefined';
             }
-            return input[ValidationsKey].encode(val, data);
+            return input[ValidationsKey].serialize(val, data);
         },
     };
     const result: ASchema<T | undefined> = {
@@ -176,7 +176,7 @@ export function clone<T>(
         [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
-            validator.decode,
+            validator.parse,
         ),
     };
     hideInvalidProperties(schema);

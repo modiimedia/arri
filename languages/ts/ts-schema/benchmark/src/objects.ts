@@ -309,7 +309,7 @@ void benny.suite(
         a.validate(ArriUser, input);
     }),
     benny.add('Arri (UValidator)', () => {
-        ArriUser[UValidator.v1].isValid(input);
+        ArriUser[UValidator.v1].validate(input);
     }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.validate(input);
@@ -372,7 +372,7 @@ void benny.suite(
         }
     }),
     benny.add('Arri (UValidator)', () => {
-        if (ArriUser[UValidator.v1].isValid(badInput)) {
+        if (ArriUser[UValidator.v1].validate(badInput)) {
             throw new Error('Expected to fail');
         }
     }),
@@ -465,13 +465,13 @@ void benny.suite(
         a.decodeUnsafe(ArriUser, inputJson);
     }),
     benny.add('Arri (UValidator)', () => {
-        ArriUser[UValidator.v1].decodeJSON(inputJson);
+        ArriUser[UValidator.v1].parse(inputJson);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.decode(inputJson);
+        $$ArriUser.parse(inputJson);
     }),
     benny.add('Arri (Compiled) Unsafe', () => {
-        $$ArriUser.decodeUnsafe(inputJson);
+        $$ArriUser.parseUnsafe(inputJson);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         AjvJtdUserParser(inputJson);
@@ -524,11 +524,11 @@ void benny.suite(
         a.encode(ArriUser, input);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.encode(input);
+        $$ArriUser.serialize(input);
     }),
     benny.add('Arri (Compiled) Validate and Serialize', () => {
         if ($$ArriUser.validate(input)) {
-            $$ArriUser.encode(input);
+            $$ArriUser.serialize(input);
         }
     }),
     benny.add('Ajv - JTD (Compiled)', () => {

@@ -31,10 +31,10 @@ export { timestamp } from './timestamp';
 export {
     coerce,
     coerceUnsafe,
-    decode,
-    decodeUnsafe,
-    encode,
-    encodeUnsafe,
+    parse as decode,
+    parseUnsafe as decodeUnsafe,
+    serialize as encode,
+    serializeUnsafe as encodeUnsafe,
     errors,
     validate,
 } from './validation';

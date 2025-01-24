@@ -26,11 +26,11 @@ export function validate<T = any>(
 }
 
 /**
- * Decode a value without throwing an error.
+ * Parse a JSON string or the result of JSON.parse() without throwing an error.
  */
-export function decode<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
+export function parse<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
     const ctx = newValidationContext();
-    const result = schema[ValidationsKey].decode(input, ctx);
+    const result = schema[ValidationsKey].parse(input, ctx);
     if (ctx.errors.length) {
         return {
             success: false,
@@ -46,9 +46,9 @@ export function decode<T = any>(schema: ASchema<T>, input: unknown): Result<T> {
 /**
  * Parse a JSON string or the result of JSON.parse(). Throws a [ValidationException] if parsing fails.
  */
-export function decodeUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
+export function parseUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
     const ctx = newValidationContext();
-    const result = schema[ValidationsKey].decode(input, ctx);
+    const result = schema[ValidationsKey].parse(input, ctx);
     if (ctx.errors.length) {
         throw new ValidationException({
             message: `Unable to parse input. ${ctx.errors[0]!.message}`,
@@ -94,10 +94,13 @@ export function coerceUnsafe<T = any>(schema: ASchema<T>, input: unknown): T {
 /**
  * Serialize a value into a JSON string.
  */
-export function encode<T = any>(schema: ASchema<T>, input: T): Result<string> {
+export function serialize<T = any>(
+    schema: ASchema<T>,
+    input: T,
+): Result<string> {
     try {
         const context = newValidationContext();
-        const result = schema[ValidationsKey].encode(input, context);
+        const result = schema[ValidationsKey].serialize(input, context);
         if (context.errors.length || typeof result === 'undefined') {
             return {
                 success: false,
@@ -134,8 +137,8 @@ export function encode<T = any>(schema: ASchema<T>, input: T): Result<string> {
     }
 }
 
-export function encodeUnsafe<T = any>(schema: ASchema<T>, input: T): string {
-    const result = encode(schema, input);
+export function serializeUnsafe<T = any>(schema: ASchema<T>, input: T): string {
+    const result = serialize(schema, input);
     if (!result.success) {
         throw new ValidationException({
             message: result.errors.length
@@ -147,16 +150,20 @@ export function encodeUnsafe<T = any>(schema: ASchema<T>, input: T): string {
     return result.value;
 }
 
-export function errors(schema: ASchema, input: unknown): ValueError[] {
+export function errors(
+    schema: ASchema,
+    input: unknown,
+    exitOnFirstError = false,
+): ValueError[] {
     const errorList: ValueError[] = [];
     try {
-        schema[ValidationsKey].decode(input, {
+        schema[ValidationsKey].parse(input, {
             errors: errorList,
             instancePath: '',
             schemaPath: '',
             depth: 0,
             maxDepth: 500,
-            exitOnFirstError: false,
+            exitOnFirstError: exitOnFirstError,
         });
     } catch (err) {
         errorList.push({ instancePath: '', schemaPath: '', message: `${err}` });

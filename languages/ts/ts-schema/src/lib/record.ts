@@ -62,11 +62,11 @@ export function record<TInnerSchema extends ASchema<any>>(
     const validator: SchemaValidator<InferRecordType<TInnerSchema>> = {
         output: {},
         validate: validateFn,
-        decode: parseFn,
+        parse: parseFn,
         coerce(input: unknown, data) {
             return parse(schema, input, data, true);
         },
-        encode(input, context) {
+        serialize(input, context) {
             if (context.depth >= context.maxDepth) {
                 context.errors.push({
                     instancePath: context.instancePath,
@@ -83,7 +83,7 @@ export function record<TInnerSchema extends ASchema<any>>(
                 if (i > 0) result += ',';
                 result += serializeString(key);
                 result += ':';
-                result += schema[ValidationsKey].encode(val, {
+                result += schema[ValidationsKey].serialize(val, {
                     instancePath: `${context.instancePath}/${key}`,
                     schemaPath: `${context.schemaPath}/values`,
                     errors: context.errors,
@@ -164,7 +164,7 @@ function parse<T>(
                 exitOnFirstError: data.exitOnFirstError,
             });
         } else {
-            result[key] = schema[ValidationsKey].decode(val, {
+            result[key] = schema[ValidationsKey].parse(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,

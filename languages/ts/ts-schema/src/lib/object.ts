@@ -91,7 +91,7 @@ export function object<
     };
     const validator: SchemaValidator<any> = {
         output: {} as any satisfies InferObjectOutput<TInput>,
-        decode: decode,
+        parse: decode,
         coerce(input: unknown, context) {
             return decodeObjectSchema(
                 schema as AObjectSchema,
@@ -101,7 +101,7 @@ export function object<
             );
         },
         validate,
-        encode(input, context) {
+        serialize(input, context) {
             return serializeObject(schema as AObjectSchema, input, context);
         },
     };
@@ -186,9 +186,12 @@ export function decodeObjectSchema<T>(
                 maxDepth: context.maxDepth,
                 exitOnFirstError: context.exitOnFirstError,
             });
+            if (context.errors.length && context.exitOnFirstError) {
+                return undefined;
+            }
             continue;
         }
-        result[key] = prop[ValidationsKey].decode(val, {
+        result[key] = prop[ValidationsKey].parse(val, {
             instancePath: `${context.instancePath}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             errors: context.errors,
@@ -196,6 +199,9 @@ export function decodeObjectSchema<T>(
             maxDepth: context.maxDepth,
             exitOnFirstError: context.exitOnFirstError,
         });
+        if (context.errors.length && context.exitOnFirstError) {
+            return undefined;
+        }
     }
     for (const key of optionalKeys) {
         const val = parsedInput[key];
@@ -212,10 +218,13 @@ export function decodeObjectSchema<T>(
                 maxDepth: context.maxDepth,
                 exitOnFirstError: context.exitOnFirstError,
             });
+            if (context.errors.length && context.exitOnFirstError) {
+                return undefined;
+            }
             continue;
         }
         if (typeof val !== 'undefined') {
-            result[key] = prop[ValidationsKey].decode(val, {
+            result[key] = prop[ValidationsKey].parse(val, {
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                 errors: context.errors,
@@ -223,6 +232,9 @@ export function decodeObjectSchema<T>(
                 maxDepth: context.maxDepth,
                 exitOnFirstError: context.exitOnFirstError,
             });
+            if (context.errors.length && context.exitOnFirstError) {
+                return undefined;
+            }
         }
     }
     if (context.errors.length) {
@@ -332,12 +344,12 @@ export function pick<
         },
         [ValidationsKey]: {
             output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
-            decode: parse,
+            parse: parse,
             coerce(input, context) {
                 return decodeObjectSchema(schema as any, input, context, false);
             },
             validate,
-            encode(input, context) {
+            serialize(input, context) {
                 return serializeObject(schema as any, input, context);
             },
         },
@@ -416,8 +428,8 @@ export function omit<
         [ValidationsKey]: {
             output: {} as any,
             validate,
-            decode: parse,
-            encode(input, context) {
+            parse: parse,
+            serialize(input, context) {
                 return serializeObject(schema as any, input, context);
             },
             coerce(input, context) {
@@ -446,7 +458,7 @@ export function serializeObject(
         const val = input[key];
         if (typeof val !== 'undefined') {
             strParts.push(
-                `"${key}":${prop[ValidationsKey].encode(val, {
+                `"${key}":${prop[ValidationsKey].serialize(val, {
                     instancePath: `${context.instancePath}/${key}`,
                     schemaPath: `${context.schemaPath}/properties/${key}`,
                     errors: context.errors,
@@ -463,7 +475,7 @@ export function serializeObject(
             const val = input[key];
             if (typeof val !== 'undefined') {
                 strParts.push(
-                    `"${key}":${prop[ValidationsKey].encode(val, {
+                    `"${key}":${prop[ValidationsKey].serialize(val, {
                         instancePath: `${context.instancePath}/${key}`,
                         schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                         errors: context.errors,
@@ -514,14 +526,14 @@ export function extend<
         validateObjectSchema(schema as any, input);
     const validator: ASchema[typeof ValidationsKey] = {
         output: {},
-        decode(input: unknown, context: ValidationContext) {
+        parse(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, false);
         },
         coerce(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, true);
         },
         validate: isType,
-        encode(input, context: ValidationContext) {
+        serialize(input, context: ValidationContext) {
             return serializeObject(schema as any, input, context);
         },
     };
@@ -531,7 +543,7 @@ export function extend<
         [UValidator.v1]: createUValidatorProperty(validator),
         '~standard': createStandardSchemaProperty(
             validator.validate,
-            validator.decode,
+            validator.parse,
         ),
     };
     hideInvalidProperties(result as any);
@@ -584,11 +596,11 @@ export function partial<
         output: {} as any,
         optional: schema[ValidationsKey].optional,
         validate,
-        decode: parse,
+        parse: parse,
         coerce(input, context) {
             return decodeObjectSchema(newSchema as any, input, context, true);
         },
-        encode(input, context) {
+        serialize(input, context) {
             return serializeObject(schema, input, context);
         },
     };
@@ -598,7 +610,7 @@ export function partial<
         [UValidator.v1]: createUValidatorProperty(validator),
         ['~standard']: createStandardSchemaProperty(
             validator.validate,
-            validator.decode,
+            validator.parse,
         ),
     };
     hideInvalidProperties(result as any);

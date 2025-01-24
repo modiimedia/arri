@@ -25,9 +25,9 @@ export function timestamp(
     const validator: SchemaValidator<Date> = {
         output: new Date(),
         validate,
-        decode: parse,
+        parse: parse,
         coerce,
-        encode: serialize,
+        serialize: serialize,
     };
     const result: AScalarSchema<'timestamp', Date> = {
         type: 'timestamp',

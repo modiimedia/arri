@@ -47,15 +47,15 @@ interface UValidatorMethods<TOut, TIn = unknown> {
     /**
      * A type guard that returns true if the input matches the specified type.
      */
-    readonly isValid?: (input: unknown) => input is TOut;
+    readonly validate?: (input: unknown) => input is TOut;
     /**
      * Transform an object or JSON string into T
      */
-    readonly decodeJSON?: (input: TIn, omitErrors?: boolean) => Result<TOut>;
+    readonly parse?: (input: TIn, omitErrors?: boolean) => Result<TOut>;
     /**
      * Transform T into a JSON string
      */
-    readonly encodeJSON?: (input: TOut, omitErrors?: boolean) => Result<string>;
+    readonly serialize?: (input: TOut, omitErrors?: boolean) => Result<string>;
     /**
      * Attempt to coerce an input into T
      */
