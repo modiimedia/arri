@@ -330,7 +330,7 @@ async function createCodegenEntryFile(config: Required<TsServerConfig>) {
     const virtualModule = await prettier.format(
         `
     import { writeFileSync } from 'node:fs';
-    import path from 'pathe';
+    import path from 'node:path';
     import app from './${OUT_APP_FILE}';
 
     const __dirname = new URL(".", import.meta.url).pathname;
