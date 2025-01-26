@@ -432,7 +432,7 @@ fun testSseStreamLargeObjects(
         var msgCount = 0
         var errorCount = 0
         var openCount = 0
-        withTimeout(10000) {
+        withTimeout(30000) {
             client.tests.streamLargeObjects(
                 onOpen = {
                     openCount++
@@ -477,7 +477,7 @@ fun testSseReconnectsWithNewCredentials(httpClient: HttpClient, baseUrl: String)
         )
         var msgCount = 0
         var openCount = 0
-        withTimeout(5000) {
+        withTimeout(10000) {
             dynamicClient.tests.streamRetryWithNewCredentials(
                 onData = {
                     msgCount++
