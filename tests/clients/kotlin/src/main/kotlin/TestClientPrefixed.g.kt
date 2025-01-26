@@ -30,12 +30,12 @@ private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
-private typealias TestClientPrefixedHeadersFn = (() -> MutableMap<String, String>?)?
+private typealias __TestClientPrefixedHeadersFn = (() -> MutableMap<String, String>?)?
 
 class TestClientPrefixed(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: TestClientPrefixedHeadersFn,
+    private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     val tests: TestClientPrefixedTestsService = TestClientPrefixedTestsService(
@@ -56,7 +56,7 @@ class TestClientPrefixed(
 class TestClientPrefixedTestsService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: TestClientPrefixedHeadersFn,
+    private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun emptyParamsGetRequest(): FooDefaultPayload {
@@ -599,7 +599,7 @@ suspend fun streamTenEventsThenEnd(
 class TestClientPrefixedUsersService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: TestClientPrefixedHeadersFn,
+    private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun watchUser(
@@ -6284,7 +6284,7 @@ private suspend fun __handleSseRequest(
     url: String,
     method: HttpMethod,
     params: TestClientPrefixedModel?,
-    headers: TestClientPrefixedHeadersFn,
+    headers: __TestClientPrefixedHeadersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,

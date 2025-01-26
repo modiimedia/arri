@@ -581,7 +581,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
     public var uint32: UInt32 = 0
     public var int64: Int64 = 0
     public var uint64: UInt64 = 0
-    public var enumerator: ObjectWithEveryTypeEnumerator = FooObjectWithEveryTypeEnumerator.a
+    public var enumerator: FooObjectWithEveryTypeEnumerator = FooObjectWithEveryTypeEnumerator.a
     public var array: [Bool] = []
     public var object: FooObjectWithEveryTypeObject = FooObjectWithEveryTypeObject()
     public var record: Dictionary<String, UInt64> = Dictionary()
@@ -603,7 +603,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
         uint32: UInt32,
         int64: Int64,
         uint64: UInt64,
-        enumerator: ObjectWithEveryTypeEnumerator,
+        enumerator: FooObjectWithEveryTypeEnumerator,
         array: [Bool],
         object: FooObjectWithEveryTypeObject,
         record: Dictionary<String, UInt64>,
@@ -1399,7 +1399,7 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
     public var uint32: UInt32?
     public var int64: Int64?
     public var uint64: UInt64?
-    public var enumerator: ObjectWithEveryNullableTypeEnumerator?
+    public var enumerator: FooObjectWithEveryNullableTypeEnumerator?
     public var array: [Bool?]?
     public var object: FooObjectWithEveryNullableTypeObject?
     public var record: Dictionary<String, UInt64?>?
@@ -1421,7 +1421,7 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
         uint32: UInt32?,
         int64: Int64?,
         uint64: UInt64?,
-        enumerator: ObjectWithEveryNullableTypeEnumerator?,
+        enumerator: FooObjectWithEveryNullableTypeEnumerator?,
         array: [Bool?]?,
         object: FooObjectWithEveryNullableTypeObject?,
         record: Dictionary<String, UInt64?>?,
@@ -2795,7 +2795,7 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
     public var uint32: UInt32?
     public var int64: Int64?
     public var uint64: UInt64?
-    public var enumerator: ObjectWithEveryOptionalTypeEnumerator?
+    public var enumerator: FooObjectWithEveryOptionalTypeEnumerator?
     public var array: [Bool]?
     public var object: FooObjectWithEveryOptionalTypeObject?
     public var record: Dictionary<String, UInt64>?
@@ -2817,7 +2817,7 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
         uint32: UInt32?,
         int64: Int64?,
         uint64: UInt64?,
-        enumerator: ObjectWithEveryOptionalTypeEnumerator?,
+        enumerator: FooObjectWithEveryOptionalTypeEnumerator?,
         array: [Bool]?,
         object: FooObjectWithEveryOptionalTypeObject?,
         record: Dictionary<String, UInt64>?,
@@ -5158,7 +5158,7 @@ public struct FooUsersWatchUserParams: ArriClientModel {
 
 public struct FooUsersWatchUserResponse: ArriClientModel {
     public var id: String = ""
-    public var role: UsersWatchUserResponseRole = FooUsersWatchUserResponseRole.standard
+    public var role: FooUsersWatchUserResponseRole = FooUsersWatchUserResponseRole.standard
     /// A profile picture
     public var photo: FooUserPhoto?
     public var createdAt: Date = Date()
@@ -5171,7 +5171,7 @@ public struct FooUsersWatchUserResponse: ArriClientModel {
     public var bio: String?
     public init(
         id: String,
-        role: UsersWatchUserResponseRole,
+        role: FooUsersWatchUserResponseRole,
         photo: FooUserPhoto?,
         createdAt: Date,
         numFollowers: Int32,
@@ -5486,10 +5486,10 @@ public struct FooUserPhoto: ArriClientModel {
 
 public struct FooUserSettings: ArriClientModel {
     public var notificationsEnabled: Bool = false
-    public var preferredTheme: UserSettingsPreferredTheme = FooUserSettingsPreferredTheme.darkMode
+    public var preferredTheme: FooUserSettingsPreferredTheme = FooUserSettingsPreferredTheme.darkMode
     public init(
         notificationsEnabled: Bool,
-        preferredTheme: UserSettingsPreferredTheme
+        preferredTheme: FooUserSettingsPreferredTheme
     ) {
             self.notificationsEnabled = notificationsEnabled
             self.preferredTheme = preferredTheme

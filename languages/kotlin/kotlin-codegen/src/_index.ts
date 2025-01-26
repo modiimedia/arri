@@ -146,7 +146,7 @@ ${getUtilityFunctions(clientName)}`;
 class ${clientName}(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: ${clientName}HeadersFn,
+    private val headers: __${clientName}HeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     ${procedureParts.join('\n\n    ')}
@@ -513,7 +513,7 @@ private suspend fun __handleSseRequest(
     url: String,
     method: HttpMethod,
     params: ${clientName}Model?,
-    headers: ${clientName}HeadersFn,
+    headers: __${clientName}HeadersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,
@@ -759,5 +759,5 @@ private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
-private typealias ${options.clientName}HeadersFn = (() -> MutableMap<String, String>?)?`;
+private typealias __${options.clientName}HeadersFn = (() -> MutableMap<String, String>?)?`;
 }

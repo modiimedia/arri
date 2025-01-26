@@ -30,12 +30,12 @@ private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
-private typealias TestClientHeadersFn = (() -> MutableMap<String, String>?)?
+private typealias __TestClientHeadersFn = (() -> MutableMap<String, String>?)?
 
 class TestClient(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: TestClientHeadersFn,
+    private val headers: __TestClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     val tests: TestClientTestsService = TestClientTestsService(
@@ -56,7 +56,7 @@ class TestClient(
 class TestClientTestsService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: TestClientHeadersFn,
+    private val headers: __TestClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun emptyParamsGetRequest(): DefaultPayload {
@@ -599,7 +599,7 @@ suspend fun streamTenEventsThenEnd(
 class TestClientUsersService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: TestClientHeadersFn,
+    private val headers: __TestClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun watchUser(
@@ -6284,7 +6284,7 @@ private suspend fun __handleSseRequest(
     url: String,
     method: HttpMethod,
     params: TestClientModel?,
-    headers: TestClientHeadersFn,
+    headers: __TestClientHeadersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,
