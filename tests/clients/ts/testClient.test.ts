@@ -12,7 +12,7 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     TestClient,
-} from './testClient.rpc';
+} from './testClient.g';
 
 function wait(ms: number) {
     return new Promise((resolve) => {
