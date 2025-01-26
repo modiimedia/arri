@@ -22,12 +22,12 @@ export default function rustArrayFromSchema(
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
-        ? `Option<Vec<${innerType.prefixedTypeName}>>`
-        : `Vec<${innerType.prefixedTypeName}>`;
+        ? `Option<Vec<${innerType.finalTypeName}>>`
+        : `Vec<${innerType.finalTypeName}>`;
     const defaultValue = isOptionType ? `None` : `Vec::new()`;
     return {
-        typeName,
-        prefixedTypeName: typeName,
+        typeId: typeName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -35,7 +35,7 @@ export default function rustArrayFromSchema(
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::Array(${innerKey})) => {
-                        let mut ${innerKey}_result: Vec<${innerType.prefixedTypeName}> = Vec::new();
+                        let mut ${innerKey}_result: Vec<${innerType.finalTypeName}> = Vec::new();
                         for ${innerKey}_element in ${innerKey} {
                             ${innerKey}_result.push(${innerType.fromJsonTemplate(`Some(${innerKey}_element)`, `${innerKey}_element`)});
                         }
@@ -46,7 +46,7 @@ export default function rustArrayFromSchema(
             }
             return `match ${input} {
                 Some(serde_json::Value::Array(${innerKey})) => {
-                    let mut ${innerKey}_result: Vec<${innerType.prefixedTypeName}> = Vec::new();
+                    let mut ${innerKey}_result: Vec<${innerType.finalTypeName}> = Vec::new();
                     for ${innerKey}_element in ${innerKey} {
                         ${innerKey}_result.push(${innerType.fromJsonTemplate(`Some(${innerKey}_element)`, `${innerKey}_element`)});
                     }

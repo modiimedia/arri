@@ -29,8 +29,8 @@ export default function rustRefFromSchema(
         defaultValue = `${prefixedInnerTypeName}::new()`;
     }
     return {
-        typeName,
-        prefixedTypeName: typeName,
+        typeId: typeName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {

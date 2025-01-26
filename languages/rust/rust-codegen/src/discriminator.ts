@@ -20,8 +20,8 @@ export function rustTaggedUnionFromSchema(
     const isOptionType = outputIsOptionType(schema, context);
     const defaultValue = isOptionType ? 'None' : `${prefixedEnumName}::new()`;
     const result: RustProperty = {
-        typeName: enumName,
-        prefixedTypeName: isOptionType
+        typeId: enumName,
+        finalTypeName: isOptionType
             ? `Option<${prefixedEnumName}>`
             : prefixedEnumName,
         defaultValue,
@@ -121,8 +121,8 @@ export function rustTaggedUnionFromSchema(
             subType.properties.push({
                 name: keyName,
                 defaultValue: keyType.defaultValue,
-                typeName: keyType.typeName,
-                prefixedTypeName: keyType.prefixedTypeName,
+                typeName: keyType.typeId,
+                prefixedTypeName: keyType.finalTypeName,
                 isDeprecated: keySchema.metadata?.isDeprecated ?? false,
                 description: keySchema.metadata?.description ?? '',
             });
@@ -169,8 +169,8 @@ export function rustTaggedUnionFromSchema(
             subType.properties.push({
                 name: keyName,
                 defaultValue: keyType.defaultValue,
-                typeName: keyType.typeName,
-                prefixedTypeName: keyType.prefixedTypeName,
+                typeName: keyType.typeId,
+                prefixedTypeName: keyType.finalTypeName,
                 isDeprecated: keySchema.metadata?.isDeprecated ?? false,
                 description: keySchema.metadata?.description ?? '',
             });

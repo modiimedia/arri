@@ -24,8 +24,8 @@ export default function rustEnumFromSchema(
         ? 'None'
         : `${prefixedEnumName}::default()`;
     const result: RustProperty = {
-        typeName: enumName,
-        prefixedTypeName: typeName,
+        typeId: enumName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {

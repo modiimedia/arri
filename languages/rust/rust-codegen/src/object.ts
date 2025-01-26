@@ -26,8 +26,8 @@ export default function rustObjectFromSchema(
         : prefixedStructName;
     const defaultValue = isOptionType ? `None` : `${prefixedStructName}::new()`;
     const result: RustProperty = {
-        typeName: structName,
-        prefixedTypeName: typeName,
+        typeId: structName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -95,7 +95,7 @@ export default function rustObjectFromSchema(
             leading += `\t#[deprecated]\n`;
         }
         fieldDeclarationParts.push(
-            `${leading}\tpub ${fieldName}: ${innerType.prefixedTypeName}`,
+            `${leading}\tpub ${fieldName}: ${innerType.finalTypeName}`,
         );
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(
@@ -157,7 +157,7 @@ export default function rustObjectFromSchema(
             leading += `\t#[deprecated]\n`;
         }
         fieldDeclarationParts.push(
-            `${leading}\tpub ${fieldName}: ${innerType.prefixedTypeName}`,
+            `${leading}\tpub ${fieldName}: ${innerType.finalTypeName}`,
         );
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(

@@ -7,10 +7,10 @@ export default function rustAnyFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     return {
-        typeName: context.isOptional
+        typeId: context.isOptional
             ? `Option<serde_json::Value>`
             : 'serde_json::Value',
-        prefixedTypeName: context.isOptional
+        finalTypeName: context.isOptional
             ? `Option<serde_json::Value>`
             : 'serde_json::Value',
         defaultValue: context.isOptional ? `None` : `serde_json::Value::Null`,

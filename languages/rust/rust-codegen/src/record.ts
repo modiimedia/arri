@@ -22,12 +22,12 @@ export default function rustRecordFromSchema(
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
-        ? `Option<BTreeMap<String, ${innerType.prefixedTypeName}>>`
-        : `BTreeMap<String, ${innerType.prefixedTypeName}>`;
+        ? `Option<BTreeMap<String, ${innerType.finalTypeName}>>`
+        : `BTreeMap<String, ${innerType.finalTypeName}>`;
     const defaultValue = isOptionType ? `None` : `BTreeMap::new()`;
     return {
-        typeName,
-        prefixedTypeName: typeName,
+        typeId: typeName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -35,7 +35,7 @@ export default function rustRecordFromSchema(
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::Object(${innerKey})) => {
-                        let mut ${innerKey}_result: BTreeMap<String, ${innerType.prefixedTypeName}> = BTreeMap::new();
+                        let mut ${innerKey}_result: BTreeMap<String, ${innerType.finalTypeName}> = BTreeMap::new();
                         for (_key_, _value_) in ${innerKey}.into_iter() {
                             ${innerKey}_result.insert(
                                 _key_.to_owned(),
@@ -49,7 +49,7 @@ export default function rustRecordFromSchema(
             }
             return `match ${input} {
                 Some(serde_json::Value::Object(${innerKey})) => {
-                    let mut ${innerKey}_result: BTreeMap<String, ${innerType.prefixedTypeName}> = BTreeMap::new();
+                    let mut ${innerKey}_result: BTreeMap<String, ${innerType.finalTypeName}> = BTreeMap::new();
                     for (_key_, _value_) in ${innerKey}.into_iter() {
                         ${innerKey}_result.insert(
                             _key_.to_owned(),

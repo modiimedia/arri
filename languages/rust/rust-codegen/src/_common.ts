@@ -19,8 +19,11 @@ export interface GeneratorContext {
 }
 
 export interface RustProperty {
-    typeName: string;
-    prefixedTypeName: string;
+    typeId: string;
+    /**
+     * The type name with the optional typePrefix
+     */
+    finalTypeName: string;
     defaultValue: string;
     isNullable: boolean;
     fromJsonTemplate: (input: string, key: string) => string;
