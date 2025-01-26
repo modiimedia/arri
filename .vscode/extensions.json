@@ -5,8 +5,8 @@
     "dbaeumer.vscode-eslint",
     "mathiasfrohlich.kotlin",
     "dart-code.flutter",
-    "rust-lang.rust-analyzer",
     "tamasfe.even-better-toml",
-    "vadimcn.vscode-lldb"
+    "vadimcn.vscode-lldb",
+    "rust-lang.rust-analyzer"
   ]
 }
