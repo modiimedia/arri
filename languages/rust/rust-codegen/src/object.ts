@@ -19,13 +19,15 @@ export default function rustObjectFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const structName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
+    const structName = getTypeName(schema, context);
+    const prefixedStructName = `${context.typeNamePrefix}${structName}`;
     const typeName: string = isOptionType
-        ? `Option<${structName}>`
-        : structName;
-    const defaultValue = isOptionType ? `None` : `${structName}::new()`;
+        ? `Option<${prefixedStructName}>`
+        : prefixedStructName;
+    const defaultValue = isOptionType ? `None` : `${prefixedStructName}::new()`;
     const result: RustProperty = {
-        typeName,
+        typeId: structName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -34,7 +36,7 @@ export default function rustObjectFromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => match ${innerKey} {
                         serde_json::Value::Object(_) => {
-                            Some(${structName}::from_json(${innerKey}.to_owned()))
+                            Some(${prefixedStructName}::from_json(${innerKey}.to_owned()))
                         }
                         _ => None,
                     },
@@ -42,8 +44,8 @@ export default function rustObjectFromSchema(
                 }`;
             }
             return `match ${input} {
-                Some(${innerKey}) => ${structName}::from_json(${innerKey}.to_owned()),
-                _ => ${structName}::new(),
+                Some(${innerKey}) => ${prefixedStructName}::from_json(${innerKey}.to_owned()),
+                _ => ${prefixedStructName}::new(),
             }`;
         },
         toJsonTemplate(input, target) {
@@ -93,7 +95,7 @@ export default function rustObjectFromSchema(
             leading += `\t#[deprecated]\n`;
         }
         fieldDeclarationParts.push(
-            `${leading}\tpub ${fieldName}: ${innerType.typeName}`,
+            `${leading}\tpub ${fieldName}: ${innerType.finalTypeName}`,
         );
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(
@@ -155,7 +157,7 @@ export default function rustObjectFromSchema(
             leading += `\t#[deprecated]\n`;
         }
         fieldDeclarationParts.push(
-            `${leading}\tpub ${fieldName}: ${innerType.typeName}`,
+            `${leading}\tpub ${fieldName}: ${innerType.finalTypeName}`,
         );
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(
@@ -212,11 +214,11 @@ export default function rustObjectFromSchema(
         leading += `#[deprecated]\n`;
     }
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
-pub struct ${structName} {
+pub struct ${prefixedStructName} {
 ${fieldDeclarationParts.join(',\n')},
 }
 
-impl ArriModel for ${structName} {
+impl ArriModel for ${prefixedStructName} {
     fn new() -> Self {
         Self {
 ${defaultParts.join(',\n')},

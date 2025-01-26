@@ -14,12 +14,18 @@ export default function rustEnumFromSchema(
     schema: SchemaFormEnum,
     context: GeneratorContext,
 ): RustProperty {
-    const enumName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
+    const enumName = getTypeName(schema, context);
+    const prefixedEnumName = `${context.typeNamePrefix}${enumName}`;
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? `Option<${enumName}>` : enumName;
-    const defaultValue = isOptionType ? 'None' : `${enumName}::default()`;
+    const typeName = isOptionType
+        ? `Option<${prefixedEnumName}>`
+        : prefixedEnumName;
+    const defaultValue = isOptionType
+        ? 'None'
+        : `${prefixedEnumName}::default()`;
     const result: RustProperty = {
-        typeName,
+        typeId: enumName,
+        finalTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -27,16 +33,16 @@ export default function rustEnumFromSchema(
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::String(${innerKey})) => {
-                        Some(${enumName}::from_string(${innerKey}.to_owned()))
+                        Some(${prefixedEnumName}::from_string(${innerKey}.to_owned()))
                     }
                     _ => None, 
                 }`;
             }
             return `match ${input} {
                 Some(serde_json::Value::String(${innerKey})) => {
-                    ${enumName}::from_string(${innerKey}.to_owned())
+                    ${prefixedEnumName}::from_string(${innerKey}.to_owned())
                 }
-                _ => ${enumName}::default(),
+                _ => ${prefixedEnumName}::default(),
             }`;
         },
         toJsonTemplate(input, target) {
@@ -82,7 +88,7 @@ export default function rustEnumFromSchema(
         initializationParts.push(`\t${valName},`);
         fromStringParts.push(`\t\t\t"${val}" => Self::${valName},`);
         serialValueParts.push(
-            `\t\t\t${enumName}::${valName} => "${val}".to_string(),`,
+            `\t\t\t${prefixedEnumName}::${valName} => "${val}".to_string(),`,
         );
     }
     let leading = '';
@@ -93,13 +99,13 @@ export default function rustEnumFromSchema(
         leading += `#[deprecated]\n`;
     }
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
-pub enum ${enumName} {
+pub enum ${prefixedEnumName} {
 ${initializationParts.join('\n')}
 }
 
-impl ArriEnum for ${enumName} {
+impl ArriEnum for ${prefixedEnumName} {
     fn default() -> Self {
-        ${enumName}::${defaultEnumValue}
+        ${prefixedEnumName}::${defaultEnumValue}
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {

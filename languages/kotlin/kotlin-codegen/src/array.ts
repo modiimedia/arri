@@ -21,9 +21,10 @@ export function kotlinArrayFromSchema(
         schemaPath: `${context.schemaPath}/elements`,
         existingTypeIds: context.existingTypeIds,
     });
-    const typeName = `MutableList<${subType.typeName}${subType.isNullable ? '?' : ''}>`;
+    const typeName = `MutableList<${subType.prefixedTypeName}${subType.isNullable ? '?' : ''}>`;
     return {
         typeName,
+        prefixedTypeName: typeName,
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
