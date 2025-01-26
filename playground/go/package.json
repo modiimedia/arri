@@ -1,7 +1,7 @@
 {
   "name": "go-playground",
   "devDependencies": {
-    "@types/node": "22.10.6",
+    "@types/node": "22.10.10",
     "arri": "workspace:*"
   }
 }
