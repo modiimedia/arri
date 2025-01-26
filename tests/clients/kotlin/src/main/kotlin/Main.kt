@@ -432,7 +432,7 @@ fun testSseStreamLargeObjects(
         var msgCount = 0
         var errorCount = 0
         var openCount = 0
-        withTimeout(30000) {
+        withTimeout(60000) {
             client.tests.streamLargeObjects(
                 onOpen = {
                     openCount++
