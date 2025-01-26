@@ -16,8 +16,13 @@ export function kotlinDiscriminatorFromSchema(
 ): KotlinProperty {
     const kotlinDiscriminatorKey = kotlinIdentifier(schema.discriminator);
     const className = getClassName(schema, context);
+    const prefixedClassName = `${context.typePrefix}${className}`;
     const nullable = isNullable(schema, context);
-    const subTypes: { typeName: string; discriminatorValue: string }[] = [];
+    const subTypes: {
+        typeName: string;
+        prefixedTypeName: string;
+        discriminatorValue: string;
+    }[] = [];
     const subContent: string[] = [];
     for (const key of Object.keys(schema.mapping)) {
         const subSchema = schema.mapping[key]!;
@@ -34,6 +39,7 @@ export function kotlinDiscriminatorFromSchema(
         });
         subTypes.push({
             typeName: subType.typeName,
+            prefixedTypeName: subType.prefixedTypeName,
             discriminatorValue: key,
         });
         if (subType.content) {
@@ -43,14 +49,15 @@ export function kotlinDiscriminatorFromSchema(
     if (subTypes.length === 0) {
         throw new Error('Discriminator schemas must have at least one mapping');
     }
-    const defaultValue = nullable ? 'null' : `${className}.new()`;
+    const defaultValue = nullable ? 'null' : `${prefixedClassName}.new()`;
     const result: KotlinProperty = {
         typeName: className,
+        prefixedTypeName: prefixedClassName,
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
             return `when (${input}) {
-                is JsonObject -> ${className}.fromJsonElement(
+                is JsonObject -> ${prefixedClassName}.fromJsonElement(
                     ${input}!!,
                     "$instancePath/${key}",
                 )
@@ -72,29 +79,29 @@ export function kotlinDiscriminatorFromSchema(
         return result;
     }
     const codeComment = getCodeComment(schema.metadata, '', 'class');
-    const content = `${codeComment}sealed interface ${className} : ${context.clientName}Model {
+    const content = `${codeComment}sealed interface ${prefixedClassName} : ${context.clientName}Model {
     val ${kotlinDiscriminatorKey}: String
 
-    companion object Factory : ${context.clientName}ModelFactory<${className}> {
+    companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
-        override fun new(): ${className} {
-            return ${subTypes[0]!.typeName}.new()
+        override fun new(): ${prefixedClassName} {
+            return ${subTypes[0]!.prefixedTypeName}.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ${className} {
+        override fun fromJson(input: String): ${prefixedClassName} {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${prefixedClassName} {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${prefixedClassName}.")
                 return new()
             }
             return when (__input.jsonObject["${schema.discriminator}"]) {
                 is JsonPrimitive -> when (__input.jsonObject["${schema.discriminator}"]!!.jsonPrimitive.contentOrNull) {
-                    ${subTypes.map((type) => `"${type.discriminatorValue}" -> ${type.typeName}.fromJsonElement(__input, instancePath)`).join('\n')}
+                    ${subTypes.map((type) => `"${type.discriminatorValue}" -> ${type.prefixedTypeName}.fromJsonElement(__input, instancePath)`).join('\n')}
                     else -> new()
                 }
 

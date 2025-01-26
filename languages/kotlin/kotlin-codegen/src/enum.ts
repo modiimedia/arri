@@ -13,6 +13,7 @@ export function kotlinEnumFromSchema(
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
     const className = getClassName(schema, context);
+    const prefixedClassName = `${context.typePrefix}${className}`;
     const enumItems = schema.enum.map((val) => {
         return {
             name: pascalCase(val, { normalize: true }),
@@ -24,24 +25,24 @@ export function kotlinEnumFromSchema(
             `Enum schemas must have at least one enum value. At ${context.schemaPath}.`,
         );
     }
-    const defaultValue = nullable ? 'null' : `${className}.new()`;
+    const defaultValue = nullable ? 'null' : `${prefixedClassName}.new()`;
     let content = '';
     if (!context.existingTypeIds.includes(className)) {
-        content = `enum class ${className} {
+        content = `enum class ${prefixedClassName} {
     ${enumItems.map((item) => item.name).join(',\n    ')};
     val serialValue: String
         get() = when (this) {
             ${enumItems.map((item) => `${item.name} -> "${item.value}"`).join('\n            ')}
         }
     
-    companion object Factory : ${context.clientName}ModelFactory<${className}> {
+    companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
-        override fun new(): ${className} {
+        override fun new(): ${prefixedClassName} {
             return ${enumItems[0]!.name}
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ${className} {
+        override fun fromJson(input: String): ${prefixedClassName} {
             return when (input) {
                 ${enumItems.map((item) => `${item.name}.serialValue -> ${item.name}`).join('\n                ')}
                 else -> ${enumItems[0]!.name}
@@ -49,9 +50,9 @@ export function kotlinEnumFromSchema(
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${prefixedClassName} {
             if (__input !is JsonPrimitive) {
-                __logError("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
+                __logError("[WARNING] ${prefixedClassName}.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got \${__input.javaClass}. Initializing empty ${prefixedClassName}.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -65,26 +66,27 @@ export function kotlinEnumFromSchema(
     }
     return {
         typeName: className,
+        prefixedTypeName: prefixedClassName,
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
             if (nullable) {
                 return `when (${input}) {
                     is JsonNull -> null
-                    is JsonPrimitive -> ${className}.fromJsonElement(${input}!!, "$instancePath/${key ?? ''}")
+                    is JsonPrimitive -> ${prefixedClassName}.fromJsonElement(${input}!!, "$instancePath/${key ?? ''}")
                     else -> null
                 }`;
             }
             return `when (${input}) {
                 is JsonNull -> ${defaultValue}
-                is JsonPrimitive -> ${className}.fromJsonElement(${input}!!, "$instancePath/${key}")
+                is JsonPrimitive -> ${prefixedClassName}.fromJsonElement(${input}!!, "$instancePath/${key}")
                 else -> ${defaultValue}
             }`;
         },
         toJson(input, target) {
             if (schema.nullable) {
                 return `${target} += when (${input}) {
-                    is ${className} -> "\\"\${${input}.serialValue}\\""
+                    is ${prefixedClassName} -> "\\"\${${input}.serialValue}\\""
                     else -> "null"
                 }`;
             }

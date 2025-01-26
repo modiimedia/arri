@@ -205,7 +205,7 @@ export async function startBuild(
             const startTime = new Date().getTime();
             logger.log(`Generating ${clientCount} client(s)...`);
             await Promise.all(
-                generators.map((generator) => generator.run(def)) ?? [],
+                generators.map((generator) => generator.run(def, false)) ?? [],
             );
             logger.log(
                 `${clientCount} client(s) generated in ${new Date().getTime() - startTime}ms`,
@@ -454,7 +454,7 @@ export async function startDevServer(
     let appDefStr = JSON.stringify(appDef);
     if (generators.length) {
         logger.info(`Running generators...`);
-        await generateClientsFromDefinition(appDef, generators);
+        await generateClientsFromDefinition(appDef, generators, true);
     } else {
         logger.warn(`No generators specified in config. Skipping codegen.`);
     }
@@ -520,7 +520,11 @@ export async function startDevServer(
                     logger.info(
                         `App Definition updated. Regenerating clients...`,
                     );
-                    await generateClientsFromDefinition(newAppDef, generators);
+                    await generateClientsFromDefinition(
+                        newAppDef,
+                        generators,
+                        true,
+                    );
                     appDef = newAppDef;
                     appDefStr = newAppDefStr;
                 }
@@ -538,19 +542,25 @@ export interface ArriServiceConfig {
 
 //// CLIENT GENERATION /////
 
-async function generateClientsFromDefinition(
+export async function generateClientsFromDefinition(
     appDef: AppDefinition,
     generators: Generator<any>[],
+    isDev: boolean,
 ) {
     const startTime = new Date().getTime();
     try {
         const clientCount = generators.length;
-        await Promise.allSettled(
-            generators.map((generator) => generator.run(appDef, true)),
+        const result = await Promise.allSettled(
+            generators.map((generator) => generator.run(appDef, isDev)),
         );
         logger.success(
             `Generated ${clientCount} client${clientCount === 1 ? '' : 's'} in ${new Date().getTime() - startTime}ms`,
         );
+        for (const item of result) {
+            if (item.status === 'rejected') {
+                console.error('ERROR', item.reason);
+            }
+        }
     } catch (err) {
         logger.error(err);
     }

@@ -4,17 +4,30 @@ import path from 'node:path';
 
 import { consola } from 'consola';
 
-const getOutput = () =>
-    fs.readFileSync(path.resolve(__dirname, './clients/ts/testClient.g.ts'));
+const getOutput = () => ({
+    ts: fs.readFileSync(
+        path.resolve(__dirname, './clients/ts/testClient.g.ts'),
+        'utf8',
+    ),
+    rustPrefixed: fs.readFileSync(
+        path.resolve(__dirname, './clients/rust/src/test_client_prefixed.g.rs'),
+        'utf8',
+    ),
+});
 
 async function main() {
     execSync(`nx build-server test-server-ts`, { stdio: 'inherit' });
     const tsServerOutput = getOutput();
     execSync(`nx build-server test-server-go`, { stdio: 'inherit' });
     const goServerOutput = getOutput();
-    if (!deepEquals(tsServerOutput, goServerOutput)) {
+    if (!deepEquals(tsServerOutput.ts, goServerOutput.ts)) {
         throw new Error(
-            "Client generated from Go server doesn't match TS server",
+            "Client generated from Go server doesn't match TS server. TS Output.",
+        );
+    }
+    if (!deepEquals(tsServerOutput.rustPrefixed, goServerOutput.rustPrefixed)) {
+        throw new Error(
+            "Client generated from Go server doesn't match TS server. Rust Output.",
         );
     }
     consola.success('Generated clients match');

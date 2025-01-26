@@ -12,15 +12,17 @@ export function kotlinRefFromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const typeName = kotlinClassName(schema.ref);
+    const prefixedTypeName = `${context.typePrefix}${typeName}`;
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? 'null' : `${typeName}.new()`;
+    const defaultValue = nullable ? 'null' : `${prefixedTypeName}.new()`;
     return {
         typeName,
+        prefixedTypeName: prefixedTypeName,
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
             return `when (${input}) {
-                is JsonObject -> ${typeName}.fromJsonElement(
+                is JsonObject -> ${prefixedTypeName}.fromJsonElement(
                     ${input}!!,
                     "$instancePath/${key}",
                 )

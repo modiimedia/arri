@@ -14,6 +14,7 @@ export function kotlinAnyFromSchema(
     const defaultValue = nullable ? 'null' : 'JsonNull';
     return {
         typeName: 'JsonElement',
+        prefixedTypeName: 'JsonElement',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
