@@ -5,7 +5,7 @@ import path from 'node:path';
 import { consola } from 'consola';
 
 const getOutput = () =>
-    fs.readFileSync(path.resolve(__dirname, './clients/ts/testClient.rpc.ts'));
+    fs.readFileSync(path.resolve(__dirname, './clients/ts/testClient.g.ts'));
 
 async function main() {
     execSync(`nx build-server test-server-ts`, { stdio: 'inherit' });
