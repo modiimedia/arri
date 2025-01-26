@@ -58,7 +58,7 @@ Below are the language client generators that are planned to have first party su
 | [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅     |
 | [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅     |
 | [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅     |
-| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅\*\* |
+| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅     |
 | [Swift](languages/swift/swift-codegen/README.md)    | ✅   | ✅\*\* |
 | Go                                                  |      |        |
 | Python                                              |      |        |
@@ -67,7 +67,7 @@ Below are the language client generators that are planned to have first party su
 
 🚧 in progress
 
-\*\* SSE for Kotlin and Swift are working but they still have some rough edges
+\*\* SSE for Swift is working but it still has some rough edges
 
 ## Other Tooling
 
