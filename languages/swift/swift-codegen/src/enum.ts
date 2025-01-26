@@ -24,7 +24,7 @@ export function swiftEnumFromSchema(
         ? ''
         : `${prefixedTypeName}.${defaultEnumValue}`;
     const result: SwiftProperty = {
-        typeName: isNullable ? `${typeName}?` : typeName,
+        typeName: isNullable ? `${prefixedTypeName}?` : prefixedTypeName,
         isNullable,
         defaultValue,
         canBeQueryString: true,

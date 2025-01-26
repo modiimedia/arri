@@ -45,19 +45,22 @@ export function rustHttpRpcFromSchema(
     if (schema.isDeprecated) {
         leading += '#[deprecated]\n';
     }
-    const params = schema.params ? validRustName(schema.params) : undefined;
-    const response = schema.response
-        ? validRustName(schema.response)
+    const params = schema.params
+        ? context.typeNamePrefix + validRustName(schema.params)
         : undefined;
+    const response = schema.response
+        ? context.typeNamePrefix + validRustName(schema.response)
+        : undefined;
+
     if (schema.isEventStream) {
         return `${leading}pub async fn ${functionName}<OnEvent>(
             &self,
-            ${params ? `params: ${context.typeNamePrefix}${params},` : ''}
+            ${params ? `params: ${params},` : ''}
             on_event: &mut OnEvent,
             max_retry_count: Option<u64>,
             max_retry_interval: Option<u64>,
         ) where
-            OnEvent: FnMut(SseEvent<${response ? `${context.typeNamePrefix}${response}` : 'EmptyArriModel'}>, &mut SseController) + std::marker::Send + std::marker::Sync,
+            OnEvent: FnMut(SseEvent<${response ? response : 'EmptyArriModel'}>, &mut SseController) + std::marker::Send + std::marker::Sync,
         {
             parsed_arri_sse_request(
                 ArriParsedSseRequestOptions {
@@ -77,8 +80,8 @@ export function rustHttpRpcFromSchema(
     }
     return `${leading}pub async fn ${functionName}(
         &self,
-        ${params ? `params: ${context.typeNamePrefix}${params},` : ''}
-    ) -> Result<${context.typeNamePrefix}${response ?? '()'}, ArriError> {
+        ${params ? `params: ${params},` : ''}
+    ) -> Result<${response ?? '()'}, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -88,7 +91,7 @@ export function rustHttpRpcFromSchema(
                 client_version: "${context.clientVersion}".to_string(),
             },
             ${params ? `Some(params)` : 'None::<EmptyArriModel>'},
-            |body| ${response ? `return ${context.typeNamePrefix}${response}::from_json_string(body)` : '{}'},
+            |body| ${response ? `return ${response}::from_json_string(body)` : '{}'},
         )
         .await
     }`;

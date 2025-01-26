@@ -30,13 +30,12 @@ private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
-private typealias headersFn = (() -> MutableMap<String, String>?)?
-
+private typealias __ExampleClientHeadersFn = (() -> MutableMap<String, String>?)?
 
 class ExampleClient(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __ExampleClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun sendObject(params: NestedObject): NestedObject {
@@ -77,7 +76,7 @@ class ExampleClient(
 class ExampleClientBooksService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __ExampleClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     /**
@@ -1808,7 +1807,7 @@ data class RecursiveObject(
 }
 
 // Implementation copied from https://github.com/Kotlin/kotlinx.serialization/blob/d0ae697b9394103879e6c7f836d0f7cf128f4b1e/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt#L45
-internal const val STRING = '"'
+private const val STRING = '"'
 
 private fun toHexChar(i: Int): Char {
     val d = i and 0xf
@@ -1816,7 +1815,7 @@ private fun toHexChar(i: Int): Char {
     else (d - 10 + 'a'.code).toChar()
 }
 
-internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
+private val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     for (c in 0..0x1f) {
         val c1 = toHexChar(c shr 12)
         val c2 = toHexChar(c shr 8)
@@ -1833,7 +1832,7 @@ internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     this[0x0c] = "\\f"
 }
 
-internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
+private val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
     for (c in 0..0x1f) {
         this[c] = 1.toByte()
     }
@@ -1846,7 +1845,7 @@ internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
     this[0x0c] = 'f'.code.toByte()
 }
 
-internal fun StringBuilder.printQuoted(value: String) {
+private fun StringBuilder.printQuoted(value: String) {
     append(STRING)
     var lastPos = 0
     for (i in value.indices) {
@@ -1904,7 +1903,7 @@ private suspend fun __prepareRequest(
 }
 
 // SSE_FN_START
-private enum class SseEventLineType {
+private enum class __ExampleClientSseEventLineType {
     Id,
     Event,
     Data,
@@ -1912,36 +1911,36 @@ private enum class SseEventLineType {
     None,
 }
 
-private fun __parseSseEventLine(line: String): Pair<SseEventLineType, String> {
+private fun __parseSseEventLine(line: String): Pair<__ExampleClientSseEventLineType, String> {
     if (line.startsWith("id:")) {
-        return Pair(SseEventLineType.Id, line.substring(3).trim())
+        return Pair(__ExampleClientSseEventLineType.Id, line.substring(3).trim())
     }
     if (line.startsWith("event:")) {
-        return Pair(SseEventLineType.Event, line.substring(6).trim())
+        return Pair(__ExampleClientSseEventLineType.Event, line.substring(6).trim())
     }
     if (line.startsWith("data:")) {
-        return Pair(SseEventLineType.Data, line.substring(5).trim())
+        return Pair(__ExampleClientSseEventLineType.Data, line.substring(5).trim())
     }
     if (line.startsWith("retry:")) {
-        return Pair(SseEventLineType.Retry, line.substring(6).trim())
+        return Pair(__ExampleClientSseEventLineType.Retry, line.substring(6).trim())
     }
-    return Pair(SseEventLineType.None, "")
+    return Pair(__ExampleClientSseEventLineType.None, "")
 }
 
-private data class __SseEvent(
+private data class __ExampleClientSseEvent(
     val id: String? = null,
     val event: String,
     val data: String,
     val retry: Int? = null
 )
 
-private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
+private class __ExampleClientSseEventParsingResult(val events: List<__ExampleClientSseEvent>, val leftover: String)
 
-private fun __parseSseEvents(input: String): __SseEventParsingResult {
-    val events = mutableListOf<__SseEvent>()
+private fun __parseSseEvents(input: String): __ExampleClientSseEventParsingResult {
+    val events = mutableListOf<__ExampleClientSseEvent>()
     val lines = input.lines()
     if (lines.isEmpty()) {
-        return __SseEventParsingResult(events = listOf(), leftover = "")
+        return __ExampleClientSseEventParsingResult(events = listOf(), leftover = "")
     }
     var id: String? = null
     var event: String? = null
@@ -1952,18 +1951,18 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
         if (line.isNotEmpty()) {
             val (type, value) = __parseSseEventLine(line)
             when (type) {
-                SseEventLineType.Id -> id = value
-                SseEventLineType.Event -> event = value
-                SseEventLineType.Data -> data = value
-                SseEventLineType.Retry -> retry = value.toInt()
-                SseEventLineType.None -> {}
+                __ExampleClientSseEventLineType.Id -> id = value
+                __ExampleClientSseEventLineType.Event -> event = value
+                __ExampleClientSseEventLineType.Data -> data = value
+                __ExampleClientSseEventLineType.Retry -> retry = value.toInt()
+                __ExampleClientSseEventLineType.None -> {}
             }
         }
         val isEnd = line == ""
         if (isEnd) {
             if (data != null) {
                 events.add(
-                    __SseEvent(
+                    __ExampleClientSseEvent(
                         id = id,
                         event = event ?: "message",
                         data = data!!,
@@ -1978,7 +1977,7 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
             lastIndex = if (index + 1 < lines.size) index + 1 else null
         }
     }
-    return __SseEventParsingResult(
+    return __ExampleClientSseEventParsingResult(
         events = events,
         leftover = if (lastIndex != null) lines.subList(lastIndex!!, lines.size).joinToString(separator = "\n") else ""
     )
@@ -1991,7 +1990,7 @@ private suspend fun __handleSseRequest(
     url: String,
     method: HttpMethod,
     params: ExampleClientModel?,
-    headers: headersFn,
+    headers: __ExampleClientHeadersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,

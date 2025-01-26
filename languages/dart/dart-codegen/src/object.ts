@@ -166,7 +166,7 @@ export function dartClassFromSchema(
 `;
     }
 
-    result.content = `${getCodeComments(schema.metadata)}class ${finalClassName} implements ${context.discriminatorParentId ?? 'ArriModel'} {
+    result.content = `${getCodeComments(schema.metadata)}class ${finalClassName} implements ${context.discriminatorParentId ? `${context.modelPrefix}${context.discriminatorParentId}` : 'ArriModel'} {
 ${fieldParts.join('\n')}
   const ${finalClassName}({
 ${constructorParts.join('\n')}
