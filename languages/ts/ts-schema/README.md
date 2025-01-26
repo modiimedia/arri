@@ -328,12 +328,12 @@ const User = a.object({
 });
 type User = a.infer<typeof User>; // { id: string; email: string; created: Date; }
 
-a.validate({
+a.validate(User, {
     id: '1',
     email: 'johndoe@example.com',
     created: new Date(),
 }); // true
-a.validate({
+a.validate(User, {
     id: '1',
     email: null,
     created: new Date(),
