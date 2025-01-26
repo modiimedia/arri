@@ -16,6 +16,7 @@ export function rustStringFromSchema(
     const typeName = isOptionType ? 'Option<String>' : 'String';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -69,6 +70,7 @@ export function rustBooleanFromSchema(
     const typeName = isOptionType ? 'Option<bool>' : 'bool';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -124,6 +126,7 @@ export function rustTimestampFromSchema(
     const defaultValue = isOptionType ? 'None' : 'DateTime::default()';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -194,6 +197,7 @@ export function rustF32FromSchema(
     const defaultValue = isOptionType ? `None` : '0.0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -252,6 +256,7 @@ export function rustF64FromSchema(
     const defaultValue = isOptionType ? `None` : '0.0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -310,6 +315,7 @@ export function rustI8FromSchema(
     const defaultValue = isOptionType ? `None` : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -371,6 +377,7 @@ export function rustU8FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -432,6 +439,7 @@ export function rustI16FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -493,6 +501,7 @@ export function rustU16FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -554,6 +563,7 @@ export function rustI32FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -615,6 +625,7 @@ export function rustU32FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -676,6 +687,7 @@ export function rustI64FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
@@ -734,6 +746,7 @@ export function rustU64FromSchema(
     const defaultValue = isOptionType ? 'None' : '0';
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {

@@ -12,10 +12,11 @@ export default function rustRefFromSchema(
     schema: SchemaFormRef,
     context: GeneratorContext,
 ): RustProperty {
-    const innerTypeName = `${context.typeNamePrefix}${validRustName(schema.ref)}`;
+    const innerTypeName = validRustName(schema.ref);
+    const prefixedInnerTypeName = `${context.typeNamePrefix}${innerTypeName}`;
     const isOptionType = outputIsOptionType(schema, context);
     const needsBoxing = true;
-    let typeName = `Box<${innerTypeName}>`;
+    let typeName = `Box<${prefixedInnerTypeName}>`;
     if (isOptionType) {
         typeName = `Option<${typeName}>`;
     }
@@ -23,21 +24,22 @@ export default function rustRefFromSchema(
     if (isOptionType) {
         defaultValue = 'None';
     } else if (needsBoxing) {
-        defaultValue = `Box::new(${innerTypeName}::new())`;
+        defaultValue = `Box::new(${prefixedInnerTypeName}::new())`;
     } else {
-        defaultValue = `${innerTypeName}::new()`;
+        defaultValue = `${prefixedInnerTypeName}::new()`;
     }
     return {
         typeName,
+        prefixedTypeName: typeName,
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             const valFromJson = (input: string) => {
                 if (needsBoxing) {
-                    return `Box::new(${innerTypeName}::from_json(${input}.to_owned()))`;
+                    return `Box::new(${prefixedInnerTypeName}::from_json(${input}.to_owned()))`;
                 }
-                return `${innerTypeName}::from_json(${input}.to_owned())`;
+                return `${prefixedInnerTypeName}::from_json(${input}.to_owned())`;
             };
             if (isOptionType) {
                 return `match ${input} {
@@ -57,7 +59,7 @@ export default function rustRefFromSchema(
                     }
                     _ => ${valFromJson(innerKey)},
                 },
-                _ => Box::new(${innerTypeName}::new()),
+                _ => Box::new(${prefixedInnerTypeName}::new()),
             }`;
         },
         toJsonTemplate(input, target) {

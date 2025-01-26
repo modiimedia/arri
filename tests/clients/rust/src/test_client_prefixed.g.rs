@@ -721,13 +721,13 @@ pub struct FooObjectWithEveryType {
     pub uint32: u32,
     pub int64: i64,
     pub uint64: u64,
-    pub enumerator: FooFooObjectWithEveryTypeEnumerator,
+    pub enumerator: FooObjectWithEveryTypeEnumerator,
     pub array: Vec<bool>,
-    pub object: FooFooObjectWithEveryTypeObject,
+    pub object: FooObjectWithEveryTypeObject,
     pub record: BTreeMap<String, u64>,
-    pub discriminator: FooFooObjectWithEveryTypeDiscriminator,
-    pub nested_object: FooFooObjectWithEveryTypeNestedObject,
-    pub nested_array: Vec<Vec<FooFooObjectWithEveryTypeNestedArrayElementElement>>,
+    pub discriminator: FooObjectWithEveryTypeDiscriminator,
+    pub nested_object: FooObjectWithEveryTypeNestedObject,
+    pub nested_array: Vec<Vec<FooObjectWithEveryTypeNestedArrayElementElement>>,
 }
 
 impl ArriModel for FooObjectWithEveryType {
@@ -747,12 +747,12 @@ impl ArriModel for FooObjectWithEveryType {
             uint32: 0,
             int64: 0,
             uint64: 0,
-            enumerator: FooFooObjectWithEveryTypeEnumerator::default(),
+            enumerator: FooObjectWithEveryTypeEnumerator::default(),
             array: Vec::new(),
-            object: FooFooObjectWithEveryTypeObject::new(),
+            object: FooObjectWithEveryTypeObject::new(),
             record: BTreeMap::new(),
-            discriminator: FooFooObjectWithEveryTypeDiscriminator::new(),
-            nested_object: FooFooObjectWithEveryTypeNestedObject::new(),
+            discriminator: FooObjectWithEveryTypeDiscriminator::new(),
+            nested_object: FooObjectWithEveryTypeNestedObject::new(),
             nested_array: Vec::new(),
         }
     }
@@ -840,9 +840,9 @@ impl ArriModel for FooObjectWithEveryType {
                 };
                 let enumerator = match _val_.get("enumerator") {
                     Some(serde_json::Value::String(enumerator_val)) => {
-                        FooFooObjectWithEveryTypeEnumerator::from_string(enumerator_val.to_owned())
+                        FooObjectWithEveryTypeEnumerator::from_string(enumerator_val.to_owned())
                     }
-                    _ => FooFooObjectWithEveryTypeEnumerator::default(),
+                    _ => FooObjectWithEveryTypeEnumerator::default(),
                 };
                 let array = match _val_.get("array") {
                     Some(serde_json::Value::Array(array_val)) => {
@@ -861,9 +861,9 @@ impl ArriModel for FooObjectWithEveryType {
                 };
                 let object = match _val_.get("object") {
                     Some(object_val) => {
-                        FooFooObjectWithEveryTypeObject::from_json(object_val.to_owned())
+                        FooObjectWithEveryTypeObject::from_json(object_val.to_owned())
                     }
-                    _ => FooFooObjectWithEveryTypeObject::new(),
+                    _ => FooObjectWithEveryTypeObject::new(),
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
@@ -886,33 +886,33 @@ impl ArriModel for FooObjectWithEveryType {
                 let discriminator = match _val_.get("discriminator") {
                     Some(discriminator_val) => match discriminator_val {
                         serde_json::Value::Object(_) => {
-                            FooFooObjectWithEveryTypeDiscriminator::from_json(
+                            FooObjectWithEveryTypeDiscriminator::from_json(
                                 discriminator_val.to_owned(),
                             )
                         }
-                        _ => FooFooObjectWithEveryTypeDiscriminator::new(),
+                        _ => FooObjectWithEveryTypeDiscriminator::new(),
                     },
-                    _ => FooFooObjectWithEveryTypeDiscriminator::new(),
+                    _ => FooObjectWithEveryTypeDiscriminator::new(),
                 };
                 let nested_object = match _val_.get("nestedObject") {
-                    Some(nested_object_val) => FooFooObjectWithEveryTypeNestedObject::from_json(
-                        nested_object_val.to_owned(),
-                    ),
-                    _ => FooFooObjectWithEveryTypeNestedObject::new(),
+                    Some(nested_object_val) => {
+                        FooObjectWithEveryTypeNestedObject::from_json(nested_object_val.to_owned())
+                    }
+                    _ => FooObjectWithEveryTypeNestedObject::new(),
                 };
                 let nested_array = match _val_.get("nestedArray") {
                     Some(serde_json::Value::Array(nested_array_val)) => {
                         let mut nested_array_val_result: Vec<
-                            Vec<FooFooObjectWithEveryTypeNestedArrayElementElement>,
+                            Vec<FooObjectWithEveryTypeNestedArrayElementElement>,
                         > = Vec::new();
                         for nested_array_val_element in nested_array_val {
                             nested_array_val_result.push(match Some(nested_array_val_element) {
                 Some(serde_json::Value::Array(nested_array_val_element_val)) => {
-                    let mut nested_array_val_element_val_result: Vec<FooFooObjectWithEveryTypeNestedArrayElementElement> = Vec::new();
+                    let mut nested_array_val_element_val_result: Vec<FooObjectWithEveryTypeNestedArrayElementElement> = Vec::new();
                     for nested_array_val_element_val_element in nested_array_val_element_val {
                         nested_array_val_element_val_result.push(match Some(nested_array_val_element_val_element) {
-                Some(nested_array_val_element_val_element_val) => FooFooObjectWithEveryTypeNestedArrayElementElement::from_json(nested_array_val_element_val_element_val.to_owned()),
-                _ => FooFooObjectWithEveryTypeNestedArrayElementElement::new(),
+                Some(nested_array_val_element_val_element_val) => FooObjectWithEveryTypeNestedArrayElementElement::from_json(nested_array_val_element_val_element_val.to_owned()),
+                _ => FooObjectWithEveryTypeNestedArrayElementElement::new(),
             });
                     }
                     nested_array_val_element_val_result
@@ -1040,7 +1040,7 @@ impl ArriModel for FooObjectWithEveryType {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /FooObjectWithEveryType/any.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/any.");
         _query_parts_.push(format!("boolean={}", &self.boolean));
         _query_parts_.push(format!("string={}", &self.string));
         _query_parts_.push(format!(
@@ -1058,26 +1058,26 @@ impl ArriModel for FooObjectWithEveryType {
         _query_parts_.push(format!("int64={}", &self.int64));
         _query_parts_.push(format!("uint64={}", &self.uint64));
         _query_parts_.push(format!("enumerator={}", &self.enumerator.serial_value()));
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooObjectWithEveryType/array.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryType/object.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryType/record.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryType/discriminator.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryType/nestedObject.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooObjectWithEveryType/nestedArray.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/nestedObject.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/nestedArray.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooObjectWithEveryTypeEnumerator {
+pub enum FooObjectWithEveryTypeEnumerator {
     A,
     B,
     C,
 }
 
-impl ArriEnum for FooFooObjectWithEveryTypeEnumerator {
+impl ArriEnum for FooObjectWithEveryTypeEnumerator {
     fn default() -> Self {
-        FooFooObjectWithEveryTypeEnumerator::A
+        FooObjectWithEveryTypeEnumerator::A
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {
@@ -1089,21 +1089,21 @@ impl ArriEnum for FooFooObjectWithEveryTypeEnumerator {
     }
     fn serial_value(&self) -> String {
         match &self {
-            FooFooObjectWithEveryTypeEnumerator::A => "A".to_string(),
-            FooFooObjectWithEveryTypeEnumerator::B => "B".to_string(),
-            FooFooObjectWithEveryTypeEnumerator::C => "C".to_string(),
+            FooObjectWithEveryTypeEnumerator::A => "A".to_string(),
+            FooObjectWithEveryTypeEnumerator::B => "B".to_string(),
+            FooObjectWithEveryTypeEnumerator::C => "C".to_string(),
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryTypeObject {
+pub struct FooObjectWithEveryTypeObject {
     pub string: String,
     pub boolean: bool,
     pub timestamp: DateTime<FixedOffset>,
 }
 
-impl ArriModel for FooFooObjectWithEveryTypeObject {
+impl ArriModel for FooObjectWithEveryTypeObject {
     fn new() -> Self {
         Self {
             string: "".to_string(),
@@ -1169,12 +1169,12 @@ impl ArriModel for FooFooObjectWithEveryTypeObject {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooObjectWithEveryTypeDiscriminator {
+pub enum FooObjectWithEveryTypeDiscriminator {
     A { title: String },
     B { title: String, description: String },
 }
 
-impl ArriModel for FooFooObjectWithEveryTypeDiscriminator {
+impl ArriModel for FooObjectWithEveryTypeDiscriminator {
     fn new() -> Self {
         Self::A {
             title: "".to_string(),
@@ -1261,18 +1261,18 @@ impl ArriModel for FooFooObjectWithEveryTypeDiscriminator {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryTypeNestedObject {
+pub struct FooObjectWithEveryTypeNestedObject {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
-    pub data: FooFooFooObjectWithEveryTypeNestedObjectData,
+    pub data: FooObjectWithEveryTypeNestedObjectData,
 }
 
-impl ArriModel for FooFooObjectWithEveryTypeNestedObject {
+impl ArriModel for FooObjectWithEveryTypeNestedObject {
     fn new() -> Self {
         Self {
             id: "".to_string(),
             timestamp: DateTime::default(),
-            data: FooFooFooObjectWithEveryTypeNestedObjectData::new(),
+            data: FooObjectWithEveryTypeNestedObjectData::new(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -1291,9 +1291,9 @@ impl ArriModel for FooFooObjectWithEveryTypeNestedObject {
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => {
-                        FooFooFooObjectWithEveryTypeNestedObjectData::from_json(data_val.to_owned())
+                        FooObjectWithEveryTypeNestedObjectData::from_json(data_val.to_owned())
                     }
-                    _ => FooFooFooObjectWithEveryTypeNestedObjectData::new(),
+                    _ => FooObjectWithEveryTypeNestedObjectData::new(),
                 };
                 Self {
                     id,
@@ -1329,24 +1329,24 @@ impl ArriModel for FooFooObjectWithEveryTypeNestedObject {
             "timestamp={}",
             serialize_date_time(&self.timestamp, false)
         ));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooFooObjectWithEveryTypeNestedObject/data.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooFooObjectWithEveryTypeNestedObjectData {
+pub struct FooObjectWithEveryTypeNestedObjectData {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
-    pub data: FooFooFooFooObjectWithEveryTypeNestedObjectDataData,
+    pub data: FooObjectWithEveryTypeNestedObjectDataData,
 }
 
-impl ArriModel for FooFooFooObjectWithEveryTypeNestedObjectData {
+impl ArriModel for FooObjectWithEveryTypeNestedObjectData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
             timestamp: DateTime::default(),
-            data: FooFooFooFooObjectWithEveryTypeNestedObjectDataData::new(),
+            data: FooObjectWithEveryTypeNestedObjectDataData::new(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -1365,11 +1365,9 @@ impl ArriModel for FooFooFooObjectWithEveryTypeNestedObjectData {
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => {
-                        FooFooFooFooObjectWithEveryTypeNestedObjectDataData::from_json(
-                            data_val.to_owned(),
-                        )
+                        FooObjectWithEveryTypeNestedObjectDataData::from_json(data_val.to_owned())
                     }
-                    _ => FooFooFooFooObjectWithEveryTypeNestedObjectDataData::new(),
+                    _ => FooObjectWithEveryTypeNestedObjectDataData::new(),
                 };
                 Self {
                     id,
@@ -1405,18 +1403,18 @@ impl ArriModel for FooFooFooObjectWithEveryTypeNestedObjectData {
             "timestamp={}",
             serialize_date_time(&self.timestamp, false)
         ));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooFooFooObjectWithEveryTypeNestedObjectData/data.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooFooFooObjectWithEveryTypeNestedObjectDataData {
+pub struct FooObjectWithEveryTypeNestedObjectDataData {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
 }
 
-impl ArriModel for FooFooFooFooObjectWithEveryTypeNestedObjectDataData {
+impl ArriModel for FooObjectWithEveryTypeNestedObjectDataData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -1470,12 +1468,12 @@ impl ArriModel for FooFooFooFooObjectWithEveryTypeNestedObjectDataData {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryTypeNestedArrayElementElement {
+pub struct FooObjectWithEveryTypeNestedArrayElementElement {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
 }
 
-impl ArriModel for FooFooObjectWithEveryTypeNestedArrayElementElement {
+impl ArriModel for FooObjectWithEveryTypeNestedArrayElementElement {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -1544,15 +1542,14 @@ pub struct FooObjectWithEveryNullableType {
     pub uint32: Option<u32>,
     pub int64: Option<i64>,
     pub uint64: Option<u64>,
-    pub enumerator: Option<FooFooObjectWithEveryNullableTypeEnumerator>,
+    pub enumerator: Option<FooObjectWithEveryNullableTypeEnumerator>,
     pub array: Option<Vec<Option<bool>>>,
-    pub object: Option<FooFooObjectWithEveryNullableTypeObject>,
+    pub object: Option<FooObjectWithEveryNullableTypeObject>,
     pub record: Option<BTreeMap<String, Option<u64>>>,
-    pub discriminator: Option<FooFooObjectWithEveryNullableTypeDiscriminator>,
-    pub nested_object: Option<FooFooObjectWithEveryNullableTypeNestedObject>,
-    pub nested_array: Option<
-        Vec<Option<Vec<Option<FooFooObjectWithEveryNullableTypeNestedArrayElementElement>>>>,
-    >,
+    pub discriminator: Option<FooObjectWithEveryNullableTypeDiscriminator>,
+    pub nested_object: Option<FooObjectWithEveryNullableTypeNestedObject>,
+    pub nested_array:
+        Option<Vec<Option<Vec<Option<FooObjectWithEveryNullableTypeNestedArrayElementElement>>>>>,
 }
 
 impl ArriModel for FooObjectWithEveryNullableType {
@@ -1697,7 +1694,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 };
                 let enumerator = match _val_.get("enumerator") {
                     Some(serde_json::Value::String(enumerator_val)) => {
-                        Some(FooFooObjectWithEveryNullableTypeEnumerator::from_string(
+                        Some(FooObjectWithEveryNullableTypeEnumerator::from_string(
                             enumerator_val.to_owned(),
                         ))
                     }
@@ -1720,11 +1717,9 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 };
                 let object = match _val_.get("object") {
                     Some(object_val) => match object_val {
-                        serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryNullableTypeObject::from_json(
-                                object_val.to_owned(),
-                            ))
-                        }
+                        serde_json::Value::Object(_) => Some(
+                            FooObjectWithEveryNullableTypeObject::from_json(object_val.to_owned()),
+                        ),
                         _ => None,
                     },
                     _ => None,
@@ -1753,7 +1748,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 let discriminator = match _val_.get("discriminator") {
                     Some(discriminator_val) => match discriminator_val {
                         serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryNullableTypeDiscriminator::from_json(
+                            Some(FooObjectWithEveryNullableTypeDiscriminator::from_json(
                                 discriminator_val.to_owned(),
                             ))
                         }
@@ -1764,7 +1759,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => match nested_object_val {
                         serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryNullableTypeNestedObject::from_json(
+                            Some(FooObjectWithEveryNullableTypeNestedObject::from_json(
                                 nested_object_val.to_owned(),
                             ))
                         }
@@ -1777,21 +1772,19 @@ impl ArriModel for FooObjectWithEveryNullableType {
                         let mut nested_array_val_result: Vec<
                             Option<
                                 Vec<
-                                    Option<
-                                        FooFooObjectWithEveryNullableTypeNestedArrayElementElement,
-                                    >,
+                                    Option<FooObjectWithEveryNullableTypeNestedArrayElementElement>,
                                 >,
                             >,
                         > = Vec::new();
                         for nested_array_val_element in nested_array_val {
                             nested_array_val_result.push(match Some(nested_array_val_element) {
                     Some(serde_json::Value::Array(nested_array_val_element_val)) => {
-                        let mut nested_array_val_element_val_result: Vec<Option<FooFooObjectWithEveryNullableTypeNestedArrayElementElement>> = Vec::new();
+                        let mut nested_array_val_element_val_result: Vec<Option<FooObjectWithEveryNullableTypeNestedArrayElementElement>> = Vec::new();
                         for nested_array_val_element_val_element in nested_array_val_element_val {
                             nested_array_val_element_val_result.push(match Some(nested_array_val_element_val_element) {
                     Some(nested_array_val_element_val_element_val) => match nested_array_val_element_val_element_val {
                         serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryNullableTypeNestedArrayElementElement::from_json(nested_array_val_element_val_element_val.to_owned()))
+                            Some(FooObjectWithEveryNullableTypeNestedArrayElementElement::from_json(nested_array_val_element_val_element_val.to_owned()))
                         }
                         _ => None,
                     },
@@ -2092,7 +2085,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /FooObjectWithEveryNullableType/any.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryNullableType/any.");
         match &self.boolean {
             Some(boolean_val) => {
                 _query_parts_.push(format!("boolean={}", boolean_val));
@@ -2208,26 +2201,26 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 _query_parts_.push("enumerator=null".to_string());
             }
         };
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooObjectWithEveryNullableType/array.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryNullableType/object.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryNullableType/record.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryNullableType/discriminator.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryNullableType/nestedObject.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooObjectWithEveryNullableType/nestedArray.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryNullableType/array.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/object.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/record.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooObjectWithEveryNullableTypeEnumerator {
+pub enum FooObjectWithEveryNullableTypeEnumerator {
     A,
     B,
     C,
 }
 
-impl ArriEnum for FooFooObjectWithEveryNullableTypeEnumerator {
+impl ArriEnum for FooObjectWithEveryNullableTypeEnumerator {
     fn default() -> Self {
-        FooFooObjectWithEveryNullableTypeEnumerator::A
+        FooObjectWithEveryNullableTypeEnumerator::A
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {
@@ -2239,21 +2232,21 @@ impl ArriEnum for FooFooObjectWithEveryNullableTypeEnumerator {
     }
     fn serial_value(&self) -> String {
         match &self {
-            FooFooObjectWithEveryNullableTypeEnumerator::A => "A".to_string(),
-            FooFooObjectWithEveryNullableTypeEnumerator::B => "B".to_string(),
-            FooFooObjectWithEveryNullableTypeEnumerator::C => "C".to_string(),
+            FooObjectWithEveryNullableTypeEnumerator::A => "A".to_string(),
+            FooObjectWithEveryNullableTypeEnumerator::B => "B".to_string(),
+            FooObjectWithEveryNullableTypeEnumerator::C => "C".to_string(),
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryNullableTypeObject {
+pub struct FooObjectWithEveryNullableTypeObject {
     pub string: Option<String>,
     pub boolean: Option<bool>,
     pub timestamp: Option<DateTime<FixedOffset>>,
 }
 
-impl ArriModel for FooFooObjectWithEveryNullableTypeObject {
+impl ArriModel for FooObjectWithEveryNullableTypeObject {
     fn new() -> Self {
         Self {
             string: None,
@@ -2363,7 +2356,7 @@ impl ArriModel for FooFooObjectWithEveryNullableTypeObject {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooObjectWithEveryNullableTypeDiscriminator {
+pub enum FooObjectWithEveryNullableTypeDiscriminator {
     A {
         title: Option<String>,
     },
@@ -2373,7 +2366,7 @@ pub enum FooFooObjectWithEveryNullableTypeDiscriminator {
     },
 }
 
-impl ArriModel for FooFooObjectWithEveryNullableTypeDiscriminator {
+impl ArriModel for FooObjectWithEveryNullableTypeDiscriminator {
     fn new() -> Self {
         Self::A { title: None }
     }
@@ -2504,13 +2497,129 @@ impl ArriModel for FooFooObjectWithEveryNullableTypeDiscriminator {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryNullableTypeNestedObject {
+pub struct FooObjectWithEveryNullableTypeNestedObject {
     pub id: Option<String>,
     pub timestamp: Option<DateTime<FixedOffset>>,
-    pub data: Option<FooFooFooObjectWithEveryNullableTypeNestedObjectData>,
+    pub data: Option<FooObjectWithEveryNullableTypeNestedObjectData>,
 }
 
-impl ArriModel for FooFooObjectWithEveryNullableTypeNestedObject {
+impl ArriModel for FooObjectWithEveryNullableTypeNestedObject {
+    fn new() -> Self {
+        Self {
+            id: None,
+            timestamp: None,
+            data: None,
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => Some(id_val.to_owned()),
+                    _ => None,
+                };
+                let timestamp = match _val_.get("timestamp") {
+                    Some(serde_json::Value::String(timestamp_val)) => {
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                            Ok(timestamp_val_result) => Some(timestamp_val_result),
+                            Err(_) => None,
+                        }
+                    }
+                    _ => None,
+                };
+                let data = match _val_.get("data") {
+                    Some(data_val) => match data_val {
+                        serde_json::Value::Object(_) => {
+                            Some(FooObjectWithEveryNullableTypeNestedObjectData::from_json(
+                                data_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                Self {
+                    id,
+                    timestamp,
+                    data,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        match &self.id {
+            Some(id_val) => {
+                _json_output_.push_str(serialize_string(id_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"timestamp\":");
+        match &self.timestamp {
+            Some(timestamp_val) => {
+                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"data\":");
+        match &self.data {
+            Some(data_val) => {
+                _json_output_.push_str(data_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self.id {
+            Some(id_val) => {
+                _query_parts_.push(format!("id={}", id_val));
+            }
+            _ => {
+                _query_parts_.push("id=null".to_string());
+            }
+        };
+        match &self.timestamp {
+            Some(timestamp_val) => {
+                _query_parts_.push(format!(
+                    "timestamp={}",
+                    serialize_date_time(timestamp_val, false)
+                ));
+            }
+            _ => {
+                _query_parts_.push("timestamp=null".to_string());
+            }
+        };
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObject/data.");
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithEveryNullableTypeNestedObjectData {
+    pub id: Option<String>,
+    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub data: Option<FooObjectWithEveryNullableTypeNestedObjectDataData>,
+}
+
+impl ArriModel for FooObjectWithEveryNullableTypeNestedObjectData {
     fn new() -> Self {
         Self {
             id: None,
@@ -2537,7 +2646,7 @@ impl ArriModel for FooFooObjectWithEveryNullableTypeNestedObject {
                 let data = match _val_.get("data") {
                     Some(data_val) => match data_val {
                         serde_json::Value::Object(_) => Some(
-                            FooFooFooObjectWithEveryNullableTypeNestedObjectData::from_json(
+                            FooObjectWithEveryNullableTypeNestedObjectDataData::from_json(
                                 data_val.to_owned(),
                             ),
                         ),
@@ -2614,134 +2723,18 @@ impl ArriModel for FooFooObjectWithEveryNullableTypeNestedObject {
                 _query_parts_.push("timestamp=null".to_string());
             }
         };
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooFooObjectWithEveryNullableTypeNestedObject/data.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObjectData/data.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooFooObjectWithEveryNullableTypeNestedObjectData {
-    pub id: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
-    pub data: Option<FooFooFooFooObjectWithEveryNullableTypeNestedObjectDataData>,
-}
-
-impl ArriModel for FooFooFooObjectWithEveryNullableTypeNestedObjectData {
-    fn new() -> Self {
-        Self {
-            id: None,
-            timestamp: None,
-            data: None,
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let id = match _val_.get("id") {
-                    Some(serde_json::Value::String(id_val)) => Some(id_val.to_owned()),
-                    _ => None,
-                };
-                let timestamp = match _val_.get("timestamp") {
-                    Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
-                            Ok(timestamp_val_result) => Some(timestamp_val_result),
-                            Err(_) => None,
-                        }
-                    }
-                    _ => None,
-                };
-                let data = match _val_.get("data") {
-                    Some(data_val) => match data_val {
-                        serde_json::Value::Object(_) => Some(
-                            FooFooFooFooObjectWithEveryNullableTypeNestedObjectDataData::from_json(
-                                data_val.to_owned(),
-                            ),
-                        ),
-                        _ => None,
-                    },
-                    _ => None,
-                };
-                Self {
-                    id,
-                    timestamp,
-                    data,
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"id\":");
-        match &self.id {
-            Some(id_val) => {
-                _json_output_.push_str(serialize_string(id_val).as_str());
-            }
-            _ => {
-                _json_output_.push_str("null");
-            }
-        };
-        _json_output_.push_str(",\"timestamp\":");
-        match &self.timestamp {
-            Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
-            }
-            _ => {
-                _json_output_.push_str("null");
-            }
-        };
-        _json_output_.push_str(",\"data\":");
-        match &self.data {
-            Some(data_val) => {
-                _json_output_.push_str(data_val.to_json_string().as_str());
-            }
-            _ => {
-                _json_output_.push_str("null");
-            }
-        };
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self.id {
-            Some(id_val) => {
-                _query_parts_.push(format!("id={}", id_val));
-            }
-            _ => {
-                _query_parts_.push("id=null".to_string());
-            }
-        };
-        match &self.timestamp {
-            Some(timestamp_val) => {
-                _query_parts_.push(format!(
-                    "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
-                ));
-            }
-            _ => {
-                _query_parts_.push("timestamp=null".to_string());
-            }
-        };
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooFooFooObjectWithEveryNullableTypeNestedObjectData/data.");
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct FooFooFooFooObjectWithEveryNullableTypeNestedObjectDataData {
+pub struct FooObjectWithEveryNullableTypeNestedObjectDataData {
     pub id: Option<String>,
     pub timestamp: Option<DateTime<FixedOffset>>,
 }
 
-impl ArriModel for FooFooFooFooObjectWithEveryNullableTypeNestedObjectDataData {
+impl ArriModel for FooObjectWithEveryNullableTypeNestedObjectDataData {
     fn new() -> Self {
         Self {
             id: None,
@@ -2825,12 +2818,12 @@ impl ArriModel for FooFooFooFooObjectWithEveryNullableTypeNestedObjectDataData {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryNullableTypeNestedArrayElementElement {
+pub struct FooObjectWithEveryNullableTypeNestedArrayElementElement {
     pub id: Option<String>,
     pub timestamp: Option<DateTime<FixedOffset>>,
 }
 
-impl ArriModel for FooFooObjectWithEveryNullableTypeNestedArrayElementElement {
+impl ArriModel for FooObjectWithEveryNullableTypeNestedArrayElementElement {
     fn new() -> Self {
         Self {
             id: None,
@@ -3193,13 +3186,13 @@ pub struct FooObjectWithEveryOptionalType {
     pub uint32: Option<u32>,
     pub int64: Option<i64>,
     pub uint64: Option<u64>,
-    pub enumerator: Option<FooFooObjectWithEveryOptionalTypeEnumerator>,
+    pub enumerator: Option<FooObjectWithEveryOptionalTypeEnumerator>,
     pub array: Option<Vec<bool>>,
-    pub object: Option<FooFooObjectWithEveryOptionalTypeObject>,
+    pub object: Option<FooObjectWithEveryOptionalTypeObject>,
     pub record: Option<BTreeMap<String, u64>>,
-    pub discriminator: Option<FooFooObjectWithEveryOptionalTypeDiscriminator>,
-    pub nested_object: Option<FooFooObjectWithEveryOptionalTypeNestedObject>,
-    pub nested_array: Option<Vec<Vec<FooFooObjectWithEveryOptionalTypeNestedArrayElementElement>>>,
+    pub discriminator: Option<FooObjectWithEveryOptionalTypeDiscriminator>,
+    pub nested_object: Option<FooObjectWithEveryOptionalTypeNestedObject>,
+    pub nested_array: Option<Vec<Vec<FooObjectWithEveryOptionalTypeNestedArrayElementElement>>>,
 }
 
 impl ArriModel for FooObjectWithEveryOptionalType {
@@ -3344,7 +3337,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                 };
                 let enumerator = match _val_.get("enumerator") {
                     Some(serde_json::Value::String(enumerator_val)) => {
-                        Some(FooFooObjectWithEveryOptionalTypeEnumerator::from_string(
+                        Some(FooObjectWithEveryOptionalTypeEnumerator::from_string(
                             enumerator_val.to_owned(),
                         ))
                     }
@@ -3367,11 +3360,9 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                 };
                 let object = match _val_.get("object") {
                     Some(object_val) => match object_val {
-                        serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryOptionalTypeObject::from_json(
-                                object_val.to_owned(),
-                            ))
-                        }
+                        serde_json::Value::Object(_) => Some(
+                            FooObjectWithEveryOptionalTypeObject::from_json(object_val.to_owned()),
+                        ),
                         _ => None,
                     },
                     _ => None,
@@ -3397,7 +3388,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                 let discriminator = match _val_.get("discriminator") {
                     Some(discriminator_val) => match discriminator_val {
                         serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryOptionalTypeDiscriminator::from_json(
+                            Some(FooObjectWithEveryOptionalTypeDiscriminator::from_json(
                                 discriminator_val.to_owned(),
                             ))
                         }
@@ -3408,7 +3399,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => match nested_object_val {
                         serde_json::Value::Object(_) => {
-                            Some(FooFooObjectWithEveryOptionalTypeNestedObject::from_json(
+                            Some(FooObjectWithEveryOptionalTypeNestedObject::from_json(
                                 nested_object_val.to_owned(),
                             ))
                         }
@@ -3419,16 +3410,16 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                 let nested_array = match _val_.get("nestedArray") {
                     Some(serde_json::Value::Array(nested_array_val)) => {
                         let mut nested_array_val_result: Vec<
-                            Vec<FooFooObjectWithEveryOptionalTypeNestedArrayElementElement>,
+                            Vec<FooObjectWithEveryOptionalTypeNestedArrayElementElement>,
                         > = Vec::new();
                         for nested_array_val_element in nested_array_val {
                             nested_array_val_result.push(match Some(nested_array_val_element) {
                 Some(serde_json::Value::Array(nested_array_val_element_val)) => {
-                    let mut nested_array_val_element_val_result: Vec<FooFooObjectWithEveryOptionalTypeNestedArrayElementElement> = Vec::new();
+                    let mut nested_array_val_element_val_result: Vec<FooObjectWithEveryOptionalTypeNestedArrayElementElement> = Vec::new();
                     for nested_array_val_element_val_element in nested_array_val_element_val {
                         nested_array_val_element_val_result.push(match Some(nested_array_val_element_val_element) {
-                Some(nested_array_val_element_val_element_val) => FooFooObjectWithEveryOptionalTypeNestedArrayElementElement::from_json(nested_array_val_element_val_element_val.to_owned()),
-                _ => FooFooObjectWithEveryOptionalTypeNestedArrayElementElement::new(),
+                Some(nested_array_val_element_val_element_val) => FooObjectWithEveryOptionalTypeNestedArrayElementElement::from_json(nested_array_val_element_val_element_val.to_owned()),
+                _ => FooObjectWithEveryOptionalTypeNestedArrayElementElement::new(),
             });
                     }
                     nested_array_val_element_val_result
@@ -3741,7 +3732,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /FooObjectWithEveryOptionalType/any.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryOptionalType/any.");
         match &self.boolean {
             Some(boolean_val) => {
                 _query_parts_.push(format!("boolean={}", boolean_val));
@@ -3829,26 +3820,26 @@ impl ArriModel for FooObjectWithEveryOptionalType {
             }
             _ => {}
         };
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooObjectWithEveryOptionalType/array.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryOptionalType/object.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryOptionalType/record.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryOptionalType/discriminator.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooObjectWithEveryOptionalType/nestedObject.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooObjectWithEveryOptionalType/nestedArray.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryOptionalType/array.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/object.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/record.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooObjectWithEveryOptionalTypeEnumerator {
+pub enum FooObjectWithEveryOptionalTypeEnumerator {
     A,
     B,
     C,
 }
 
-impl ArriEnum for FooFooObjectWithEveryOptionalTypeEnumerator {
+impl ArriEnum for FooObjectWithEveryOptionalTypeEnumerator {
     fn default() -> Self {
-        FooFooObjectWithEveryOptionalTypeEnumerator::A
+        FooObjectWithEveryOptionalTypeEnumerator::A
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {
@@ -3860,21 +3851,21 @@ impl ArriEnum for FooFooObjectWithEveryOptionalTypeEnumerator {
     }
     fn serial_value(&self) -> String {
         match &self {
-            FooFooObjectWithEveryOptionalTypeEnumerator::A => "A".to_string(),
-            FooFooObjectWithEveryOptionalTypeEnumerator::B => "B".to_string(),
-            FooFooObjectWithEveryOptionalTypeEnumerator::C => "C".to_string(),
+            FooObjectWithEveryOptionalTypeEnumerator::A => "A".to_string(),
+            FooObjectWithEveryOptionalTypeEnumerator::B => "B".to_string(),
+            FooObjectWithEveryOptionalTypeEnumerator::C => "C".to_string(),
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryOptionalTypeObject {
+pub struct FooObjectWithEveryOptionalTypeObject {
     pub string: String,
     pub boolean: bool,
     pub timestamp: DateTime<FixedOffset>,
 }
 
-impl ArriModel for FooFooObjectWithEveryOptionalTypeObject {
+impl ArriModel for FooObjectWithEveryOptionalTypeObject {
     fn new() -> Self {
         Self {
             string: "".to_string(),
@@ -3940,12 +3931,12 @@ impl ArriModel for FooFooObjectWithEveryOptionalTypeObject {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooObjectWithEveryOptionalTypeDiscriminator {
+pub enum FooObjectWithEveryOptionalTypeDiscriminator {
     A { title: String },
     B { title: String, description: String },
 }
 
-impl ArriModel for FooFooObjectWithEveryOptionalTypeDiscriminator {
+impl ArriModel for FooObjectWithEveryOptionalTypeDiscriminator {
     fn new() -> Self {
         Self::A {
             title: "".to_string(),
@@ -4032,18 +4023,18 @@ impl ArriModel for FooFooObjectWithEveryOptionalTypeDiscriminator {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryOptionalTypeNestedObject {
+pub struct FooObjectWithEveryOptionalTypeNestedObject {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
-    pub data: FooFooFooObjectWithEveryOptionalTypeNestedObjectData,
+    pub data: FooObjectWithEveryOptionalTypeNestedObjectData,
 }
 
-impl ArriModel for FooFooObjectWithEveryOptionalTypeNestedObject {
+impl ArriModel for FooObjectWithEveryOptionalTypeNestedObject {
     fn new() -> Self {
         Self {
             id: "".to_string(),
             timestamp: DateTime::default(),
-            data: FooFooFooObjectWithEveryOptionalTypeNestedObjectData::new(),
+            data: FooObjectWithEveryOptionalTypeNestedObjectData::new(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -4061,12 +4052,10 @@ impl ArriModel for FooFooObjectWithEveryOptionalTypeNestedObject {
                     _ => DateTime::default(),
                 };
                 let data = match _val_.get("data") {
-                    Some(data_val) => {
-                        FooFooFooObjectWithEveryOptionalTypeNestedObjectData::from_json(
-                            data_val.to_owned(),
-                        )
-                    }
-                    _ => FooFooFooObjectWithEveryOptionalTypeNestedObjectData::new(),
+                    Some(data_val) => FooObjectWithEveryOptionalTypeNestedObjectData::from_json(
+                        data_val.to_owned(),
+                    ),
+                    _ => FooObjectWithEveryOptionalTypeNestedObjectData::new(),
                 };
                 Self {
                     id,
@@ -4102,24 +4091,24 @@ impl ArriModel for FooFooObjectWithEveryOptionalTypeNestedObject {
             "timestamp={}",
             serialize_date_time(&self.timestamp, false)
         ));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooFooObjectWithEveryOptionalTypeNestedObject/data.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooFooObjectWithEveryOptionalTypeNestedObjectData {
+pub struct FooObjectWithEveryOptionalTypeNestedObjectData {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
-    pub data: FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData,
+    pub data: FooObjectWithEveryOptionalTypeNestedObjectDataData,
 }
 
-impl ArriModel for FooFooFooObjectWithEveryOptionalTypeNestedObjectData {
+impl ArriModel for FooObjectWithEveryOptionalTypeNestedObjectData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
             timestamp: DateTime::default(),
-            data: FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData::new(),
+            data: FooObjectWithEveryOptionalTypeNestedObjectDataData::new(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -4138,11 +4127,11 @@ impl ArriModel for FooFooFooObjectWithEveryOptionalTypeNestedObjectData {
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => {
-                        FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData::from_json(
+                        FooObjectWithEveryOptionalTypeNestedObjectDataData::from_json(
                             data_val.to_owned(),
                         )
                     }
-                    _ => FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData::new(),
+                    _ => FooObjectWithEveryOptionalTypeNestedObjectDataData::new(),
                 };
                 Self {
                     id,
@@ -4178,18 +4167,18 @@ impl ArriModel for FooFooFooObjectWithEveryOptionalTypeNestedObjectData {
             "timestamp={}",
             serialize_date_time(&self.timestamp, false)
         ));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooFooFooObjectWithEveryOptionalTypeNestedObjectData/data.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData {
+pub struct FooObjectWithEveryOptionalTypeNestedObjectDataData {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
 }
 
-impl ArriModel for FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData {
+impl ArriModel for FooObjectWithEveryOptionalTypeNestedObjectDataData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -4243,12 +4232,12 @@ impl ArriModel for FooFooFooFooObjectWithEveryOptionalTypeNestedObjectDataData {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooObjectWithEveryOptionalTypeNestedArrayElementElement {
+pub struct FooObjectWithEveryOptionalTypeNestedArrayElementElement {
     pub id: String,
     pub timestamp: DateTime<FixedOffset>,
 }
 
-impl ArriModel for FooFooObjectWithEveryOptionalTypeNestedArrayElementElement {
+impl ArriModel for FooObjectWithEveryOptionalTypeNestedArrayElementElement {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -4380,8 +4369,8 @@ impl ArriModel for FooRecursiveObject {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooRecursiveObject/left.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooRecursiveObject/right.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/left.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/right.");
         _query_parts_.push(format!("value={}", &self.value));
         _query_parts_.join("&")
     }
@@ -4814,7 +4803,7 @@ impl ArriModel for FooStreamConnectionErrorTestResponse {
 #[derive(Clone, Debug, PartialEq)]
 pub struct FooStreamLargeObjectsResponse {
     pub numbers: Vec<f64>,
-    pub objects: Vec<FooFooStreamLargeObjectsResponseObjectsElement>,
+    pub objects: Vec<FooStreamLargeObjectsResponseObjectsElement>,
 }
 
 impl ArriModel for FooStreamLargeObjectsResponse {
@@ -4845,16 +4834,16 @@ impl ArriModel for FooStreamLargeObjectsResponse {
                 let objects = match _val_.get("objects") {
                     Some(serde_json::Value::Array(objects_val)) => {
                         let mut objects_val_result: Vec<
-                            FooFooStreamLargeObjectsResponseObjectsElement,
+                            FooStreamLargeObjectsResponseObjectsElement,
                         > = Vec::new();
                         for objects_val_element in objects_val {
                             objects_val_result.push(match Some(objects_val_element) {
                                 Some(objects_val_element_val) => {
-                                    FooFooStreamLargeObjectsResponseObjectsElement::from_json(
+                                    FooStreamLargeObjectsResponseObjectsElement::from_json(
                                         objects_val_element_val.to_owned(),
                                     )
                                 }
-                                _ => FooFooStreamLargeObjectsResponseObjectsElement::new(),
+                                _ => FooStreamLargeObjectsResponseObjectsElement::new(),
                             });
                         }
                         objects_val_result
@@ -4898,20 +4887,20 @@ impl ArriModel for FooStreamLargeObjectsResponse {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooStreamLargeObjectsResponse/numbers.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooStreamLargeObjectsResponse/objects.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /StreamLargeObjectsResponse/numbers.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /StreamLargeObjectsResponse/objects.");
         _query_parts_.join("&")
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooStreamLargeObjectsResponseObjectsElement {
+pub struct FooStreamLargeObjectsResponseObjectsElement {
     pub id: String,
     pub name: String,
     pub email: String,
 }
 
-impl ArriModel for FooFooStreamLargeObjectsResponseObjectsElement {
+impl ArriModel for FooStreamLargeObjectsResponseObjectsElement {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -5378,14 +5367,14 @@ impl ArriModel for FooUsersWatchUserParams {
 #[derive(Clone, Debug, PartialEq)]
 pub struct FooUsersWatchUserResponse {
     pub id: String,
-    pub role: FooFooUsersWatchUserResponseRole,
+    pub role: FooUsersWatchUserResponseRole,
     /// A profile picture
     pub photo: Option<FooUserPhoto>,
     pub created_at: DateTime<FixedOffset>,
     pub num_followers: i32,
     pub settings: FooUserSettings,
-    pub recent_notifications: Vec<FooFooUsersWatchUserResponseRecentNotificationsElement>,
-    pub bookmarks: BTreeMap<String, FooFooUsersWatchUserResponseBookmarksValue>,
+    pub recent_notifications: Vec<FooUsersWatchUserResponseRecentNotificationsElement>,
+    pub bookmarks: BTreeMap<String, FooUsersWatchUserResponseBookmarksValue>,
     pub metadata: BTreeMap<String, serde_json::Value>,
     pub random_list: Vec<serde_json::Value>,
     pub bio: Option<String>,
@@ -5395,7 +5384,7 @@ impl ArriModel for FooUsersWatchUserResponse {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            role: FooFooUsersWatchUserResponseRole::default(),
+            role: FooUsersWatchUserResponseRole::default(),
             photo: None,
             created_at: DateTime::default(),
             num_followers: 0,
@@ -5416,9 +5405,9 @@ impl ArriModel for FooUsersWatchUserResponse {
                 };
                 let role = match _val_.get("role") {
                     Some(serde_json::Value::String(role_val)) => {
-                        FooFooUsersWatchUserResponseRole::from_string(role_val.to_owned())
+                        FooUsersWatchUserResponseRole::from_string(role_val.to_owned())
                     }
-                    _ => FooFooUsersWatchUserResponseRole::default(),
+                    _ => FooUsersWatchUserResponseRole::default(),
                 };
                 let photo = match _val_.get("photo") {
                     Some(photo_val) => match photo_val {
@@ -5449,17 +5438,17 @@ impl ArriModel for FooUsersWatchUserResponse {
                 let recent_notifications = match _val_.get("recentNotifications") {
                     Some(serde_json::Value::Array(recent_notifications_val)) => {
                         let mut recent_notifications_val_result: Vec<
-                            FooFooUsersWatchUserResponseRecentNotificationsElement,
+                            FooUsersWatchUserResponseRecentNotificationsElement,
                         > = Vec::new();
                         for recent_notifications_val_element in recent_notifications_val {
                             recent_notifications_val_result.push(match Some(recent_notifications_val_element) {
                 Some(recent_notifications_val_element_val) => match recent_notifications_val_element_val {
                     serde_json::Value::Object(_) => {
-                        FooFooUsersWatchUserResponseRecentNotificationsElement::from_json(recent_notifications_val_element_val.to_owned())
+                        FooUsersWatchUserResponseRecentNotificationsElement::from_json(recent_notifications_val_element_val.to_owned())
                     }
-                    _ => FooFooUsersWatchUserResponseRecentNotificationsElement::new(),
+                    _ => FooUsersWatchUserResponseRecentNotificationsElement::new(),
                 },
-                _ => FooFooUsersWatchUserResponseRecentNotificationsElement::new(),
+                _ => FooUsersWatchUserResponseRecentNotificationsElement::new(),
             });
                         }
                         recent_notifications_val_result
@@ -5470,18 +5459,18 @@ impl ArriModel for FooUsersWatchUserResponse {
                     Some(serde_json::Value::Object(bookmarks_val)) => {
                         let mut bookmarks_val_result: BTreeMap<
                             String,
-                            FooFooUsersWatchUserResponseBookmarksValue,
+                            FooUsersWatchUserResponseBookmarksValue,
                         > = BTreeMap::new();
                         for (_key_, _value_) in bookmarks_val.into_iter() {
                             bookmarks_val_result.insert(
                                 _key_.to_owned(),
                                 match Some(_value_.to_owned()) {
                                     Some(value_val) => {
-                                        FooFooUsersWatchUserResponseBookmarksValue::from_json(
+                                        FooUsersWatchUserResponseBookmarksValue::from_json(
                                             value_val.to_owned(),
                                         )
                                     }
-                                    _ => FooFooUsersWatchUserResponseBookmarksValue::new(),
+                                    _ => FooUsersWatchUserResponseBookmarksValue::new(),
                                 },
                             );
                         }
@@ -5630,17 +5619,17 @@ impl ArriModel for FooUsersWatchUserResponse {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!("role={}", &self.role.serial_value()));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooUsersWatchUserResponse/photo.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/photo.");
         _query_parts_.push(format!(
             "createdAt={}",
             serialize_date_time(&self.created_at, false)
         ));
         _query_parts_.push(format!("numFollowers={}", &self.num_followers));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooUsersWatchUserResponse/settings.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooUsersWatchUserResponse/recentNotifications.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooUsersWatchUserResponse/bookmarks.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /FooUsersWatchUserResponse/metadata.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /FooUsersWatchUserResponse/randomList.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/settings.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /UsersWatchUserResponse/recentNotifications.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/bookmarks.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/metadata.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /UsersWatchUserResponse/randomList.");
         match &self.bio {
             Some(bio_val) => {
                 _query_parts_.push(format!("bio={}", bio_val));
@@ -5652,14 +5641,14 @@ impl ArriModel for FooUsersWatchUserResponse {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooUsersWatchUserResponseRole {
+pub enum FooUsersWatchUserResponseRole {
     Standard,
     Admin,
 }
 
-impl ArriEnum for FooFooUsersWatchUserResponseRole {
+impl ArriEnum for FooUsersWatchUserResponseRole {
     fn default() -> Self {
-        FooFooUsersWatchUserResponseRole::Standard
+        FooUsersWatchUserResponseRole::Standard
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {
@@ -5670,8 +5659,8 @@ impl ArriEnum for FooFooUsersWatchUserResponseRole {
     }
     fn serial_value(&self) -> String {
         match &self {
-            FooFooUsersWatchUserResponseRole::Standard => "standard".to_string(),
-            FooFooUsersWatchUserResponseRole::Admin => "admin".to_string(),
+            FooUsersWatchUserResponseRole::Standard => "standard".to_string(),
+            FooUsersWatchUserResponseRole::Admin => "admin".to_string(),
         }
     }
 }
@@ -5773,14 +5762,14 @@ impl ArriModel for FooUserPhoto {
 #[derive(Clone, Debug, PartialEq)]
 pub struct FooUserSettings {
     pub notifications_enabled: bool,
-    pub preferred_theme: FooFooUserSettingsPreferredTheme,
+    pub preferred_theme: FooUserSettingsPreferredTheme,
 }
 
 impl ArriModel for FooUserSettings {
     fn new() -> Self {
         Self {
             notifications_enabled: false,
-            preferred_theme: FooFooUserSettingsPreferredTheme::default(),
+            preferred_theme: FooUserSettingsPreferredTheme::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -5794,11 +5783,9 @@ impl ArriModel for FooUserSettings {
                 };
                 let preferred_theme = match _val_.get("preferredTheme") {
                     Some(serde_json::Value::String(preferred_theme_val)) => {
-                        FooFooUserSettingsPreferredTheme::from_string(
-                            preferred_theme_val.to_owned(),
-                        )
+                        FooUserSettingsPreferredTheme::from_string(preferred_theme_val.to_owned())
                     }
-                    _ => FooFooUserSettingsPreferredTheme::default(),
+                    _ => FooUserSettingsPreferredTheme::default(),
                 };
                 Self {
                     notifications_enabled,
@@ -5839,15 +5826,15 @@ impl ArriModel for FooUserSettings {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooUserSettingsPreferredTheme {
+pub enum FooUserSettingsPreferredTheme {
     DarkMode,
     LightMode,
     System,
 }
 
-impl ArriEnum for FooFooUserSettingsPreferredTheme {
+impl ArriEnum for FooUserSettingsPreferredTheme {
     fn default() -> Self {
-        FooFooUserSettingsPreferredTheme::DarkMode
+        FooUserSettingsPreferredTheme::DarkMode
     }
     fn from_string(input: String) -> Self {
         match input.as_str() {
@@ -5859,15 +5846,15 @@ impl ArriEnum for FooFooUserSettingsPreferredTheme {
     }
     fn serial_value(&self) -> String {
         match &self {
-            FooFooUserSettingsPreferredTheme::DarkMode => "dark-mode".to_string(),
-            FooFooUserSettingsPreferredTheme::LightMode => "light-mode".to_string(),
-            FooFooUserSettingsPreferredTheme::System => "system".to_string(),
+            FooUserSettingsPreferredTheme::DarkMode => "dark-mode".to_string(),
+            FooUserSettingsPreferredTheme::LightMode => "light-mode".to_string(),
+            FooUserSettingsPreferredTheme::System => "system".to_string(),
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooFooUsersWatchUserResponseRecentNotificationsElement {
+pub enum FooUsersWatchUserResponseRecentNotificationsElement {
     PostLike {
         post_id: String,
         user_id: String,
@@ -5879,7 +5866,7 @@ pub enum FooFooUsersWatchUserResponseRecentNotificationsElement {
     },
 }
 
-impl ArriModel for FooFooUsersWatchUserResponseRecentNotificationsElement {
+impl ArriModel for FooUsersWatchUserResponseRecentNotificationsElement {
     fn new() -> Self {
         Self::PostLike {
             post_id: "".to_string(),
@@ -5995,12 +5982,12 @@ impl ArriModel for FooFooUsersWatchUserResponseRecentNotificationsElement {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooFooUsersWatchUserResponseBookmarksValue {
+pub struct FooUsersWatchUserResponseBookmarksValue {
     pub post_id: String,
     pub user_id: String,
 }
 
-impl ArriModel for FooFooUsersWatchUserResponseBookmarksValue {
+impl ArriModel for FooUsersWatchUserResponseBookmarksValue {
     fn new() -> Self {
         Self {
             post_id: "".to_string(),

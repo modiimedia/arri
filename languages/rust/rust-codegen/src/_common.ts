@@ -20,6 +20,7 @@ export interface GeneratorContext {
 
 export interface RustProperty {
     typeName: string;
+    prefixedTypeName: string;
     defaultValue: string;
     isNullable: boolean;
     fromJsonTemplate: (input: string, key: string) => string;

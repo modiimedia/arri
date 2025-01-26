@@ -10,6 +10,9 @@ export default function rustAnyFromSchema(
         typeName: context.isOptional
             ? `Option<serde_json::Value>`
             : 'serde_json::Value',
+        prefixedTypeName: context.isOptional
+            ? `Option<serde_json::Value>`
+            : 'serde_json::Value',
         defaultValue: context.isOptional ? `None` : `serde_json::Value::Null`,
         isNullable: false,
         fromJsonTemplate(input, key) {
