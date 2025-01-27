@@ -18,7 +18,7 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     headers: () -> Dictionary<String, String>,
     clientVersion: String,
     params: TParams,
-    timeoutSeconds: Int64 = 60,
+    timeoutMs: UInt64 = 60000,
     onError: (Error) -> Void
 ) async throws -> TResponse {
     do {
@@ -44,7 +44,13 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
                 }
                 break;
         }
-        let request = ArriHTTPRequest(url: parsedURL!.url!, method: method, headers: finalHeaders, body: finalBody)
+        let request = ArriHTTPRequest(
+            url: parsedURL!.url!,
+            method: method, 
+            headers: finalHeaders,
+            body: finalBody, 
+            timeoutMs: timeoutMs
+        )
         let response = try await delegate.handleHTTPRequest(request: request)
         if response.statusCode >= 200 && response.statusCode < 300 {
             let result = TResponse.init(JSONData: response.body ?? Data())
@@ -262,7 +268,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
     }
     public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<Data> {
         let httpRequest = self.prepareHttpRequest(request: request)
-        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
+        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .milliseconds(Int64(request.timeoutMs)))
         let responseBody = try? await response.body.collect(upTo: maxBodyBytes)
         var responseData: Data?
         if responseBody != nil {
@@ -278,9 +284,9 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
             body: responseData
         )
     }
-    public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse {
+    public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse {        
         let httpRequest = self.prepareHttpRequest(request: request)
-        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .minutes(10))
+        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .milliseconds(Int64(request.timeoutMs)))
         if response.status.code >= 200 && response.status.code < 300 && response.headers["Content-Type"].contains("text/event-stream") {
             return .ok(ArriHTTPResponse(
                 statusCode: UInt32(response.status.code),
@@ -359,16 +365,19 @@ public struct ArriHTTPRequest {
     public var method: String
     public var headers: Dictionary<String, String>
     public var body: String?
+    public var timeoutMs: UInt64
     public init(
         url: URL,
         method: String,
         headers: Dictionary<String, String>,
-        body: String?
+        body: String?,
+        timeoutMs: UInt64?
     ) {
         self.url = url
         self.method = method
         self.headers = headers
         self.body = body
+        self.timeoutMs = timeoutMs ?? 5000
     }
 }
 public struct ArriHTTPResponse<T> {
@@ -620,6 +629,7 @@ public struct EventSourceOptions<T: ArriClientModel> {
     public var onClose: (() -> ()) = { }
     public var maxRetryCount: UInt32?
     public var maxRetryInterval: UInt32 = 30000
+    public var timeoutMs: UInt64 = 10000
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> ()
     ) {
@@ -645,16 +655,29 @@ public struct EventSourceOptions<T: ArriClientModel> {
     }
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> (),
+        onRequestError: ((ArriRequestError, inout EventSource<T>) -> ())? = nil,
+        onResponseError: ((ArriResponseError, inout EventSource<T>) -> ())? = nil,
+        timeoutMs: UInt64? = nil
+    ) {
+        self.onMessage = onMessage
+        self.onRequestError = onRequestError ?? self.onRequestError
+        self.onResponseError = onResponseError ?? self.onResponseError
+        self.timeoutMs = timeoutMs ?? self.timeoutMs
+    }
+    public init(
+        onMessage: @escaping (T, inout EventSource<T>) -> (),
         onRequestError: @escaping (ArriRequestError, inout EventSource<T>) -> (),
         onResponseError: @escaping (ArriResponseError, inout EventSource<T>) -> (),
         maxRetryCount: UInt32?,
-        maxRetryInterval: UInt32?
+        maxRetryInterval: UInt32?,
+        timeoutMs: UInt64?
     ) {
         self.onMessage = onMessage
         self.onRequestError = onRequestError
         self.onResponseError = onResponseError
         self.maxRetryCount = maxRetryCount
         self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
+        self.timeoutMs = timeoutMs ?? self.timeoutMs
     }
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> (),
@@ -664,7 +687,8 @@ public struct EventSourceOptions<T: ArriClientModel> {
         onResponseError: ((ArriResponseError, inout EventSource<T>) -> ())?,
         onClose: (() -> ())?,
         maxRetryCount: UInt32?,
-        maxRetryInterval: UInt32?
+        maxRetryInterval: UInt32?,
+        timeoutMs: UInt64?
     ) {
         self.onMessage = onMessage
         self.onRequest = onRequest ?? self.onRequest
@@ -674,6 +698,7 @@ public struct EventSourceOptions<T: ArriClientModel> {
         self.onClose = onClose ?? self.onClose
         self.maxRetryCount = maxRetryCount
         self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
+        self.timeoutMs = timeoutMs ?? self.timeoutMs
     }
 }
 
@@ -743,7 +768,13 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                     break;
             }
         }
-        let request = ArriHTTPRequest(url: urlComponents!.url!, method: self.method, headers: self.headers(), body: body)
+        let request = ArriHTTPRequest(
+            url: urlComponents!.url!, 
+            method: self.method, 
+            headers: self.headers(), 
+            body: body,
+            timeoutMs: self.options.timeoutMs 
+        )
         self.options.onRequest(request, &self)
         if cancelled {
             return

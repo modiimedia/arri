@@ -6,13 +6,13 @@ If you need any additional guidance, feel free to pop into the Arri RPC [discord
 
 ## Table of Contents
 
--   [Prerequisites](#prerequisites)
--   [Building and Running Tests](#building-and-running-tests)
--   [Running Integration Tests](#running-integration-tests)
--   [Project Structure](#project-structure)
--   [Project Scaffolds](#project-scaffolds)
--   [Guidelines For Pull Requests](#guidelines-for-pull-requests)
--   [Obtaining Commit Access](#obtaining-commit-access)
+- [Prerequisites](#prerequisites)
+- [Building and Running Tests](#building-and-running-tests)
+- [Running Integration Tests](#running-integration-tests)
+- [Project Structure](#project-structure)
+- [Project Scaffolds](#project-scaffolds)
+- [Guidelines For Pull Requests](#guidelines-for-pull-requests)
+- [Obtaining Commit Access](#obtaining-commit-access)
 
 ## Prerequisites
 
@@ -31,10 +31,10 @@ You will also need to install the toolchain for whatever language libraries you 
 
 To be able to build and run everything you currently need:
 
--   [The Dart SDK](https://dart.dev/get-dart) for Dart
--   [The Rust compiler & Cargo](https://www.rust-lang.org/learn/get-started) for Rust
--   [The Go compiler](https://go.dev/doc/install) for Go
--   [The Swift compiler](https://www.swift.org/documentation/swift-compiler/) for Swift
+- [The Dart SDK](https://dart.dev/get-dart) for Dart
+- [The Rust compiler & Cargo](https://www.rust-lang.org/learn/get-started) for Rust
+- [The Go compiler](https://go.dev/doc/install) for Go
+- [The Swift compiler](https://www.swift.org/documentation/swift-compiler/) for Swift
 
 ## Building and Running Tests
 
@@ -77,22 +77,22 @@ Which let's me run `pnpm nx foo my-awesome-project`
 
 ### Common Targets
 
--   `test` - run unit tests on the specified project
--   `build` - build the TS project (TS Only)
--   `compile` - compile the project (Non-TS projects only)
--   `lint` - lint the project
--   `typecheck` - run the Typescript type-checker against the project (TS only)
+- `test` - run unit tests on the specified project
+- `build` - build the TS project (TS Only)
+- `compile` - compile the project (Non-TS projects only)
+- `lint` - lint the project
+- `typecheck` - run the Typescript type-checker against the project (TS only)
 
 ### Global Commands
 
 We also have some npm scripts that execute a target across many projects
 
--   `pnpm build` - build all TS projects
--   `pnpm compile` - compile all non-TS projects
--   `pnpm test` - run all unit tests
--   `pnpm integration-tests` - start the test server and run all integration tests
--   `pnpm lint` - lint all projects
--   `pnpm typecheck` - type-check all TS projects
+- `pnpm build` - build all TS projects
+- `pnpm compile` - compile all non-TS projects
+- `pnpm test` - run all unit tests
+- `pnpm integration-tests` - start the test server and run all integration tests
+- `pnpm lint` - lint all projects
+- `pnpm typecheck` - type-check all TS projects
 
 ## Running Integration Tests
 
@@ -104,8 +104,9 @@ There are many cases where you might want to run integration tests against a sin
 # ensure your code generators are the most recent build
 pnpm build
 
-# start the test server
+# start either the TS or Go test server
 pnpm nx dev test-server-ts
+pnpm nx dev test-server-go
 ```
 
 Next you need to start the integration tests for the specific client you want to test.
@@ -121,10 +122,10 @@ That's it.
 The playground directory is used to experiment with random stuff. You can start the playground dev server like so:
 
 ```bash
-# spin up the typescript server playground
+# spin up the Typescript server playground
 pnpm nx dev ts-playground
 
-# spin up the go server playground
+# spin up the Go server playground
 pnpm nx dev go-playground
 ```
 
@@ -154,7 +155,7 @@ Any language specific project should be prefixed by the language name. So for ex
 
 ## Project Scaffolds
 
-There is currently a scaffolding script that will help you scaffold a "code-generator" or "tooling" project.
+There is currently a scaffolding script that will help you scaffold a "code-generator" or "tooling" project ("tooling" would be Arri tooling such as the Arri CLI). If you need to create a library for a specific language you will have to manually create that project under the relevant language directory for now.
 
 ```bash
 pnpm scaffold
@@ -164,10 +165,10 @@ For a more complete guide on creating a code generator see [here](/docs/creating
 
 ## Guidelines For Pull Requests
 
--   Run `pnpm format` before submitting
--   PRs should address primarily a single concern. Example: Do not open a PR that fixes 3 unrelated bugs.
--   Before adding features or submitting a large PR please open up an issue or start a discussion on [discord](https://discord.gg/5m23HEQss7).
--   Provide a good PR description as a record of what change is being made and why it was made. Link to a GitHub issue if it exists.
+- Run `pnpm format` before submitting
+- PRs should primarily address a single concern. Example: Do not open a PR that fixes 3 unrelated bugs.
+- Before adding features or submitting a large PR please open up an issue or start a discussion on [discord](https://discord.gg/5m23HEQss7).
+- Provide a good PR description as a record of what change is being made and why it was made. Link to a GitHub issue if it exists.
 
 ## Obtaining Commit Access
 

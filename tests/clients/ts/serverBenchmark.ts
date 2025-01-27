@@ -8,7 +8,7 @@ import {
     ObjectWithEveryNullableType,
     ObjectWithEveryOptionalType,
     ObjectWithEveryType,
-} from './testClient.rpc';
+} from './testClient.g';
 
 const now = new Date();
 

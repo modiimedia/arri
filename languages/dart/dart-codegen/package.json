@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-dart",
-  "version": "0.72.0",
+  "version": "0.73.0",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
@@ -14,5 +14,5 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": ["dist"],
-  "dependencies": { "@arrirpc/codegen-utils": "workspace:*", "pathe": "^2.0.1" }
+  "dependencies": { "@arrirpc/codegen-utils": "workspace:*", "pathe": "^2.0.2" }
 }

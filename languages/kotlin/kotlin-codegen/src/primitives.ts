@@ -36,6 +36,7 @@ export function kotlinStringFromSchema(
     const defaultValue = nullable ? 'null' : '""';
     return {
         typeName: 'String',
+        prefixedTypeName: 'String',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -74,6 +75,7 @@ export function kotlinBooleanFromSchema(
     const defaultValue = nullable ? 'null' : 'false';
     return {
         typeName: 'Boolean',
+        prefixedTypeName: 'Boolean',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -106,6 +108,7 @@ export function kotlinTimestampFromSchema(
     const defaultValue = nullable ? 'null' : 'Instant.now()';
     return {
         typeName: 'Instant',
+        prefixedTypeName: 'Instant',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -165,6 +168,7 @@ export function kotlinFloat32FromSchema(
     const defaultValue = nullable ? 'null' : '0.0F';
     return {
         typeName: 'Float',
+        prefixedTypeName: 'Float',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -197,6 +201,7 @@ export function kotlinFloat64FromSchema(
     const defaultValue = nullable ? 'null' : '0.0';
     return {
         typeName: 'Double',
+        prefixedTypeName: 'Double',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -229,6 +234,7 @@ export function kotlinInt8FromSchema(
     const defaultValue = nullable ? 'null' : '0';
     return {
         typeName: 'Byte',
+        prefixedTypeName: 'Byte',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -261,6 +267,7 @@ export function kotlinInt16FromSchema(
     const defaultValue = nullable ? 'null' : '0';
     return {
         typeName: 'Short',
+        prefixedTypeName: 'Short',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -293,6 +300,7 @@ export function kotlinInt32FromSchema(
     const defaultValue = nullable ? 'null' : '0';
     return {
         typeName: 'Int',
+        prefixedTypeName: 'Int',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -325,6 +333,7 @@ export function kotlinInt64FromSchema(
     const defaultValue = nullable ? 'null' : '0L';
     return {
         typeName: 'Long',
+        prefixedTypeName: 'Long',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -363,6 +372,7 @@ export function kotlinUint8FromSchema(
     const defaultValue = nullable ? 'null' : '0u';
     return {
         typeName: 'UByte',
+        prefixedTypeName: 'UByte',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -395,6 +405,7 @@ export function kotlinUint16FromSchema(
     const defaultValue = nullable ? 'null' : '0u';
     return {
         typeName: 'UShort',
+        prefixedTypeName: 'UShort',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -427,6 +438,7 @@ export function kotlinUint32FromSchema(
     const defaultValue = nullable ? 'null' : '0u';
     return {
         typeName: 'UInt',
+        prefixedTypeName: 'UInt',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
@@ -459,6 +471,7 @@ export function kotlinUint64FromSchema(
     const defaultValue = nullable ? 'null' : '0UL';
     return {
         typeName: 'ULong',
+        prefixedTypeName: 'ULong',
         isNullable: nullable,
         defaultValue,
         fromJson(input) {

@@ -48,7 +48,10 @@ import { dartRefFromSchema } from './ref';
 export interface DartClientGeneratorOptions {
     outputFile: string;
     clientName?: string;
-    modelPrefix?: string;
+    /**
+     * Add a prefix to the generated class names
+     */
+    typePrefix?: string;
     format?: boolean;
 }
 
@@ -84,7 +87,7 @@ export function createDartClient(
     const typeParts: string[] = [];
     const context: CodegenContext = {
         clientName: options.clientName ?? 'Client',
-        modelPrefix: options.modelPrefix ?? '',
+        modelPrefix: options.typePrefix ?? '',
         generatedTypes: [],
         instancePath: '',
         schemaPath: '',

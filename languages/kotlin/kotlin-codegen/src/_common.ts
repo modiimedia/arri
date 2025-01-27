@@ -21,6 +21,7 @@ export interface CodegenContext {
 
 export interface KotlinProperty {
     typeName: string;
+    prefixedTypeName: string;
     isNullable: boolean;
     content: string;
     defaultValue: string;
@@ -90,14 +91,14 @@ export function kotlinClassName(input: string): string {
     return name;
 }
 
-export function getClassName(schema: Schema, context: CodegenContext): string {
+export function getClassName(schema: Schema, context: CodegenContext) {
     if (schema.metadata?.id) {
         const className = kotlinClassName(
             pascalCase(schema.metadata.id, {
                 normalize: true,
             }),
         );
-        return `${context.typePrefix}${className}`;
+        return className;
     }
     const depth = instanceDepth(context);
     if (depth === 1 && !context.discriminatorKey) {
@@ -106,7 +107,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
                 normalize: true,
             }),
         );
-        return `${context.typePrefix}${className}`;
+        return className;
     }
 
     if (
@@ -120,7 +121,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
                 { normalize: true },
             ),
         );
-        return `${context.typePrefix}${className}`;
+        return className;
     }
 
     const className = kotlinClassName(
@@ -137,7 +138,14 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
             },
         ),
     );
-    return `${context.typePrefix}${className}`;
+    return className;
+}
+
+export function getPrefixedClassName(
+    schema: Schema,
+    context: CodegenContext,
+): string {
+    return `${context.typePrefix}${getClassName(schema, context)}`;
 }
 
 export function instanceDepth(context: CodegenContext) {

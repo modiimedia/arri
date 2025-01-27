@@ -19,23 +19,47 @@ export default defineConfig({
             clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                '../../clients/ts/testClient.rpc.ts',
+                '../../clients/ts/testClient.g.ts',
             ),
             prettierOptions: prettierConfig,
+        }),
+        generators.typescriptClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/ts/tsClientPrefixed.g.ts',
+            ),
+            typePrefix: 'Foo',
         }),
         generators.dartClient({
             clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                '../../clients/dart/lib/test_client.rpc.dart',
+                '../../clients/dart/lib/test_client.g.dart',
             ),
+        }),
+        generators.dartClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/dart/lib/test_client_prefixed.g.dart',
+            ),
+            typePrefix: 'Foo',
         }),
         generators.kotlinClient({
             clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
-                '../../clients/kotlin/src/main/kotlin/TestClient.rpc.kt',
+                '../../clients/kotlin/src/main/kotlin/TestClient.g.kt',
             ),
+        }),
+        generators.kotlinClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/kotlin/src/main/kotlin/TestClientPrefixed.g.kt',
+            ),
+            typePrefix: 'Foo',
         }),
         generators.rustClient({
             clientName: 'TestClient',
@@ -44,12 +68,28 @@ export default defineConfig({
                 '../../clients/rust/src/test_client.g.rs',
             ),
         }),
+        generators.rustClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/rust/src/test_client_prefixed.g.rs',
+            ),
+            typePrefix: 'Foo',
+        }),
         generators.swiftClient({
             clientName: 'TestClient',
             outputFile: path.resolve(
                 __dirname,
                 '../../clients/swift/Sources/TestClient.g.swift',
             ),
+        }),
+        generators.swiftClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/swift/Sources/TestClientPrefixed.g.swift',
+            ),
+            typePrefix: 'Foo',
         }),
     ],
 });

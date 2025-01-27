@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
-import 'package:test_client_dart/test_client.rpc.dart';
+import 'package:test_client_dart/test_client.g.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/io_client.dart';
 

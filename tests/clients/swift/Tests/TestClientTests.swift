@@ -318,8 +318,9 @@ final class TestSwiftClientTests: XCTestCase {
                 errorCount += 1
                 print("UNEXPECTED RESPONSE_ERROR: \(err)")
                 es.cancel()
-            })
-        ).result
+            },
+            timeoutMs: 30000
+        )).result
         XCTAssertEqual(errorCount, 0)
         XCTAssertEqual(msgCount, 1)
     }
@@ -353,7 +354,8 @@ final class TestSwiftClientTests: XCTestCase {
             },
             onClose: nil,
             maxRetryCount: nil,
-            maxRetryInterval: nil
+            maxRetryInterval: nil,
+            timeoutMs: nil
             )
         ).result
         XCTAssertEqual(errorCount, 0)
@@ -392,7 +394,8 @@ final class TestSwiftClientTests: XCTestCase {
             },
             onClose: nil,
             maxRetryCount: nil,
-            maxRetryInterval: nil
+            maxRetryInterval: nil,
+            timeoutMs: nil
         )).result
         XCTAssertEqual(msgCount, 0)
         XCTAssertEqual(reqErrorCount, 0)
@@ -431,7 +434,8 @@ final class TestSwiftClientTests: XCTestCase {
                 },
                 onClose: nil,
                 maxRetryCount: nil,
-                maxRetryInterval: nil
+                maxRetryInterval: nil,
+                timeoutMs: nil
             )
         )
         try await Task.sleep(for: .seconds(1))
@@ -468,7 +472,8 @@ final class TestSwiftClientTests: XCTestCase {
                 closeCount += 1
             },
             maxRetryCount: nil,
-            maxRetryInterval: nil
+            maxRetryInterval: nil,
+            timeoutMs: nil
         )).result
         XCTAssertEqual(msgCount, 10)
         XCTAssertEqual(errorCount, 0)
