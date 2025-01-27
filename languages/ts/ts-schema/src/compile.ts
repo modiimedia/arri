@@ -9,8 +9,10 @@ import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import {
     type ASchema,
-    errors as getInputErrors,
     type InferType,
+    newValidationContext,
+    SchemaValidator,
+    ValidationContext,
 } from './_index';
 import { createStandardSchemaProperty } from './adapters';
 import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
@@ -89,18 +91,14 @@ export function compile<TSchema extends ASchema<any>>(
                 value: result,
             };
         } catch (err) {
-            const errors = getInputErrors(schema, input, false);
-            if (errors.length === 0) {
-                errors.push({
-                    instancePath: '',
-                    schemaPath: '',
-                    message: err instanceof Error ? err.message : `${err}`,
-                    data: err,
-                });
-            }
             return {
                 success: false,
-                errors: errors,
+                errors: [
+                    {
+                        instancePath: '/',
+                        message: err instanceof Error ? err.message : `${err}`,
+                    },
+                ],
             };
         }
     };
@@ -108,23 +106,34 @@ export function compile<TSchema extends ASchema<any>>(
         input: unknown,
     ) => input is InferType<TSchema>;
     const parse = (input: unknown): Result<InferType<TSchema>> => {
+        const context = newValidationContext();
         try {
-            const result = parserFn(input);
+            const result = parserFn(input, context);
+            if (context.errors.length) {
+                return {
+                    success: false,
+                    errors: context.errors,
+                };
+            }
             return {
                 success: true,
                 value: result,
             };
         } catch (err) {
-            const errors = getInputErrors(schema, input, false);
-            if (!errors.length) {
-                errors.push({
-                    message: err instanceof Error ? err.message : '',
-                    instancePath: '/',
-                });
+            if (context.errors.length) {
+                return {
+                    success: false,
+                    errors: context.errors,
+                };
             }
             return {
                 success: false,
-                errors: errors,
+                errors: [
+                    {
+                        message: err instanceof Error ? err.message : `${err}`,
+                        instancePath: '/',
+                    },
+                ],
             };
         }
     };
@@ -133,33 +142,16 @@ export function compile<TSchema extends ASchema<any>>(
         validate,
         parse: parse,
         parseUnsafe(input) {
-            const result = parse(input);
-            if (!result.success) {
-                throw new ValidationException({
-                    message:
-                        result.errors[0]?.message ?? 'Error decoding input',
-                    errors: result.errors,
-                });
+            const context = newValidationContext();
+            const result = parserFn(input, context);
+            if (context.errors.length) {
+                throw new ValidationException({ errors: context.errors });
             }
-            return result.value;
+            return result!;
         },
         serialize,
         serializeUnsafe(input) {
-            try {
-                return serializeFn(input);
-            } catch (err) {
-                const errors = getInputErrors(schema, input);
-                let errorMessage = err instanceof Error ? err.message : '';
-                if (errors.length) {
-                    errorMessage =
-                        errors[0]!.message ??
-                        `Parsing error at ${errors[0]!.instancePath}`;
-                }
-                throw new ValidationException({
-                    message: errorMessage,
-                    errors,
-                });
-            }
+            return serializeFn(input);
         },
         compiledCode: {
             validate: validateCode,
@@ -186,13 +178,14 @@ export function compile<TSchema extends ASchema<any>>(
     return result;
 }
 
-type CompiledDecoder<TSchema extends ASchema<any>> =
-    CompiledValidator<TSchema>['parseUnsafe'];
+type CompiledParser<TSchema extends ASchema<any>> = SchemaValidator<
+    InferType<TSchema>
+>['parse'];
 
 export function getCompiledParser<TSchema extends ASchema<any>>(
     input: string,
     schema: TSchema,
-): { fn: CompiledDecoder<TSchema>; code: string } {
+): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaDecodingCode(input, schema);
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
@@ -210,22 +203,24 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 };
             case 'int64':
                 return {
-                    fn(input) {
+                    fn(input, context) {
                         return bigIntDecoder(
                             input,
                             false,
                             schema.nullable ?? false,
+                            context,
                         );
                     },
                     code,
                 };
             case 'uint64':
                 return {
-                    fn(input) {
+                    fn(input, context) {
                         return bigIntDecoder(
                             input,
                             true,
                             schema.nullable ?? false,
+                            context,
                         );
                     },
                     code,
@@ -233,110 +228,120 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
             case 'int32':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             return nullableIntDecoder(
                                 input,
                                 int32Min,
                                 int32Max,
+                                context,
                             );
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input) {
-                        return intDecoder(input, int32Min, int32Max);
+                    fn(input, context) {
+                        return intDecoder(input, int32Min, int32Max, context);
                     },
                     code,
                 };
             case 'int16':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             return nullableIntDecoder(
                                 input,
                                 int16Min,
                                 int16Max,
+                                context,
                             );
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input) {
-                        return intDecoder(input, int16Min, int16Max);
+                    fn(input, context) {
+                        return intDecoder(input, int16Min, int16Max, context);
                     },
                     code,
                 };
             case 'int8':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
-                            return nullableIntDecoder(input, int8Min, int8Max);
+                        fn(input, context) {
+                            return nullableIntDecoder(
+                                input,
+                                int8Min,
+                                int8Max,
+                                context,
+                            );
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input) {
-                        return intDecoder(input, int8Min, int8Max);
+                    fn(input, context) {
+                        return intDecoder(input, int8Min, int8Max, context);
                     },
                     code,
                 };
             case 'uint32':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             return nullableIntDecoder(
                                 input,
                                 uint32Min,
                                 uint32Max,
+                                context,
                             );
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input) {
-                        return intDecoder(input, uint32Min, uint32Max);
+                    fn(input, context) {
+                        return intDecoder(input, uint32Min, uint32Max, context);
                     },
                     code,
                 };
             case 'uint16':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             return nullableIntDecoder(
                                 input,
                                 uint16Min,
                                 uint16Max,
+                                context,
                             );
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input: unknown) {
-                        return intDecoder(input, uint16Min, uint16Max);
+                    fn(input: unknown, context) {
+                        return intDecoder(input, uint16Min, uint16Max, context);
                     },
                     code,
                 };
             case 'uint8':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             return nullableIntDecoder(
                                 input,
                                 uint8Min,
                                 uint8Max,
+                                context,
                             );
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input: unknown) {
-                        return intDecoder(input, uint8Min, uint8Max);
+                    fn(input: unknown, context) {
+                        return intDecoder(input, uint8Min, uint8Max, context);
                     },
                     code,
                 };
@@ -344,7 +349,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 if (schema.nullable) {
                     return {
                         code,
-                        fn(input) {
+                        fn(input, context) {
                             if (typeof input === 'string') {
                                 if (input === 'true') {
                                     return true;
@@ -362,21 +367,17 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                             if (input === null) {
                                 return null;
                             }
-                            throw new ValidationException({
+                            context.errors.push({
+                                instancePath: '',
+                                schemaPath: '/type',
                                 message: `Expected boolean. Got ${typeof input}`,
-                                errors: [
-                                    {
-                                        instancePath: '',
-                                        schemaPath: '/type',
-                                        message: `Expected boolean. Got ${typeof input}`,
-                                    },
-                                ],
                             });
+                            return undefined;
                         },
                     };
                 }
                 return {
-                    fn(input) {
+                    fn(input, context) {
                         if (typeof input === 'string') {
                             if (input === 'true') {
                                 return true;
@@ -388,23 +389,19 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         if (typeof input === 'boolean') {
                             return input;
                         }
-                        throw new ValidationException({
+                        context.errors.push({
+                            instancePath: '',
+                            schemaPath: '/type',
                             message: `Expected boolean. Got ${typeof input}`,
-                            errors: [
-                                {
-                                    instancePath: '',
-                                    schemaPath: '/type',
-                                    message: `Expected boolean. Got ${typeof input}`,
-                                },
-                            ],
                         });
+                        return undefined;
                     },
                     code,
                 };
             case 'string':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             if (typeof input === 'string') {
                                 if (input === 'null') {
                                     return null;
@@ -414,42 +411,34 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                             if (input === null) {
                                 return null;
                             }
-                            throw new ValidationException({
+                            context.errors.push({
+                                instancePath: '',
+                                schemaPath: '/type',
                                 message: `Expected string or null. Got ${typeof input}.`,
-                                errors: [
-                                    {
-                                        instancePath: '',
-                                        schemaPath: '/type',
-                                        message: `Expected string or null. Got ${typeof input}.`,
-                                    },
-                                ],
                             });
+                            return undefined;
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input) {
+                    fn(input, context) {
                         if (typeof input === 'string') {
                             return input;
                         }
-                        throw new ValidationException({
+                        context.errors.push({
                             message: `Expected string. Got ${typeof input}.`,
-                            errors: [
-                                {
-                                    instancePath: '',
-                                    schemaPath: '/type',
-                                    message: `Expected string. Got ${typeof input}.`,
-                                },
-                            ],
+                            instancePath: '/',
+                            schemaPath: '/type',
                         });
+                        return undefined;
                     },
                     code,
                 };
             case 'timestamp':
                 if (schema.nullable) {
                     return {
-                        fn(input) {
+                        fn(input, context) {
                             if (typeof input === 'string') {
                                 const decodedInput = new Date(input);
                                 if (!Number.isNaN(decodedInput.getMonth())) {
@@ -468,22 +457,18 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                             if (input === null) {
                                 return null;
                             }
-                            throw new ValidationException({
+                            context.errors.push({
+                                instancePath: '',
+                                schemaPath: '/type',
                                 message: `Expected instanceof Date, ISO Date string, or null. Got ${typeof input}.`,
-                                errors: [
-                                    {
-                                        instancePath: '',
-                                        schemaPath: '/type',
-                                        message: `Expected instanceof Date, ISO Date string, or null. Got ${typeof input}.`,
-                                    },
-                                ],
                             });
+                            return undefined;
                         },
                         code,
                     };
                 }
                 return {
-                    fn(input: unknown) {
+                    fn(input: unknown, context) {
                         if (typeof input === 'string') {
                             const decodedInput = new Date(input);
                             if (!Number.isNaN(decodedInput.getMonth())) {
@@ -496,16 +481,12 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         ) {
                             return input;
                         }
-                        throw new ValidationException({
+                        context.errors.push({
+                            instancePath: '',
+                            schemaPath: '/type',
                             message: `Expected instance of Date or ISO date string. Got ${typeof input}.`,
-                            errors: [
-                                {
-                                    instancePath: '',
-                                    schemaPath: '/type',
-                                    message: `Expected instance of Date or ISO date string. Got ${typeof input}.`,
-                                },
-                            ],
                         });
+                        return undefined;
                     },
                     code,
                 };
@@ -516,7 +497,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     if (isSchemaFormEnum(schema)) {
         if (schema.nullable) {
             return {
-                fn(input) {
+                fn(input, context) {
                     if (typeof input === 'string') {
                         for (const val of schema.enum) {
                             if (input === val) {
@@ -530,26 +511,20 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     if (input === null) {
                         return null;
                     }
-                    throw new ValidationException({
+                    context.errors.push({
+                        instancePath: '',
+                        schemaPath: '/enum',
                         message: `Expected one of the following values: [${schema.enum.join(
                             ', ',
                         )}] or null. Got ${typeof input}.`,
-                        errors: [
-                            {
-                                instancePath: '',
-                                schemaPath: '/enum',
-                                message: `Expected one of the following values: [${schema.enum.join(
-                                    ', ',
-                                )}] or null. Got ${typeof input}.`,
-                            },
-                        ],
                     });
+                    return undefined;
                 },
                 code,
             };
         }
         return {
-            fn(input) {
+            fn(input, context) {
                 if (typeof input === 'string') {
                     for (const val of schema.enum) {
                         if (input === val) {
@@ -557,61 +532,53 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         }
                     }
                 }
-                throw new ValidationException({
+                context.errors.push({
+                    instancePath: '',
+                    schemaPath: '/enum',
                     message: `Expected one of the following values: [${schema.enum.join(
                         ', ',
                     )}]. Got ${typeof input}.`,
-                    errors: [
-                        {
-                            instancePath: '',
-                            schemaPath: '/enum',
-                            message: `Expected one of the following values: [${schema.enum.join(
-                                ', ',
-                            )}]. Got ${typeof input}.`,
-                        },
-                    ],
                 });
+                return undefined;
             },
             code,
         };
     }
 
-    return { fn: new Function(input, code) as any, code };
+    return { fn: new Function(input, 'context', code) as any, code };
 }
 
-function compiledFloatDecoder(input: unknown): number {
+function compiledFloatDecoder(
+    input: unknown,
+    context: ValidationContext,
+): number | undefined {
     if (typeof input === 'string') {
         const decodedVal = Number(input);
         if (!Number.isNaN(decodedVal)) {
             return decodedVal;
         }
-        throw new ValidationException({
+        context.errors.push({
+            instancePath: '',
+            schemaPath: '/type',
             message: `Unable to decode number from ${input}`,
-            errors: [
-                {
-                    instancePath: '',
-                    schemaPath: '/type',
-                    message: `Unable to decode number from ${input}`,
-                },
-            ],
         });
+        return undefined;
     }
     if (typeof input === 'number' && !Number.isNaN(input)) {
         return input;
     }
-    throw new ValidationException({
+    context.errors.push({
+        instancePath: '',
+        schemaPath: '/type',
         message: `Expected number. Got ${typeof input}`,
-        errors: [
-            {
-                instancePath: '',
-                schemaPath: '/type',
-                message: `Expected number. Got ${typeof input}`,
-            },
-        ],
     });
+    return undefined;
 }
 
-function nullableFloatDecoder(input: unknown): number | null {
+function nullableFloatDecoder(
+    input: unknown,
+    context: ValidationContext,
+): number | null | undefined {
     if (typeof input === 'string') {
         const decodedVal = Number(input);
         if (!Number.isNaN(decodedVal)) {
@@ -620,16 +587,12 @@ function nullableFloatDecoder(input: unknown): number | null {
         if (input === 'null') {
             return null;
         }
-        throw new ValidationException({
+        context.errors.push({
+            instancePath: '',
+            schemaPath: '/type',
             message: `Unable to decode number from ${input}`,
-            errors: [
-                {
-                    instancePath: '',
-                    schemaPath: '/type',
-                    message: `Unable to decode number from ${input}`,
-                },
-            ],
         });
+        return undefined;
     }
     if (typeof input === 'number' && !Number.isNaN(input)) {
         return input;
@@ -637,22 +600,19 @@ function nullableFloatDecoder(input: unknown): number | null {
     if (input === null) {
         return null;
     }
-    throw new ValidationException({
+    context.errors.push({
+        instancePath: '',
+        schemaPath: '/type',
         message: `Expected number or null. Got ${typeof input}`,
-        errors: [
-            {
-                instancePath: '',
-                schemaPath: '/type',
-                message: `Expected number or null. Got ${typeof input}`,
-            },
-        ],
     });
+    return undefined;
 }
 
 function bigIntDecoder(
     input: unknown,
     isUnsigned: boolean,
     isNullable: boolean,
+    context: ValidationContext,
 ): any {
     if (typeof input === 'string' || typeof input === 'number') {
         if (isNullable && input === 'null') {
@@ -664,31 +624,22 @@ function bigIntDecoder(
                 if (val >= BigInt('0')) {
                     return val;
                 }
-                throw new ValidationException({
+                context.errors.push({
                     message: 'uint64 must be greater than or equal to 0',
-                    errors: [
-                        {
-                            message:
-                                'uint64 must be greater than or equal to 0',
-                            schemaPath: '/type',
-                            instancePath: '',
-                        },
-                    ],
+                    schemaPath: '/type',
+                    instancePath: '',
                 });
+                return undefined;
             }
             return val;
         } catch (err) {
-            throw new ValidationException({
+            context.errors.push({
+                schemaPath: '/type',
+                instancePath: '',
+                data: err,
                 message: `Error transforming ${input} to BigInt`,
-                errors: [
-                    {
-                        schemaPath: '/type',
-                        instancePath: '',
-                        data: err,
-                        message: `Error transforming ${input} to BigInt`,
-                    },
-                ],
             });
+            return undefined;
         }
     }
     if (typeof input === 'bigint') {
@@ -696,15 +647,10 @@ function bigIntDecoder(
             if (input >= BigInt('0')) {
                 return input;
             }
-            throw new ValidationException({
+            context.errors.push({
                 message: 'uint64 must be greater than or equal to 0',
-                errors: [
-                    {
-                        message: 'uint64 must be greater than or equal to 0',
-                        schemaPath: '/type',
-                        instancePath: '',
-                    },
-                ],
+                schemaPath: '/type',
+                instancePath: '',
             });
         }
         return input;
@@ -712,23 +658,20 @@ function bigIntDecoder(
     if (isNullable && input === null) {
         return null;
     }
-    throw new ValidationException({
+    context.errors.push({
+        schemaPath: '/type',
+        instancePath: '',
         message: 'Expected BigInt or Integer string',
-        errors: [
-            {
-                schemaPath: '/type',
-                instancePath: '',
-                message: 'Expected BigInt or Integer string',
-            },
-        ],
     });
+    return undefined;
 }
 
 function nullableIntDecoder(
     input: unknown,
     minNum: number,
     maxNum: number,
-): number | null {
+    context: ValidationContext,
+): number | null | undefined {
     if (typeof input === 'string') {
         const decodedInput = Number(input);
         if (
@@ -753,19 +696,20 @@ function nullableIntDecoder(
     if (input === null) {
         return null;
     }
-    throw new ValidationException({
+    context.errors.push({
+        instancePath: '',
+        schemaPath: '/type',
         message: `Expected valid integer between ${minNum} & ${maxNum} or null. Got ${typeof input}.`,
-        errors: [
-            {
-                instancePath: '',
-                schemaPath: '/type',
-                message: `Expected valid integer between ${minNum} & ${maxNum} or null. Got ${typeof input}.`,
-            },
-        ],
     });
+    return undefined;
 }
 
-function intDecoder(input: unknown, minNum: number, maxNum: number): any {
+function intDecoder(
+    input: unknown,
+    minNum: number,
+    maxNum: number,
+    context: ValidationContext,
+): any {
     if (typeof input === 'string') {
         const decodedInput = Number(input);
         if (
@@ -784,16 +728,12 @@ function intDecoder(input: unknown, minNum: number, maxNum: number): any {
     ) {
         return input;
     }
-    throw new ValidationException({
+    context.errors.push({
+        instancePath: '',
+        schemaPath: '/type',
         message: `Expected valid integer between ${minNum} & ${maxNum}`,
-        errors: [
-            {
-                instancePath: '',
-                schemaPath: '/type',
-                message: `Expected valid integer between ${minNum} & ${maxNum}`,
-            },
-        ],
     });
+    return undefined;
 }
 
 export function getCompiledSerializer<TSchema extends ASchema>(

@@ -195,3 +195,51 @@ it('parses discriminated unions', () => {
         ).toStrictEqual(input);
     }
 });
+
+it('returns expected amount of errors', () => {
+    const Schema = a.object({
+        string: a.string(),
+        bool: a.boolean(),
+        int64: a.int64(),
+        object: a.object({
+            timestamp: a.timestamp(),
+            bool: a.boolean(),
+            array: a.array(a.boolean()),
+        }),
+    });
+    type Schema = a.infer<typeof Schema>;
+    const $$Schema = a.compile(Schema);
+    const goodInput: Schema = {
+        string: '',
+        bool: false,
+        int64: 1000n,
+        object: {
+            timestamp: new Date(),
+            bool: true,
+            array: [true, false, false],
+        },
+    };
+    let result = $$Schema.parse(goodInput);
+    expect(result.success).toBe(true);
+    const badInput = {
+        string: true,
+        bool: 'false',
+        int64: 'hello world',
+        object: {
+            timestamp: false,
+            bool: 'true',
+            array: [true, false, 1],
+        },
+    };
+    result = $$Schema.parse(badInput);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+        expect(result.errors.length).toBe(6);
+        expect(result.errors[0]?.instancePath).toBe('/string');
+        expect(result.errors[1]?.instancePath).toBe('/bool');
+        expect(result.errors[2]?.instancePath).toBe('/int64');
+        expect(result.errors[3]?.instancePath).toBe('/object/timestamp');
+        expect(result.errors[4]?.instancePath).toBe('/object/bool');
+        expect(result.errors[5]?.instancePath).toBe('/object/array/[i]');
+    }
+});

@@ -5,7 +5,7 @@
   "projectType": "library",
   "targets": {
     "benchmark": {
-      "inputs": ["default", "{projectRoot}/benchmark/src"],
+      "inputs": ["default", "{projectRoot}/benchmark/src", "{projectRoot}/src"],
       "outputs": ["{projectRoot}/benchmark/dist"],
       "executor": "nx:run-commands",
       "options": {
