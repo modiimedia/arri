@@ -494,6 +494,7 @@ func StreamMessages(params ChatMessageParams, controller arri.SseController[Chat
 		case <-t.C:
 			controller.Push(ChatMessage{ChatMessageText: &ChatMessageText{
 				ChannelId: params.ChannelId,
+				Text:      "Hello world",
 			}})
 		case <-controller.Done():
 			return nil

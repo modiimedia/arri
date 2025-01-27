@@ -1,4 +1,13 @@
-import { type ASchema, type ASchemaOptions, SCHEMA_METADATA } from '../schemas';
+import {
+    type ASchema,
+    type ASchemaOptions,
+    SCHEMA_METADATA,
+    ValidationContext,
+} from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 
 /**
  * Transforms a schema into a nullable type
@@ -22,7 +31,23 @@ export function nullable<T>(
         }
         return schema.metadata[SCHEMA_METADATA].validate(val);
     };
-    return {
+    const parse = (
+        val: unknown,
+        data: ValidationContext,
+    ): T | null | undefined => {
+        if (
+            data.instancePath.length === 0 &&
+            typeof val === 'string' &&
+            val === 'null'
+        ) {
+            return null;
+        }
+        if (val === null) {
+            return null;
+        }
+        return schema.metadata[SCHEMA_METADATA].parse(val, data);
+    };
+    const result: ASchema<T | null> = {
         ...schema,
         nullable: true,
         metadata: {
@@ -33,19 +58,7 @@ export function nullable<T>(
                 output: null as T | null,
                 optional: schema.metadata[SCHEMA_METADATA].optional,
                 validate: isType,
-                parse(val, data) {
-                    if (
-                        data.instancePath.length === 0 &&
-                        typeof val === 'string' &&
-                        val === 'null'
-                    ) {
-                        return null;
-                    }
-                    if (val === null) {
-                        return null;
-                    }
-                    return schema.metadata[SCHEMA_METADATA].parse(val, data);
-                },
+                parse: parse,
                 coerce(val, data) {
                     if (val === null) {
                         return null;
@@ -67,6 +80,8 @@ export function nullable<T>(
             },
         },
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 /**
@@ -91,7 +106,16 @@ export function optional<T>(
         }
         return input.metadata[SCHEMA_METADATA].validate(val);
     };
-    return {
+    const parse = (val: unknown, context: ValidationContext): T | undefined => {
+        if (typeof val === 'undefined') {
+            return undefined;
+        }
+        if (context.instancePath.length === 0 && val === 'undefined') {
+            return undefined;
+        }
+        return input.metadata[SCHEMA_METADATA].parse(val, context);
+    };
+    const result: ASchema<T | undefined> = {
         ...input,
         metadata: {
             id: opts.id ?? input.metadata.id,
@@ -101,15 +125,7 @@ export function optional<T>(
                 output: undefined as T | undefined,
                 optional: true,
                 validate: isType,
-                parse: (val, data) => {
-                    if (typeof val === 'undefined') {
-                        return undefined;
-                    }
-                    if (data.instancePath.length === 0 && val === 'undefined') {
-                        return undefined;
-                    }
-                    return input.metadata[SCHEMA_METADATA].parse(val, data);
-                },
+                parse: parse,
                 coerce: (val, data) => {
                     if (typeof val === 'undefined') {
                         return undefined;
@@ -127,7 +143,10 @@ export function optional<T>(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(isType, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 export function clone<T>(
@@ -144,6 +163,8 @@ export function clone<T>(
                 ...input.metadata[SCHEMA_METADATA],
             },
         },
+        '~standard': input['~standard'],
     };
+    hideInvalidProperties(schema);
     return schema;
 }

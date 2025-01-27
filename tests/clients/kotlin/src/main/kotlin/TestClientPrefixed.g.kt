@@ -30,22 +30,22 @@ private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
-private typealias headersFn = (() -> MutableMap<String, String>?)?
+private typealias __TestClientPrefixedHeadersFn = (() -> MutableMap<String, String>?)?
 
-class TestClient(
+class TestClientPrefixed(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    val tests: TestClientTestsService = TestClientTestsService(
+    val tests: TestClientPrefixedTestsService = TestClientPrefixedTestsService(
                 httpClient = httpClient,
                 baseUrl = baseUrl,
                 headers = headers,
                 onError = onError,
             )
 
-    val users: TestClientUsersService = TestClientUsersService(
+    val users: TestClientPrefixedUsersService = TestClientPrefixedUsersService(
                 httpClient = httpClient,
                 baseUrl = baseUrl,
                 headers = headers,
@@ -53,13 +53,13 @@ class TestClient(
             )
 }
 
-class TestClientTestsService(
+class TestClientPrefixedTestsService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    suspend fun emptyParamsGetRequest(): DefaultPayload {
+    suspend fun emptyParamsGetRequest(): FooDefaultPayload {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -69,7 +69,7 @@ class TestClientTestsService(
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -77,16 +77,16 @@ class TestClientTestsService(
             )
         }
             if (response.status.value in 200..299) {
-                return DefaultPayload.fromJson(response.bodyAsText())
+                return FooDefaultPayload.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun emptyParamsPostRequest(): DefaultPayload {
+    suspend fun emptyParamsPostRequest(): FooDefaultPayload {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -96,7 +96,7 @@ class TestClientTestsService(
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -104,16 +104,16 @@ class TestClientTestsService(
             )
         }
             if (response.status.value in 200..299) {
-                return DefaultPayload.fromJson(response.bodyAsText())
+                return FooDefaultPayload.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun emptyResponseGetRequest(params: DefaultPayload): Unit {
+    suspend fun emptyResponseGetRequest(params: FooDefaultPayload): Unit {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -126,14 +126,14 @@ class TestClientTestsService(
             if (response.status.value in 200..299) {
                 return 
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun emptyResponsePostRequest(params: DefaultPayload): Unit {
+    suspend fun emptyResponsePostRequest(params: FooDefaultPayload): Unit {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -146,7 +146,7 @@ class TestClientTestsService(
             if (response.status.value in 200..299) {
                 return 
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -157,7 +157,7 @@ class TestClientTestsService(
 * If the target language supports it. Generated code should mark this procedure as deprecated.
 */
 @Deprecated(message = "This method was marked as deprecated by the server")
-suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
+suspend fun deprecatedRpc(params: FooDeprecatedRpcParams): Unit {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -170,14 +170,14 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             if (response.status.value in 200..299) {
                 return 
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendError(params: SendErrorParams): Unit {
+    suspend fun sendError(params: FooSendErrorParams): Unit {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -190,14 +190,14 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             if (response.status.value in 200..299) {
                 return 
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendObject(params: ObjectWithEveryType): ObjectWithEveryType {
+    suspend fun sendObject(params: FooObjectWithEveryType): FooObjectWithEveryType {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -207,7 +207,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -215,16 +215,16 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return ObjectWithEveryType.fromJson(response.bodyAsText())
+                return FooObjectWithEveryType.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendObjectWithNullableFields(params: ObjectWithEveryNullableType): ObjectWithEveryNullableType {
+    suspend fun sendObjectWithNullableFields(params: FooObjectWithEveryNullableType): FooObjectWithEveryNullableType {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -234,7 +234,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -242,16 +242,16 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return ObjectWithEveryNullableType.fromJson(response.bodyAsText())
+                return FooObjectWithEveryNullableType.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendObjectWithPascalCaseKeys(params: ObjectWithPascalCaseKeys): ObjectWithPascalCaseKeys {
+    suspend fun sendObjectWithPascalCaseKeys(params: FooObjectWithPascalCaseKeys): FooObjectWithPascalCaseKeys {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -261,7 +261,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -269,16 +269,16 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return ObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
+                return FooObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendObjectWithSnakeCaseKeys(params: ObjectWithSnakeCaseKeys): ObjectWithSnakeCaseKeys {
+    suspend fun sendObjectWithSnakeCaseKeys(params: FooObjectWithSnakeCaseKeys): FooObjectWithSnakeCaseKeys {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -288,7 +288,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -296,16 +296,16 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return ObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
+                return FooObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendPartialObject(params: ObjectWithEveryOptionalType): ObjectWithEveryOptionalType {
+    suspend fun sendPartialObject(params: FooObjectWithEveryOptionalType): FooObjectWithEveryOptionalType {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -315,7 +315,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -323,16 +323,16 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return ObjectWithEveryOptionalType.fromJson(response.bodyAsText())
+                return FooObjectWithEveryOptionalType.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendRecursiveObject(params: RecursiveObject): RecursiveObject {
+    suspend fun sendRecursiveObject(params: FooRecursiveObject): FooRecursiveObject {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -342,7 +342,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -350,16 +350,16 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return RecursiveObject.fromJson(response.bodyAsText())
+                return FooRecursiveObject.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 
-    suspend fun sendRecursiveUnion(params: RecursiveUnion): RecursiveUnion {
+    suspend fun sendRecursiveUnion(params: FooRecursiveUnion): FooRecursiveUnion {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -369,7 +369,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
+            throw TestClientPrefixedError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
                 data = JsonPrimitive(response.bodyAsText()),
@@ -377,9 +377,9 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             )
         }
             if (response.status.value in 200..299) {
-                return RecursiveUnion.fromJson(response.bodyAsText())
+                return FooRecursiveUnion.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -387,14 +387,14 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
     }
 
     suspend fun streamAutoReconnect(
-            params: AutoReconnectParams,
+            params: FooAutoReconnectParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: AutoReconnectResponse) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooAutoReconnectResponse) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -413,7 +413,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = AutoReconnectResponse.fromJson(str)
+                    val data = FooAutoReconnectResponse.fromJson(str)
                     onData(data)
                 }
             )
@@ -423,14 +423,14 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
 * This route will always return an error. The client should automatically retry with exponential backoff.
 */
 suspend fun streamConnectionErrorTest(
-            params: StreamConnectionErrorTestParams,
+            params: FooStreamConnectionErrorTestParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooStreamConnectionErrorTestResponse) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -449,7 +449,7 @@ suspend fun streamConnectionErrorTest(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = StreamConnectionErrorTestResponse.fromJson(str)
+                    val data = FooStreamConnectionErrorTestResponse.fromJson(str)
                     onData(data)
                 }
             )
@@ -465,8 +465,8 @@ suspend fun streamLargeObjects(
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooStreamLargeObjectsResponse) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -485,21 +485,21 @@ suspend fun streamLargeObjects(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = StreamLargeObjectsResponse.fromJson(str)
+                    val data = FooStreamLargeObjectsResponse.fromJson(str)
                     onData(data)
                 }
             )
         }
 
     suspend fun streamMessages(
-            params: ChatMessageParams,
+            params: FooChatMessageParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: ChatMessage) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooChatMessage) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -518,7 +518,7 @@ suspend fun streamLargeObjects(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = ChatMessage.fromJson(str)
+                    val data = FooChatMessage.fromJson(str)
                     onData(data)
                 }
             )
@@ -531,8 +531,8 @@ suspend fun streamLargeObjects(
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooTestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -551,7 +551,7 @@ suspend fun streamLargeObjects(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = TestsStreamRetryWithNewCredentialsResponse.fromJson(str)
+                    val data = FooTestsStreamRetryWithNewCredentialsResponse.fromJson(str)
                     onData(data)
                 }
             )
@@ -567,8 +567,8 @@ suspend fun streamTenEventsThenEnd(
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: ChatMessage) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooChatMessage) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -587,7 +587,7 @@ suspend fun streamTenEventsThenEnd(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = ChatMessage.fromJson(str)
+                    val data = FooChatMessage.fromJson(str)
                     onData(data)
                 }
             )
@@ -596,21 +596,21 @@ suspend fun streamTenEventsThenEnd(
 
 
 
-class TestClientUsersService(
+class TestClientPrefixedUsersService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun watchUser(
-            params: UsersWatchUserParams,
+            params: FooUsersWatchUserParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: UsersWatchUserResponse) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooUsersWatchUserResponse) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -629,7 +629,7 @@ class TestClientUsersService(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = UsersWatchUserResponse.fromJson(str)
+                    val data = FooUsersWatchUserResponse.fromJson(str)
                     onData(data)
                 }
             )
@@ -638,12 +638,12 @@ class TestClientUsersService(
 
 
 
-interface TestClientModel {
+interface TestClientPrefixedModel {
     fun toJson(): String
     fun toUrlQueryParams(): String
 }
 
-interface TestClientModelFactory<T> {
+interface TestClientPrefixedModelFactory<T> {
     fun new(): T
     fun fromJson(input: String): T
     fun fromJsonElement(
@@ -652,12 +652,12 @@ interface TestClientModelFactory<T> {
     ): T
 }
 
-data class TestClientError(
+data class TestClientPrefixedError(
     val code: Int,
     val errorMessage: String,
     val data: JsonElement?,
     val stack: List<String>?,
-) : Exception(errorMessage), TestClientModel {
+) : Exception(errorMessage), TestClientPrefixedModel {
     override fun toJson(): String {
         var output = "{"
         output += "\"code\":"
@@ -690,9 +690,9 @@ data class TestClientError(
         return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<TestClientError> {
-        override fun new(): TestClientError {
-            return TestClientError(
+    companion object Factory : TestClientPrefixedModelFactory<TestClientPrefixedError> {
+        override fun new(): TestClientPrefixedError {
+            return TestClientPrefixedError(
                 code = 0,
                 errorMessage = "",
                 data = null,
@@ -700,13 +700,13 @@ data class TestClientError(
             )
         }
 
-        override fun fromJson(input: String): TestClientError {
+        override fun fromJson(input: String): TestClientPrefixedError {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestClientError {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestClientPrefixedError {
             if (__input !is JsonObject) {
-                __logError("[WARNING] TestClientError.fromJsonElement() expected JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestClientError.")
+                __logError("[WARNING] TestClientPrefixedError.fromJsonElement() expected JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestClientPrefixedError.")
             }
             val code = when (__input.jsonObject["code"]) {
                 is JsonPrimitive -> __input.jsonObject["code"]!!.jsonPrimitive.intOrNull ?: 0
@@ -738,7 +738,7 @@ data class TestClientError(
                 else -> null
 
             }
-            return TestClientError(
+            return TestClientPrefixedError(
                 code,
                 errorMessage,
                 data,
@@ -749,9 +749,9 @@ data class TestClientError(
     }
 }
 
-data class ManuallyAddedModel(
+data class FooManuallyAddedModel(
     val hello: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"hello\":"
@@ -766,30 +766,30 @@ queryParts.add("hello=$hello")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ManuallyAddedModel> {
+    companion object Factory : TestClientPrefixedModelFactory<FooManuallyAddedModel> {
         @JvmStatic
-        override fun new(): ManuallyAddedModel {
-            return ManuallyAddedModel(
+        override fun new(): FooManuallyAddedModel {
+            return FooManuallyAddedModel(
                 hello = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ManuallyAddedModel {
+        override fun fromJson(input: String): FooManuallyAddedModel {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ManuallyAddedModel {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooManuallyAddedModel {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ManuallyAddedModel.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ManuallyAddedModel.")
+                __logError("[WARNING] FooManuallyAddedModel.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooManuallyAddedModel.")
                 return new()
             }
 val hello: String = when (__input.jsonObject["hello"]) {
                 is JsonPrimitive -> __input.jsonObject["hello"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ManuallyAddedModel(
+            return FooManuallyAddedModel(
                 hello,
             )
         }
@@ -798,9 +798,9 @@ val hello: String = when (__input.jsonObject["hello"]) {
 
 
 
-data class DefaultPayload(
+data class FooDefaultPayload(
     val message: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"message\":"
@@ -815,30 +815,30 @@ queryParts.add("message=$message")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<DefaultPayload> {
+    companion object Factory : TestClientPrefixedModelFactory<FooDefaultPayload> {
         @JvmStatic
-        override fun new(): DefaultPayload {
-            return DefaultPayload(
+        override fun new(): FooDefaultPayload {
+            return FooDefaultPayload(
                 message = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): DefaultPayload {
+        override fun fromJson(input: String): FooDefaultPayload {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): DefaultPayload {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooDefaultPayload {
             if (__input !is JsonObject) {
-                __logError("[WARNING] DefaultPayload.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DefaultPayload.")
+                __logError("[WARNING] FooDefaultPayload.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooDefaultPayload.")
                 return new()
             }
 val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return DefaultPayload(
+            return FooDefaultPayload(
                 message,
             )
         }
@@ -848,10 +848,10 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 @Deprecated(message = "This class was marked as deprecated by the server")
-data class DeprecatedRpcParams(
+data class FooDeprecatedRpcParams(
 @Deprecated(message = "This field was marked as deprecated by the server")
     val deprecatedField: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"deprecatedField\":"
@@ -866,30 +866,30 @@ queryParts.add("deprecatedField=$deprecatedField")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<DeprecatedRpcParams> {
+    companion object Factory : TestClientPrefixedModelFactory<FooDeprecatedRpcParams> {
         @JvmStatic
-        override fun new(): DeprecatedRpcParams {
-            return DeprecatedRpcParams(
+        override fun new(): FooDeprecatedRpcParams {
+            return FooDeprecatedRpcParams(
                 deprecatedField = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): DeprecatedRpcParams {
+        override fun fromJson(input: String): FooDeprecatedRpcParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): DeprecatedRpcParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooDeprecatedRpcParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] DeprecatedRpcParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DeprecatedRpcParams.")
+                __logError("[WARNING] FooDeprecatedRpcParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooDeprecatedRpcParams.")
                 return new()
             }
 val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
                 is JsonPrimitive -> __input.jsonObject["deprecatedField"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return DeprecatedRpcParams(
+            return FooDeprecatedRpcParams(
                 deprecatedField,
             )
         }
@@ -898,10 +898,10 @@ val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
 
 
 
-data class SendErrorParams(
+data class FooSendErrorParams(
     val code: UShort,
     val message: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"code\":"
@@ -919,24 +919,24 @@ queryParts.add("message=$message")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<SendErrorParams> {
+    companion object Factory : TestClientPrefixedModelFactory<FooSendErrorParams> {
         @JvmStatic
-        override fun new(): SendErrorParams {
-            return SendErrorParams(
+        override fun new(): FooSendErrorParams {
+            return FooSendErrorParams(
                 code = 0u,
                 message = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): SendErrorParams {
+        override fun fromJson(input: String): FooSendErrorParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): SendErrorParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooSendErrorParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] SendErrorParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty SendErrorParams.")
+                __logError("[WARNING] FooSendErrorParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooSendErrorParams.")
                 return new()
             }
 val code: UShort = when (__input.jsonObject["code"]) {
@@ -947,7 +947,7 @@ val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return SendErrorParams(
+            return FooSendErrorParams(
                 code,
                 message,
             )
@@ -957,7 +957,7 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
-data class ObjectWithEveryType(
+data class FooObjectWithEveryType(
     val any: JsonElement,
     val boolean: Boolean,
     val string: String,
@@ -972,14 +972,14 @@ data class ObjectWithEveryType(
     val uint32: UInt,
     val int64: Long,
     val uint64: ULong,
-    val enumerator: ObjectWithEveryTypeEnumerator,
+    val enumerator: FooObjectWithEveryTypeEnumerator,
     val array: MutableList<Boolean>,
-    val `object`: ObjectWithEveryTypeObject,
+    val `object`: FooObjectWithEveryTypeObject,
     val record: MutableMap<String, ULong>,
-    val discriminator: ObjectWithEveryTypeDiscriminator,
-    val nestedObject: ObjectWithEveryTypeNestedObject,
-    val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>>,
-) : TestClientModel {
+    val discriminator: FooObjectWithEveryTypeDiscriminator,
+    val nestedObject: FooObjectWithEveryTypeNestedObject,
+    val nestedArray: MutableList<MutableList<FooObjectWithEveryTypeNestedArrayElementElement>>,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"any\":"
@@ -1087,10 +1087,10 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryType> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryType> {
         @JvmStatic
-        override fun new(): ObjectWithEveryType {
-            return ObjectWithEveryType(
+        override fun new(): FooObjectWithEveryType {
+            return FooObjectWithEveryType(
                 any = JsonNull,
                 boolean = false,
                 string = "",
@@ -1105,25 +1105,25 @@ return queryParts.joinToString("&")
                 uint32 = 0u,
                 int64 = 0L,
                 uint64 = 0UL,
-                enumerator = ObjectWithEveryTypeEnumerator.new(),
+                enumerator = FooObjectWithEveryTypeEnumerator.new(),
                 array = mutableListOf(),
-                `object` = ObjectWithEveryTypeObject.new(),
+                `object` = FooObjectWithEveryTypeObject.new(),
                 record = mutableMapOf(),
-                discriminator = ObjectWithEveryTypeDiscriminator.new(),
-                nestedObject = ObjectWithEveryTypeNestedObject.new(),
+                discriminator = FooObjectWithEveryTypeDiscriminator.new(),
+                nestedObject = FooObjectWithEveryTypeNestedObject.new(),
                 nestedArray = mutableListOf(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryType {
+        override fun fromJson(input: String): FooObjectWithEveryType {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryType {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryType {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryType.")
+                __logError("[WARNING] FooObjectWithEveryType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryType.")
                 return new()
             }
 val any: JsonElement = when (__input.jsonObject["any"]) {
@@ -1186,10 +1186,10 @@ val uint64: ULong = when (__input.jsonObject["uint64"]) {
                 is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
                 else -> 0UL
             }
-val enumerator: ObjectWithEveryTypeEnumerator = when (__input.jsonObject["enumerator"]) {
-                is JsonNull -> ObjectWithEveryTypeEnumerator.new()
-                is JsonPrimitive -> ObjectWithEveryTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
-                else -> ObjectWithEveryTypeEnumerator.new()
+val enumerator: FooObjectWithEveryTypeEnumerator = when (__input.jsonObject["enumerator"]) {
+                is JsonNull -> FooObjectWithEveryTypeEnumerator.new()
+                is JsonPrimitive -> FooObjectWithEveryTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
+                else -> FooObjectWithEveryTypeEnumerator.new()
             }
 val array: MutableList<Boolean> = when (__input.jsonObject["array"]) {
                 is JsonArray -> {
@@ -1207,13 +1207,13 @@ val array: MutableList<Boolean> = when (__input.jsonObject["array"]) {
 
                 else -> mutableListOf()
             }
-val `object`: ObjectWithEveryTypeObject = when (__input.jsonObject["object"]) {
-                is JsonObject -> ObjectWithEveryTypeObject.fromJsonElement(
+val `object`: FooObjectWithEveryTypeObject = when (__input.jsonObject["object"]) {
+                is JsonObject -> FooObjectWithEveryTypeObject.fromJsonElement(
                     __input.jsonObject["object"]!!,
                     "$instancePath/object",
                 )
 
-                else -> ObjectWithEveryTypeObject.new()
+                else -> FooObjectWithEveryTypeObject.new()
             }
 val record: MutableMap<String, ULong> = when (__input.jsonObject["record"]) {
                 is JsonObject -> {
@@ -1229,38 +1229,38 @@ val record: MutableMap<String, ULong> = when (__input.jsonObject["record"]) {
 
                 else -> mutableMapOf()
             }
-val discriminator: ObjectWithEveryTypeDiscriminator = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> ObjectWithEveryTypeDiscriminator.fromJsonElement(
+val discriminator: FooObjectWithEveryTypeDiscriminator = when (__input.jsonObject["discriminator"]) {
+                is JsonObject -> FooObjectWithEveryTypeDiscriminator.fromJsonElement(
                     __input.jsonObject["discriminator"]!!,
                     "$instancePath/discriminator",
                 )
-                else -> ObjectWithEveryTypeDiscriminator.new()
+                else -> FooObjectWithEveryTypeDiscriminator.new()
             }
-val nestedObject: ObjectWithEveryTypeNestedObject = when (__input.jsonObject["nestedObject"]) {
-                is JsonObject -> ObjectWithEveryTypeNestedObject.fromJsonElement(
+val nestedObject: FooObjectWithEveryTypeNestedObject = when (__input.jsonObject["nestedObject"]) {
+                is JsonObject -> FooObjectWithEveryTypeNestedObject.fromJsonElement(
                     __input.jsonObject["nestedObject"]!!,
                     "$instancePath/nestedObject",
                 )
 
-                else -> ObjectWithEveryTypeNestedObject.new()
+                else -> FooObjectWithEveryTypeNestedObject.new()
             }
-val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>> = when (__input.jsonObject["nestedArray"]) {
+val nestedArray: MutableList<MutableList<FooObjectWithEveryTypeNestedArrayElementElement>> = when (__input.jsonObject["nestedArray"]) {
                 is JsonArray -> {
-                    val __value: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>> = mutableListOf()
+                    val __value: MutableList<MutableList<FooObjectWithEveryTypeNestedArrayElementElement>> = mutableListOf()
                     for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
                 is JsonArray -> {
-                    val __value: MutableList<ObjectWithEveryTypeNestedArrayElementElement> = mutableListOf()
+                    val __value: MutableList<FooObjectWithEveryTypeNestedArrayElementElement> = mutableListOf()
                     for (__element in __element!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> ObjectWithEveryTypeNestedArrayElementElement.fromJsonElement(
+                is JsonObject -> FooObjectWithEveryTypeNestedArrayElementElement.fromJsonElement(
                     __element!!,
                     "$instancePath/undefined",
                 )
 
-                else -> ObjectWithEveryTypeNestedArrayElementElement.new()
+                else -> FooObjectWithEveryTypeNestedArrayElementElement.new()
             }
                         )
                     }
@@ -1276,7 +1276,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementEl
 
                 else -> mutableListOf()
             }
-            return ObjectWithEveryType(
+            return FooObjectWithEveryType(
                 any,
                 boolean,
                 string,
@@ -1303,7 +1303,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementEl
     }
 }
 
-enum class ObjectWithEveryTypeEnumerator {
+enum class FooObjectWithEveryTypeEnumerator {
     A,
     B,
     C;
@@ -1314,14 +1314,14 @@ enum class ObjectWithEveryTypeEnumerator {
             C -> "C"
         }
     
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeEnumerator> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeEnumerator> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeEnumerator {
+        override fun new(): FooObjectWithEveryTypeEnumerator {
             return A
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeEnumerator {
+        override fun fromJson(input: String): FooObjectWithEveryTypeEnumerator {
             return when (input) {
                 A.serialValue -> A
                 B.serialValue -> B
@@ -1331,9 +1331,9 @@ enum class ObjectWithEveryTypeEnumerator {
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeEnumerator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeEnumerator {
             if (__input !is JsonPrimitive) {
-                __logError("[WARNING] ObjectWithEveryTypeEnumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeEnumerator.")
+                __logError("[WARNING] FooObjectWithEveryTypeEnumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeEnumerator.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -1346,11 +1346,11 @@ enum class ObjectWithEveryTypeEnumerator {
     }
 }
 
-data class ObjectWithEveryTypeObject(
+data class FooObjectWithEveryTypeObject(
     val string: String,
     val boolean: Boolean,
     val timestamp: Instant,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"string\":"
@@ -1375,10 +1375,10 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeObject> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeObject {
-            return ObjectWithEveryTypeObject(
+        override fun new(): FooObjectWithEveryTypeObject {
+            return FooObjectWithEveryTypeObject(
                 string = "",
                 boolean = false,
                 timestamp = Instant.now(),
@@ -1386,14 +1386,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeObject {
+        override fun fromJson(input: String): FooObjectWithEveryTypeObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeObject.")
+                __logError("[WARNING] FooObjectWithEveryTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeObject.")
                 return new()
             }
 val string: String = when (__input.jsonObject["string"]) {
@@ -1412,7 +1412,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-            return ObjectWithEveryTypeObject(
+            return FooObjectWithEveryTypeObject(
                 string,
                 boolean,
                 timestamp,
@@ -1423,30 +1423,30 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
 
 
 
-sealed interface ObjectWithEveryTypeDiscriminator : TestClientModel {
+sealed interface FooObjectWithEveryTypeDiscriminator : TestClientPrefixedModel {
     val type: String
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeDiscriminator> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeDiscriminator> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeDiscriminator {
-            return ObjectWithEveryTypeDiscriminatorA.new()
+        override fun new(): FooObjectWithEveryTypeDiscriminator {
+            return FooObjectWithEveryTypeDiscriminatorA.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeDiscriminator {
+        override fun fromJson(input: String): FooObjectWithEveryTypeDiscriminator {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeDiscriminator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeDiscriminator {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeDiscriminator.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeDiscriminator.")
                 return new()
             }
             return when (__input.jsonObject["type"]) {
                 is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> ObjectWithEveryTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-"B" -> ObjectWithEveryTypeDiscriminatorB.fromJsonElement(__input, instancePath)
+                    "A" -> FooObjectWithEveryTypeDiscriminatorA.fromJsonElement(__input, instancePath)
+"B" -> FooObjectWithEveryTypeDiscriminatorB.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -1456,9 +1456,9 @@ sealed interface ObjectWithEveryTypeDiscriminator : TestClientModel {
     }
 }
 
-data class ObjectWithEveryTypeDiscriminatorA(
+data class FooObjectWithEveryTypeDiscriminatorA(
     val title: String,
-) : ObjectWithEveryTypeDiscriminator {
+) : FooObjectWithEveryTypeDiscriminator {
     override val type get() = "A"
 
     override fun toJson(): String {
@@ -1477,30 +1477,30 @@ queryParts.add("title=$title")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeDiscriminatorA> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeDiscriminatorA> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeDiscriminatorA {
-            return ObjectWithEveryTypeDiscriminatorA(
+        override fun new(): FooObjectWithEveryTypeDiscriminatorA {
+            return FooObjectWithEveryTypeDiscriminatorA(
                 title = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeDiscriminatorA {
+        override fun fromJson(input: String): FooObjectWithEveryTypeDiscriminatorA {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeDiscriminatorA {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeDiscriminatorA {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeDiscriminatorA.")
+                __logError("[WARNING] FooObjectWithEveryTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeDiscriminatorA.")
                 return new()
             }
 val title: String = when (__input.jsonObject["title"]) {
                 is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ObjectWithEveryTypeDiscriminatorA(
+            return FooObjectWithEveryTypeDiscriminatorA(
                 title,
             )
         }
@@ -1509,10 +1509,10 @@ val title: String = when (__input.jsonObject["title"]) {
 
 
 
-data class ObjectWithEveryTypeDiscriminatorB(
+data class FooObjectWithEveryTypeDiscriminatorB(
     val title: String,
     val description: String,
-) : ObjectWithEveryTypeDiscriminator {
+) : FooObjectWithEveryTypeDiscriminator {
     override val type get() = "B"
 
     override fun toJson(): String {
@@ -1534,24 +1534,24 @@ queryParts.add("description=$description")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeDiscriminatorB> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeDiscriminatorB> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeDiscriminatorB {
-            return ObjectWithEveryTypeDiscriminatorB(
+        override fun new(): FooObjectWithEveryTypeDiscriminatorB {
+            return FooObjectWithEveryTypeDiscriminatorB(
                 title = "",
                 description = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeDiscriminatorB {
+        override fun fromJson(input: String): FooObjectWithEveryTypeDiscriminatorB {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeDiscriminatorB {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeDiscriminatorB {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeDiscriminatorB.")
+                __logError("[WARNING] FooObjectWithEveryTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeDiscriminatorB.")
                 return new()
             }
 val title: String = when (__input.jsonObject["title"]) {
@@ -1562,7 +1562,7 @@ val description: String = when (__input.jsonObject["description"]) {
                 is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ObjectWithEveryTypeDiscriminatorB(
+            return FooObjectWithEveryTypeDiscriminatorB(
                 title,
                 description,
             )
@@ -1572,11 +1572,11 @@ val description: String = when (__input.jsonObject["description"]) {
 
 
 
-data class ObjectWithEveryTypeNestedObject(
+data class FooObjectWithEveryTypeNestedObject(
     val id: String,
     val timestamp: Instant,
-    val data: ObjectWithEveryTypeNestedObjectData,
-) : TestClientModel {
+    val data: FooObjectWithEveryTypeNestedObjectData,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -1601,25 +1601,25 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeNestedObject> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeNestedObject {
-            return ObjectWithEveryTypeNestedObject(
+        override fun new(): FooObjectWithEveryTypeNestedObject {
+            return FooObjectWithEveryTypeNestedObject(
                 id = "",
                 timestamp = Instant.now(),
-                data = ObjectWithEveryTypeNestedObjectData.new(),
+                data = FooObjectWithEveryTypeNestedObjectData.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeNestedObject {
+        override fun fromJson(input: String): FooObjectWithEveryTypeNestedObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeNestedObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeNestedObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedObject.")
+                __logError("[WARNING] FooObjectWithEveryTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeNestedObject.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -1634,15 +1634,15 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-val data: ObjectWithEveryTypeNestedObjectData = when (__input.jsonObject["data"]) {
-                is JsonObject -> ObjectWithEveryTypeNestedObjectData.fromJsonElement(
+val data: FooObjectWithEveryTypeNestedObjectData = when (__input.jsonObject["data"]) {
+                is JsonObject -> FooObjectWithEveryTypeNestedObjectData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
 
-                else -> ObjectWithEveryTypeNestedObjectData.new()
+                else -> FooObjectWithEveryTypeNestedObjectData.new()
             }
-            return ObjectWithEveryTypeNestedObject(
+            return FooObjectWithEveryTypeNestedObject(
                 id,
                 timestamp,
                 data,
@@ -1651,11 +1651,11 @@ val data: ObjectWithEveryTypeNestedObjectData = when (__input.jsonObject["data"]
     }
 }
 
-data class ObjectWithEveryTypeNestedObjectData(
+data class FooObjectWithEveryTypeNestedObjectData(
     val id: String,
     val timestamp: Instant,
-    val data: ObjectWithEveryTypeNestedObjectDataData,
-) : TestClientModel {
+    val data: FooObjectWithEveryTypeNestedObjectDataData,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -1680,25 +1680,25 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedObjectData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeNestedObjectData> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeNestedObjectData {
-            return ObjectWithEveryTypeNestedObjectData(
+        override fun new(): FooObjectWithEveryTypeNestedObjectData {
+            return FooObjectWithEveryTypeNestedObjectData(
                 id = "",
                 timestamp = Instant.now(),
-                data = ObjectWithEveryTypeNestedObjectDataData.new(),
+                data = FooObjectWithEveryTypeNestedObjectDataData.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeNestedObjectData {
+        override fun fromJson(input: String): FooObjectWithEveryTypeNestedObjectData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeNestedObjectData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeNestedObjectData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedObjectData.")
+                __logError("[WARNING] FooObjectWithEveryTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeNestedObjectData.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -1713,15 +1713,15 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-val data: ObjectWithEveryTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
-                is JsonObject -> ObjectWithEveryTypeNestedObjectDataData.fromJsonElement(
+val data: FooObjectWithEveryTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
+                is JsonObject -> FooObjectWithEveryTypeNestedObjectDataData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
 
-                else -> ObjectWithEveryTypeNestedObjectDataData.new()
+                else -> FooObjectWithEveryTypeNestedObjectDataData.new()
             }
-            return ObjectWithEveryTypeNestedObjectData(
+            return FooObjectWithEveryTypeNestedObjectData(
                 id,
                 timestamp,
                 data,
@@ -1730,10 +1730,10 @@ val data: ObjectWithEveryTypeNestedObjectDataData = when (__input.jsonObject["da
     }
 }
 
-data class ObjectWithEveryTypeNestedObjectDataData(
+data class FooObjectWithEveryTypeNestedObjectDataData(
     val id: String,
     val timestamp: Instant,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -1755,24 +1755,24 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedObjectDataData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeNestedObjectDataData> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeNestedObjectDataData {
-            return ObjectWithEveryTypeNestedObjectDataData(
+        override fun new(): FooObjectWithEveryTypeNestedObjectDataData {
+            return FooObjectWithEveryTypeNestedObjectDataData(
                 id = "",
                 timestamp = Instant.now(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeNestedObjectDataData {
+        override fun fromJson(input: String): FooObjectWithEveryTypeNestedObjectDataData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeNestedObjectDataData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeNestedObjectDataData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedObjectDataData.")
+                __logError("[WARNING] FooObjectWithEveryTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeNestedObjectDataData.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -1787,7 +1787,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-            return ObjectWithEveryTypeNestedObjectDataData(
+            return FooObjectWithEveryTypeNestedObjectDataData(
                 id,
                 timestamp,
             )
@@ -1797,10 +1797,10 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
 
 
 
-data class ObjectWithEveryTypeNestedArrayElementElement(
+data class FooObjectWithEveryTypeNestedArrayElementElement(
     val id: String,
     val timestamp: Instant,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -1822,24 +1822,24 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedArrayElementElement> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeNestedArrayElementElement> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeNestedArrayElementElement {
-            return ObjectWithEveryTypeNestedArrayElementElement(
+        override fun new(): FooObjectWithEveryTypeNestedArrayElementElement {
+            return FooObjectWithEveryTypeNestedArrayElementElement(
                 id = "",
                 timestamp = Instant.now(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeNestedArrayElementElement {
+        override fun fromJson(input: String): FooObjectWithEveryTypeNestedArrayElementElement {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeNestedArrayElementElement {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeNestedArrayElementElement {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedArrayElementElement.")
+                __logError("[WARNING] FooObjectWithEveryTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeNestedArrayElementElement.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -1854,7 +1854,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-            return ObjectWithEveryTypeNestedArrayElementElement(
+            return FooObjectWithEveryTypeNestedArrayElementElement(
                 id,
                 timestamp,
             )
@@ -1864,7 +1864,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
 
 
 
-data class ObjectWithEveryNullableType(
+data class FooObjectWithEveryNullableType(
     val any: JsonElement?,
     val boolean: Boolean?,
     val string: String?,
@@ -1879,14 +1879,14 @@ data class ObjectWithEveryNullableType(
     val uint32: UInt?,
     val int64: Long?,
     val uint64: ULong?,
-    val enumerator: ObjectWithEveryNullableTypeEnumerator?,
+    val enumerator: FooObjectWithEveryNullableTypeEnumerator?,
     val array: MutableList<Boolean?>?,
-    val `object`: ObjectWithEveryNullableTypeObject?,
+    val `object`: FooObjectWithEveryNullableTypeObject?,
     val record: MutableMap<String, ULong?>?,
-    val discriminator: ObjectWithEveryNullableTypeDiscriminator?,
-    val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
-    val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?,
-) : TestClientModel {
+    val discriminator: FooObjectWithEveryNullableTypeDiscriminator?,
+    val nestedObject: FooObjectWithEveryNullableTypeNestedObject?,
+    val nestedArray: MutableList<MutableList<FooObjectWithEveryNullableTypeNestedArrayElementElement?>?>?,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"any\":"
@@ -1934,7 +1934,7 @@ output += when (uint64) {
                 }
 output += ",\"enumerator\":"
 output += when (enumerator) {
-                    is ObjectWithEveryNullableTypeEnumerator -> "\"${enumerator.serialValue}\""
+                    is FooObjectWithEveryNullableTypeEnumerator -> "\"${enumerator.serialValue}\""
                     else -> "null"
                 }
 output += ",\"array\":"
@@ -2034,10 +2034,10 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableType> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableType> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableType {
-            return ObjectWithEveryNullableType(
+        override fun new(): FooObjectWithEveryNullableType {
+            return FooObjectWithEveryNullableType(
                 any = null,
                 boolean = null,
                 string = null,
@@ -2063,14 +2063,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableType {
+        override fun fromJson(input: String): FooObjectWithEveryNullableType {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableType {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableType {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableType.")
+                __logError("[WARNING] FooObjectWithEveryNullableType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableType.")
                 return new()
             }
 val any: JsonElement? = when (__input.jsonObject["any"]) {
@@ -2134,9 +2134,9 @@ val uint64: ULong? = when (__input.jsonObject["uint64"]) {
                     is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull()
                     else -> null
                 }
-val enumerator: ObjectWithEveryNullableTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
+val enumerator: FooObjectWithEveryNullableTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
                     is JsonNull -> null
-                    is JsonPrimitive -> ObjectWithEveryNullableTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
+                    is JsonPrimitive -> FooObjectWithEveryNullableTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
                     else -> null
                 }
 val array: MutableList<Boolean?>? = when (__input.jsonObject["array"]) {
@@ -2155,8 +2155,8 @@ val array: MutableList<Boolean?>? = when (__input.jsonObject["array"]) {
 
                     else -> null
                 }
-val `object`: ObjectWithEveryNullableTypeObject? = when (__input.jsonObject["object"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeObject.fromJsonElement(
+val `object`: FooObjectWithEveryNullableTypeObject? = when (__input.jsonObject["object"]) {
+                    is JsonObject -> FooObjectWithEveryNullableTypeObject.fromJsonElement(
                         __input.jsonObject["object"]!!,
                         "$instancePath/object",
                     )
@@ -2176,32 +2176,32 @@ val record: MutableMap<String, ULong?>? = when (__input.jsonObject["record"]) {
 
                 else -> null
             }
-val discriminator: ObjectWithEveryNullableTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> ObjectWithEveryNullableTypeDiscriminator.fromJsonElement(
+val discriminator: FooObjectWithEveryNullableTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
+                is JsonObject -> FooObjectWithEveryNullableTypeDiscriminator.fromJsonElement(
                     __input.jsonObject["discriminator"]!!,
                     "$instancePath/discriminator",
                 )
                 else -> null
             }
-val nestedObject: ObjectWithEveryNullableTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedObject.fromJsonElement(
+val nestedObject: FooObjectWithEveryNullableTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
+                    is JsonObject -> FooObjectWithEveryNullableTypeNestedObject.fromJsonElement(
                         __input.jsonObject["nestedObject"]!!,
                         "$instancePath/nestedObject",
                     )
                     else -> null
                 }
-val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>? = when (__input.jsonObject["nestedArray"]) {
+val nestedArray: MutableList<MutableList<FooObjectWithEveryNullableTypeNestedArrayElementElement?>?>? = when (__input.jsonObject["nestedArray"]) {
                     is JsonArray -> {
-                        val __value: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?> = mutableListOf()
+                        val __value: MutableList<MutableList<FooObjectWithEveryNullableTypeNestedArrayElementElement?>?> = mutableListOf()
                         for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
                             __value.add(
                                 when (__element) {
                     is JsonArray -> {
-                        val __value: MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?> = mutableListOf()
+                        val __value: MutableList<FooObjectWithEveryNullableTypeNestedArrayElementElement?> = mutableListOf()
                         for (__element in __element!!.jsonArray) {
                             __value.add(
                                 when (__element) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement(
+                    is JsonObject -> FooObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement(
                         __element!!,
                         "$instancePath/undefined",
                     )
@@ -2221,7 +2221,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayE
 
                     else -> null
                 }
-            return ObjectWithEveryNullableType(
+            return FooObjectWithEveryNullableType(
                 any,
                 boolean,
                 string,
@@ -2248,7 +2248,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayE
     }
 }
 
-enum class ObjectWithEveryNullableTypeEnumerator {
+enum class FooObjectWithEveryNullableTypeEnumerator {
     A,
     B,
     C;
@@ -2259,14 +2259,14 @@ enum class ObjectWithEveryNullableTypeEnumerator {
             C -> "C"
         }
     
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeEnumerator> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeEnumerator> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeEnumerator {
+        override fun new(): FooObjectWithEveryNullableTypeEnumerator {
             return A
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeEnumerator {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeEnumerator {
             return when (input) {
                 A.serialValue -> A
                 B.serialValue -> B
@@ -2276,9 +2276,9 @@ enum class ObjectWithEveryNullableTypeEnumerator {
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeEnumerator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeEnumerator {
             if (__input !is JsonPrimitive) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeEnumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeEnumerator.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeEnumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeEnumerator.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -2291,11 +2291,11 @@ enum class ObjectWithEveryNullableTypeEnumerator {
     }
 }
 
-data class ObjectWithEveryNullableTypeObject(
+data class FooObjectWithEveryNullableTypeObject(
     val string: String?,
     val boolean: Boolean?,
     val timestamp: Instant?,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"string\":"
@@ -2329,10 +2329,10 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeObject> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeObject {
-            return ObjectWithEveryNullableTypeObject(
+        override fun new(): FooObjectWithEveryNullableTypeObject {
+            return FooObjectWithEveryNullableTypeObject(
                 string = null,
                 boolean = null,
                 timestamp = null,
@@ -2340,14 +2340,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeObject {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeObject.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeObject.")
                 return new()
             }
 val string: String? = when (__input.jsonObject["string"]) {
@@ -2366,7 +2366,7 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                         null
                 else -> null
             }
-            return ObjectWithEveryNullableTypeObject(
+            return FooObjectWithEveryNullableTypeObject(
                 string,
                 boolean,
                 timestamp,
@@ -2377,30 +2377,30 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
 
 
 
-sealed interface ObjectWithEveryNullableTypeDiscriminator : TestClientModel {
+sealed interface FooObjectWithEveryNullableTypeDiscriminator : TestClientPrefixedModel {
     val type: String
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeDiscriminator> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeDiscriminator> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeDiscriminator {
-            return ObjectWithEveryNullableTypeDiscriminatorA.new()
+        override fun new(): FooObjectWithEveryNullableTypeDiscriminator {
+            return FooObjectWithEveryNullableTypeDiscriminatorA.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeDiscriminator {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeDiscriminator {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeDiscriminator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeDiscriminator {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeDiscriminator.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeDiscriminator.")
                 return new()
             }
             return when (__input.jsonObject["type"]) {
                 is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> ObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-"B" -> ObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement(__input, instancePath)
+                    "A" -> FooObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement(__input, instancePath)
+"B" -> FooObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -2410,9 +2410,9 @@ sealed interface ObjectWithEveryNullableTypeDiscriminator : TestClientModel {
     }
 }
 
-data class ObjectWithEveryNullableTypeDiscriminatorA(
+data class FooObjectWithEveryNullableTypeDiscriminatorA(
     val title: String?,
-) : ObjectWithEveryNullableTypeDiscriminator {
+) : FooObjectWithEveryNullableTypeDiscriminator {
     override val type get() = "A"
 
     override fun toJson(): String {
@@ -2434,30 +2434,30 @@ queryParts.add("title=$title")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeDiscriminatorA> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeDiscriminatorA> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeDiscriminatorA {
-            return ObjectWithEveryNullableTypeDiscriminatorA(
+        override fun new(): FooObjectWithEveryNullableTypeDiscriminatorA {
+            return FooObjectWithEveryNullableTypeDiscriminatorA(
                 title = null,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeDiscriminatorA {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeDiscriminatorA {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeDiscriminatorA {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeDiscriminatorA {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeDiscriminatorA.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeDiscriminatorA.")
                 return new()
             }
 val title: String? = when (__input.jsonObject["title"]) {
                     is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull
                     else -> null
                 }
-            return ObjectWithEveryNullableTypeDiscriminatorA(
+            return FooObjectWithEveryNullableTypeDiscriminatorA(
                 title,
             )
         }
@@ -2466,10 +2466,10 @@ val title: String? = when (__input.jsonObject["title"]) {
 
 
 
-data class ObjectWithEveryNullableTypeDiscriminatorB(
+data class FooObjectWithEveryNullableTypeDiscriminatorB(
     val title: String?,
     val description: String?,
-) : ObjectWithEveryNullableTypeDiscriminator {
+) : FooObjectWithEveryNullableTypeDiscriminator {
     override val type get() = "B"
 
     override fun toJson(): String {
@@ -2497,24 +2497,24 @@ queryParts.add("description=$description")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeDiscriminatorB> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeDiscriminatorB> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeDiscriminatorB {
-            return ObjectWithEveryNullableTypeDiscriminatorB(
+        override fun new(): FooObjectWithEveryNullableTypeDiscriminatorB {
+            return FooObjectWithEveryNullableTypeDiscriminatorB(
                 title = null,
                 description = null,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeDiscriminatorB {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeDiscriminatorB {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeDiscriminatorB {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeDiscriminatorB {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeDiscriminatorB.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeDiscriminatorB.")
                 return new()
             }
 val title: String? = when (__input.jsonObject["title"]) {
@@ -2525,7 +2525,7 @@ val description: String? = when (__input.jsonObject["description"]) {
                     is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull
                     else -> null
                 }
-            return ObjectWithEveryNullableTypeDiscriminatorB(
+            return FooObjectWithEveryNullableTypeDiscriminatorB(
                 title,
                 description,
             )
@@ -2535,11 +2535,11 @@ val description: String? = when (__input.jsonObject["description"]) {
 
 
 
-data class ObjectWithEveryNullableTypeNestedObject(
+data class FooObjectWithEveryNullableTypeNestedObject(
     val id: String?,
     val timestamp: Instant?,
-    val data: ObjectWithEveryNullableTypeNestedObjectData?,
-) : TestClientModel {
+    val data: FooObjectWithEveryNullableTypeNestedObjectData?,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -2573,10 +2573,10 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeNestedObject> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeNestedObject {
-            return ObjectWithEveryNullableTypeNestedObject(
+        override fun new(): FooObjectWithEveryNullableTypeNestedObject {
+            return FooObjectWithEveryNullableTypeNestedObject(
                 id = null,
                 timestamp = null,
                 data = null,
@@ -2584,14 +2584,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeNestedObject {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeNestedObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeNestedObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeNestedObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedObject.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeNestedObject.")
                 return new()
             }
 val id: String? = when (__input.jsonObject["id"]) {
@@ -2606,14 +2606,14 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                         null
                 else -> null
             }
-val data: ObjectWithEveryNullableTypeNestedObjectData? = when (__input.jsonObject["data"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedObjectData.fromJsonElement(
+val data: FooObjectWithEveryNullableTypeNestedObjectData? = when (__input.jsonObject["data"]) {
+                    is JsonObject -> FooObjectWithEveryNullableTypeNestedObjectData.fromJsonElement(
                         __input.jsonObject["data"]!!,
                         "$instancePath/data",
                     )
                     else -> null
                 }
-            return ObjectWithEveryNullableTypeNestedObject(
+            return FooObjectWithEveryNullableTypeNestedObject(
                 id,
                 timestamp,
                 data,
@@ -2622,11 +2622,11 @@ val data: ObjectWithEveryNullableTypeNestedObjectData? = when (__input.jsonObjec
     }
 }
 
-data class ObjectWithEveryNullableTypeNestedObjectData(
+data class FooObjectWithEveryNullableTypeNestedObjectData(
     val id: String?,
     val timestamp: Instant?,
-    val data: ObjectWithEveryNullableTypeNestedObjectDataData?,
-) : TestClientModel {
+    val data: FooObjectWithEveryNullableTypeNestedObjectDataData?,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -2660,10 +2660,10 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedObjectData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeNestedObjectData> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeNestedObjectData {
-            return ObjectWithEveryNullableTypeNestedObjectData(
+        override fun new(): FooObjectWithEveryNullableTypeNestedObjectData {
+            return FooObjectWithEveryNullableTypeNestedObjectData(
                 id = null,
                 timestamp = null,
                 data = null,
@@ -2671,14 +2671,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeNestedObjectData {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeNestedObjectData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeNestedObjectData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeNestedObjectData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedObjectData.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeNestedObjectData.")
                 return new()
             }
 val id: String? = when (__input.jsonObject["id"]) {
@@ -2693,14 +2693,14 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                         null
                 else -> null
             }
-val data: ObjectWithEveryNullableTypeNestedObjectDataData? = when (__input.jsonObject["data"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement(
+val data: FooObjectWithEveryNullableTypeNestedObjectDataData? = when (__input.jsonObject["data"]) {
+                    is JsonObject -> FooObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement(
                         __input.jsonObject["data"]!!,
                         "$instancePath/data",
                     )
                     else -> null
                 }
-            return ObjectWithEveryNullableTypeNestedObjectData(
+            return FooObjectWithEveryNullableTypeNestedObjectData(
                 id,
                 timestamp,
                 data,
@@ -2709,10 +2709,10 @@ val data: ObjectWithEveryNullableTypeNestedObjectDataData? = when (__input.jsonO
     }
 }
 
-data class ObjectWithEveryNullableTypeNestedObjectDataData(
+data class FooObjectWithEveryNullableTypeNestedObjectDataData(
     val id: String?,
     val timestamp: Instant?,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -2743,24 +2743,24 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedObjectDataData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeNestedObjectDataData> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeNestedObjectDataData {
-            return ObjectWithEveryNullableTypeNestedObjectDataData(
+        override fun new(): FooObjectWithEveryNullableTypeNestedObjectDataData {
+            return FooObjectWithEveryNullableTypeNestedObjectDataData(
                 id = null,
                 timestamp = null,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeNestedObjectDataData {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeNestedObjectDataData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeNestedObjectDataData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeNestedObjectDataData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedObjectDataData.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeNestedObjectDataData.")
                 return new()
             }
 val id: String? = when (__input.jsonObject["id"]) {
@@ -2775,7 +2775,7 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                         null
                 else -> null
             }
-            return ObjectWithEveryNullableTypeNestedObjectDataData(
+            return FooObjectWithEveryNullableTypeNestedObjectDataData(
                 id,
                 timestamp,
             )
@@ -2785,10 +2785,10 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
 
 
 
-data class ObjectWithEveryNullableTypeNestedArrayElementElement(
+data class FooObjectWithEveryNullableTypeNestedArrayElementElement(
     val id: String?,
     val timestamp: Instant?,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -2819,24 +2819,24 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedArrayElementElement> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeNestedArrayElementElement> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeNestedArrayElementElement {
-            return ObjectWithEveryNullableTypeNestedArrayElementElement(
+        override fun new(): FooObjectWithEveryNullableTypeNestedArrayElementElement {
+            return FooObjectWithEveryNullableTypeNestedArrayElementElement(
                 id = null,
                 timestamp = null,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeNestedArrayElementElement {
+        override fun fromJson(input: String): FooObjectWithEveryNullableTypeNestedArrayElementElement {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeNestedArrayElementElement {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeNestedArrayElementElement {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedArrayElementElement.")
+                __logError("[WARNING] FooObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeNestedArrayElementElement.")
                 return new()
             }
 val id: String? = when (__input.jsonObject["id"]) {
@@ -2851,7 +2851,7 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                         null
                 else -> null
             }
-            return ObjectWithEveryNullableTypeNestedArrayElementElement(
+            return FooObjectWithEveryNullableTypeNestedArrayElementElement(
                 id,
                 timestamp,
             )
@@ -2861,13 +2861,13 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
 
 
 
-data class ObjectWithPascalCaseKeys(
+data class FooObjectWithPascalCaseKeys(
     val createdAt: Instant,
     val displayName: String,
     val phoneNumber: String?,
     val emailAddress: String? = null,
     val isAdmin: Boolean? = null,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"CreatedAt\":"
@@ -2909,10 +2909,10 @@ if (isAdmin != null) {
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeys> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeys> {
         @JvmStatic
-        override fun new(): ObjectWithPascalCaseKeys {
-            return ObjectWithPascalCaseKeys(
+        override fun new(): FooObjectWithPascalCaseKeys {
+            return FooObjectWithPascalCaseKeys(
                 createdAt = Instant.now(),
                 displayName = "",
                 phoneNumber = null,
@@ -2920,14 +2920,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithPascalCaseKeys {
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeys {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeys {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeys {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithPascalCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeys.")
+                __logError("[WARNING] FooObjectWithPascalCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeys.")
                 return new()
             }
 val createdAt: Instant = when (__input.jsonObject["CreatedAt"]) {
@@ -2954,7 +2954,7 @@ val isAdmin: Boolean? = when (__input.jsonObject["IsAdmin"]) {
                     is JsonPrimitive -> __input.jsonObject["IsAdmin"]!!.jsonPrimitive.booleanOrNull
                     else -> null
                 }
-            return ObjectWithPascalCaseKeys(
+            return FooObjectWithPascalCaseKeys(
                 createdAt,
                 displayName,
                 phoneNumber,
@@ -2967,13 +2967,13 @@ val isAdmin: Boolean? = when (__input.jsonObject["IsAdmin"]) {
 
 
 
-data class ObjectWithSnakeCaseKeys(
+data class FooObjectWithSnakeCaseKeys(
     val createdAt: Instant,
     val displayName: String,
     val phoneNumber: String?,
     val emailAddress: String? = null,
     val isAdmin: Boolean? = null,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"created_at\":"
@@ -3015,10 +3015,10 @@ if (isAdmin != null) {
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeys> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeys> {
         @JvmStatic
-        override fun new(): ObjectWithSnakeCaseKeys {
-            return ObjectWithSnakeCaseKeys(
+        override fun new(): FooObjectWithSnakeCaseKeys {
+            return FooObjectWithSnakeCaseKeys(
                 createdAt = Instant.now(),
                 displayName = "",
                 phoneNumber = null,
@@ -3026,14 +3026,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithSnakeCaseKeys {
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeys {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeys {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeys {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithSnakeCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeys.")
+                __logError("[WARNING] FooObjectWithSnakeCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeys.")
                 return new()
             }
 val createdAt: Instant = when (__input.jsonObject["created_at"]) {
@@ -3060,7 +3060,7 @@ val isAdmin: Boolean? = when (__input.jsonObject["is_admin"]) {
                     is JsonPrimitive -> __input.jsonObject["is_admin"]!!.jsonPrimitive.booleanOrNull
                     else -> null
                 }
-            return ObjectWithSnakeCaseKeys(
+            return FooObjectWithSnakeCaseKeys(
                 createdAt,
                 displayName,
                 phoneNumber,
@@ -3073,7 +3073,7 @@ val isAdmin: Boolean? = when (__input.jsonObject["is_admin"]) {
 
 
 
-data class ObjectWithEveryOptionalType(
+data class FooObjectWithEveryOptionalType(
     val any: JsonElement? = null,
     val boolean: Boolean? = null,
     val string: String? = null,
@@ -3088,14 +3088,14 @@ data class ObjectWithEveryOptionalType(
     val uint32: UInt? = null,
     val int64: Long? = null,
     val uint64: ULong? = null,
-    val enumerator: ObjectWithEveryOptionalTypeEnumerator? = null,
+    val enumerator: FooObjectWithEveryOptionalTypeEnumerator? = null,
     val array: MutableList<Boolean>? = null,
-    val `object`: ObjectWithEveryOptionalTypeObject? = null,
+    val `object`: FooObjectWithEveryOptionalTypeObject? = null,
     val record: MutableMap<String, ULong>? = null,
-    val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = null,
-    val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
-    val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = null,
-) : TestClientModel {
+    val discriminator: FooObjectWithEveryOptionalTypeDiscriminator? = null,
+    val nestedObject: FooObjectWithEveryOptionalTypeNestedObject? = null,
+    val nestedArray: MutableList<MutableList<FooObjectWithEveryOptionalTypeNestedArrayElementElement>>? = null,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 var hasProperties = false
@@ -3335,23 +3335,23 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalType> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalType> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalType {
-            return ObjectWithEveryOptionalType(
+        override fun new(): FooObjectWithEveryOptionalType {
+            return FooObjectWithEveryOptionalType(
 
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalType {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalType {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalType {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalType {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalType.")
+                __logError("[WARNING] FooObjectWithEveryOptionalType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalType.")
                 return new()
             }
 val any: JsonElement? = when (__input.jsonObject["any"]) {
@@ -3414,9 +3414,9 @@ val uint64: ULong? = when (__input.jsonObject["uint64"]) {
                     is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull()
                     else -> null
                 }
-val enumerator: ObjectWithEveryOptionalTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
+val enumerator: FooObjectWithEveryOptionalTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
                     is JsonNull -> null
-                    is JsonPrimitive -> ObjectWithEveryOptionalTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
+                    is JsonPrimitive -> FooObjectWithEveryOptionalTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
                     else -> null
                 }
 val array: MutableList<Boolean>? = when (__input.jsonObject["array"]) {
@@ -3435,8 +3435,8 @@ val array: MutableList<Boolean>? = when (__input.jsonObject["array"]) {
 
                     else -> null
                 }
-val `object`: ObjectWithEveryOptionalTypeObject? = when (__input.jsonObject["object"]) {
-                    is JsonObject -> ObjectWithEveryOptionalTypeObject.fromJsonElement(
+val `object`: FooObjectWithEveryOptionalTypeObject? = when (__input.jsonObject["object"]) {
+                    is JsonObject -> FooObjectWithEveryOptionalTypeObject.fromJsonElement(
                         __input.jsonObject["object"]!!,
                         "$instancePath/object",
                     )
@@ -3456,37 +3456,37 @@ val record: MutableMap<String, ULong>? = when (__input.jsonObject["record"]) {
 
                 else -> null
             }
-val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> ObjectWithEveryOptionalTypeDiscriminator.fromJsonElement(
+val discriminator: FooObjectWithEveryOptionalTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
+                is JsonObject -> FooObjectWithEveryOptionalTypeDiscriminator.fromJsonElement(
                     __input.jsonObject["discriminator"]!!,
                     "$instancePath/discriminator",
                 )
                 else -> null
             }
-val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
-                    is JsonObject -> ObjectWithEveryOptionalTypeNestedObject.fromJsonElement(
+val nestedObject: FooObjectWithEveryOptionalTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
+                    is JsonObject -> FooObjectWithEveryOptionalTypeNestedObject.fromJsonElement(
                         __input.jsonObject["nestedObject"]!!,
                         "$instancePath/nestedObject",
                     )
                     else -> null
                 }
-val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = when (__input.jsonObject["nestedArray"]) {
+val nestedArray: MutableList<MutableList<FooObjectWithEveryOptionalTypeNestedArrayElementElement>>? = when (__input.jsonObject["nestedArray"]) {
                     is JsonArray -> {
-                        val __value: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>> = mutableListOf()
+                        val __value: MutableList<MutableList<FooObjectWithEveryOptionalTypeNestedArrayElementElement>> = mutableListOf()
                         for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
                             __value.add(
                                 when (__element) {
                 is JsonArray -> {
-                    val __value: MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement> = mutableListOf()
+                    val __value: MutableList<FooObjectWithEveryOptionalTypeNestedArrayElementElement> = mutableListOf()
                     for (__element in __element!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement(
+                is JsonObject -> FooObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement(
                     __element!!,
                     "$instancePath/undefined",
                 )
 
-                else -> ObjectWithEveryOptionalTypeNestedArrayElementElement.new()
+                else -> FooObjectWithEveryOptionalTypeNestedArrayElementElement.new()
             }
                         )
                     }
@@ -3502,7 +3502,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayE
 
                     else -> null
                 }
-            return ObjectWithEveryOptionalType(
+            return FooObjectWithEveryOptionalType(
                 any,
                 boolean,
                 string,
@@ -3529,7 +3529,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayE
     }
 }
 
-enum class ObjectWithEveryOptionalTypeEnumerator {
+enum class FooObjectWithEveryOptionalTypeEnumerator {
     A,
     B,
     C;
@@ -3540,14 +3540,14 @@ enum class ObjectWithEveryOptionalTypeEnumerator {
             C -> "C"
         }
     
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeEnumerator> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeEnumerator> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeEnumerator {
+        override fun new(): FooObjectWithEveryOptionalTypeEnumerator {
             return A
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeEnumerator {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeEnumerator {
             return when (input) {
                 A.serialValue -> A
                 B.serialValue -> B
@@ -3557,9 +3557,9 @@ enum class ObjectWithEveryOptionalTypeEnumerator {
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeEnumerator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeEnumerator {
             if (__input !is JsonPrimitive) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeEnumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeEnumerator.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeEnumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeEnumerator.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -3572,11 +3572,11 @@ enum class ObjectWithEveryOptionalTypeEnumerator {
     }
 }
 
-data class ObjectWithEveryOptionalTypeObject(
+data class FooObjectWithEveryOptionalTypeObject(
     val string: String,
     val boolean: Boolean,
     val timestamp: Instant,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"string\":"
@@ -3601,10 +3601,10 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeObject> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeObject {
-            return ObjectWithEveryOptionalTypeObject(
+        override fun new(): FooObjectWithEveryOptionalTypeObject {
+            return FooObjectWithEveryOptionalTypeObject(
                 string = "",
                 boolean = false,
                 timestamp = Instant.now(),
@@ -3612,14 +3612,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeObject {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeObject.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeObject.")
                 return new()
             }
 val string: String = when (__input.jsonObject["string"]) {
@@ -3638,7 +3638,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-            return ObjectWithEveryOptionalTypeObject(
+            return FooObjectWithEveryOptionalTypeObject(
                 string,
                 boolean,
                 timestamp,
@@ -3649,30 +3649,30 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
 
 
 
-sealed interface ObjectWithEveryOptionalTypeDiscriminator : TestClientModel {
+sealed interface FooObjectWithEveryOptionalTypeDiscriminator : TestClientPrefixedModel {
     val type: String
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeDiscriminator> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeDiscriminator> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeDiscriminator {
-            return ObjectWithEveryOptionalTypeDiscriminatorA.new()
+        override fun new(): FooObjectWithEveryOptionalTypeDiscriminator {
+            return FooObjectWithEveryOptionalTypeDiscriminatorA.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeDiscriminator {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeDiscriminator {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeDiscriminator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeDiscriminator {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeDiscriminator.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeDiscriminator.")
                 return new()
             }
             return when (__input.jsonObject["type"]) {
                 is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> ObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-"B" -> ObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement(__input, instancePath)
+                    "A" -> FooObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement(__input, instancePath)
+"B" -> FooObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -3682,9 +3682,9 @@ sealed interface ObjectWithEveryOptionalTypeDiscriminator : TestClientModel {
     }
 }
 
-data class ObjectWithEveryOptionalTypeDiscriminatorA(
+data class FooObjectWithEveryOptionalTypeDiscriminatorA(
     val title: String,
-) : ObjectWithEveryOptionalTypeDiscriminator {
+) : FooObjectWithEveryOptionalTypeDiscriminator {
     override val type get() = "A"
 
     override fun toJson(): String {
@@ -3703,30 +3703,30 @@ queryParts.add("title=$title")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeDiscriminatorA> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeDiscriminatorA> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeDiscriminatorA {
-            return ObjectWithEveryOptionalTypeDiscriminatorA(
+        override fun new(): FooObjectWithEveryOptionalTypeDiscriminatorA {
+            return FooObjectWithEveryOptionalTypeDiscriminatorA(
                 title = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeDiscriminatorA {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeDiscriminatorA {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeDiscriminatorA {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeDiscriminatorA {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeDiscriminatorA.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeDiscriminatorA.")
                 return new()
             }
 val title: String = when (__input.jsonObject["title"]) {
                 is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ObjectWithEveryOptionalTypeDiscriminatorA(
+            return FooObjectWithEveryOptionalTypeDiscriminatorA(
                 title,
             )
         }
@@ -3735,10 +3735,10 @@ val title: String = when (__input.jsonObject["title"]) {
 
 
 
-data class ObjectWithEveryOptionalTypeDiscriminatorB(
+data class FooObjectWithEveryOptionalTypeDiscriminatorB(
     val title: String,
     val description: String,
-) : ObjectWithEveryOptionalTypeDiscriminator {
+) : FooObjectWithEveryOptionalTypeDiscriminator {
     override val type get() = "B"
 
     override fun toJson(): String {
@@ -3760,24 +3760,24 @@ queryParts.add("description=$description")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeDiscriminatorB> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeDiscriminatorB> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeDiscriminatorB {
-            return ObjectWithEveryOptionalTypeDiscriminatorB(
+        override fun new(): FooObjectWithEveryOptionalTypeDiscriminatorB {
+            return FooObjectWithEveryOptionalTypeDiscriminatorB(
                 title = "",
                 description = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeDiscriminatorB {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeDiscriminatorB {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeDiscriminatorB {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeDiscriminatorB {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeDiscriminatorB.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeDiscriminatorB.")
                 return new()
             }
 val title: String = when (__input.jsonObject["title"]) {
@@ -3788,7 +3788,7 @@ val description: String = when (__input.jsonObject["description"]) {
                 is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ObjectWithEveryOptionalTypeDiscriminatorB(
+            return FooObjectWithEveryOptionalTypeDiscriminatorB(
                 title,
                 description,
             )
@@ -3798,11 +3798,11 @@ val description: String = when (__input.jsonObject["description"]) {
 
 
 
-data class ObjectWithEveryOptionalTypeNestedObject(
+data class FooObjectWithEveryOptionalTypeNestedObject(
     val id: String,
     val timestamp: Instant,
-    val data: ObjectWithEveryOptionalTypeNestedObjectData,
-) : TestClientModel {
+    val data: FooObjectWithEveryOptionalTypeNestedObjectData,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -3827,25 +3827,25 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeNestedObject> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeNestedObject {
-            return ObjectWithEveryOptionalTypeNestedObject(
+        override fun new(): FooObjectWithEveryOptionalTypeNestedObject {
+            return FooObjectWithEveryOptionalTypeNestedObject(
                 id = "",
                 timestamp = Instant.now(),
-                data = ObjectWithEveryOptionalTypeNestedObjectData.new(),
+                data = FooObjectWithEveryOptionalTypeNestedObjectData.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeNestedObject {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeNestedObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeNestedObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeNestedObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedObject.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeNestedObject.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -3860,15 +3860,15 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-val data: ObjectWithEveryOptionalTypeNestedObjectData = when (__input.jsonObject["data"]) {
-                is JsonObject -> ObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement(
+val data: FooObjectWithEveryOptionalTypeNestedObjectData = when (__input.jsonObject["data"]) {
+                is JsonObject -> FooObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
 
-                else -> ObjectWithEveryOptionalTypeNestedObjectData.new()
+                else -> FooObjectWithEveryOptionalTypeNestedObjectData.new()
             }
-            return ObjectWithEveryOptionalTypeNestedObject(
+            return FooObjectWithEveryOptionalTypeNestedObject(
                 id,
                 timestamp,
                 data,
@@ -3877,11 +3877,11 @@ val data: ObjectWithEveryOptionalTypeNestedObjectData = when (__input.jsonObject
     }
 }
 
-data class ObjectWithEveryOptionalTypeNestedObjectData(
+data class FooObjectWithEveryOptionalTypeNestedObjectData(
     val id: String,
     val timestamp: Instant,
-    val data: ObjectWithEveryOptionalTypeNestedObjectDataData,
-) : TestClientModel {
+    val data: FooObjectWithEveryOptionalTypeNestedObjectDataData,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -3906,25 +3906,25 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedObjectData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeNestedObjectData> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeNestedObjectData {
-            return ObjectWithEveryOptionalTypeNestedObjectData(
+        override fun new(): FooObjectWithEveryOptionalTypeNestedObjectData {
+            return FooObjectWithEveryOptionalTypeNestedObjectData(
                 id = "",
                 timestamp = Instant.now(),
-                data = ObjectWithEveryOptionalTypeNestedObjectDataData.new(),
+                data = FooObjectWithEveryOptionalTypeNestedObjectDataData.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeNestedObjectData {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeNestedObjectData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeNestedObjectData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeNestedObjectData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedObjectData.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeNestedObjectData.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -3939,15 +3939,15 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-val data: ObjectWithEveryOptionalTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
-                is JsonObject -> ObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement(
+val data: FooObjectWithEveryOptionalTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
+                is JsonObject -> FooObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
 
-                else -> ObjectWithEveryOptionalTypeNestedObjectDataData.new()
+                else -> FooObjectWithEveryOptionalTypeNestedObjectDataData.new()
             }
-            return ObjectWithEveryOptionalTypeNestedObjectData(
+            return FooObjectWithEveryOptionalTypeNestedObjectData(
                 id,
                 timestamp,
                 data,
@@ -3956,10 +3956,10 @@ val data: ObjectWithEveryOptionalTypeNestedObjectDataData = when (__input.jsonOb
     }
 }
 
-data class ObjectWithEveryOptionalTypeNestedObjectDataData(
+data class FooObjectWithEveryOptionalTypeNestedObjectDataData(
     val id: String,
     val timestamp: Instant,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -3981,24 +3981,24 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedObjectDataData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeNestedObjectDataData> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeNestedObjectDataData {
-            return ObjectWithEveryOptionalTypeNestedObjectDataData(
+        override fun new(): FooObjectWithEveryOptionalTypeNestedObjectDataData {
+            return FooObjectWithEveryOptionalTypeNestedObjectDataData(
                 id = "",
                 timestamp = Instant.now(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeNestedObjectDataData {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeNestedObjectDataData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeNestedObjectDataData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeNestedObjectDataData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedObjectDataData.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeNestedObjectDataData.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -4013,7 +4013,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-            return ObjectWithEveryOptionalTypeNestedObjectDataData(
+            return FooObjectWithEveryOptionalTypeNestedObjectDataData(
                 id,
                 timestamp,
             )
@@ -4023,10 +4023,10 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
 
 
 
-data class ObjectWithEveryOptionalTypeNestedArrayElementElement(
+data class FooObjectWithEveryOptionalTypeNestedArrayElementElement(
     val id: String,
     val timestamp: Instant,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -4048,24 +4048,24 @@ queryParts.add(
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedArrayElementElement> {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeNestedArrayElementElement> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeNestedArrayElementElement {
-            return ObjectWithEveryOptionalTypeNestedArrayElementElement(
+        override fun new(): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
+            return FooObjectWithEveryOptionalTypeNestedArrayElementElement(
                 id = "",
                 timestamp = Instant.now(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeNestedArrayElementElement {
+        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeNestedArrayElementElement {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedArrayElementElement.")
+                __logError("[WARNING] FooObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeNestedArrayElementElement.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -4080,7 +4080,7 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                         Instant.now()
                 else -> Instant.now()
             }
-            return ObjectWithEveryOptionalTypeNestedArrayElementElement(
+            return FooObjectWithEveryOptionalTypeNestedArrayElementElement(
                 id,
                 timestamp,
             )
@@ -4090,11 +4090,11 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
 
 
 
-data class RecursiveObject(
-    val left: RecursiveObject?,
-    val right: RecursiveObject?,
+data class FooRecursiveObject(
+    val left: FooRecursiveObject?,
+    val right: FooRecursiveObject?,
     val value: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"left\":"
@@ -4115,10 +4115,10 @@ queryParts.add("value=$value")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveObject> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveObject> {
         @JvmStatic
-        override fun new(): RecursiveObject {
-            return RecursiveObject(
+        override fun new(): FooRecursiveObject {
+            return FooRecursiveObject(
                 left = null,
                 right = null,
                 value = "",
@@ -4126,25 +4126,25 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveObject {
+        override fun fromJson(input: String): FooRecursiveObject {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveObject {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveObject.")
+                __logError("[WARNING] FooRecursiveObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveObject.")
                 return new()
             }
-val left: RecursiveObject? = when (__input.jsonObject["left"]) {
-                is JsonObject -> RecursiveObject.fromJsonElement(
+val left: FooRecursiveObject? = when (__input.jsonObject["left"]) {
+                is JsonObject -> FooRecursiveObject.fromJsonElement(
                     __input.jsonObject["left"]!!,
                     "$instancePath/left",
                 )
                 else -> null
             }
-val right: RecursiveObject? = when (__input.jsonObject["right"]) {
-                is JsonObject -> RecursiveObject.fromJsonElement(
+val right: FooRecursiveObject? = when (__input.jsonObject["right"]) {
+                is JsonObject -> FooRecursiveObject.fromJsonElement(
                     __input.jsonObject["right"]!!,
                     "$instancePath/right",
                 )
@@ -4154,7 +4154,7 @@ val value: String = when (__input.jsonObject["value"]) {
                 is JsonPrimitive -> __input.jsonObject["value"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveObject(
+            return FooRecursiveObject(
                 left,
                 right,
                 value,
@@ -4165,32 +4165,32 @@ val value: String = when (__input.jsonObject["value"]) {
 
 
 
-sealed interface RecursiveUnion : TestClientModel {
+sealed interface FooRecursiveUnion : TestClientPrefixedModel {
     val type: String
 
-    companion object Factory : TestClientModelFactory<RecursiveUnion> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveUnion> {
         @JvmStatic
-        override fun new(): RecursiveUnion {
-            return RecursiveUnionChild.new()
+        override fun new(): FooRecursiveUnion {
+            return FooRecursiveUnionChild.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnion {
+        override fun fromJson(input: String): FooRecursiveUnion {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnion {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveUnion {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnion.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveUnion.")
                 return new()
             }
             return when (__input.jsonObject["type"]) {
                 is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "CHILD" -> RecursiveUnionChild.fromJsonElement(__input, instancePath)
-"CHILDREN" -> RecursiveUnionChildren.fromJsonElement(__input, instancePath)
-"TEXT" -> RecursiveUnionText.fromJsonElement(__input, instancePath)
-"SHAPE" -> RecursiveUnionShape.fromJsonElement(__input, instancePath)
+                    "CHILD" -> FooRecursiveUnionChild.fromJsonElement(__input, instancePath)
+"CHILDREN" -> FooRecursiveUnionChildren.fromJsonElement(__input, instancePath)
+"TEXT" -> FooRecursiveUnionText.fromJsonElement(__input, instancePath)
+"SHAPE" -> FooRecursiveUnionShape.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -4203,9 +4203,9 @@ sealed interface RecursiveUnion : TestClientModel {
 /**
 * Child node
 */
-data class RecursiveUnionChild(
-    val data: RecursiveUnion,
-) : RecursiveUnion {
+data class FooRecursiveUnionChild(
+    val data: FooRecursiveUnion,
+) : FooRecursiveUnion {
     override val type get() = "CHILD"
 
     override fun toJson(): String {
@@ -4224,33 +4224,33 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionChild> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveUnionChild> {
         @JvmStatic
-        override fun new(): RecursiveUnionChild {
-            return RecursiveUnionChild(
-                data = RecursiveUnion.new(),
+        override fun new(): FooRecursiveUnionChild {
+            return FooRecursiveUnionChild(
+                data = FooRecursiveUnion.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionChild {
+        override fun fromJson(input: String): FooRecursiveUnionChild {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionChild {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveUnionChild {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionChild.")
+                __logError("[WARNING] FooRecursiveUnionChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveUnionChild.")
                 return new()
             }
-val data: RecursiveUnion = when (__input.jsonObject["data"]) {
-                is JsonObject -> RecursiveUnion.fromJsonElement(
+val data: FooRecursiveUnion = when (__input.jsonObject["data"]) {
+                is JsonObject -> FooRecursiveUnion.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
-                else -> RecursiveUnion.new()
+                else -> FooRecursiveUnion.new()
             }
-            return RecursiveUnionChild(
+            return FooRecursiveUnionChild(
                 data,
             )
         }
@@ -4262,9 +4262,9 @@ val data: RecursiveUnion = when (__input.jsonObject["data"]) {
 /**
 * List of children node
 */
-data class RecursiveUnionChildren(
-    val data: MutableList<RecursiveUnion>,
-) : RecursiveUnion {
+data class FooRecursiveUnionChildren(
+    val data: MutableList<FooRecursiveUnion>,
+) : FooRecursiveUnion {
     override val type get() = "CHILDREN"
 
     override fun toJson(): String {
@@ -4290,36 +4290,36 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionChildren> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveUnionChildren> {
         @JvmStatic
-        override fun new(): RecursiveUnionChildren {
-            return RecursiveUnionChildren(
+        override fun new(): FooRecursiveUnionChildren {
+            return FooRecursiveUnionChildren(
                 data = mutableListOf(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionChildren {
+        override fun fromJson(input: String): FooRecursiveUnionChildren {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionChildren {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveUnionChildren {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionChildren.")
+                __logError("[WARNING] FooRecursiveUnionChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveUnionChildren.")
                 return new()
             }
-val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
+val data: MutableList<FooRecursiveUnion> = when (__input.jsonObject["data"]) {
                 is JsonArray -> {
-                    val __value: MutableList<RecursiveUnion> = mutableListOf()
+                    val __value: MutableList<FooRecursiveUnion> = mutableListOf()
                     for (__element in __input.jsonObject["data"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> RecursiveUnion.fromJsonElement(
+                is JsonObject -> FooRecursiveUnion.fromJsonElement(
                     __element!!,
                     "$instancePath/undefined",
                 )
-                else -> RecursiveUnion.new()
+                else -> FooRecursiveUnion.new()
             }
                         )
                     }
@@ -4328,7 +4328,7 @@ val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
 
                 else -> mutableListOf()
             }
-            return RecursiveUnionChildren(
+            return FooRecursiveUnionChildren(
                 data,
             )
         }
@@ -4340,9 +4340,9 @@ val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
 /**
 * Text node
 */
-data class RecursiveUnionText(
+data class FooRecursiveUnionText(
     val data: String,
-) : RecursiveUnion {
+) : FooRecursiveUnion {
     override val type get() = "TEXT"
 
     override fun toJson(): String {
@@ -4361,30 +4361,30 @@ queryParts.add("data=$data")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionText> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveUnionText> {
         @JvmStatic
-        override fun new(): RecursiveUnionText {
-            return RecursiveUnionText(
+        override fun new(): FooRecursiveUnionText {
+            return FooRecursiveUnionText(
                 data = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionText {
+        override fun fromJson(input: String): FooRecursiveUnionText {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionText {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveUnionText {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionText.")
+                __logError("[WARNING] FooRecursiveUnionText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveUnionText.")
                 return new()
             }
 val data: String = when (__input.jsonObject["data"]) {
                 is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveUnionText(
+            return FooRecursiveUnionText(
                 data,
             )
         }
@@ -4396,9 +4396,9 @@ val data: String = when (__input.jsonObject["data"]) {
 /**
 * Shape node
 */
-data class RecursiveUnionShape(
-    val data: RecursiveUnionShapeData,
-) : RecursiveUnion {
+data class FooRecursiveUnionShape(
+    val data: FooRecursiveUnionShapeData,
+) : FooRecursiveUnion {
     override val type get() = "SHAPE"
 
     override fun toJson(): String {
@@ -4417,45 +4417,45 @@ __logError("[WARNING] nested objects cannot be serialized to query params. Skipp
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionShape> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveUnionShape> {
         @JvmStatic
-        override fun new(): RecursiveUnionShape {
-            return RecursiveUnionShape(
-                data = RecursiveUnionShapeData.new(),
+        override fun new(): FooRecursiveUnionShape {
+            return FooRecursiveUnionShape(
+                data = FooRecursiveUnionShapeData.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionShape {
+        override fun fromJson(input: String): FooRecursiveUnionShape {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionShape {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveUnionShape {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionShape.")
+                __logError("[WARNING] FooRecursiveUnionShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveUnionShape.")
                 return new()
             }
-val data: RecursiveUnionShapeData = when (__input.jsonObject["data"]) {
-                is JsonObject -> RecursiveUnionShapeData.fromJsonElement(
+val data: FooRecursiveUnionShapeData = when (__input.jsonObject["data"]) {
+                is JsonObject -> FooRecursiveUnionShapeData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
 
-                else -> RecursiveUnionShapeData.new()
+                else -> FooRecursiveUnionShapeData.new()
             }
-            return RecursiveUnionShape(
+            return FooRecursiveUnionShape(
                 data,
             )
         }
     }
 }
 
-data class RecursiveUnionShapeData(
+data class FooRecursiveUnionShapeData(
     val width: Double,
     val height: Double,
     val color: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"width\":"
@@ -4476,10 +4476,10 @@ queryParts.add("color=$color")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionShapeData> {
+    companion object Factory : TestClientPrefixedModelFactory<FooRecursiveUnionShapeData> {
         @JvmStatic
-        override fun new(): RecursiveUnionShapeData {
-            return RecursiveUnionShapeData(
+        override fun new(): FooRecursiveUnionShapeData {
+            return FooRecursiveUnionShapeData(
                 width = 0.0,
                 height = 0.0,
                 color = "",
@@ -4487,14 +4487,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionShapeData {
+        override fun fromJson(input: String): FooRecursiveUnionShapeData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionShapeData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooRecursiveUnionShapeData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionShapeData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionShapeData.")
+                __logError("[WARNING] FooRecursiveUnionShapeData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooRecursiveUnionShapeData.")
                 return new()
             }
 val width: Double = when (__input.jsonObject["width"]) {
@@ -4509,7 +4509,7 @@ val color: String = when (__input.jsonObject["color"]) {
                 is JsonPrimitive -> __input.jsonObject["color"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveUnionShapeData(
+            return FooRecursiveUnionShapeData(
                 width,
                 height,
                 color,
@@ -4520,9 +4520,9 @@ val color: String = when (__input.jsonObject["color"]) {
 
 
 
-data class AutoReconnectParams(
+data class FooAutoReconnectParams(
     val messageCount: UByte,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"messageCount\":"
@@ -4537,30 +4537,30 @@ queryParts.add("messageCount=$messageCount")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<AutoReconnectParams> {
+    companion object Factory : TestClientPrefixedModelFactory<FooAutoReconnectParams> {
         @JvmStatic
-        override fun new(): AutoReconnectParams {
-            return AutoReconnectParams(
+        override fun new(): FooAutoReconnectParams {
+            return FooAutoReconnectParams(
                 messageCount = 0u,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): AutoReconnectParams {
+        override fun fromJson(input: String): FooAutoReconnectParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): AutoReconnectParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooAutoReconnectParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] AutoReconnectParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty AutoReconnectParams.")
+                __logError("[WARNING] FooAutoReconnectParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooAutoReconnectParams.")
                 return new()
             }
 val messageCount: UByte = when (__input.jsonObject["messageCount"]) {
                 is JsonPrimitive -> __input.jsonObject["messageCount"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
                 else -> 0u
             }
-            return AutoReconnectParams(
+            return FooAutoReconnectParams(
                 messageCount,
             )
         }
@@ -4569,10 +4569,10 @@ val messageCount: UByte = when (__input.jsonObject["messageCount"]) {
 
 
 
-data class AutoReconnectResponse(
+data class FooAutoReconnectResponse(
     val count: UByte,
     val message: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"count\":"
@@ -4590,24 +4590,24 @@ queryParts.add("message=$message")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<AutoReconnectResponse> {
+    companion object Factory : TestClientPrefixedModelFactory<FooAutoReconnectResponse> {
         @JvmStatic
-        override fun new(): AutoReconnectResponse {
-            return AutoReconnectResponse(
+        override fun new(): FooAutoReconnectResponse {
+            return FooAutoReconnectResponse(
                 count = 0u,
                 message = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): AutoReconnectResponse {
+        override fun fromJson(input: String): FooAutoReconnectResponse {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): AutoReconnectResponse {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooAutoReconnectResponse {
             if (__input !is JsonObject) {
-                __logError("[WARNING] AutoReconnectResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty AutoReconnectResponse.")
+                __logError("[WARNING] FooAutoReconnectResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooAutoReconnectResponse.")
                 return new()
             }
 val count: UByte = when (__input.jsonObject["count"]) {
@@ -4618,7 +4618,7 @@ val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return AutoReconnectResponse(
+            return FooAutoReconnectResponse(
                 count,
                 message,
             )
@@ -4628,10 +4628,10 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
-data class StreamConnectionErrorTestParams(
+data class FooStreamConnectionErrorTestParams(
     val statusCode: Int,
     val statusMessage: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"statusCode\":"
@@ -4649,24 +4649,24 @@ queryParts.add("statusMessage=$statusMessage")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<StreamConnectionErrorTestParams> {
+    companion object Factory : TestClientPrefixedModelFactory<FooStreamConnectionErrorTestParams> {
         @JvmStatic
-        override fun new(): StreamConnectionErrorTestParams {
-            return StreamConnectionErrorTestParams(
+        override fun new(): FooStreamConnectionErrorTestParams {
+            return FooStreamConnectionErrorTestParams(
                 statusCode = 0,
                 statusMessage = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): StreamConnectionErrorTestParams {
+        override fun fromJson(input: String): FooStreamConnectionErrorTestParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamConnectionErrorTestParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooStreamConnectionErrorTestParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] StreamConnectionErrorTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamConnectionErrorTestParams.")
+                __logError("[WARNING] FooStreamConnectionErrorTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooStreamConnectionErrorTestParams.")
                 return new()
             }
 val statusCode: Int = when (__input.jsonObject["statusCode"]) {
@@ -4677,7 +4677,7 @@ val statusMessage: String = when (__input.jsonObject["statusMessage"]) {
                 is JsonPrimitive -> __input.jsonObject["statusMessage"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return StreamConnectionErrorTestParams(
+            return FooStreamConnectionErrorTestParams(
                 statusCode,
                 statusMessage,
             )
@@ -4687,9 +4687,9 @@ val statusMessage: String = when (__input.jsonObject["statusMessage"]) {
 
 
 
-data class StreamConnectionErrorTestResponse(
+data class FooStreamConnectionErrorTestResponse(
     val message: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"message\":"
@@ -4704,30 +4704,30 @@ queryParts.add("message=$message")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<StreamConnectionErrorTestResponse> {
+    companion object Factory : TestClientPrefixedModelFactory<FooStreamConnectionErrorTestResponse> {
         @JvmStatic
-        override fun new(): StreamConnectionErrorTestResponse {
-            return StreamConnectionErrorTestResponse(
+        override fun new(): FooStreamConnectionErrorTestResponse {
+            return FooStreamConnectionErrorTestResponse(
                 message = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): StreamConnectionErrorTestResponse {
+        override fun fromJson(input: String): FooStreamConnectionErrorTestResponse {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamConnectionErrorTestResponse {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooStreamConnectionErrorTestResponse {
             if (__input !is JsonObject) {
-                __logError("[WARNING] StreamConnectionErrorTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamConnectionErrorTestResponse.")
+                __logError("[WARNING] FooStreamConnectionErrorTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooStreamConnectionErrorTestResponse.")
                 return new()
             }
 val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return StreamConnectionErrorTestResponse(
+            return FooStreamConnectionErrorTestResponse(
                 message,
             )
         }
@@ -4736,10 +4736,10 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
-data class StreamLargeObjectsResponse(
+data class FooStreamLargeObjectsResponse(
     val numbers: MutableList<Double>,
-    val objects: MutableList<StreamLargeObjectsResponseObjectsElement>,
-) : TestClientModel {
+    val objects: MutableList<FooStreamLargeObjectsResponseObjectsElement>,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"numbers\":"
@@ -4771,24 +4771,24 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<StreamLargeObjectsResponse> {
+    companion object Factory : TestClientPrefixedModelFactory<FooStreamLargeObjectsResponse> {
         @JvmStatic
-        override fun new(): StreamLargeObjectsResponse {
-            return StreamLargeObjectsResponse(
+        override fun new(): FooStreamLargeObjectsResponse {
+            return FooStreamLargeObjectsResponse(
                 numbers = mutableListOf(),
                 objects = mutableListOf(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): StreamLargeObjectsResponse {
+        override fun fromJson(input: String): FooStreamLargeObjectsResponse {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamLargeObjectsResponse {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooStreamLargeObjectsResponse {
             if (__input !is JsonObject) {
-                __logError("[WARNING] StreamLargeObjectsResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamLargeObjectsResponse.")
+                __logError("[WARNING] FooStreamLargeObjectsResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooStreamLargeObjectsResponse.")
                 return new()
             }
 val numbers: MutableList<Double> = when (__input.jsonObject["numbers"]) {
@@ -4807,18 +4807,18 @@ val numbers: MutableList<Double> = when (__input.jsonObject["numbers"]) {
 
                 else -> mutableListOf()
             }
-val objects: MutableList<StreamLargeObjectsResponseObjectsElement> = when (__input.jsonObject["objects"]) {
+val objects: MutableList<FooStreamLargeObjectsResponseObjectsElement> = when (__input.jsonObject["objects"]) {
                 is JsonArray -> {
-                    val __value: MutableList<StreamLargeObjectsResponseObjectsElement> = mutableListOf()
+                    val __value: MutableList<FooStreamLargeObjectsResponseObjectsElement> = mutableListOf()
                     for (__element in __input.jsonObject["objects"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> StreamLargeObjectsResponseObjectsElement.fromJsonElement(
+                is JsonObject -> FooStreamLargeObjectsResponseObjectsElement.fromJsonElement(
                     __element!!,
                     "$instancePath/undefined",
                 )
 
-                else -> StreamLargeObjectsResponseObjectsElement.new()
+                else -> FooStreamLargeObjectsResponseObjectsElement.new()
             }
                         )
                     }
@@ -4827,7 +4827,7 @@ val objects: MutableList<StreamLargeObjectsResponseObjectsElement> = when (__inp
 
                 else -> mutableListOf()
             }
-            return StreamLargeObjectsResponse(
+            return FooStreamLargeObjectsResponse(
                 numbers,
                 objects,
             )
@@ -4835,11 +4835,11 @@ val objects: MutableList<StreamLargeObjectsResponseObjectsElement> = when (__inp
     }
 }
 
-data class StreamLargeObjectsResponseObjectsElement(
+data class FooStreamLargeObjectsResponseObjectsElement(
     val id: String,
     val name: String,
     val email: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -4860,10 +4860,10 @@ queryParts.add("email=$email")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<StreamLargeObjectsResponseObjectsElement> {
+    companion object Factory : TestClientPrefixedModelFactory<FooStreamLargeObjectsResponseObjectsElement> {
         @JvmStatic
-        override fun new(): StreamLargeObjectsResponseObjectsElement {
-            return StreamLargeObjectsResponseObjectsElement(
+        override fun new(): FooStreamLargeObjectsResponseObjectsElement {
+            return FooStreamLargeObjectsResponseObjectsElement(
                 id = "",
                 name = "",
                 email = "",
@@ -4871,14 +4871,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): StreamLargeObjectsResponseObjectsElement {
+        override fun fromJson(input: String): FooStreamLargeObjectsResponseObjectsElement {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamLargeObjectsResponseObjectsElement {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooStreamLargeObjectsResponseObjectsElement {
             if (__input !is JsonObject) {
-                __logError("[WARNING] StreamLargeObjectsResponseObjectsElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamLargeObjectsResponseObjectsElement.")
+                __logError("[WARNING] FooStreamLargeObjectsResponseObjectsElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooStreamLargeObjectsResponseObjectsElement.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -4893,7 +4893,7 @@ val email: String = when (__input.jsonObject["email"]) {
                 is JsonPrimitive -> __input.jsonObject["email"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return StreamLargeObjectsResponseObjectsElement(
+            return FooStreamLargeObjectsResponseObjectsElement(
                 id,
                 name,
                 email,
@@ -4904,9 +4904,9 @@ val email: String = when (__input.jsonObject["email"]) {
 
 
 
-data class ChatMessageParams(
+data class FooChatMessageParams(
     val channelId: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"channelId\":"
@@ -4921,30 +4921,30 @@ queryParts.add("channelId=$channelId")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ChatMessageParams> {
+    companion object Factory : TestClientPrefixedModelFactory<FooChatMessageParams> {
         @JvmStatic
-        override fun new(): ChatMessageParams {
-            return ChatMessageParams(
+        override fun new(): FooChatMessageParams {
+            return FooChatMessageParams(
                 channelId = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ChatMessageParams {
+        override fun fromJson(input: String): FooChatMessageParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ChatMessageParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooChatMessageParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ChatMessageParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageParams.")
+                __logError("[WARNING] FooChatMessageParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooChatMessageParams.")
                 return new()
             }
 val channelId: String = when (__input.jsonObject["channelId"]) {
                 is JsonPrimitive -> __input.jsonObject["channelId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ChatMessageParams(
+            return FooChatMessageParams(
                 channelId,
             )
         }
@@ -4953,31 +4953,31 @@ val channelId: String = when (__input.jsonObject["channelId"]) {
 
 
 
-sealed interface ChatMessage : TestClientModel {
+sealed interface FooChatMessage : TestClientPrefixedModel {
     val messageType: String
 
-    companion object Factory : TestClientModelFactory<ChatMessage> {
+    companion object Factory : TestClientPrefixedModelFactory<FooChatMessage> {
         @JvmStatic
-        override fun new(): ChatMessage {
-            return ChatMessageText.new()
+        override fun new(): FooChatMessage {
+            return FooChatMessageText.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ChatMessage {
+        override fun fromJson(input: String): FooChatMessage {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ChatMessage {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooChatMessage {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessage.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooChatMessage.")
                 return new()
             }
             return when (__input.jsonObject["messageType"]) {
                 is JsonPrimitive -> when (__input.jsonObject["messageType"]!!.jsonPrimitive.contentOrNull) {
-                    "TEXT" -> ChatMessageText.fromJsonElement(__input, instancePath)
-"IMAGE" -> ChatMessageImage.fromJsonElement(__input, instancePath)
-"URL" -> ChatMessageUrl.fromJsonElement(__input, instancePath)
+                    "TEXT" -> FooChatMessageText.fromJsonElement(__input, instancePath)
+"IMAGE" -> FooChatMessageImage.fromJsonElement(__input, instancePath)
+"URL" -> FooChatMessageUrl.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -4987,13 +4987,13 @@ sealed interface ChatMessage : TestClientModel {
     }
 }
 
-data class ChatMessageText(
+data class FooChatMessageText(
     val id: String,
     val channelId: String,
     val userId: String,
     val date: Instant,
     val text: String,
-) : ChatMessage {
+) : FooChatMessage {
     override val messageType get() = "TEXT"
 
     override fun toJson(): String {
@@ -5028,10 +5028,10 @@ queryParts.add("text=$text")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ChatMessageText> {
+    companion object Factory : TestClientPrefixedModelFactory<FooChatMessageText> {
         @JvmStatic
-        override fun new(): ChatMessageText {
-            return ChatMessageText(
+        override fun new(): FooChatMessageText {
+            return FooChatMessageText(
                 id = "",
                 channelId = "",
                 userId = "",
@@ -5041,14 +5041,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ChatMessageText {
+        override fun fromJson(input: String): FooChatMessageText {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ChatMessageText {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooChatMessageText {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ChatMessageText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageText.")
+                __logError("[WARNING] FooChatMessageText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooChatMessageText.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -5075,7 +5075,7 @@ val text: String = when (__input.jsonObject["text"]) {
                 is JsonPrimitive -> __input.jsonObject["text"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ChatMessageText(
+            return FooChatMessageText(
                 id,
                 channelId,
                 userId,
@@ -5088,13 +5088,13 @@ val text: String = when (__input.jsonObject["text"]) {
 
 
 
-data class ChatMessageImage(
+data class FooChatMessageImage(
     val id: String,
     val channelId: String,
     val userId: String,
     val date: Instant,
     val image: String,
-) : ChatMessage {
+) : FooChatMessage {
     override val messageType get() = "IMAGE"
 
     override fun toJson(): String {
@@ -5129,10 +5129,10 @@ queryParts.add("image=$image")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ChatMessageImage> {
+    companion object Factory : TestClientPrefixedModelFactory<FooChatMessageImage> {
         @JvmStatic
-        override fun new(): ChatMessageImage {
-            return ChatMessageImage(
+        override fun new(): FooChatMessageImage {
+            return FooChatMessageImage(
                 id = "",
                 channelId = "",
                 userId = "",
@@ -5142,14 +5142,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ChatMessageImage {
+        override fun fromJson(input: String): FooChatMessageImage {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ChatMessageImage {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooChatMessageImage {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ChatMessageImage.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageImage.")
+                __logError("[WARNING] FooChatMessageImage.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooChatMessageImage.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -5176,7 +5176,7 @@ val image: String = when (__input.jsonObject["image"]) {
                 is JsonPrimitive -> __input.jsonObject["image"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ChatMessageImage(
+            return FooChatMessageImage(
                 id,
                 channelId,
                 userId,
@@ -5189,13 +5189,13 @@ val image: String = when (__input.jsonObject["image"]) {
 
 
 
-data class ChatMessageUrl(
+data class FooChatMessageUrl(
     val id: String,
     val channelId: String,
     val userId: String,
     val date: Instant,
     val url: String,
-) : ChatMessage {
+) : FooChatMessage {
     override val messageType get() = "URL"
 
     override fun toJson(): String {
@@ -5230,10 +5230,10 @@ queryParts.add("url=$url")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ChatMessageUrl> {
+    companion object Factory : TestClientPrefixedModelFactory<FooChatMessageUrl> {
         @JvmStatic
-        override fun new(): ChatMessageUrl {
-            return ChatMessageUrl(
+        override fun new(): FooChatMessageUrl {
+            return FooChatMessageUrl(
                 id = "",
                 channelId = "",
                 userId = "",
@@ -5243,14 +5243,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ChatMessageUrl {
+        override fun fromJson(input: String): FooChatMessageUrl {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ChatMessageUrl {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooChatMessageUrl {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ChatMessageUrl.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageUrl.")
+                __logError("[WARNING] FooChatMessageUrl.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooChatMessageUrl.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
@@ -5277,7 +5277,7 @@ val url: String = when (__input.jsonObject["url"]) {
                 is JsonPrimitive -> __input.jsonObject["url"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return ChatMessageUrl(
+            return FooChatMessageUrl(
                 id,
                 channelId,
                 userId,
@@ -5290,9 +5290,9 @@ val url: String = when (__input.jsonObject["url"]) {
 
 
 
-data class TestsStreamRetryWithNewCredentialsResponse(
+data class FooTestsStreamRetryWithNewCredentialsResponse(
     val message: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"message\":"
@@ -5307,30 +5307,30 @@ queryParts.add("message=$message")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<TestsStreamRetryWithNewCredentialsResponse> {
+    companion object Factory : TestClientPrefixedModelFactory<FooTestsStreamRetryWithNewCredentialsResponse> {
         @JvmStatic
-        override fun new(): TestsStreamRetryWithNewCredentialsResponse {
-            return TestsStreamRetryWithNewCredentialsResponse(
+        override fun new(): FooTestsStreamRetryWithNewCredentialsResponse {
+            return FooTestsStreamRetryWithNewCredentialsResponse(
                 message = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): TestsStreamRetryWithNewCredentialsResponse {
+        override fun fromJson(input: String): FooTestsStreamRetryWithNewCredentialsResponse {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestsStreamRetryWithNewCredentialsResponse {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooTestsStreamRetryWithNewCredentialsResponse {
             if (__input !is JsonObject) {
-                __logError("[WARNING] TestsStreamRetryWithNewCredentialsResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestsStreamRetryWithNewCredentialsResponse.")
+                __logError("[WARNING] FooTestsStreamRetryWithNewCredentialsResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooTestsStreamRetryWithNewCredentialsResponse.")
                 return new()
             }
 val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return TestsStreamRetryWithNewCredentialsResponse(
+            return FooTestsStreamRetryWithNewCredentialsResponse(
                 message,
             )
         }
@@ -5339,9 +5339,9 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
-data class UsersWatchUserParams(
+data class FooUsersWatchUserParams(
     val userId: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"userId\":"
@@ -5356,30 +5356,30 @@ queryParts.add("userId=$userId")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UsersWatchUserParams> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserParams> {
         @JvmStatic
-        override fun new(): UsersWatchUserParams {
-            return UsersWatchUserParams(
+        override fun new(): FooUsersWatchUserParams {
+            return FooUsersWatchUserParams(
                 userId = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserParams {
+        override fun fromJson(input: String): FooUsersWatchUserParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UsersWatchUserParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserParams.")
+                __logError("[WARNING] FooUsersWatchUserParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserParams.")
                 return new()
             }
 val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return UsersWatchUserParams(
+            return FooUsersWatchUserParams(
                 userId,
             )
         }
@@ -5388,22 +5388,22 @@ val userId: String = when (__input.jsonObject["userId"]) {
 
 
 
-data class UsersWatchUserResponse(
+data class FooUsersWatchUserResponse(
     val id: String,
-    val role: UsersWatchUserResponseRole,
+    val role: FooUsersWatchUserResponseRole,
     /**
     * A profile picture    
 */
-    val photo: UserPhoto?,
+    val photo: FooUserPhoto?,
     val createdAt: Instant,
     val numFollowers: Int,
-    val settings: UserSettings,
-    val recentNotifications: MutableList<UsersWatchUserResponseRecentNotificationsElement>,
-    val bookmarks: MutableMap<String, UsersWatchUserResponseBookmarksValue>,
+    val settings: FooUserSettings,
+    val recentNotifications: MutableList<FooUsersWatchUserResponseRecentNotificationsElement>,
+    val bookmarks: MutableMap<String, FooUsersWatchUserResponseBookmarksValue>,
     val metadata: MutableMap<String, JsonElement>,
     val randomList: MutableList<JsonElement>,
     val bio: String? = null,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"id\":"
@@ -5486,16 +5486,16 @@ if (bio != null) {
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UsersWatchUserResponse> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserResponse> {
         @JvmStatic
-        override fun new(): UsersWatchUserResponse {
-            return UsersWatchUserResponse(
+        override fun new(): FooUsersWatchUserResponse {
+            return FooUsersWatchUserResponse(
                 id = "",
-                role = UsersWatchUserResponseRole.new(),
+                role = FooUsersWatchUserResponseRole.new(),
                 photo = null,
                 createdAt = Instant.now(),
                 numFollowers = 0,
-                settings = UserSettings.new(),
+                settings = FooUserSettings.new(),
                 recentNotifications = mutableListOf(),
                 bookmarks = mutableMapOf(),
                 metadata = mutableMapOf(),
@@ -5504,27 +5504,27 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserResponse {
+        override fun fromJson(input: String): FooUsersWatchUserResponse {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponse {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserResponse {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UsersWatchUserResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponse.")
+                __logError("[WARNING] FooUsersWatchUserResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserResponse.")
                 return new()
             }
 val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val role: UsersWatchUserResponseRole = when (__input.jsonObject["role"]) {
-                is JsonNull -> UsersWatchUserResponseRole.new()
-                is JsonPrimitive -> UsersWatchUserResponseRole.fromJsonElement(__input.jsonObject["role"]!!, "$instancePath/role")
-                else -> UsersWatchUserResponseRole.new()
+val role: FooUsersWatchUserResponseRole = when (__input.jsonObject["role"]) {
+                is JsonNull -> FooUsersWatchUserResponseRole.new()
+                is JsonPrimitive -> FooUsersWatchUserResponseRole.fromJsonElement(__input.jsonObject["role"]!!, "$instancePath/role")
+                else -> FooUsersWatchUserResponseRole.new()
             }
-val photo: UserPhoto? = when (__input.jsonObject["photo"]) {
-                    is JsonObject -> UserPhoto.fromJsonElement(
+val photo: FooUserPhoto? = when (__input.jsonObject["photo"]) {
+                    is JsonObject -> FooUserPhoto.fromJsonElement(
                         __input.jsonObject["photo"]!!,
                         "$instancePath/photo",
                     )
@@ -5542,25 +5542,25 @@ val numFollowers: Int = when (__input.jsonObject["numFollowers"]) {
                 is JsonPrimitive -> __input.jsonObject["numFollowers"]!!.jsonPrimitive.intOrNull ?: 0
                 else -> 0
             }
-val settings: UserSettings = when (__input.jsonObject["settings"]) {
-                is JsonObject -> UserSettings.fromJsonElement(
+val settings: FooUserSettings = when (__input.jsonObject["settings"]) {
+                is JsonObject -> FooUserSettings.fromJsonElement(
                     __input.jsonObject["settings"]!!,
                     "$instancePath/settings",
                 )
 
-                else -> UserSettings.new()
+                else -> FooUserSettings.new()
             }
-val recentNotifications: MutableList<UsersWatchUserResponseRecentNotificationsElement> = when (__input.jsonObject["recentNotifications"]) {
+val recentNotifications: MutableList<FooUsersWatchUserResponseRecentNotificationsElement> = when (__input.jsonObject["recentNotifications"]) {
                 is JsonArray -> {
-                    val __value: MutableList<UsersWatchUserResponseRecentNotificationsElement> = mutableListOf()
+                    val __value: MutableList<FooUsersWatchUserResponseRecentNotificationsElement> = mutableListOf()
                     for (__element in __input.jsonObject["recentNotifications"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> UsersWatchUserResponseRecentNotificationsElement.fromJsonElement(
+                is JsonObject -> FooUsersWatchUserResponseRecentNotificationsElement.fromJsonElement(
                     __element!!,
                     "$instancePath/undefined",
                 )
-                else -> UsersWatchUserResponseRecentNotificationsElement.new()
+                else -> FooUsersWatchUserResponseRecentNotificationsElement.new()
             }
                         )
                     }
@@ -5569,17 +5569,17 @@ val recentNotifications: MutableList<UsersWatchUserResponseRecentNotificationsEl
 
                 else -> mutableListOf()
             }
-val bookmarks: MutableMap<String, UsersWatchUserResponseBookmarksValue> = when (__input.jsonObject["bookmarks"]) {
+val bookmarks: MutableMap<String, FooUsersWatchUserResponseBookmarksValue> = when (__input.jsonObject["bookmarks"]) {
                 is JsonObject -> {
-                    val __value: MutableMap<String, UsersWatchUserResponseBookmarksValue> = mutableMapOf()
+                    val __value: MutableMap<String, FooUsersWatchUserResponseBookmarksValue> = mutableMapOf()
                     for (__entry in __input.jsonObject["bookmarks"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                is JsonObject -> UsersWatchUserResponseBookmarksValue.fromJsonElement(
+                is JsonObject -> FooUsersWatchUserResponseBookmarksValue.fromJsonElement(
                     __entry.value!!,
                     "$instancePath/bookmarks",
                 )
 
-                else -> UsersWatchUserResponseBookmarksValue.new()
+                else -> FooUsersWatchUserResponseBookmarksValue.new()
             }
                     }
                     __value
@@ -5621,7 +5621,7 @@ val bio: String? = when (__input.jsonObject["bio"]) {
                     is JsonPrimitive -> __input.jsonObject["bio"]!!.jsonPrimitive.contentOrNull
                     else -> null
                 }
-            return UsersWatchUserResponse(
+            return FooUsersWatchUserResponse(
                 id,
                 role,
                 photo,
@@ -5638,7 +5638,7 @@ val bio: String? = when (__input.jsonObject["bio"]) {
     }
 }
 
-enum class UsersWatchUserResponseRole {
+enum class FooUsersWatchUserResponseRole {
     Standard,
     Admin;
     val serialValue: String
@@ -5647,14 +5647,14 @@ enum class UsersWatchUserResponseRole {
             Admin -> "admin"
         }
     
-    companion object Factory : TestClientModelFactory<UsersWatchUserResponseRole> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserResponseRole> {
         @JvmStatic
-        override fun new(): UsersWatchUserResponseRole {
+        override fun new(): FooUsersWatchUserResponseRole {
             return Standard
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserResponseRole {
+        override fun fromJson(input: String): FooUsersWatchUserResponseRole {
             return when (input) {
                 Standard.serialValue -> Standard
                 Admin.serialValue -> Admin
@@ -5663,9 +5663,9 @@ enum class UsersWatchUserResponseRole {
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponseRole {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserResponseRole {
             if (__input !is JsonPrimitive) {
-                __logError("[WARNING] UsersWatchUserResponseRole.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRole.")
+                __logError("[WARNING] FooUsersWatchUserResponseRole.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserResponseRole.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -5680,7 +5680,7 @@ enum class UsersWatchUserResponseRole {
 /**
 * A profile picture
 */
-data class UserPhoto(
+data class FooUserPhoto(
     val url: String,
     val width: Double,
     val height: Double,
@@ -5689,7 +5689,7 @@ data class UserPhoto(
     * When the photo was last updated in nanoseconds    
 */
     val nanoseconds: ULong,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"url\":"
@@ -5716,10 +5716,10 @@ queryParts.add("nanoseconds=$nanoseconds")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UserPhoto> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUserPhoto> {
         @JvmStatic
-        override fun new(): UserPhoto {
-            return UserPhoto(
+        override fun new(): FooUserPhoto {
+            return FooUserPhoto(
                 url = "",
                 width = 0.0,
                 height = 0.0,
@@ -5729,14 +5729,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UserPhoto {
+        override fun fromJson(input: String): FooUserPhoto {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UserPhoto {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUserPhoto {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UserPhoto.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UserPhoto.")
+                __logError("[WARNING] FooUserPhoto.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUserPhoto.")
                 return new()
             }
 val url: String = when (__input.jsonObject["url"]) {
@@ -5759,7 +5759,7 @@ val nanoseconds: ULong = when (__input.jsonObject["nanoseconds"]) {
                 is JsonPrimitive -> __input.jsonObject["nanoseconds"]!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
                 else -> 0UL
             }
-            return UserPhoto(
+            return FooUserPhoto(
                 url,
                 width,
                 height,
@@ -5772,10 +5772,10 @@ val nanoseconds: ULong = when (__input.jsonObject["nanoseconds"]) {
 
 
 
-data class UserSettings(
+data class FooUserSettings(
     val notificationsEnabled: Boolean,
-    val preferredTheme: UserSettingsPreferredTheme,
-) : TestClientModel {
+    val preferredTheme: FooUserSettingsPreferredTheme,
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"notificationsEnabled\":"
@@ -5793,36 +5793,36 @@ queryParts.add("preferredTheme=${preferredTheme.serialValue}")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UserSettings> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUserSettings> {
         @JvmStatic
-        override fun new(): UserSettings {
-            return UserSettings(
+        override fun new(): FooUserSettings {
+            return FooUserSettings(
                 notificationsEnabled = false,
-                preferredTheme = UserSettingsPreferredTheme.new(),
+                preferredTheme = FooUserSettingsPreferredTheme.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UserSettings {
+        override fun fromJson(input: String): FooUserSettings {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UserSettings {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUserSettings {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UserSettings.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UserSettings.")
+                __logError("[WARNING] FooUserSettings.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUserSettings.")
                 return new()
             }
 val notificationsEnabled: Boolean = when (__input.jsonObject["notificationsEnabled"]) {
                 is JsonPrimitive -> __input.jsonObject["notificationsEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
-val preferredTheme: UserSettingsPreferredTheme = when (__input.jsonObject["preferredTheme"]) {
-                is JsonNull -> UserSettingsPreferredTheme.new()
-                is JsonPrimitive -> UserSettingsPreferredTheme.fromJsonElement(__input.jsonObject["preferredTheme"]!!, "$instancePath/preferredTheme")
-                else -> UserSettingsPreferredTheme.new()
+val preferredTheme: FooUserSettingsPreferredTheme = when (__input.jsonObject["preferredTheme"]) {
+                is JsonNull -> FooUserSettingsPreferredTheme.new()
+                is JsonPrimitive -> FooUserSettingsPreferredTheme.fromJsonElement(__input.jsonObject["preferredTheme"]!!, "$instancePath/preferredTheme")
+                else -> FooUserSettingsPreferredTheme.new()
             }
-            return UserSettings(
+            return FooUserSettings(
                 notificationsEnabled,
                 preferredTheme,
             )
@@ -5830,7 +5830,7 @@ val preferredTheme: UserSettingsPreferredTheme = when (__input.jsonObject["prefe
     }
 }
 
-enum class UserSettingsPreferredTheme {
+enum class FooUserSettingsPreferredTheme {
     DarkMode,
     LightMode,
     System;
@@ -5841,14 +5841,14 @@ enum class UserSettingsPreferredTheme {
             System -> "system"
         }
     
-    companion object Factory : TestClientModelFactory<UserSettingsPreferredTheme> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUserSettingsPreferredTheme> {
         @JvmStatic
-        override fun new(): UserSettingsPreferredTheme {
+        override fun new(): FooUserSettingsPreferredTheme {
             return DarkMode
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UserSettingsPreferredTheme {
+        override fun fromJson(input: String): FooUserSettingsPreferredTheme {
             return when (input) {
                 DarkMode.serialValue -> DarkMode
                 LightMode.serialValue -> LightMode
@@ -5858,9 +5858,9 @@ enum class UserSettingsPreferredTheme {
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UserSettingsPreferredTheme {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUserSettingsPreferredTheme {
             if (__input !is JsonPrimitive) {
-                __logError("[WARNING] UserSettingsPreferredTheme.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty UserSettingsPreferredTheme.")
+                __logError("[WARNING] FooUserSettingsPreferredTheme.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty FooUserSettingsPreferredTheme.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -5873,30 +5873,30 @@ enum class UserSettingsPreferredTheme {
     }
 }
 
-sealed interface UsersWatchUserResponseRecentNotificationsElement : TestClientModel {
+sealed interface FooUsersWatchUserResponseRecentNotificationsElement : TestClientPrefixedModel {
     val notificationType: String
 
-    companion object Factory : TestClientModelFactory<UsersWatchUserResponseRecentNotificationsElement> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserResponseRecentNotificationsElement> {
         @JvmStatic
-        override fun new(): UsersWatchUserResponseRecentNotificationsElement {
-            return UsersWatchUserResponseRecentNotificationsElementPostLike.new()
+        override fun new(): FooUsersWatchUserResponseRecentNotificationsElement {
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLike.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserResponseRecentNotificationsElement {
+        override fun fromJson(input: String): FooUsersWatchUserResponseRecentNotificationsElement {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponseRecentNotificationsElement {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserResponseRecentNotificationsElement {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElement.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserResponseRecentNotificationsElement.")
                 return new()
             }
             return when (__input.jsonObject["notificationType"]) {
                 is JsonPrimitive -> when (__input.jsonObject["notificationType"]!!.jsonPrimitive.contentOrNull) {
-                    "POST_LIKE" -> UsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonElement(__input, instancePath)
-"POST_COMMENT" -> UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement(__input, instancePath)
+                    "POST_LIKE" -> FooUsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonElement(__input, instancePath)
+"POST_COMMENT" -> FooUsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -5906,10 +5906,10 @@ sealed interface UsersWatchUserResponseRecentNotificationsElement : TestClientMo
     }
 }
 
-data class UsersWatchUserResponseRecentNotificationsElementPostLike(
+data class FooUsersWatchUserResponseRecentNotificationsElementPostLike(
     val postId: String,
     val userId: String,
-) : UsersWatchUserResponseRecentNotificationsElement {
+) : FooUsersWatchUserResponseRecentNotificationsElement {
     override val notificationType get() = "POST_LIKE"
 
     override fun toJson(): String {
@@ -5931,24 +5931,24 @@ queryParts.add("userId=$userId")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UsersWatchUserResponseRecentNotificationsElementPostLike> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserResponseRecentNotificationsElementPostLike> {
         @JvmStatic
-        override fun new(): UsersWatchUserResponseRecentNotificationsElementPostLike {
-            return UsersWatchUserResponseRecentNotificationsElementPostLike(
+        override fun new(): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLike(
                 postId = "",
                 userId = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserResponseRecentNotificationsElementPostLike {
+        override fun fromJson(input: String): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponseRecentNotificationsElementPostLike {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElementPostLike.")
+                __logError("[WARNING] FooUsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserResponseRecentNotificationsElementPostLike.")
                 return new()
             }
 val postId: String = when (__input.jsonObject["postId"]) {
@@ -5959,7 +5959,7 @@ val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return UsersWatchUserResponseRecentNotificationsElementPostLike(
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLike(
                 postId,
                 userId,
             )
@@ -5969,11 +5969,11 @@ val userId: String = when (__input.jsonObject["userId"]) {
 
 
 
-data class UsersWatchUserResponseRecentNotificationsElementPostComment(
+data class FooUsersWatchUserResponseRecentNotificationsElementPostComment(
     val postId: String,
     val userId: String,
     val commentText: String,
-) : UsersWatchUserResponseRecentNotificationsElement {
+) : FooUsersWatchUserResponseRecentNotificationsElement {
     override val notificationType get() = "POST_COMMENT"
 
     override fun toJson(): String {
@@ -5998,10 +5998,10 @@ queryParts.add("commentText=$commentText")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UsersWatchUserResponseRecentNotificationsElementPostComment> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserResponseRecentNotificationsElementPostComment> {
         @JvmStatic
-        override fun new(): UsersWatchUserResponseRecentNotificationsElementPostComment {
-            return UsersWatchUserResponseRecentNotificationsElementPostComment(
+        override fun new(): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+            return FooUsersWatchUserResponseRecentNotificationsElementPostComment(
                 postId = "",
                 userId = "",
                 commentText = "",
@@ -6009,14 +6009,14 @@ return queryParts.joinToString("&")
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserResponseRecentNotificationsElementPostComment {
+        override fun fromJson(input: String): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponseRecentNotificationsElementPostComment {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElementPostComment.")
+                __logError("[WARNING] FooUsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserResponseRecentNotificationsElementPostComment.")
                 return new()
             }
 val postId: String = when (__input.jsonObject["postId"]) {
@@ -6031,7 +6031,7 @@ val commentText: String = when (__input.jsonObject["commentText"]) {
                 is JsonPrimitive -> __input.jsonObject["commentText"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return UsersWatchUserResponseRecentNotificationsElementPostComment(
+            return FooUsersWatchUserResponseRecentNotificationsElementPostComment(
                 postId,
                 userId,
                 commentText,
@@ -6042,10 +6042,10 @@ val commentText: String = when (__input.jsonObject["commentText"]) {
 
 
 
-data class UsersWatchUserResponseBookmarksValue(
+data class FooUsersWatchUserResponseBookmarksValue(
     val postId: String,
     val userId: String,
-) : TestClientModel {
+) : TestClientPrefixedModel {
     override fun toJson(): String {
 var output = "{"
 output += "\"postId\":"
@@ -6063,24 +6063,24 @@ queryParts.add("userId=$userId")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<UsersWatchUserResponseBookmarksValue> {
+    companion object Factory : TestClientPrefixedModelFactory<FooUsersWatchUserResponseBookmarksValue> {
         @JvmStatic
-        override fun new(): UsersWatchUserResponseBookmarksValue {
-            return UsersWatchUserResponseBookmarksValue(
+        override fun new(): FooUsersWatchUserResponseBookmarksValue {
+            return FooUsersWatchUserResponseBookmarksValue(
                 postId = "",
                 userId = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): UsersWatchUserResponseBookmarksValue {
+        override fun fromJson(input: String): FooUsersWatchUserResponseBookmarksValue {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponseBookmarksValue {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUsersWatchUserResponseBookmarksValue {
             if (__input !is JsonObject) {
-                __logError("[WARNING] UsersWatchUserResponseBookmarksValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseBookmarksValue.")
+                __logError("[WARNING] FooUsersWatchUserResponseBookmarksValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUsersWatchUserResponseBookmarksValue.")
                 return new()
             }
 val postId: String = when (__input.jsonObject["postId"]) {
@@ -6091,7 +6091,7 @@ val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return UsersWatchUserResponseBookmarksValue(
+            return FooUsersWatchUserResponseBookmarksValue(
                 postId,
                 userId,
             )
@@ -6102,7 +6102,7 @@ val userId: String = when (__input.jsonObject["userId"]) {
 
 
 // Implementation copied from https://github.com/Kotlin/kotlinx.serialization/blob/d0ae697b9394103879e6c7f836d0f7cf128f4b1e/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt#L45
-internal const val STRING = '"'
+private const val STRING = '"'
 
 private fun toHexChar(i: Int): Char {
     val d = i and 0xf
@@ -6110,7 +6110,7 @@ private fun toHexChar(i: Int): Char {
     else (d - 10 + 'a'.code).toChar()
 }
 
-internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
+private val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     for (c in 0..0x1f) {
         val c1 = toHexChar(c shr 12)
         val c2 = toHexChar(c shr 8)
@@ -6127,7 +6127,7 @@ internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     this[0x0c] = "\\f"
 }
 
-internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
+private val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
     for (c in 0..0x1f) {
         this[c] = 1.toByte()
     }
@@ -6140,7 +6140,7 @@ internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
     this[0x0c] = 'f'.code.toByte()
 }
 
-internal fun StringBuilder.printQuoted(value: String) {
+private fun StringBuilder.printQuoted(value: String) {
     append(STRING)
     var lastPos = 0
     for (i in value.indices) {
@@ -6165,7 +6165,7 @@ private suspend fun __prepareRequest(
     client: HttpClient,
     url: String,
     method: HttpMethod,
-    params: TestClientModel?,
+    params: TestClientPrefixedModel?,
     headers: MutableMap<String, String>?,
 ): HttpStatement {
     var finalUrl = url
@@ -6198,7 +6198,7 @@ private suspend fun __prepareRequest(
 }
 
 // SSE_FN_START
-private enum class SseEventLineType {
+private enum class __TestClientPrefixedSseEventLineType {
     Id,
     Event,
     Data,
@@ -6206,36 +6206,36 @@ private enum class SseEventLineType {
     None,
 }
 
-private fun __parseSseEventLine(line: String): Pair<SseEventLineType, String> {
+private fun __parseSseEventLine(line: String): Pair<__TestClientPrefixedSseEventLineType, String> {
     if (line.startsWith("id:")) {
-        return Pair(SseEventLineType.Id, line.substring(3).trim())
+        return Pair(__TestClientPrefixedSseEventLineType.Id, line.substring(3).trim())
     }
     if (line.startsWith("event:")) {
-        return Pair(SseEventLineType.Event, line.substring(6).trim())
+        return Pair(__TestClientPrefixedSseEventLineType.Event, line.substring(6).trim())
     }
     if (line.startsWith("data:")) {
-        return Pair(SseEventLineType.Data, line.substring(5).trim())
+        return Pair(__TestClientPrefixedSseEventLineType.Data, line.substring(5).trim())
     }
     if (line.startsWith("retry:")) {
-        return Pair(SseEventLineType.Retry, line.substring(6).trim())
+        return Pair(__TestClientPrefixedSseEventLineType.Retry, line.substring(6).trim())
     }
-    return Pair(SseEventLineType.None, "")
+    return Pair(__TestClientPrefixedSseEventLineType.None, "")
 }
 
-private data class __SseEvent(
+private data class __TestClientPrefixedSseEvent(
     val id: String? = null,
     val event: String,
     val data: String,
     val retry: Int? = null
 )
 
-private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
+private class __TestClientPrefixedSseEventParsingResult(val events: List<__TestClientPrefixedSseEvent>, val leftover: String)
 
-private fun __parseSseEvents(input: String): __SseEventParsingResult {
-    val events = mutableListOf<__SseEvent>()
+private fun __parseSseEvents(input: String): __TestClientPrefixedSseEventParsingResult {
+    val events = mutableListOf<__TestClientPrefixedSseEvent>()
     val lines = input.lines()
     if (lines.isEmpty()) {
-        return __SseEventParsingResult(events = listOf(), leftover = "")
+        return __TestClientPrefixedSseEventParsingResult(events = listOf(), leftover = "")
     }
     var id: String? = null
     var event: String? = null
@@ -6246,18 +6246,18 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
         if (line.isNotEmpty()) {
             val (type, value) = __parseSseEventLine(line)
             when (type) {
-                SseEventLineType.Id -> id = value
-                SseEventLineType.Event -> event = value
-                SseEventLineType.Data -> data = value
-                SseEventLineType.Retry -> retry = value.toInt()
-                SseEventLineType.None -> {}
+                __TestClientPrefixedSseEventLineType.Id -> id = value
+                __TestClientPrefixedSseEventLineType.Event -> event = value
+                __TestClientPrefixedSseEventLineType.Data -> data = value
+                __TestClientPrefixedSseEventLineType.Retry -> retry = value.toInt()
+                __TestClientPrefixedSseEventLineType.None -> {}
             }
         }
         val isEnd = line == ""
         if (isEnd) {
             if (data != null) {
                 events.add(
-                    __SseEvent(
+                    __TestClientPrefixedSseEvent(
                         id = id,
                         event = event ?: "message",
                         data = data!!,
@@ -6272,7 +6272,7 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
             lastIndex = if (index + 1 < lines.size) index + 1 else null
         }
     }
-    return __SseEventParsingResult(
+    return __TestClientPrefixedSseEventParsingResult(
         events = events,
         leftover = if (lastIndex != null) lines.subList(lastIndex!!, lines.size).joinToString(separator = "\n") else ""
     )
@@ -6283,8 +6283,8 @@ private suspend fun __handleSseRequest(
     httpClient: HttpClient,
     url: String,
     method: HttpMethod,
-    params: TestClientModel?,
-    headers: headersFn,
+    params: TestClientPrefixedModel?,
+    headers: __TestClientPrefixedHeadersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,
@@ -6293,7 +6293,7 @@ private suspend fun __handleSseRequest(
     onData: ((data: String) -> Unit) = {},
     onError: ((err: Exception) -> Unit) = {},
     onRequestError: ((err: Exception) -> Unit) = {},
-    onResponseError: ((err: TestClientError) -> Unit) = {},
+    onResponseError: ((err: TestClientPrefixedError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
@@ -6328,11 +6328,11 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        val err = TestClientError.fromJson(httpResponse.bodyAsText()) 
+                        val err = TestClientPrefixedError.fromJson(httpResponse.bodyAsText()) 
                         onError(err)
                         onResponseError(err)
                     } else {
-                        val err = TestClientError(
+                        val err = TestClientPrefixedError(
                             code = httpResponse.status.value,
                             errorMessage = httpResponse.status.description,
                             data = JsonPrimitive(httpResponse.bodyAsText()),
@@ -6366,7 +6366,7 @@ private suspend fun __handleSseRequest(
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    val err = TestClientError(
+                    val err = TestClientPrefixedError(
                         code = 0,
                         errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
                         data = JsonPrimitive(httpResponse.bodyAsText()),

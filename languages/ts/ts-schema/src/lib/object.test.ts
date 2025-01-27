@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 const UserSchema = a.object({
@@ -20,6 +22,39 @@ const PostSchema = a.object({
 });
 
 type PostSchema = a.infer<typeof PostSchema>;
+
+const ObjectWithEveryType = a.object({
+    string: a.string(),
+    boolean: a.boolean(),
+    timestamp: a.timestamp(),
+    enum: a.enumerator(['FOO', 'BAR', 'BAZ']),
+    int8: a.int8(),
+    uint8: a.uint8(),
+    int16: a.int16(),
+    uint16: a.uint16(),
+    int32: a.int32(),
+    uint32: a.uint32(),
+    int64: a.int64(),
+    uint64: a.uint64(),
+    array: a.array(a.string()),
+    record: a.record(a.boolean()),
+    object: a.object({
+        foo: a.string(),
+    }),
+    discriminator: a.discriminator('type', {
+        FOO: a.object({
+            foo: a.string(),
+        }),
+        BAR: a.object({
+            bar: a.string(),
+        }),
+        BAZ: a.object({
+            baz: a.string(),
+        }),
+    }),
+    any: a.any(),
+});
+type ObjectWithEveryType = a.infer<typeof ObjectWithEveryType>;
 
 describe('a.object()', () => {
     describe('type inference', () => {
@@ -171,7 +206,7 @@ describe('a.object()', () => {
             expect(jsonResult.value).toStrictEqual(goodInput);
         }
     });
-    it('produces valid jtd schema', () => {
+    it('produces valid ATD schema', () => {
         const result = JSON.stringify(
             a.object({
                 id: a.string(),
@@ -272,6 +307,63 @@ describe('a.object()', () => {
         const input = { id: '', name: '', createdAt: new Date() };
         expect(a.validate(User1, input)).toEqual(a.validate(User2, input));
         expect(a.serialize(User1, input)).toEqual(a.serialize(User2, input));
+    });
+    describe('standard-schema support', () => {
+        it('properly infers types', async () => {
+            assertType<StandardSchemaV1<ObjectWithEveryType>>(
+                ObjectWithEveryType,
+            );
+            const result = await ObjectWithEveryType['~standard'].validate('');
+            if (!result.issues) assertType<ObjectWithEveryType>(result.value);
+        });
+        it('produces the same result via the standard-schema interface', async () => {
+            const input: ObjectWithEveryType = {
+                string: '',
+                boolean: false,
+                timestamp: new Date(),
+                enum: 'FOO',
+                int8: 1,
+                uint8: 1,
+                int16: 10,
+                uint16: 10,
+                int32: 100,
+                uint32: 100,
+                int64: 1000n,
+                uint64: 1000n,
+                array: ['foo', 'bar'],
+                record: {
+                    foo: true,
+                    bar: false,
+                },
+                object: {
+                    foo: '',
+                },
+                discriminator: {
+                    type: 'BAZ',
+                    baz: '',
+                },
+                any: '',
+            };
+            expect(a.validate(ObjectWithEveryType, input)).toBe(true);
+            let standardResult =
+                await ObjectWithEveryType['~standard'].validate(input);
+            expect(typeof standardResult.issues).toBe('undefined');
+            if (!standardResult.issues) {
+                expect(standardResult.value).toStrictEqual(input);
+            }
+            delete (input as any).int16;
+            expect(a.validate(ObjectWithEveryType, input)).toBe(false);
+            standardResult =
+                await ObjectWithEveryType['~standard'].validate(input);
+            expect(standardResult.issues?.length).toBe(1);
+            if (standardResult.issues) {
+                expect(standardResult.issues[0]?.path).toStrictEqual(['int16']);
+            }
+        });
+        it('omits the ~standard key from json', () => {
+            const result = JSON.stringify(ObjectWithEveryType);
+            expect(result.includes('"~standard":'));
+        });
     });
 });
 
@@ -377,7 +469,7 @@ describe('a.pick()', () => {
         const result = a.safeParse(UserSubsetSchema, input);
         expect(!result.success);
     });
-    it('produces jtd object schema with picked properties', () => {
+    it('produces ATD object schema with picked properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
             properties: {
                 name: {
@@ -392,6 +484,44 @@ describe('a.pick()', () => {
             },
             optionalProperties: {},
             metadata: {},
+        });
+    });
+    describe('standard-schema support', () => {
+        const PickedSchema = a.pick(ObjectWithEveryType, [
+            'array',
+            'boolean',
+            'string',
+            'int32',
+        ]);
+        type PickedSchema = a.infer<typeof PickedSchema>;
+        it('properly infers types', async () => {
+            assertType<StandardSchemaV1<PickedSchema>>(PickedSchema);
+            const result = await PickedSchema['~standard'].validate('');
+            if (!result.issues) assertType<PickedSchema>(result.value);
+        });
+        it('produces the same results via the standard-schema interface', async () => {
+            const input: PickedSchema = {
+                string: 'hello world',
+                boolean: false,
+                int32: 10,
+                array: ['foo', 'bar'],
+            };
+            expect(a.validate(PickedSchema, input)).toBe(true);
+            let standardResult =
+                await PickedSchema['~standard'].validate(input);
+            expect(typeof standardResult.issues).toBe('undefined');
+            if (!standardResult.issues) {
+                expect(standardResult.value).toStrictEqual(input);
+            }
+            (input as any).int32 = 'hello world';
+            expect(a.validate(PickedSchema, input)).toBe(false);
+            standardResult = await PickedSchema['~standard'].validate(input);
+            expect(standardResult.issues?.length).toBe(1);
+            expect(standardResult.issues?.[0]?.path).toStrictEqual(['int32']);
+        });
+        it('omits the ~standard key from json', () => {
+            const result = JSON.stringify(PickedSchema);
+            expect(result.includes('"~standard":'));
         });
     });
 });
@@ -435,7 +565,7 @@ describe('a.omit()', () => {
         }
         expect(badResult.success).toBe(false);
     });
-    it('produces jtd schema without omitted properties', () => {
+    it('produces ATD schema without omitted properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
             properties: {
                 name: {
@@ -456,6 +586,61 @@ describe('a.omit()', () => {
             },
             strict: true,
             metadata: {},
+        });
+    });
+
+    describe('standard-schema support', () => {
+        const OmittedSchema = a.omit(ObjectWithEveryType, [
+            'any',
+            'array',
+            'enum',
+            'int32',
+            'uint32',
+            'int16',
+            'uint16',
+        ]);
+        type OmittedSchema = a.infer<typeof OmittedSchema>;
+        it('properly infers types', async () => {
+            assertType<StandardSchemaV1<OmittedSchema>>(OmittedSchema);
+            const result = await OmittedSchema['~standard'].validate('');
+            if (!result.issues) assertType<OmittedSchema>(result.value);
+        });
+        it('produces the same result via the standard interface', async () => {
+            const input: OmittedSchema = {
+                string: '',
+                boolean: false,
+                object: {
+                    foo: '',
+                },
+                timestamp: new Date(),
+                int8: 0,
+                int64: 0n,
+                uint8: 0,
+                uint64: 0n,
+                record: {
+                    FOO: true,
+                    BAR: false,
+                },
+                discriminator: {
+                    type: 'BAZ',
+                    baz: 'baz',
+                },
+            };
+            expect(a.validate(OmittedSchema, input)).toBe(true);
+            let standardResult =
+                await OmittedSchema['~standard'].validate(input);
+            expect(typeof standardResult.issues).toBe('undefined');
+            if (!standardResult.issues) {
+                expect(standardResult.value).toStrictEqual(input);
+            }
+            (input.record.FOO as any) = 'hello world';
+            expect(a.validate(OmittedSchema, input)).toBe(false);
+            standardResult = await OmittedSchema['~standard'].validate(input);
+            expect(standardResult.issues?.length).toBe(1);
+            expect(standardResult.issues?.[0]?.path).toStrictEqual([
+                'record',
+                'FOO',
+            ]);
         });
     });
 });
@@ -571,6 +756,45 @@ describe('a.partial()', () => {
                 },
             },
             metadata: {},
+        });
+    });
+
+    describe('standard-schema support', () => {
+        const PartialSchema = a.partial(ObjectWithEveryType);
+        type PartialSchema = a.infer<typeof PartialSchema>;
+        it('properly infers types', async () => {
+            assertType<StandardSchemaV1<PartialSchema>>(PartialSchema);
+            const result = await PartialSchema['~standard'].validate('');
+            if (!result.issues) assertType<PartialSchema>(result.value);
+        });
+        it('produces the same result via the standard schema interface', async () => {
+            const input: PartialSchema = {
+                string: '',
+                boolean: true,
+                record: {
+                    FOO: false,
+                    BAR: true,
+                },
+            };
+            expect(a.validate(PartialSchema, input)).toBe(true);
+            let standardResult =
+                await PartialSchema['~standard'].validate(input);
+            expect(typeof standardResult.issues).toBe('undefined');
+            if (!standardResult.issues) {
+                expect(standardResult.value).toStrictEqual(input);
+            }
+            (input as any).array = [1, 2, 3, 4, 5];
+            expect(a.validate(PartialSchema, input)).toBe(false);
+            standardResult = await PartialSchema['~standard'].validate(input);
+            expect(standardResult.issues?.length).toBe(5);
+            expect(standardResult.issues?.[0]?.path).toStrictEqual([
+                'array',
+                '0',
+            ]);
+        });
+        it('omits the ~standard key from json', () => {
+            const result = JSON.stringify(PartialSchema);
+            expect(result.includes('"~standard":'));
         });
     });
 });

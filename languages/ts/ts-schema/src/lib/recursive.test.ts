@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import { a } from '../_index';
 
 interface BinaryTree {
@@ -228,4 +230,41 @@ test('overloaded functions produce the same result', () => {
     };
     expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
     expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+});
+
+it('produces valid ATD', () => {
+    const result = JSON.parse(JSON.stringify(BinaryTree));
+    expect(result).toStrictEqual({
+        properties: {
+            left: {
+                ref: 'BinaryTree',
+                nullable: true,
+                metadata: {},
+            },
+            right: {
+                ref: 'BinaryTree',
+                nullable: true,
+                metadata: {},
+            },
+        },
+        metadata: {
+            id: 'BinaryTree',
+        },
+    });
+});
+
+describe('standard schema support', () => {
+    const SchemaA = a.recursive<BinaryTree>(
+        (self) => a.object({ left: a.nullable(self), right: a.nullable(self) }),
+        {
+            id: 'BTree',
+        },
+    );
+    it('properly infers types', async () => {
+        assertType<StandardSchemaV1<BinaryTree>>(SchemaA);
+        const result = await SchemaA['~standard'].validate('');
+        if (!result.issues) {
+            assertType<BinaryTree>(result.value);
+        }
+    });
 });

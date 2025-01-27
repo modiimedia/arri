@@ -12,22 +12,40 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 
 ## Table of Contents
 
--   [Server Implementations](#server-implementations)
--   [Client Generators](#client-generators)
--   [Other Tooling](#other-tooling)
--   [Manually Creating An App Definition](#manually-creating-an-app-definition)
--   [How To Contribute](#how-to-contribute)
+- [Server Implementations](#server-implementations)
+    - [Typescript](#typescript)
+    - [Go](#go)
+    - [Server Language Roadmap](#server-language-roadmap)
+- [Client Generators](#client-generators)
+- [Other Tooling](#other-tooling)
+- [Manually Creating An App Definition](#manually-creating-an-app-definition)
+- [How To Contribute](#how-to-contribute)
 
 ## Server Implementations
 
--   [Typescript](/languages/ts/ts-server/README.md)
--   [Go (Experimental)](/languages/go/go-server/README.md)
+### Typescript
+
+Click [here](/languages/ts/ts-server/README.md) to get started with a Typescript server.
+
+#### Relevant Libraries
+
+| Name                                                            | Description                                                                                                                                                                    |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [@arrirpc/server](/languages/ts/ts-server/README.md)            | TS Server framework for Arri RPC                                                                                                                                               |
+| [@arrirpc/schema](/languages/ts/ts-schema/README.md)            | High performance schema builder for validating procedure inputs and outputs. Can also be used as a standalone TS validation library or to generated types for other languages. |
+| [@arrirpc/eslint-plugin](/languages/ts/eslint-plugin/README.md) | Lint rules for building Arri RPC schemas                                                                                                                                       |
+
+### Go
+
+Click [here](/languages/go/go-server/README.md) to get started with Go. Be aware that Go support is still in early stages.
+
+### Server Language Roadmap
 
 I'm currently finishing up the Go server implementation. After that is stable I have the following languages on my shortlist for the next potential server implementation:
 
--   rust
--   dart
--   zig
+- rust
+- dart
+- zig
 
 See this [guide](/docs/implementing-an-arri-server.md) for information on how to implement your own Arri server
 
@@ -40,7 +58,7 @@ Below are the language client generators that are planned to have first party su
 | [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅     |
 | [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅     |
 | [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅     |
-| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅\*\* |
+| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅     |
 | [Swift](languages/swift/swift-codegen/README.md)    | ✅   | ✅\*\* |
 | Go                                                  |      |        |
 | Python                                              |      |        |
@@ -49,13 +67,11 @@ Below are the language client generators that are planned to have first party su
 
 🚧 in progress
 
-\*\* SSE for Kotlin and Swift are working but they still have some rough edges
+\*\* SSE for Swift is working but it still has some rough edges
 
 ## Other Tooling
 
--   [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
--   [@arrirpc/schema](tooling/schema/README.md) - Arri type builder used to define types that can be generated in multiple languages. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
--   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
+- [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
 
 ## Manually Creating an App Definition
 
@@ -75,7 +91,7 @@ Before running this command. Make sure you have an arri config created already.
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
@@ -98,23 +114,23 @@ Arri comes with some useful helpers that reduces the boilerplate of manually cre
 
 ```ts
 // AppDefinition.ts
-import { createAppDefinition } from "arri";
-import { a } from "@arrirpc/schema";
+import { createAppDefinition } from 'arri';
+import { a } from '@arrirpc/schema';
 
-const HelloParams = a.object("HelloParams", {
+const HelloParams = a.object('HelloParams', {
     message: a.string(),
 });
 
-const HelloResponse = a.object("HelloResponse", {
+const HelloResponse = a.object('HelloResponse', {
     message: a.string(),
 });
 
 export default createAppDefinition({
     procedures: {
         sayHello: {
-            transport: "http",
-            method: "post",
-            path: "/say-hello",
+            transport: 'http',
+            method: 'post',
+            path: '/say-hello',
             params: HelloParams,
             response: HelloResponse,
         },
@@ -126,14 +142,14 @@ Additionally if you only need cross language types, you can skip defining proced
 
 ```ts
 // AppDefinition.ts
-import { createAppDefinition } from "arri";
-import { a } from "@arrirpc/schema";
+import { createAppDefinition } from 'arri';
+import { a } from '@arrirpc/schema';
 
-const HelloParams = a.object("HelloParams", {
+const HelloParams = a.object('HelloParams', {
     message: a.string(),
 });
 
-const HelloResponse = a.object("HelloResponse", {
+const HelloResponse = a.object('HelloResponse', {
     message: a.string(),
 });
 

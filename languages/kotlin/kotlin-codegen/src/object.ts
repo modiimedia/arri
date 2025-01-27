@@ -15,16 +15,18 @@ export function kotlinObjectFromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const className = getClassName(schema, context);
+    const prefixedClassName = `${context.typePrefix}${className}`;
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? 'null' : `${className}.new()`;
+    const defaultValue = nullable ? 'null' : `${prefixedClassName}.new()`;
     const result: KotlinProperty = {
         typeName: className,
+        prefixedTypeName: prefixedClassName,
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonObject -> ${className}.fromJsonElement(
+                    is JsonObject -> ${prefixedClassName}.fromJsonElement(
                         ${input}!!,
                         "$instancePath/${key}",
                     )
@@ -32,12 +34,12 @@ export function kotlinObjectFromSchema(
                 }`;
             }
             return `when (${input}) {
-                is JsonObject -> ${className}.fromJsonElement(
+                is JsonObject -> ${prefixedClassName}.fromJsonElement(
                     ${input}!!,
                     "$instancePath/${key}",
                 )
 
-                else -> ${className}.new()
+                else -> ${prefixedClassName}.new()
             }`;
         },
         toJson(input, target) {
@@ -96,7 +98,7 @@ export function kotlinObjectFromSchema(
             subContent.push(type.content);
         }
         fieldParts.push(
-            `${getCodeComment(prop.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.typeName}${type.isNullable ? '?' : ''},`,
+            `${getCodeComment(prop.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.prefixedTypeName}${type.isNullable ? '?' : ''},`,
         );
         if (i === 0 && !context.discriminatorKey) {
             toJsonParts.push(`output += "\\"${key}\\":"`);
@@ -106,7 +108,7 @@ export function kotlinObjectFromSchema(
         toJsonParts.push(type.toJson(kotlinKey, 'output'));
         toQueryParts.push(type.toQueryString(kotlinKey, 'queryParts', key));
         fromJsonParts.push(
-            `val ${kotlinKey}: ${type.typeName}${type.isNullable ? '?' : ''} = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
+            `val ${kotlinKey}: ${type.prefixedTypeName}${type.isNullable ? '?' : ''} = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
         );
         defaultParts.push(
             `                ${kotlinKey} = ${type.defaultValue},`,
@@ -137,7 +139,7 @@ export function kotlinObjectFromSchema(
             ? ''
             : `\n        if (hasProperties) output += ","\n`;
         fieldParts.push(
-            `${getCodeComment(schema.optionalProperties![key]!.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.typeName}? = null,`,
+            `${getCodeComment(schema.optionalProperties![key]!.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.prefixedTypeName}? = null,`,
         );
         if (hasKnownKeys) {
             toJsonParts.push(`if (${kotlinKey} != null) {
@@ -153,20 +155,21 @@ ${isLast ? '' : '    hasProperties = true'}\n}`);
 
         toQueryParts.push(type.toQueryString(kotlinKey, 'queryParts', key));
         fromJsonParts.push(
-            `val ${kotlinKey}: ${type.typeName}? = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
+            `val ${kotlinKey}: ${type.prefixedTypeName}? = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
         );
     }
 
     toJsonParts.push('output += "}"');
     toJsonParts.push('return output');
     toQueryParts.push('return queryParts.joinToString("&")');
-    const implementedClass =
-        context.discriminatorParentId ?? `${context.clientName}Model`;
+    const implementedClass = context.discriminatorParentId
+        ? `${context.typePrefix}${context.discriminatorParentId}`
+        : `${context.clientName}Model`;
     let discriminatorField = '';
     if (context.discriminatorKey && context.discriminatorValue) {
         discriminatorField = `\n    override val ${kotlinIdentifier(context.discriminatorKey)} get() = "${context.discriminatorValue}"\n`;
     }
-    const content = `${getCodeComment(schema.metadata, '', 'class')}data class ${className}(
+    const content = `${getCodeComment(schema.metadata, '', 'class')}data class ${prefixedClassName}(
 ${fieldParts.join('\n')}
 ) : ${implementedClass} {${discriminatorField}
     override fun toJson(): String {
@@ -177,27 +180,27 @@ ${toJsonParts.join('\n')}
 ${toQueryParts.join('\n')}
     }
 
-    companion object Factory : ${context.clientName}ModelFactory<${className}> {
+    companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
-        override fun new(): ${className} {
-            return ${className}(
+        override fun new(): ${prefixedClassName} {
+            return ${prefixedClassName}(
 ${defaultParts.join('\n')}
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ${className} {
+        override fun fromJson(input: String): ${prefixedClassName} {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${prefixedClassName} {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
+                __logError("[WARNING] ${prefixedClassName}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${prefixedClassName}.")
                 return new()
             }
 ${fromJsonParts.join('\n')}
-            return ${className}(
+            return ${prefixedClassName}(
                 ${kotlinKeys.join(',\n                ')},
             )
         }

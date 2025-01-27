@@ -1,21 +1,14 @@
 {
   "name": "@arrirpc/server",
-  "version": "0.70.1",
+  "version": "0.73.0",
   "type": "module",
   "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
+  "files": ["dist"],
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -26,13 +19,11 @@
     "@arrirpc/schema": "workspace:*",
     "@types/source-map-support": "^0.5.10",
     "arri": "workspace:*",
-    "crossws": "^0.3.1",
-    "h3": "^1.13.0",
+    "crossws": "^0.3.3",
+    "h3": "^1.14.0",
     "scule": "^1.3.0",
     "source-map-support": "^0.5.21",
     "uncrypto": "^0.1.3"
   },
-  "devDependencies": {
-    "bun-types": "^1.1.42"
-  }
+  "devDependencies": { "bun-types": "^1.2.0" }
 }

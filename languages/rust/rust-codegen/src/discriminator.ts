@@ -15,11 +15,15 @@ export function rustTaggedUnionFromSchema(
     schema: SchemaFormDiscriminator,
     context: GeneratorContext,
 ): RustProperty {
-    const enumName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
+    const enumName = getTypeName(schema, context);
+    const prefixedEnumName = `${context.typeNamePrefix}${enumName}`;
     const isOptionType = outputIsOptionType(schema, context);
-    const defaultValue = isOptionType ? 'None' : `${enumName}::new()`;
+    const defaultValue = isOptionType ? 'None' : `${prefixedEnumName}::new()`;
     const result: RustProperty = {
-        typeName: isOptionType ? `Option<${enumName}>` : enumName,
+        typeId: enumName,
+        finalTypeName: isOptionType
+            ? `Option<${prefixedEnumName}>`
+            : prefixedEnumName,
         defaultValue,
         isNullable: isOptionType,
         fromJsonTemplate(input: string, key: string) {
@@ -28,7 +32,7 @@ export function rustTaggedUnionFromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => match ${innerKey} {
                         serde_json::Value::Object(_) => {
-                            Some(${enumName}::from_json(${innerKey}.to_owned()))
+                            Some(${prefixedEnumName}::from_json(${innerKey}.to_owned()))
                         }
                         _ => None,
                     },
@@ -38,11 +42,11 @@ export function rustTaggedUnionFromSchema(
             return `match ${input} {
                 Some(${innerKey}) => match ${innerKey} {
                     serde_json::Value::Object(_) => {
-                        ${enumName}::from_json(${innerKey}.to_owned())
+                        ${prefixedEnumName}::from_json(${innerKey}.to_owned())
                     }
-                    _ => ${enumName}::new(),
+                    _ => ${prefixedEnumName}::new(),
                 },
-                _ => ${enumName}::new(),
+                _ => ${prefixedEnumName}::new(),
             }`;
         },
         toJsonTemplate(input: string, target: string) {
@@ -68,6 +72,7 @@ export function rustTaggedUnionFromSchema(
             name: string;
             defaultValue: string;
             typeName: string;
+            prefixedTypeName: string;
             isDeprecated: boolean;
             description: string;
         }[];
@@ -116,7 +121,8 @@ export function rustTaggedUnionFromSchema(
             subType.properties.push({
                 name: keyName,
                 defaultValue: keyType.defaultValue,
-                typeName: keyType.typeName,
+                typeName: keyType.typeId,
+                prefixedTypeName: keyType.finalTypeName,
                 isDeprecated: keySchema.metadata?.isDeprecated ?? false,
                 description: keySchema.metadata?.description ?? '',
             });
@@ -163,7 +169,8 @@ export function rustTaggedUnionFromSchema(
             subType.properties.push({
                 name: keyName,
                 defaultValue: keyType.defaultValue,
-                typeName: keyType.typeName,
+                typeName: keyType.typeId,
+                prefixedTypeName: keyType.finalTypeName,
                 isDeprecated: keySchema.metadata?.isDeprecated ?? false,
                 description: keySchema.metadata?.description ?? '',
             });
@@ -205,7 +212,7 @@ export function rustTaggedUnionFromSchema(
         leading += '#[deprecated]\n';
     }
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
-pub enum ${enumName} {
+pub enum ${prefixedEnumName} {
     ${subTypes
         .map((type) => {
             let leading = '';
@@ -227,7 +234,7 @@ pub enum ${enumName} {
                 if (prop.isDeprecated) {
                     leading += '#[deprecated]\n';
                 }
-                return `${leading}${prop.name}: ${prop.typeName},`;
+                return `${leading}${prop.name}: ${prop.prefixedTypeName},`;
             })
             .join('\n')}
     },`;
@@ -235,7 +242,7 @@ pub enum ${enumName} {
         .join('\n')}
 }
 
-impl ArriModel for ${enumName} {
+impl ArriModel for ${prefixedEnumName} {
     fn new() -> Self {
         Self::${subTypes[0]!.name} {
             ${subTypes[0]?.properties.map((prop) => `${prop.name}: ${prop.defaultValue},`).join('\n')}

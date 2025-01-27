@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 describe('nullable', () => {
@@ -134,6 +136,31 @@ describe('nullable', () => {
             expect(!objResult.success && objResult.error.errors.length > 0);
         });
     });
+    describe('standard-schema support', () => {
+        it('properly infers types', async () => {
+            const Schema = a.object({
+                id: a.string(),
+                name: a.string(),
+                tags: a.nullable(a.array(a.string())),
+            });
+            type Schema = a.infer<typeof Schema>;
+            assertType<StandardSchemaV1<Schema>>(Schema);
+            const result = await Schema['~standard'].validate('');
+            if (!result.issues) {
+                assertType<Schema>(result.value);
+                assertType<string[] | null>(result.value.tags);
+            }
+        });
+    });
+
+    it('outputs valid ATD', () => {
+        const result = JSON.parse(JSON.stringify(a.nullable(a.boolean())));
+        expect(result).toStrictEqual({
+            type: 'boolean',
+            nullable: true,
+            metadata: {},
+        });
+    });
 });
 
 describe('optional()', () => {
@@ -157,6 +184,48 @@ describe('optional()', () => {
             });
         });
     });
+    describe('standard-schema support', () => {
+        it('properly infers types', async () => {
+            const Schema = a.object({
+                id: a.string(),
+                name: a.string(),
+                tags: a.optional(a.array(a.string())),
+            });
+            type Schema = a.infer<typeof Schema>;
+            assertType<StandardSchemaV1<Schema>>(Schema);
+            const result = await Schema['~standard'].validate('');
+            if (!result.issues) {
+                assertType<Schema>(result.value);
+                assertType<string[] | undefined>(result.value.tags);
+            }
+        });
+    });
+
+    it('outputs valid ATD', () => {
+        const result = JSON.parse(
+            JSON.stringify(
+                a.object({
+                    id: a.string(),
+                    name: a.optional(a.string()),
+                }),
+            ),
+        );
+        expect(result).toStrictEqual({
+            properties: {
+                id: {
+                    type: 'string',
+                    metadata: {},
+                },
+            },
+            optionalProperties: {
+                name: {
+                    type: 'string',
+                    metadata: {},
+                },
+            },
+            metadata: {},
+        });
+    });
 });
 
 describe('clone()', () => {
@@ -176,5 +245,29 @@ describe('clone()', () => {
         type ModifiedStringSchema = a.infer<typeof ModifiedStringSchema>;
         assertType<ModifiedStringSchema>('hello world');
         expect(ModifiedStringSchema.metadata.id).toBe('cloned_string_schema');
+    });
+
+    describe('standard-schema support', () => {
+        it('properly infers types', async () => {
+            const Schema = a.enumerator(['FOO', 'BAR', 'BAZ']);
+            type Schema = a.infer<typeof Schema>;
+            assertType<StandardSchemaV1<Schema>>(Schema);
+            let result = await Schema['~standard'].validate('');
+            if (!result.issues) assertType<Schema>(result.value);
+
+            const ClonedSchema = a.clone(Schema);
+            type ClonedSchema = a.infer<typeof ClonedSchema>;
+            assertType<StandardSchemaV1<ClonedSchema>>(ClonedSchema);
+            result = await ClonedSchema['~standard'].validate('');
+            if (!result.issues) assertType<ClonedSchema>(result.value);
+        });
+    });
+
+    it('produces valid ATD', () => {
+        const result = JSON.parse(JSON.stringify(a.clone(a.boolean())));
+        expect(result).toStrictEqual({
+            type: 'boolean',
+            metadata: {},
+        });
     });
 });

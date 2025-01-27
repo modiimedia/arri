@@ -169,7 +169,7 @@ export function kotlinServiceFromSchema(
         content: `class ${name}(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __${context.clientName}HeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     ${procedureParts.join('\n\n    ')}

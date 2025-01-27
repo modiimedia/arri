@@ -6,6 +6,10 @@ import {
     type ValidationContext,
 } from '../schemas';
 import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
+import {
     int8Max,
     int8Min,
     int16Max,
@@ -193,7 +197,7 @@ export function int64(
         });
         return undefined;
     }
-    return {
+    const result: AScalarSchema<'int64', bigint> = {
         type: 'int64',
         metadata: {
             id: opts.id,
@@ -212,7 +216,10 @@ export function int64(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(isType, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 export function uint64(
@@ -260,7 +267,7 @@ export function uint64(
         });
         return undefined;
     }
-    return {
+    const result: AScalarSchema<'uint64', bigint> = {
         type: 'uint64',
         metadata: {
             id: opts.id,
@@ -279,11 +286,14 @@ export function uint64(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(isType, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 function validateNumber(input: unknown): input is number {
-    return typeof input === 'number' || !Number.isNaN(input);
+    return typeof input === 'number';
 }
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
@@ -322,7 +332,41 @@ function numberScalarType<TType extends NumberType>(
         input: number,
     ) => { success: true } | { success: false; message: string },
 ): AScalarSchema<TType, number> {
-    return {
+    const validate = (input: unknown): input is number => {
+        const isNum = validateNumber(input);
+        if (!isNum) {
+            return false;
+        }
+        return numTypeMatcher(input).success;
+    };
+    const parse = (
+        input: unknown,
+        context: ValidationContext,
+    ): number | undefined => {
+        const result = parseNumber(input, context);
+        if (context.errors.length) {
+            return undefined;
+        }
+        if (typeof result !== 'number') {
+            context?.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/type`,
+                message: `Error at ${context.instancePath}. Invalid number.`,
+            });
+            return undefined;
+        }
+        const matchResult = numTypeMatcher(result);
+        if (matchResult.success) {
+            return result;
+        }
+        context?.errors.push({
+            instancePath: context.instancePath,
+            schemaPath: `${context.schemaPath}/type`,
+            message: `Error at ${context.instancePath}. ${matchResult.message}`,
+        });
+        return undefined;
+    };
+    const result: AScalarSchema<TType, number> = {
         type,
         metadata: {
             id: opts.id,
@@ -330,37 +374,8 @@ function numberScalarType<TType extends NumberType>(
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: 0,
-                validate(input): input is number {
-                    const isNum = validateNumber(input);
-                    if (!isNum) {
-                        return false;
-                    }
-                    return numTypeMatcher(input).success;
-                },
-                parse(input, options) {
-                    const result = parseNumber(input, options);
-                    if (options.errors.length) {
-                        return undefined;
-                    }
-                    if (typeof result !== 'number') {
-                        options?.errors.push({
-                            instancePath: options.instancePath,
-                            schemaPath: `${options.schemaPath}/type`,
-                            message: `Error at ${options.instancePath}. Invalid number.`,
-                        });
-                        return undefined;
-                    }
-                    const matchResult = numTypeMatcher(result);
-                    if (matchResult.success) {
-                        return result;
-                    }
-                    options?.errors.push({
-                        instancePath: options.instancePath,
-                        schemaPath: `${options.schemaPath}/type`,
-                        message: `Error at ${options.instancePath}. ${matchResult.message}`,
-                    });
-                    return undefined;
-                },
+                validate,
+                parse,
                 serialize: serializeNumber,
                 coerce(input, options) {
                     const result = coerceNumber(input, options);
@@ -387,5 +402,8 @@ function numberScalarType<TType extends NumberType>(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(validate, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }

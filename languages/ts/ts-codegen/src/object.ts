@@ -47,7 +47,7 @@ export function tsObjectFromSchema(
             return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
         },
         toQueryStringTemplate(_input, _target) {
-            return `console.warn("[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.")`;
+            return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: '',
     };

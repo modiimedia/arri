@@ -21,10 +21,11 @@ export function kotlinMapFromSchema(
         existingTypeIds: context.existingTypeIds,
     });
 
-    const typeName = `MutableMap<String, ${subType.typeName}${subType.isNullable ? '?' : ''}>`;
+    const typeName = `MutableMap<String, ${subType.prefixedTypeName}${subType.isNullable ? '?' : ''}>`;
     const defaultValue = nullable ? 'null' : 'mutableMapOf()';
     return {
         typeName,
+        prefixedTypeName: typeName,
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {

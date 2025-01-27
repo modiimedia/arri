@@ -4,7 +4,10 @@ import {
     SCHEMA_METADATA,
     type ValidationContext,
 } from '../schemas';
-
+import {
+    createStandardSchemaProperty as createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 /**
  * Create a Date schema
  *
@@ -15,7 +18,7 @@ import {
 export function timestamp(
     opts: ASchemaOptions = {},
 ): AScalarSchema<'timestamp', Date> {
-    return {
+    const result: AScalarSchema<'timestamp', Date> = {
         type: 'timestamp',
         metadata: {
             id: opts.id,
@@ -29,7 +32,10 @@ export function timestamp(
                 serialize,
             },
         },
+        '~standard': createStandardSchemaProperty(validate, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 function validate(input: unknown): input is Date {
@@ -51,7 +57,6 @@ function parse(input: unknown, data: ValidationContext): Date | undefined {
         }
         return new Date(result);
     }
-
     data.errors.push({
         message: `Error at ${data.instancePath}. Invalid date.`,
         instancePath: data.instancePath,

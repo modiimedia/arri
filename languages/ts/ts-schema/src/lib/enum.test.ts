@@ -1,3 +1,5 @@
+import { StandardSchemaV1 } from '@standard-schema/spec';
+
 import * as a from './_namespace';
 
 const UserRolesSchema = a.stringEnum(['admin', 'standard']);
@@ -58,4 +60,24 @@ test('ID shorthand matches standard function', () => {
         expect(a.validate(SchemaA, val)).toBe(false);
         expect(a.validate(SchemaB, val)).toBe(false);
     }
+});
+
+it('Produces valid ATD', () => {
+    const result = JSON.parse(
+        JSON.stringify(a.enumerator(['FOO', 'BAR', 'BAZ'])),
+    );
+    expect(result).toStrictEqual({
+        enum: ['FOO', 'BAR', 'BAZ'],
+        metadata: {},
+    });
+});
+
+describe('standard-schema support', () => {
+    it('properly infers types', async () => {
+        const Schema = a.enumerator(['FOO', 'BAR', 'BAZ']);
+        type Schema = a.infer<typeof Schema>;
+        assertType<StandardSchemaV1<Schema>>(Schema);
+        const result = await Schema['~standard'].validate('');
+        if (!result.issues) assertType<Schema>(result.value);
+    });
 });

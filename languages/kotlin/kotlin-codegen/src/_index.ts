@@ -146,7 +146,7 @@ ${getUtilityFunctions(clientName)}`;
 class ${clientName}(
     private val httpClient: HttpClient,
     private val baseUrl: String,
-    private val headers: headersFn,
+    private val headers: __${clientName}HeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     ${procedureParts.join('\n\n    ')}
@@ -331,7 +331,7 @@ data class ${clientName}Error(
 
 function getUtilityFunctions(clientName: string): string {
     return `// Implementation copied from https://github.com/Kotlin/kotlinx.serialization/blob/d0ae697b9394103879e6c7f836d0f7cf128f4b1e/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt#L45
-internal const val STRING = '"'
+private const val STRING = '"'
 
 private fun toHexChar(i: Int): Char {
     val d = i and 0xf
@@ -339,7 +339,7 @@ private fun toHexChar(i: Int): Char {
     else (d - 10 + 'a'.code).toChar()
 }
 
-internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
+private val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     for (c in 0..0x1f) {
         val c1 = toHexChar(c shr 12)
         val c2 = toHexChar(c shr 8)
@@ -356,7 +356,7 @@ internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     this[0x0c] = "\\\\f"
 }
 
-internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
+private val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
     for (c in 0..0x1f) {
         this[c] = 1.toByte()
     }
@@ -369,7 +369,7 @@ internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
     this[0x0c] = 'f'.code.toByte()
 }
 
-internal fun StringBuilder.printQuoted(value: String) {
+private fun StringBuilder.printQuoted(value: String) {
     append(STRING)
     var lastPos = 0
     for (i in value.indices) {
@@ -427,7 +427,7 @@ private suspend fun __prepareRequest(
 }
 
 // SSE_FN_START
-private enum class SseEventLineType {
+private enum class __${clientName}SseEventLineType {
     Id,
     Event,
     Data,
@@ -435,36 +435,36 @@ private enum class SseEventLineType {
     None,
 }
 
-private fun __parseSseEventLine(line: String): Pair<SseEventLineType, String> {
+private fun __parseSseEventLine(line: String): Pair<__${clientName}SseEventLineType, String> {
     if (line.startsWith("id:")) {
-        return Pair(SseEventLineType.Id, line.substring(3).trim())
+        return Pair(__${clientName}SseEventLineType.Id, line.substring(3).trim())
     }
     if (line.startsWith("event:")) {
-        return Pair(SseEventLineType.Event, line.substring(6).trim())
+        return Pair(__${clientName}SseEventLineType.Event, line.substring(6).trim())
     }
     if (line.startsWith("data:")) {
-        return Pair(SseEventLineType.Data, line.substring(5).trim())
+        return Pair(__${clientName}SseEventLineType.Data, line.substring(5).trim())
     }
     if (line.startsWith("retry:")) {
-        return Pair(SseEventLineType.Retry, line.substring(6).trim())
+        return Pair(__${clientName}SseEventLineType.Retry, line.substring(6).trim())
     }
-    return Pair(SseEventLineType.None, "")
+    return Pair(__${clientName}SseEventLineType.None, "")
 }
 
-private data class __SseEvent(
+private data class __${clientName}SseEvent(
     val id: String? = null,
     val event: String,
     val data: String,
     val retry: Int? = null
 )
 
-private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
+private class __${clientName}SseEventParsingResult(val events: List<__${clientName}SseEvent>, val leftover: String)
 
-private fun __parseSseEvents(input: String): __SseEventParsingResult {
-    val events = mutableListOf<__SseEvent>()
+private fun __parseSseEvents(input: String): __${clientName}SseEventParsingResult {
+    val events = mutableListOf<__${clientName}SseEvent>()
     val lines = input.lines()
     if (lines.isEmpty()) {
-        return __SseEventParsingResult(events = listOf(), leftover = "")
+        return __${clientName}SseEventParsingResult(events = listOf(), leftover = "")
     }
     var id: String? = null
     var event: String? = null
@@ -475,18 +475,18 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
         if (line.isNotEmpty()) {
             val (type, value) = __parseSseEventLine(line)
             when (type) {
-                SseEventLineType.Id -> id = value
-                SseEventLineType.Event -> event = value
-                SseEventLineType.Data -> data = value
-                SseEventLineType.Retry -> retry = value.toInt()
-                SseEventLineType.None -> {}
+                __${clientName}SseEventLineType.Id -> id = value
+                __${clientName}SseEventLineType.Event -> event = value
+                __${clientName}SseEventLineType.Data -> data = value
+                __${clientName}SseEventLineType.Retry -> retry = value.toInt()
+                __${clientName}SseEventLineType.None -> {}
             }
         }
         val isEnd = line == ""
         if (isEnd) {
             if (data != null) {
                 events.add(
-                    __SseEvent(
+                    __${clientName}SseEvent(
                         id = id,
                         event = event ?: "message",
                         data = data!!,
@@ -501,7 +501,7 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
             lastIndex = if (index + 1 < lines.size) index + 1 else null
         }
     }
-    return __SseEventParsingResult(
+    return __${clientName}SseEventParsingResult(
         events = events,
         leftover = if (lastIndex != null) lines.subList(lastIndex!!, lines.size).joinToString(separator = "\\n") else ""
     )
@@ -513,7 +513,7 @@ private suspend fun __handleSseRequest(
     url: String,
     method: HttpMethod,
     params: ${clientName}Model?,
-    headers: headersFn,
+    headers: __${clientName}HeadersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,
@@ -759,5 +759,5 @@ private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
-private typealias headersFn = (() -> MutableMap<String, String>?)?`;
+private typealias __${options.clientName}HeadersFn = (() -> MutableMap<String, String>?)?`;
 }

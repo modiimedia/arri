@@ -4,9 +4,9 @@ At its core a generator plugin is just a function that accepts an [app definitio
 
 ## Table of Contents
 
--   [Scaffold a generator project](#scaffold-a-generator-project)
--   [Conventions and Best Practices](#conventions-and-best-practices)
--   [Additional Requirements For Official Client Generators](#additional-requirements-for-official-client-generators)
+- [Scaffold a generator project](#scaffold-a-generator-project)
+- [Conventions and Best Practices](#conventions-and-best-practices)
+- [Additional Requirements For Official Client Generators](#additional-requirements-for-official-client-generators)
 
 ## Scaffold a generator project
 
@@ -19,7 +19,7 @@ arri init ./my-generator --type plugin
 This will scaffold a project with an entry file that looks like this:
 
 ```ts
-import { defineGeneratorPlugin } from "@arrirpc/codegen-utils";
+import { defineGeneratorPlugin } from '@arrirpc/codegen-utils';
 
 // add any options needed for your plugin here
 export interface MyPluginOptions {
@@ -47,19 +47,19 @@ _The following only applies to official Arri client generators. There are no con
 
 Client generators should aim to do the following:
 
--   Output code that is consistent and predictable. The same input should always produce the same output.
--   Output code that follows the standard conventions of the target language
-    -   Ex: if a language expects snake_case keys. Then the code generator should convert the keys as needed.
--   Output code that is ergonomic and feels good to use.
--   Output code comments when a `description` is added to a type definition
--   Output code comments when a `description` is added to an RPC definition
--   Output `deprecated` annotations when a type definition is marked as deprecated
--   Output `deprecated` annotations when an RPC definition is marked as deprecated
--   Create clients that provide easy mechanisms for changing headers.
-    -   You shouldn't have to initialize a whole new client just to change the headers
--   Create clients that notify the server what version they are on with the `client-version` header.
-    -   This version should come from the `info.version` field in the app definition file.
--   Create clients that are tolerant to server side changes. [See below](#creating-tolerant-clients).
+- Output code that is consistent and predictable. The same input should always produce the same output.
+- Output code that follows the standard conventions of the target language
+    - Ex: if a language expects snake_case keys. Then the code generator should convert the keys as needed.
+- Output code that is ergonomic and feels good to use.
+- Output code comments when a `description` is added to a type definition
+- Output code comments when a `description` is added to an RPC definition
+- Output `deprecated` annotations when a type definition is marked as deprecated
+- Output `deprecated` annotations when an RPC definition is marked as deprecated
+- Create clients that provide easy mechanisms for changing headers.
+    - You shouldn't have to initialize a whole new client just to change the headers
+- Create clients that notify the server what version they are on with the `client-version` header.
+    - This version should come from the `info.version` field in the app definition file.
+- Create clients that are tolerant to server side changes. [See below](#creating-tolerant-clients).
 
 ### Creating tolerant clients
 
@@ -152,10 +152,10 @@ User {
 
 #### When is acceptable to have the client return an error?
 
--   The client was unable to connect to the server
--   The server has returned an error
--   The server did not provide the correct content-type header
--   The server did not response with correctly formatted JSON
+- The client was unable to connect to the server
+- The server has returned an error
+- The server did not provide the correct content-type header
+- The server did not response with correctly formatted JSON
 
 #### Conclusion
 
@@ -177,16 +177,16 @@ Personally I will usually hand write a client based on the `AppDefinition.json` 
 
 Unit tests can also be made for the hand-written client to ensure that it deserializes and serializes the following files in `tests/test-files`:
 
--   `Book.json`
--   `BookParams.json`
--   `NestedObject_NoSpecialChars.json`
--   `NestedObject_SpecialChars.json`
--   `ObjectWithEveryType.json`
--   `ObjectWithNullableFields_AllNull.json`
--   `ObjectWithNullableFields_NoNull.json`
--   `ObjectWithOptionalFields_AllUndefined.json`
--   `ObjectWithOptionalFields_NoUndefined.json`
--   `RecursiveObject.json`
+- `Book.json`
+- `BookParams.json`
+- `NestedObject_NoSpecialChars.json`
+- `NestedObject_SpecialChars.json`
+- `ObjectWithEveryType.json`
+- `ObjectWithNullableFields_AllNull.json`
+- `ObjectWithNullableFields_NoNull.json`
+- `ObjectWithOptionalFields_AllUndefined.json`
+- `ObjectWithOptionalFields_NoUndefined.json`
+- `RecursiveObject.json`
 
 I encourage you to look at some of the codegen-reference projects in `/languages` to see what some of this looks like. For example look at the tests in `/languages/dart/dart-codegen-reference` and `/languages/dart/dart-codegen` to see how they reference one another and how they reference the test files.
 

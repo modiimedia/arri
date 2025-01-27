@@ -4,8 +4,13 @@ import {
     type ARefSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
+    SchemaMetadata,
     type ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 
 let recursiveTypeCount = 0;
 
@@ -81,36 +86,43 @@ export function recursive<T = any>(
         );
     }
     const id = options.id ?? `TypeRef${recursiveTypeCount}`;
-    const mainSchema = callback({
-        ref: id,
-        metadata: {
-            [SCHEMA_METADATA]: {
-                output: '' as T,
-                parse(input, context) {
-                    if (recursiveFns[id]) {
-                        return recursiveFns[id]!.parse(input, context);
-                    }
-                },
-                serialize(input, context) {
-                    if (recursiveFns[id]) {
-                        return recursiveFns[id]!.serialize(input, context);
-                    }
-                    return '';
-                },
-                validate(input): input is T {
-                    if (recursiveFns[id]) {
-                        return recursiveFns[id]!.validate(input);
-                    }
-                    return false;
-                },
-                coerce(input, context) {
-                    if (recursiveFns[id]) {
-                        return recursiveFns[id]!.coerce(input, context);
-                    }
-                },
+    const metadata: SchemaMetadata<T> = {
+        [SCHEMA_METADATA]: {
+            output: '' as T,
+            parse(input, context) {
+                if (recursiveFns[id]) {
+                    return recursiveFns[id]!.parse(input, context);
+                }
+            },
+            serialize(input, context) {
+                if (recursiveFns[id]) {
+                    return recursiveFns[id]!.serialize(input, context);
+                }
+                return '';
+            },
+            validate(input): input is T {
+                if (recursiveFns[id]) {
+                    return recursiveFns[id]!.validate(input);
+                }
+                return false;
+            },
+            coerce(input, context) {
+                if (recursiveFns[id]) {
+                    return recursiveFns[id]!.coerce(input, context);
+                }
             },
         },
-    });
+    };
+    const schema: ARefSchema<T> = {
+        ref: id,
+        metadata: metadata,
+        '~standard': createStandardSchemaProperty(
+            metadata[SCHEMA_METADATA].validate,
+            metadata[SCHEMA_METADATA].parse,
+        ),
+    };
+    hideInvalidProperties(schema);
+    const mainSchema = callback(schema);
     mainSchema.metadata.id = id;
     mainSchema.metadata.description =
         options?.description ?? mainSchema.metadata.description;

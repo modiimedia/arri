@@ -19,7 +19,7 @@ struct CustomRequestDelegate: ArriRequestDelegate {
         if request.body != nil {
             httpRequest.body = .bytes(ByteBuffer(string: request.body!))
         }
-        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
+        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(Int64(request.timeoutMs)))
         let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
         var responseData: Data?
         if responseBody != nil {

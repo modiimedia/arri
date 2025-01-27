@@ -1,6 +1,8 @@
 # Arri Schema
 
-A type builder and validation library for [Arri Type Definitions](/specifications/arri_type_definition.md). A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
+A Typescript validator and schema builder that can be compiled to other languages. A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library. This library also supports [standard-schema](https://github.com/standard-schema/standard-schema) meaning it can be used with any third-party library that accepts standard schema.
+
+Under the hood this library constructs [Arri Type Definitions (ATD)](/specifications/arri_type_definition.md). These definitions can be passed to the [Arri CLI](/tooling/cli//README.md) to generate code for any of the client languages that Arri supports. Lastly, this library also comes with a [JIT compiler](#compiled-validators) which produces precompiled validators that are more than 100x faster than Zod.
 
 ## Project Philosophy
 
@@ -24,7 +26,8 @@ Originally this library was created as a way for building schemas for [Json Type
 
 - [Installation](#installation)
 - [Basic Example](#basic-example)
-- [Usage With @arrirpc/server](#usage-with-arrirpcserver)
+- [Usage with @arrirpc/server](#usage-with-arrirpcserver)
+- [Compiling to other languages](#compiling-to-other-languages)
 - [Supported Types](#supported-types)
     - [Primitives](#primitives)
     - [Enums](#enums)
@@ -48,8 +51,8 @@ Originally this library was created as a way for building schemas for [Json Type
     - [Safe Coerce](#safe-coerce)
     - [Serialize](#serialize)
     - [Errors](#errors)
-- [Compiled Validators](#compiled-validators)
 - [Metadata](#metadata)
+- [Compiled Validators](#compiled-validators)
 - [Benchmarks](#benchmarks)
 - [Development](#development)
 
@@ -66,7 +69,7 @@ pnpm install @arrirpc/schema
 ## Basic Example
 
 ```ts
-import { a } from "@arrirpc/schema";
+import { a } from '@arrirpc/schema';
 
 const User = a.object({
     id: a.string(),
@@ -81,12 +84,18 @@ a.parse(User, `{"id": "1", "name": "John Doe"}`);
 a.parse(User, `{"id": "1", "name": null}`);
 
 // returns true
-a.validate(User, { id: "1", name: "John Doe" });
+a.validate(User, { id: '1', name: 'John Doe' });
 // returns false
-a.validate(User, { id: "1", name: null });
+a.validate(User, { id: '1', name: null });
 
 // outputs valid json
-a.serialize(User, { id: "1", name: "John Doe" });
+a.serialize(User, { id: '1', name: 'John Doe' });
+
+// JIT compiled validator (faster but server-side only)
+const $$User = a.compile(User);
+$$User.validate({ id: '1', name: 'John Doe' });
+$$User.parse(`{"id": "1", "name": "John Doe"}`);
+$$User.serialize({ id: '1', name: 'John Doe' });
 ```
 
 ## Usage With @arrirpc/server
@@ -94,8 +103,8 @@ a.serialize(User, { id: "1", name: "John Doe" });
 See [here](/languages/ts/ts-server/README.md) for full details.
 
 ```ts
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
 export default defineRpc({
     params: a.object({
@@ -112,6 +121,135 @@ export default defineRpc({
     },
 });
 ```
+
+## Compiling To Other Languages
+
+All schemas defined with this library can be compiled to other languages using the [Arri CLI](/tooling/cli/README.md).
+
+### Install the Arri ClI
+
+```bash
+# npm
+npm i --save-dev arri
+
+# pnpm
+pnpm i --save-dev arri
+```
+
+### Create You Arri Config
+
+```ts
+import { defineConfig, generators } from 'arri';
+
+export default defineConfig({
+    generators: [
+        // add your generators here
+        generators.rustClient({
+            // options
+        }),
+        generators.dartClient({
+            // options
+        }),
+    ],
+});
+```
+
+### Create And Export Your Schemas
+
+Use the `createAppDefinition` helper to export your schemas for the Arri CLI.
+
+```ts
+// definitions.ts
+import { createAppDefinition } from 'arri';
+import { a } from '@arrirpc/schema';
+
+const User = a.object('User', {
+    id: a.string(),
+    name: a.optional(string()),
+    email: a.nullable(a.string()),
+    createdAt: a.timestamp({ description: 'When the user was created' }),
+    updatedAt: a.timestamp(),
+});
+
+export default createAppDefinition({
+    definitions: {
+        User,
+    },
+});
+```
+
+### Run the Code Generator
+
+```bash
+# npm
+npx arri codegen ./definitions.ts
+
+# pnpm
+pnpm arri codegen ./definitions.ts
+```
+
+And your done. Now you can rerun this command whenever any of your schemas get updated.
+
+### Example Output
+
+```dart
+// dart output
+
+class User {
+  final String id;
+  final String? name;
+  final String? email;
+  /// when the user was created
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const User({
+     required this.id,
+     this.name,
+     required this.email,
+     required this.createdAt,
+     required this.updatedAt,
+  });
+
+  // implementation details
+}
+```
+
+```rust
+// rust output
+
+pub struct User {
+  id: String,
+  name: String,
+  name: Option<String>,
+  email: Option<String>,
+  // when the user was created
+  created_at: DateTime<FixedOffset>,
+  updated_at: DateTime<FixedOffset>,
+}
+
+impl ArriModel for User {
+  // implementation details
+}
+```
+
+```kotlin
+// kotlin output
+
+data class User(
+  val id: String,
+  val name: String?,
+  val email: String? = null,
+  /**
+   * When the user was created
+   */
+  val createdAt: Instant,
+  val updatedAt: Instance,
+) {
+  // implementation details
+}
+```
+
+See [here](/README.md#client-generators) for a list of all officially supported language generators.
 
 ## Supported Types
 
@@ -141,14 +279,14 @@ Enum schemas allow you to specify a predefine list of accepted strings
 **Usage**
 
 ```ts
-const Status = a.enumerator(["ACTIVE", "INACTIVE", "UNKNOWN"]);
+const Status = a.enumerator(['ACTIVE', 'INACTIVE', 'UNKNOWN']);
 type Status = a.infer<typeof Status>; // "ACTIVE" | "INACTIVE" | "UNKNOWN";
 
-a.validate(Status, "BLAH"); // false
-a.validate(Status, "ACTIVE"); // true
+a.validate(Status, 'BLAH'); // false
+a.validate(Status, 'ACTIVE'); // true
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -165,10 +303,10 @@ const MyList = a.array(a.string());
 type MyList = a.infer<typeof MyList>; // string[];
 
 a.validate(MyList, [1, 2]); // false
-a.validate(MyList, ["hello", "world"]); // true
+a.validate(MyList, ['hello', 'world']); // true
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -190,19 +328,19 @@ const User = a.object({
 });
 type User = a.infer<typeof User>; // { id: string; email: string; created: Date; }
 
-a.validate({
-    id: "1",
-    email: "johndoe@example.com",
+a.validate(User, {
+    id: '1',
+    email: 'johndoe@example.com',
     created: new Date(),
 }); // true
-a.validate({
-    id: "1",
+a.validate(User, {
+    id: '1',
     email: null,
     created: new Date(),
 }); // false
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -237,14 +375,14 @@ const UserStrict = a.object(
 );
 
 a.parse(UserStrict, {
-    id: "1",
-    name: "johndoe",
+    id: '1',
+    name: 'johndoe',
     created: new Date(),
-    bio: "my name is joe",
+    bio: 'my name is joe',
 }); // fails parsing because of the additional field "bio"
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -276,11 +414,11 @@ a.validate(R, {
     world: false,
 }); // true;
 a.validate(R, {
-    hello: "world",
+    hello: 'world',
 }); // false;
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -295,7 +433,7 @@ a.validate(R, {
 **Usage**
 
 ```ts
-const Shape = a.discriminator("type", {
+const Shape = a.discriminator('type', {
     RECTANGLE: a.object({
         width: a.float32(),
         height: a.float32(),
@@ -307,26 +445,26 @@ const Shape = a.discriminator("type", {
 type Shape = a.infer<typeof Shape>; // { type: "RECTANGLE"; width: number; height: number; } | { type: "CIRCLE"; radius: number; }
 
 // Infer specific sub types of the union
-type ShapeTypeRectangle = a.inferSubType<Shape, "type", "RECTANGLE">; // { type "RECTANGLE"; width: number; height: number; };
-type ShapeTypeCircle = a.inferSubType<Shape, "type", "CIRCLE">; // { type "CIRCLE"; radius: number; }
+type ShapeTypeRectangle = a.inferSubType<Shape, 'type', 'RECTANGLE'>; // { type "RECTANGLE"; width: number; height: number; };
+type ShapeTypeCircle = a.inferSubType<Shape, 'type', 'CIRCLE'>; // { type "CIRCLE"; radius: number; }
 
 a.validate(Shape, {
-    type: "RECTANGLE",
+    type: 'RECTANGLE',
     width: 1,
     height: 1.5,
 }); // true
 a.validate(Shape, {
-    type: "CIRCLE",
+    type: 'CIRCLE',
     radius: 5,
 }); // true
 a.validate(Shape, {
-    type: "CIRCLE",
+    type: 'CIRCLE',
     width: 1,
     height: 1.5,
 }); // false
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -385,7 +523,7 @@ const BinaryTree = a.recursive<BinaryTree>(
             right: a.nullable(self),
         }),
     {
-        id: "BinaryTree",
+        id: 'BinaryTree',
     },
 );
 
@@ -411,7 +549,7 @@ a.validate(BinaryTree, {
 }); // false
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -454,7 +592,7 @@ const User = a.object({
  */
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -487,7 +625,7 @@ const name = a.nullable(a.string());
  */
 ```
 
-**Outputted JTD**
+**Outputted ATD**
 
 ```json
 {
@@ -506,7 +644,7 @@ const A = a.object(
         a: a.string(),
         b: a.float32(),
     },
-    { id: "A" },
+    { id: 'A' },
 );
 console.log(A.metadata.id); // "A"
 
@@ -545,7 +683,7 @@ const A = a.object({
 });
 // { a: string; b: number; }
 
-const B = a.omit(A, ["a"]);
+const B = a.omit(A, ['a']);
 // { b: number; }
 ```
 
@@ -561,7 +699,7 @@ const A = a.object({
 });
 // { a: string; b: number; c: Date; }
 
-const B = a.pick(A, ["a", "c"]);
+const B = a.pick(A, ['a', 'c']);
 // { a: string; c: Date; }
 ```
 
@@ -593,7 +731,7 @@ const User = a.object({
     name: a.string(),
 });
 a.validate(User, true); // false
-a.validate(User, { id: "1", name: "john doe" }); // true
+a.validate(User, { id: '1', name: 'john doe' }); // true
 
 if (a.validate(User, someInput)) {
     console.log(someInput.id); // intellisense works here
@@ -644,9 +782,9 @@ const A = a.object({
 });
 
 a.coerce(A, {
-    a: "1",
-    b: "true",
-    c: "500.24",
+    a: '1',
+    b: 'true',
+    c: '500.24',
 });
 // { a: "1", b: true, c: 500.24 };
 ```
@@ -681,7 +819,7 @@ const User = a.object({
     name: a.string(),
 });
 
-a.serialize(User, { id: "1", name: "john doe" });
+a.serialize(User, { id: '1', name: 'john doe' });
 // {"id":"1","name":"john doe"}
 ```
 
@@ -697,7 +835,7 @@ const User = a.object({
     date: a.timestamp(),
 });
 
-a.errors(User, { id: 1, date: "hello world" });
+a.errors(User, { id: 1, date: 'hello world' });
 /**
  * [
  *   {
@@ -713,34 +851,6 @@ a.errors(User, { id: 1, date: "hello world" });
  * ]
  *
  */
-```
-
-## Compiled Validators
-
-`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions.
-
-```ts
-const User = a.object({
-    id: a.string(),
-    email: a.nullable(a.string()),
-    created: a.timestamp(),
-});
-
-const $$User = a.compile(User);
-
-$$User.validate(someInput);
-$$User.parse(someJson);
-$$User.serialize({ id: "1", email: null, created: new Date() });
-```
-
-In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
-
-You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
-
-```ts
-$$User.compiledCode.validate; // the generated validation code
-$$User.compiledCode.parse; // the generated parsing code
-$$User.compiledCode.serialize; // the generated serialization code
 ```
 
 ## Metadata
@@ -764,8 +874,8 @@ const BookSchema = a.object(
         publishDate: a.timestamp(),
     },
     {
-        id: "Book",
-        description: "This is a book",
+        id: 'Book',
+        description: 'This is a book',
     },
 );
 ```
@@ -825,20 +935,20 @@ data class Book(
 )
 ```
 
-### ID Shorthand (Experimental)
+### ID Shorthand
 
-Because IDs are really important for producing concise type names. Arri validate also provides an _experimental\*_ shorthand for defining IDs of objects, discriminators, and recursive types.
+Because IDs are really important for producing concise type names. Arri validate also provides shorthand for defining IDs of objects, discriminators, and recursive types.
 
 ```ts
 // ID will be set to "Book"
-const BookSchema = a.object("Book", {
+const BookSchema = a.object('Book', {
     title: a.string(),
     author: a.string(),
     publishDate: a.timestamp(),
 });
 
 // ID will be set to "Message"
-const MessageSchema = a.discriminator("Message", "type", {
+const MessageSchema = a.discriminator('Message', 'type', {
     TEXT: a.object({
         userId: a.string(),
         content: a.string(),
@@ -850,7 +960,7 @@ const MessageSchema = a.discriminator("Message", "type", {
 });
 
 // ID will be set to "BTree"
-const BinaryTreeSchema = a.recursive("BTree", (self) =>
+const BinaryTreeSchema = a.recursive('BTree', (self) =>
     a.object({
         left: a.nullable(self),
         right: a.nullable(self),
@@ -858,7 +968,33 @@ const BinaryTreeSchema = a.recursive("BTree", (self) =>
 );
 ```
 
-\* Because this is experimental it may be removed in the future. The main thing I'm testings is whether added convenience is worth the overhead of maintaining 2 versions of each of these functions. The shorthand could also introduce unintended confusion for users of this library as it creates two places to look for an id.
+## Compiled Validators
+
+`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions. The result of the compilation also implements the [standard-schema](https://github.com/standard-schema/standard-schema) interface, meaning it can be passed into any library that accepts standard-schema.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    email: a.nullable(a.string()),
+    created: a.timestamp(),
+});
+
+const $$User = a.compile(User);
+
+$$User.validate(someInput);
+$$User.parse(someJson);
+$$User.serialize({ id: '1', email: null, created: new Date() });
+```
+
+In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods are created using [`new Function()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
+
+You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
+
+```ts
+$$User.compiledCode.validate; // the generated validation code
+$$User.compiledCode.parse; // the generated parsing code
+$$User.compiledCode.serialize; // the generated serialization code
+```
 
 ## Benchmarks
 

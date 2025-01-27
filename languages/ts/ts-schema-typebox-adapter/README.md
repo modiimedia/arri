@@ -1,7 +1,3 @@
-## NOTICE:
-
-Currently not in development. Doesn't work with latest Arri version or Typescript version. I may resurrect this down the road if I have time. Although I probably will want to rethink the proper way to approach supporting different validation libraries (i.e. TypeBox, Zod, etc)
-
 # Arri Typebox Adapter
 
 Let's you reuse your [Typebox](https://github.com/sinclairzx81/typebox) schemas with Arri-RPC
@@ -20,9 +16,9 @@ Simply wrap your typebox schemas with `typeboxAdapter()` to use them with arrirp
 
 ```ts
 // updateUser.rpc.ts
-import { defineRpc } from "@arrirpc/server";
-import { typeboxAdapter } from "@arrripc/typebox-adapter";
-import { Type } from "typebox";
+import { defineRpc } from '@arrirpc/server';
+import { typeboxAdapter } from '@arrripc/typebox-adapter';
+import { Type } from 'typebox';
 
 const User = Type.Object(
     {
@@ -30,7 +26,7 @@ const User = Type.Object(
         name: Type.String(),
     },
     {
-        $id: "User",
+        $id: 'User',
     },
 );
 

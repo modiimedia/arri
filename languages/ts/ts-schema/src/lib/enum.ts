@@ -2,7 +2,12 @@ import {
     type ASchemaOptions,
     type AStringEnumSchema,
     SCHEMA_METADATA,
+    ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 
 export const stringEnum = enumerator;
 
@@ -58,7 +63,22 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
         }
         return false;
     };
-    return {
+    const parse = (input: unknown, context: ValidationContext) => {
+        if (isType(input)) {
+            return input;
+        }
+        context.errors.push({
+            instancePath: context.instancePath,
+            schemaPath: `${context.schemaPath}/enum`,
+            message: `Error at ${
+                context.instancePath
+            }. Invalid enum value. Expected one of the following values: [${enumVal.join(
+                ', ',
+            )}]`,
+        });
+        return undefined;
+    };
+    const result: AStringEnumSchema<TValues> = {
         enum: enumVal,
         metadata: {
             id: meta?.id,
@@ -66,21 +86,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
             isDeprecated: meta?.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: paramA[0] ?? ('' as any),
-                parse(input, context) {
-                    if (isType(input)) {
-                        return input;
-                    }
-                    context.errors.push({
-                        instancePath: context.instancePath,
-                        schemaPath: `${context.schemaPath}/enum`,
-                        message: `Error at ${
-                            context.instancePath
-                        }. Invalid enum value. Expected one of the following values: [${enumVal.join(
-                            ', ',
-                        )}]`,
-                    });
-                    return undefined;
-                },
+                parse,
                 coerce: (input, context) => {
                     if (isType(input)) {
                         return input;
@@ -105,5 +111,8 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(isType, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }

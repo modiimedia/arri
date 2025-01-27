@@ -4,6 +4,10 @@ import {
     SCHEMA_METADATA,
     type ValidationContext,
 } from '../schemas';
+import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../standardSchema';
 
 /**
  * @example
@@ -14,7 +18,7 @@ import {
 export function boolean(
     opts: ASchemaOptions = {},
 ): AScalarSchema<'boolean', boolean> {
-    return {
+    const result: AScalarSchema<'boolean', boolean> = {
         type: 'boolean',
         metadata: {
             id: opts.id,
@@ -54,7 +58,10 @@ export function boolean(
                 },
             },
         },
+        '~standard': createStandardSchemaProperty(validate, parse),
     };
+    hideInvalidProperties(result);
+    return result;
 }
 
 function validate(input: unknown): input is boolean {

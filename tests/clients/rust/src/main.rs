@@ -1,5 +1,7 @@
 #[path = "test_client.g.rs"]
 mod test_client;
+#[path = "test_client_prefixed.g.rs"]
+mod test_client_prefixed;
 fn main() {}
 
 #[cfg(test)]
