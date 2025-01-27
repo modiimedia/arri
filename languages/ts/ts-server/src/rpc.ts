@@ -277,7 +277,7 @@ export function registerRpc(
             }
             if (typeof response === 'object') {
                 const payload = responseValidator?.serialize(response);
-                if (payload && payload?.success !== true) {
+                if (payload && payload.success !== true) {
                     throw defineError(500, {
                         message:
                             'Failed to serialize response. Response does not match specified schema',
@@ -285,7 +285,7 @@ export function registerRpc(
                     });
                 }
                 setResponseHeader(event, 'Content-Type', 'application/json');
-                await send(event, payload ?? JSON.stringify(response));
+                await send(event, payload?.value ?? JSON.stringify(response));
             } else {
                 setResponseHeader(event, 'Content-Type', 'application/json');
                 await send(event, `{}`);
