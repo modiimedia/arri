@@ -37,7 +37,7 @@ Click [here](/languages/ts/ts-server/README.md) to get started with a Typescript
 
 ### Go
 
-Be aware that go support is still in early stages. Click [here](/languages/go/go-server/README.md) to get started.
+Click [here](/languages/go/go-server/README.md) to get started with Go. Be aware that Go support is still in early stages.
 
 ### Server Language Roadmap
 
