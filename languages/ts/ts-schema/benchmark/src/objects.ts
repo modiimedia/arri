@@ -462,12 +462,7 @@ void benny.suite(
         }
     }),
     benny.add('Zod', () => {
-        try {
-            ZodUser.parse(badInput);
-            throw new Error('Expected to fail');
-        } catch (_) {
-            // do nothing
-        }
+        ZodUser.safeParse(badInput);
     }),
     benny.add('Valibot', () => {
         if (v.is(ValibotUser, badInput)) {
@@ -539,25 +534,11 @@ void benny.suite(
     benny.add('Arri', () => {
         a.parse(ArriUser, badInputJson);
     }),
-    benny.add('Arri Unsafe', () => {
-        try {
-            a.parseUnsafe(ArriUser, badInputJson);
-        } catch (_) {
-            // do nothing
-        }
-    }),
     benny.add('Arri (StandardSchema)', () => {
         ArriUser['~standard'].validate(badInputJson);
     }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.parse(badInputJson);
-    }),
-    benny.add('Arri (Compiled) Unsafe', () => {
-        try {
-            $$ArriUser.parseUnsafe(badInputJson);
-        } catch (_) {
-            // do nothing
-        }
     }),
     benny.add('Arri (Compiled Standard Schema)', () => {
         $$ArriUser['~standard'].validate(badInputJson);
@@ -572,11 +553,7 @@ void benny.suite(
         v.safeParse(ValibotUser, JSON.parse(badInputJson));
     }),
     benny.add('JSON.parse + Zod', () => {
-        try {
-            ZodUser.parse(JSON.parse(badInputJson));
-        } catch (_) {
-            // do nothing
-        }
+        ZodUser.safeParse(JSON.parse(badInputJson));
     }),
     benny.cycle(),
     benny.complete(),
