@@ -552,7 +552,11 @@ void benny.suite(
         a.parse(ArriUser, badInputJson);
     }),
     benny.add('Arri Unsafe', () => {
-        a.parseUnsafe(ArriUser, badInputJson);
+        try {
+            a.parseUnsafe(ArriUser, badInputJson);
+        } catch (_) {
+            // do nothing
+        }
     }),
     benny.add('Arri (UValidator)', () => {
         ArriUser[UValidator.v1].parse(badInputJson);
@@ -564,7 +568,11 @@ void benny.suite(
         $$ArriUser.parse(badInputJson);
     }),
     benny.add('Arri (Compiled) Unsafe', () => {
-        $$ArriUser.parseUnsafe(badInputJson);
+        try {
+            $$ArriUser.parseUnsafe(badInputJson);
+        } catch (_) {
+            // do nothing
+        }
     }),
     benny.add('Arri (Compiled Standard Schema)', () => {
         $$ArriUser['~standard'].validate(badInputJson);
@@ -579,7 +587,11 @@ void benny.suite(
         v.safeParse(ValibotUser, JSON.parse(badInputJson));
     }),
     benny.add('JSON.parse + Zod', () => {
-        ZodUser.parse(JSON.parse(badInputJson));
+        try {
+            ZodUser.parse(JSON.parse(badInputJson));
+        } catch (_) {
+            // do nothing
+        }
     }),
     benny.cycle(),
     benny.complete(),
@@ -598,7 +610,7 @@ void benny.suite(
 void benny.suite(
     'Object Coercion',
     benny.add('Arri', () => {
-        a.coerceUnsafe(ArriUser, inputWithStringKeys);
+        a.coerce(ArriUser, inputWithStringKeys);
     }),
     benny.add('TypeBox', () => {
         Value.Convert(TypeBoxUser, inputWithStringKeys);
