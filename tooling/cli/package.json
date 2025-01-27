@@ -48,7 +48,6 @@
     "prettier": "^3.4.2"
   },
   "devDependencies": {
-    "@types/degit": "^2.8.6",
-    "@arrirpc/schema-interface": "workspace:*"
+    "@types/degit": "^2.8.6"
   }
 }

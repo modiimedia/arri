@@ -1,17 +1,14 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type AScalarSchema,
+    AScalarSchemaWithAdapters,
     type ASchemaOptions,
     type NumberType,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 import {
     int8Max,
@@ -160,7 +157,7 @@ export function uint32(opts: ASchemaOptions = {}) {
 
 export function int64(
     opts: ASchemaOptions = {},
-): AScalarSchema<'int64', bigint> {
+): AScalarSchemaWithAdapters<'int64', bigint> {
     function isType(input: unknown): input is bigint {
         return (
             typeof input === 'bigint' && input >= int64Min && input <= int64Max
@@ -213,15 +210,14 @@ export function int64(
             return `"${input.toString()}"`;
         },
     };
-    const result: AScalarSchema<'int64', bigint> = {
+    const result: AScalarSchemaWithAdapters<'int64', bigint> = {
         type: 'int64',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -230,7 +226,7 @@ export function int64(
 
 export function uint64(
     opts: ASchemaOptions = {},
-): AScalarSchema<'uint64', bigint> {
+): AScalarSchemaWithAdapters<'uint64', bigint> {
     function isType(input: unknown): input is bigint {
         return (
             typeof input === 'bigint' &&
@@ -285,15 +281,14 @@ export function uint64(
             return `"${input.toString()}"`;
         },
     };
-    const result: AScalarSchema<'uint64', bigint> = {
+    const result: AScalarSchemaWithAdapters<'uint64', bigint> = {
         type: 'uint64',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);
@@ -339,7 +334,7 @@ function numberScalarType<TType extends NumberType>(
     numTypeMatcher: (
         input: number,
     ) => { success: true } | { success: false; message: string },
-): AScalarSchema<TType, number> {
+): AScalarSchemaWithAdapters<TType, number> {
     const validate = (input: unknown): input is number => {
         const isNum = validateNumber(input);
         if (!isNum) {
@@ -403,15 +398,14 @@ function numberScalarType<TType extends NumberType>(
             return undefined;
         },
     };
-    const result: AScalarSchema<TType, number> = {
+    const result: AScalarSchemaWithAdapters<TType, number> = {
         type,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

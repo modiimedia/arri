@@ -1,23 +1,11 @@
-import {
-    Result,
-    UValidatorWith,
-    ValidationException,
-} from '@arrirpc/schema-interface';
-import * as UValidator from '@arrirpc/schema-interface';
 import { isSchemaFormEnum, isSchemaFormType } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
-import {
-    type ASchema,
-    type InferType,
-    newValidationContext,
-    SchemaValidator,
-    ValidationContext,
-} from './_index';
 import { createStandardSchemaProperty } from './adapters';
 import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
 import { createSerializationV2Template as getSchemaSerializationCode } from './compiler/serialize';
 import { createValidationTemplate as getSchemaValidationCode } from './compiler/validate';
+import { Result, ValidationException } from './errors';
 import {
     int8Max,
     int8Min,
@@ -32,6 +20,14 @@ import {
     uint32Max,
     uint32Min,
 } from './lib/numberConstants';
+import {
+    type ASchema,
+    ASchemaStrict,
+    type InferType,
+    newValidationContext,
+    SchemaValidator,
+    ValidationContext,
+} from './schemas';
 
 export {
     getSchemaDecodingCode,
@@ -39,12 +35,8 @@ export {
     getSchemaValidationCode,
 };
 
-export interface CompiledValidator<TSchema extends ASchema<any>>
-    extends StandardSchemaV1<InferType<TSchema>>,
-        UValidatorWith<
-            InferType<TSchema>,
-            'coerce' | 'parse' | 'serialize' | 'validate' | 'toATD'
-        > {
+export interface CompiledValidator<TSchema extends ASchema<any>> {
+    schema: ASchemaStrict<TSchema>;
     /**
      * Determine if a type matches a schema. This is a type guard.
      */
@@ -65,6 +57,9 @@ export interface CompiledValidator<TSchema extends ASchema<any>>
      * Serialize to JSON. Throws an error if it fails.
      */
     serializeUnsafe: (input: InferType<TSchema>) => string;
+    /**
+     * The ATD Schema
+     */
     compiledCode: {
         parse: string;
         serialize: string;
@@ -72,12 +67,15 @@ export interface CompiledValidator<TSchema extends ASchema<any>>
     };
 }
 
+type CompiledValidatorWithAdapters<TSchema extends ASchema> =
+    CompiledValidator<TSchema> & StandardSchemaV1<InferType<TSchema>>;
+
 /**
  * Create compiled versions of the `decode()`, `validate()`, and `serialize()` functions
  */
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
-): CompiledValidator<TSchema> {
+): CompiledValidatorWithAdapters<TSchema> {
     const validateCode = getSchemaValidationCode('input', schema);
     const parser = getCompiledParser('input', schema);
     const parserFn = parser.fn;
@@ -137,8 +135,8 @@ export function compile<TSchema extends ASchema<any>>(
             };
         }
     };
-    const atd = JSON.parse(JSON.stringify(schema));
-    const result: CompiledValidator<TSchema> = {
+    const result: CompiledValidatorWithAdapters<TSchema> = {
+        schema: JSON.parse(JSON.stringify(schema)),
         validate,
         parse: parse,
         parseUnsafe(input) {
@@ -166,14 +164,6 @@ export function compile<TSchema extends ASchema<any>>(
             }
             return result.value;
         }),
-        [UValidator.v1]: {
-            vendor: 'arri/compiled',
-            validate,
-            parse,
-            serialize,
-            coerce: schema[UValidator.v1].coerce,
-            toATD: () => atd,
-        },
     };
     return result;
 }

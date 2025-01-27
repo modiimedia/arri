@@ -47,6 +47,7 @@
     "postversion",
     "pubspec",
     "Quickstart",
+    "Requirable",
     "reqwest",
     "scule",
     "serde",

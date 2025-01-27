@@ -1,5 +1,4 @@
-import { a, type AObjectSchema } from '@arrirpc/schema';
-import { ValueError } from '@arrirpc/schema-interface';
+import { a, type AObjectSchema, ValueError } from '@arrirpc/schema';
 import {
     type H3Error,
     type H3Event,

@@ -1,22 +1,21 @@
-import * as UValidator from '@arrirpc/schema-interface';
 import { type SchemaFormProperties } from '@arrirpc/type-defs';
 
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type AObjectSchema,
     type AObjectSchemaOptions,
+    AObjectSchemaWithAdapters,
     type ASchema,
+    ASchemaWithAdapters,
     type InferObjectOutput,
     type InferType,
     isObject,
     type ResolveObject,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 import { optional } from './modifiers';
 
@@ -37,14 +36,14 @@ export function object<
 >(
     input: TInput,
     opts?: AObjectSchemaOptions<TAdditionalProps>,
-): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps>;
+): AObjectSchemaWithAdapters<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
     TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     id: string,
     input: TInput,
-): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps>;
+): AObjectSchemaWithAdapters<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     TInput extends Record<any, ASchema> = {},
@@ -52,7 +51,7 @@ export function object<
 >(
     propA: TInput | string,
     propB?: TInput | AObjectSchemaOptions<TAdditionalProps>,
-): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps> {
+): AObjectSchemaWithAdapters<InferObjectOutput<TInput>, TAdditionalProps> {
     const isIdShorthand = typeof propA === 'string';
     const input = isIdShorthand ? (propB as TInput) : propA;
     const options = isIdShorthand
@@ -66,7 +65,7 @@ export function object<
     }
     for (const key of Object.keys(input)) {
         const prop = input[key]!;
-        if (prop[ValidationsKey].optional) {
+        if (prop[VALIDATOR_KEY].optional) {
             if (!schema.optionalProperties) {
                 schema.optionalProperties = {};
             }
@@ -76,14 +75,14 @@ export function object<
         schema.properties[key] = prop;
     }
     const validate = (input: unknown): input is InferObjectOutput<TInput> => {
-        return validateObjectSchema(schema as AObjectSchema, input);
+        return validateObjectSchema(schema as AObjectSchemaWithAdapters, input);
     };
     const decode = (
         input: unknown,
         context: ValidationContext,
     ): InferObjectOutput<TInput> | undefined => {
         return decodeObjectSchema(
-            schema as AObjectSchema,
+            schema as AObjectSchemaWithAdapters,
             input,
             context,
             false,
@@ -94,7 +93,7 @@ export function object<
         parse: decode,
         coerce(input: unknown, context) {
             return decodeObjectSchema(
-                schema as AObjectSchema,
+                schema as AObjectSchemaWithAdapters,
                 input,
                 context,
                 true,
@@ -102,18 +101,21 @@ export function object<
         },
         validate,
         serialize(input, context) {
-            return serializeObject(schema as AObjectSchema, input, context);
+            return serializeObject(
+                schema as AObjectSchemaWithAdapters,
+                input,
+                context,
+            );
         },
     };
-    const result: AObjectSchema<any, TAdditionalProps> = {
+    const result: AObjectSchemaWithAdapters<any, TAdditionalProps> = {
         ...(schema as any),
         metadata: {
             id: options.id,
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validate, decode),
     };
     hideInvalidProperties(result);
@@ -121,7 +123,7 @@ export function object<
 }
 
 export function decodeObjectSchema<T>(
-    schema: AObjectSchema<T>,
+    schema: AObjectSchemaWithAdapters<T>,
     input: unknown,
     context: ValidationContext,
     coerce = false,
@@ -178,7 +180,7 @@ export function decodeObjectSchema<T>(
         const val = parsedInput[key];
         const prop = schema.properties[key]!;
         if (coerce) {
-            result[key] = prop[ValidationsKey].coerce(val, {
+            result[key] = prop[VALIDATOR_KEY].coerce(val, {
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/properties/${key}`,
                 errors: context.errors,
@@ -191,7 +193,7 @@ export function decodeObjectSchema<T>(
             }
             continue;
         }
-        result[key] = prop[ValidationsKey].parse(val, {
+        result[key] = prop[VALIDATOR_KEY].parse(val, {
             instancePath: `${context.instancePath}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             errors: context.errors,
@@ -210,7 +212,7 @@ export function decodeObjectSchema<T>(
             continue;
         }
         if (coerce) {
-            result[key] = prop[ValidationsKey].coerce(val, {
+            result[key] = prop[VALIDATOR_KEY].coerce(val, {
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                 errors: context.errors,
@@ -224,7 +226,7 @@ export function decodeObjectSchema<T>(
             continue;
         }
         if (typeof val !== 'undefined') {
-            result[key] = prop[ValidationsKey].parse(val, {
+            result[key] = prop[VALIDATOR_KEY].parse(val, {
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                 errors: context.errors,
@@ -244,7 +246,7 @@ export function decodeObjectSchema<T>(
 }
 
 export function validateObjectSchema(
-    schema: AObjectSchema,
+    schema: AObjectSchemaWithAdapters,
     input: unknown,
 ): boolean {
     if (!isObject(input)) {
@@ -253,14 +255,14 @@ export function validateObjectSchema(
     const allowedKeys: string[] | undefined = schema.strict ? [] : undefined;
     for (const key of Object.keys(schema.properties)) {
         const propSchema = schema.properties[key]!;
-        const isValid = propSchema[ValidationsKey].validate(input[key]);
+        const isValid = propSchema[VALIDATOR_KEY].validate(input[key]);
         if (!isValid) return false;
         allowedKeys?.push(key);
     }
     if (schema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
             const propsSchema = schema.optionalProperties[key]!;
-            const isValid = propsSchema[ValidationsKey].validate(input[key]);
+            const isValid = propsSchema[VALIDATOR_KEY].validate(input[key]);
             if (!isValid) return false;
             allowedKeys?.push(key);
         }
@@ -286,14 +288,14 @@ export function validateObjectSchema(
  * const SubObject = a.pick(User, ['foo']) // { foo: string; }
  */
 export function pick<
-    TSchema extends AObjectSchema<any, any> = any,
+    TSchema extends AObjectSchemaWithAdapters<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
-    TAdditionalProps extends boolean = false,
+    TStrict extends boolean = false,
 >(
     inputSchema: TSchema,
     keys: TKeys[],
-    options: AObjectSchemaOptions<TAdditionalProps> = {},
-): AObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
+    options: AObjectSchemaOptions<TStrict> = {},
+): AObjectSchemaWithAdapters<Pick<InferType<TSchema>, TKeys>, TStrict> {
     type TOutput = Pick<InferType<TSchema>, TKeys>;
     const schema: SchemaFormProperties = {
         properties: {},
@@ -332,9 +334,9 @@ export function pick<
     const validate = (input: unknown): input is TOutput => {
         return validateObjectSchema(schema as any, input);
     };
-    const result: AObjectSchema<
+    const result: AObjectSchemaWithAdapters<
         Pick<InferType<TSchema>, TKeys>,
-        TAdditionalProps
+        TStrict
     > = {
         ...(schema as any),
         metadata: {
@@ -342,7 +344,7 @@ export function pick<
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [ValidationsKey]: {
+        [VALIDATOR_KEY]: {
             output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
             parse: parse,
             coerce(input, context) {
@@ -372,14 +374,17 @@ export function pick<
  * const SubObject = a.omit(BaseObject, ['foo']) // { bar: string; baz: string; }
  */
 export function omit<
-    TSchema extends AObjectSchema<any, any> = any,
+    TSchema extends AObjectSchemaWithAdapters<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     inputSchema: TSchema,
     keys: TKeys[],
     options: AObjectSchemaOptions<TAdditionalProps> = {},
-): AObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
+): AObjectSchemaWithAdapters<
+    Omit<InferType<TSchema>, TKeys>,
+    TAdditionalProps
+> {
     type TOutput = Omit<InferType<TSchema>, TKeys>;
     const schema: SchemaFormProperties = {
         properties: {
@@ -415,7 +420,7 @@ export function omit<
         context: ValidationContext,
     ): TOutput | undefined =>
         decodeObjectSchema(schema as any, input, context, false);
-    const result: AObjectSchema<
+    const result: AObjectSchemaWithAdapters<
         Omit<InferType<TSchema>, TKeys>,
         TAdditionalProps
     > = {
@@ -425,7 +430,7 @@ export function omit<
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [ValidationsKey]: {
+        [VALIDATOR_KEY]: {
             output: {} as any,
             validate,
             parse: parse,
@@ -443,7 +448,7 @@ export function omit<
 }
 
 export function serializeObject(
-    schema: AObjectSchema,
+    schema: AObjectSchemaWithAdapters,
     input: any,
     context: ValidationContext,
 ) {
@@ -458,7 +463,7 @@ export function serializeObject(
         const val = input[key];
         if (typeof val !== 'undefined') {
             strParts.push(
-                `"${key}":${prop[ValidationsKey].serialize(val, {
+                `"${key}":${prop[VALIDATOR_KEY].serialize(val, {
                     instancePath: `${context.instancePath}/${key}`,
                     schemaPath: `${context.schemaPath}/properties/${key}`,
                     errors: context.errors,
@@ -475,7 +480,7 @@ export function serializeObject(
             const val = input[key];
             if (typeof val !== 'undefined') {
                 strParts.push(
-                    `"${key}":${prop[ValidationsKey].serialize(val, {
+                    `"${key}":${prop[VALIDATOR_KEY].serialize(val, {
                         instancePath: `${context.instancePath}/${key}`,
                         schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                         errors: context.errors,
@@ -491,14 +496,14 @@ export function serializeObject(
 }
 
 export function extend<
-    TBaseSchema extends AObjectSchema<any, any> = any,
-    TSchema extends AObjectSchema<any, any> = any,
+    TBaseSchema extends AObjectSchemaWithAdapters<any, any> = any,
+    TSchema extends AObjectSchemaWithAdapters<any, any> = any,
     TAdditionalProps extends boolean = false,
 >(
     baseSchema: TBaseSchema,
     inputSchema: TSchema,
     options: AObjectSchemaOptions<TAdditionalProps> = {},
-): AObjectSchema<
+): AObjectSchemaWithAdapters<
     ResolveObject<InferType<TBaseSchema> & InferType<TSchema>>,
     TAdditionalProps
 > {
@@ -524,7 +529,7 @@ export function extend<
         input: unknown,
     ): input is InferType<TBaseSchema> & InferType<TSchema> =>
         validateObjectSchema(schema as any, input);
-    const validator: ASchema[typeof ValidationsKey] = {
+    const validator: ASchema[typeof VALIDATOR_KEY] = {
         output: {},
         parse(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, false);
@@ -537,10 +542,9 @@ export function extend<
             return serializeObject(schema as any, input, context);
         },
     };
-    const result: ASchema<any> = {
+    const result: ASchemaWithAdapters<any> = {
         ...schema,
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(
             validator.validate,
             validator.parse,
@@ -551,12 +555,12 @@ export function extend<
 }
 
 export function partial<
-    TSchema extends AObjectSchema<any, any> = any,
+    TSchema extends AObjectSchemaWithAdapters<any, any> = any,
     TAdditionalProps extends boolean = false,
 >(
     schema: TSchema,
     options: AObjectSchemaOptions<TAdditionalProps> = {},
-): AObjectSchema<Partial<InferType<TSchema>>, TAdditionalProps> {
+): AObjectSchemaWithAdapters<Partial<InferType<TSchema>>, TAdditionalProps> {
     const newSchema: SchemaFormProperties = {
         properties: {},
         optionalProperties: {},
@@ -576,7 +580,7 @@ export function partial<
     if (schema.optionalProperties && newSchema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
             const prop = schema.optionalProperties[key]!;
-            if (prop[ValidationsKey].optional) {
+            if (prop[VALIDATOR_KEY].optional) {
                 newSchema.optionalProperties[key] = prop;
             } else {
                 newSchema.optionalProperties[key] = optional(prop);
@@ -594,7 +598,7 @@ export function partial<
     };
     const validator: SchemaValidator<any> = {
         output: {} as any,
-        optional: schema[ValidationsKey].optional,
+        optional: schema[VALIDATOR_KEY].optional,
         validate,
         parse: parse,
         coerce(input, context) {
@@ -604,10 +608,9 @@ export function partial<
             return serializeObject(schema, input, context);
         },
     };
-    const result: ASchema = {
+    const result: ASchemaWithAdapters = {
         ...newSchema,
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         ['~standard']: createStandardSchemaProperty(
             validator.validate,
             validator.parse,

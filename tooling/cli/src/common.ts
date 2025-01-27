@@ -1,5 +1,4 @@
-import { a } from '@arrirpc/schema';
-import { ValidationException } from '@arrirpc/schema-interface';
+import { a, ValidationException } from '@arrirpc/schema';
 import { createConsola } from 'consola';
 import { ofetch } from 'ofetch';
 import path from 'pathe';

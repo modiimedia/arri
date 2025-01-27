@@ -1,8 +1,5 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
@@ -12,13 +9,14 @@ import {
     type InferType,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
+    WithAdapters,
 } from '../schemas';
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
-): AArraySchema<TInnerSchema> {
+): AArraySchema<TInnerSchema> & WithAdapters<InferType<TInnerSchema>[]> {
     const validateType = (
         input: unknown,
     ): input is InferType<AArraySchema<TInnerSchema>> => {
@@ -41,7 +39,7 @@ export function array<TInnerSchema extends ASchema<any> = any>(
             const strParts: string[] = [];
             for (let i = 0; i < input.length; i++) {
                 const item = input[i];
-                const part = schema[ValidationsKey].serialize(item, {
+                const part = schema[VALIDATOR_KEY].serialize(item, {
                     instancePath: `${context.instancePath}/${i}`,
                     schemaPath: `${context.schemaPath}/elements`,
                     errors: context.errors,
@@ -57,15 +55,15 @@ export function array<TInnerSchema extends ASchema<any> = any>(
             return `[${strParts.join(',')}]`;
         },
     };
-    const result: AArraySchema<TInnerSchema> = {
+    const result: AArraySchema<TInnerSchema> &
+        WithAdapters<InferType<TInnerSchema>[]> = {
         elements: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validateType, parseType),
     };
     hideInvalidProperties(result);
@@ -77,7 +75,7 @@ function validate<T>(innerSchema: ASchema<T>, input: unknown): input is T[] {
         return false;
     }
     for (const item of input) {
-        const isValid = innerSchema[ValidationsKey].validate(item);
+        const isValid = innerSchema[VALIDATOR_KEY].validate(item);
         if (!isValid) {
             return false;
         }
@@ -118,7 +116,7 @@ function parse<T>(
     for (let i = 0; i < parsedInput.length; i++) {
         const item = parsedInput[i];
         if (coerce) {
-            const parsedItem = innerSchema[ValidationsKey].coerce(item, {
+            const parsedItem = innerSchema[VALIDATOR_KEY].coerce(item, {
                 instancePath: `${context.instancePath}/${i}`,
                 schemaPath: `${context.schemaPath}/elements`,
                 errors: context.errors,
@@ -131,7 +129,7 @@ function parse<T>(
             // }
             result.push(parsedItem as any);
         } else {
-            const parsedItem = innerSchema[ValidationsKey].parse(item, {
+            const parsedItem = innerSchema[VALIDATOR_KEY].parse(item, {
                 instancePath: `${context.instancePath}/${i}`,
                 schemaPath: `${context.schemaPath}/elements`,
                 errors: context.errors,

@@ -22,7 +22,6 @@
     "dist"
   ],
   "dependencies": {
-    "@arrirpc/schema-interface": "workspace:*",
     "@arrirpc/type-defs": "workspace:*",
     "@standard-schema/spec": "1.0.0",
     "scule": "^1.3.0",

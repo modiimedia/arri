@@ -7,14 +7,16 @@ import {
 } from '@arrirpc/codegen-utils';
 import {
     a,
-    type ADiscriminatorSchema,
-    type AObjectSchema,
-    type ASchema,
-    type InferType,
+    ADiscriminatorSchema,
+    AObjectSchema,
+    errorMessageFromErrors,
+    InferType,
     isADiscriminatorSchema,
     isAObjectSchema,
+    isASchema,
+    Result,
+    ValueError,
 } from '@arrirpc/schema';
-import { errorMessageFromErrors } from '@arrirpc/schema-interface';
 import {
     eventHandler,
     getValidatedQuery,
@@ -35,13 +37,12 @@ import {
 } from './eventStreamRpc';
 import { type MiddlewareEvent } from './middleware';
 import { type RouteOptions } from './route';
-import { type WebsocketRpc } from './websocketRpc';
 
-export type RpcParamSchema<TObjectInner = any, TDiscriminatorInner = any> =
-    | AObjectSchema<TObjectInner>
-    | ADiscriminatorSchema<TDiscriminatorInner>;
+export type RpcParamSchema<T = any> =
+    | AObjectSchema<T>
+    | ADiscriminatorSchema<T>;
 
-export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
+export function isRpcParamSchema(input: unknown): input is RpcParamSchema<any> {
     return isAObjectSchema(input) || isADiscriminatorSchema(input);
 }
 
@@ -57,9 +58,7 @@ export type Rpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> =
-    | HttpRpc<TIsEventStream, TParams, TResponse>
-    | WebsocketRpc<TParams, TResponse>;
+> = HttpRpc<TIsEventStream, TParams, TResponse>;
 
 export interface HttpRpc<
     TIsEventStream extends boolean = false,
@@ -77,20 +76,28 @@ export interface HttpRpc<
     pingInterval?: TIsEventStream extends true ? number : undefined;
     handler: TIsEventStream extends true
         ? EventStreamRpcHandler<
-              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-              TResponse extends RpcParamSchema
+              TParams extends RpcParamSchema<any>
+                  ? InferType<TParams>
+                  : undefined,
+              TResponse extends RpcParamSchema<any>
                   ? InferType<TResponse>
                   : undefined
           >
         : RpcHandler<
-              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-              TResponse extends RpcParamSchema ? InferType<TResponse> : void
+              TParams extends RpcParamSchema<any>
+                  ? InferType<TParams>
+                  : undefined,
+              TResponse extends RpcParamSchema<any>
+                  ? InferType<TResponse>
+                  : void
           >;
     postHandler?: TIsEventStream extends true
         ? undefined
         : RpcPostHandler<
-              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-              TResponse extends RpcParamSchema
+              TParams extends RpcParamSchema<any>
+                  ? InferType<TParams>
+                  : undefined,
+              TResponse extends RpcParamSchema<any>
                   ? InferType<TResponse>
                   : undefined
           >;
@@ -179,46 +186,29 @@ export function getRpcPath(rpcName: string, prefix = ''): string {
 
 export function getRpcParamName(
     rpcName: string,
-    procedure: HttpRpc<any, any, any> | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.params)) {
         return undefined;
     }
-    const nameParts = rpcName
-        .split('.')
-        .map((part) =>
-            removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
-        );
-    const paramName =
-        procedure.params.metadata?.id ??
-        pascalCase(`${nameParts.join(`_`)}_params`);
+    const paramName = getSchemaName(rpcName, 'params', procedure.params);
     return paramName;
 }
 
 export function getRpcResponseName(
     rpcName: string,
-    procedure: HttpRpc<any, any, any> | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
     }
-    const nameParts = rpcName
-        .split('.')
-        .map((part) =>
-            removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
-        );
-    const responseName =
-        procedure.response.metadata?.id ??
-        pascalCase(`${nameParts.join('_')}_response`);
+    const responseName = getSchemaName(rpcName, 'response', procedure.response);
     return responseName;
 }
 
 function getRpcResponseDefinition(
     rpcName: string,
-    procedure:
-        | HttpRpc<any, any>
-        | EventStreamRpc<any, any>
-        | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any> | EventStreamRpc<any, any>,
 ): RpcDefinition['response'] {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -261,7 +251,6 @@ export function registerRpc(
                 await validateRpcRequestInput(
                     event,
                     httpMethod,
-                    procedure.params,
                     paramValidator!,
                 );
             }
@@ -327,13 +316,12 @@ export function registerRpc(
 export async function validateRpcRequestInput(
     event: H3Event,
     httpMethod: RpcHttpMethod,
-    schema: ASchema,
-    validator: ReturnType<typeof a.compile>,
+    validator: RequestValidator,
 ) {
     switch (httpMethod) {
         case 'get': {
             const parsedParams = await getValidatedQuery(event, (input) =>
-                a.coerce(schema, input),
+                validator.coerce(input),
             );
             if (parsedParams.success) {
                 event.context.params = parsedParams.value;
@@ -382,15 +370,53 @@ export async function validateRpcRequestInput(
     }
 }
 
-export function getSchemaValidator(
+export type RequestValidator<T = any> = {
+    validate: (input: unknown) => input is T;
+    errors: (input: unknown) => ValueError[];
+    coerce: (input: unknown) => Result<T>;
+    parse: (input: unknown) => Result<T>;
+    serialize: (input: any) => Result<string>;
+};
+
+export function getSchemaValidator<T extends Record<string, any> = any>(
     rpcName: string,
     type: 'params' | 'response',
-    schema: ASchema<any>,
-): ReturnType<typeof a.compile> | undefined {
-    try {
-        return a.compile(schema);
-    } catch (_) {
-        console.error(`Error compiling ${type} validator for ${rpcName}`);
-        return undefined;
+    schema: RpcParamSchema<T>,
+): RequestValidator<T> | undefined {
+    if (isASchema(schema)) {
+        try {
+            const validator = a.compile(schema);
+            return {
+                validate: validator.validate,
+                serialize: validator.serialize,
+                parse: validator.parse,
+                coerce: (input) => a.coerce(schema, input),
+                errors: (input) => a.errors(schema, input),
+            };
+        } catch (err) {
+            console.error(
+                `Error compiling ${type} validator for ${rpcName}. Error: ${err}`,
+            );
+        }
     }
+    return undefined;
+}
+
+export function getSchemaName(
+    rpcName: string,
+    type: 'params' | 'response',
+    schema: RpcParamSchema<any>,
+): string {
+    const cleanedName = rpcName
+        .split('.')
+        .map((part) =>
+            removeDisallowedChars(part, '!@#$%^&*()+=[]{}|\\;:\'"<>,./?'),
+        )
+        .join('_');
+    return (
+        schema.metadata?.id ??
+        pascalCase(`${cleanedName}_${type}`, {
+            normalize: true,
+        })
+    );
 }

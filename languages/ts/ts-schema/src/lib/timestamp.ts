@@ -1,16 +1,13 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
-    createStandardSchemaProperty as createStandardSchemaProperty,
-    createUValidatorProperty,
+    createStandardSchemaProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type AScalarSchema,
+    AScalarSchemaWithAdapters,
     type ASchemaOptions,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 /**
  * Create a Date schema
@@ -21,7 +18,7 @@ import {
  */
 export function timestamp(
     opts: ASchemaOptions = {},
-): AScalarSchema<'timestamp', Date> {
+): AScalarSchemaWithAdapters<'timestamp', Date> {
     const validator: SchemaValidator<Date> = {
         output: new Date(),
         validate,
@@ -29,15 +26,14 @@ export function timestamp(
         coerce,
         serialize: serialize,
     };
-    const result: AScalarSchema<'timestamp', Date> = {
+    const result: AScalarSchemaWithAdapters<'timestamp', Date> = {
         type: 'timestamp',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

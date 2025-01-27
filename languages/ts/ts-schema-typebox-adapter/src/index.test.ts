@@ -151,10 +151,7 @@ describe('arri inference', () => {
             response: typeboxAdapter(Schema),
             handler({ params }) {
                 assertType<Schema>(params);
-                return {
-                    id: '',
-                    name: '',
-                };
+                return { id: '', name: '' };
             },
         });
         defineEventStreamRpc({

@@ -1,16 +1,13 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
     type ASchemaOptions,
-    type AStringEnumSchema,
+    AStringEnumSchemaWithAdapters,
     SchemaValidator,
     ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 
 export const stringEnum = enumerator;
@@ -30,7 +27,7 @@ export const stringEnum = enumerator;
 export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     values: TValues,
     opts?: ASchemaOptions,
-): AStringEnumSchema<TValues>;
+): AStringEnumSchemaWithAdapters<TValues>;
 /**
  * An enumeration of string values
  *
@@ -46,11 +43,11 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
 export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     id: string,
     values: TValues,
-): AStringEnumSchema<TValues>;
+): AStringEnumSchemaWithAdapters<TValues>;
 export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     paramA: TValues | string,
     paramB?: ASchemaOptions | TValues,
-): AStringEnumSchema<TValues> {
+): AStringEnumSchemaWithAdapters<TValues> {
     const isIdShorthand = typeof paramA === 'string';
     const enumVal = isIdShorthand ? (paramB as TValues) : paramA;
     const meta = isIdShorthand
@@ -108,15 +105,14 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
             return `"${input}"`;
         },
     };
-    const result: AStringEnumSchema<TValues> = {
+    const result: AStringEnumSchemaWithAdapters<TValues> = {
         enum: enumVal,
         metadata: {
             id: meta?.id,
             description: meta?.description,
             isDeprecated: meta?.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);

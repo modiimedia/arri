@@ -1,10 +1,10 @@
-import { AObjectSchema, ASchema, ValidationsKey } from '@arrirpc/schema';
 import {
-    createStandardSchemaProperty,
-    createUValidatorProperty,
-    hideInvalidProperties,
-} from '@arrirpc/schema/dist/adapters';
-import * as UValidator from '@arrirpc/schema-interface';
+    AObjectSchema,
+    ASchema,
+    VALIDATOR_KEY,
+    ValueError,
+} from '@arrirpc/schema';
+import { hideInvalidProperties } from '@arrirpc/schema/dist/adapters';
 import { OptionalKind, type TObject, TSchema } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value, type ValueErrorIterator } from '@sinclair/typebox/value';
@@ -32,7 +32,7 @@ export function typeboxAdapter<TInput extends CleanedTSchema>(
     const compiled = TypeCompiler.Compile<any>(input);
     const validationMethods: ASchema<
         CleanedStatic<TInput>
-    >[typeof ValidationsKey] = {
+    >[typeof VALIDATOR_KEY] = {
         output: {} as any as CleanedStatic<TInput>,
         optional: (input as any)[OptionalKind] === 'Optional',
         parse(val: unknown, context) {
@@ -84,27 +84,16 @@ export function typeboxAdapter<TInput extends CleanedTSchema>(
             id: input.$id ?? input.title,
             description: input.description,
         },
-        '~standard': createStandardSchemaProperty(
-            validationMethods.validate,
-            validationMethods.parse,
-            'arri/typebox',
-        ),
-        [UValidator.v1]: createUValidatorProperty(
-            validationMethods,
-            'arri/typebox',
-        ),
-        [ValidationsKey]: validationMethods,
+        [VALIDATOR_KEY]: validationMethods,
     };
     hideInvalidProperties(result);
     return result as any;
 }
 
-function typeboxErrorsToArriErrors(
-    errs: ValueErrorIterator,
-): UValidator.ValueError[] {
-    const mappedErrs: UValidator.ValueError[] = [];
+function typeboxErrorsToArriErrors(errs: ValueErrorIterator): ValueError[] {
+    const mappedErrs: ValueError[] = [];
     for (const err of errs) {
-        const obj: UValidator.ValueError = {
+        const obj: ValueError = {
             message: err.message,
             instancePath: err.path,
             schemaPath: '',

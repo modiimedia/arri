@@ -1,4 +1,3 @@
-import * as UValidator from '@arrirpc/schema-interface';
 import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Check, Value } from '@sinclair/typebox/value';
@@ -349,9 +348,6 @@ void benny.suite(
     benny.add('Arri', () => {
         a.validate(ArriUser, input);
     }),
-    benny.add('Arri (UValidator)', () => {
-        ArriUser[UValidator.v1].validate(input);
-    }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.validate(input);
     }),
@@ -409,11 +405,6 @@ void benny.suite(
     'Object Validation - Bad Input',
     benny.add('Arri', () => {
         if (a.validate(ArriUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
-    }),
-    benny.add('Arri (UValidator)', () => {
-        if (ArriUser[UValidator.v1].validate(badInput)) {
             throw new Error('Expected to fail');
         }
     }),
@@ -505,9 +496,6 @@ void benny.suite(
     benny.add('Arri Unsafe', () => {
         a.parseUnsafe(ArriUser, inputJson);
     }),
-    benny.add('Arri (UValidator)', () => {
-        ArriUser[UValidator.v1].parse(inputJson);
-    }),
     benny.add('Arri (StandardSchema)', () => {
         ArriUser['~standard'].validate(inputJson);
     }),
@@ -557,9 +545,6 @@ void benny.suite(
         } catch (_) {
             // do nothing
         }
-    }),
-    benny.add('Arri (UValidator)', () => {
-        ArriUser[UValidator.v1].parse(badInputJson);
     }),
     benny.add('Arri (StandardSchema)', () => {
         ArriUser['~standard'].validate(badInputJson);

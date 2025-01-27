@@ -175,9 +175,6 @@ importers:
 
   languages/ts/ts-schema:
     dependencies:
-      '@arrirpc/schema-interface':
-        specifier: workspace:*
-        version: link:../ts-schema-interface
       '@arrirpc/type-defs':
         specifier: workspace:*
         version: link:../../../tooling/type-defs
@@ -228,9 +225,6 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../ts-schema
-      '@arrirpc/schema-interface':
-        specifier: workspace:*
-        version: link:../ts-schema-interface
       '@types/source-map-support':
         specifier: ^0.5.10
         version: 0.5.10
@@ -398,9 +392,6 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
     devDependencies:
-      '@arrirpc/schema-interface':
-        specifier: workspace:*
-        version: link:../../languages/ts/ts-schema-interface
       '@types/degit':
         specifier: ^2.8.6
         version: 2.8.6

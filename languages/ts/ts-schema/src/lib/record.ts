@@ -1,19 +1,16 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type ARecordSchema,
+    ARecordSchemaWithAdapters,
     type ASchema,
     type ASchemaOptions,
     type InferType,
     isObject,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 import { serializeString } from './string';
 
@@ -37,7 +34,7 @@ import { serializeString } from './string';
 export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
-): ARecordSchema<TInnerSchema> {
+): ARecordSchemaWithAdapters<TInnerSchema> {
     const validateFn = (
         input: unknown,
     ): input is InferRecordType<TInnerSchema> => {
@@ -46,7 +43,7 @@ export function record<TInnerSchema extends ASchema<any>>(
         }
         for (const key of Object.keys(input)) {
             const val = input[key];
-            const isValid = schema[ValidationsKey].validate(val);
+            const isValid = schema[VALIDATOR_KEY].validate(val);
             if (!isValid) {
                 return false;
             }
@@ -83,7 +80,7 @@ export function record<TInnerSchema extends ASchema<any>>(
                 if (i > 0) result += ',';
                 result += serializeString(key);
                 result += ':';
-                result += schema[ValidationsKey].serialize(val, {
+                result += schema[VALIDATOR_KEY].serialize(val, {
                     instancePath: `${context.instancePath}/${key}`,
                     schemaPath: `${context.schemaPath}/values`,
                     errors: context.errors,
@@ -96,15 +93,14 @@ export function record<TInnerSchema extends ASchema<any>>(
             return result;
         },
     };
-    const result: ARecordSchema<TInnerSchema> = {
+    const result: ARecordSchemaWithAdapters<TInnerSchema> = {
         values: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validateFn, parseFn),
     };
     hideInvalidProperties(result);
@@ -155,7 +151,7 @@ function parse<T>(
     for (const key of Object.keys(parsedInput)) {
         const val = parsedInput[key];
         if (coerce) {
-            result[key] = schema[ValidationsKey].coerce(val, {
+            result[key] = schema[VALIDATOR_KEY].coerce(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,
@@ -164,7 +160,7 @@ function parse<T>(
                 exitOnFirstError: data.exitOnFirstError,
             });
         } else {
-            result[key] = schema[ValidationsKey].parse(val, {
+            result[key] = schema[VALIDATOR_KEY].parse(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,

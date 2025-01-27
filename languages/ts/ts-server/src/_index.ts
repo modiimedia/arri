@@ -7,5 +7,4 @@ export * from './route';
 export * from './router';
 export * from './rpc';
 export * from './service';
-export * from './websocketRpc';
 export * from 'h3';

@@ -1,16 +1,13 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type AScalarSchema,
+    AScalarSchemaWithAdapters,
     type ASchemaOptions,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 
 /**
@@ -21,7 +18,7 @@ import {
  */
 export function boolean(
     opts: ASchemaOptions = {},
-): AScalarSchema<'boolean', boolean> {
+): AScalarSchemaWithAdapters<'boolean', boolean> {
     const validator: SchemaValidator<boolean> = {
         output: false,
         parse: parse,
@@ -55,15 +52,14 @@ export function boolean(
             return undefined;
         },
     };
-    const result: AScalarSchema<'boolean', boolean> = {
+    const result: AScalarSchemaWithAdapters<'boolean', boolean> = {
         type: 'boolean',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

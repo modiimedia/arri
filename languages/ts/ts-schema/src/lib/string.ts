@@ -1,15 +1,13 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
     type AScalarSchema,
+    AScalarSchemaWithAdapters,
     type ASchemaOptions,
     type ValidationContext as ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 
 /**
@@ -20,8 +18,8 @@ import {
  */
 export function string(
     opts: ASchemaOptions = {},
-): AScalarSchema<'string', string> {
-    const validator: AScalarSchema<'string', string>[typeof ValidationsKey] = {
+): AScalarSchemaWithAdapters<'string', string> {
+    const validator: AScalarSchema<'string', string>[typeof VALIDATOR_KEY] = {
         output: '',
         parse: decode,
         coerce,
@@ -39,15 +37,14 @@ export function string(
             return JSON.stringify(input);
         },
     };
-    const result: AScalarSchema<'string', string> = {
+    const result: AScalarSchemaWithAdapters<'string', string> = {
         type: 'string',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty<string>(validate, decode),
     };
     hideInvalidProperties(result);

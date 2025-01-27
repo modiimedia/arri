@@ -3,9 +3,9 @@ import {
     a,
     type AObjectSchema,
     type ASchema,
+    errorMessageFromErrors,
     type InferType,
 } from '@arrirpc/schema';
-import { errorMessageFromErrors } from '@arrirpc/schema-interface';
 import {
     defineEventHandler,
     getQuery,

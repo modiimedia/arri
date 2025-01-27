@@ -1,22 +1,19 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type ASchema,
     type ASchemaOptions,
+    ASchemaWithAdapters,
     SchemaValidator,
     ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 
 /**
  * Create a schema that accepts anything
  */
-export function any(options: ASchemaOptions = {}): ASchema<any> {
+export function any(options: ASchemaOptions = {}): ASchemaWithAdapters<any> {
     const validate = (input: unknown): input is any => true;
     const parse = (
         input: unknown,
@@ -52,14 +49,13 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
             return JSON.stringify(input);
         },
     };
-    const result: ASchema<any> = {
+    const result: ASchemaWithAdapters<any> = {
         metadata: {
             id: options.id,
             description: options.description,
             isDeprecated: options.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validate, parse),
     };
     hideInvalidProperties(result);

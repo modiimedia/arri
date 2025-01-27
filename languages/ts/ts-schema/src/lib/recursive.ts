@@ -1,24 +1,22 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
 import {
-    type ADiscriminatorSchema,
-    type AObjectSchema,
+    ADiscriminatorSchemaWithAdapters,
+    AObjectSchemaWithAdapters,
     type ARefSchema,
+    ARefSchemaWithAdapters,
     type ASchemaOptions,
     SchemaValidator,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 
 let recursiveTypeCount = 0;
 
 type RecursiveCallback<T> = (
     self: ARefSchema<T>,
-) => AObjectSchema<T> | ADiscriminatorSchema<T>;
+) => AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
 
 /**
  * @example
@@ -39,7 +37,7 @@ type RecursiveCallback<T> = (
 export function recursive<T = any>(
     callback: RecursiveCallback<T>,
     metadata?: ASchemaOptions,
-): AObjectSchema<T> | ADiscriminatorSchema<T>;
+): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
 /**
  * Recursive ID Shorthand
  *
@@ -62,11 +60,11 @@ export function recursive<T = any>(
 export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
-): AObjectSchema<T> | ADiscriminatorSchema<T>;
+): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
 export function recursive<T = any>(
     propA: RecursiveCallback<T> | string,
     propB?: ASchemaOptions | RecursiveCallback<T>,
-): AObjectSchema<T> | ADiscriminatorSchema<T> {
+): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T> {
     const isIdShorthand = typeof propA === 'string';
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
     const options = isIdShorthand
@@ -137,10 +135,9 @@ export function recursive<T = any>(
         },
     };
 
-    const refSchema: ARefSchema<T> = {
+    const refSchema: ARefSchemaWithAdapters<T> = {
         ref: id,
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(
             validator.validate,
             validator.parse,
@@ -155,10 +152,10 @@ export function recursive<T = any>(
     mainSchema.metadata.isDeprecated =
         options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
-        validate: mainSchema[ValidationsKey].validate,
-        parse: mainSchema[ValidationsKey].parse,
-        serialize: mainSchema[ValidationsKey].serialize,
-        coerce: mainSchema[ValidationsKey].coerce,
+        validate: mainSchema[VALIDATOR_KEY].validate,
+        parse: mainSchema[VALIDATOR_KEY].parse,
+        serialize: mainSchema[VALIDATOR_KEY].serialize,
+        coerce: mainSchema[VALIDATOR_KEY].coerce,
     };
     return mainSchema;
 }

@@ -32,7 +32,7 @@ test('type inference', () => {
 test('isEventStreamRpc()', () => {
     const rpc = defineEventStreamRpc({
         params: undefined,
-        response: undefined,
+        response: a.object({}),
         handler() {},
     });
     expect(isEventStreamRpc(rpc)).toBe(true);

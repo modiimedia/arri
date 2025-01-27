@@ -1,12 +1,11 @@
-import * as UValidator from '@arrirpc/schema-interface';
-
 import {
     createStandardSchemaProperty,
-    createUValidatorProperty,
     hideInvalidProperties,
 } from '../adapters';
+import { ValueError } from '../errors';
 import {
     type ADiscriminatorSchema,
+    ADiscriminatorSchemaWithAdapters,
     type AObjectSchema,
     type ASchemaOptions,
     type InferType,
@@ -14,7 +13,7 @@ import {
     type ResolveObject,
     SchemaValidator,
     type ValidationContext,
-    ValidationsKey,
+    VALIDATOR_KEY,
 } from '../schemas';
 
 /**
@@ -58,7 +57,7 @@ export function discriminator<
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
     opts?: ASchemaOptions,
-): ADiscriminatorSchema<
+): ADiscriminatorSchemaWithAdapters<
     InferDiscriminatorType<
         TDiscriminatorKey,
         TMapping,
@@ -72,7 +71,7 @@ export function discriminator<
     id: string,
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
-): ADiscriminatorSchema<
+): ADiscriminatorSchemaWithAdapters<
     InferDiscriminatorType<
         TDiscriminatorKey,
         TMapping,
@@ -86,7 +85,7 @@ export function discriminator<
     propA: string | TDiscriminatorKey,
     propB: TDiscriminatorKey | TMapping,
     propC?: TMapping | ASchemaOptions,
-): ADiscriminatorSchema<
+): ADiscriminatorSchemaWithAdapters<
     InferDiscriminatorType<
         TDiscriminatorKey,
         TMapping,
@@ -142,7 +141,7 @@ export function discriminator<
                 );
                 return undefined;
             }
-            const result = targetSchema[ValidationsKey].serialize(input, {
+            const result = targetSchema[VALIDATOR_KEY].serialize(input, {
                 instancePath: context.instancePath,
                 schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
                 errors: context.errors,
@@ -155,7 +154,7 @@ export function discriminator<
             return result;
         },
     };
-    const result: ADiscriminatorSchema<
+    const result: ADiscriminatorSchemaWithAdapters<
         InferDiscriminatorType<
             TDiscriminatorKey,
             TMapping,
@@ -169,8 +168,7 @@ export function discriminator<
             description: opts.description,
             isDeprecated: opts.isDeprecated,
         },
-        [ValidationsKey]: validator,
-        [UValidator.v1]: createUValidatorProperty(validator),
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(isType, parseType),
     };
     hideInvalidProperties(result);
@@ -209,7 +207,7 @@ function validate(
     if (!targetSchema) {
         return false;
     }
-    return targetSchema[ValidationsKey].validate(input);
+    return targetSchema[VALIDATOR_KEY].validate(input);
 }
 
 function parse(
@@ -274,7 +272,7 @@ function parse(
         return undefined;
     }
     if (coerce) {
-        const result = targetSchema[ValidationsKey].coerce(parsedInput, {
+        const result = targetSchema[VALIDATOR_KEY].coerce(parsedInput, {
             instancePath: context.instancePath,
             schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
             errors: context.errors,
@@ -286,7 +284,7 @@ function parse(
         });
         return result;
     }
-    const result = targetSchema[ValidationsKey].parse(parsedInput, {
+    const result = targetSchema[VALIDATOR_KEY].parse(parsedInput, {
         instancePath: context.instancePath,
         schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
         errors: context.errors,
@@ -307,5 +305,5 @@ function discriminatorMappingError(
         message: `Error fetching discriminator schema. Mapping for "${discriminatorVal} is undefined.`,
         instancePath: data.instancePath,
         schemaPath: data.schemaPath,
-    } satisfies UValidator.ValueError;
+    } satisfies ValueError;
 }

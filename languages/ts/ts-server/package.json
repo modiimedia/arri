@@ -24,7 +24,6 @@
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "@arrirpc/schema-interface": "workspace:*",
     "@types/source-map-support": "^0.5.10",
     "arri": "workspace:*",
     "crossws": "^0.3.3",
