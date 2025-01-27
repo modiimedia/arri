@@ -12,12 +12,12 @@ for (const key of Object.keys(validationTestSuites)) {
     test(key, () => {
         for (const input of suite.goodInputs) {
             expect(a.validate(suite.schema, input));
-            const json = a.encodeUnsafe(suite.schema, input);
-            expect(isEqual(a.decodeUnsafe(suite.schema, json), input));
+            const json = a.serializeUnsafe(suite.schema, input);
+            expect(isEqual(a.parseUnsafe(suite.schema, json), input));
         }
         for (const input of suite.badInputs) {
             expect(!a.validate(suite.schema, input));
-            expect(!a.decode(suite.schema, input).success);
+            expect(!a.parse(suite.schema, input).success);
         }
     });
 }
@@ -30,14 +30,11 @@ describe('parsing test suites', () => {
                 const input = suite.goodInputs[i];
                 const expectedResult = suite.expectedResults[i];
                 expect(
-                    isEqual(
-                        a.decodeUnsafe(suite.schema, input),
-                        expectedResult,
-                    ),
+                    isEqual(a.parseUnsafe(suite.schema, input), expectedResult),
                 );
             }
             for (const input of suite.badInputs) {
-                expect(!a.decode(suite.schema, input).success);
+                expect(!a.parse(suite.schema, input).success);
             }
         });
     }
@@ -48,8 +45,8 @@ describe('serialization test suites', () => {
         const suite = serializationTestSuites[key]!;
         test(key, () => {
             for (const input of suite.inputs) {
-                const result = a.encodeUnsafe(suite.schema, input);
-                const parseResult = a.decode(suite.schema, result);
+                const result = a.serializeUnsafe(suite.schema, input);
+                const parseResult = a.parse(suite.schema, result);
                 if (!parseResult.success) {
                     console.error(parseResult.errors);
                     console.log(result);

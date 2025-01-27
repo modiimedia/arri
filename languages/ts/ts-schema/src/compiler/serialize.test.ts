@@ -22,7 +22,7 @@ for (const key of Object.keys(validationTestSuites)) {
                         throw err;
                     }
                 }
-                const parseResult = a.decode(suite.schema, result);
+                const parseResult = a.parse(suite.schema, result);
                 if (!parseResult.success) {
                     console.error(parseResult.errors);
                     console.error(Compiled.compiledCode.serialize);
@@ -88,7 +88,7 @@ it("doesn't serialize NaN", () => {
     const input = { num: NaN, int: NaN };
     try {
         expect(Compiled.serializeUnsafe(input));
-        expect(a.encodeUnsafe(Schema, input));
+        expect(a.serializeUnsafe(Schema, input));
     } catch (_) {
         expect(true).toBe(true);
     }

@@ -14,6 +14,7 @@ import {
     isADiscriminatorSchema,
     isAObjectSchema,
 } from '@arrirpc/schema';
+import { errorMessageFromErrors } from '@arrirpc/schema-interface';
 import {
     eventHandler,
     getValidatedQuery,
@@ -275,20 +276,16 @@ export function registerRpc(
                 await opts.onBeforeResponse(event);
             }
             if (typeof response === 'object') {
-                if (!responseValidator?.validate(response)) {
-                    const errors = a.errors(procedure.response, response);
+                const payload = responseValidator?.serialize(response);
+                if (payload && payload?.success !== true) {
                     throw defineError(500, {
                         message:
                             'Failed to serialize response. Response does not match specified schema',
-                        data: errors,
+                        data: payload?.errors,
                     });
                 }
                 setResponseHeader(event, 'Content-Type', 'application/json');
-                await send(
-                    event,
-                    responseValidator?.encodeUnsafe(response) ??
-                        JSON.stringify(response),
-                );
+                await send(event, payload ?? JSON.stringify(response));
             } else {
                 setResponseHeader(event, 'Content-Type', 'application/json');
                 await send(event, `{}`);
@@ -370,20 +367,10 @@ export async function validateRpcRequestInput(
                     message: `Invalid request body. Expected object. Got undefined.`,
                 });
             }
-            const parsedParams = validator.decode(body);
+            const parsedParams = validator.parse(body);
             if (!parsedParams?.success) {
-                const errorParts: string[] = [];
-                for (const err of parsedParams.errors) {
-                    const errPath = err.instancePath?.split('/');
-                    errPath?.shift();
-                    if (errPath && !errorParts.includes(errPath.join('.'))) {
-                        errorParts.push(errPath.join('.'));
-                    }
-                }
                 throw defineError(400, {
-                    message: `Invalid request body. Affected properties [${errorParts.join(
-                        ', ',
-                    )}]`,
+                    message: errorMessageFromErrors(parsedParams.errors),
                     data: parsedParams.errors,
                 });
             }

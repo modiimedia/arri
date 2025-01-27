@@ -5,6 +5,7 @@ import {
     type ASchema,
     type InferType,
 } from '@arrirpc/schema';
+import { errorMessageFromErrors } from '@arrirpc/schema-interface';
 import {
     defineEventHandler,
     getQuery,
@@ -111,10 +112,10 @@ export function handleRoute(
             }
             if (route.query) {
                 const query = getQuery(event);
-                const parsedQuery = a.safeCoerce(route.query as ASchema, query);
+                const parsedQuery = a.coerce(route.query as ASchema, query);
                 if (!parsedQuery.success) {
                     const errParts: string[] = [];
-                    for (const err of parsedQuery.error.errors) {
+                    for (const err of parsedQuery.errors) {
                         const errPath = err.instancePath.split('/');
                         errPath.shift();
                         const propName = errPath.join('.');
@@ -139,21 +140,11 @@ export function handleRoute(
             ];
             if (route.body && !notAllowedBodyMethods.includes(event.method)) {
                 const body = await readRawBody(event);
-                const parsedBody = a.safeParse(route.body as ASchema, body);
+                const parsedBody = a.parse(route.body as ASchema, body);
                 if (!parsedBody.success) {
-                    const errorParts: string[] = [];
-                    for (const err of parsedBody.error.errors) {
-                        const errPath = err.instancePath.split('/');
-                        errPath.shift();
-                        if (!errorParts.includes(errPath.join('.'))) {
-                            errorParts.push(errPath.join('.'));
-                        }
-                    }
                     throw defineError(400, {
-                        message: `Invalid request body. Affected properties [${errorParts.join(
-                            ', ',
-                        )}]`,
-                        data: parsedBody.error,
+                        message: errorMessageFromErrors(parsedBody.errors),
+                        data: parsedBody.errors,
                     });
                 }
                 event.context.body = parsedBody.value;

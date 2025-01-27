@@ -1,7 +1,7 @@
 import * as UValidator from '@arrirpc/schema-interface';
 import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
-import { Value } from '@sinclair/typebox/value';
+import { Check, Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
 import benny from 'benny';
@@ -65,6 +65,8 @@ const input: ArriUser = {
         },
     ],
 };
+const inputJson = JSON.stringify(input);
+
 const badInput: ArriUser = {
     id: 12345,
     role: 'moderator',
@@ -89,7 +91,15 @@ const badInput: ArriUser = {
         } as any,
     ],
 };
-const inputJson = JSON.stringify(input);
+const badInputJson = JSON.stringify(badInput);
+
+if (a.parse(ArriUser, badInput).success) {
+    throw new Error('ArriUser should fail at badInputJson');
+}
+if ($$ArriUser.parse(badInputJson).success) {
+    throw new Error('$$ArriUser should failed at badInputJson');
+}
+
 const inputWithStringKeys = {
     id: '12345',
     role: 'moderator',
@@ -173,6 +183,12 @@ const ZodCoercedUser = z.object({
         ]),
     ),
 });
+if (!ZodUser.safeParse(input).success) {
+    throw new Error(`Zod should parse input`);
+}
+if (ZodUser.safeParse(badInput).success) {
+    throw new Error(`Zod should not parse badInput`);
+}
 
 const TypeBoxUser = Type.Object({
     id: Type.Integer(),
@@ -214,6 +230,12 @@ const TypeBoxUser = Type.Object({
     ),
 });
 const TypeBoxUserValidator = TypeCompiler.Compile(TypeBoxUser);
+if (!Check(TypeBoxUser, input)) {
+    throw new Error(`Typebox should pass input`);
+}
+if (Check(TypeBoxUser, badInput)) {
+    throw new Error(`Typebox should not pass bad input`);
+}
 
 const ajv = new Ajv({ strict: false });
 const AjvUserValidator = ajv.compile<ArriUser>(TypeBoxUser);
@@ -272,8 +294,14 @@ const AjvInput = {
 const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
 const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
 const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
+if (!AjvUserValidator(input)) {
+    throw new Error('Ajv should pass input');
+}
+if (AjvUserValidator(badInput)) {
+    throw new Error('Ajv should fail bad input');
+}
 
-const ValidbotUser = v.object({
+const ValibotUser = v.object({
     id: v.pipe(v.number(), v.integer()),
     role: v.picklist(['standard', 'admin', 'moderator']),
     name: v.string(),
@@ -282,7 +310,7 @@ const ValidbotUser = v.object({
     updatedAt: v.pipe(v.number(), v.integer()),
     settings: v.optional(
         v.object({
-            preferredTheme: v.picklist(['light', 'dark']),
+            preferredTheme: v.picklist(['system', 'light', 'dark']),
             allowNotifications: v.boolean(),
         }),
     ),
@@ -302,6 +330,19 @@ const ValidbotUser = v.object({
         ]),
     ),
 });
+type ValibotUser = v.InferOutput<typeof ValibotUser>;
+if (!v.is(ValibotUser, input)) {
+    throw new Error('Valibot should pass input');
+}
+if (!v.safeParse(ValibotUser, input).success) {
+    throw new Error('Validbot should parse input');
+}
+if (v.is(ValibotUser, badInput)) {
+    throw new Error('Valibot should fail badInput');
+}
+if (v.safeParse(ValibotUser, badInput).success) {
+    throw new Error('Valibot should not parse badInput');
+}
 
 void benny.suite(
     'Object Validation - Good Input',
@@ -348,7 +389,7 @@ void benny.suite(
         ZodUser.parse(input);
     }),
     benny.add('Valibot', () => {
-        v.is(ValidbotUser, input);
+        v.is(ValibotUser, input);
     }),
     benny.cycle(),
     benny.complete(),
@@ -438,7 +479,7 @@ void benny.suite(
         }
     }),
     benny.add('Valibot', () => {
-        if (v.is(ValidbotUser, badInput)) {
+        if (v.is(ValibotUser, badInput)) {
             throw new Error('Expected to fail');
         }
     }),
@@ -459,13 +500,16 @@ void benny.suite(
 void benny.suite(
     'Object Parsing',
     benny.add('Arri', () => {
-        a.decode(ArriUser, inputJson);
+        a.parse(ArriUser, inputJson);
     }),
     benny.add('Arri Unsafe', () => {
-        a.decodeUnsafe(ArriUser, inputJson);
+        a.parseUnsafe(ArriUser, inputJson);
     }),
     benny.add('Arri (UValidator)', () => {
         ArriUser[UValidator.v1].parse(inputJson);
+    }),
+    benny.add('Arri (StandardSchema)', () => {
+        ArriUser['~standard'].validate(inputJson);
     }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.parse(inputJson);
@@ -473,11 +517,20 @@ void benny.suite(
     benny.add('Arri (Compiled) Unsafe', () => {
         $$ArriUser.parseUnsafe(inputJson);
     }),
+    benny.add('Arri (Compiled Standard Schema)', () => {
+        $$ArriUser['~standard'].validate(inputJson);
+    }),
     benny.add('Ajv - JTD (Compiled)', () => {
         AjvJtdUserParser(inputJson);
     }),
     benny.add('JSON.parse', () => {
         JSON.parse(inputJson);
+    }),
+    benny.add('JSON.parse + Valibot', () => {
+        v.safeParse(ValibotUser, JSON.parse(inputJson));
+    }),
+    benny.add('JSON.parse + Zod', () => {
+        ZodUser.parse(JSON.parse(inputJson));
     }),
     benny.cycle(),
     benny.complete(),
@@ -488,6 +541,55 @@ void benny.suite(
     }),
     benny.save({
         file: 'objects-parsing',
+        format: 'json',
+        folder: 'benchmark/dist',
+    }),
+);
+
+void benny.suite(
+    'Object Parsing - Bad Input',
+    benny.add('Arri', () => {
+        a.parse(ArriUser, badInputJson);
+    }),
+    benny.add('Arri Unsafe', () => {
+        a.parseUnsafe(ArriUser, badInputJson);
+    }),
+    benny.add('Arri (UValidator)', () => {
+        ArriUser[UValidator.v1].parse(badInputJson);
+    }),
+    benny.add('Arri (StandardSchema)', () => {
+        ArriUser['~standard'].validate(badInputJson);
+    }),
+    benny.add('Arri (Compiled)', () => {
+        $$ArriUser.parse(badInputJson);
+    }),
+    benny.add('Arri (Compiled) Unsafe', () => {
+        $$ArriUser.parseUnsafe(badInputJson);
+    }),
+    benny.add('Arri (Compiled Standard Schema)', () => {
+        $$ArriUser['~standard'].validate(badInputJson);
+    }),
+    benny.add('Ajv - JTD (Compiled)', () => {
+        AjvJtdUserParser(badInputJson);
+    }),
+    benny.add('JSON.parse', () => {
+        JSON.parse(badInputJson);
+    }),
+    benny.add('JSON.parse + Valibot', () => {
+        v.safeParse(ValibotUser, JSON.parse(badInputJson));
+    }),
+    benny.add('JSON.parse + Zod', () => {
+        ZodUser.parse(JSON.parse(badInputJson));
+    }),
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
+        file: 'objects-parsing-bad-input',
+        format: 'chart.html',
+        folder: 'benchmark/dist',
+    }),
+    benny.save({
+        file: 'objects-parsing-bad-input',
         format: 'json',
         folder: 'benchmark/dist',
     }),
@@ -521,14 +623,25 @@ void benny.suite(
 void benny.suite(
     'Object Serialization',
     benny.add('Arri', () => {
-        a.encode(ArriUser, input);
+        a.serialize(ArriUser, input);
+    }),
+    benny.add('Arri (Unsafe)', () => {
+        a.serializeUnsafe(ArriUser, input);
     }),
     benny.add('Arri (Compiled)', () => {
         $$ArriUser.serialize(input);
     }),
+    benny.add('Arri (Compiled Unsafe)', () => {
+        $$ArriUser.serializeUnsafe(input);
+    }),
     benny.add('Arri (Compiled) Validate and Serialize', () => {
         if ($$ArriUser.validate(input)) {
             $$ArriUser.serialize(input);
+        }
+    }),
+    benny.add('Arri (Compiled) Validate and Serialize Unsafe', () => {
+        if ($$ArriUser.validate(input)) {
+            $$ArriUser.serializeUnsafe(input);
         }
     }),
     benny.add('Ajv - JTD (Compiled)', () => {

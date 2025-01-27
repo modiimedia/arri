@@ -26,7 +26,7 @@ for (const key of Object.keys(validationTestSuites)) {
             test(`Bad input - ${i + 1}`, () => {
                 const input = suite.badInputs[i];
                 expect(Compiled.parse(input).success).toBe(false);
-                expect(a.decode(suite.schema, input).success).toBe(false);
+                expect(a.parse(suite.schema, input).success).toBe(false);
             });
         }
     });
@@ -58,7 +58,7 @@ describe('parsing test suites', () => {
                         Compiled.parseUnsafe(serializedResult.value),
                     ).toStrictEqual(expectedResult);
                     expect(actualResult.value).toStrictEqual(
-                        a.decodeUnsafe(suite.schema, input),
+                        a.parseUnsafe(suite.schema, input),
                     );
                 });
             }

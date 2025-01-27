@@ -139,12 +139,12 @@ describe('a.object()', () => {
             isAdmin: false,
         };
         const goodJsonInput = JSON.stringify(goodInput);
-        const goodInputResult = a.decode(UserSchema, goodInput);
+        const goodInputResult = a.parse(UserSchema, goodInput);
         expect(goodInputResult.success);
         if (goodInputResult.success) {
             expect(goodInputResult.value).toStrictEqual(goodInput);
         }
-        const goodJsonResult = a.decode(UserSchema, goodJsonInput);
+        const goodJsonResult = a.parse(UserSchema, goodJsonInput);
         expect(goodJsonResult.success);
         if (goodJsonResult.success) {
             expect(goodJsonResult.value).toStrictEqual(goodInput);
@@ -156,8 +156,8 @@ describe('a.object()', () => {
             name: 'john doe',
         };
         const badJsonInput = JSON.stringify(badInput);
-        expect(a.decode(UserSchema, badInput).success).toBe(false);
-        expect(a.decode(UserSchema, badJsonInput).success).toBe(false);
+        expect(a.parse(UserSchema, badInput).success).toBe(false);
+        expect(a.parse(UserSchema, badJsonInput).success).toBe(false);
     });
     test('parses nested objects', () => {
         const badInput = {
@@ -174,12 +174,12 @@ describe('a.object()', () => {
             },
         };
         const badJsonInput = JSON.stringify(badInput);
-        const badInputResult = a.decode(PostSchema, badInput);
+        const badInputResult = a.parse(PostSchema, badInput);
         if (badInputResult.success) {
             console.error(badInputResult.value);
         }
         expect(badInputResult.success).toBe(false);
-        expect(a.decode(PostSchema, badJsonInput).success).toBe(false);
+        expect(a.parse(PostSchema, badJsonInput).success).toBe(false);
         const goodInput: PostSchema = {
             id: '1234456',
             title: 'Hello World',
@@ -195,12 +195,12 @@ describe('a.object()', () => {
             },
         };
         const goodJsonInput = JSON.stringify(goodInput);
-        const result = a.decode(PostSchema, goodInput);
+        const result = a.parse(PostSchema, goodInput);
         expect(result.success);
         if (result.success) {
             expect(result.value).toStrictEqual(goodInput);
         }
-        const jsonResult = a.decode(PostSchema, goodJsonInput);
+        const jsonResult = a.parse(PostSchema, goodJsonInput);
         expect(jsonResult.success);
         if (jsonResult.success) {
             expect(jsonResult.value).toStrictEqual(goodInput);
@@ -257,8 +257,8 @@ describe('a.object()', () => {
             createdAt: new Date(),
             name: 'John Doe',
         };
-        const result = a.encodeUnsafe(SimpleObject, input);
-        expect(a.decodeUnsafe(SimpleObject, result)).toStrictEqual(input);
+        const result = a.serializeUnsafe(SimpleObject, input);
+        expect(a.parseUnsafe(SimpleObject, result)).toStrictEqual(input);
         JSON.parse(result);
     });
     it('serializes nested object', () => {
@@ -283,9 +283,9 @@ describe('a.object()', () => {
                 date: new Date(),
             },
         };
-        const result = a.encodeUnsafe(NestedObject, input);
+        const result = a.serializeUnsafe(NestedObject, input);
         JSON.parse(result);
-        expect(a.decodeUnsafe(NestedObject, result)).toStrictEqual(input);
+        expect(a.parseUnsafe(NestedObject, result)).toStrictEqual(input);
     });
     it('has consistent output across function overloads', () => {
         const User1 = a.object(
@@ -306,7 +306,9 @@ describe('a.object()', () => {
         expect(JSON.stringify(User1)).toBe(JSON.stringify(User2));
         const input = { id: '', name: '', createdAt: new Date() };
         expect(a.validate(User1, input)).toEqual(a.validate(User2, input));
-        expect(a.encode(User1, input)).toEqual(a.encode(User2, input));
+        expect(a.serializeUnsafe(User1, input)).toEqual(
+            a.serializeUnsafe(User2, input),
+        );
     });
     describe('standard-schema support', () => {
         it('properly infers types', async () => {
@@ -448,7 +450,7 @@ describe('a.pick()', () => {
             name: 'john doe',
             email: 'johndoe@gmail.com',
         };
-        const result = a.decode(UserSubsetSchema, input);
+        const result = a.parse(UserSubsetSchema, input);
         expect(result.success);
         if (result.success) {
             expect(result.value).toStrictEqual({
@@ -465,7 +467,7 @@ describe('a.pick()', () => {
             isAdmin: false,
             createdAt: undefined,
         };
-        const result = a.decode(UserSubsetSchema, input);
+        const result = a.parse(UserSubsetSchema, input);
         expect(!result.success);
     });
     it('produces ATD object schema with picked properties', () => {
@@ -530,7 +532,7 @@ describe('a.omit()', () => {
         strict: true,
     });
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
-    const parse = (input: unknown) => a.decode(UserSubsetSchema, input);
+    const parse = (input: unknown) => a.parse(UserSubsetSchema, input);
     it('infers object with omitted fields', () => {
         assertType<UserSubsetSchema>({
             name: 'john doe',
@@ -679,7 +681,7 @@ describe('a.partial()', () => {
 
     it('parses good input', () => {
         const input1: PartialObject = {};
-        const result1 = a.decode(PartialObject, input1);
+        const result1 = a.parse(PartialObject, input1);
         expect(result1.success);
         if (result1.success) {
             expect(result1.value).toStrictEqual(input1);
@@ -688,7 +690,7 @@ describe('a.partial()', () => {
             date: new Date(),
             stringEnum: 'b',
         };
-        const result2 = a.decode(PartialObject, input2);
+        const result2 = a.parse(PartialObject, input2);
         if (result2.success) {
             expect(result2.value).toStrictEqual(input2);
         }
@@ -699,7 +701,7 @@ describe('a.partial()', () => {
             stringArray: ['1', '2'],
             stringEnum: 'b',
         };
-        const result3 = a.decode(PartialObject, input3);
+        const result3 = a.parse(PartialObject, input3);
         if (result3.success) {
             expect(result3.value).toStrictEqual(input3);
         }
@@ -709,13 +711,13 @@ describe('a.partial()', () => {
         const input1 = {
             stringEnum: '1',
         };
-        const result1 = a.decode(PartialObject, input1);
+        const result1 = a.parse(PartialObject, input1);
         expect(!result1.success);
 
         const input2 = {
             foo: '',
         };
-        const result2 = a.decode(PartialObject, input2);
+        const result2 = a.parse(PartialObject, input2);
         expect(!result2.success);
     });
 

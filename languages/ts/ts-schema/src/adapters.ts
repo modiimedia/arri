@@ -12,10 +12,11 @@ import {
 export function createStandardSchemaProperty<T>(
     validate: (input: unknown) => input is T,
     parse: (input: unknown, ctx: ValidationContext) => T | undefined,
+    vendor = 'arri',
 ): StandardSchemaV1<T>['~standard'] {
     return {
         version: 1,
-        vendor: 'arri',
+        vendor,
         validate(input): StandardSchemaV1.Result<T> {
             const ctx = newValidationContext(true);
             const result = parse(input, ctx);
@@ -45,6 +46,7 @@ export function hideInvalidProperties(schema: ASchema) {
 
 export function createUValidatorProperty<T>(
     validator: ASchema<T>[typeof ValidationsKey],
+    vendor = 'arri',
 ): UValidatorWith<
     T,
     'parse' | 'serialize' | 'coerce' | 'validate' | 'errors'
@@ -53,7 +55,7 @@ export function createUValidatorProperty<T>(
         T,
         'parse' | 'serialize' | 'coerce' | 'validate' | 'errors'
     >[typeof v1] = {
-        vendor: 'arri',
+        vendor,
         validate: validator.validate,
         parse(input) {
             const ctx = newValidationContext(true);

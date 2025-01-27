@@ -204,7 +204,7 @@ const PubPackageResponse = a.object({
 
 export async function getDartPackageMeta() {
     const response = await ofetch('https://pub.dev/api/packages/arri_client');
-    const data = a.parse(PubPackageResponse, response);
+    const data = a.parseUnsafe(PubPackageResponse, response);
     return data;
 }
 
@@ -322,7 +322,7 @@ export async function getRustPackageMeta() {
     const response = await ofetch(
         `https://crates.io/api/v1/crates/arri_client`,
     );
-    const meta = a.parse(CratesIoPackageResponse, response);
+    const meta = a.parseUnsafe(CratesIoPackageResponse, response);
     return meta;
 }
 

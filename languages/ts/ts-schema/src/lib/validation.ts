@@ -130,6 +130,7 @@ export function serialize<T = any>(
             errors: [
                 {
                     message: err instanceof Error ? err.message : `${err}`,
+                    instancePath: '/',
                     data: err,
                 },
             ],

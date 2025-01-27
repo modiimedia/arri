@@ -14,7 +14,7 @@ const deps = Object.keys(packageJson.dependencies);
 export default defineBuildConfig({
     entries: [
         { input: './src/_index', name: 'index' },
-        { input: './src/testSuites' },
+        { input: './src/adapters', name: 'adapters' },
     ],
     rollup: {
         emitCJS: true,

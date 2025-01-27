@@ -123,20 +123,20 @@ it('parses objects in the expected way', () => {
             },
         ],
     };
-    expect(a.safeParse(TargetUserSchema, goodInput).success);
-    expect(a.safeParse(TargetUserSchema, JSON.stringify(goodInput)).success);
-    expect(a.safeParse(ConvertedUserSchema, goodInput).success);
-    expect(a.safeParse(ConvertedUserSchema, JSON.stringify(goodInput)).success);
+    expect(a.parse(TargetUserSchema, goodInput).success);
+    expect(a.parse(TargetUserSchema, JSON.stringify(goodInput)).success);
+    expect(a.parse(ConvertedUserSchema, goodInput).success);
+    expect(a.parse(ConvertedUserSchema, JSON.stringify(goodInput)).success);
     const badInput = {
         id: '12345',
         name: 12345131,
         isAdmin: true,
         posts: [],
     };
-    expect(!a.safeParse(TargetUserSchema, badInput).success);
-    expect(!a.safeParse(TargetUserSchema, JSON.stringify(badInput)).success);
-    expect(!a.safeParse(ConvertedUserSchema, badInput).success);
-    expect(!a.safeParse(ConvertedUserSchema, JSON.stringify(badInput)).success);
+    expect(!a.parse(TargetUserSchema, badInput).success);
+    expect(!a.parse(TargetUserSchema, JSON.stringify(badInput)).success);
+    expect(!a.parse(ConvertedUserSchema, badInput).success);
+    expect(!a.parse(ConvertedUserSchema, JSON.stringify(badInput)).success);
 });
 
 describe('arri inference', () => {

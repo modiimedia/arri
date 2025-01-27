@@ -1,4 +1,5 @@
-import { a, type AObjectSchema, type ValidationError } from '@arrirpc/schema';
+import { a, type AObjectSchema } from '@arrirpc/schema';
+import { ValueError } from '@arrirpc/schema-interface';
 import {
     type H3Error,
     type H3Event,
@@ -59,7 +60,7 @@ export function defineError(
 }
 
 export function errorResponseFromValidationErrors(
-    errors: ValidationError['errors'],
+    errors: ValueError[],
     prefixText = `Missing or invalid parameters`,
 ): H3Error {
     const errorParts: string[] = [];

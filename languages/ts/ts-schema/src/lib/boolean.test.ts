@@ -3,7 +3,7 @@ import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 describe('parsing', () => {
-    const parse = (input: unknown) => a.decode(a.boolean(), input).success;
+    const parse = (input: unknown) => a.parse(a.boolean(), input).success;
     it('accepts good input', () => {
         expect(parse(true));
         expect(parse(false));

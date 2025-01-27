@@ -80,10 +80,10 @@ void benny.suite(
 void benny.suite(
     'Int Parsing',
     benny.add('Arri', () => {
-        a.decodeUnsafe(IntSchema, intStringInput);
+        a.parse(IntSchema, intStringInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$IntSchema.parseUnsafe(intStringInput);
+        $$IntSchema.parse(intStringInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         ajvJtdParser(intStringInput);
@@ -136,7 +136,7 @@ void benny.suite(
 void benny.suite(
     'Int Serialization',
     benny.add('Arri', () => {
-        a.encode(IntSchema, intInput);
+        a.serialize(IntSchema, intInput);
     }),
     benny.add('Arri (Compiled)', () => {
         $$IntSchema.serialize(intInput);

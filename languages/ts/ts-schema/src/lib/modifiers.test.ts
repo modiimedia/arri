@@ -103,8 +103,8 @@ describe('nullable', () => {
         });
     });
     describe('parsing', () => {
-        const parseNum = (input: unknown) => a.decode(NullableNum, input);
-        const parseObject = (input: unknown) => a.decode(NullableObject, input);
+        const parseNum = (input: unknown) => a.parse(NullableNum, input);
+        const parseObject = (input: unknown) => a.parse(NullableObject, input);
         it('accepts good input', () => {
             expect(parseNum('1').success);
             expect(parseNum(null).success);

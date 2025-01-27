@@ -1,4 +1,5 @@
-import { a, type InferType, type ValueError } from '@arrirpc/schema';
+import { a, type InferType } from '@arrirpc/schema';
+import { ValueError } from '@arrirpc/schema-interface';
 import {
     createEventStream,
     eventHandler,
@@ -229,7 +230,7 @@ export function registerEventStreamRpc(
                         return true;
                     } as any),
                 serializer:
-                    responseValidator?.serialize ??
+                    responseValidator?.serializeUnsafe ??
                     function (_) {
                         return '';
                     },

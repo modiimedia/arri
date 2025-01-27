@@ -22,7 +22,7 @@ describe('validation', () => {
 });
 
 describe('parsing', () => {
-    const parse = (input: unknown) => a.decode(a.timestamp(), input).success;
+    const parse = (input: unknown) => a.parse(a.timestamp(), input).success;
     it('accepts valid input', () => {
         expect(parse(new Date()));
         expect(parse('2001-01-01T06:00:00.000Z'));

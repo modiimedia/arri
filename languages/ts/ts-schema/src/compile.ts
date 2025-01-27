@@ -89,7 +89,7 @@ export function compile<TSchema extends ASchema<any>>(
                 value: result,
             };
         } catch (err) {
-            const errors = getInputErrors(schema, input, true);
+            const errors = getInputErrors(schema, input, false);
             if (errors.length === 0) {
                 errors.push({
                     instancePath: '',
@@ -115,10 +115,11 @@ export function compile<TSchema extends ASchema<any>>(
                 value: result,
             };
         } catch (err) {
-            const errors = getInputErrors(schema, input, true);
+            const errors = getInputErrors(schema, input, false);
             if (!errors.length) {
                 errors.push({
                     message: err instanceof Error ? err.message : '',
+                    instancePath: '/',
                 });
             }
             return {
