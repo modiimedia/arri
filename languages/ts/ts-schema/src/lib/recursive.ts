@@ -1,22 +1,22 @@
 import {
-    type ADiscriminatorSchema,
-    type AObjectSchema,
-    type ARefSchema,
-    type ASchemaOptions,
-    SCHEMA_METADATA,
-    SchemaMetadata,
-    type ValidationContext,
-} from '../schemas';
-import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
+import {
+    ADiscriminatorSchemaWithAdapters,
+    AObjectSchemaWithAdapters,
+    type ARefSchema,
+    ARefSchemaWithAdapters,
+    type ASchemaOptions,
+    SchemaValidator,
+    VALIDATOR_KEY,
+} from '../schemas';
 
 let recursiveTypeCount = 0;
 
 type RecursiveCallback<T> = (
     self: ARefSchema<T>,
-) => AObjectSchema<T> | ADiscriminatorSchema<T>;
+) => AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
 
 /**
  * @example
@@ -37,7 +37,7 @@ type RecursiveCallback<T> = (
 export function recursive<T = any>(
     callback: RecursiveCallback<T>,
     metadata?: ASchemaOptions,
-): AObjectSchema<T> | ADiscriminatorSchema<T>;
+): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
 /**
  * Recursive ID Shorthand
  *
@@ -60,25 +60,17 @@ export function recursive<T = any>(
 export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
-): AObjectSchema<T> | ADiscriminatorSchema<T>;
+): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
 export function recursive<T = any>(
     propA: RecursiveCallback<T> | string,
     propB?: ASchemaOptions | RecursiveCallback<T>,
-): AObjectSchema<T> | ADiscriminatorSchema<T> {
+): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T> {
     const isIdShorthand = typeof propA === 'string';
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
     const options = isIdShorthand
         ? { id: propA }
         : ((propB ?? {}) as ASchemaOptions);
-    const recursiveFns: Record<
-        string,
-        {
-            validate: (input: unknown) => any;
-            parse: (input: unknown, data: ValidationContext) => any;
-            coerce: (input: unknown, data: ValidationContext) => any;
-            serialize: (input: unknown, data: ValidationContext) => any;
-        }
-    > = {};
+
     if (!options.id) {
         recursiveTypeCount++;
         console.warn(
@@ -86,54 +78,84 @@ export function recursive<T = any>(
         );
     }
     const id = options.id ?? `TypeRef${recursiveTypeCount}`;
-    const metadata: SchemaMetadata<T> = {
-        [SCHEMA_METADATA]: {
-            output: '' as T,
-            parse(input, context) {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.parse(input, context);
-                }
-            },
-            serialize(input, context) {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.serialize(input, context);
-                }
-                return '';
-            },
-            validate(input): input is T {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.validate(input);
-                }
-                return false;
-            },
-            coerce(input, context) {
-                if (recursiveFns[id]) {
-                    return recursiveFns[id]!.coerce(input, context);
-                }
-            },
+    const recursiveFns: Record<
+        string,
+        Omit<SchemaValidator<any>, 'output'>
+    > = {};
+    const validator: SchemaValidator<T> = {
+        output: '' as T,
+        parse(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    message: 'Max depth exceeded',
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                });
+                return undefined;
+            }
+            if (recursiveFns[id]) {
+                return recursiveFns[id].parse(input, {
+                    ...context,
+                    depth: context.depth + 1,
+                });
+            }
+        },
+        serialize(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    message: 'Max depth exceeded',
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                });
+                return undefined;
+            }
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.serialize(input, context);
+            }
+            return '';
+        },
+        validate(input): input is T {
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.validate(input);
+            }
+            return false;
+        },
+        coerce(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    message: 'Max depth exceeded',
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                });
+                return undefined;
+            }
+            if (recursiveFns[id]) {
+                return recursiveFns[id]!.coerce(input, context);
+            }
         },
     };
-    const schema: ARefSchema<T> = {
+
+    const refSchema: ARefSchemaWithAdapters<T> = {
         ref: id,
-        metadata: metadata,
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(
-            metadata[SCHEMA_METADATA].validate,
-            metadata[SCHEMA_METADATA].parse,
+            validator.validate,
+            validator.parse,
         ),
     };
-    hideInvalidProperties(schema);
-    const mainSchema = callback(schema);
+    hideInvalidProperties(refSchema);
+    const mainSchema = callback(refSchema);
+    if (!mainSchema.metadata) mainSchema.metadata = {};
     mainSchema.metadata.id = id;
     mainSchema.metadata.description =
         options?.description ?? mainSchema.metadata.description;
     mainSchema.metadata.isDeprecated =
         options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
-        validate: mainSchema.metadata[SCHEMA_METADATA].validate,
-        parse: mainSchema.metadata[SCHEMA_METADATA].parse,
-        serialize: mainSchema.metadata[SCHEMA_METADATA].serialize as any,
-        coerce: mainSchema.metadata[SCHEMA_METADATA].coerce,
+        validate: mainSchema[VALIDATOR_KEY].validate,
+        parse: mainSchema[VALIDATOR_KEY].parse,
+        serialize: mainSchema[VALIDATOR_KEY].serialize,
+        coerce: mainSchema[VALIDATOR_KEY].coerce,
     };
-
     return mainSchema;
 }

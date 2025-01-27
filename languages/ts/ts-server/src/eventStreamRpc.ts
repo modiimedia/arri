@@ -1,4 +1,4 @@
-import { a, type InferType, type ValueError } from '@arrirpc/schema';
+import { InferType, ResultSuccess, ValueError } from '@arrirpc/schema';
 import {
     createEventStream,
     eventHandler,
@@ -19,14 +19,15 @@ import {
     type HttpRpc,
     isRpc,
     isRpcParamSchema,
+    RequestValidator,
     type RpcEvent,
     type RpcParamSchema,
     validateRpcRequestInput,
 } from './rpc';
 
 export function defineEventStreamRpc<
-    TParams extends RpcParamSchema | undefined = undefined,
-    TResponse extends RpcParamSchema | undefined | never = undefined,
+    TResponse extends RpcParamSchema<any>,
+    TParams extends RpcParamSchema<any> | undefined = undefined,
 >(
     config: Omit<
         EventStreamRpc<TParams, TResponse>,
@@ -71,17 +72,13 @@ export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
 }
 
 export interface EventStreamConnectionOptions<TData> {
-    validator: (input: unknown) => input is TData;
-    validationErrors: (input: unknown) => ValueError[];
-    serializer: (input: TData) => string;
+    validator?: RequestValidator<TData>;
     pingInterval?: number;
 }
 
 export class EventStreamConnection<TData> {
     readonly lastEventId?: string;
-    private readonly validationErrors: (input: unknown) => ValueError[];
-    private readonly validator: (input: unknown) => input is TData;
-    private readonly serializer: (input: TData) => string;
+    private readonly validator?: RequestValidator<TData>;
     // for some reason Rollup cannot output DTS when this is set to NodeJS.Timeout
     private pingInterval: any | undefined = undefined;
     private readonly pingIntervalMs: number;
@@ -91,9 +88,7 @@ export class EventStreamConnection<TData> {
         this.eventStream = createEventStream(event);
         this.lastEventId = getHeader(event, 'Last-Event-Id');
         this.pingIntervalMs = opts.pingInterval ?? 60000;
-        this.serializer = opts.serializer;
         this.validator = opts.validator;
-        this.validationErrors = opts.validationErrors;
         this.eventStream.onClosed(() => {
             this.cleanup();
         });
@@ -118,20 +113,25 @@ export class EventStreamConnection<TData> {
     async push(data: TData[], eventId?: string): Promise<SsePushResult[]>;
     async push(data: TData, eventId?: string): Promise<SsePushResult>;
     async push(data: TData | TData[], eventId?: string) {
+        if (!this.validator) return;
         if (Array.isArray(data)) {
             const results: SsePushResult[] = [];
             const events: EventStreamMessage[] = [];
             for (const item of data) {
-                if (this.validator(item)) {
+                if (this.validator.validate(item)) {
                     events.push({
                         id: eventId,
                         event: 'message',
-                        data: this.serializer(item),
+                        data: (
+                            this.validator.serialize(
+                                item,
+                            ) as ResultSuccess<string>
+                        ).value,
                     });
                     results.push({ success: true });
                     continue;
                 }
-                const errors = this.validationErrors(item);
+                const errors = this.validator.errors(item);
                 results.push({
                     success: false,
                     errors,
@@ -140,16 +140,16 @@ export class EventStreamConnection<TData> {
             await this.eventStream.push(events);
             return results;
         }
-        if (this.validator(data)) {
+        if (this.validator.validate(data)) {
             await this.eventStream.push({
                 id: eventId,
                 event: 'message',
-                data: this.serializer(data),
+                data: (this.validator.serialize(data) as ResultSuccess<string>)
+                    .value,
             });
-
             return { success: true };
         }
-        const errors = this.validationErrors(data);
+        const errors = this.validator.errors(data);
         return {
             success: false,
             errors,
@@ -217,28 +217,12 @@ export function registerEventStreamRpc(
                 await validateRpcRequestInput(
                     event,
                     httpMethod,
-                    procedure.params,
                     paramValidator!,
                 );
             }
             const stream = new EventStreamConnection(event, {
                 pingInterval: procedure.pingInterval,
-                validator:
-                    responseValidator?.validate ??
-                    (function () {
-                        return true;
-                    } as any),
-                serializer:
-                    responseValidator?.serialize ??
-                    function (_) {
-                        return '';
-                    },
-                validationErrors(input) {
-                    if (procedure.response) {
-                        return a.errors(procedure.response, input);
-                    }
-                    return [];
-                },
+                validator: responseValidator,
             });
             event.context.stream = stream;
             await procedure.handler(

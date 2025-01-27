@@ -30,10 +30,11 @@ export { string } from './string';
 export { timestamp } from './timestamp';
 export {
     coerce,
+    coerceUnsafe,
     errors,
     parse,
-    safeCoerce,
-    safeParse,
+    parseUnsafe,
     serialize,
+    serializeUnsafe,
     validate,
 } from './validation';

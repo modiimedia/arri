@@ -108,7 +108,7 @@ void benny.suite(
 void benny.suite(
     'Int Coercion',
     benny.add('Arri', () => {
-        a.coerce(IntSchema, intStringInput);
+        a.coerceUnsafe(IntSchema, intStringInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
         ajvCoerce.validate(TypeBoxIntSchema, intStringInput);

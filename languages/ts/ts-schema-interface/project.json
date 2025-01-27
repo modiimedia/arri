@@ -1,16 +1,16 @@
 {
-  "name": "ts-schema",
+  "name": "ts-schema-interface",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "languages/ts/ts-schema/src",
+  "sourceRoot": "languages/ts/ts-schema-interface/src",
   "projectType": "library",
   "targets": {
     "benchmark": {
-      "inputs": ["default", "{projectRoot}/benchmark/src", "{projectRoot}/src"],
+      "inputs": ["default", "{projectRoot}/benchmark/src"],
       "outputs": ["{projectRoot}/benchmark/dist"],
       "executor": "nx:run-commands",
       "options": {
         "command": "jiti buildBenchmarks.ts && node benchmark/dist/_index.cjs",
-        "cwd": "languages/ts/ts-schema"
+        "cwd": "languages/ts/ts-schema-interface"
       }
     },
     "build": {
@@ -18,36 +18,36 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "languages/ts/ts-schema"
+        "cwd": "languages/ts/ts-schema-interface"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "languages/ts/ts-schema"
+        "cwd": "languages/ts/ts-schema-interface"
       },
       "dependsOn": ["build"]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint languages/ts/ts-schema"
+        "command": "pnpm eslint languages/ts/ts-schema-interface"
       }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-schema"],
+      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-schema-interface"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "languages/ts/ts-schema"
+        "cwd": "languages/ts/ts-schema-interface"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "languages/ts/ts-schema"
+        "cwd": "languages/ts/ts-schema-interface"
       }
     }
   },

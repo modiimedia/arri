@@ -3,7 +3,6 @@ import enquirer from 'enquirer';
 import { existsSync, readFileSync } from 'fs';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'pathe';
-import { kebabCase } from 'scule';
 
 const main = defineCommand({
     async run() {
@@ -19,14 +18,14 @@ const main = defineCommand({
                 : '0.0.1';
         const result = await enquirer.prompt<{
             name: string;
-            type: 'codegen' | 'tooling';
+            type: 'codegen' | 'other';
         }>([
             {
                 name: 'type',
                 message: 'Select a package type',
                 required: true,
                 type: 'select',
-                choices: ['codegen', 'tooling'],
+                choices: ['codegen', 'other'],
             },
         ]);
         let projectName: string;
@@ -68,24 +67,10 @@ const main = defineCommand({
                     );
                 }
                 break;
-            case 'tooling': {
-                const inputResult = await enquirer.prompt<{ name: string }>([
-                    {
-                        name: 'name',
-                        message: 'Name your package',
-                        type: 'input',
-                        required: true,
-                    },
-                ]);
-                isCodegen = false;
-                pkgName = kebabCase(inputResult.name);
-                projectName = kebabCase(
-                    inputResult.name.replace('@arrirpc/', ''),
+            case 'other': {
+                throw Error(
+                    "Sorry scaffolding for this package type isn't support at this time. Please reference a similar library in either /languages or /tooling to get things set up to your needs.",
                 );
-                pkgLocation = `tooling/${pkgName}`;
-                depth = 2;
-                outDir = path.resolve(__dirname, '../../tooling', pkgName);
-                break;
             }
         }
         await mkdir(outDir);

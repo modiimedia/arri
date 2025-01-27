@@ -1,13 +1,14 @@
 import {
-    type AScalarSchema,
-    type ASchemaOptions,
-    SCHEMA_METADATA,
-    type ValidationContext as ValidationContext,
-} from '../schemas';
-import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
+import {
+    type AScalarSchema,
+    AScalarSchemaWithAdapters,
+    type ASchemaOptions,
+    type ValidationContext as ValidationContext,
+    VALIDATOR_KEY,
+} from '../schemas';
 
 /**
  * @example
@@ -17,33 +18,34 @@ import {
  */
 export function string(
     opts: ASchemaOptions = {},
-): AScalarSchema<'string', string> {
-    const result: AScalarSchema<'string', string> = {
+): AScalarSchemaWithAdapters<'string', string> {
+    const validator: AScalarSchema<'string', string>[typeof VALIDATOR_KEY] = {
+        output: '',
+        parse: decode,
+        coerce,
+        validate,
+        serialize(input, context) {
+            if (context.instancePath.length === 0) {
+                return input;
+            }
+            if (input.length < 42) {
+                return serializeSmallString(input);
+            }
+            if (input.length < 5000 && !STR_ESCAPE.test(input)) {
+                return `"${input}"`;
+            }
+            return JSON.stringify(input);
+        },
+    };
+    const result: AScalarSchemaWithAdapters<'string', string> = {
         type: 'string',
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: '',
-                parse,
-                coerce,
-                validate,
-                serialize(input, context) {
-                    if (context.instancePath.length === 0) {
-                        return input;
-                    }
-                    if (input.length < 42) {
-                        return serializeSmallString(input);
-                    }
-                    if (input.length < 5000 && !STR_ESCAPE.test(input)) {
-                        return `"${input}"`;
-                    }
-                    return JSON.stringify(input);
-                },
-            },
         },
-        '~standard': createStandardSchemaProperty<string>(validate, parse),
+        [VALIDATOR_KEY]: validator,
+        '~standard': createStandardSchemaProperty<string>(validate, decode),
     };
     hideInvalidProperties(result);
     return result;
@@ -63,7 +65,7 @@ function validate(input: unknown): input is string {
     return typeof input === 'string';
 }
 
-function parse(input: unknown, context: ValidationContext) {
+function decode(input: unknown, context: ValidationContext) {
     if (validate(input)) {
         return input;
     }
@@ -78,7 +80,7 @@ function parse(input: unknown, context: ValidationContext) {
 }
 
 function coerce(input: unknown, context: ValidationContext) {
-    return parse(input, context);
+    return decode(input, context);
 }
 
 // Everything below was taken from https://github.com/fastify/fast-json-stringify in "./lib/serializer.js"

@@ -10,9 +10,11 @@ import {
 } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
-import { type ValueError } from './lib/validation';
+import { ValueError } from './errors';
 
-export const SCHEMA_METADATA = Symbol.for('arri.schema_metadata');
+function secretSymbol<T extends string>(key: T) {
+    return Symbol.for(key) as any as ` Symbol.for(${T})`;
+}
 
 export type MaybeNullable<
     T = any,
@@ -23,53 +25,90 @@ export interface ValidationContext {
     instancePath: string;
     schemaPath: string;
     errors: ValueError[];
+    exitOnFirstError: boolean;
+    depth: number;
+    maxDepth: number;
     discriminatorKey?: string;
     discriminatorValue?: string;
 }
 
+export function newValidationContext(
+    exitOnFirstError = false,
+    maxDepth = 500,
+): ValidationContext {
+    return {
+        instancePath: '',
+        schemaPath: '',
+        errors: [],
+        exitOnFirstError,
+        depth: 0,
+        maxDepth,
+    };
+}
+
+export const VALIDATOR_KEY = secretSymbol('arri/schema/validator/v1');
+
 export interface SchemaValidator<T> {
     output: T;
     optional?: boolean;
+    validate: (input: unknown) => input is T;
     parse: (input: unknown, context: ValidationContext) => T | undefined;
     coerce: (input: unknown, context: ValidationContext) => T | undefined;
-    serialize: (input: T, context: ValidationContext) => string;
-    validate: (input: unknown) => input is T;
-    _isAdapted?: boolean;
+    serialize: (input: T, context: ValidationContext) => string | undefined;
 }
 
-export interface SchemaMetadata<T> {
+export interface SchemaMetadata {
     [key: string]: any;
     id?: string;
     description?: string;
     isDeprecated?: boolean;
-    [SCHEMA_METADATA]: SchemaValidator<T>;
 }
 
-export interface ASchema<T = any> extends StandardSchemaV1<T> {
-    metadata: SchemaMetadata<T>;
+export type WithAdapters<T = any> = StandardSchemaV1<T>;
+
+export interface ASchema<T = any> {
+    metadata?: SchemaMetadata;
     nullable?: boolean;
+    [VALIDATOR_KEY]: SchemaValidator<T>;
 }
+export type ASchemaStrict<TSchema extends ASchema> = Omit<
+    TSchema,
+    typeof VALIDATOR_KEY
+>;
 export function isASchema(input: unknown): input is ASchema {
-    if (typeof input !== 'object') {
-        return false;
-    }
-    if (!input || !('metadata' in input)) {
+    if (typeof input !== 'object' || !input) {
         return false;
     }
     if (
-        !input.metadata ||
-        typeof input.metadata !== 'object' ||
-        !(SCHEMA_METADATA in input.metadata) ||
-        !input.metadata[SCHEMA_METADATA] ||
-        typeof input.metadata[SCHEMA_METADATA] !== 'object'
+        'metadata' in input &&
+        typeof input.metadata === 'object' &&
+        input.metadata
     ) {
-        return false;
+        if (
+            'id' in input.metadata &&
+            typeof input.metadata.id !== 'string' &&
+            typeof input.metadata.id !== 'undefined'
+        ) {
+            return false;
+        }
+        if (
+            'description' in input.metadata &&
+            typeof input.metadata.description !== 'string' &&
+            typeof input.metadata.description !== 'undefined'
+        ) {
+            return false;
+        }
+        if (
+            'isDeprecated' in input.metadata &&
+            typeof input.metadata.isDeprecated !== 'boolean' &&
+            typeof input.metadata.isDeprecated !== 'undefined'
+        ) {
+            return false;
+        }
     }
-    return (
-        'parse' in input.metadata[SCHEMA_METADATA] &&
-        typeof input.metadata[SCHEMA_METADATA] === 'object'
-    );
+    return VALIDATOR_KEY in input;
 }
+export type ASchemaWithAdapters<T = any> = ASchema<T> & WithAdapters<T>;
 
 export interface ASchemaOptions {
     id?: string;
@@ -82,7 +121,7 @@ export type ResolveObject<T> = Resolve<{ [k in keyof T]: T[k] }>;
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type InferType<TInput extends ASchema<any>> = Resolve<
-    TInput['metadata'][typeof SCHEMA_METADATA]['output']
+    TInput[typeof VALIDATOR_KEY]['output']
 >;
 
 /**
@@ -135,6 +174,10 @@ export function isAScalarSchema(input: unknown): input is AScalarSchema {
             NumberTypeValues.includes(input.type as any))
     );
 }
+export type AScalarSchemaWithAdapters<
+    T extends JtdType | NumberType = any,
+    TVal = any,
+> = AScalarSchema<T, TVal> & WithAdapters<TVal>;
 
 export const NumberTypeValues = [
     'float32',
@@ -158,6 +201,8 @@ export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
 export function isAAraySchema(input: unknown): input is AArraySchema {
     return isASchema(input) && isSchemaFormElements(input);
 }
+export type AArraySchemaWithAdapters<TInnerSchema extends ASchema<any> = any> =
+    AArraySchema<TInnerSchema> & WithAdapters<InferType<TInnerSchema>[]>;
 
 // string enums
 export interface AStringEnumSchema<TValues extends string[]>
@@ -169,6 +214,8 @@ export function isAStringEnumSchema(
 ): input is AStringEnumSchema<any> {
     return isASchema(input) && isSchemaFormEnum(input);
 }
+export type AStringEnumSchemaWithAdapters<T extends string[]> =
+    AStringEnumSchema<T> & WithAdapters<T[number]>;
 
 // discriminators
 export interface ADiscriminatorSchema<T> extends ASchema<T> {
@@ -180,21 +227,20 @@ export function isADiscriminatorSchema(
 ): input is ADiscriminatorSchema<any> {
     return isASchema(input) && isSchemaFormDiscriminator(input);
 }
+export type ADiscriminatorSchemaWithAdapters<T> = ADiscriminatorSchema<T> &
+    WithAdapters<T>;
 
 // records
-export interface ARecordSchema<
-    TInnerSchema extends ASchema<any>,
-    TNullable extends boolean = false,
-> extends ASchema<
-        MaybeNullable<Record<string, InferType<TInnerSchema>>, TNullable>
-    > {
+export interface ARecordSchema<TInnerSchema extends ASchema<any>>
+    extends ASchema<Record<string, InferType<TInnerSchema>>> {
     values: TInnerSchema;
 }
-export function isARecordSchema(
-    input: unknown,
-): input is ARecordSchema<any, any> {
+export function isARecordSchema(input: unknown): input is ARecordSchema<any> {
     return isASchema(input) && isSchemaFormValues(input);
 }
+export type ARecordSchemaWithAdapters<TInnerSchema extends ASchema<any>> =
+    ARecordSchema<TInnerSchema> &
+        WithAdapters<Record<string, InferType<TInnerSchema>>>;
 
 // object types
 export interface AObjectSchema<TVal = any, TStrict extends boolean = false>
@@ -206,6 +252,10 @@ export interface AObjectSchema<TVal = any, TStrict extends boolean = false>
 export function isAObjectSchema(input: unknown): input is AObjectSchema {
     return isASchema(input) && isSchemaFormProperties(input);
 }
+export type AObjectSchemaWithAdapters<
+    T = any,
+    TStrict extends boolean = false,
+> = AObjectSchema<T, TStrict> & WithAdapters<T>;
 
 export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>
     extends ASchemaOptions {
@@ -223,11 +273,9 @@ export type InferObjectOutput<TInput = any> = ResolveObject<
 export type InferObjectRawType<TInput> =
     TInput extends Record<any, any>
         ? {
-              [TKey in keyof TInput]: TInput[TKey]['metadata'][typeof SCHEMA_METADATA]['optional'] extends true
-                  ?
-                        | TInput[TKey]['metadata'][typeof SCHEMA_METADATA]['output']
-                        | undefined
-                  : TInput[TKey]['metadata'][typeof SCHEMA_METADATA]['output'];
+              [TKey in keyof TInput]: TInput[TKey][typeof VALIDATOR_KEY]['optional'] extends true
+                  ? TInput[TKey][typeof VALIDATOR_KEY]['output'] | undefined
+                  : TInput[TKey][typeof VALIDATOR_KEY]['output'];
           }
         : never;
 
@@ -239,7 +287,7 @@ export function isObject(input: unknown): input is Record<any, any> {
 export interface ARefSchema<T> extends ASchema<T> {
     ref: string;
 }
-
 export function isARefSchema(input: unknown): input is ARefSchema<any> {
     return isASchema(input) && isSchemaFormRef(input);
 }
+export type ARefSchemaWithAdapters<T> = ARefSchema<T> & WithAdapters<T>;

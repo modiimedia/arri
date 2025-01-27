@@ -81,17 +81,17 @@ describe('Parsing', () => {
     );
     it('outputs valid arrays', () => {
         const input = ['a', 'b', 'c'];
-        const result = a.parse(StringArray, input);
+        const result = a.parseUnsafe(StringArray, input);
         expect(result).toStrictEqual(input);
     });
     it('accepts good input', () => {
         const numberArr = [1, 2, 3, 4, 5];
-        const numberArrResult = a.safeParse(NumberArray, numberArr);
+        const numberArrResult = a.parse(NumberArray, numberArr);
         expect(numberArrResult.success);
         if (numberArrResult.success) {
             expect(numberArrResult.value).toStrictEqual(numberArr);
         }
-        const numberJsonArrResult = a.safeParse(
+        const numberJsonArrResult = a.parse(
             NumberArray,
             JSON.stringify(numberArr),
         );
@@ -103,43 +103,45 @@ describe('Parsing', () => {
             { id: '123111', date: new Date() },
             { id: 'alsdkfja', date: new Date() },
         ];
-        expect(a.safeParse(ObjectArray, objectArr).success).toBe(true);
-        expect(
-            a.safeParse(ObjectArray, JSON.stringify(objectArr)).success,
-        ).toBe(true);
+        expect(a.parse(ObjectArray, objectArr).success).toBe(true);
+        expect(a.parse(ObjectArray, JSON.stringify(objectArr)).success).toBe(
+            true,
+        );
     });
 
     it('rejects bad input', () => {
         const numberArr = [1, '1', 4];
-        expect(a.safeParse(NumberArray, numberArr).success).toBe(false);
-        expect(
-            a.safeParse(NumberArray, JSON.stringify(numberArr)).success,
-        ).toBe(false);
+        expect(a.parse(NumberArray, numberArr).success).toBe(false);
+        expect(a.parse(NumberArray, JSON.stringify(numberArr)).success).toBe(
+            false,
+        );
         const objectArr = [
             { id: '123124', date: 0 },
             { id: '1l3kj431lkj', date: 0 },
         ];
-        expect(a.safeParse(ObjectArray, objectArr).success).toBe(false);
-        expect(
-            a.safeParse(ObjectArray, JSON.stringify(objectArr)).success,
-        ).toBe(false);
+        expect(a.parse(ObjectArray, objectArr).success).toBe(false);
+        expect(a.parse(ObjectArray, JSON.stringify(objectArr)).success).toBe(
+            false,
+        );
         const nestedArr = [
             [1, 2, 3],
             [1, 2, 3],
         ];
-        expect(a.safeParse(NumberArray, nestedArr).success).toBe(false);
+        expect(a.parse(NumberArray, nestedArr).success).toBe(false);
         const nestedStringArr = [
             ['1', '2', '3'],
             ['1', '2', '3'],
         ];
-        expect(a.safeParse(StringArray, nestedStringArr).success).toBe(false);
+        expect(a.parse(StringArray, nestedStringArr).success).toBe(false);
     });
 
     it('parses array of nullable strings', () => {
         const input = [null, null, 'goodbye'];
         const Schema = a.array(a.nullable(a.string()));
-        expect(a.parse(Schema, input)).toStrictEqual(input);
-        expect(a.parse(Schema, JSON.stringify(input))).toStrictEqual(input);
+        expect(a.parseUnsafe(Schema, input)).toStrictEqual(input);
+        expect(a.parseUnsafe(Schema, JSON.stringify(input))).toStrictEqual(
+            input,
+        );
     });
 });
 
@@ -148,7 +150,7 @@ describe('Serialization', () => {
         const SimpleSchema = a.array(a.number());
         type SimpleSchema = a.infer<typeof SimpleSchema>;
         const input: SimpleSchema = [1, 10, 25];
-        expect(a.serialize(SimpleSchema, input)).toBe('[1,10,25]');
+        expect(a.serializeUnsafe(SimpleSchema, input)).toBe('[1,10,25]');
         const ComplexSchema = a.array(
             a.object({
                 id: a.string(),
@@ -160,7 +162,7 @@ describe('Serialization', () => {
             { id: '1', role: 'CUSTOMER' },
             { id: '2', role: 'HOST' },
         ];
-        expect(a.serialize(ComplexSchema, input2)).toBe(
+        expect(a.serializeUnsafe(ComplexSchema, input2)).toBe(
             `[{"id":"1","role":"CUSTOMER"},{"id":"2","role":"HOST"}]`,
         );
     });

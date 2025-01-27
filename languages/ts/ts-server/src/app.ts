@@ -36,11 +36,6 @@ import {
     Rpc,
 } from './rpc';
 import { ArriService } from './service';
-import {
-    createWsRpcDefinition,
-    type NamedWebsocketRpc,
-    registerWebsocketRpc,
-} from './websocketRpc';
 
 export type DefinitionMap = Record<
     string,
@@ -180,12 +175,10 @@ export class ArriApp {
 
     rpc(name: string, procedure: Rpc<any, any, any>) {
         (procedure as any).name = name;
-        const p = procedure as NamedHttpRpc | NamedWebsocketRpc;
+        const p = procedure as NamedHttpRpc;
         const path = p.path ?? getRpcPath(p.name, this._rpcRoutePrefix);
         if (p.transport === 'http') {
             this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
-        } else if (p.transport === 'ws') {
-            this._procedures[p.name] = createWsRpcDefinition(p.name, path, p);
         }
 
         if (isRpcParamSchema(p.params)) {
@@ -221,9 +214,6 @@ export class ArriApp {
                 debug: this._debug,
             });
             return;
-        }
-        if (p.transport === 'ws') {
-            registerWebsocketRpc(this.h3Router, path, p);
         }
     }
 

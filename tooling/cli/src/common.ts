@@ -1,4 +1,4 @@
-import { a, ValidationError } from '@arrirpc/schema';
+import { a, ValidationException } from '@arrirpc/schema';
 import { createConsola } from 'consola';
 import { ofetch } from 'ofetch';
 import path from 'pathe';
@@ -14,12 +14,11 @@ export function isInsideDir(dir: string, parentDir: string) {
 
 export async function getArriPackageMetadata() {
     const npmPackageResponse = await ofetch('https://registry.npmjs.com/arri');
-    const arriInfo = a.safeParse(NpmRegistryPackage, npmPackageResponse);
+    const arriInfo = a.parse(NpmRegistryPackage, npmPackageResponse);
     if (!arriInfo.success) {
         const errors = a.errors(NpmRegistryPackage, npmPackageResponse);
-        console.warn(errors);
-        throw new ValidationError({
-            message: 'Arri parsing response from registry',
+        throw new ValidationException({
+            message: 'Error parsing response from registry',
             errors,
         });
     }

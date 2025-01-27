@@ -539,6 +539,12 @@ export const validationTestSuites: Record<
             true,
             { type: 'CREATED', createdAt: '01/01/2001' },
             { type: 'MOVED', itemId: '1', createdAt: new Date() },
+            {
+                type: 'MOVED',
+                itemId: '3',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         ],
     },
     'record with boolean values': {

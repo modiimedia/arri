@@ -103,9 +103,8 @@ describe('nullable', () => {
         });
     });
     describe('parsing', () => {
-        const parseNum = (input: unknown) => a.safeParse(NullableNum, input);
-        const parseObject = (input: unknown) =>
-            a.safeParse(NullableObject, input);
+        const parseNum = (input: unknown) => a.parse(NullableNum, input);
+        const parseObject = (input: unknown) => a.parse(NullableObject, input);
         it('accepts good input', () => {
             expect(parseNum('1').success);
             expect(parseNum(null).success);
@@ -127,13 +126,13 @@ describe('nullable', () => {
         });
         it('rejects bad input', () => {
             const numResult = parseNum('hello world');
-            expect(!numResult.success && numResult.error.errors.length > 0);
+            expect(!numResult.success && numResult.errors.length > 0);
             const objResult = parseObject({
                 id: '12355',
                 name: undefined,
                 createdAt: new Date(),
             });
-            expect(!objResult.success && objResult.error.errors.length > 0);
+            expect(!objResult.success && objResult.errors.length > 0);
         });
     });
     describe('standard-schema support', () => {
@@ -238,13 +237,13 @@ describe('clone()', () => {
         const ClonedStringSchema = a.clone(StringSchema);
         type ClonedStringSchema = a.infer<typeof ClonedStringSchema>;
         assertType<ClonedStringSchema>('hello world');
-        expect(ClonedStringSchema.metadata.id).toBe(undefined);
+        expect(ClonedStringSchema.metadata?.id).toBe(undefined);
         const ModifiedStringSchema = a.clone(StringSchema, {
             id: 'cloned_string_schema',
         });
         type ModifiedStringSchema = a.infer<typeof ModifiedStringSchema>;
         assertType<ModifiedStringSchema>('hello world');
-        expect(ModifiedStringSchema.metadata.id).toBe('cloned_string_schema');
+        expect(ModifiedStringSchema.metadata?.id).toBe('cloned_string_schema');
     });
 
     describe('standard-schema support', () => {

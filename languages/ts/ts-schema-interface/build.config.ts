@@ -10,12 +10,10 @@ const packageJson = JSON.parse(
 );
 
 const deps = Object.keys(packageJson.dependencies);
+const devDeps = Object.keys(packageJson.devDependencies ?? {});
 
 export default defineBuildConfig({
-    entries: [
-        { input: './src/_index', name: 'index' },
-        { input: './src/adapters', name: 'adapters' },
-    ],
+    entries: [{ input: './src/_index', name: 'index' }],
     rollup: {
         emitCJS: true,
         dts: {
@@ -27,5 +25,5 @@ export default defineBuildConfig({
     clean: true,
     declaration: true,
     failOnWarn: true,
-    externals: deps,
+    externals: [...deps, ...devDeps],
 });

@@ -37,8 +37,12 @@ import { type TemplateInput } from './common';
 
 export function createParsingTemplate(input: string, schema: Schema): string {
     const fallbackTemplate = `
-    function $fallback(instancePath, schemaPath) {
-        throw new Error(\`Error parsing input. InstancePath: "\${instancePath}". SchemaPath: "\${schemaPath}"\`);
+    function $fallback(instancePath, schemaPath, message) {
+        context.errors.push({
+            message: message,
+            instancePath: instancePath,
+            schemaPath: schemaPath,
+        })
     }`;
     let jsonParseCheck = '';
 
@@ -158,9 +162,7 @@ export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
 }
 
 export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
-    const errorMessage = input.instancePath.length
-        ? `Expected boolean for ${input.instancePath}`
-        : `Expected boolean`;
+    const errorMessage = 'expected boolean';
     const templateParts: string[] = [];
     if (input.instancePath.length === 0) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
@@ -198,7 +200,7 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
-    const errorMessage = `Expected string at ${input.instancePath}`;
+    const errorMessage = `expected string`;
     const mainTemplate = `if (typeof ${input.val} === 'string') {
         ${input.targetVal} = ${input.val};
     } else {
@@ -323,7 +325,7 @@ export function bigIntTemplate(
         templateParts.push(`${input.targetVal} = val;`);
     }
     templateParts.push(`} catch(err) {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse BigInt from ${input.val}.");
+        $fallback("${input.instancePath}", "${input.schemaPath}", \`Unable to parse BigInt from \${${input.val}}\`);
     }`);
     if (input.instancePath.length === 0 && input.schema.nullable) {
         templateParts.push('}');
@@ -348,7 +350,7 @@ export function bigIntTemplate(
         }`);
     }
     templateParts.push(`else {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected BigInt or Integer string. Got \${${input.val}}");
+        $fallback("${input.instancePath}", "${input.schemaPath}", \`Expected BigInt or Integer string. Got \${${input.val}}\`);
     }`);
     return templateParts.join('\n');
 }
@@ -376,7 +378,7 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     } else if (typeof ${input.val} === 'string') {
         ${input.targetVal} = new Date(${input.val});
     } else {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string at ${input.instancePath}")
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string")
     }`;
     if (input.schema.nullable) {
         templateParts.push(`if (${input.val} === null) {
@@ -396,7 +398,7 @@ function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
         .join(' || ');
     const errorMessage = `Expected one of the following values: [${input.schema.enum.join(
         ', ',
-    )}]${input.instancePath.length ? ` at ${input.instancePath}` : ''}.`;
+    )}]`;
     const templateParts: string[] = [];
     templateParts.push(`if (typeof ${input.val} === 'string') {
         if (${enumTemplate}) {
@@ -535,7 +537,7 @@ export function arrayTemplate(
     const innerTemplate = schemaTemplate({
         val: itemVar,
         targetVal: itemResultVar,
-        instancePath: `${input.instancePath}/[0]`,
+        instancePath: `${input.instancePath}/[i]`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         subFunctions: input.subFunctions,

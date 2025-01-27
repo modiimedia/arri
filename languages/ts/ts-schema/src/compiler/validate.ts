@@ -216,7 +216,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         }
     }
     let mainTemplate = parts.join(' && ');
-    const fnName = refFunctionName(input.schema.metadata.id ?? '');
+    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(input) {
@@ -302,7 +302,7 @@ function discriminatorTemplate(
     let mainTemplate = `typeof ${input.val} === 'object' && ${
         input.val
     } !== null && (${parts.join(' || ')})`;
-    const fnName = refFunctionName(input.schema.metadata.id ?? '');
+    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
 
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {

@@ -46,10 +46,11 @@ Originally this library was created as a way for building schemas for [Json Type
 - [Utilities](#utilities)
     - [Validate](#validate)
     - [Parse](#parse)
-    - [Safe Parse](#safe-parse)
+    - [Parse Unsafe](#parse-unsafe)
     - [Coerce](#coerce)
-    - [Safe Coerce](#safe-coerce)
+    - [Coerce Unsafe](#coerce-unsafe)
     - [Serialize](#serialize)
+    - [Serialize Unsafe](#serialize-unsafe)
     - [Errors](#errors)
 - [Metadata](#metadata)
 - [Compiled Validators](#compiled-validators)
@@ -748,13 +749,20 @@ const User = a.object({
     name: a.string(),
 });
 
-// returns a User if successful or throws a ValidationError if fails
+// returns Result<User>
 const result = a.parse(User, jsonString);
+if (result.success) {
+    // something when wrong with parsing
+    console.log(result.errors);
+} else {
+    // parsing was successful
+    console.log(result.value);
+}
 ```
 
-### Safe Parse
+### Parse Unsafe
 
-A safer alternative to `a.parse()` that doesn't throw an error.
+Alternate version to `parse()` that will throw a `ValidationException` if parsing fails.
 
 ```ts
 const User = a.object({
@@ -762,17 +770,14 @@ const User = a.object({
     name: a.string(),
 });
 
-const result = a.safeParse(User, jsonString);
-if (result.success) {
-    console.log(result.value); // result.value will be User
-} else {
-    console.error(result.error);
-}
+// can throw an error
+const result = a.parseUnsafe(User, jsonString);
+console.log(result);
 ```
 
 ### Coerce
 
-`a.coerce()` will attempt to convert inputs to the correct type. If it fails to convert the inputs it will throw a `ValidationError`
+`a.coerce()` will attempt to convert inputs to the correct type. Returns a `Result<T>`
 
 ```ts
 const A = a.object({
@@ -786,12 +791,12 @@ a.coerce(A, {
     b: 'true',
     c: '500.24',
 });
-// { a: "1", b: true, c: 500.24 };
+// { success: true, value: { a: '1', b: true, c: 500.24 } };
 ```
 
-### Safe Coerce
+### Coerce Unsafe
 
-`a.safeCoerce()` is an alternative to `a.coerce()` that doesn't throw.
+`a.coerceUnsafe()` is an alternative to `a.coerce()` that will throw an error if coercion fails
 
 ```ts
 const A = a.object({
@@ -800,18 +805,12 @@ const A = a.object({
     c: a.float32(),
 });
 
-const result = a.safeCoerce(A, someInput);
-
-if (result.success) {
-    console.log(result.value);
-} else {
-    console.error(result.error);
-}
+a.coerceUnsafe(A, someInput); // returns T but can throw an error
 ```
 
 ### Serialize
 
-`a.serialize()` will take an input and serialize it to a valid JSON string.
+`a.serialize()` will take an input and serialize it to a valid JSON string. This returns `Result<string>`
 
 ```ts
 const User = a.object({
@@ -819,8 +818,27 @@ const User = a.object({
     name: a.string(),
 });
 
-a.serialize(User, { id: '1', name: 'john doe' });
-// {"id":"1","name":"john doe"}
+const result = a.serialize(User, { id: '1', name: 'john doe' });
+if (result.success) {
+    console.log(result.value);
+    // '{"id":"1","name":"john doe"}''
+}
+```
+
+Be aware that this function does not validate the input. So if you are passing in an any or unknown type into this function it is recommended that you validate it first.
+
+### Serialize Unsafe
+
+`a.serializeUnsafe()` is an alternative to `a.serialize()` that returns a JSON string, but can throw an error.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+});
+
+const result = a.serialize(User, { id: '1', name: 'john doe' }); // might throw an error
+// '{"id":"1","name":"john doe"}''
 ```
 
 Be aware that this function does not validate the input. So if you are passing in an any or unknown type into this function it is recommended that you validate it first.
@@ -983,7 +1001,9 @@ const $$User = a.compile(User);
 
 $$User.validate(someInput);
 $$User.parse(someJson);
+$$User.parseUnsafe(someJson);
 $$User.serialize({ id: '1', email: null, created: new Date() });
+$$User.serializeUnsafe({ id: '1', email: null, created: new Date() });
 ```
 
 In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods are created using [`new Function()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
