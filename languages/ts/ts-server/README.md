@@ -15,10 +15,9 @@ Parameters and responses are defined using [@arrirpc/schema](/languages/ts/ts-sc
         - [File-Based Routing](#file-based-routing)
         - [Manual Routing](#manual-routing)
         - [Creating Event Stream Procedures](#creating-event-stream-procedures)
-        - [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
-            - [Adding to the RPC Context](#adding-to-the-rpc-context)
     - [Adding Non-RPC Routes](#adding-non-rpc-routes)
     - [Adding Middleware](#adding-middleware)
+        - [Adding to the RPC Context](#adding-to-the-rpc-context)
 - [Key Concepts](#key-concepts)
     - [Arri Definition File](#arri-definition-file)
     - [How Procedures Map To Endpoints](#how-procedures-map-to-endpoints)
@@ -289,70 +288,6 @@ stream.push(data: Data, eventId?: string)
 stream.close()
 // register a callback that will fire after the stream has been close by the server or the connection has been dropped
 stream.onClosed(cb: () => any)
-```
-
-### Creating Websocket Procedures (Experimental
-
-Very experimental. Do not use in production.
-
-```ts
-// Websocket procedures work really well with discriminated unions
-const IncomingMsg = a.discriminator('type', {
-    FOO: a.object({
-        message: a.string(),
-    }),
-    PING: a.object({
-        message: a.string(),
-    })
-});
-
-const OutgoingMsg = a.discriminator('type', {
-    BAR: a.object({
-        message: a.string(),
-    }),
-    PONG: a.object({
-    message: a.string()
-    })
-});
-
-export default defineWebsocketRpc(
-    params: IncomingMsg,
-    response: OutgoingMsg,
-    handler: {
-        onOpen: (peer) => {},
-        onMessage: (peer, message) => {
-            switch(message.type) {
-                case "FOO":
-                    peer.send({
-                        type: "BAR",
-                        message: "You sent a FOO message"
-                    });
-                    break;
-                case "PING":
-                    peer.send({
-                        type: "PONG",
-                        message: "You sent a PING message"
-                    });
-                    break;
-            }
-        },
-        onError: (peer, error) => {}
-    }
-)
-```
-
-Under the hood Websocket RPCs use [crossws](https://crossws.unjs.io/).
-
-The possible payloads sent by the server will look like the following:
-
-```
-event: message
-data: <response serialized to json>
-```
-
-```
-event: error
-data: {"code": <some-err-code>, "message": <some-error-msg>}
 ```
 
 ### Adding Non-RPC Routes
