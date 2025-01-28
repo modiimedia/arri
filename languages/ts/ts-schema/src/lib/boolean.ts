@@ -28,6 +28,7 @@ export function boolean(
             if (validate(input)) {
                 return input;
             }
+            console.log('MAYBE_COERCE_INPUT', input);
             switch (input) {
                 case 'true':
                 case 'TRUE':

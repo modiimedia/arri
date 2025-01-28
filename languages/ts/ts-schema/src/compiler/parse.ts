@@ -253,7 +253,7 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
     if (input.instancePath.length === 0 || input.shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const ${valName} = Number(${input.val});
-            if (!Number.isNaN(parsedVal)) {
+            if (!Number.isNaN(${valName})) {
                 ${input.targetVal} = ${valName};
             }`);
         if (input.schema.nullable) {
@@ -388,7 +388,44 @@ export function bigIntTemplate(
 
 export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     const templateParts: string[] = [];
-    if (input.instancePath.length === 0 || input.shouldCoerce) {
+    if (input.shouldCoerce) {
+        return `if (typeof ${input.val} === 'string') {
+            try {
+                const parsedVal = new Date(${input.val});
+                if (!Number.isNaN(parsedVal.getMonth())) {
+                    ${input.targetVal} = parsedVal;
+                } ${
+                    input.schema.nullable
+                        ? `else if (${input.val} === 'null') {
+                                ${input.targetVal} = null;
+                            }`
+                        : ''
+                } else {
+                    $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to coerce date"); 
+                }
+            } catch (err) {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date"); 
+            }    
+        } else if (typeof ${input.val} === 'number') {
+            const parsedVal = new Date(${input.val});
+            if (!Number.isNaN(parsedVal.getMonth())) {
+                ${input.targetVal} = parsedVal;
+            } else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
+            }
+        } else if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+            ${input.targetVal} = ${input.val};
+        }${
+            input.schema.nullable
+                ? ` else if (${input.val} === null) {
+                    ${input.targetVal} = null;    
+                }`
+                : ''
+        } else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
+            }`;
+    }
+    if (input.instancePath.length === 0) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = new Date(${input.val});
             if (!Number.isNaN(parsedVal.getMonth())) {

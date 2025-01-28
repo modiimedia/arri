@@ -92,7 +92,12 @@ describe('coercion test suites', () => {
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.coerce(input);
                     if (!actualResult.success) {
-                        console.log(Compiled.compiledCode.coerce);
+                        console.log({
+                            schema: suite.schema,
+                            input: input,
+                            inputIndex: i,
+                            errors: actualResult.errors,
+                        });
                         console.log(input, 'Should coerce');
                     }
                     expect(actualResult.success).toBe(true);
@@ -116,7 +121,12 @@ describe('coercion test suites', () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.coerce(input);
                     if (result.success) {
-                        console.log(Compiled.compiledCode.coerce);
+                        console.log({
+                            schema: suite.schema,
+                            input: input,
+                            inputIndex: i,
+                            result: result.value,
+                        });
                         console.log(input, 'Should NOT coerce');
                     }
                     expect(result.success).toBe(false);

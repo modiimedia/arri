@@ -48,7 +48,8 @@ describe('coercion test suites', () => {
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
                 const result = a.coerce(suite.schema, input);
-                if (!result.success) console.error(result.errors);
+                if (!result.success)
+                    console.error('KEY', key, 'INDEX', i, result.errors);
                 expect(result.success).toBe(true);
                 if (result.success) {
                     expect(result.value).toStrictEqual(

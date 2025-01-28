@@ -1341,7 +1341,7 @@ export const coercionTestSuites: Record<
         schema: a.int32(),
         goodInputs: [1, '1', '15', 15, '-15', -15],
         expectedResults: [1, 1, 15, 15, -15, -15],
-        badInputs: ['hello world', 1000, '1000', 3147483647, '3147483647'],
+        badInputs: ['hello world', 3147483647, '3147483647'],
     },
     uint32: {
         schema: a.uint32(),

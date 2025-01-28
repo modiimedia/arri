@@ -394,6 +394,69 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'boolean':
+                if (shouldCoerce) {
+                    if (schema.nullable) {
+                        return {
+                            code,
+                            fn(input, context) {
+                                switch (input) {
+                                    case true:
+                                        return true;
+                                    case false:
+                                        return false;
+                                    case 'true':
+                                    case 'TRUE':
+                                    case '1':
+                                    case 1:
+                                        return true;
+                                    case 'false':
+                                    case 'FALSE':
+                                    case '0':
+                                    case 0:
+                                        return false;
+                                    case null:
+                                    case 'null':
+                                        return null;
+                                    default:
+                                        context.errors.push({
+                                            instancePath: '/',
+                                            schemaPath: '/type',
+                                            message: `Unable to coerce ${input} into boolean`,
+                                        });
+                                        return undefined;
+                                }
+                            },
+                        };
+                    }
+                    return {
+                        code,
+                        fn(input, context) {
+                            switch (input) {
+                                case true:
+                                    return true;
+                                case false:
+                                    return false;
+                                case 'true':
+                                case 'TRUE':
+                                case '1':
+                                case 1:
+                                    return true;
+                                case 'false':
+                                case 'FALSE':
+                                case '0':
+                                case 0:
+                                    return false;
+                                default:
+                                    context.errors.push({
+                                        instancePath: '/',
+                                        schemaPath: '/type',
+                                        message: `Unable to coerce ${input} into boolean`,
+                                    });
+                                    return undefined;
+                            }
+                        },
+                    };
+                }
                 if (schema.nullable) {
                     return {
                         code,
