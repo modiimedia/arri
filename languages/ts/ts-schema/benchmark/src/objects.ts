@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
-import { Check, Value } from '@sinclair/typebox/value';
+import { Check, Decode, Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
 import benny from 'benny';
@@ -484,7 +484,7 @@ void benny.suite(
 );
 
 void benny.suite(
-    'Object Parsing',
+    'Object Parsing - Good Input',
     benny.add('Arri', () => {
         a.parse(ArriUser, inputJson);
     }),
@@ -509,6 +509,12 @@ void benny.suite(
     benny.add('JSON.parse', () => {
         JSON.parse(inputJson);
     }),
+    benny.add('JSON.parse + Typebox', () => {
+        Decode(TypeBoxUser, JSON.parse(inputJson));
+    }),
+    benny.add('JSON.parse + Typebox (Compiled)', () => {
+        TypeBoxUserValidator.Decode(JSON.parse(inputJson));
+    }),
     benny.add('JSON.parse + Valibot', () => {
         v.safeParse(ValibotUser, JSON.parse(inputJson));
     }),
@@ -518,16 +524,46 @@ void benny.suite(
     benny.cycle(),
     benny.complete(),
     benny.save({
-        file: 'objects-parsing',
+        file: 'objects-parsing-good-input',
         format: 'chart.html',
         folder: 'benchmark/dist',
     }),
     benny.save({
-        file: 'objects-parsing',
+        file: 'objects-parsing-good-input',
         format: 'json',
         folder: 'benchmark/dist',
     }),
 );
+
+function TypeBoxDecodeSafe(input: unknown) {
+    try {
+        const val = Decode(TypeBoxUser, input);
+        return {
+            success: true,
+            value: val,
+        };
+    } catch (err) {
+        return {
+            success: false,
+            error: err,
+        };
+    }
+}
+
+function TypeboxDecodeSafeCompiled(input: unknown) {
+    try {
+        const val = TypeBoxUserValidator.Decode(input);
+        return {
+            success: true,
+            value: val,
+        };
+    } catch (err) {
+        return {
+            success: false,
+            error: err,
+        };
+    }
+}
 
 void benny.suite(
     'Object Parsing - Bad Input',
@@ -548,6 +584,12 @@ void benny.suite(
     }),
     benny.add('JSON.parse', () => {
         JSON.parse(badInputJson);
+    }),
+    benny.add('JSON.parse + Typebox', () => {
+        TypeBoxDecodeSafe(JSON.parse(badInputJson));
+    }),
+    benny.add('JSON.parse + Typebox (Compiled)', () => {
+        TypeboxDecodeSafeCompiled(badInput);
     }),
     benny.add('JSON.parse + Valibot', () => {
         v.safeParse(ValibotUser, JSON.parse(badInputJson));
