@@ -35,7 +35,11 @@ import {
 } from '../lib/numberConstants';
 import { type TemplateInput } from './common';
 
-export function createParsingTemplate(input: string, schema: Schema): string {
+export function createParsingTemplate(
+    input: string,
+    schema: Schema,
+    shouldCoerce = false,
+): string {
     const fallbackTemplate = `
     function $fallback(instancePath, schemaPath, message) {
         context.errors.push({
@@ -54,6 +58,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         instancePath: '',
         schemaPath: '',
         subFunctions,
+        shouldCoerce: shouldCoerce,
     });
     const jsonTemplate = schemaTemplate({
         val: 'json',
@@ -62,6 +67,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         instancePath: '',
         schemaPath: '',
         subFunctions,
+        shouldCoerce: shouldCoerce,
     });
 
     if (
@@ -164,6 +170,25 @@ export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
 export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
     const errorMessage = 'expected boolean';
     const templateParts: string[] = [];
+    if (input.shouldCoerce) {
+        templateParts.push(`if (${input.val} === true || ${input.val} === 'true' || ${input.val} === 'TRUE' || ${input.val} === 1 || ${input.val} === '1') {
+                ${input.targetVal} = true;
+            }
+            else if (${input.val} === false || ${input.val} === 'false' || ${input.val} === 'FALSE' || ${input.val} === 0 || ${input.val} === '0') {
+                ${input.targetVal} = false;
+            }`);
+        if (input.schema.nullable) {
+            templateParts.push(`else if (${input.val} === null || ${input.val} === 'null') {
+                    ${input.targetVal} = null;
+                }`);
+        }
+        templateParts.push(
+            `else {
+                $fallback("${input.instancePath}", "${input.schema}/type", "${errorMessage}");
+            }`,
+        );
+        return templateParts.join('\n');
+    }
     if (input.instancePath.length === 0) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             if (${input.val} === 'true') {
@@ -225,7 +250,7 @@ function getVarName(input: string): string {
 export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
     const valName = getVarName(`${input.val}Val`);
     const templateParts: string[] = [];
-    if (input.instancePath.length === 0) {
+    if (input.instancePath.length === 0 || input.shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const ${valName} = Number(${input.val});
             if (!Number.isNaN(parsedVal)) {
@@ -266,7 +291,7 @@ export function intTemplate(
 ) {
     const templateParts: string[] = [];
 
-    if (input.instancePath.length === 0) {
+    if (input.instancePath.length === 0 || input.shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = Number(${input.val});
             if (Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
@@ -278,7 +303,7 @@ export function intTemplate(
             }`);
         }
         templateParts.push(
-            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max});`,
+            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");`,
         );
         templateParts.push('}');
     }
@@ -308,7 +333,10 @@ export function bigIntTemplate(
     templateParts.push(
         `if (typeof ${input.val} === 'string' || typeof ${input.val} === 'number') {`,
     );
-    if (input.instancePath.length === 0 && input.schema.nullable) {
+    if (
+        (input.instancePath.length === 0 || input.shouldCoerce) &&
+        input.schema.nullable
+    ) {
         templateParts.push(`if (${input.val} === 'null') {
             ${input.targetVal} = null;
         } else {`);
@@ -327,7 +355,10 @@ export function bigIntTemplate(
     templateParts.push(`} catch(err) {
         $fallback("${input.instancePath}", "${input.schemaPath}", \`Unable to parse BigInt from \${${input.val}}\`);
     }`);
-    if (input.instancePath.length === 0 && input.schema.nullable) {
+    if (
+        (input.instancePath.length === 0 || input.shouldCoerce) &&
+        input.schema.nullable
+    ) {
         templateParts.push('}');
     }
     templateParts.push('}');
@@ -357,7 +388,7 @@ export function bigIntTemplate(
 
 export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     const templateParts: string[] = [];
-    if (input.instancePath.length === 0) {
+    if (input.instancePath.length === 0 || input.shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = new Date(${input.val});
             if (!Number.isNaN(parsedVal.getMonth())) {
@@ -392,7 +423,7 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     return templateParts.join('\n');
 }
 
-function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
+export function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
     const enumTemplate = input.schema.enum
         .map((val) => `${input.val} === "${val}"`)
         .join(' || ');
@@ -467,6 +498,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
             subFunctions: input.subFunctions,
+            shouldCoerce: input.shouldCoerce,
         });
         parsingParts.push(innerTemplate);
     }
@@ -480,6 +512,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 subFunctions: input.subFunctions,
+                shouldCoerce: input.shouldCoerce,
             });
             parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
                 // ignore undefined
@@ -541,6 +574,7 @@ export function arrayTemplate(
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         subFunctions: input.subFunctions,
+        shouldCoerce: input.shouldCoerce,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
         const ${resultVar} = [];
@@ -580,6 +614,7 @@ export function discriminatorTemplate(
             discriminatorKey: input.schema.discriminator,
             discriminatorValue: type,
             subFunctions: input.subFunctions,
+            shouldCoerce: input.shouldCoerce,
         });
         switchParts.push(`case "${type}": {
             ${template}
@@ -651,6 +686,7 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         schemaPath: `${input.schemaPath}/values`,
         schema: input.schema.values,
         subFunctions: input.subFunctions,
+        shouldCoerce: input.shouldCoerce,
     });
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
         const ${resultVal} = {};

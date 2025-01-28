@@ -13,12 +13,16 @@ import {
     int16Min,
     int32Max,
     int32Min,
+    int64Max,
+    int64Min,
     uint8Max,
     uint8Min,
     uint16Max,
     uint16Min,
     uint32Max,
     uint32Min,
+    uint64Max,
+    uint64Min,
 } from './lib/numberConstants';
 import {
     type ASchema,
@@ -42,13 +46,21 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
      */
     validate: (input: unknown) => input is InferType<TSchema>;
     /**
-     * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
+     * Parse a JSON string or the result of JSON.parse(). Returns a Result<T>.
      */
     parse: (input: unknown) => Result<InferType<TSchema>>;
     /**
      * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
      */
     parseUnsafe: (input: unknown) => InferType<TSchema>;
+    /**
+     * Coerce an object into <T>. Returns Result<T>.
+     */
+    coerce: (input: unknown) => Result<InferType<TSchema>>;
+    /**
+     * Coerce an object into <T>. Throws an error if coercion fails.
+     */
+    coerceUnsafe: (input: unknown) => InferType<TSchema>;
     /**
      * Serialize to JSON
      */
@@ -62,6 +74,7 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
      */
     compiledCode: {
         parse: string;
+        coerce: string;
         serialize: string;
         validate: string;
     };
@@ -77,8 +90,10 @@ export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidatorWithAdapters<TSchema> {
     const validateCode = getSchemaValidationCode('input', schema);
-    const parser = getCompiledParser('input', schema);
+    const parser = getCompiledParser('input', schema, false);
     const parserFn = parser.fn;
+    const coercer = getCompiledParser('input', schema, true);
+    const coercerFn = coercer.fn;
     const serializer = getCompiledSerializer(schema);
     const serializeFn = serializer.fn;
     const serialize = (input: InferType<TSchema>): Result<string> => {
@@ -135,6 +150,38 @@ export function compile<TSchema extends ASchema<any>>(
             };
         }
     };
+    const coerce = (input: unknown): Result<InferType<TSchema>> => {
+        const context = newValidationContext();
+        try {
+            const result = coercerFn(input, context);
+            if (context.errors.length) {
+                return {
+                    success: false,
+                    errors: context.errors,
+                };
+            }
+            return {
+                success: true,
+                value: result,
+            };
+        } catch (err) {
+            if (context.errors.length) {
+                return {
+                    success: false,
+                    errors: context.errors,
+                };
+            }
+            return {
+                success: false,
+                errors: [
+                    {
+                        message: err instanceof Error ? err.message : `${err}`,
+                        instancePath: '/',
+                    },
+                ],
+            };
+        }
+    };
     const result: CompiledValidatorWithAdapters<TSchema> = {
         schema: JSON.parse(JSON.stringify(schema)),
         validate,
@@ -147,6 +194,15 @@ export function compile<TSchema extends ASchema<any>>(
             }
             return result!;
         },
+        coerce: coerce,
+        coerceUnsafe(input) {
+            const context = newValidationContext();
+            const result = coercerFn(input, context);
+            if (context.errors.length) {
+                throw new ValidationException({ errors: context.errors });
+            }
+            return result!;
+        },
         serialize,
         serializeUnsafe(input) {
             return serializeFn(input);
@@ -154,6 +210,7 @@ export function compile<TSchema extends ASchema<any>>(
         compiledCode: {
             validate: validateCode,
             parse: parser.code,
+            coerce: coercer.code,
             serialize: serializer.code,
         },
         '~standard': createStandardSchemaProperty(validate, (input, ctx) => {
@@ -175,8 +232,9 @@ type CompiledParser<TSchema extends ASchema<any>> = SchemaValidator<
 export function getCompiledParser<TSchema extends ASchema<any>>(
     input: string,
     schema: TSchema,
+    shouldCoerce: boolean,
 ): { fn: CompiledParser<TSchema>; code: string } {
-    const code = getSchemaDecodingCode(input, schema);
+    const code = getSchemaDecodingCode(input, schema, shouldCoerce);
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'float32':
@@ -534,7 +592,6 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
             code,
         };
     }
-
     return { fn: new Function(input, 'context', code) as any, code };
 }
 
@@ -611,17 +668,26 @@ function bigIntDecoder(
         try {
             const val = BigInt(input);
             if (isUnsigned) {
-                if (val >= BigInt('0')) {
+                if (val >= uint64Min && val <= uint64Max) {
                     return val;
                 }
                 context.errors.push({
-                    message: 'uint64 must be greater than or equal to 0',
+                    message:
+                        'uint64 must an integer between 0 and 18,446,744,073,709,551,615',
                     schemaPath: '/type',
                     instancePath: '',
                 });
                 return undefined;
             }
-            return val;
+            if (val >= int64Min && val <= int64Max) {
+                return val;
+            }
+            context.errors.push({
+                schemaPath: '/type',
+                instancePath: '/',
+                message: `int64 must be an integer between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807`,
+            });
+            return undefined;
         } catch (err) {
             context.errors.push({
                 schemaPath: '/type',
@@ -634,23 +700,31 @@ function bigIntDecoder(
     }
     if (typeof input === 'bigint') {
         if (isUnsigned) {
-            if (input >= BigInt('0')) {
+            if (input >= uint64Min && input <= uint64Max) {
                 return input;
             }
             context.errors.push({
                 message: 'uint64 must be greater than or equal to 0',
                 schemaPath: '/type',
-                instancePath: '',
+                instancePath: '/',
             });
         }
-        return input;
+        if (input >= int64Min && input <= int64Max) {
+            return input;
+        }
+        context.errors.push({
+            schemaPath: '/type',
+            instancePath: '/',
+            message: `int64 must be an integer between -9,223,372,036,854,775,808 and 9,223,372,036,854,775,807`,
+        });
+        return undefined;
     }
     if (isNullable && input === null) {
         return null;
     }
     context.errors.push({
         schemaPath: '/type',
-        instancePath: '',
+        instancePath: '/',
         message: 'Expected BigInt or Integer string',
     });
     return undefined;
