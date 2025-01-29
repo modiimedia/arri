@@ -1464,6 +1464,21 @@ export const coercionTestSuites: Record<
                     'hello world',
                 ],
             },
+            {
+                boolean: 'true',
+                timestamp: 1000,
+                float32: '1.5',
+                float64: '1.5',
+                int8: '1',
+                uint8: '1',
+                int16: '10',
+                uint16: '10',
+                int32: '100',
+                uint32: '100',
+                int64: '1000',
+                uint64: '1000',
+                array: ['null', null, 'false', 'FALSE', 1, 0, '1', '0'],
+            },
         ],
     },
     'object with optional fields': {
@@ -1562,7 +1577,7 @@ export const coercionTestSuites: Record<
             uint32: a.nullable(a.uint32()),
             int64: a.nullable(a.int64()),
             uint64: a.nullable(a.uint64()),
-            array: a.nullable(a.array(a.boolean())),
+            array: a.nullable(a.array(a.nullable(a.boolean()))),
         }),
         goodInputs: [
             {

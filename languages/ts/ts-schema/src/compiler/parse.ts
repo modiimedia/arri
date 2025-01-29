@@ -302,7 +302,7 @@ export function intTemplate(
                 ${input.targetVal} = parsedVal;
             }`);
         if (input.schema.nullable) {
-            templateParts.push(`if (${input.val} === 'null') {
+            templateParts.push(`else if (${input.val} === 'null') {
                 ${input.targetVal} = null;
             }`);
         }
