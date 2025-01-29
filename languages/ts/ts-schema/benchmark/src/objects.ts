@@ -616,6 +616,9 @@ void benny.suite(
     benny.add('Arri', () => {
         a.coerce(ArriUser, inputWithStringKeys);
     }),
+    benny.add('Arri (Compiled)', () => {
+        $$ArriUser.coerce(inputWithStringKeys);
+    }),
     benny.add('TypeBox', () => {
         Value.Convert(TypeBoxUser, inputWithStringKeys);
     }),

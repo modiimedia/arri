@@ -390,7 +390,7 @@ export function getSchemaValidator<T extends Record<string, any> = any>(
                 validate: validator.validate,
                 serialize: validator.serialize,
                 parse: validator.parse,
-                coerce: (input) => a.coerce(schema, input),
+                coerce: validator.coerce,
                 errors: (input) => a.errors(schema, input),
             };
         } catch (err) {

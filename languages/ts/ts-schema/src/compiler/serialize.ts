@@ -40,6 +40,7 @@ export function createSerializationV2Template(
         outputPrefix: '',
         needsSanitization: [],
         subFunctions,
+        shouldCoerce: undefined,
     };
     const result = template(context);
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
@@ -313,6 +314,7 @@ export function objectTemplate(
             outputPrefix: includeComma ? `,"${key}":` : `"${key}":`,
             needsSanitization: input.needsSanitization,
             subFunctions: input.subFunctions,
+            shouldCoerce: undefined,
         });
         templateParts.push(innerTemplate);
     }
@@ -345,6 +347,7 @@ export function objectTemplate(
                 outputPrefix: `"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             const innerTemplateWithComma = template({
                 schema: optionalPropSchema,
@@ -355,6 +358,7 @@ export function objectTemplate(
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
                 if (${hasFieldsVar}) {
@@ -382,6 +386,7 @@ export function objectTemplate(
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             const completeInnerTemplate = `if (typeof ${innerVal} !== 'undefined') {
                 ${innerTemplate}
@@ -437,6 +442,7 @@ export function arrayTemplate(
         outputPrefix: '',
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
         const ${itemVarName} = ${input.val}[i];
@@ -476,6 +482,7 @@ export function recordTemplate(
         outputPrefix: '',
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
     templateParts.push(`for (let i = 0; i < ${keysVarName}.length; i++) {
         const key = ${keysVarName}[i];
@@ -548,6 +555,7 @@ function discriminatorTemplate(
             outputPrefix: input.outputPrefix,
             needsSanitization: input.needsSanitization,
             subFunctions: input.subFunctions,
+            shouldCoerce: undefined,
         });
         templateParts.push(`case '${val}': {
             ${innerTemplate}
