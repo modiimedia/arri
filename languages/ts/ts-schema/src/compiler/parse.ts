@@ -184,7 +184,7 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
         }
         templateParts.push(
             `else {
-                $fallback("${input.instancePath}", "${input.schema}/type", "${errorMessage}");
+                $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
             }`,
         );
         return templateParts.join('\n');
@@ -257,12 +257,14 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
                 ${input.targetVal} = ${valName};
             }`);
         if (input.schema.nullable) {
-            templateParts.push(`if (${input.val} === 'null') {
+            templateParts.push(`else if (${input.val} === 'null') {
                 ${input.targetVal} = null;
             }`);
         }
         templateParts.push(
-            `$fallback("${input.instancePath}", "${input.schemaPath}/type", \`Could not parse number from \${${input.val}}\`);`,
+            `else { 
+                $fallback("${input.instancePath}", "${input.schemaPath}/type", \`Could not parse number from \${${input.val}}\`);
+            }`,
         );
         templateParts.push('}');
     }
@@ -273,13 +275,15 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
     if (input.schema.nullable) {
-        templateParts.push(`if (${input.val} === null) {
+        templateParts.push(`${input.instancePath.length === 0 || input.shouldCoerce ? 'else ' : ''}if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
         }`);
     } else {
-        templateParts.push(mainTemplate);
+        templateParts.push(
+            `${input.instancePath.length === 0 || input.shouldCoerce ? 'else ' : ''}${mainTemplate}`,
+        );
     }
     return templateParts.join('\n');
 }
@@ -290,11 +294,12 @@ export function intTemplate(
     max: number,
 ) {
     const templateParts: string[] = [];
-    if (input.instancePath.length === 0 || input.shouldCoerce) {
+    const shouldCoerce = input.shouldCoerce || input.instancePath.length === 0;
+    if (shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = Number(${input.val});
             if (Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
-                ${input.targetVal} = ${input.val};
+                ${input.targetVal} = parsedVal;
             }`);
         if (input.schema.nullable) {
             templateParts.push(`if (${input.val} === 'null') {
@@ -302,7 +307,9 @@ export function intTemplate(
             }`);
         }
         templateParts.push(
-            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");`,
+            `else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");
+            }`,
         );
         templateParts.push('}');
     }
@@ -311,15 +318,15 @@ export function intTemplate(
         } else {
             $fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");
         }`;
-
+    const prefix = shouldCoerce ? `else ` : '';
     if (input.schema.nullable) {
-        templateParts.push(`if (${input.val} === null) {
+        templateParts.push(`${prefix}if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
         }`);
     } else {
-        templateParts.push(mainTemplate);
+        templateParts.push(prefix + mainTemplate);
     }
     return templateParts.join('\n');
 }
@@ -527,6 +534,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
     }
     for (const key of Object.keys(input.schema.properties)) {
         const subSchema = input.schema.properties[key];
+
         const innerTemplate = schemaTemplate({
             val: `${input.val}.${key}`,
             targetVal: `${innerTargetVal}.${key}`,

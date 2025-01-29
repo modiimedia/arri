@@ -1,4 +1,4 @@
-import { isSchemaFormEnum, isSchemaFormType } from '@arrirpc/type-defs';
+import { isSchemaFormEnum, isSchemaFormType, Schema } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import { createStandardSchemaProperty } from './adapters';
@@ -231,7 +231,7 @@ type CompiledParser<TSchema extends ASchema<any>> = SchemaValidator<
 
 export function getCompiledParser<TSchema extends ASchema<any>>(
     input: string,
-    schema: TSchema,
+    schema: Schema,
     shouldCoerce: boolean,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaDecodingCode(input, schema, shouldCoerce);
