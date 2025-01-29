@@ -1256,7 +1256,7 @@ export const coercionTestSuites: Record<
     }
 > = {
     boolean: {
-        schema: a.object({ bool: a.boolean() }),
+        schema: a.boolean(),
         goodInputs: [
             true,
             false,
@@ -1316,7 +1316,7 @@ export const coercionTestSuites: Record<
         schema: a.int16(),
         goodInputs: [1, '1', '15', 15, '-15', -15],
         expectedResults: [1, 1, 15, 15, -15, -15],
-        badInputs: ['hello world', 1.1, '1.1', 1000, '1000', 40000, '-4000'],
+        badInputs: ['hello world', 1.1, '1.1', 40000, '-40000'],
     },
     uint16: {
         schema: a.uint16(),

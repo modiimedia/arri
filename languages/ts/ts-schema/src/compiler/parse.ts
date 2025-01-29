@@ -290,7 +290,6 @@ export function intTemplate(
     max: number,
 ) {
     const templateParts: string[] = [];
-
     if (input.instancePath.length === 0 || input.shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = Number(${input.val});

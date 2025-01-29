@@ -547,6 +547,78 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'timestamp':
+                if (shouldCoerce) {
+                    if (schema.nullable) {
+                        return {
+                            fn(input, context) {
+                                if (typeof input === 'string') {
+                                    const decodedInput = new Date(input);
+                                    if (
+                                        !Number.isNaN(decodedInput.getMonth())
+                                    ) {
+                                        return decodedInput;
+                                    }
+                                    if (input === 'null') {
+                                        return null;
+                                    }
+                                }
+                                if (typeof input === 'number') {
+                                    const decodedInput = new Date(input);
+                                    if (
+                                        !Number.isNaN(decodedInput.getMonth())
+                                    ) {
+                                        return decodedInput;
+                                    }
+                                }
+                                if (
+                                    typeof input === 'object' &&
+                                    input instanceof Date
+                                ) {
+                                    return input;
+                                }
+                                if (input === null) {
+                                    return null;
+                                }
+                                context.errors.push({
+                                    instancePath: '',
+                                    schemaPath: '/type',
+                                    message: `Expected instanceof Date, ISO Date string, or null. Got ${typeof input}.`,
+                                });
+                                return undefined;
+                            },
+                            code,
+                        };
+                    }
+                    return {
+                        fn(input, context) {
+                            if (typeof input === 'string') {
+                                const decodedInput = new Date(input);
+                                if (!Number.isNaN(decodedInput.getMonth())) {
+                                    return decodedInput;
+                                }
+                            }
+                            if (typeof input === 'number') {
+                                const decodedInput = new Date(input);
+                                if (!Number.isNaN(decodedInput.getMonth())) {
+                                    return decodedInput;
+                                }
+                            }
+                            if (
+                                typeof input === 'object' &&
+                                input instanceof Date
+                            ) {
+                                return input;
+                            }
+                            context.errors.push({
+                                instancePath: '',
+                                schemaPath: '/type',
+                                message: `Expected instanceof Date or ISO Date string. Got ${typeof input}.`,
+                            });
+                            return undefined;
+                        },
+                        code,
+                    };
+                }
                 if (schema.nullable) {
                     return {
                         fn(input, context) {
