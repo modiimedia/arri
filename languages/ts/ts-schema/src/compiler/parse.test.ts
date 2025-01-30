@@ -2,7 +2,11 @@ import { isEqual } from 'lodash';
 
 import { a } from '../_index';
 import { compile } from '../compile';
-import { parsingTestSuites, validationTestSuites } from '../testSuites';
+import {
+    coercionTestSuites,
+    parsingTestSuites,
+    validationTestSuites,
+} from '../testSuites';
 
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
@@ -69,6 +73,61 @@ describe('parsing test suites', () => {
                     if (result.success) {
                         console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should NOT parse');
+                    }
+                    expect(result.success).toBe(false);
+                });
+            }
+        });
+    }
+});
+
+describe('coercion test suites', () => {
+    for (const key of Object.keys(coercionTestSuites)) {
+        const suite = coercionTestSuites[key]!;
+        describe(key, () => {
+            const Compiled = compile(suite.schema);
+            for (let i = 0; i < suite.goodInputs.length; i++) {
+                test(`${key} - Good Input ${i}`, () => {
+                    const input = suite.goodInputs[i];
+                    const expectedResult = suite.expectedResults[i];
+                    const actualResult = Compiled.coerce(input);
+                    if (!actualResult.success) {
+                        console.log({
+                            schema: suite.schema,
+                            input: input,
+                            inputIndex: i,
+                            errors: actualResult.errors,
+                        });
+                        console.log(input, 'Should coerce');
+                    }
+                    expect(actualResult.success).toBe(true);
+                    if (!actualResult.success) return;
+                    const serializedResult = Compiled.serialize(
+                        actualResult.value,
+                    );
+                    expect(serializedResult.success).toBe(true);
+                    if (!serializedResult.success) return;
+                    expect(actualResult.value).toStrictEqual(expectedResult);
+                    expect(
+                        Compiled.coerceUnsafe(serializedResult.value),
+                    ).toStrictEqual(expectedResult);
+                    expect(actualResult.value).toStrictEqual(
+                        a.coerceUnsafe(suite.schema, input),
+                    );
+                });
+            }
+            for (let i = 0; i < suite.badInputs.length; i++) {
+                test(`${key} - Bad Input ${i}`, () => {
+                    const input = suite.badInputs[i];
+                    const result = Compiled.coerce(input);
+                    if (result.success) {
+                        console.log({
+                            schema: suite.schema,
+                            input: input,
+                            inputIndex: i,
+                            result: result.value,
+                        });
+                        console.log(input, 'Should NOT coerce');
                     }
                     expect(result.success).toBe(false);
                 });

@@ -2,6 +2,7 @@ import { isEqual } from 'lodash';
 
 import { a } from '../_index';
 import {
+    coercionTestSuites,
     parsingTestSuites,
     serializationTestSuites,
     validationTestSuites,
@@ -35,6 +36,26 @@ describe('parsing test suites', () => {
             }
             for (const input of suite.badInputs) {
                 expect(!a.parse(suite.schema, input).success);
+            }
+        });
+    }
+});
+
+describe('coercion test suites', () => {
+    for (const key of Object.keys(coercionTestSuites)) {
+        const suite = coercionTestSuites[key]!;
+        test(key, () => {
+            for (let i = 0; i < suite.goodInputs.length; i++) {
+                const input = suite.goodInputs[i];
+                const result = a.coerce(suite.schema, input);
+                if (!result.success)
+                    console.error('KEY', key, 'INDEX', i, result.errors);
+                expect(result.success).toBe(true);
+                if (result.success) {
+                    expect(result.value).toStrictEqual(
+                        suite.expectedResults[i],
+                    );
+                }
             }
         });
     }

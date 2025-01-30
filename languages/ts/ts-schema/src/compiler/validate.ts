@@ -45,6 +45,7 @@ export function createValidationTemplate(
         schemaPath: ``,
         instancePath: '',
         subFunctions,
+        shouldCoerce: undefined,
     });
 
     const subFunctionBodies = Object.keys(subFunctions).map(
@@ -196,6 +197,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 val: `${input.val}.${key}`,
                 targetVal: '',
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             }),
         );
     }
@@ -209,6 +211,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 val: `${input.val}.${key}`,
                 targetVal: '',
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             parts.push(
                 `(typeof ${input.val}.${key} === 'undefined' || (${template}))`,
@@ -253,6 +256,7 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         schema: input.schema.elements,
         targetVal: '',
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
 
     if (input.schema.nullable) {
@@ -269,6 +273,7 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         val: `${input.val}[key]`,
         targetVal: '',
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
     if (input.schema.nullable) {
@@ -296,6 +301,7 @@ function discriminatorTemplate(
                 discriminatorKey: input.schema.discriminator,
                 discriminatorValue: discriminatorVal,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             }),
         );
     }
