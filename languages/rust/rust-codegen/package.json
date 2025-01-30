@@ -17,5 +17,5 @@
     "@arrirpc/codegen-utils": "workspace:*",
     "pathe": "^2.0.2"
   },
-  "version": "0.73.0"
+  "version": "0.74.0"
 }
