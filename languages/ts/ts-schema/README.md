@@ -988,7 +988,7 @@ const BinaryTreeSchema = a.recursive('BTree', (self) =>
 
 ## Compiled Validators
 
-`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions. The result of the compilation also implements the [standard-schema](https://github.com/standard-schema/standard-schema) interface, meaning it can be passed into any library that accepts standard-schema.
+`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, coercion, and serialization functions. The result of the compilation also implements the [standard-schema](https://github.com/standard-schema/standard-schema) interface, meaning it can be passed into any library that accepts standard-schema.
 
 ```ts
 const User = a.object({
@@ -1002,6 +1002,8 @@ const $$User = a.compile(User);
 $$User.validate(someInput);
 $$User.parse(someJson);
 $$User.parseUnsafe(someJson);
+$$User.coerce(someObject);
+$$User.coerceUnsafe(someObject);
 $$User.serialize({ id: '1', email: null, created: new Date() });
 $$User.serializeUnsafe({ id: '1', email: null, created: new Date() });
 ```
@@ -1013,6 +1015,7 @@ You can also use `a.compile` for code generation. The compiler result gives you 
 ```ts
 $$User.compiledCode.validate; // the generated validation code
 $$User.compiledCode.parse; // the generated parsing code
+$$User.compiledCode.coerce; // the generated coersion code
 $$User.compiledCode.serialize; // the generated serialization code
 ```
 
