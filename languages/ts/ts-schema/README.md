@@ -1015,7 +1015,7 @@ You can also use `a.compile` for code generation. The compiler result gives you 
 ```ts
 $$User.compiledCode.validate; // the generated validation code
 $$User.compiledCode.parse; // the generated parsing code
-$$User.compiledCode.coerce; // the generated coersion code
+$$User.compiledCode.coerce; // the generated coercion code
 $$User.compiledCode.serialize; // the generated serialization code
 ```
 
