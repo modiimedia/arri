@@ -45,7 +45,7 @@
     "scaffold": "jiti internal/scripts/scaffold-package.ts",
     "postversion": "jiti internal/scripts/version-sync.ts",
     "gen-test-utils": "jiti internal/scripts/generate-test-utils.ts",
-    "publish-all": "pnpm run build && sh internal/scripts/publish-all.sh"
+    "publish-all": "pnpm run build && pnpm run compile && sh internal/scripts/publish-all.sh"
   },
   "private": true,
   "devDependencies": {
