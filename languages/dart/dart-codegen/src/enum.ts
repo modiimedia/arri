@@ -5,6 +5,7 @@ import {
     DartProperty,
     getDartClassName,
     outputIsNullable,
+    validDartIdentifier,
 } from './_common';
 
 export function dartEnumFromSchema(
@@ -17,7 +18,7 @@ export function dartEnumFromSchema(
         ? `${context.modelPrefix}${enumName}?`
         : `${context.modelPrefix}${enumName}`;
     const enumValues = schema.enum.map((val) => ({
-        name: camelCase(val, { normalize: true }),
+        name: validDartIdentifier(camelCase(val, { normalize: true })),
         serialValue: val,
     }));
     if (!enumValues.length) {
