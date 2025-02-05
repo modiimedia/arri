@@ -1,7 +1,7 @@
 {
   "name": "@arrirpc/schema-interface",
   "private": true,
-  "version": "0.74.0",
+  "version": "0.74.1",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
