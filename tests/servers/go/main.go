@@ -111,8 +111,16 @@ func DeprecatedRpc(_ DeprecatedRpcParams, _ RpcEvent) (arri.EmptyMessage, arri.R
 }
 
 type DiscriminatorWithEmptyObject struct {
-	Empty    *struct{} `discriminator:"EMPTY"`
-	NotEmpty *struct{} `discriminator:"NOT_EMPTY"`
+	Empty    *DiscriminatorWithEmptyObjectEmpty    `discriminator:"EMPTY"`
+	NotEmpty *DiscriminatorWithEmptyObjectNotEmpty `discriminator:"NOT_EMPTY"`
+}
+
+type DiscriminatorWithEmptyObjectEmpty struct{}
+
+type DiscriminatorWithEmptyObjectNotEmpty struct {
+	Foo string
+	Bar float64
+	Baz bool
 }
 
 func SendDiscriminatorWithEmptyObject(params DiscriminatorWithEmptyObject, _ RpcEvent) (DiscriminatorWithEmptyObject, arri.RpcError) {

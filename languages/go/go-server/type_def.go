@@ -249,7 +249,11 @@ func IsDiscriminatorStruct(input reflect.Type) bool {
 	if input.Kind() != reflect.Struct {
 		return false
 	}
-	for i := 0; i < input.NumField(); i++ {
+	numFields := input.NumField()
+	if numFields == 0 {
+		return false
+	}
+	for i := 0; i < numFields; i++ {
 		var discriminatorTag = input.Field(i).Tag.Get("discriminator")
 		if len(discriminatorTag) > 0 {
 			return true
@@ -287,9 +291,9 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
 	}
-	if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
-		return nil, errors.New("cannot create schema for an empty struct")
-	}
+	// if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
+	// 	return nil, errors.New("cannot create schema for an empty struct")
+	// }
 	requiredFields := OrderedMap[TypeDef]{}
 	optionalFields := OrderedMap[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
@@ -424,7 +428,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context TypeD
 		return nil, errors.ErrUnsupported
 	}
 	if input.NumField() == 0 {
-		return nil, errors.New("cannot create schema for an empty struct")
+		return nil, errors.New("cannot create discriminator schema for an empty struct")
 	}
 	discriminatorKey := "type"
 	mapping := OrderedMap[TypeDef]{}
