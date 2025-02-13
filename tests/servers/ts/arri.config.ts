@@ -30,6 +30,7 @@ export default defineConfig({
                 '../../clients/ts/tsClientPrefixed.g.ts',
             ),
             typePrefix: 'Foo',
+            prettierOptions: prettierConfig,
         }),
         generators.dartClient({
             clientName: 'TestClient',
