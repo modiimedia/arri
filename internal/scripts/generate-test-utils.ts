@@ -39,6 +39,8 @@ const Discriminator = a.discriminator(
 );
 type Discriminator = a.infer<typeof Discriminator>;
 
+const EmptyObject = a.object({});
+
 const ObjectWithEveryType = a.object(
     {
         string: a.string(),
@@ -181,6 +183,7 @@ const def = createAppDefinition({
         },
     },
     definitions: {
+        EmptyObject,
         Book,
         BookParams,
         NestedObject,
@@ -209,6 +212,11 @@ async function main() {
 
     const targetDate = new Date('01/01/2001 10:00 AM CST');
 
+    files.push({
+        filename: 'EmptyObject.json',
+        content: a.serializeUnsafe(EmptyObject, {}),
+    });
+
     const book: Book = {
         id: '1',
         name: 'The Adventures of Tom Sawyer',
@@ -217,7 +225,7 @@ async function main() {
     };
     files.push({
         filename: 'Book.json',
-        content: a.serialize(Book, book),
+        content: a.serializeUnsafe(Book, book),
     });
 
     const bookParams: BookParams = {
@@ -225,7 +233,7 @@ async function main() {
     };
     files.push({
         filename: 'BookParams.json',
-        content: a.serialize(BookParams, bookParams),
+        content: a.serializeUnsafe(BookParams, bookParams),
     });
 
     const nestedObject: NestedObject = {
@@ -234,7 +242,7 @@ async function main() {
     };
     files.push({
         filename: `NestedObject_NoSpecialChars.json`,
-        content: a.serialize(NestedObject, nestedObject),
+        content: a.serializeUnsafe(NestedObject, nestedObject),
     });
 
     const nestedObjectWithSpecialChars: NestedObject = {
@@ -244,7 +252,7 @@ async function main() {
     };
     files.push({
         filename: 'NestedObject_SpecialChars.json',
-        content: a.serialize(NestedObject, nestedObjectWithSpecialChars),
+        content: a.serializeUnsafe(NestedObject, nestedObjectWithSpecialChars),
     });
 
     const objectWithEveryFieldValue: ObjectWithEveryType = {
@@ -281,17 +289,23 @@ async function main() {
     };
     files.push({
         filename: 'ObjectWithEveryType.json',
-        content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
+        content: a.serializeUnsafe(
+            ObjectWithEveryType,
+            objectWithEveryFieldValue,
+        ),
     });
     objectWithEveryFieldValue.record = { B: false, A: true };
     files.push({
         filename: 'ObjectWithEveryType_ReversedRecord.json',
-        content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
+        content: a.serializeUnsafe(
+            ObjectWithEveryType,
+            objectWithEveryFieldValue,
+        ),
     });
     const objectWithOptionalFieldsAllUndefined: ObjectWithOptionalFields = {};
     files.push({
         filename: 'ObjectWithOptionalFields_AllUndefined.json',
-        content: a.serialize(
+        content: a.serializeUnsafe(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsAllUndefined,
         ),
@@ -302,7 +316,7 @@ async function main() {
     };
     files.push({
         filename: 'ObjectWithOptionalFields_NoUndefined.json',
-        content: a.serialize(
+        content: a.serializeUnsafe(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsNoUndefined,
         ),
@@ -313,7 +327,7 @@ async function main() {
     };
     files.push({
         filename: 'ObjectWithOptionalFields_NoUndefined_ReversedRecord.json',
-        content: a.serialize(
+        content: a.serializeUnsafe(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsNoUndefined,
         ),
@@ -341,7 +355,7 @@ async function main() {
     };
     files.push({
         filename: `ObjectWithNullableFields_AllNull.json`,
-        content: a.serialize(
+        content: a.serializeUnsafe(
             ObjectWithNullableFields,
             objectWithNullableFieldsAllNull,
         ),
@@ -382,7 +396,7 @@ async function main() {
     };
     files.push({
         filename: 'ObjectWithNullableFields_NoNull.json',
-        content: a.serialize(
+        content: a.serializeUnsafe(
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,
         ),
@@ -393,7 +407,7 @@ async function main() {
     };
     files.push({
         filename: 'ObjectWithNullableFields_NoNull_ReversedRecord.json',
-        content: a.serialize(
+        content: a.serializeUnsafe(
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,
         ),
@@ -417,8 +431,9 @@ async function main() {
     };
     files.push({
         filename: 'RecursiveObject.json',
-        content: a.serialize(RecursiveObject, recursiveObject),
+        content: a.serializeUnsafe(RecursiveObject, recursiveObject),
     });
+
     const mdParts: string[] = [
         'Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.',
         '',
