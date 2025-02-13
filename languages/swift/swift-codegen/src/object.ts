@@ -253,7 +253,7 @@ export function swiftObjectFromSchema(
 ${fieldNames.map((field) => `               lhs.${field} == rhs.${field}`).join(' &&\n')}
         }`;
     }
-    const hasProperties = fieldNames.length > 0;
+    const hasProperties = initArgParts.length > 0;
     result.content = `${codeComments(schema)}public ${declaration} ${prefixedTypeName}: ArriClientModel {
 ${fieldNameParts.join('\n')}
     ${initPrefix} init(

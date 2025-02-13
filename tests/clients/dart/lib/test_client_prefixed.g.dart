@@ -117,6 +117,20 @@ class TestClientPrefixedTestsService {
     );
   }
 
+  Future<FooDiscriminatorWithEmptyObject> sendDiscriminatorWithEmptyObject(
+      FooDiscriminatorWithEmptyObject params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-discriminator-with-empty-object",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => FooDiscriminatorWithEmptyObject.fromJsonString(body),
+      onError: _onError,
+    );
+  }
+
   Future<void> sendError(FooSendErrorParams params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-error",
@@ -769,6 +783,196 @@ class FooDeprecatedRpcParams implements ArriModel {
   @override
   String toString() {
     return "FooDeprecatedRpcParams ${toJsonString()}";
+  }
+}
+
+sealed class FooDiscriminatorWithEmptyObject implements ArriModel {
+  String get type;
+  const FooDiscriminatorWithEmptyObject();
+
+  factory FooDiscriminatorWithEmptyObject.empty() {
+    return FooDiscriminatorWithEmptyObjectEmpty.empty();
+  }
+
+  factory FooDiscriminatorWithEmptyObject.fromJson(
+      Map<String, dynamic> _input_) {
+    final type = typeFromDynamic<String>(_input_["type"], "");
+    switch (type) {
+      case "EMPTY":
+        return FooDiscriminatorWithEmptyObjectEmpty.fromJson(_input_);
+      case "NOT_EMPTY":
+        return FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(_input_);
+      default:
+        return FooDiscriminatorWithEmptyObject.empty();
+    }
+  }
+
+  factory FooDiscriminatorWithEmptyObject.fromJsonString(String input) {
+    return FooDiscriminatorWithEmptyObject.fromJson(json.decode(input));
+  }
+}
+
+class FooDiscriminatorWithEmptyObjectEmpty
+    implements FooDiscriminatorWithEmptyObject {
+  const FooDiscriminatorWithEmptyObjectEmpty();
+
+  @override
+  String get type => "EMPTY";
+
+  factory FooDiscriminatorWithEmptyObjectEmpty.empty() {
+    return FooDiscriminatorWithEmptyObjectEmpty();
+  }
+
+  factory FooDiscriminatorWithEmptyObjectEmpty.fromJson(
+      Map<String, dynamic> _input_) {
+    return FooDiscriminatorWithEmptyObjectEmpty();
+  }
+
+  factory FooDiscriminatorWithEmptyObjectEmpty.fromJsonString(String input) {
+    return FooDiscriminatorWithEmptyObjectEmpty.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "type": type,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("type=$type");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooDiscriminatorWithEmptyObjectEmpty copyWith() {
+    return FooDiscriminatorWithEmptyObjectEmpty();
+  }
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooDiscriminatorWithEmptyObjectEmpty &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooDiscriminatorWithEmptyObjectEmpty ${toJsonString()}";
+  }
+}
+
+class FooDiscriminatorWithEmptyObjectNotEmpty
+    implements FooDiscriminatorWithEmptyObject {
+  final String foo;
+  final double bar;
+  final bool baz;
+  const FooDiscriminatorWithEmptyObjectNotEmpty({
+    required this.foo,
+    required this.bar,
+    required this.baz,
+  });
+
+  @override
+  String get type => "NOT_EMPTY";
+
+  factory FooDiscriminatorWithEmptyObjectNotEmpty.empty() {
+    return FooDiscriminatorWithEmptyObjectNotEmpty(
+      foo: "",
+      bar: 0.0,
+      baz: false,
+    );
+  }
+
+  factory FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(
+      Map<String, dynamic> _input_) {
+    final foo = typeFromDynamic<String>(_input_["foo"], "");
+    final bar = doubleFromDynamic(_input_["bar"], 0.0);
+    final baz = typeFromDynamic<bool>(_input_["baz"], false);
+    return FooDiscriminatorWithEmptyObjectNotEmpty(
+      foo: foo,
+      bar: bar,
+      baz: baz,
+    );
+  }
+
+  factory FooDiscriminatorWithEmptyObjectNotEmpty.fromJsonString(String input) {
+    return FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "type": type,
+      "foo": foo,
+      "bar": bar,
+      "baz": baz,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("type=$type");
+    _queryParts_.add("foo=$foo");
+    _queryParts_.add("bar=$bar");
+    _queryParts_.add("baz=$baz");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooDiscriminatorWithEmptyObjectNotEmpty copyWith({
+    String? foo,
+    double? bar,
+    bool? baz,
+  }) {
+    return FooDiscriminatorWithEmptyObjectNotEmpty(
+      foo: foo ?? this.foo,
+      bar: bar ?? this.bar,
+      baz: baz ?? this.baz,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        foo,
+        bar,
+        baz,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooDiscriminatorWithEmptyObjectNotEmpty &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooDiscriminatorWithEmptyObjectNotEmpty ${toJsonString()}";
   }
 }
 

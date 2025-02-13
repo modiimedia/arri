@@ -117,6 +117,18 @@ public class TestClientTestsService {
         )
         
     }
+    public func sendDiscriminatorWithEmptyObject(_ params: DiscriminatorWithEmptyObject) async throws -> DiscriminatorWithEmptyObject {
+        let result: DiscriminatorWithEmptyObject = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-discriminator-with-empty-object",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        return result
+    }
     public func sendError(_ params: SendErrorParams) async throws -> () {
         let _: EmptyArriModel = try await parsedArriHttpRequest(
             delegate: self.delegate,
@@ -500,6 +512,192 @@ public struct DeprecatedRpcParams: ArriClientModel {
 
         return DeprecatedRpcParams(
             deprecatedField: self.deprecatedField
+        )
+    }
+    
+}
+    
+
+public enum DiscriminatorWithEmptyObject: ArriClientModel {
+    case empty(DiscriminatorWithEmptyObjectEmpty)
+    case notEmpty(DiscriminatorWithEmptyObjectNotEmpty)
+    public init() {
+        self = .empty(DiscriminatorWithEmptyObjectEmpty())
+    }
+    public init(json: JSON) {
+        let discriminator = json["type"].string ?? ""
+        switch (discriminator) {
+            case "EMPTY":
+                self = .empty(DiscriminatorWithEmptyObjectEmpty(json: json))
+                break
+            case "NOT_EMPTY":
+                self = .notEmpty(DiscriminatorWithEmptyObjectNotEmpty(json: json))
+                break
+            default:
+                self = .empty(DiscriminatorWithEmptyObjectEmpty())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .empty(let __innerVal):
+                return __innerVal.toJSONString()
+            case .notEmpty(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .empty(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .notEmpty(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> DiscriminatorWithEmptyObject {
+        switch(self) {
+            case .empty(let __innerVal):
+                return .empty(__innerVal.clone())
+            case .notEmpty(let __innerVal):
+                return .notEmpty(__innerVal.clone())
+        }
+    }
+}
+    
+public struct DiscriminatorWithEmptyObjectEmpty: ArriClientModel {
+    let type: String = "EMPTY"
+    public init(
+
+    ) {
+
+    }
+    
+    public init(json: JSON) {
+
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"type\":\"EMPTY\""
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "type", value: "EMPTY"))
+        return __queryParts
+    }
+    public func clone() -> DiscriminatorWithEmptyObjectEmpty {
+
+        return DiscriminatorWithEmptyObjectEmpty(
+
+        )
+    }
+    
+}
+    
+
+public struct DiscriminatorWithEmptyObjectNotEmpty: ArriClientModel {
+    let type: String = "NOT_EMPTY"
+    public var foo: String = ""
+    public var bar: Float64 = 0.0
+    public var baz: Bool = false
+    public init(
+        foo: String,
+        bar: Float64,
+        baz: Bool
+    ) {
+            self.foo = foo
+            self.bar = bar
+            self.baz = baz
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.foo = json["foo"].string ?? ""
+        self.bar = json["bar"].double ?? 0.0
+        self.baz = json["baz"].bool ?? false
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"type\":\"NOT_EMPTY\""
+        __json += ",\"foo\":"
+        __json += serializeString(input: self.foo)
+        __json += ",\"bar\":"
+        __json += "\(self.bar)"
+        __json += ",\"baz\":"
+        __json += "\(self.baz)"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "type", value: "NOT_EMPTY"))
+        __queryParts.append(URLQueryItem(name: "foo", value: self.foo))
+        __queryParts.append(URLQueryItem(name: "bar", value: "\(self.bar)"))
+        __queryParts.append(URLQueryItem(name: "baz", value: "\(self.baz)"))
+        return __queryParts
+    }
+    public func clone() -> DiscriminatorWithEmptyObjectNotEmpty {
+
+        return DiscriminatorWithEmptyObjectNotEmpty(
+            foo: self.foo,
+            bar: self.bar,
+            baz: self.baz
         )
     }
     

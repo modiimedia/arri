@@ -177,6 +177,33 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         }
     }
 
+    suspend fun sendDiscriminatorWithEmptyObject(params: DiscriminatorWithEmptyObject): DiscriminatorWithEmptyObject {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-discriminator-with-empty-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return DiscriminatorWithEmptyObject.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
     suspend fun sendError(params: SendErrorParams): Unit {
         try {
             val response = __prepareRequest(
@@ -891,6 +918,159 @@ val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
             }
             return DeprecatedRpcParams(
                 deprecatedField,
+            )
+        }
+    }
+}
+
+
+
+sealed interface DiscriminatorWithEmptyObject : TestClientModel {
+    val type: String
+
+    companion object Factory : TestClientModelFactory<DiscriminatorWithEmptyObject> {
+        @JvmStatic
+        override fun new(): DiscriminatorWithEmptyObject {
+            return DiscriminatorWithEmptyObjectEmpty.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): DiscriminatorWithEmptyObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorWithEmptyObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObject.")
+                return new()
+            }
+            return when (__input.jsonObject["type"]) {
+                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
+                    "EMPTY" -> DiscriminatorWithEmptyObjectEmpty.fromJsonElement(__input, instancePath)
+"NOT_EMPTY" -> DiscriminatorWithEmptyObjectNotEmpty.fromJsonElement(__input, instancePath)
+                    else -> new()
+                }
+
+                else -> new()
+            }
+        }
+    }
+}
+
+data class DiscriminatorWithEmptyObjectEmpty(
+    private val placeholderKey: Short = 0
+) : DiscriminatorWithEmptyObject {
+    override val type get() = "EMPTY"
+
+    override fun toJson(): String {
+var output = "{"
+output += "\"type\":\"EMPTY\""
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("type=EMPTY")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<DiscriminatorWithEmptyObjectEmpty> {
+        @JvmStatic
+        override fun new(): DiscriminatorWithEmptyObjectEmpty {
+            return DiscriminatorWithEmptyObjectEmpty(
+
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): DiscriminatorWithEmptyObjectEmpty {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorWithEmptyObjectEmpty {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] DiscriminatorWithEmptyObjectEmpty.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObjectEmpty.")
+                return new()
+            }
+
+            return DiscriminatorWithEmptyObjectEmpty(
+                
+            )
+        }
+    }
+}
+
+
+
+data class DiscriminatorWithEmptyObjectNotEmpty(
+    val foo: String,
+    val bar: Double,
+    val baz: Boolean,
+) : DiscriminatorWithEmptyObject {
+    override val type get() = "NOT_EMPTY"
+
+    override fun toJson(): String {
+var output = "{"
+output += "\"type\":\"NOT_EMPTY\""
+output += ",\"foo\":"
+output += buildString { printQuoted(foo) }
+output += ",\"bar\":"
+output += bar
+output += ",\"baz\":"
+output += baz
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("type=NOT_EMPTY")
+queryParts.add("foo=$foo")
+queryParts.add("bar=$bar")
+queryParts.add("baz=$baz")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<DiscriminatorWithEmptyObjectNotEmpty> {
+        @JvmStatic
+        override fun new(): DiscriminatorWithEmptyObjectNotEmpty {
+            return DiscriminatorWithEmptyObjectNotEmpty(
+                foo = "",
+                bar = 0.0,
+                baz = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): DiscriminatorWithEmptyObjectNotEmpty {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorWithEmptyObjectNotEmpty {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] DiscriminatorWithEmptyObjectNotEmpty.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObjectNotEmpty.")
+                return new()
+            }
+val foo: String = when (__input.jsonObject["foo"]) {
+                is JsonPrimitive -> __input.jsonObject["foo"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+val bar: Double = when (__input.jsonObject["bar"]) {
+                is JsonPrimitive -> __input.jsonObject["bar"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+val baz: Boolean = when (__input.jsonObject["baz"]) {
+                is JsonPrimitive -> __input.jsonObject["baz"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return DiscriminatorWithEmptyObjectNotEmpty(
+                foo,
+                bar,
+                baz,
             )
         }
     }

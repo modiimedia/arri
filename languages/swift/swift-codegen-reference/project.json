@@ -1,8 +1,10 @@
 {
   "name": "swift-codegen-reference",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["swift-client"],
   "targets": {
     "compile": {
+      "dependsOn": ["^compile"],
       "executor": "nx:run-commands",
       "inputs": [
         "{projectRoot}/Sources",
