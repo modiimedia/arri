@@ -138,6 +138,60 @@ class ExampleClientBooksService {
   }
 }
 
+class EmptyObject implements ArriModel {
+  const EmptyObject();
+
+  factory EmptyObject.empty() {
+    return EmptyObject();
+  }
+
+  factory EmptyObject.fromJson(Map<String, dynamic> _input_) {
+    return EmptyObject();
+  }
+
+  factory EmptyObject.fromJsonString(String input) {
+    return EmptyObject.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{};
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    return _queryParts_.join("&");
+  }
+
+  @override
+  EmptyObject copyWith() {
+    return EmptyObject();
+  }
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) {
+    return other is EmptyObject && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "EmptyObject ${toJsonString()}";
+  }
+}
+
 /// This is a book
 class Book implements ArriModel {
   /// The book ID

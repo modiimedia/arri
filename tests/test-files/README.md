@@ -1,5 +1,11 @@
 Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.
 
+## EmptyObject.json
+
+```json
+{}
+```
+
 ## Book.json
 
 ```json

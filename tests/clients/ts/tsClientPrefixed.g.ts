@@ -135,6 +135,24 @@ export class TestClientPrefixedTestsService {
       clientVersion: "10",
     });
   }
+  async sendDiscriminatorWithEmptyObject(
+    params: FooDiscriminatorWithEmptyObject,
+  ): Promise<FooDiscriminatorWithEmptyObject> {
+    return arriRequest<
+      FooDiscriminatorWithEmptyObject,
+      FooDiscriminatorWithEmptyObject
+    >({
+      url: `${this._baseUrl}/rpcs/tests/send-discriminator-with-empty-object`,
+      method: "post",
+      headers: this._headers,
+      onError: this._onError,
+      params: params,
+      responseFromJson: $$FooDiscriminatorWithEmptyObject.fromJson,
+      responseFromString: $$FooDiscriminatorWithEmptyObject.fromJsonString,
+      serializer: $$FooDiscriminatorWithEmptyObject.toJsonString,
+      clientVersion: "10",
+    });
+  }
   async sendError(params: FooSendErrorParams): Promise<undefined> {
     return arriRequest<undefined, FooSendErrorParams>({
       url: `${this._baseUrl}/rpcs/tests/send-error`,
@@ -554,6 +572,180 @@ export const $$FooDeprecatedRpcParams: ArriModelValidator<FooDeprecatedRpcParams
     toUrlQueryString(input): string {
       const queryParts: string[] = [];
       queryParts.push(`deprecatedField=${input.deprecatedField}`);
+      return queryParts.join("&");
+    },
+  };
+
+export type FooDiscriminatorWithEmptyObject =
+  | FooDiscriminatorWithEmptyObjectEmpty
+  | FooDiscriminatorWithEmptyObjectNotEmpty;
+export const $$FooDiscriminatorWithEmptyObject: ArriModelValidator<FooDiscriminatorWithEmptyObject> =
+  {
+    new(): FooDiscriminatorWithEmptyObject {
+      return $$FooDiscriminatorWithEmptyObjectEmpty.new();
+    },
+    validate(input): input is FooDiscriminatorWithEmptyObject {
+      if (!isObject(input)) {
+        return false;
+      }
+      if (typeof input.type !== "string") {
+        return false;
+      }
+      switch (input.type) {
+        case "EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectEmpty.validate(input);
+        case "NOT_EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectNotEmpty.validate(input);
+        default:
+          return false;
+      }
+    },
+    fromJson(input): FooDiscriminatorWithEmptyObject {
+      switch (input.type) {
+        case "EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectEmpty.fromJson(input);
+        case "NOT_EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(input);
+        default:
+          return $$FooDiscriminatorWithEmptyObjectEmpty.new();
+      }
+    },
+    fromJsonString(input): FooDiscriminatorWithEmptyObject {
+      return $$FooDiscriminatorWithEmptyObject.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+      switch (input.type) {
+        case "EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectEmpty.toJsonString(input);
+        case "NOT_EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectNotEmpty.toJsonString(input);
+        default:
+          throw new Error(`Unhandled case "${(input as any).type}"`);
+      }
+    },
+    toUrlQueryString(input): string {
+      switch (input.type) {
+        case "EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectEmpty.toUrlQueryString(input);
+        case "NOT_EMPTY":
+          return $$FooDiscriminatorWithEmptyObjectNotEmpty.toUrlQueryString(
+            input,
+          );
+        default:
+          throw new Error("Unhandled case");
+      }
+    },
+  };
+export interface FooDiscriminatorWithEmptyObjectEmpty {
+  type: "EMPTY";
+}
+const $$FooDiscriminatorWithEmptyObjectEmpty: ArriModelValidator<FooDiscriminatorWithEmptyObjectEmpty> =
+  {
+    new(): FooDiscriminatorWithEmptyObjectEmpty {
+      return {
+        type: "EMPTY",
+      };
+    },
+    validate(input): input is FooDiscriminatorWithEmptyObjectEmpty {
+      return isObject(input) && input.type === "EMPTY";
+    },
+    fromJson(input): FooDiscriminatorWithEmptyObjectEmpty {
+      const _type = "EMPTY";
+      return {
+        type: _type,
+      };
+    },
+    fromJsonString(input): FooDiscriminatorWithEmptyObjectEmpty {
+      return $$FooDiscriminatorWithEmptyObjectEmpty.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+      let json = "{";
+      json += '"type":"EMPTY"';
+      json += "}";
+      return json;
+    },
+    toUrlQueryString(input): string {
+      const queryParts: string[] = [];
+      queryParts.push("type=EMPTY");
+      return queryParts.join("&");
+    },
+  };
+
+export interface FooDiscriminatorWithEmptyObjectNotEmpty {
+  type: "NOT_EMPTY";
+  foo: string;
+  bar: number;
+  baz: boolean;
+}
+const $$FooDiscriminatorWithEmptyObjectNotEmpty: ArriModelValidator<FooDiscriminatorWithEmptyObjectNotEmpty> =
+  {
+    new(): FooDiscriminatorWithEmptyObjectNotEmpty {
+      return {
+        type: "NOT_EMPTY",
+        foo: "",
+        bar: 0,
+        baz: false,
+      };
+    },
+    validate(input): input is FooDiscriminatorWithEmptyObjectNotEmpty {
+      return (
+        isObject(input) &&
+        input.type === "NOT_EMPTY" &&
+        typeof input.foo === "string" &&
+        typeof input.bar === "number" &&
+        typeof input.baz === "boolean"
+      );
+    },
+    fromJson(input): FooDiscriminatorWithEmptyObjectNotEmpty {
+      const _type = "NOT_EMPTY";
+      let _foo: string;
+      if (typeof input.foo === "string") {
+        _foo = input.foo;
+      } else {
+        _foo = "";
+      }
+      let _bar: number;
+      if (typeof input.bar === "number") {
+        _bar = input.bar;
+      } else {
+        _bar = 0;
+      }
+      let _baz: boolean;
+      if (typeof input.baz === "boolean") {
+        _baz = input.baz;
+      } else {
+        _baz = false;
+      }
+      return {
+        type: _type,
+        foo: _foo,
+        bar: _bar,
+        baz: _baz,
+      };
+    },
+    fromJsonString(input): FooDiscriminatorWithEmptyObjectNotEmpty {
+      return $$FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(
+        JSON.parse(input),
+      );
+    },
+    toJsonString(input): string {
+      let json = "{";
+      json += '"type":"NOT_EMPTY"';
+      json += ',"foo":';
+      json += serializeString(input.foo);
+      json += ',"bar":';
+      json += `${input.bar}`;
+      json += ',"baz":';
+      json += `${input.baz}`;
+      json += "}";
+      return json;
+    },
+    toUrlQueryString(input): string {
+      const queryParts: string[] = [];
+      queryParts.push("type=NOT_EMPTY");
+      queryParts.push(`foo=${input.foo}`);
+      queryParts.push(`bar=${input.bar}`);
+      queryParts.push(`baz=${input.baz}`);
       return queryParts.join("&");
     },
   };

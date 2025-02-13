@@ -150,6 +150,26 @@ impl TestClientTestsService {
         )
         .await
     }
+    pub async fn send_discriminator_with_empty_object(
+        &self,
+        params: DiscriminatorWithEmptyObject,
+    ) -> Result<DiscriminatorWithEmptyObject, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-discriminator-with-empty-object",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return DiscriminatorWithEmptyObject::from_json_string(body),
+        )
+        .await
+    }
     pub async fn send_error(&self, params: SendErrorParams) -> Result<(), ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -646,6 +666,94 @@ impl ArriModel for DeprecatedRpcParams {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("deprecatedField={}", &self.deprecated_field));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum DiscriminatorWithEmptyObject {
+    Empty {},
+    NotEmpty { foo: String, bar: f64, baz: bool },
+}
+
+impl ArriModel for DiscriminatorWithEmptyObject {
+    fn new() -> Self {
+        Self::Empty {}
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let r#type = match _val_.get("type") {
+                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match r#type.as_str() {
+                    "EMPTY" => Self::Empty {},
+                    "NOT_EMPTY" => {
+                        let foo = match _val_.get("foo") {
+                            Some(serde_json::Value::String(foo_val)) => foo_val.to_owned(),
+                            _ => "".to_string(),
+                        };
+                        let bar = match _val_.get("bar") {
+                            Some(serde_json::Value::Number(bar_val)) => {
+                                bar_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        let baz = match _val_.get("baz") {
+                            Some(serde_json::Value::Bool(baz_val)) => baz_val.to_owned(),
+                            _ => false,
+                        };
+                        Self::NotEmpty { foo, bar, baz }
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Empty {} => {
+                _json_output_.push_str("\"type\":\"EMPTY\"");
+            }
+            Self::NotEmpty { foo, bar, baz } => {
+                _json_output_.push_str("\"type\":\"NOT_EMPTY\"");
+                _json_output_.push_str(",\"foo\":");
+                _json_output_.push_str(serialize_string(foo).as_str());
+                _json_output_.push_str(",\"bar\":");
+                _json_output_.push_str(bar.to_string().as_str());
+                _json_output_.push_str(",\"baz\":");
+                _json_output_.push_str(baz.to_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::Empty {} => {
+                _query_parts_.push(format!("type=EMPTY"));
+            }
+            Self::NotEmpty { foo, bar, baz } => {
+                _query_parts_.push(format!("type=NOT_EMPTY"));
+                _query_parts_.push(format!("foo={}", foo));
+                _query_parts_.push(format!("bar={}", bar));
+                _query_parts_.push(format!("baz={}", baz));
+            }
+        }
         _query_parts_.join("&")
     }
 }

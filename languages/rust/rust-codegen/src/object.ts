@@ -8,6 +8,7 @@ import {
     formatDescriptionComment,
     GeneratorContext,
     getTypeName,
+    maybeStr,
     outputIsOptionType,
     RustProperty,
     validRustIdentifier,
@@ -213,15 +214,16 @@ export default function rustObjectFromSchema(
     if (schema.metadata?.isDeprecated) {
         leading += `#[deprecated]\n`;
     }
+    const hasProperties = fieldDeclarationParts.length > 0;
     result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub struct ${prefixedStructName} {
-${fieldDeclarationParts.join(',\n')},
+${fieldDeclarationParts.join(',\n')}${maybeStr(hasProperties, ',')}
 }
 
 impl ArriModel for ${prefixedStructName} {
     fn new() -> Self {
         Self {
-${defaultParts.join(',\n')},
+${defaultParts.join(',\n')}${maybeStr(hasProperties, ',')}
         }
     }
     fn from_json(input: serde_json::Value) -> Self {

@@ -79,6 +79,7 @@ func main() {
 		Description:  "If the target language supports it. Generated code should mark this procedure as deprecated.",
 	})
 	arri.RegisterDef(&app, DeprecatedRpcParams{}, arri.DefOptions{IsDeprecated: true})
+	arri.ScopedRpc(&app, "tests", SendDiscriminatorWithEmptyObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendError, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithNullableFields, arri.RpcOptions{})
@@ -107,6 +108,23 @@ type DeprecatedRpcParams struct {
 
 func DeprecatedRpc(_ DeprecatedRpcParams, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
+}
+
+type DiscriminatorWithEmptyObject struct {
+	Empty    *DiscriminatorWithEmptyObjectEmpty    `discriminator:"EMPTY"`
+	NotEmpty *DiscriminatorWithEmptyObjectNotEmpty `discriminator:"NOT_EMPTY"`
+}
+
+type DiscriminatorWithEmptyObjectEmpty struct{}
+
+type DiscriminatorWithEmptyObjectNotEmpty struct {
+	Foo string
+	Bar float64
+	Baz bool
+}
+
+func SendDiscriminatorWithEmptyObject(params DiscriminatorWithEmptyObject, _ RpcEvent) (DiscriminatorWithEmptyObject, arri.RpcError) {
+	return params, nil
 }
 
 type DefaultPayload struct {

@@ -43,6 +43,7 @@
     }
   },
   "definitions": {
+    "EmptyObject": { "properties": {}, "metadata": {} },
     "Book": {
       "properties": {
         "id": {
@@ -275,8 +276,8 @@
     },
     "RecursiveObject": {
       "properties": {
-        "left": { "ref": "RecursiveObject", "metadata": {}, "nullable": true },
-        "right": { "ref": "RecursiveObject", "metadata": {}, "nullable": true }
+        "left": { "ref": "RecursiveObject", "nullable": true, "metadata": {} },
+        "right": { "ref": "RecursiveObject", "nullable": true, "metadata": {} }
       },
       "metadata": { "id": "RecursiveObject" }
     }

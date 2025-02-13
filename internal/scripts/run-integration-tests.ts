@@ -25,7 +25,7 @@ const run = defineCommand({
         },
     },
     async run({ args }) {
-        const parsedArgs = a.parse(CliArgs, args);
+        const parsedArgs = a.parseUnsafe(CliArgs, args);
         if (!parsedArgs.server) {
             const { type } = await enquirer.prompt<{ type: 'ts' | 'go' }>([
                 {

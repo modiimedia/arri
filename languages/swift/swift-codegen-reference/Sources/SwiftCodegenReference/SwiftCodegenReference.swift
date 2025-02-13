@@ -107,6 +107,47 @@ public class ExampleClientBooksService {
     }
 }
 
+public struct EmptyObject: ArriClientModel {
+    public init(
+        
+    ) {
+
+    }
+    public init(json: JSON) {
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        var __numKeys = 0
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+       return []
+    }
+    public func clone() -> EmptyObject {
+        return EmptyObject(
+        )
+    }
+}
+
 /// This is a book
 public struct Book: ArriClientModel {
     /// The book ID

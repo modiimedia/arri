@@ -157,6 +157,32 @@ export class ExampleClientBooksService {
     }
 }
 
+export interface EmptyObject {}
+export const $$EmptyObject: ArriModelValidator<EmptyObject> = {
+    new(): EmptyObject {
+        return {};
+    },
+    validate(input): input is EmptyObject {
+        return isObject(input);
+    },
+    fromJson(input): EmptyObject {
+        return {};
+    },
+    fromJsonString(input): EmptyObject {
+        return $$EmptyObject.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        let _hasKey = false;
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        return queryParts.join('&');
+    },
+};
+
 /**
  * This is a book
  */

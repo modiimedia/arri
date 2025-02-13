@@ -166,11 +166,13 @@ export function dartClassFromSchema(
 `;
     }
 
+    const hasProperties = propNames.length > 0;
+
     result.content = `${getCodeComments(schema.metadata)}class ${finalClassName} implements ${context.discriminatorParentId ? `${context.modelPrefix}${context.discriminatorParentId}` : 'ArriModel'} {
 ${fieldParts.join('\n')}
-  const ${finalClassName}({
+  const ${finalClassName}(${hasProperties ? '{' : ''}
 ${constructorParts.join('\n')}
-  });
+  ${hasProperties ? '}' : ''});
 ${discriminatorPart}
   factory ${finalClassName}.empty() {
     return ${finalClassName}(
@@ -211,9 +213,9 @@ ${toUrlQueryParts.join('\n')}
   }
 
   @override
-  ${finalClassName} copyWith({
+  ${finalClassName} copyWith(${hasProperties ? '{' : ''}
 ${copyWithParamParts.join('\n')}
-  }) {
+  ${hasProperties ? '}' : ''}) {
     return ${finalClassName}(
 ${copyWithReturnParts.join('\n')}
     );

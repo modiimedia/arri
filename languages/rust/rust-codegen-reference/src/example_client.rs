@@ -133,6 +133,41 @@ impl ExampleClientBooksService {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct EmptyObject {}
+
+impl ArriModel for EmptyObject {
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => Self {},
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        let mut _has_keys_ = false;
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.join("&")
+    }
+}
+
 /// This is a book
 #[derive(Clone, Debug, PartialEq)]
 pub struct Book {
