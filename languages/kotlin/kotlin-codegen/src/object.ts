@@ -169,8 +169,9 @@ ${isLast ? '' : '    hasProperties = true'}\n}`);
     if (context.discriminatorKey && context.discriminatorValue) {
         discriminatorField = `\n    override val ${kotlinIdentifier(context.discriminatorKey)} get() = "${context.discriminatorValue}"\n`;
     }
+    const hasProperties = fieldParts.length > 0;
     const content = `${getCodeComment(schema.metadata, '', 'class')}data class ${prefixedClassName}(
-${fieldParts.join('\n')}
+${fieldParts.join('\n')}${!hasProperties ? '    private val placeholderKey: Short = 0' : ''}
 ) : ${implementedClass} {${discriminatorField}
     override fun toJson(): String {
 ${toJsonParts.join('\n')}    
@@ -201,7 +202,7 @@ ${defaultParts.join('\n')}
             }
 ${fromJsonParts.join('\n')}
             return ${prefixedClassName}(
-                ${kotlinKeys.join(',\n                ')},
+                ${kotlinKeys.join(',\n                ')}${hasProperties ? `,` : ''}
             )
         }
     }

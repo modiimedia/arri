@@ -154,3 +154,10 @@ export function formatDescriptionComment(
         .map((line) => `${leading}/// ${line}`)
         .join('\n');
 }
+
+export function maybeStr(show: boolean, char: string) {
+    if (show) {
+        return char;
+    }
+    return '';
+}

@@ -288,6 +288,48 @@ data class ExampleClientError(
     }
 }
 
+data class EmptyObject(
+    private val placeholderKey: Short = 0
+) : ExampleClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        var hasProperties = false
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : ExampleClientModelFactory<EmptyObject> {
+        @JvmStatic
+        override fun new(): EmptyObject {
+            return EmptyObject(
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): EmptyObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): EmptyObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] EmptyObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty EmptyObject.")
+                return new()
+            }
+
+            return EmptyObject(
+
+            )
+        }
+
+    }
+}
+
 /**
  * This is a book
  */
