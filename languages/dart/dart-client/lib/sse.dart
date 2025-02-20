@@ -175,9 +175,22 @@ class EventSource<T> {
       _retryCount = 0;
       _internalRetryDelay = 100;
 
+      List<int>? pendingBytes;
+
       response.stream.listen(
         (value) {
-          final input = utf8.decode(value);
+          String input;
+          try {
+            if (pendingBytes != null) {
+              input = utf8.decode([...pendingBytes!, ...value]);
+            } else {
+              input = utf8.decode(value);
+            }
+            pendingBytes = null;
+          } catch (err) {
+            pendingBytes = value;
+            return;
+          }
           final eventResult = parseSseEvents(pendingData + input, parser);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
