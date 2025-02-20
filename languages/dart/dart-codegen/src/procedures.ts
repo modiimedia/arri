@@ -107,32 +107,33 @@ function getFunctionName(instancePath: string) {
 }
 
 export function dartWsRpcFromSchema(
-    schema: WsRpcDefinition,
-    context: CodegenContext,
+    _: WsRpcDefinition,
+    __: CodegenContext,
 ): string {
-    const metadata: Schema['metadata'] = {
-        description: schema.description,
-        isDeprecated: schema.isDeprecated,
-    };
-    const functionName = getFunctionName(context.instancePath);
-    let responseType: string | undefined;
-    let paramsType: string | undefined;
-    if (schema.response) {
-        responseType = `${context.modelPrefix}${validDartClassName(schema.response, context.modelPrefix)}`;
-    }
-    if (schema.params) {
-        paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
-    }
-    return `${getCodeComments(metadata)}Future<ArriWebsocketController<${responseType ?? 'void'}, ${paramsType ?? 'void'}>> ${functionName}() {
-        return arriWebsocketRequest(
-            "$_baseUrl${schema.path}",
-            headers: _headers,
-            clientVersion: _clientVersion,
-            parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : '{}'},
-            serializer: (msg) ${paramsType ? '=> msg.toJsonString()' : '=> ""'},
-            onError: _onError,
-        );
-    }`;
+    return '';
+    // const metadata: Schema['metadata'] = {
+    //     description: schema.description,
+    //     isDeprecated: schema.isDeprecated,
+    // };
+    // const functionName = getFunctionName(context.instancePath);
+    // let responseType: string | undefined;
+    // let paramsType: string | undefined;
+    // if (schema.response) {
+    //     responseType = `${context.modelPrefix}${validDartClassName(schema.response, context.modelPrefix)}`;
+    // }
+    // if (schema.params) {
+    //     paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
+    // }
+    // return `${getCodeComments(metadata)}Future<ArriWebsocketController<${responseType ?? 'void'}, ${paramsType ?? 'void'}>> ${functionName}() {
+    //     return arriWebsocketRequest(
+    //         "$_baseUrl${schema.path}",
+    //         headers: _headers,
+    //         clientVersion: _clientVersion,
+    //         parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : '{}'},
+    //         serializer: (msg) ${paramsType ? '=> msg.toJsonString()' : '=> ""'},
+    //         onError: _onError,
+    //     );
+    // }`;
 }
 
 export function dartServiceFromSchema(

@@ -125,17 +125,6 @@ class ExampleClientBooksService {
                   : null,
     );
   }
-
-  Future<ArriWebsocketController<Book, BookParams>> createConnection() {
-    return arriWebsocketRequest(
-      "$_baseUrl/books/create-connection",
-      headers: _headers,
-      clientVersion: _clientVersion,
-      parser: (msg) => Book.fromJsonString(msg),
-      serializer: (msg) => msg.toJsonString(),
-      onError: _onError,
-    );
-  }
 }
 
 class EmptyObject implements ArriModel {
