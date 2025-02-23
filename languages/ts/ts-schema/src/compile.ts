@@ -39,6 +39,13 @@ export {
     getSchemaValidationCode,
 };
 
+export interface CompiledValidatorCompiledCode {
+    parse: string;
+    coerce: string;
+    serialize: string;
+    validate: string;
+}
+
 export interface CompiledValidator<
     TSchema extends ASchema<any>,
     TIncludeCode extends boolean = false,
@@ -76,12 +83,7 @@ export interface CompiledValidator<
      * The ATD Schema
      */
     compiledCode: TIncludeCode extends true
-        ? {
-              parse: string;
-              coerce: string;
-              serialize: string;
-              validate: string;
-          }
+        ? CompiledValidatorCompiledCode
         : undefined;
 }
 
@@ -226,7 +228,7 @@ export function compile<
                       parse: parser.code,
                       coerce: coercer.code,
                       serialize: serializer.code,
-                  } as any)
+                  } satisfies CompiledValidatorCompiledCode as any)
                 : undefined,
         '~standard': createStandardSchemaProperty(validate, (input, ctx) => {
             const result = parse(input);

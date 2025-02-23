@@ -1010,9 +1010,12 @@ $$User.serializeUnsafe({ id: '1', email: null, created: new Date() });
 
 In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods are created using [`new Function()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
 
-You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
+You can also use `a.compile` for code generation. Passing `true` as the second parameter will ensure that the compile result gives you access to the generated function bodies. This is disabled by default as of `v0.76.0` in order to reduce unwanted memory usage. (No need to carry around these large strings if they aren't going to be used.)
 
 ```ts
+// pass true to the second parameter to get access to the generated function bodies
+const $$User = a.compile(User, true);
+
 $$User.compiledCode.validate; // the generated validation code
 $$User.compiledCode.parse; // the generated parsing code
 $$User.compiledCode.coerce; // the generated coercion code
