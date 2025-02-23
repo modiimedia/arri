@@ -39,7 +39,10 @@ export {
     getSchemaValidationCode,
 };
 
-export interface CompiledValidator<TSchema extends ASchema<any>> {
+export interface CompiledValidator<
+    TSchema extends ASchema<any>,
+    TIncludeCode extends boolean = false,
+> {
     schema: ASchemaStrict<TSchema>;
     /**
      * Determine if a type matches a schema. This is a type guard.
@@ -72,23 +75,32 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
     /**
      * The ATD Schema
      */
-    compiledCode: {
-        parse: string;
-        coerce: string;
-        serialize: string;
-        validate: string;
-    };
+    compiledCode: TIncludeCode extends true
+        ? {
+              parse: string;
+              coerce: string;
+              serialize: string;
+              validate: string;
+          }
+        : undefined;
 }
 
-type CompiledValidatorWithAdapters<TSchema extends ASchema> =
-    CompiledValidator<TSchema> & StandardSchemaV1<InferType<TSchema>>;
+type CompiledValidatorWithAdapters<
+    TSchema extends ASchema,
+    TIncludeCode extends boolean = false,
+> = CompiledValidator<TSchema, TIncludeCode> &
+    StandardSchemaV1<InferType<TSchema>>;
 
 /**
  * Create compiled versions of the `decode()`, `validate()`, and `serialize()` functions
  */
-export function compile<TSchema extends ASchema<any>>(
+export function compile<
+    TSchema extends ASchema<any>,
+    TIncludeCompiled extends boolean = false,
+>(
     schema: TSchema,
-): CompiledValidatorWithAdapters<TSchema> {
+    includeCompiledCode?: TIncludeCompiled,
+): CompiledValidatorWithAdapters<TSchema, TIncludeCompiled> {
     const validateCode = getSchemaValidationCode('input', schema);
     const parser = getCompiledParser('input', schema, false);
     const parserFn = parser.fn;
@@ -182,7 +194,7 @@ export function compile<TSchema extends ASchema<any>>(
             };
         }
     };
-    const result: CompiledValidatorWithAdapters<TSchema> = {
+    const result: CompiledValidatorWithAdapters<TSchema, TIncludeCompiled> = {
         schema: JSON.parse(JSON.stringify(schema)),
         validate,
         parse: parse,
@@ -207,12 +219,15 @@ export function compile<TSchema extends ASchema<any>>(
         serializeUnsafe(input) {
             return serializeFn(input);
         },
-        compiledCode: {
-            validate: validateCode,
-            parse: parser.code,
-            coerce: coercer.code,
-            serialize: serializer.code,
-        },
+        compiledCode:
+            includeCompiledCode === true
+                ? ({
+                      validate: validateCode,
+                      parse: parser.code,
+                      coerce: coercer.code,
+                      serialize: serializer.code,
+                  } as any)
+                : undefined,
         '~standard': createStandardSchemaProperty(validate, (input, ctx) => {
             const result = parse(input);
             if (!result.success) {
