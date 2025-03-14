@@ -13,6 +13,6 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": ["dist"],
-  "version": "0.76.1-0",
+  "version": "0.76.2-beta.0",
   "dependencies": { "scule": "^1.3.0" }
 }

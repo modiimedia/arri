@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-swift",
-  "version": "0.76.1-0",
+  "version": "0.76.2-beta.0",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
