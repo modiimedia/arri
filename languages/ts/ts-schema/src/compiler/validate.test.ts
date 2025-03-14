@@ -5,7 +5,7 @@ import { validationTestSuites } from '../testSuites';
 Object.keys(validationTestSuites).forEach((key) => {
     test(key, () => {
         const suite = validationTestSuites[key]!;
-        const Compiled = compile(suite.schema);
+        const Compiled = compile(suite.schema, true);
         for (const input of suite.goodInputs) {
             if (!Compiled.validate(input)) {
                 console.log(suite.schema);

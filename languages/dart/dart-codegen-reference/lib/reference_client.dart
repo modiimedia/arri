@@ -16,10 +16,10 @@ class ExampleClient {
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl,
-        _headers = headers,
-        _onError = onError;
+  }) : _httpClient = httpClient,
+       _baseUrl = baseUrl,
+       _headers = headers,
+       _onError = onError;
 
   Future<NestedObject> sendObject(NestedObject params) async {
     return parsedArriRequest(
@@ -35,11 +35,11 @@ class ExampleClient {
   }
 
   ExampleClientBooksService get books => ExampleClientBooksService(
-        baseUrl: _baseUrl,
-        headers: _headers,
-        httpClient: _httpClient,
-        onError: _onError,
-      );
+    baseUrl: _baseUrl,
+    headers: _headers,
+    httpClient: _httpClient,
+    onError: _onError,
+  );
 }
 
 class ExampleClientBooksService {
@@ -53,10 +53,10 @@ class ExampleClientBooksService {
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl,
-        _headers = headers,
-        _onError = onError;
+  }) : _httpClient = httpClient,
+       _baseUrl = baseUrl,
+       _headers = headers,
+       _onError = onError;
 
   /// Get a book
   Future<Book> getBook(BookParams params) async {
@@ -92,7 +92,7 @@ class ExampleClientBooksService {
     BookParams params, {
     void Function(Book data, EventSource<Book> connection)? onMessage,
     void Function(http.StreamedResponse response, EventSource<Book> connection)?
-        onOpen,
+    onOpen,
     void Function(EventSource<Book> connection)? onClose,
     void Function(ArriError error, EventSource<Book> connection)? onError,
     Duration? retryDelay,
@@ -113,16 +113,17 @@ class ExampleClientBooksService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
+      onError:
+          onError != null && _onError != null
+              ? (err, es) {
+                _onError.call(onError);
+                return onError(err, es);
+              }
+              : onError != null
               ? onError
               : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+              ? (err, _) => _onError.call(err)
+              : null,
     );
   }
 }
@@ -215,12 +216,7 @@ class Book implements ArriModel {
     final name = typeFromDynamic<String>(_input_["name"], "");
     final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime.now());
     final updatedAt = dateTimeFromDynamic(_input_["updatedAt"], DateTime.now());
-    return Book(
-      id: id,
-      name: name,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
+    return Book(id: id, name: name, createdAt: createdAt, updatedAt: updatedAt);
   }
 
   factory Book.fromJsonString(String input) {
@@ -269,12 +265,7 @@ class Book implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        createdAt,
-        updatedAt,
-      ];
+  List<Object?> get props => [id, name, createdAt, updatedAt];
 
   @override
   bool operator ==(Object other) {
@@ -292,21 +283,15 @@ class Book implements ArriModel {
 
 class BookParams implements ArriModel {
   final String bookId;
-  const BookParams({
-    required this.bookId,
-  });
+  const BookParams({required this.bookId});
 
   factory BookParams.empty() {
-    return BookParams(
-      bookId: "",
-    );
+    return BookParams(bookId: "");
   }
 
   factory BookParams.fromJson(Map<String, dynamic> _input_) {
     final bookId = typeFromDynamic<String>(_input_["bookId"], "");
-    return BookParams(
-      bookId: bookId,
-    );
+    return BookParams(bookId: bookId);
   }
 
   factory BookParams.fromJsonString(String input) {
@@ -315,9 +300,7 @@ class BookParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{
-      "bookId": bookId,
-    };
+    final _output_ = <String, dynamic>{"bookId": bookId};
     return _output_;
   }
 
@@ -334,18 +317,12 @@ class BookParams implements ArriModel {
   }
 
   @override
-  BookParams copyWith({
-    String? bookId,
-  }) {
-    return BookParams(
-      bookId: bookId ?? this.bookId,
-    );
+  BookParams copyWith({String? bookId}) {
+    return BookParams(bookId: bookId ?? this.bookId);
   }
 
   @override
-  List<Object?> get props => [
-        bookId,
-      ];
+  List<Object?> get props => [bookId];
 
   @override
   bool operator ==(Object other) {
@@ -364,25 +341,16 @@ class BookParams implements ArriModel {
 class NestedObject implements ArriModel {
   final String id;
   final String content;
-  const NestedObject({
-    required this.id,
-    required this.content,
-  });
+  const NestedObject({required this.id, required this.content});
 
   factory NestedObject.empty() {
-    return NestedObject(
-      id: "",
-      content: "",
-    );
+    return NestedObject(id: "", content: "");
   }
 
   factory NestedObject.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
-    return NestedObject(
-      id: id,
-      content: content,
-    );
+    return NestedObject(id: id, content: content);
   }
 
   factory NestedObject.fromJsonString(String input) {
@@ -391,10 +359,7 @@ class NestedObject implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{
-      "id": id,
-      "content": content,
-    };
+    final _output_ = <String, dynamic>{"id": id, "content": content};
     return _output_;
   }
 
@@ -412,21 +377,12 @@ class NestedObject implements ArriModel {
   }
 
   @override
-  NestedObject copyWith({
-    String? id,
-    String? content,
-  }) {
-    return NestedObject(
-      id: id ?? this.id,
-      content: content ?? this.content,
-    );
+  NestedObject copyWith({String? id, String? content}) {
+    return NestedObject(id: id ?? this.id, content: content ?? this.content);
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        content,
-      ];
+  List<Object?> get props => [id, content];
 
   @override
   bool operator ==(Object other) {
@@ -520,27 +476,30 @@ class ObjectWithEveryType implements ArriModel {
     final uint32 = intFromDynamic(_input_["uint32"], 0);
     final int64 = bigIntFromDynamic(_input_["int64"], BigInt.zero);
     final uint64 = bigIntFromDynamic(_input_["uint64"], BigInt.zero);
-    final k_enum =
-        Enumerator.fromString(typeFromDynamic<String>(_input_["enum"], ""));
-    final object = _input_["object"] is Map<String, dynamic>
-        ? NestedObject.fromJson(_input_["object"])
-        : NestedObject.empty();
-    final array = _input_["array"] is List
-        ? (_input_["array"] as List)
-            .map((_el_) => typeFromDynamic<bool>(_el_, false))
-            .toList()
-        : <bool>[];
-    final record = _input_["record"] is Map<String, dynamic>
-        ? (_input_["record"] as Map<String, dynamic>).map(
-            (_key_, _val_) => MapEntry(
-              _key_,
-              typeFromDynamic<bool>(_val_, false),
-            ),
-          )
-        : <String, bool>{};
-    final discriminator = _input_["discriminator"] is Map<String, dynamic>
-        ? Discriminator.fromJson(_input_["discriminator"])
-        : Discriminator.empty();
+    final k_enum = Enumerator.fromString(
+      typeFromDynamic<String>(_input_["enum"], ""),
+    );
+    final object =
+        _input_["object"] is Map<String, dynamic>
+            ? NestedObject.fromJson(_input_["object"])
+            : NestedObject.empty();
+    final array =
+        _input_["array"] is List
+            ? (_input_["array"] as List)
+                .map((_el_) => typeFromDynamic<bool>(_el_, false))
+                .toList()
+            : <bool>[];
+    final record =
+        _input_["record"] is Map<String, dynamic>
+            ? (_input_["record"] as Map<String, dynamic>).map(
+              (_key_, _val_) =>
+                  MapEntry(_key_, typeFromDynamic<bool>(_val_, false)),
+            )
+            : <String, bool>{};
+    final discriminator =
+        _input_["discriminator"] is Map<String, dynamic>
+            ? Discriminator.fromJson(_input_["discriminator"])
+            : Discriminator.empty();
     final any = _input_["any"];
     return ObjectWithEveryType(
       string: string,
@@ -588,12 +547,7 @@ class ObjectWithEveryType implements ArriModel {
       "enum": k_enum.serialValue,
       "object": object.toJson(),
       "array": array.map((_el_) => _el_).toList(),
-      "record": record.map(
-        (_key_, _val_) => MapEntry(
-          _key_,
-          _val_,
-        ),
-      ),
+      "record": record.map((_key_, _val_) => MapEntry(_key_, _val_)),
       "discriminator": discriminator.toJson(),
       "any": any,
     };
@@ -623,15 +577,20 @@ class ObjectWithEveryType implements ArriModel {
     _queryParts_.add("uint64=$uint64");
     _queryParts_.add("enum=${k_enum.serialValue}");
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.",
+    );
     print(
-        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.");
+      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.",
+    );
     print(
-        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.");
+      "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.",
+    );
     return _queryParts_.join("&");
   }
 
@@ -682,26 +641,26 @@ class ObjectWithEveryType implements ArriModel {
 
   @override
   List<Object?> get props => [
-        string,
-        boolean,
-        timestamp,
-        float32,
-        float64,
-        int8,
-        uint8,
-        int16,
-        uint16,
-        int32,
-        uint32,
-        int64,
-        uint64,
-        k_enum,
-        object,
-        array,
-        record,
-        discriminator,
-        any,
-      ];
+    string,
+    boolean,
+    timestamp,
+    float32,
+    float64,
+    int8,
+    uint8,
+    int16,
+    uint16,
+    int32,
+    uint32,
+    int64,
+    uint64,
+    k_enum,
+    object,
+    array,
+    record,
+    discriminator,
+    any,
+  ];
 
   @override
   bool operator ==(Object other) {
@@ -767,24 +726,18 @@ sealed class Discriminator implements ArriModel {
 
 class DiscriminatorA implements Discriminator {
   final String id;
-  const DiscriminatorA({
-    required this.id,
-  });
+  const DiscriminatorA({required this.id});
 
   @override
   String get typeName => "A";
 
   factory DiscriminatorA.empty() {
-    return DiscriminatorA(
-      id: "",
-    );
+    return DiscriminatorA(id: "");
   }
 
   factory DiscriminatorA.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    return DiscriminatorA(
-      id: id,
-    );
+    return DiscriminatorA(id: id);
   }
 
   factory DiscriminatorA.fromJsonString(String input) {
@@ -793,10 +746,7 @@ class DiscriminatorA implements Discriminator {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{
-      "typeName": typeName,
-      "id": id,
-    };
+    final _output_ = <String, dynamic>{"typeName": typeName, "id": id};
     return _output_;
   }
 
@@ -814,18 +764,12 @@ class DiscriminatorA implements Discriminator {
   }
 
   @override
-  DiscriminatorA copyWith({
-    String? id,
-  }) {
-    return DiscriminatorA(
-      id: id ?? this.id,
-    );
+  DiscriminatorA copyWith({String? id}) {
+    return DiscriminatorA(id: id ?? this.id);
   }
 
   @override
-  List<Object?> get props => [
-        id,
-      ];
+  List<Object?> get props => [id];
 
   @override
   bool operator ==(Object other) {
@@ -844,28 +788,19 @@ class DiscriminatorA implements Discriminator {
 class DiscriminatorB implements Discriminator {
   final String id;
   final String name;
-  const DiscriminatorB({
-    required this.id,
-    required this.name,
-  });
+  const DiscriminatorB({required this.id, required this.name});
 
   @override
   String get typeName => "B";
 
   factory DiscriminatorB.empty() {
-    return DiscriminatorB(
-      id: "",
-      name: "",
-    );
+    return DiscriminatorB(id: "", name: "");
   }
 
   factory DiscriminatorB.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
-    return DiscriminatorB(
-      id: id,
-      name: name,
-    );
+    return DiscriminatorB(id: id, name: name);
   }
 
   factory DiscriminatorB.fromJsonString(String input) {
@@ -897,21 +832,12 @@ class DiscriminatorB implements Discriminator {
   }
 
   @override
-  DiscriminatorB copyWith({
-    String? id,
-    String? name,
-  }) {
-    return DiscriminatorB(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+  DiscriminatorB copyWith({String? id, String? name}) {
+    return DiscriminatorB(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-      ];
+  List<Object?> get props => [id, name];
 
   @override
   bool operator ==(Object other) {
@@ -941,22 +867,14 @@ class DiscriminatorC implements Discriminator {
   String get typeName => "C";
 
   factory DiscriminatorC.empty() {
-    return DiscriminatorC(
-      id: "",
-      name: "",
-      date: DateTime.now(),
-    );
+    return DiscriminatorC(id: "", name: "", date: DateTime.now());
   }
 
   factory DiscriminatorC.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
     final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
-    return DiscriminatorC(
-      id: id,
-      name: name,
-      date: date,
-    );
+    return DiscriminatorC(id: id, name: name, date: date);
   }
 
   factory DiscriminatorC.fromJsonString(String input) {
@@ -990,11 +908,7 @@ class DiscriminatorC implements Discriminator {
   }
 
   @override
-  DiscriminatorC copyWith({
-    String? id,
-    String? name,
-    DateTime? date,
-  }) {
+  DiscriminatorC copyWith({String? id, String? name, DateTime? date}) {
     return DiscriminatorC(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -1003,11 +917,7 @@ class DiscriminatorC implements Discriminator {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        date,
-      ];
+  List<Object?> get props => [id, name, date];
 
   @override
   bool operator ==(Object other) {
@@ -1083,28 +993,31 @@ class ObjectWithOptionalFields implements ArriModel {
     final uint32 = nullableIntFromDynamic(_input_["uint32"]);
     final int64 = nullableBigIntFromDynamic(_input_["int64"]);
     final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
-    final k_enum = _input_["enum"] is String
-        ? Enumerator.fromString(_input_["enum"])
-        : null;
-    final object = _input_["object"] is Map<String, dynamic>
-        ? NestedObject.fromJson(_input_["object"])
-        : null;
-    final array = _input_["array"] is List
-        ? (_input_["array"] as List)
-            .map((_el_) => typeFromDynamic<bool>(_el_, false))
-            .toList()
-        : null;
-    final record = _input_["record"] is Map<String, dynamic>
-        ? (_input_["record"] as Map<String, dynamic>).map(
-            (_key_, _val_) => MapEntry(
-              _key_,
-              typeFromDynamic<bool>(_val_, false),
-            ),
-          )
-        : null;
-    final discriminator = _input_["discriminator"] is Map<String, dynamic>
-        ? Discriminator.fromJson(_input_["discriminator"])
-        : null;
+    final k_enum =
+        _input_["enum"] is String
+            ? Enumerator.fromString(_input_["enum"])
+            : null;
+    final object =
+        _input_["object"] is Map<String, dynamic>
+            ? NestedObject.fromJson(_input_["object"])
+            : null;
+    final array =
+        _input_["array"] is List
+            ? (_input_["array"] as List)
+                .map((_el_) => typeFromDynamic<bool>(_el_, false))
+                .toList()
+            : null;
+    final record =
+        _input_["record"] is Map<String, dynamic>
+            ? (_input_["record"] as Map<String, dynamic>).map(
+              (_key_, _val_) =>
+                  MapEntry(_key_, typeFromDynamic<bool>(_val_, false)),
+            )
+            : null;
+    final discriminator =
+        _input_["discriminator"] is Map<String, dynamic>
+            ? Discriminator.fromJson(_input_["discriminator"])
+            : null;
     final any = _input_["any"];
     return ObjectWithOptionalFields(
       string: string,
@@ -1154,10 +1067,7 @@ class ObjectWithOptionalFields implements ArriModel {
     if (array != null) _output_["array"] = array!.map((_el_) => _el_).toList();
     if (record != null)
       _output_["record"] = record!.map(
-        (_key_, _val_) => MapEntry(
-          _key_,
-          _val_,
-        ),
+        (_key_, _val_) => MapEntry(_key_, _val_),
       );
     if (discriminator != null)
       _output_["discriminator"] = discriminator!.toJson();
@@ -1189,15 +1099,20 @@ class ObjectWithOptionalFields implements ArriModel {
     if (uint64 != null) _queryParts_.add("uint64=$uint64");
     if (k_enum != null) _queryParts_.add("enum=${k_enum!.serialValue}");
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.",
+    );
     print(
-        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.");
+      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.",
+    );
     print(
-        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.");
+      "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.",
+    );
     return _queryParts_.join("&");
   }
 
@@ -1249,26 +1164,26 @@ class ObjectWithOptionalFields implements ArriModel {
 
   @override
   List<Object?> get props => [
-        string,
-        boolean,
-        timestamp,
-        float32,
-        float64,
-        int8,
-        uint8,
-        int16,
-        uint16,
-        int32,
-        uint32,
-        int64,
-        uint64,
-        k_enum,
-        object,
-        array,
-        record,
-        discriminator,
-        any,
-      ];
+    string,
+    boolean,
+    timestamp,
+    float32,
+    float64,
+    int8,
+    uint8,
+    int16,
+    uint16,
+    int32,
+    uint32,
+    int64,
+    uint64,
+    k_enum,
+    object,
+    array,
+    record,
+    discriminator,
+    any,
+  ];
 
   @override
   bool operator ==(Object other) {
@@ -1365,28 +1280,31 @@ class ObjectWithNullableFields implements ArriModel {
     final uint32 = nullableIntFromDynamic(_input_["uint32"]);
     final int64 = nullableBigIntFromDynamic(_input_["int64"]);
     final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
-    final k_enum = _input_["enum"] is String
-        ? Enumerator.fromString(_input_["enum"])
-        : null;
-    final object = _input_["object"] is Map<String, dynamic>
-        ? NestedObject.fromJson(_input_["object"])
-        : null;
-    final array = _input_["array"] is List
-        ? (_input_["array"] as List)
-            .map((_el_) => typeFromDynamic<bool>(_el_, false))
-            .toList()
-        : null;
-    final record = _input_["record"] is Map<String, dynamic>
-        ? (_input_["record"] as Map<String, dynamic>).map(
-            (_key_, _val_) => MapEntry(
-              _key_,
-              typeFromDynamic<bool>(_val_, false),
-            ),
-          )
-        : null;
-    final discriminator = _input_["discriminator"] is Map<String, dynamic>
-        ? Discriminator.fromJson(_input_["discriminator"])
-        : null;
+    final k_enum =
+        _input_["enum"] is String
+            ? Enumerator.fromString(_input_["enum"])
+            : null;
+    final object =
+        _input_["object"] is Map<String, dynamic>
+            ? NestedObject.fromJson(_input_["object"])
+            : null;
+    final array =
+        _input_["array"] is List
+            ? (_input_["array"] as List)
+                .map((_el_) => typeFromDynamic<bool>(_el_, false))
+                .toList()
+            : null;
+    final record =
+        _input_["record"] is Map<String, dynamic>
+            ? (_input_["record"] as Map<String, dynamic>).map(
+              (_key_, _val_) =>
+                  MapEntry(_key_, typeFromDynamic<bool>(_val_, false)),
+            )
+            : null;
+    final discriminator =
+        _input_["discriminator"] is Map<String, dynamic>
+            ? Discriminator.fromJson(_input_["discriminator"])
+            : null;
     final any = _input_["any"];
     return ObjectWithNullableFields(
       string: string,
@@ -1434,12 +1352,7 @@ class ObjectWithNullableFields implements ArriModel {
       "enum": k_enum?.serialValue,
       "object": object?.toJson(),
       "array": array?.map((_el_) => _el_).toList(),
-      "record": record?.map(
-        (_key_, _val_) => MapEntry(
-          _key_,
-          _val_,
-        ),
-      ),
+      "record": record?.map((_key_, _val_) => MapEntry(_key_, _val_)),
       "discriminator": discriminator?.toJson(),
       "any": any,
     };
@@ -1469,15 +1382,20 @@ class ObjectWithNullableFields implements ArriModel {
     _queryParts_.add("uint64=$uint64");
     _queryParts_.add("enum=${k_enum?.serialValue}");
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.",
+    );
     print(
-        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.");
+      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.",
+    );
     print(
-        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.");
+      "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.",
+    );
     return _queryParts_.join("&");
   }
 
@@ -1529,26 +1447,26 @@ class ObjectWithNullableFields implements ArriModel {
 
   @override
   List<Object?> get props => [
-        string,
-        boolean,
-        timestamp,
-        float32,
-        float64,
-        int8,
-        uint8,
-        int16,
-        uint16,
-        int32,
-        uint32,
-        int64,
-        uint64,
-        k_enum,
-        object,
-        array,
-        record,
-        discriminator,
-        any,
-      ];
+    string,
+    boolean,
+    timestamp,
+    float32,
+    float64,
+    int8,
+    uint8,
+    int16,
+    uint16,
+    int32,
+    uint32,
+    int64,
+    uint64,
+    k_enum,
+    object,
+    array,
+    record,
+    discriminator,
+    any,
+  ];
 
   @override
   bool operator ==(Object other) {
@@ -1568,27 +1486,20 @@ class ObjectWithNullableFields implements ArriModel {
 class RecursiveObject implements ArriModel {
   final RecursiveObject? left;
   final RecursiveObject? right;
-  const RecursiveObject({
-    required this.left,
-    required this.right,
-  });
+  const RecursiveObject({required this.left, required this.right});
   factory RecursiveObject.empty() {
-    return RecursiveObject(
-      left: null,
-      right: null,
-    );
+    return RecursiveObject(left: null, right: null);
   }
   factory RecursiveObject.fromJson(Map<String, dynamic> _input_) {
-    final left = _input_["left"] is Map<String, dynamic>
-        ? RecursiveObject.fromJson(_input_["left"])
-        : null;
-    final right = _input_["right"] is Map<String, dynamic>
-        ? RecursiveObject.fromJson(_input_["right"])
-        : null;
-    return RecursiveObject(
-      left: left,
-      right: right,
-    );
+    final left =
+        _input_["left"] is Map<String, dynamic>
+            ? RecursiveObject.fromJson(_input_["left"])
+            : null;
+    final right =
+        _input_["right"] is Map<String, dynamic>
+            ? RecursiveObject.fromJson(_input_["right"])
+            : null;
+    return RecursiveObject(left: left, right: right);
   }
   factory RecursiveObject.fromJsonString(String input) {
     return RecursiveObject.fromJson(json.decode(input));
@@ -1612,9 +1523,11 @@ class RecursiveObject implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.",
+    );
     print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.");
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.",
+    );
     return _queryParts_.join("&");
   }
 
@@ -1630,10 +1543,7 @@ class RecursiveObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [
-        left,
-        right,
-      ];
+  List<Object?> get props => [left, right];
 
   @override
   bool operator ==(Object other) {

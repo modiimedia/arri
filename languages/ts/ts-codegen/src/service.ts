@@ -72,17 +72,22 @@ export function tsServiceFromDefinition(
         name: serviceName,
         content: `export class ${serviceName} {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void; 
 ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
     constructor(
         options: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
+        if (options.fetch) {
+            this._fetch = createFetch({ fetch: options.fetch });
+        }
         this._headers = options.headers ?? {};
         this._onError = options.onError;
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(options);`).join('\n')}

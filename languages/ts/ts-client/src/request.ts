@@ -1,9 +1,11 @@
 import { serializeSmallString } from '@arrirpc/schema';
 import { EventSourcePlusOptions, type HttpMethod } from 'event-source-plus';
-import { FetchError, ofetch } from 'ofetch';
+import { $Fetch, FetchError, ofetch } from 'ofetch';
 
 import { ArriErrorInstance, isArriError } from './errors';
 import { getHeaders } from './utils';
+
+export { type $Fetch, createFetch, type Fetch, ofetch } from 'ofetch';
 
 export interface ArriRequestOpts<
     TType,
@@ -16,6 +18,10 @@ export interface ArriRequestOpts<
     responseFromJson: (input: Record<string, unknown>) => TType;
     responseFromString: (input: string) => TType;
     onError?: (err: unknown) => void;
+    /**
+     * Override the default ofetch implementation
+     */
+    ofetch?: $Fetch;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
@@ -47,7 +53,8 @@ export async function arriRequest<
         const headers = (await getHeaders(opts.headers)) ?? {};
         if (contentType) headers['Content-Type'] = contentType;
         if (opts.clientVersion) headers['client-version'] = opts.clientVersion;
-        const result = await ofetch(url, {
+        const fetchInstance = opts.ofetch ?? ofetch;
+        const result = await fetchInstance(url, {
             method: opts.method,
             body,
             headers,

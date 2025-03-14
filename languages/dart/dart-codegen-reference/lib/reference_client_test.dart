@@ -28,15 +28,13 @@ void main() {
       expect(
         input.toUrlQueryParams(),
         equals(
-            "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z"),
+          "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z",
+        ),
       );
     });
     test("== operator", () {
       expect(input.copyWith(createdAt: DateTime.now()) == input, equals(false));
-      expect(
-        input.copyWith(),
-        equals(input),
-      );
+      expect(input.copyWith(), equals(input));
     });
   });
 
@@ -50,12 +48,14 @@ void main() {
     late final String noSpecialCharsReference;
     late final String specialCharsReference;
     setUpAll(() async {
-      noSpecialCharsReference = await File(
-              "../../../tests/test-files/NestedObject_NoSpecialChars.json")
-          .readAsString();
+      noSpecialCharsReference =
+          await File(
+            "../../../tests/test-files/NestedObject_NoSpecialChars.json",
+          ).readAsString();
       specialCharsReference =
-          await File("../../../tests/test-files/NestedObject_SpecialChars.json")
-              .readAsString();
+          await File(
+            "../../../tests/test-files/NestedObject_SpecialChars.json",
+          ).readAsString();
     });
     test("toJsonString()", () {
       expect(input.toJsonString(), equals(noSpecialCharsReference));
@@ -63,16 +63,21 @@ void main() {
     });
     test("fromJsonString()", () {
       expect(
-          NestedObject.fromJsonString(noSpecialCharsReference), equals(input));
-      expect(NestedObject.fromJsonString(specialCharsReference),
-          equals(specialCharsInput));
+        NestedObject.fromJsonString(noSpecialCharsReference),
+        equals(input),
+      );
+      expect(
+        NestedObject.fromJsonString(specialCharsReference),
+        equals(specialCharsInput),
+      );
     });
     test("toUrlQueryParams()", () {
       expect(input.toUrlQueryParams(), equals("id=1&content=hello world"));
       expect(
         specialCharsInput.toUrlQueryParams(),
         equals(
-            "id=1&content=double-quote: \" | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000"),
+          "id=1&content=double-quote: \" | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000",
+        ),
       );
     });
     test("== operator", () {
@@ -111,8 +116,9 @@ void main() {
     final String emptyReference = "{}";
     setUpAll(() async {
       reference =
-          await File("../../../tests/test-files/ObjectWithEveryType.json")
-              .readAsString();
+          await File(
+            "../../../tests/test-files/ObjectWithEveryType.json",
+          ).readAsString();
     });
     test("fromJsonString()", () {
       final now = DateTime.now();
@@ -120,16 +126,12 @@ void main() {
       expect(
         ObjectWithEveryType.fromJsonString(emptyReference).copyWith(
           timestamp: now,
-          discriminator: DiscriminatorC.empty().copyWith(
-            date: now,
-          ),
+          discriminator: DiscriminatorC.empty().copyWith(date: now),
         ),
         equals(
           ObjectWithEveryType.empty().copyWith(
             timestamp: now,
-            discriminator: DiscriminatorC.empty().copyWith(
-              date: now,
-            ),
+            discriminator: DiscriminatorC.empty().copyWith(date: now),
           ),
         ),
       );
@@ -156,23 +158,25 @@ void main() {
       k_enum: Enumerator.baz,
       object: NestedObject(id: "1", content: "hello world"),
       array: [true, false, false],
-      record: {
-        "A": true,
-        "B": false,
-      },
+      record: {"A": true, "B": false},
       discriminator: DiscriminatorC(
-          id: "", name: "", date: DateTime.parse("2001-01-01T16:00:00.000Z")),
+        id: "",
+        name: "",
+        date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      ),
       any: "hello world",
     );
     late String allUndefinedReference;
     late String noUndefinedReference;
     setUpAll(() async {
-      allUndefinedReference = await File(
-              "../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
-          .readAsString();
-      noUndefinedReference = await File(
-              "../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
-          .readAsString();
+      allUndefinedReference =
+          await File(
+            "../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json",
+          ).readAsString();
+      noUndefinedReference =
+          await File(
+            "../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json",
+          ).readAsString();
     });
     test("fromJsonString()", () {
       expect(
@@ -199,10 +203,7 @@ void main() {
         ObjectWithOptionalFields.empty().toJsonString(),
         equals(allUndefinedReference),
       );
-      expect(
-        noUndefinedInput.toJsonString(),
-        equals(noUndefinedReference),
-      );
+      expect(noUndefinedInput.toJsonString(), equals(noUndefinedReference));
     });
     test("== operator", () {
       expect(
@@ -226,18 +227,15 @@ void main() {
         k_enum: Enumerator.baz,
         object: NestedObject(id: "1", content: "hello world"),
         array: [true, false, false],
-        record: {
-          "A": true,
-          "B": false,
-        },
+        record: {"A": true, "B": false},
         discriminator: DiscriminatorC(
-            id: "", name: "", date: DateTime.parse("2001-01-01T16:00:00.000Z")),
+          id: "",
+          name: "",
+          date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+        ),
         any: "hello world",
       );
-      expect(
-        noUndefinedInput,
-        equals(newInput),
-      );
+      expect(noUndefinedInput, equals(newInput));
       expect(
         noUndefinedInput == newInput.copyWith(any: () => "hello world again"),
         equals(false),

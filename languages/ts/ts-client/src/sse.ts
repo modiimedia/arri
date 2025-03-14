@@ -65,6 +65,7 @@ export function arriSseRequest<
 
     const eventSource = new EventSourcePlus(url, {
         method: opts.method ?? 'get',
+        fetch: opts.ofetch?.native,
         headers: async () => {
             const headers: Record<string, string> =
                 (await getHeaders(opts.headers)) ?? {};

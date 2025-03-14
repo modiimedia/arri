@@ -58,6 +58,7 @@ export function httpRpcFromDefinition(
             {
                 url: \`\${this._baseUrl}${def.path}\`,
                 method: "${def.method.toLowerCase()}",
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 ${params ? 'params: params,' : ''}
@@ -77,6 +78,7 @@ export function httpRpcFromDefinition(
         return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
             method: "${def.method.toLowerCase()}",
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             ${params ? 'params: params,' : ''}

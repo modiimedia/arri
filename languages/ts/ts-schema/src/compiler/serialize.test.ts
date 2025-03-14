@@ -4,7 +4,7 @@ import { serializationTestSuites, validationTestSuites } from '../testSuites';
 
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
-    const Compiled = compile(suite.schema);
+    const Compiled = compile(suite.schema, true);
     for (let i = 0; i < suite.goodInputs.length; i++) {
         const input = suite.goodInputs[i]!;
         test(`${key} - ${i + 1}`, () => {
@@ -40,7 +40,7 @@ for (const key of Object.keys(validationTestSuites)) {
 
 for (const key of Object.keys(serializationTestSuites)) {
     const suite = serializationTestSuites[key]!;
-    const Compiled = a.compile(suite.schema);
+    const Compiled = a.compile(suite.schema, true);
     for (let i = 0; i < suite.inputs.length; i++) {
         const input = suite.inputs[i]!;
         test(`${key} - ${i + 1}`, () => {

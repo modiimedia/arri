@@ -138,6 +138,9 @@ import {
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
+    type Fetch,
+    type $Fetch,
+    createFetch,
     ${context.usedFeatures.ws ? 'type WsController,' : ''}
     ${context.usedFeatures.ws ? 'type WsOptions,' : ''}
 } from "@arrirpc/client";
