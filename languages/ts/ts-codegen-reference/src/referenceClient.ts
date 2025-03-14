@@ -25,6 +25,9 @@ import {
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
+    type Fetch,
+    type $Fetch,
+    createFetch,
     type WsController,
     type WsOptions,
 } from '@arrirpc/client';
@@ -33,6 +36,7 @@ type HeaderMap = Record<string, string | undefined>;
 
 export class ExampleClient {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
@@ -41,11 +45,15 @@ export class ExampleClient {
     constructor(
         options: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? '';
+        if (options.fetch) {
+            this._fetch = createFetch({ fetch: options.fetch });
+        }
         this._headers = options.headers ?? {};
         this._onError = options.onError;
         this.books = new ExampleClientBooksService(options);
@@ -55,6 +63,7 @@ export class ExampleClient {
         return arriRequest<NestedObject, NestedObject>({
             url: `${this._baseUrl}/send-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -68,6 +77,7 @@ export class ExampleClient {
 
 export class ExampleClientBooksService {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
@@ -75,11 +85,15 @@ export class ExampleClientBooksService {
     constructor(
         options: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? '';
+        if (options.fetch) {
+            this._fetch = createFetch({ fetch: options.fetch });
+        }
         this._headers = options.headers ?? {};
         this._onError = options.onError;
     }
@@ -90,6 +104,7 @@ export class ExampleClientBooksService {
         return arriRequest<Book, BookParams>({
             url: `${this._baseUrl}/books/get-book`,
             method: 'get',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -107,6 +122,7 @@ export class ExampleClientBooksService {
         return arriRequest<Book, Book>({
             url: `${this._baseUrl}/books/create-book`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -127,6 +143,7 @@ export class ExampleClientBooksService {
             {
                 url: `${this._baseUrl}/books/watch-book`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
