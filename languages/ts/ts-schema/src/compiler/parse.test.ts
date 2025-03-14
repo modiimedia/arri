@@ -40,7 +40,7 @@ describe('parsing test suites', () => {
     for (const key of Object.keys(parsingTestSuites)) {
         const suite = parsingTestSuites[key]!;
         describe(key, () => {
-            const Compiled = compile(suite.schema);
+            const Compiled = compile(suite.schema, true);
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 test(`${key} - Good Input ${i}`, () => {
                     const input = suite.goodInputs[i];
