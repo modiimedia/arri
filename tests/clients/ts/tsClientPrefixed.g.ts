@@ -24,11 +24,15 @@ import {
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
+    type Fetch,
+    type $Fetch,
+    createFetch,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
 export class TestClientPrefixed {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
@@ -38,11 +42,15 @@ export class TestClientPrefixed {
     constructor(
         options: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? '';
+        if (options.fetch) {
+            this._fetch = createFetch({ fetch: options.fetch });
+        }
         this._headers = options.headers ?? {};
         this._onError = options.onError;
         this.tests = new TestClientPrefixedTestsService(options);
@@ -52,6 +60,7 @@ export class TestClientPrefixed {
 
 export class TestClientPrefixedTestsService {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
@@ -60,11 +69,15 @@ export class TestClientPrefixedTestsService {
     constructor(
         options: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? '';
+        if (options.fetch) {
+            this._fetch = createFetch({ fetch: options.fetch });
+        }
         this._headers = options.headers ?? {};
         this._onError = options.onError;
     }
@@ -72,6 +85,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<FooDefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
             method: 'get',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
 
@@ -85,6 +99,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<FooDefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
 
@@ -100,6 +115,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<undefined, FooDefaultPayload>({
             url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
             method: 'get',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -115,6 +131,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<undefined, FooDefaultPayload>({
             url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -132,6 +149,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<undefined, FooDeprecatedRpcParams>({
             url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -150,6 +168,7 @@ export class TestClientPrefixedTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-discriminator-with-empty-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -164,6 +183,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<undefined, FooSendErrorParams>({
             url: `${this._baseUrl}/rpcs/tests/send-error`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -179,6 +199,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<FooObjectWithEveryType, FooObjectWithEveryType>({
             url: `${this._baseUrl}/rpcs/tests/send-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -197,6 +218,7 @@ export class TestClientPrefixedTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -215,6 +237,7 @@ export class TestClientPrefixedTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-object-with-pascal-case-keys`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -233,6 +256,7 @@ export class TestClientPrefixedTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-object-with-snake-case-keys`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -251,6 +275,7 @@ export class TestClientPrefixedTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -266,6 +291,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<FooRecursiveObject, FooRecursiveObject>({
             url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -281,6 +307,7 @@ export class TestClientPrefixedTestsService {
         return arriRequest<FooRecursiveUnion, FooRecursiveUnion>({
             url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -298,6 +325,7 @@ export class TestClientPrefixedTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -323,6 +351,7 @@ export class TestClientPrefixedTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -347,6 +376,7 @@ export class TestClientPrefixedTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
 
@@ -367,6 +397,7 @@ export class TestClientPrefixedTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -388,6 +419,7 @@ export class TestClientPrefixedTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
 
@@ -411,6 +443,7 @@ export class TestClientPrefixedTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
 
@@ -426,6 +459,7 @@ export class TestClientPrefixedTestsService {
 
 export class TestClientPrefixedUsersService {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
@@ -434,11 +468,15 @@ export class TestClientPrefixedUsersService {
     constructor(
         options: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? '';
+        if (options.fetch) {
+            this._fetch = createFetch({ fetch: options.fetch });
+        }
         this._headers = options.headers ?? {};
         this._onError = options.onError;
     }
@@ -453,6 +491,7 @@ export class TestClientPrefixedUsersService {
             {
                 url: `${this._baseUrl}/rpcs/users/watch-user`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
