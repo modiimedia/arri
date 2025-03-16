@@ -137,7 +137,7 @@ npm i --save-dev arri
 pnpm i --save-dev arri
 ```
 
-### Create You Arri Config
+### Create Your Arri Config
 
 ```ts
 import { defineConfig, generators } from 'arri';
