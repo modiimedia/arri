@@ -6,13 +6,13 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.rustClient({
-            clientName: "MyClient",
-            outputFile: "./some-project/my_client.g.rs",
+            clientName: 'MyClient',
+            outputFile: './some-project/my_client.g.rs',
         }),
     ],
 });
@@ -136,19 +136,19 @@ client
 
 All the generated types will have the following methods implemented
 
--   `from_json_string(String input) -> Self`
--   `from_json(serde_json::Value input) -> Self`
--   `to_json(&Self) -> serde_json::Value`
--   `to_json_string(&Self) -> String`
--   `to_query_params_string(&Self) -> String`
+- `from_json_string(String input) -> Self`
+- `from_json(serde_json::Value input) -> Self`
+- `to_json(&Self) -> serde_json::Value`
+- `to_json_string(&Self) -> String`
+- `to_query_params_string(&Self) -> String`
 
 `serde_json` is used for parsing JSON. However we do not rely on `serde` itself for serializing and deserializing.
 
 The generated types also derive the following traits
 
--   Clone
--   Debug
--   PartialEq
+- Clone
+- Debug
+- PartialEq
 
 # Development
 

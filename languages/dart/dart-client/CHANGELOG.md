@@ -94,37 +94,37 @@ No changes
 
 ## 0.57.5
 
--   Update `http` and `web_socket_channel` to latest
+- Update `http` and `web_socket_channel` to latest
 
 ## 0.0.22
 
--   Clean up parsing logic for doubles and ints
+- Clean up parsing logic for doubles and ints
 
 ## 0.0.15
 
--   Fix serialization errors + get dev server working (arri server)
+- Fix serialization errors + get dev server working (arri server)
 
 ## 0.0.14
 
--   Fix headers error
+- Fix headers error
 
 ## 0.0.13
 
--   Fix error where posts requests with a body fail
+- Fix error where posts requests with a body fail
 
 ## 0.0.12
 
--   Clean up some of the built in functions
--   Remove redundant code
--   Override `toString()` method on the `ArriRequestError` class to allow for better logging.
+- Clean up some of the built in functions
+- Remove redundant code
+- Override `toString()` method on the `ArriRequestError` class to allow for better logging.
 
 ## 0.0.6
 
--   update license title
--   more loose dependency restrictions
--   add issue tracker
--   cleanup generated output
+- update license title
+- more loose dependency restrictions
+- add issue tracker
+- cleanup generated output
 
 ## 0.0.5
 
--   Initial version.
+- Initial version.

@@ -6,13 +6,13 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.swiftClient({
-            clientName: "MyClient",
-            outputFile: "./client/Sources/MyClient.g.swift",
+            clientName: 'MyClient',
+            outputFile: './client/Sources/MyClient.g.swift',
         }),
     ],
 });
