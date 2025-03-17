@@ -101,6 +101,20 @@ func TestFromUrlQueryWithEveryType(t *testing.T) {
 	}
 }
 
+func TestFromUrlQueryWithEveryTypeWithBadInput(t *testing.T) {
+	target := queryResultWithEveryType{}
+	input := map[string][]string{}
+	err := arri.DecodeQueryParams(input, &target, arri.EncodingOptions{})
+	if err == nil {
+		t.Fatalf("should return an error")
+		return
+	}
+	if len(err.Errors) != 14 {
+		t.Fatalf("should have 14 validation errors")
+		return
+	}
+}
+
 func BenchmarkFromUrlQueryWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		target := queryResultWithEveryType{}
