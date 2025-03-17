@@ -26,12 +26,12 @@ This turns all of the `@arrirpc/eslint` rules on.
 
 ```js
 // eslint.config.js
-import arri from "@arrirpc/eslint-plugin/configs";
+import arri from '@arrirpc/eslint-plugin/configs';
 
 export default [
     arri.recommended,
     {
-        files: ["src/**/*.ts"], // you will still need to tell eslint which files to lint like so
+        files: ['src/**/*.ts'], // you will still need to tell eslint which files to lint like so
     },
 ];
 ```
@@ -42,7 +42,7 @@ The plugin can be enabled in flat file configs like so.
 
 ```js
 // eslint.config.js
-import arri from "@arrirpc/eslint";
+import arri from '@arrirpc/eslint';
 
 export default [
     {
@@ -51,13 +51,13 @@ export default [
         },
         rules: {
             // check to see if an ID has been assigned to root a.object() schemas
-            "arri/no-anonymous-object": 2,
+            'arri/no-anonymous-object': 2,
             // check to see if an ID has been assigned to a.enumerator() or a.stringEnum() schemas
-            "arri/no-anonymous-enumerator": 2,
+            'arri/no-anonymous-enumerator': 2,
             // check to see if an ID has been assigned to a.discriminator() schemas
-            "arri/no-anonymous-discriminator": 2,
+            'arri/no-anonymous-discriminator': 2,
             // check to see if an ID has been assigned to a.recursive() schemas
-            "arri/no-anonymous-recursive": 2,
+            'arri/no-anonymous-recursive': 2,
         },
     },
 ];

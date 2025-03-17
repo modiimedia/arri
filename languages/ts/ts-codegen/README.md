@@ -6,13 +6,13 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.typescriptClient({
-            clientName: "MyClient",
-            outputFile: "./client/src/myClient.g.ts",
+            clientName: 'MyClient',
+            outputFile: './client/src/myClient.g.ts',
         }),
     ],
 });
@@ -44,13 +44,13 @@ pnpm i --save @arrirpc/client
 
 ```ts
 // This will match whatever you put in the arri config
-import { MyClient } from "./myClient.g";
+import { MyClient } from './myClient.g';
 
 const client = new MyClient({
-    baseUrl: "https://example.com",
+    baseUrl: 'https://example.com',
     headers: () => {
         return {
-            Authorization: "<some-token>",
+            Authorization: '<some-token>',
         };
     },
     // optional
@@ -67,13 +67,13 @@ The root client will be a class containing all of the services and procedures in
 For example if we have a some procedures grouped under `"users"` we can import just that service like so.
 
 ```ts
-import { MyClientUsersService } from "./myClient.g";
+import { MyClientUsersService } from './myClient.g';
 
 const usersService = new MyClientUsersService({
-    baseUrl: "https://example.com",
+    baseUrl: 'https://example.com',
     headers: () => {
         return {
-            Authorization: "<some-token>",
+            Authorization: '<some-token>',
         };
     },
 });
@@ -87,14 +87,14 @@ All generated types and serializers/parsers can be imported from the generated c
 
 ```ts
 // import the user type and the user helper
-import { type User, $$User } from "./myClient.g";
+import { type User, $$User } from './myClient.g';
 
 const bob: User = {
     // field
 };
 
 $$User.serialize(bob); // outputs valid JSON
-$$User.parse("<some-json-string>"); // outputs a User
+$$User.parse('<some-json-string>'); // outputs a User
 ```
 
 # Development

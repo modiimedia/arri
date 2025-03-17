@@ -6,13 +6,13 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.dartClient({
-            clientName: "MyClient",
-            outputFile: "./client/src/my_client.g.dart",
+            clientName: 'MyClient',
+            outputFile: './client/src/my_client.g.dart',
         }),
     ],
 });
