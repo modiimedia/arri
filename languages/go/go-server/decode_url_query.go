@@ -26,6 +26,7 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 	}
 	numFields := reflectValue.NumField()
 	targetType := reflectValue.Type()
+	ctxSnapshot := ctx.clone()
 	for i := 0; i < numFields; i++ {
 		field := reflectValue.Field(i)
 		fieldMeta := targetType.Field(i)
@@ -52,12 +53,10 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 		urlValue := values.Get(key)
 		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
-			ctx := ctx.copyWith(
-				None[uint32](),
-				Some(enumValues),
-				Some(ctx.InstancePath+"/"+key),
-				Some(ctx.SchemaPath+"/optionalProperties"),
-			)
+			ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
+			ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
+			ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties"
+			ctx.EnumValues = enumValues
 			optionalTypeFromUrlQuery(urlValue, &field, &ctx)
 			continue
 		}
@@ -68,12 +67,10 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 			)
 			continue
 		}
-		ctx := ctx.copyWith(
-			None[uint32](),
-			Some(enumValues),
-			Some(ctx.InstancePath+"/"+key),
-			Some(ctx.SchemaPath+"/optionalProperties"),
-		)
+		ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
+		ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
+		ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties"
+		ctx.EnumValues = enumValues
 		isNullable := utils.IsNullableTypeOrPointer(fieldType)
 		if isNullable {
 			nullableTypeFromUrlQuery(urlValue, &field, &ctx)

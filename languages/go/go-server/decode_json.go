@@ -14,7 +14,7 @@ import (
 )
 
 type DecoderError struct {
-	errors []ValidationError
+	Errors []ValidationError
 }
 
 func (e DecoderError) Code() uint32 {
@@ -22,16 +22,16 @@ func (e DecoderError) Code() uint32 {
 }
 
 func (e DecoderError) Error() string {
-	if len(e.errors) == 0 {
+	if len(e.Errors) == 0 {
 		return "Invalid input."
 	}
 	msg := "Invalid input. Affected properties ["
 
-	for i := 0; i < len(e.errors); i++ {
+	for i := 0; i < len(e.Errors); i++ {
 		if i > 0 {
 			msg += ", "
 		}
-		err := e.errors[i]
+		err := e.Errors[i]
 		msg += err.InstancePath
 		if err.InstancePath == "" && err.SchemaPath == "" {
 			return err.Message
@@ -46,11 +46,11 @@ func (e DecoderError) Data() Option[any] {
 }
 
 func (e DecoderError) EncodeJSON(options EncodingOptions) ([]byte, error) {
-	return EncodeJSON(e.errors, options)
+	return EncodeJSON(e.Errors, options)
 }
 
 func NewDecoderError(errors []ValidationError) DecoderError {
-	return DecoderError{errors: errors}
+	return DecoderError{Errors: errors}
 }
 
 type ValidationError struct {
@@ -77,19 +77,15 @@ type DecoderContext struct {
 	Errors       []ValidationError
 }
 
-func (c DecoderContext) copyWith(CurrentDepth Option[uint32], EnumValues Option[[]string], InstancePath Option[string], SchemaPath Option[string]) DecoderContext {
-	currentDepth := CurrentDepth.UnwrapOr(c.CurrentDepth)
-	enumValues := EnumValues.UnwrapOr(c.EnumValues)
-	instancePath := InstancePath.UnwrapOr(c.InstancePath)
-	schemaPath := SchemaPath.UnwrapOr(c.SchemaPath)
+func (dc DecoderContext) clone() DecoderContext {
 	return DecoderContext{
-		MaxDepth:     c.MaxDepth,
-		CurrentDepth: currentDepth,
-		EnumValues:   enumValues,
-		InstancePath: instancePath,
-		SchemaPath:   schemaPath,
-		KeyCasing:    c.KeyCasing,
-		Errors:       c.Errors,
+		MaxDepth:     dc.MaxDepth,
+		CurrentDepth: dc.CurrentDepth,
+		EnumValues:   dc.EnumValues,
+		InstancePath: dc.InstancePath,
+		SchemaPath:   dc.SchemaPath,
+		KeyCasing:    dc.KeyCasing,
+		Errors:       dc.Errors,
 	}
 }
 
@@ -122,14 +118,14 @@ func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError
 	if maxDepth == 0 {
 		maxDepth = 10000
 	}
-	context := DecoderContext{
+	dc := DecoderContext{
 		MaxDepth:  maxDepth,
 		KeyCasing: keyCasing,
 		Errors:    errors,
 	}
-	ok := typeFromJSON(&parsedResult, value, &context)
-	if len(context.Errors) > 0 {
-		err := NewDecoderError(context.Errors)
+	ok := typeFromJSON(&parsedResult, value, &dc)
+	if len(dc.Errors) > 0 {
+		err := NewDecoderError(dc.Errors)
 		return &err
 	}
 	if !ok {
@@ -140,14 +136,14 @@ func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError
 	return nil
 }
 
-func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
-	if context.CurrentDepth > context.MaxDepth {
-		context.Errors = append(
-			context.Errors,
+func typeFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
+	if dc.CurrentDepth > dc.MaxDepth {
+		dc.Errors = append(
+			dc.Errors,
 			NewValidationError(
 				"exceeded max depth",
-				context.InstancePath,
-				context.SchemaPath,
+				dc.InstancePath,
+				dc.SchemaPath,
 			),
 		)
 		return false
@@ -155,72 +151,72 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCont
 	kind := target.Kind()
 	switch kind {
 	case reflect.Float32:
-		return floatFromJSON(data, target, context, 32)
+		return floatFromJSON(data, target, dc, 32)
 	case reflect.Float64:
-		return floatFromJSON(data, target, context, 64)
+		return floatFromJSON(data, target, dc, 64)
 	case reflect.Int8:
-		return intFromJSON(data, target, context, 8)
+		return intFromJSON(data, target, dc, 8)
 	case reflect.Int16:
-		return intFromJSON(data, target, context, 16)
+		return intFromJSON(data, target, dc, 16)
 	case reflect.Int32:
-		return intFromJSON(data, target, context, 32)
+		return intFromJSON(data, target, dc, 32)
 	case reflect.Uint8:
-		return uintFromJSON(data, target, context, 8)
+		return uintFromJSON(data, target, dc, 8)
 	case reflect.Uint16:
-		return uintFromJSON(data, target, context, 16)
+		return uintFromJSON(data, target, dc, 16)
 	case reflect.Uint32:
-		return uintFromJSON(data, target, context, 32)
+		return uintFromJSON(data, target, dc, 32)
 	case reflect.Int64, reflect.Int:
-		return largeIntFromJSON(data, target, context, false)
+		return largeIntFromJSON(data, target, dc, false)
 	case reflect.Uint64, reflect.Uint:
-		return largeIntFromJSON(data, target, context, true)
+		return largeIntFromJSON(data, target, dc, true)
 	case reflect.String:
-		if len(context.EnumValues) > 0 {
-			return enumFromJSON(data, target, context)
+		if len(dc.EnumValues) > 0 {
+			return enumFromJSON(data, target, dc)
 		}
-		return stringFromJSON(data, target, context)
+		return stringFromJSON(data, target, dc)
 	case reflect.Bool:
-		return boolFromJSON(data, target, context)
+		return boolFromJSON(data, target, dc)
 	case reflect.Struct:
 		t := target.Type()
 		if t.Name() == "Time" {
-			return timestampFromJSON(data, target, context)
+			return timestampFromJSON(data, target, dc)
 		}
 		if utils.IsOptionalType(t) {
-			return optionFromJSON(data, target, context)
+			return optionFromJSON(data, target, dc)
 		}
 		if utils.IsNullableTypeOrPointer(t) {
-			return nullableFromJSON(data, target, context)
+			return nullableFromJSON(data, target, dc)
 		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
-			return target.Interface().(ArriModel).DecodeJSON(data, target, context)
+			return target.Interface().(ArriModel).DecodeJSON(data, target, dc)
 		}
-		return structFromJSON(data, target, context)
+		return structFromJSON(data, target, dc)
 	case reflect.Slice, reflect.Array:
-		return arrayFromJSON(data, target, context)
+		return arrayFromJSON(data, target, dc)
 	case reflect.Map:
-		return mapFromJSON(data, target, context)
+		return mapFromJSON(data, target, dc)
 	case reflect.Ptr:
-		return pointerFromJSON(data, target, context)
+		return pointerFromJSON(data, target, dc)
 	case reflect.Interface:
 		subType := target.Elem()
 		if subType.Kind() == reflect.Invalid {
-			return anyFromJSON(data, target, context)
+			return anyFromJSON(data, target, dc)
 		}
-		return typeFromJSON(data, subType, context)
+		return typeFromJSON(data, subType, dc)
 	}
-	context.Errors = append(
-		context.Errors,
+	dc.Errors = append(
+		dc.Errors,
 		NewValidationError(
 			"unsupported type \""+kind.String()+"\"",
-			context.InstancePath,
-			context.SchemaPath,
+			dc.InstancePath,
+			dc.SchemaPath,
 		),
 	)
 	return false
 }
 
-func pointerFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func pointerFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
 	switch data.Type {
 	case gjson.Null:
 		return true
@@ -230,35 +226,35 @@ func pointerFromJSON(data *gjson.Result, target reflect.Value, context *DecoderC
 		target.Set(el)
 	}
 	el := target.Elem()
-	return typeFromJSON(data, el, context)
+	return typeFromJSON(data, el, dc)
 }
 
-func enumFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func enumFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
 	if data.Type != gjson.String {
-		context.Errors = append(
-			context.Errors,
+		dc.Errors = append(
+			dc.Errors,
 			NewValidationError(
-				"expected on of the following string values "+fmt.Sprintf("%+v", context.EnumValues),
-				context.InstancePath,
-				context.SchemaPath,
+				"expected on of the following string values "+fmt.Sprintf("%+v", dc.EnumValues),
+				dc.InstancePath,
+				dc.SchemaPath,
 			),
 		)
 		return false
 	}
 	val := data.String()
-	for i := 0; i < len(context.EnumValues); i++ {
-		enumVal := context.EnumValues[i]
+	for i := 0; i < len(dc.EnumValues); i++ {
+		enumVal := dc.EnumValues[i]
 		if val == enumVal {
 			target.SetString(val)
 			return true
 		}
 	}
-	context.Errors = append(
-		context.Errors,
+	dc.Errors = append(
+		dc.Errors,
 		NewValidationError(
-			"expected on of the following string values "+fmt.Sprintf("%+v", context.EnumValues),
-			context.InstancePath,
-			context.SchemaPath,
+			"expected on of the following string values "+fmt.Sprintf("%+v", dc.EnumValues),
+			dc.InstancePath,
+			dc.SchemaPath,
 		),
 	)
 	return false
@@ -552,17 +548,27 @@ func arrayFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCon
 	target.Grow(numItems)
 	target.SetLen(numItems)
 	hasErr := false
+
+	currCtx := context.clone()
+	context.EnumValues = []string{}
+	context.CurrentDepth++
+	context.SchemaPath = context.SchemaPath + "/elements"
 	for i := 0; i < numItems; i++ {
 		element := json[i]
 		subTarget := target.Index(i)
-		ctx := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), Some(context.InstancePath+"/"+fmt.Sprint(i)), Some(context.SchemaPath+"/elements"))
-		success := typeFromJSON(&element, subTarget, &ctx)
+		context.InstancePath = currCtx.InstancePath + "/" + fmt.Sprint(i)
+		success := typeFromJSON(&element, subTarget, context)
+		context.CurrentDepth--
 		if !success {
 			hasErr = true
 			continue
 		}
 		reflect.Append(target, subTarget)
 	}
+	context.EnumValues = currCtx.EnumValues
+	context.CurrentDepth = currCtx.CurrentDepth
+	context.InstancePath = currCtx.InstancePath
+	context.SchemaPath = currCtx.SchemaPath
 	return !hasErr
 }
 
@@ -583,12 +589,18 @@ func mapFromJSON(data *gjson.Result, target reflect.Value, context *DecoderConte
 	numKeys := len(json)
 	target.Set(reflect.MakeMapWithSize(target.Type(), numKeys))
 	hasError := false
+
+	contextSnapshot := context.clone()
+	context.CurrentDepth++
+	context.SchemaPath = context.SchemaPath + "/values"
+	context.EnumValues = []string{}
+
 	for key, value := range json {
 		keyVal := reflect.ValueOf(key)
 		v := reflect.New(target.Type().Elem())
 		innerTarget := v
-		innerContext := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), Some(context.InstancePath+"/"+key), Some(context.SchemaPath+"/values"))
-		success := typeFromJSON(&value, innerTarget, &innerContext)
+		context.InstancePath = contextSnapshot.InstancePath + "/" + key
+		success := typeFromJSON(&value, innerTarget, context)
 		if !success {
 			hasError = true
 			continue
@@ -599,19 +611,27 @@ func mapFromJSON(data *gjson.Result, target reflect.Value, context *DecoderConte
 			target.SetMapIndex(keyVal, innerTarget)
 		}
 	}
+
+	context.CurrentDepth = contextSnapshot.CurrentDepth
+	context.SchemaPath = contextSnapshot.SchemaPath
+	context.InstancePath = contextSnapshot.InstancePath
+	context.EnumValues = contextSnapshot.EnumValues
 	return !hasError
 }
 
-func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext) bool {
+func structFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
 	if !data.IsObject() {
-		c.Errors = append(c.Errors, NewValidationError("expected object", c.InstancePath, c.SchemaPath))
+		dc.Errors = append(dc.Errors, NewValidationError("expected object", dc.InstancePath, dc.SchemaPath))
 		return false
 	}
 	targetType := target.Type()
 	if IsDiscriminatorStruct(targetType) {
-		return discriminatorStructFromJSON(data, target, c)
+		return discriminatorStructFromJSON(data, target, dc)
 	}
 	hasErr := false
+	contextSnapshot := dc.clone()
+	dc.CurrentDepth++
+	dc.EnumValues = []string{}
 	for i := 0; i < target.NumField(); i++ {
 		field := target.Field(i)
 		fieldType := field.Type()
@@ -624,7 +644,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 		if len(keyTag) > 0 {
 			fieldName = keyTag
 		} else {
-			switch c.KeyCasing {
+			switch dc.KeyCasing {
 			case KeyCasingCamelCase:
 				fieldName = strcase.ToLowerCamel(fieldName)
 			case KeyCasingPascalCase:
@@ -635,7 +655,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 			}
 		}
 		jsonResult := data.Get(fieldName)
-		enumValues := None[[]string]()
+		enumValues := []string{}
 		enumTag := fieldMeta.Tag.Get("enum")
 		if len(enumTag) > 0 {
 			enumTags := strings.Split(enumTag, ",")
@@ -644,41 +664,39 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 				tag := strings.TrimSpace(enumTags[i])
 				vals = append(vals, tag)
 			}
-			enumValues = Some(vals)
+			enumValues = vals
 		}
 		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
-			ctx := c.copyWith(
-				Some(c.CurrentDepth+1),
-				enumValues,
-				Some(c.InstancePath+"/"+fieldName),
-				Some(c.SchemaPath+"/optionalProperties/"+fieldName),
-			)
-			success := optionFromJSON(&jsonResult, field, &ctx)
+			dc.InstancePath = contextSnapshot.InstancePath + "/" + fieldName
+			dc.SchemaPath = contextSnapshot.SchemaPath + "/optionalProperties/" + fieldName
+			dc.EnumValues = enumValues
+			success := optionFromJSON(&jsonResult, field, dc)
 			if !success {
 				hasErr = true
 			}
 			continue
 		}
-		ctx := c.copyWith(
-			Some(c.CurrentDepth+1),
-			enumValues,
-			Some(c.InstancePath+"/"+fieldName),
-			Some(c.SchemaPath+"/properties/"+fieldName),
-		)
+		dc.InstancePath = contextSnapshot.InstancePath + "/" + fieldName
+		dc.SchemaPath = contextSnapshot.SchemaPath + "/properties/" + fieldName
+		dc.EnumValues = enumValues
 		isNullable := utils.IsNullableTypeOrPointer(fieldType)
 		if isNullable {
-			success := nullableFromJSON(&jsonResult, field, &ctx)
+			success := nullableFromJSON(&jsonResult, field, dc)
 			if !success {
 				hasErr = true
 			}
 			continue
 		}
-		success := typeFromJSON(&jsonResult, field, &ctx)
+		success := typeFromJSON(&jsonResult, field, dc)
 		if !success {
 			hasErr = true
 		}
 	}
+	dc.CurrentDepth = contextSnapshot.CurrentDepth
+	dc.InstancePath = contextSnapshot.InstancePath
+	dc.SchemaPath = contextSnapshot.SchemaPath
+	dc.EnumValues = contextSnapshot.EnumValues
 	return !hasErr
 }
 
@@ -710,10 +728,11 @@ func anyFromJSON(data *gjson.Result, target reflect.Value, context *DecoderConte
 	return true
 }
 
-func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
 	numFields := target.NumField()
 	structType := target.Type()
 	discriminatorKey := "type"
+	contextSnapshot := dc.clone()
 	for i := 0; i < numFields; i++ {
 		field := target.Field(i)
 		fieldMeta := structType.Field(i)
@@ -726,34 +745,34 @@ func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, conte
 			continue
 		}
 		if fieldType.Kind() != reflect.Ptr || fieldType.Elem().Kind() != reflect.Struct {
-			context.Errors = append(context.Errors,
+			dc.Errors = append(dc.Errors,
 				NewValidationError(
 					"all discriminator fields must be a pointer to a struct",
-					context.InstancePath,
-					context.SchemaPath,
+					dc.InstancePath,
+					dc.SchemaPath,
 				),
 			)
 			return false
 		}
 		discriminatorValue := fieldMeta.Tag.Get("discriminator")
 		if len(discriminatorValue) == 0 {
-			context.Errors = append(
-				context.Errors,
+			dc.Errors = append(
+				dc.Errors,
 				NewValidationError(
 					"no discriminator value specified unable to unmarshal",
-					context.InstancePath,
-					context.SchemaPath,
+					dc.InstancePath,
+					dc.SchemaPath,
 				),
 			)
 			return false
 		}
 		jsonDiscriminatorValue := data.Get(discriminatorKey)
 		if jsonDiscriminatorValue.Type != gjson.String {
-			context.Errors = append(context.Errors,
+			dc.Errors = append(dc.Errors,
 				NewValidationError(
 					"missing discriminator field \""+discriminatorKey+"\"",
-					context.InstancePath,
-					context.SchemaPath,
+					dc.InstancePath,
+					dc.SchemaPath,
 				),
 			)
 			return false
@@ -762,17 +781,22 @@ func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, conte
 			continue
 		}
 		innerTarget := reflect.New(field.Type().Elem())
-		ctx := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), None[string](), Some(context.SchemaPath+"/mapping/"+discriminatorValue))
-		typeFromJSON(data, innerTarget, &ctx)
+		dc.SchemaPath = contextSnapshot.SchemaPath + "/mapping/" + discriminatorValue
+		dc.CurrentDepth++
+		dc.EnumValues = []string{}
+		typeFromJSON(data, innerTarget, dc)
+		dc.SchemaPath = contextSnapshot.SchemaPath
+		dc.InstancePath = contextSnapshot.InstancePath
+		dc.EnumValues = contextSnapshot.EnumValues
 		field.Set(innerTarget)
 		return true
 	}
-	context.Errors = append(
-		context.Errors,
+	dc.Errors = append(
+		dc.Errors,
 		NewValidationError(
 			"input didn't match any of the discriminator sub types",
-			context.InstancePath,
-			context.SchemaPath,
+			dc.InstancePath,
+			dc.SchemaPath,
 		),
 	)
 	return false
