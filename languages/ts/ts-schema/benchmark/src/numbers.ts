@@ -153,7 +153,7 @@ void benny.suite(
         TypeBoxIntValidator.Check(intBadInput);
     }),
     benny.add('Zod', () => {
-        ZodIntSchema.parse(intBadInput);
+        ZodIntSchema.safeParse(intBadInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotIntSchema, intBadInput);
@@ -271,7 +271,7 @@ void benny.suite(
         Value.Convert(TypeBoxIntSchema, intBadStringInput);
     }),
     benny.add('Zod', () => {
-        ZodIntSchemaCoerced.parse(intBadStringInput);
+        ZodIntSchemaCoerced.safeParse(intBadStringInput);
     }),
     benny.cycle(),
     benny.complete(),
