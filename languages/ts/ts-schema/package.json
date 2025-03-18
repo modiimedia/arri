@@ -30,6 +30,7 @@
   "devDependencies": {
     "@sinclair/typebox": "^0.34.30",
     "ajv": "^8.17.1",
+    "arktype": "^2.1.9",
     "benny": "^3.7.1",
     "valibot": "1.0.0-rc.4",
     "zod": "^3.24.2"

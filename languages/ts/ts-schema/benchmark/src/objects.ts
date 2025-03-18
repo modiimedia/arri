@@ -3,6 +3,7 @@ import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Check, Decode, Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
+import { type as arktype } from 'arktype';
 import benny from 'benny';
 import * as v from 'valibot';
 import { z } from 'zod';
@@ -343,6 +344,41 @@ if (v.safeParse(ValibotUser, badInput).success) {
     throw new Error('Valibot should not parse badInput');
 }
 
+const ArktypeUser = arktype({
+    id: 'number.integer',
+    role: "'standard' | 'admin' | 'moderator'",
+    name: 'string',
+    email: 'string | null',
+    createdAt: 'number.integer',
+    updatedAt: 'number.integer',
+    'settings?': {
+        preferredTheme: "'light' | 'dark' | 'system'",
+        allowNotifications: 'boolean',
+    },
+    recentNotifications: arktype({
+        type: "'POST_LIKE'",
+        userId: 'string',
+        postId: 'string',
+    })
+        .or({
+            type: "'POST_COMMENT'",
+            userId: 'string',
+            postId: 'string',
+            commentText: 'string',
+        })
+        .array(),
+});
+
+const arktypeGoodResult = ArktypeUser(input);
+const arktypeBadResult = ArktypeUser(badInput);
+
+if (arktypeGoodResult instanceof arktype.errors) {
+    throw new Error('ArktypeUser should pass input');
+}
+if (!(arktypeBadResult instanceof arktype.errors)) {
+    throw new Error('ArktypeUser should fail bad input');
+}
+
 void benny.suite(
     'Object Validation - Good Input',
     benny.add('Arri', () => {
@@ -386,6 +422,9 @@ void benny.suite(
     }),
     benny.add('Valibot', () => {
         v.is(ValibotUser, input);
+    }),
+    benny.add('Arktype', () => {
+        ArktypeUser(input);
     }),
     benny.cycle(),
     benny.complete(),
@@ -462,10 +501,17 @@ void benny.suite(
         }
     }),
     benny.add('Zod', () => {
-        ZodUser.safeParse(badInput);
+        if (ZodUser.safeParse(badInput).success) {
+            throw new Error('Expected to fail');
+        }
     }),
     benny.add('Valibot', () => {
         if (v.is(ValibotUser, badInput)) {
+            throw new Error('Expected to fail');
+        }
+    }),
+    benny.add('Arktype', () => {
+        if (!(ArktypeUser(badInput) instanceof arktype.errors)) {
             throw new Error('Expected to fail');
         }
     }),
@@ -520,6 +566,9 @@ void benny.suite(
     }),
     benny.add('JSON.parse + Zod', () => {
         ZodUser.parse(JSON.parse(inputJson));
+    }),
+    benny.add('JSON.parse + Arktype', () => {
+        ArktypeUser(JSON.parse(inputJson));
     }),
     benny.cycle(),
     benny.complete(),
@@ -596,6 +645,9 @@ void benny.suite(
     }),
     benny.add('JSON.parse + Zod', () => {
         ZodUser.safeParse(JSON.parse(badInputJson));
+    }),
+    benny.add('JSON.parse + Arktype', () => {
+        ArktypeUser(JSON.parse(badInputJson));
     }),
     benny.cycle(),
     benny.complete(),
