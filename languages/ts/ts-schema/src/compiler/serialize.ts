@@ -41,6 +41,7 @@ export function createSerializationV2Template(
         needsSanitization: [],
         subFunctions,
         shouldCoerce: undefined,
+        requiresTransformation: false,
     };
     const result = template(context);
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
@@ -315,6 +316,7 @@ export function objectTemplate(
             needsSanitization: input.needsSanitization,
             subFunctions: input.subFunctions,
             shouldCoerce: undefined,
+            requiresTransformation: false,
         });
         templateParts.push(innerTemplate);
     }
@@ -348,6 +350,7 @@ export function objectTemplate(
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
                 shouldCoerce: undefined,
+                requiresTransformation: input.requiresTransformation,
             });
             const innerTemplateWithComma = template({
                 schema: optionalPropSchema,
@@ -359,6 +362,7 @@ export function objectTemplate(
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
                 shouldCoerce: undefined,
+                requiresTransformation: input.requiresTransformation,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
                 if (${hasFieldsVar}) {
@@ -387,6 +391,7 @@ export function objectTemplate(
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
                 shouldCoerce: undefined,
+                requiresTransformation: input.requiresTransformation,
             });
             const completeInnerTemplate = `if (typeof ${innerVal} !== 'undefined') {
                 ${innerTemplate}
@@ -443,6 +448,7 @@ export function arrayTemplate(
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
         shouldCoerce: undefined,
+        requiresTransformation: input.requiresTransformation,
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
         const ${itemVarName} = ${input.val}[i];
@@ -483,6 +489,7 @@ export function recordTemplate(
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
         shouldCoerce: undefined,
+        requiresTransformation: input.requiresTransformation,
     });
     templateParts.push(`for (let i = 0; i < ${keysVarName}.length; i++) {
         const key = ${keysVarName}[i];
@@ -556,6 +563,7 @@ function discriminatorTemplate(
             needsSanitization: input.needsSanitization,
             subFunctions: input.subFunctions,
             shouldCoerce: undefined,
+            requiresTransformation: input.requiresTransformation,
         });
         templateParts.push(`case '${val}': {
             ${innerTemplate}
