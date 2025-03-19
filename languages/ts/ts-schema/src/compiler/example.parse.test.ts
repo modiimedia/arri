@@ -20,10 +20,10 @@ test('equivalent', () => {
     const contextOld = {
         errors: [],
     };
-    expect(parseUserNew(user, contextNew)).toStrictEqual(
-        parseUserOld(user, contextOld),
+    expect(parseUserNew({ ...user }, contextNew)).toStrictEqual(
+        parseUserOld({ ...user }, contextOld),
     );
-    expect(parseUserNewV2(user, contextNew)).toStrictEqual(
+    expect(parseUserNewV2({ user }, contextNew)).toStrictEqual(
         parseUserOld(user, contextOld),
     );
 });
