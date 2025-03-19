@@ -1025,7 +1025,6 @@ $$User.compiledCode.serialize; // the generated serialization code
 ## Benchmarks
 
 _Last Updated: 2025-03-19T21:46:43.732Z_
-_Last Updated: 2024-12-27_
 
 All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
 
