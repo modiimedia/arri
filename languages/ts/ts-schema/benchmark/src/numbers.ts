@@ -78,10 +78,10 @@ void benny.suite(
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.validate(intGoodInput);
     }),
-    benny.add('Arri (Standard Schema)', () => {
+    benny.add('Arri - Standard Schema', () => {
         ArriIntSchema['~standard'].validate(intGoodInput);
     }),
-    benny.add('Arri (Compiled + Standard Schema', () => {
+    benny.add('Arri (Compiled) - Standard Schema', () => {
         $$ArriIntSchema['~standard'].validate(intGoodInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
@@ -133,13 +133,13 @@ void benny.suite(
     benny.add('Arri', () => {
         a.validate(ArriIntSchema, intBadInput);
     }),
+    benny.add('Arri - Standard Schema', () => {
+        ArriIntSchema['~standard'].validate(intBadInput);
+    }),
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.validate(intBadInput);
     }),
-    benny.add('Arri (Standard Schema)', () => {
-        ArriIntSchema['~standard'].validate(intBadInput);
-    }),
-    benny.add('Arri (Compiled + Standard Schema', () => {
+    benny.add('Arri (Compiled) - Standard Schema', () => {
         $$ArriIntSchema['~standard'].validate(intBadInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
