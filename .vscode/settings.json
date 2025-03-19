@@ -55,8 +55,10 @@
     "structs",
     "typebox",
     "typeof",
+    "typia",
     "uncrypto",
     "unflatten",
+    "Valibot",
     "vals",
     "websockets"
   ],
