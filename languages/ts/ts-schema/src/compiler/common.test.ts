@@ -35,11 +35,13 @@ describe('inputRequiresTransformation()', () => {
             a.object({
                 foo: a.string(),
             }),
-            a.array(a.boolean()),
+            a.array(a.string()),
             a.record(a.number()),
         ];
         for (const schema of schemas) {
-            expect(inputRequiresTransformation(schema)).toBe(false);
+            const requiresTransform = inputRequiresTransformation(schema);
+            if (requiresTransform) console.log(schema);
+            expect(requiresTransform).toBe(false);
         }
     });
 });

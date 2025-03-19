@@ -27,7 +27,6 @@ export function inputRequiresTransformation(
     depth = 0,
 ): boolean {
     if (isSchemaFormType(schema)) {
-        if (depth === 0) return true;
         switch (schema.type) {
             case 'string':
                 return false;
@@ -40,7 +39,7 @@ export function inputRequiresTransformation(
             case 'uint16':
             case 'int32':
             case 'uint32':
-                return depth > 0;
+                return depth === 0;
             case 'int64':
             case 'uint64':
             case 'timestamp':
