@@ -1,3 +1,5 @@
+import assert from 'node:assert';
+
 import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value } from '@sinclair/typebox/value';
@@ -5,17 +7,11 @@ import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
+import typia from 'typia';
 import * as v from 'valibot';
 import { z } from 'zod';
 
 import { a } from '../../src/_index';
-
-function shouldFail() {
-    throw new Error('should fail');
-}
-function shouldPass() {
-    throw new Error('should pass');
-}
 
 const intGoodInput = 1245;
 const intGoodStringInput = `${intGoodInput}`;
@@ -24,21 +20,21 @@ const intBadStringInput = `${intBadInput}`;
 
 const ArriIntSchema = a.int32();
 const $$ArriIntSchema = a.compile(ArriIntSchema);
-if (!a.validate(ArriIntSchema, intGoodInput)) shouldPass();
-if (a.validate(ArriIntSchema, intBadInput)) shouldFail();
-if (!$$ArriIntSchema.validate(intGoodInput)) shouldPass();
-if ($$ArriIntSchema.validate(intBadInput)) shouldFail();
+assert(a.validate(ArriIntSchema, intGoodInput) === true);
+assert(a.validate(ArriIntSchema, intBadInput) === false);
+assert($$ArriIntSchema.validate(intGoodInput) === true);
+assert($$ArriIntSchema.validate(intBadInput) === false);
 
 const TypeBoxIntSchema = Type.Integer();
 const TypeBoxIntValidator = TypeCompiler.Compile(TypeBoxIntSchema);
-if (!Value.Check(TypeBoxIntSchema, intGoodInput)) shouldPass();
-if (Value.Check(TypeBoxIntSchema, intBadInput)) shouldFail();
-if (!TypeBoxIntValidator.Check(intGoodInput)) throw new Error('Should pass');
-if (TypeBoxIntValidator.Check(intBadInput)) throw new Error('Should fail');
+assert(Value.Check(TypeBoxIntSchema, intGoodInput) === true);
+assert(Value.Check(TypeBoxIntSchema, intBadInput) === false);
+assert(TypeBoxIntValidator.Check(intGoodInput) === true);
+assert(TypeBoxIntValidator.Check(intBadInput) === false);
 
-const arktypeIntSchema = arktype('number.integer');
-if (arktypeIntSchema(intGoodInput) instanceof arktype.errors) shouldPass();
-if (!(arktypeIntSchema(intBadInput) instanceof arktype.errors)) shouldFail();
+const ArktypeIntSchema = arktype('number.integer');
+assert(typeof ArktypeIntSchema(intGoodInput) === 'number');
+assert(ArktypeIntSchema(intBadInput) instanceof arktype.errors);
 
 const ajv = new Ajv({ strict: false });
 const ajvIntValidator = ajv.compile(TypeBoxIntSchema);
@@ -47,10 +43,10 @@ const ajvJtd = new AjvJtd({ strictSchema: false });
 const ajvJtdIntValidator = ajvJtd.compile(ArriIntSchema);
 const ajvJtdIntParser = ajvJtd.compileParser(ArriIntSchema);
 const ajvJtdSerializer = ajvJtd.compileSerializer(ArriIntSchema);
-if (!ajvIntValidator(intGoodInput)) shouldPass();
-if (ajvIntValidator(intBadInput)) shouldFail();
-if (!ajvJtdIntValidator(intGoodInput)) shouldPass();
-if (ajvJtdIntValidator(intBadInput)) shouldFail();
+assert(ajvIntValidator(intGoodInput) === true);
+assert(ajvIntValidator(intBadInput) === false);
+assert(ajvJtdIntValidator(intGoodInput) === true);
+assert(ajvJtdIntValidator(intBadInput) === false);
 
 const ZodIntSchema = z
     .number()
@@ -58,12 +54,21 @@ const ZodIntSchema = z
 const ZodIntSchemaCoerced = z.coerce
     .number()
     .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
-if (!ZodIntSchema.safeParse(intGoodInput).success) shouldPass();
-if (ZodIntSchema.safeParse(intBadInput).success) shouldFail();
+assert(ZodIntSchema.safeParse(intGoodInput).success === true);
+assert(ZodIntSchema.safeParse(intBadInput).success === false);
 
 const ValibotIntSchema = v.pipe(v.number(), v.integer());
-if (!v.is(ValibotIntSchema, intGoodInput)) shouldPass();
-if (v.is(ValibotIntSchema, intBadInput)) shouldFail();
+assert(v.is(ValibotIntSchema, intGoodInput) === true);
+assert(v.is(ValibotIntSchema, intBadInput) === false);
+
+type TypiaInt32 = number & typia.tags.Type<'int32'>;
+
+const TypiaIntValidator = typia.createIs<TypiaInt32>();
+const TypiaIntSerializer = typia.json.createStringify<TypiaInt32>();
+const TypiaIntValidateAndSerialize =
+    typia.json.createValidateStringify<TypiaInt32>();
+assert(TypiaIntValidator(intGoodInput) === true);
+assert(TypiaIntValidator(intBadInput) === false);
 
 void benny.suite(
     'Int Validation',
@@ -104,7 +109,10 @@ void benny.suite(
         v.is(ValibotIntSchema, intGoodInput);
     }),
     benny.add('Arktype', () => {
-        arktypeIntSchema(intGoodInput);
+        ArktypeIntSchema(intGoodInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaIntValidator(intGoodInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -159,7 +167,10 @@ void benny.suite(
         v.is(ValibotIntSchema, intBadInput);
     }),
     benny.add('Arktype', () => {
-        arktypeIntSchema(intBadInput);
+        ArktypeIntSchema(intBadInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaIntValidator(intBadInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -295,8 +306,19 @@ void benny.suite(
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.serialize(intGoodInput);
     }),
+    benny.add('Arri (Compiled) - Validate and Serialize', () => {
+        if ($$ArriIntSchema.validate(intGoodInput)) {
+            $$ArriIntSchema.serialize(intGoodInput);
+        }
+    }),
     benny.add('Ajv - JTD (Compiled)', () => {
         ajvJtdSerializer(intGoodInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaIntSerializer(intGoodInput);
+    }),
+    benny.add('Typia - Validate and Serialize', () => {
+        TypiaIntValidateAndSerialize(intGoodInput);
     }),
     benny.add('JSON.stringify', () => {
         JSON.stringify(intGoodInput);

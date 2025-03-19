@@ -1,11 +1,15 @@
-import { Type } from '@sinclair/typebox';
+import assert from 'node:assert';
+
+import { Static, Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Check, Decode, Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
+import typia from 'typia';
 import * as v from 'valibot';
+import { assertType } from 'vitest';
 import { z } from 'zod';
 
 import { a } from '../../src/_index';
@@ -66,7 +70,6 @@ const input: ArriUser = {
     ],
 };
 const inputJson = JSON.stringify(input);
-
 const badInput: ArriUser = {
     id: 12345,
     role: 'moderator',
@@ -92,15 +95,7 @@ const badInput: ArriUser = {
     ],
 };
 const badInputJson = JSON.stringify(badInput);
-
-if (a.parse(ArriUser, badInput).success) {
-    throw new Error('ArriUser should fail at badInputJson');
-}
-if ($$ArriUser.parse(badInputJson).success) {
-    throw new Error('$$ArriUser should failed at badInputJson');
-}
-
-const inputWithStringKeys = {
+const inputWithStringValues = {
     id: '12345',
     role: 'moderator',
     name: 'John Doe',
@@ -125,6 +120,13 @@ const inputWithStringKeys = {
         },
     ],
 };
+
+assert(a.validate(ArriUser, input) === true);
+assert(a.validate(ArriUser, badInput) == false);
+assert(a.parse(ArriUser, input).success === true);
+assert(a.parse(ArriUser, badInput).success === false);
+assert($$ArriUser.validate(input) === true);
+assert($$ArriUser.validate(badInput) === false);
 
 const ZodUser = z.object({
     id: z.number(),
@@ -154,6 +156,7 @@ const ZodUser = z.object({
         ]),
     ),
 });
+type ZodUser = z.infer<typeof ZodUser>;
 const ZodCoercedUser = z.object({
     id: z.coerce.number(),
     role: z.enum(['standard', 'admin', 'moderator']),
@@ -183,14 +186,11 @@ const ZodCoercedUser = z.object({
         ]),
     ),
 });
-if (!ZodUser.safeParse(input).success) {
-    throw new Error(`Zod should parse input`);
-}
-if (ZodUser.safeParse(badInput).success) {
-    throw new Error(`Zod should not parse badInput`);
-}
+assertType<ZodUser>(input);
+assert(ZodUser.safeParse(input).success === true);
+assert(ZodUser.safeParse(badInput).success === false);
 
-const TypeBoxUser = Type.Object({
+const TypeboxUser = Type.Object({
     id: Type.Integer(),
     role: Type.Union([
         Type.Literal('standard'),
@@ -229,16 +229,16 @@ const TypeBoxUser = Type.Object({
         ]),
     ),
 });
-const TypeBoxUserValidator = TypeCompiler.Compile(TypeBoxUser);
-if (!Check(TypeBoxUser, input)) {
-    throw new Error(`Typebox should pass input`);
-}
-if (Check(TypeBoxUser, badInput)) {
-    throw new Error(`Typebox should not pass bad input`);
-}
+type TypeboxUser = Static<typeof TypeboxUser>;
+const $$TypeboxUser = TypeCompiler.Compile(TypeboxUser);
+assertType<TypeboxUser>(input);
+assert(Check(TypeboxUser, input) === true);
+assert(Check(TypeboxUser, badInput) === false);
+assert($$TypeboxUser.Check(input) === true);
+assert($$TypeboxUser.Check(badInput) === false);
 
 const ajv = new Ajv({ strict: false });
-const AjvUserValidator = ajv.compile<ArriUser>(TypeBoxUser);
+const AjvUserValidator = ajv.compile<ArriUser>(TypeboxUser);
 const ajvJtd = new AjvJtd({ strictSchema: false });
 const AjvInput = {
     properties: {
@@ -294,12 +294,10 @@ const AjvInput = {
 const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
 const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
 const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
-if (!AjvUserValidator(input)) {
-    throw new Error('Ajv should pass input');
-}
-if (AjvUserValidator(badInput)) {
-    throw new Error('Ajv should fail bad input');
-}
+assert(AjvUserValidator(input) === true);
+assert(AjvUserValidator(badInput) === false);
+assert(AjvJtdUserValidator(input) === true);
+assert(AjvJtdUserValidator(badInput) === false);
 
 const ValibotUser = v.object({
     id: v.pipe(v.number(), v.integer()),
@@ -331,18 +329,11 @@ const ValibotUser = v.object({
     ),
 });
 type ValibotUser = v.InferOutput<typeof ValibotUser>;
-if (!v.is(ValibotUser, input)) {
-    throw new Error('Valibot should pass input');
-}
-if (!v.safeParse(ValibotUser, input).success) {
-    throw new Error('Validbot should parse input');
-}
-if (v.is(ValibotUser, badInput)) {
-    throw new Error('Valibot should fail badInput');
-}
-if (v.safeParse(ValibotUser, badInput).success) {
-    throw new Error('Valibot should not parse badInput');
-}
+assertType<ValibotUser>(input);
+assert(v.is(ValibotUser, input) === true);
+assert(v.is(ValibotUser, badInput) === false);
+assert(v.safeParse(ValibotUser, input).success === true);
+assert(v.safeParse(ValibotUser, badInput).success === false);
 
 const ArktypeUser = arktype({
     id: 'number.integer',
@@ -368,16 +359,50 @@ const ArktypeUser = arktype({
         })
         .array(),
 });
+type ArkTypeUser = arktype.infer<typeof ArktypeUser>;
+assertType<ArkTypeUser>(input);
+assert(!(ArktypeUser(input) instanceof arktype.errors));
+assert(ArktypeUser(badInput) instanceof arktype.errors);
 
-const arktypeGoodResult = ArktypeUser(input);
-const arktypeBadResult = ArktypeUser(badInput);
+type TypiaInt32 = number & typia.tags.Type<'int32'>;
+type TypiaUser = {
+    id: TypiaInt32;
+    role: 'standard' | 'admin' | 'moderator';
+    name: string;
+    email: string | null;
+    createdAt: TypiaInt32;
+    updatedAt: TypiaInt32;
+    settings?: {
+        preferredTheme: 'light' | 'dark' | 'system';
+        allowNotifications: boolean;
+    };
+    recentNotifications: Array<
+        | {
+              type: 'POST_LIKE';
+              userId: string;
+              postId: string;
+          }
+        | {
+              type: 'POST_COMMENT';
+              userId: string;
+              postId: string;
+              commentText: string;
+          }
+    >;
+};
+const TypiaValidate = typia.createIs<TypiaUser>();
+const TypiaJsonParse = typia.json.createValidateParse<TypiaUser>();
+const TypiaJsonStringify = typia.json.createStringify<TypiaUser>();
+const TypiaValidateAndJsonStringify =
+    typia.json.createValidateStringify<TypiaUser>();
 
-if (arktypeGoodResult instanceof arktype.errors) {
-    throw new Error('ArktypeUser should pass input');
-}
-if (!(arktypeBadResult instanceof arktype.errors)) {
-    throw new Error('ArktypeUser should fail bad input');
-}
+assertType<TypiaUser>(input);
+assert(TypiaValidate(input) === true);
+assert(TypiaValidate(badInput) === false);
+assert(TypiaJsonParse(inputJson).success === true);
+assert(TypiaJsonParse(badInputJson).success === false);
+assert(typeof TypiaJsonStringify(input) === 'string');
+assert(TypiaValidateAndJsonStringify(input).success === true);
 
 void benny.suite(
     'Object Validation - Good Input',
@@ -406,16 +431,16 @@ void benny.suite(
         AjvJtdUserValidator(input);
     }),
     benny.add('Ajv - JSON Schema', () => {
-        ajv.validate(TypeBoxUser, input);
+        ajv.validate(TypeboxUser, input);
     }),
     benny.add('Ajv - JSON Schema (Compiled)', () => {
         AjvUserValidator(input);
     }),
     benny.add('TypeBox', () => {
-        Value.Check(TypeBoxUser, input);
+        Value.Check(TypeboxUser, input);
     }),
     benny.add('TypeBox (Compiled)', () => {
-        TypeBoxUserValidator.Check(input);
+        $$TypeboxUser.Check(input);
     }),
     benny.add('Zod', () => {
         ZodUser.parse(input);
@@ -425,6 +450,9 @@ void benny.suite(
     }),
     benny.add('Arktype', () => {
         ArktypeUser(input);
+    }),
+    benny.add('Typia', () => {
+        TypiaValidate(input);
     }),
     benny.cycle(),
     benny.complete(),
@@ -443,77 +471,46 @@ void benny.suite(
 void benny.suite(
     'Object Validation - Bad Input',
     benny.add('Arri', () => {
-        if (a.validate(ArriUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        a.validate(ArriUser, badInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        if ($$ArriUser.validate(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        $$ArriUser.validate(badInput);
     }),
     benny.add('Arri (Standard-Schema)', () => {
-        const result = ArriUser['~standard'].validate(badInput);
-        if (result instanceof Promise) {
-            throw new Error('Expected not to be a promise');
-        }
-        if (typeof result.issues === 'undefined') {
-            throw new Error('Expected to fail');
-        }
+        ArriUser['~standard'].validate(badInput);
     }),
     benny.add('Arri (Compiled + Standard Schema)', () => {
-        const result = $$ArriUser['~standard'].validate(badInput);
-        if (result instanceof Promise) {
-            throw new Error('Expected not to be a promise');
-        }
-        if (typeof result.issues === 'undefined') {
-            throw new Error('Expected to fail');
-        }
+        $$ArriUser['~standard'].validate(badInput);
     }),
     benny.add('Ajv - JTD', () => {
-        if (ajvJtd.validate(ArriUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        ajvJtd.validate(ArriUser, badInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
-        if (AjvJtdUserValidator(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        AjvJtdUserValidator(badInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
-        if (ajv.validate(TypeBoxUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        ajv.validate(TypeboxUser, badInput);
     }),
     benny.add('Ajv - JSON Schema (Compiled)', () => {
-        if (AjvUserValidator(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        AjvUserValidator(badInput);
     }),
     benny.add('TypeBox', () => {
-        if (Value.Check(TypeBoxUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        Value.Check(TypeboxUser, badInput);
     }),
     benny.add('TypeBox (Compiled)', () => {
-        if (TypeBoxUserValidator.Check(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        $$TypeboxUser.Check(badInput);
     }),
     benny.add('Zod', () => {
-        if (ZodUser.safeParse(badInput).success) {
-            throw new Error('Expected to fail');
-        }
+        ZodUser.safeParse(badInput);
     }),
     benny.add('Valibot', () => {
-        if (v.is(ValibotUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        v.is(ValibotUser, badInput);
     }),
     benny.add('Arktype', () => {
-        if (!(ArktypeUser(badInput) instanceof arktype.errors)) {
-            throw new Error('Expected to fail');
-        }
+        ArktypeUser(badInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaValidate(badInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -556,10 +553,10 @@ void benny.suite(
         JSON.parse(inputJson);
     }),
     benny.add('JSON.parse + Typebox', () => {
-        Decode(TypeBoxUser, JSON.parse(inputJson));
+        Decode(TypeboxUser, JSON.parse(inputJson));
     }),
     benny.add('JSON.parse + Typebox (Compiled)', () => {
-        TypeBoxUserValidator.Decode(JSON.parse(inputJson));
+        $$TypeboxUser.Decode(JSON.parse(inputJson));
     }),
     benny.add('JSON.parse + Valibot', () => {
         v.safeParse(ValibotUser, JSON.parse(inputJson));
@@ -569,6 +566,9 @@ void benny.suite(
     }),
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(inputJson));
+    }),
+    benny.add('Typia (json.createValidateParse)', () => {
+        TypiaJsonParse(inputJson);
     }),
     benny.cycle(),
     benny.complete(),
@@ -586,7 +586,7 @@ void benny.suite(
 
 function TypeBoxDecodeSafe(input: unknown) {
     try {
-        const val = Decode(TypeBoxUser, input);
+        const val = Decode(TypeboxUser, input);
         return {
             success: true,
             value: val,
@@ -601,7 +601,7 @@ function TypeBoxDecodeSafe(input: unknown) {
 
 function TypeboxDecodeSafeCompiled(input: unknown) {
     try {
-        const val = TypeBoxUserValidator.Decode(input);
+        const val = $$TypeboxUser.Decode(input);
         return {
             success: true,
             value: val,
@@ -649,6 +649,9 @@ void benny.suite(
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(badInputJson));
     }),
+    benny.add('Typia (json.createValidateParse)', () => {
+        TypiaJsonParse(badInputJson);
+    }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -666,16 +669,16 @@ void benny.suite(
 void benny.suite(
     'Object Coercion',
     benny.add('Arri', () => {
-        a.coerce(ArriUser, inputWithStringKeys);
+        a.coerce(ArriUser, inputWithStringValues);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.coerce(inputWithStringKeys);
+        $$ArriUser.coerce(inputWithStringValues);
     }),
     benny.add('TypeBox', () => {
-        Value.Convert(TypeBoxUser, inputWithStringKeys);
+        Value.Convert(TypeboxUser, inputWithStringValues);
     }),
     benny.add('Zod', () => {
-        ZodCoercedUser.parse(inputWithStringKeys);
+        ZodCoercedUser.parse(inputWithStringValues);
     }),
     benny.cycle(),
     benny.complete(),
@@ -717,6 +720,12 @@ void benny.suite(
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
         AjvJtdUserSerializer(input);
+    }),
+    benny.add('Typia', () => {
+        TypiaJsonStringify(input);
+    }),
+    benny.add('Typia - Validate and Serialize', () => {
+        TypiaValidateAndJsonStringify(input);
     }),
     benny.add('JSON.stringify', () => {
         JSON.stringify(input);
