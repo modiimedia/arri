@@ -33,7 +33,7 @@ import {
     uint32Max,
     uint32Min,
 } from '../lib/numberConstants';
-import { type TemplateInput } from './common';
+import { inputRequiresTransformation, type TemplateInput } from './common';
 
 export function createParsingTemplate(
     input: string,
@@ -51,6 +51,8 @@ export function createParsingTemplate(
     let jsonParseCheck = '';
 
     const subFunctions: Record<string, string> = {};
+    const requiresTransformation =
+        !shouldCoerce && inputRequiresTransformation(schema);
     const template = schemaTemplate({
         val: input,
         targetVal: 'result',
@@ -59,6 +61,7 @@ export function createParsingTemplate(
         schemaPath: '',
         subFunctions,
         shouldCoerce: shouldCoerce,
+        requiresTransformation: requiresTransformation,
     });
     const jsonTemplate = schemaTemplate({
         val: 'json',
@@ -68,6 +71,7 @@ export function createParsingTemplate(
         schemaPath: '',
         subFunctions,
         shouldCoerce: shouldCoerce,
+        requiresTransformation: requiresTransformation,
     });
 
     if (
@@ -78,9 +82,9 @@ export function createParsingTemplate(
     ) {
         jsonParseCheck = `if (typeof ${input} === 'string') {
             const json = JSON.parse(${input});
-            let result = {};
+            ${requiresTransformation ? `let result = {};` : ''};
             ${jsonTemplate}
-            return result;
+            ${requiresTransformation ? `return result;` : `return ${input};`}
         }`;
     }
 
@@ -99,9 +103,9 @@ export function createParsingTemplate(
     const finalTemplate = `${fallbackTemplate}
     ${functionBodyParts.join('\n')}
     ${jsonParseCheck}
-    let result = {};
+    ${requiresTransformation ? `let result = {};` : `return ${input};`}
     ${template}
-    return result;`;
+    ${requiresTransformation ? `return result;` : `return ${input};`}`;
     return finalTemplate;
 }
 
@@ -164,7 +168,17 @@ export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
             ${input.targetVal} = ${input.val};
         }`;
     }
-    return `${input.targetVal} = ${input.val}`;
+    return maybeInclude(
+        `${input.targetVal} = ${input.val}`,
+        input.requiresTransformation,
+    );
+}
+
+function maybeInclude(input: string, requiresTransformation: boolean) {
+    if (requiresTransformation) {
+        return input;
+    }
+    return '';
 }
 
 export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
@@ -208,13 +222,13 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
         templateParts.push('}');
     }
     const mainTemplate = `if (typeof ${input.val} === 'boolean') {
-        ${input.targetVal} = ${input.val};
+        ${maybeInclude(`${input.targetVal} = ${input.val};`, input.requiresTransformation)}
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
     if (input.schema.nullable) {
         templateParts.push(`if (${input.val} === null) {
-            ${input.targetVal} = null;
+            ${maybeInclude(`${input.targetVal} = null`, input.requiresTransformation)};
         } else {
             ${mainTemplate}
         }`);
@@ -227,13 +241,13 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
 export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
     const errorMessage = `expected string`;
     const mainTemplate = `if (typeof ${input.val} === 'string') {
-        ${input.targetVal} = ${input.val};
+        ${maybeInclude(`${input.targetVal} = ${input.val};`, input.requiresTransformation)}
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
     if (input.schema.nullable) {
         return `if (${input.val} === null) {
-            ${input.targetVal} = ${input.val};
+            ${maybeInclude(`${input.targetVal} = ${input.val}`, input.requiresTransformation)}
         } else {
             ${mainTemplate}
         }`;
@@ -254,11 +268,11 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const ${valName} = Number(${input.val});
             if (!Number.isNaN(${valName})) {
-                ${input.targetVal} = ${valName};
+                ${maybeInclude(`${input.targetVal} = ${valName};`, input.requiresTransformation)}
             }`);
         if (input.schema.nullable) {
             templateParts.push(`else if (${input.val} === 'null') {
-                ${input.targetVal} = null;
+                ${maybeInclude(`${input.targetVal} = null;`, input.requiresTransformation)}
             }`);
         }
         templateParts.push(
@@ -270,13 +284,13 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
     }
     const errorMessage = `Expected number at ${input.instancePath}`;
     const mainTemplate = `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
-        ${input.targetVal} = ${input.val};
+        ${maybeInclude(`${input.targetVal} = ${input.val};`, input.requiresTransformation)}
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
     if (input.schema.nullable) {
         templateParts.push(`${input.instancePath.length === 0 || input.shouldCoerce ? 'else ' : ''}if (${input.val} === null) {
-            ${input.targetVal} = null;
+            ${maybeInclude(`${input.targetVal} = null;`, input.requiresTransformation)}
         } else {
             ${mainTemplate}
         }`);
@@ -543,6 +557,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             schemaPath: `${input.schemaPath}/properties/${key}`,
             subFunctions: input.subFunctions,
             shouldCoerce: input.shouldCoerce,
+            requiresTransformation: input.requiresTransformation,
         });
         parsingParts.push(innerTemplate);
     }
@@ -557,6 +572,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 subFunctions: input.subFunctions,
                 shouldCoerce: input.shouldCoerce,
+                requiresTransformation: input.requiresTransformation,
             });
             parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
                 // ignore undefined
@@ -619,6 +635,7 @@ export function arrayTemplate(
         schema: input.schema.elements,
         subFunctions: input.subFunctions,
         shouldCoerce: input.shouldCoerce,
+        requiresTransformation: input.requiresTransformation,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
         const ${resultVar} = [];
@@ -659,6 +676,7 @@ export function discriminatorTemplate(
             discriminatorValue: type,
             subFunctions: input.subFunctions,
             shouldCoerce: input.shouldCoerce,
+            requiresTransformation: input.requiresTransformation,
         });
         switchParts.push(`case "${type}": {
             ${template}
@@ -731,6 +749,7 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         schema: input.schema.values,
         subFunctions: input.subFunctions,
         shouldCoerce: input.shouldCoerce,
+        requiresTransformation: input.requiresTransformation,
     });
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
         const ${resultVal} = {};
