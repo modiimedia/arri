@@ -326,6 +326,8 @@ export const validationTestSuites: Record<
             },
         ] satisfies Post[],
         badInputs: [
+            {},
+            [],
             {
                 id: '1',
                 isFeatured: false,
@@ -439,6 +441,9 @@ export const validationTestSuites: Record<
                 id: a.string(),
                 createdAt: a.timestamp(),
                 type: a.stringEnum(['a', 'b']),
+                object: a.object({
+                    foo: a.string(),
+                }),
             }),
         ),
         goodInputs: [
@@ -446,6 +451,14 @@ export const validationTestSuites: Record<
                 id: '',
                 createdAt: new Date(),
                 type: 'a',
+            },
+            {
+                id: '',
+                createdAt: new Date(),
+                type: 'b',
+                object: {
+                    foo: 'string',
+                },
             },
             { id: '' },
             {},
@@ -455,6 +468,12 @@ export const validationTestSuites: Record<
             null,
             'hello world',
             { id: '', createdAt: new Date(), type: '' },
+            {
+                id: '',
+                createdAt: new Date(),
+                type: 'b',
+                object: [],
+            },
         ],
     },
     'array of strings': {
