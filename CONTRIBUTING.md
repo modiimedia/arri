@@ -25,11 +25,11 @@ pnpm i
 pnpm build
 ```
 
-Which will build all the TS projects needed to get started.
+Which will build all the TS projects needed to get started. If you just want to contribute to a TS project then you are all set. (All of the Arri generators are written in TS)
 
-You will also need to install the toolchain for whatever language libraries you are looking to work in. For example you need to Rust compiler and Cargo to work on the Rust client library.
+If you want to contribute to a non-TS library you will also need to install the toolchain for whatever language you are looking to work in. For example you need to Rust compiler and Cargo to work on the Rust client library.
 
-To be able to build and run everything you currently need:
+To be able to build and run everything in this repo you currently need:
 
 - [The Dart SDK](https://dart.dev/get-dart) for Dart
 - [The Rust compiler & Cargo](https://www.rust-lang.org/learn/get-started) for Rust
