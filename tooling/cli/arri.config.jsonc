@@ -1,0 +1,9 @@
+{
+  "generators": [
+    {
+      "type": "GO_CLIENT",
+      "clientName": "Client",
+      "outFile": "../client.g.go"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+server:
+  type: "GO"
+
+generators:
+  - type: "GO_CLIENT",
+    clientName: "Client",
+    outDir: "../client.g.go"
+  - type: "TYPESCRIPT_CLIENT"
+    clientName: "Client"
+    outDir: "../client.g.ts"
+    prettierOptions:
+      tabWidth: 4
+      semi: true

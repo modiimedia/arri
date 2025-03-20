@@ -10,6 +10,7 @@ import {
     kebabCase,
     removeDisallowedChars,
 } from '@arrirpc/codegen-utils';
+import { a } from '@arrirpc/schema';
 import { listen, Listener } from '@joshmossas/listhen';
 import { FSWatcher } from 'chokidar';
 import esbuild from 'esbuild';
@@ -134,7 +135,78 @@ export interface TsServerConfig {
     };
 }
 
-const defaultTsServerConfig: Required<TsServerConfig> = {
+export const TsServerConfig = a.partial(
+    a.object({
+        port: a.float64(),
+        entry: a.string(),
+        serverEntry: a.string(),
+        rootDir: a.string(),
+        srcDir: a.string(),
+        /**
+         * string | false
+         */
+        procedureDir: a.any(),
+        /**
+         * this defaults to ["**\/*.rpc.ts"]
+         */
+        procedureGlobPatterns: a.array(a.string()),
+        buildDir: a.string(),
+        esbuild: a.any(),
+        https: a.any(),
+        http2: a.boolean(),
+        devServer: a.partial(
+            a.object({
+                /**
+                 * Use this to add directories outside of the srcDir that should trigger a dev server reload
+                 */
+                additionalWatchDirs: a.array(a.string()),
+                /**
+                 * If you want to serve both https and http on the dev server
+                 */
+                httpWithHttps: a.boolean(),
+                httpWithHttpsPort: a.number(),
+            }),
+        ),
+    }),
+    { id: 'TsServerOptions' },
+);
+export const $$TsServerConfig = a.compile(TsServerConfig);
+
+export const TsServerConfigHttps = a.object({
+    cert: a.string(),
+    key: a.string(),
+    passphrase: a.optional(a.string()),
+});
+export const $$TsServerOptionsHttps = a.compile(TsServerConfigHttps);
+
+export function isTsServerConfig(input: unknown): input is TsServerConfig {
+    if (!$$TsServerConfig.validate(input)) return false;
+    if (
+        typeof input.https !== 'undefined' &&
+        typeof input.https !== 'boolean' &&
+        !$$TsServerOptionsHttps.validate(input.https)
+    ) {
+        console.log('Hello world');
+        return false;
+    }
+    if (
+        typeof input.procedureDir !== 'undefined' &&
+        typeof input.procedureDir !== 'boolean' &&
+        typeof input.procedureDir !== 'string'
+    ) {
+        return false;
+    }
+    if (input.esbuild === null) return false;
+    if (
+        typeof input.esbuild !== 'undefined' &&
+        typeof input.esbuild !== 'object'
+    ) {
+        return false;
+    }
+    return true;
+}
+
+export const defaultTsServerConfig: Required<TsServerConfig> = {
     port: 3000,
     entry: 'app.ts',
     serverEntry: '',
