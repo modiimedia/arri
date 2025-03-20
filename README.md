@@ -52,7 +52,7 @@ See this [guide](/docs/implementing-an-arri-server.md) for information on how to
 
 ## Client Generators
 
-Generators get run by the [Arri CLI](/tooling/cli/README.md) during `arri build` and `arri dev`. You can register which generators you want to run in your Arri config (`arri.config.ts` by default)
+Generators get run by the [Arri CLI](/tooling/cli/README.md) during `arri build`, `arri dev`, and `arri codegen`. You can register which generators you want to run in your Arri config (`arri.config.ts` by default)
 
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
