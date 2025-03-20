@@ -1819,6 +1819,8 @@ Sed in commodo libero. Vestibulum sit amet convallis libero. Aenean tincidunt so
                 A: true,
                 '"B"': false,
                 '\tC': true,
+                'Dwayne the "Rock" Johnson': false,
+                '\\\t`"/\b\f\n\r\t\u0000': true,
             },
         ],
     },
