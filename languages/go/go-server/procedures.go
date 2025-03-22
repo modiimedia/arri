@@ -115,9 +115,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.WriteHeader(200)
-			w.Write([]byte("ok"))
+			handlePreflightRequest(w)
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
@@ -223,4 +221,12 @@ func Rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], handler func(TP
 
 func ScopedRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, handler func(TParams, TEvent) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
+}
+
+func handlePreflightRequest(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Method", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(200)
+	w.Write([]byte("ok"))
 }

@@ -188,8 +188,7 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
-			w.WriteHeader(200)
-			w.Write([]byte("ok"))
+			handlePreflightRequest(w)
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
@@ -243,6 +242,10 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 	})
 
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			handlePreflightRequest(w)
+			return
+		}
 		w.Header().Add("Content-Type", "application/json")
 		event, err := app.createEvent(w, r)
 		if err != nil {
