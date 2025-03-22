@@ -41,11 +41,11 @@ func main() {
 		arri.AppOptions[RpcEvent]{
 			AppVersion:     "10",
 			RpcRoutePrefix: "/rpcs",
-			OnRequest: func(r *http.Request, event *RpcEvent) arri.RpcError {
+			OnRequest: func(event *RpcEvent) arri.RpcError {
 				event.Writer().Header().Set("Access-Control-Allow-Origin", "*")
 				return nil
 			},
-			OnError: func(r *http.Request, ac *RpcEvent, err error) {},
+			OnError: func(ac *RpcEvent, err error) {},
 		},
 		func(w http.ResponseWriter, r *http.Request) (*RpcEvent, arri.RpcError) {
 			return &RpcEvent{

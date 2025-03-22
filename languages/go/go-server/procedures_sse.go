@@ -188,18 +188,23 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(200)
+			w.Write([]byte("ok"))
+			return
+		}
 		event, err := app.createEvent(w, r)
 		if err != nil {
-			handleError(false, w, r, nil, err, onError)
+			handleError(false, w, nil, err, onError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, r, event, Error(404, "Not found"), onError)
+			handleError(false, w, event, Error(404, "Not found"), onError)
 			return
 		}
-		err = onRequest(r, event)
+		err = onRequest(event)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
 
@@ -208,7 +213,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 				fn := app.middleware[i]
 				err := fn(r, *event, rpcName)
 				if err != nil {
-					handleError(false, w, r, event, err, onError)
+					handleError(false, w, event, err, onError)
 					return
 				}
 			}
@@ -216,7 +221,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, r, event, Error(500, "Error initializing empty params"), onError)
+			handleError(false, w, event, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
@@ -225,18 +230,18 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, r, event, fromUrlQueryErr, onError)
+					handleError(false, w, event, fromUrlQueryErr, onError)
 					return
 				}
 			default:
 				b, bErr := io.ReadAll(r.Body)
 				if bErr != nil {
-					handleError(false, w, r, event, Error(400, bErr.Error()), onError)
+					handleError(false, w, event, Error(400, bErr.Error()), onError)
 					return
 				}
 				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
 				if fromJSONErr != nil {
-					handleError(false, w, r, event, fromJSONErr, onError)
+					handleError(false, w, event, fromJSONErr, onError)
 					return
 				}
 			}
@@ -245,12 +250,12 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		sseController := newDefaultSseController[TResponse](w, r, app.options.KeyCasing)
 		err = handler(params, sseController, *event)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
-		err = onAfterResponse(r, event, "")
+		err = onAfterResponse(event, "")
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 		}
 	})
 }
@@ -263,28 +268,28 @@ func ScopedEventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent]
 	eventStreamRpc(app, scope, options, handler)
 }
 
-func getHooks[TEvent Event](app *App[TEvent]) (func(*http.Request, *TEvent) RpcError, func(*http.Request, *TEvent, any) RpcError, func(*http.Request, *TEvent, any) RpcError, func(*http.Request, *TEvent, error)) {
+func getHooks[TEvent Event](app *App[TEvent]) (func(*TEvent) RpcError, func(*TEvent, any) RpcError, func(*TEvent, any) RpcError, func(*TEvent, error)) {
 	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, e *TEvent) RpcError {
+		onRequest = func(e *TEvent) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, e *TEvent, a any) RpcError {
+		onBeforeResponse = func(e *TEvent, a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, e *TEvent, a any) RpcError {
+		onAfterResponse = func(e *TEvent, a any) RpcError {
 			return nil
 		}
 	}
 	onError := app.options.OnError
 	if onError == nil {
-		onError = func(r *http.Request, e *TEvent, err error) {}
+		onError = func(e *TEvent, err error) {}
 	}
 	return onRequest, onBeforeResponse, onAfterResponse, onError
 }

@@ -140,10 +140,10 @@ type AppOptions[TEvent Event] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         func(*http.Request, *TEvent) RpcError
-	OnBeforeResponse  func(*http.Request, *TEvent, any) RpcError
-	OnAfterResponse   func(*http.Request, *TEvent, any) RpcError
-	OnError           func(*http.Request, *TEvent, error)
+	OnRequest         func(*TEvent) RpcError
+	OnBeforeResponse  func(*TEvent, any) RpcError
+	OnAfterResponse   func(*TEvent, any) RpcError
+	OnError           func(*TEvent, error)
 }
 
 func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], createEvent func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)) App[TEvent] {
@@ -166,40 +166,40 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 	}
 	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t *TEvent) RpcError {
+		onRequest = func(t *TEvent) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t *TEvent, a any) RpcError {
+		onBeforeResponse = func(t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t *TEvent, a any) RpcError {
+		onAfterResponse = func(t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
 	onError := app.options.OnError
 	if onError == nil {
-		onError = func(r *http.Request, t *TEvent, err error) {}
+		onError = func(t *TEvent, err error) {}
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		event, err := app.createEvent(w, r)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
-		err = onRequest(r, event)
+		err = onRequest(event)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
 		if r.URL.Path != "/" {
-			handleError(false, w, r, event, Error(404, ""), onError)
+			handleError(false, w, event, Error(404, ""), onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -223,16 +223,16 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		if len(options.AppVersion) > 0 {
 			response.Version = Some(options.AppVersion)
 		}
-		err = onBeforeResponse(r, event, response)
+		err = onBeforeResponse(event, response)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
 		jsonResult, _ := EncodeJSON(response, encodingOptions)
 		w.Write(jsonResult)
-		onAfterResponseErr := onAfterResponse(r, event, response)
+		onAfterResponseErr := onAfterResponse(event, response)
 		if onAfterResponseErr != nil {
-			handleError(true, w, r, event, onAfterResponseErr, onError)
+			handleError(true, w, event, onAfterResponseErr, onError)
 			return
 		}
 	})
@@ -241,24 +241,24 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		w.Header().Add("Content-Type", "application/json")
 		event, err := app.createEvent(w, r)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
-		err = onRequest(r, event)
+		err = onRequest(event)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 		}
 		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), encodingOptions)
-		beforeResponseErr := onBeforeResponse(r, event, jsonResult)
+		beforeResponseErr := onBeforeResponse(event, jsonResult)
 		if beforeResponseErr != nil {
-			handleError(false, w, r, event, beforeResponseErr, onError)
+			handleError(false, w, event, beforeResponseErr, onError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
-		err = onAfterResponse(r, event, jsonResult)
+		err = onAfterResponse(event, jsonResult)
 		if err != nil {
-			handleError(true, w, r, event, err, onError)
+			handleError(true, w, event, err, onError)
 			return
 		}
 	})
@@ -268,12 +268,11 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 func handleError[TEvent Event](
 	responseSent bool,
 	w http.ResponseWriter,
-	r *http.Request,
 	event *TEvent,
 	err RpcError,
-	onError func(*http.Request, *TEvent, error),
+	onError func(*TEvent, error),
 ) {
-	onError(r, event, err)
+	onError(event, err)
 	if responseSent {
 		return
 	}
