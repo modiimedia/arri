@@ -427,6 +427,7 @@ public enum SSEEvent<T: ArriClientModel> {
     case start
     case ping
     case done
+    case unknown
 
     init(rawEvent: RawSSEEvent) {
         switch (rawEvent.event) { 
@@ -446,12 +447,14 @@ public enum SSEEvent<T: ArriClientModel> {
                     retry: rawEvent.retry
                 ))
                 break;
-            default:
+            case "":
                 self = .message(SSEMessageEvent<T>(
                     id: rawEvent.id,
                     data: T.init(JSONString: rawEvent.data),
                     retry: rawEvent.retry
                 ))
+            default:
+                self = .unknown
                 break;
         }
     }
@@ -864,6 +867,8 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                                     break;                    
                                 case .ping:
                                     break 
+                                case .unknown:
+                                    break;
                             }
                         }
                     }
