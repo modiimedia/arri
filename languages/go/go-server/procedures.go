@@ -114,12 +114,13 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	}
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "application/json")
 		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.WriteHeader(200)
 			w.Write([]byte("ok"))
 			return
 		}
+		w.Header().Add("Content-Type", "application/json")
 		event, err := app.createEvent(w, r)
 		if err != nil {
 			handleError(false, w, nil, err, onError)

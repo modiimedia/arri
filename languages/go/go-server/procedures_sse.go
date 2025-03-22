@@ -14,6 +14,7 @@ import (
 )
 
 type SseController[T any] interface {
+	Init() // Send stream to client
 	Push(T) RpcError
 	Close(notifyClient bool)
 	Done() <-chan struct{}
@@ -80,6 +81,14 @@ func (controller *defaultSseController[T]) startStream() {
 			}
 		}
 	}()
+}
+
+func (controller *defaultSseController[T]) Init() {
+	if !controller.headersSent {
+		controller.startStream()
+	}
+	fmt.Fprintf(controller.writer, "event: start\ndata: connection successful\n\n")
+	controller.responseController.Flush()
 }
 
 func (controller *defaultSseController[T]) Push(message T) RpcError {
@@ -189,6 +198,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.WriteHeader(200)
 			w.Write([]byte("ok"))
 			return

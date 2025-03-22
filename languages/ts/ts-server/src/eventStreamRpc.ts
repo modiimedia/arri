@@ -99,6 +99,10 @@ export class EventStreamConnection<TData> {
      */
     send() {
         void this.eventStream.send();
+        this.eventStream.push({
+            event: 'start',
+            data: 'connection successful',
+        });
         this.pingInterval = setInterval(async () => {
             await this.eventStream.push({
                 event: 'ping',

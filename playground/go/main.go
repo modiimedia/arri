@@ -23,7 +23,7 @@ type SayHelloParams struct {
 }
 
 type SayHelloResponse struct {
-	Message string `enum:"HELLO,WORLD" enumName:"MESSAGE"`
+	Message string
 }
 
 func SayHello(params SayHelloParams, event arri.DefaultEvent) (SayHelloResponse, arri.RpcError) {
