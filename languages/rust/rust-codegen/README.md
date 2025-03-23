@@ -22,10 +22,11 @@ export default defineConfig({
 
 | Name                  | Descriptions                                                               |
 | --------------------- | -------------------------------------------------------------------------- |
-| clientName            | The named of the generated client struct (Defaults to "Client")            |
 | outputFile (required) | Path to the file that will be created by the generator                     |
+| clientName            | The named of the generated client struct (Defaults to "Client")            |
 | typePrefix            | Add a prefix to the generated struct names                                 |
 | format                | Whether to run `rustfmt` on the generated file or not (Defaults to "true") |
+| rootService           | The root service of the generated client                                   |
 
 ### 2) Install the Rust client library
 
