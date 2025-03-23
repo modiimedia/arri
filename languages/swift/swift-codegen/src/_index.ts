@@ -32,7 +32,10 @@ import { swiftDictionaryFromSchema } from './record';
 import { swiftRefFromSchema } from './ref';
 
 export interface SwiftClientGeneratorOptions {
-    clientName: string;
+    /**
+     * Defaults to "Client"
+     */
+    clientName?: string;
     outputFile: string;
     /**
      * Add a prefix to the generated structs
@@ -75,7 +78,7 @@ export function createSwiftClient(
 ) {
     const context: GeneratorContext = {
         clientVersion: def.info?.version ?? '',
-        clientName: options.clientName,
+        clientName: options.clientName ?? 'Client',
         typePrefix: options.typePrefix ?? '',
         instancePath: '',
         schemaPath: '',

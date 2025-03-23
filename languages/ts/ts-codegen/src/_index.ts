@@ -38,7 +38,10 @@ export * from './common';
 export * from './rpc';
 
 export interface TypescriptGeneratorOptions {
-    clientName: string;
+    /**
+     * Defaults to 'Client'
+     */
+    clientName?: string;
     outputFile: string;
     /**
      * Add a prefix to the generated types
@@ -97,7 +100,7 @@ export async function createTypescriptClient(
 ): Promise<string> {
     const types: string[] = [];
     const context: CodegenContext = {
-        clientName: options.clientName,
+        clientName: options.clientName ?? 'Client',
         typePrefix: options.typePrefix ?? '',
         generatedTypes: [],
         instancePath: '',
