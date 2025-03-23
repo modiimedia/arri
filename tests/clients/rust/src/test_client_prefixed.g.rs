@@ -20,34 +20,9 @@ use std::collections::{BTreeMap, HashMap};
 #[derive(Clone)]
 pub struct TestClientPrefixed {
     _config: InternalArriClientConfig,
-    pub tests: TestClientPrefixedTestsService,
-    pub users: TestClientPrefixedUsersService,
 }
 
 impl ArriClientService for TestClientPrefixed {
-    fn create(config: ArriClientConfig) -> Self {
-        Self {
-            _config: InternalArriClientConfig::from(config.clone()),
-            tests: TestClientPrefixedTestsService::create(config.clone()),
-            users: TestClientPrefixedUsersService::create(config),
-        }
-    }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
-        *unwrapped_headers = headers.clone();
-        self.tests.update_headers(headers.clone());
-        self.users.update_headers(headers);
-    }
-}
-
-impl TestClientPrefixed {}
-
-#[derive(Clone)]
-pub struct TestClientPrefixedTestsService {
-    _config: InternalArriClientConfig,
-}
-
-impl ArriClientService for TestClientPrefixedTestsService {
     fn create(config: ArriClientConfig) -> Self {
         Self {
             _config: InternalArriClientConfig::from(config),
@@ -59,7 +34,7 @@ impl ArriClientService for TestClientPrefixedTestsService {
     }
 }
 
-impl TestClientPrefixedTestsService {
+impl TestClientPrefixed {
     pub async fn empty_params_get_request(&self) -> Result<FooDefaultPayload, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -482,52 +457,6 @@ impl TestClientPrefixedTestsService {
                 max_retry_interval,
             },
             None::<EmptyArriModel>,
-            on_event,
-        )
-        .await;
-    }
-}
-
-#[derive(Clone)]
-pub struct TestClientPrefixedUsersService {
-    _config: InternalArriClientConfig,
-}
-
-impl ArriClientService for TestClientPrefixedUsersService {
-    fn create(config: ArriClientConfig) -> Self {
-        Self {
-            _config: InternalArriClientConfig::from(config),
-        }
-    }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
-        *unwrapped_headers = headers.clone();
-    }
-}
-
-impl TestClientPrefixedUsersService {
-    pub async fn watch_user<OnEvent>(
-        &self,
-        params: FooUsersWatchUserParams,
-        on_event: &mut OnEvent,
-        max_retry_count: Option<u64>,
-        max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<FooUsersWatchUserResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!("{}/rpcs/users/watch-user", &self._config.base_url),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
             on_event,
         )
         .await;

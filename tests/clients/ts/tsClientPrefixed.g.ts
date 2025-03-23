@@ -37,34 +37,6 @@ export class TestClientPrefixed {
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
-    tests: TestClientPrefixedTestsService;
-    users: TestClientPrefixedUsersService;
-    constructor(
-        options: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-        } = {},
-    ) {
-        this._baseUrl = options.baseUrl ?? '';
-        if (options.fetch) {
-            this._fetch = createFetch({ fetch: options.fetch });
-        }
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-        this.tests = new TestClientPrefixedTestsService(options);
-        this.users = new TestClientPrefixedUsersService(options);
-    }
-}
-
-export class TestClientPrefixedTestsService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
 
     constructor(
         options: {
@@ -450,54 +422,6 @@ export class TestClientPrefixedTestsService {
                 responseFromJson: $$FooChatMessage.fromJson,
                 responseFromString: $$FooChatMessage.fromJsonString,
                 serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
-        );
-    }
-}
-
-export class TestClientPrefixedUsersService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-
-    constructor(
-        options: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-        } = {},
-    ) {
-        this._baseUrl = options.baseUrl ?? '';
-        if (options.fetch) {
-            this._fetch = createFetch({ fetch: options.fetch });
-        }
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-    }
-    watchUser(
-        params: FooUsersWatchUserParams,
-        options: SseOptions<FooUsersWatchUserResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            FooUsersWatchUserResponse,
-            FooUsersWatchUserParams
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/users/watch-user`,
-                method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$FooUsersWatchUserResponse.fromJson,
-                responseFromString: $$FooUsersWatchUserResponse.fromJsonString,
-                serializer: $$FooUsersWatchUserParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
