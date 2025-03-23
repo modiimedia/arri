@@ -53,6 +53,7 @@ export interface RustClientGeneratorOptions {
     outputFile: string;
     format?: boolean;
     typePrefix?: string;
+    rootService?: string;
 }
 
 export const rustClientGenerator = defineGeneratorPlugin(
@@ -67,6 +68,7 @@ export const rustClientGenerator = defineGeneratorPlugin(
                     instancePath: '',
                     schemaPath: '',
                     generatedTypes: [],
+                    rootService: options.rootService,
                 };
                 const client = createRustClient(def, {
                     ...context,
@@ -92,7 +94,7 @@ export function createRustClient(
     def: AppDefinition,
     context: Omit<GeneratorContext, 'clientVersion'>,
 ): string {
-    const services = unflattenProcedures(def.procedures);
+    const services = unflattenProcedures(def.procedures, context.rootService);
     const rpcParts: string[] = [];
     const subServices: { name: string; key: string }[] = [];
     const subServiceContent: string[] = [];
@@ -106,6 +108,7 @@ export function createRustClient(
                 instancePath: key,
                 schemaPath: key,
                 generatedTypes: context.generatedTypes,
+                rootService: context.rootService,
             });
             if (service.content) {
                 subServices.push({
@@ -124,6 +127,7 @@ export function createRustClient(
                 instancePath: key,
                 schemaPath: key,
                 generatedTypes: context.generatedTypes,
+                rootService: context.rootService,
             });
             if (rpc) {
                 rpcParts.push(rpc);

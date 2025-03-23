@@ -115,6 +115,7 @@ export function rustTaggedUnionFromSchema(
                 generatedTypes: context.generatedTypes,
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
+                rootService: context.rootService,
             });
             if (keyType.content) subTypeContent.push(keyType.content);
             const keyName = validRustIdentifier(key);
@@ -163,6 +164,7 @@ export function rustTaggedUnionFromSchema(
                 generatedTypes: context.generatedTypes,
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
+                rootService: context.rootService,
             });
             if (keyType.content) subTypeContent.push(keyType.content);
             const keyName = validRustIdentifier(key);

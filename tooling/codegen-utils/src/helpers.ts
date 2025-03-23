@@ -6,8 +6,19 @@ import {
 
 export function unflattenProcedures(
     procedures: AppDefinition['procedures'],
+    rootService?: string,
 ): Record<string, RpcDefinition | ServiceDefinition> {
-    return unflattenObject(procedures);
+    if (!rootService) {
+        return unflattenObject(procedures);
+    }
+    const filteredProcedures: AppDefinition['procedures'] = {};
+    for (const key of Object.keys(procedures)) {
+        if (key.startsWith(rootService)) {
+            filteredProcedures[key.replace(rootService + '.', '')] =
+                procedures[key]!;
+        }
+    }
+    return unflattenObject(filteredProcedures);
 }
 
 export function unflattenObject(data: Record<string, any>) {
