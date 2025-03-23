@@ -22,9 +22,10 @@ export default defineConfig({
 
 | Name                  | Description                                            |
 | --------------------- | ------------------------------------------------------ |
-| clientName (required) | The name of the generated client                       |
 | outputFile (required) | Path to the file that will be created by the generator |
+| clientName            | The name of the generated client                       |
 | typePrefix            | Add a prefix to all of the generated types             |
+| rootService           | The root service of the generated client               |
 
 ### 2) Install the Swift client library
 

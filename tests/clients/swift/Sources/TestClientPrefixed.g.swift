@@ -7,41 +7,6 @@ public class TestClientPrefixed {
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
     let onError: (Error) -> Void
-    public let tests: TestClientPrefixedTestsService
-    public let users: TestClientPrefixedUsersService
-    public init(
-        baseURL: String,
-        delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>,
-        onError: @escaping ((Error) -> Void) = { _ -> Void in }
-    ) {
-        self.baseURL = baseURL
-        self.delegate = delegate
-        self.headers = headers
-        self.onError = onError
-        self.tests = TestClientPrefixedTestsService(
-            baseURL: baseURL,
-            delegate: delegate,
-            headers: headers,
-            onError: onError
-        )
-        self.users = TestClientPrefixedUsersService(
-            baseURL: baseURL,
-            delegate: delegate,
-            headers: headers,
-            onError: onError
-        )    
-    }
-
-        
-}
-
-@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
-public class TestClientPrefixedTestsService {
-    let baseURL: String
-    let delegate: ArriRequestDelegate
-    let headers: () -> Dictionary<String, String>
-    let onError: (Error) -> Void
 
     public init(
         baseURL: String,
@@ -310,44 +275,6 @@ public class TestClientPrefixedTestsService {
                 method: "GET",
                 headers: self.headers,
                 params: nil,
-                delegate: self.delegate,
-                clientVersion: "10",
-                options: options
-            )
-            await eventSource.sendRequest()
-        }
-        return task
-    }
-        
-}
-
-
-@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
-public class TestClientPrefixedUsersService {
-    let baseURL: String
-    let delegate: ArriRequestDelegate
-    let headers: () -> Dictionary<String, String>
-    let onError: (Error) -> Void
-
-    public init(
-        baseURL: String,
-        delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>,
-        onError: @escaping ((Error) -> Void) = { _ -> Void in }
-    ) {
-        self.baseURL = baseURL
-        self.delegate = delegate
-        self.headers = headers
-        self.onError = onError
-    
-    }
-    public func watchUser(_ params: FooUsersWatchUserParams, options: EventSourceOptions<FooUsersWatchUserResponse>) -> Task<(), Never> {
-        let task = Task {
-            var eventSource = EventSource<FooUsersWatchUserResponse>(
-                url: "\(self.baseURL)/rpcs/users/watch-user",
-                method: "GET",
-                headers: self.headers,
-                params: params,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options

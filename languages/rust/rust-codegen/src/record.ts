@@ -19,6 +19,7 @@ export default function rustRecordFromSchema(
         instancePath: `${context.instancePath}/value`,
         schemaPath: `${context.schemaPath}/values`,
         generatedTypes: context.generatedTypes,
+        rootService: context.rootService,
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType

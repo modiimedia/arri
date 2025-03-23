@@ -16,6 +16,7 @@ export interface GeneratorContext {
     discriminatorKey?: string;
     discriminatorValue?: string;
     isOptional?: boolean;
+    rootService: string | undefined;
 }
 
 export interface RustProperty {

@@ -21,37 +21,6 @@ class TestClientPrefixed {
         _headers = headers,
         _onError = onError;
 
-  TestClientPrefixedTestsService get tests => TestClientPrefixedTestsService(
-        baseUrl: _baseUrl,
-        headers: _headers,
-        httpClient: _httpClient,
-        onError: _onError,
-      );
-
-  TestClientPrefixedUsersService get users => TestClientPrefixedUsersService(
-        baseUrl: _baseUrl,
-        headers: _headers,
-        httpClient: _httpClient,
-        onError: _onError,
-      );
-}
-
-class TestClientPrefixedTestsService {
-  final http.Client? _httpClient;
-  final String _baseUrl;
-  final String _clientVersion = "10";
-  final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  TestClientPrefixedTestsService({
-    http.Client? httpClient,
-    required String baseUrl,
-    FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl,
-        _headers = headers,
-        _onError = onError;
-
   Future<FooDefaultPayload> emptyParamsGetRequest() async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/empty-params-get-request",
@@ -490,66 +459,6 @@ class TestClientPrefixedTestsService {
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
       parser: (body) => FooChatMessage.fromJsonString(body),
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
-    );
-  }
-}
-
-class TestClientPrefixedUsersService {
-  final http.Client? _httpClient;
-  final String _baseUrl;
-  final String _clientVersion = "10";
-  final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  TestClientPrefixedUsersService({
-    http.Client? httpClient,
-    required String baseUrl,
-    FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl,
-        _headers = headers,
-        _onError = onError;
-
-  EventSource<FooUsersWatchUserResponse> watchUser(
-    FooUsersWatchUserParams params, {
-    void Function(FooUsersWatchUserResponse data,
-            EventSource<FooUsersWatchUserResponse> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooUsersWatchUserResponse> connection)?
-        onOpen,
-    void Function(EventSource<FooUsersWatchUserResponse> connection)? onClose,
-    void Function(
-            ArriError error, EventSource<FooUsersWatchUserResponse> connection)?
-        onError,
-    Duration? retryDelay,
-    int? maxRetryCount,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/users/watch-user",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      params: params.toJson(),
-      parser: (body) => FooUsersWatchUserResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,

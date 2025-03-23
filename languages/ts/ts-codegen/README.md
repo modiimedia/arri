@@ -20,11 +20,14 @@ export default defineConfig({
 
 **Options:**
 
-| Name                  | Description                                          |
-| --------------------- | ---------------------------------------------------- |
-| clientName (required) | The name of the generated client                     |
-| outputFile (required) | Path to a file that will be created by the generator |
-| prettierOptions       | Formatting options for the generated code            |
+| Name                  | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| outputFile (required) | Path to a file that will be created by the generator       |
+| clientName            | The name of the generated client                           |
+| typePrefix            | Add a prefix to the generated type names                   |
+| rootService           | Set the root service of the generated client               |
+| prettierOptions       | Formatting options for the generated code                  |
+| rpcGenerators         | Override the default function used for creating procedures |
 
 ### 2) Install the TS client library
 
