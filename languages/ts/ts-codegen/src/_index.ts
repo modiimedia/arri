@@ -70,7 +70,7 @@ export interface TypescriptGeneratorOptions {
     /**
      * Override the default functions used for creating procedures
      */
-    rpcGenerators?: Record<RpcDefinition['transport'], RpcGenerator>;
+    rpcGenerators?: Partial<Record<RpcDefinition['transport'], RpcGenerator>>;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
