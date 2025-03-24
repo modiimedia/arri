@@ -28,10 +28,10 @@
     "uncrypto": "^0.1.3"
   },
   "devDependencies": {
-    "@ryoppippi/unplugin-typia": "^2.0.3",
-    "@sinclair/typebox": "^0.34.30",
+    "@ryoppippi/unplugin-typia": "^2.1.3",
+    "@sinclair/typebox": "^0.34.31",
     "ajv": "^8.17.1",
-    "arktype": "^2.1.10",
+    "arktype": "^2.1.12",
     "benny": "^3.7.1",
     "typia": "^8.0.3",
     "valibot": "1.0.0",
