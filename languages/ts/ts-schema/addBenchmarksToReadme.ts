@@ -150,6 +150,7 @@ interface TestUser {
         }
         if (line.startsWith('_Last Updated:')) {
             newReadmeLines.push(`_Last Updated: ${new Date().toISOString()}_`);
+            continue;
         }
         newReadmeLines.push(line);
     }
