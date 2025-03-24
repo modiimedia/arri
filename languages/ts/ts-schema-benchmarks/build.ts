@@ -6,6 +6,7 @@ import { build } from 'esbuild';
 const bundleSizeCases = [
     'arktype',
     'arri',
+    'arri-modular-imports',
     'typebox',
     'typia',
     'valibot',
