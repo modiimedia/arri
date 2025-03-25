@@ -28,6 +28,7 @@ Originally this library was created as a way for building schemas for [Json Type
 - [Basic Example](#basic-example)
 - [Usage with @arrirpc/server](#usage-with-arrirpcserver)
 - [Compiling to other languages](#compiling-to-other-languages)
+- [Tree-Shakeable Imports](#tree-shakeable-imports)
 - [Supported Types](#supported-types)
     - [Primitives](#primitives)
     - [Enums](#enums)
@@ -79,9 +80,9 @@ const User = a.object({
 
 type User = a.infer<typeof User>;
 
-// passes and returns User
+// returns ResultSuccess<User>
 a.parse(User, `{"id": "1", "name": "John Doe"}`);
-// throws error
+// returns ResultFailure
 a.parse(User, `{"id": "1", "name": null}`);
 
 // returns true
@@ -251,6 +252,57 @@ data class User(
 ```
 
 See [here](/README.md#client-generators) for a list of all officially supported language generators.
+
+## Tree-Shakeable Imports
+
+For those that are concerned about bundle sizes you can use Arri's optional modular import syntax. This makes it so that bundlers can remove unused Arri functions from JS bundles at build time. You can also enforce this in your codebase using the [arri/prefer-modular-imports](/languages/ts/eslint-plugin/README.md) lint rule.
+
+```ts
+// without prefix
+import { string, boolean, object } from '@arrirpc/schema';
+const User = object({
+    id: string(),
+    name: string(),
+    isAdmin: boolean(),
+});
+
+// with prefix
+import * as a from '@arrirpc/schema';
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+    isAdmin: a.boolean(),
+});
+```
+
+Click [here](/languages/ts/ts-schema-benchmarks/README.md#bundle-size) to see how Arri Schema's bundle sizes compares to the rest of the ecosystem.
+
+### Why isn't this the default?
+
+Just personal preference. I find manually importing individual functions to be a bad developer experience.
+
+```ts
+// not a fan
+import { foo, bar, baz } from 'foo';
+```
+
+Additionally, having an explicitly exported `a` namespace means that when I type `a.{something}` that the TS language server will autocomplete the available functions even if I haven't imported `@arrirpc/schema` yet. If we didn't have that explicit export, then you would not get autocomplete for `a.{something}` until you added the `import * as a` line to your file.
+
+```ts
+// this has to be added before you get autocomplete for `a.{whatever}`
+import * as a from '@arrirpc/schema';
+```
+
+However I understand that keeping small bundle sizes can be important which is why I've allowed both options:
+
+```ts
+// if you care about bundle size use one of these two
+import * as a from '@arrirpc/schema';
+import { string, object, etc } from '@arrirpc/schema';
+
+// if you aren't as particular about bundle sizes then use this
+import { a } from '@arrirpc/schema';
+```
 
 ## Supported Types
 
