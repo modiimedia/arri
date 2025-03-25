@@ -1,6 +1,8 @@
 # Arri-RPC Eslint Plugin and Configs
 
-This library provides some useful lint rules when building Arri RPC schemas.
+This library provides some useful lint rules when building schemas for Arri-RPC.
+
+If you are using Arri Schema standalone the only lint rule you probably want is `arri/prefer-modular-imports` to keep bundle sizes lower.
 
 ## Installation
 
@@ -14,26 +16,33 @@ pnpm i --save-dev @arrirpc/eslint-plugin
 
 ## Usage
 
-### Ecosystem Note
-
-This library supports both [flat file config format](https://eslint.org/docs/latest/use/configure/configuration-files) and the [legacy config format](https://eslint.org/docs/latest/use/configure/configuration-files-deprecated). Right now, the legacy format is the default. When more of the ecosystem has moved to supporting the new format this library will swap defaults, and potentially drop support for the old format. When such a change happens, it will be marked as a breaking change.
-
 ### Flat File Config
 
-#### Using the default recommended configuration
+#### Use one of the premade configurations
 
-This turns all of the `@arrirpc/eslint` rules on.
+- **recommended**: turns on all of the lint rules related to schema building and codegen
+- **all**: the same as recommended but also includes the `prefer-modular-imports` rule
 
 ```js
 // eslint.config.js
 import arri from '@arrirpc/eslint-plugin/configs';
 
+// turn on lint rules related to schema building and codegen
 export default [
     arri.recommended,
     {
-        files: ['src/**/*.ts'], // you will still need to tell eslint which files to lint like so
+        files: ['src/**/*.ts'],
     },
 ];
+
+
+// turn on all arri lint rules
+export default [
+    arri.all,
+    {
+        files: ['src/**/*.ts']
+    }
+]
 ```
 
 #### Manual setup
@@ -58,6 +67,8 @@ export default [
             'arri/no-anonymous-discriminator': 2,
             // check to see if an ID has been assigned to a.recursive() schemas
             'arri/no-anonymous-recursive': 2,
+            // enforce using arri's tree-shakable imports instead of the non tree-shakable imports to keep bundle sizes lower
+            'arri/prefer-modular-imports': 2,
         },
     },
 ];
@@ -67,12 +78,17 @@ export default [
 
 #### Using the default recommended configuration
 
-This turns all of the `@arrirpc/eslint` rules on
-
 ```jsonc
+// Arri-RPC recommended
 {
     "extends": ["plugin:@arrirpc/legacy-config-recommended"],
     "files": ["**/*.ts"],
+}
+
+// all rules
+{
+    "extends": ["plugin:@arrirpc/legacy-config-all"],
+    "files": ["**/*.ts"]
 }
 ```
 
@@ -90,6 +106,8 @@ This turns all of the `@arrirpc/eslint` rules on
         "@arrirpc/no-anonymous-discriminator": 2,
         // check to see if an ID has been assigned to a.recursive() schemas
         "@arrirpc/no-anonymous-recursive": 2,
+        // enforce usage of modular imports to reduce bundle size
+        "@arrirpc/prefer-modular-imports": 2,
     },
 }
 ```

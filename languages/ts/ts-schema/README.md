@@ -255,7 +255,7 @@ See [here](/README.md#client-generators) for a list of all officially supported 
 
 ## Tree-Shakeable Imports
 
-For those that are concerned about bundle sizes you can use Arri's optional modular import syntax. This makes it so that bundlers can remove unused Arri functions from JS bundles at build time.
+For those that are concerned about bundle sizes you can use Arri's optional modular import syntax. This makes it so that bundlers can remove unused Arri functions from JS bundles at build time. You can also enforce this in your codebase using the [arri/prefer-modular-imports](/languages/ts/eslint-plugin/README.md) lint rule.
 
 ```ts
 // without prefix

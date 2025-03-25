@@ -13,8 +13,21 @@ export const flatConfigs = {
             'no-anonymous-enumerator': 2,
             'no-anonymous-discriminator': 2,
             'no-anonymous-recursive': 2,
+            'prefer-modular-imports': 0,
         }),
-    } satisfies Linter.FlatConfig,
+    } satisfies Linter.Config,
+    all: {
+        plugins: {
+            arri: plugin,
+        },
+        rules: prefixedRuleMap('arri', {
+            'no-anonymous-discriminator': 2,
+            'no-anonymous-enumerator': 2,
+            'no-anonymous-object': 2,
+            'no-anonymous-recursive': 2,
+            'prefer-modular-imports': 2,
+        }),
+    } satisfies Linter.Config,
 } as const;
 
 export default flatConfigs;

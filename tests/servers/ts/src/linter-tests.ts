@@ -1,4 +1,7 @@
-import { a } from '@arrirpc/schema';
+import 'node:fs';
+
+// eslint-disable-next-line arri/prefer-modular-imports
+import { a, boolean, string } from '@arrirpc/schema';
 
 // eslint-disable-next-line arri/no-anonymous-object
 const ObjectSchema = a.object({
@@ -26,6 +29,8 @@ a.discriminator('type', {
         b: a.string(),
     }),
 });
+
+console.log('blah', boolean, string);
 
 // eslint-disable-next-line arri/no-anonymous-recursive
 a.recursive((self) =>

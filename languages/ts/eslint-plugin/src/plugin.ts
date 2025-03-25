@@ -14,6 +14,17 @@ export const configs: ESLint.Plugin['configs'] = {
             'no-anonymous-recursive': 2,
             'no-anonymous-discriminator': 2,
             'no-anonymous-enumerator': 2,
+            'prefer-modular-imports': 0,
+        }),
+    },
+    'legacy-config-all': {
+        plugins: ['@arrirpc'],
+        rules: prefixedRuleMap('@arrirpc', {
+            'no-anonymous-object': 2,
+            'no-anonymous-recursive': 2,
+            'no-anonymous-discriminator': 2,
+            'no-anonymous-enumerator': 2,
+            'prefer-modular-imports': 2,
         }),
     },
 };
