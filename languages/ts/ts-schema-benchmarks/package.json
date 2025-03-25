@@ -14,5 +14,6 @@
     "@ryoppippi/unplugin-typia": "^2.1.3",
     "autocannon": "^8.0.0",
     "citty": "^0.1.6"
-  }
+  },
+  "version": "0.77.0"
 }
