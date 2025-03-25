@@ -275,6 +275,8 @@ const User = a.object({
 });
 ```
 
+Click [here](/languages/ts/ts-schema-benchmarks/README.md#bundle-size) to see how Arri Schema's bundle sizes compares to the rest of the ecosystem.
+
 ### Why isn't this the default?
 
 Just personal preference. I find manually importing individual functions to be a bad developer experience.
