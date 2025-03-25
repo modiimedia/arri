@@ -1,4 +1,12 @@
 {
   "name": "ts-schema-benchmarks",
-  "targets": {}
+  "targets": {
+    "execute": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm jiti ./scripts/execute.ts",
+        "cwd": "languages/ts/ts-schema-benchmarks"
+      }
+    }
+  }
 }
