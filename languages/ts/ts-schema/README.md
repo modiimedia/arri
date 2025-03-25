@@ -257,8 +257,10 @@ See [here](/README.md#client-generators) for a list of all officially supported 
 
 For those that are concerned about bundle sizes you can use Arri's optional modular import syntax. This makes it so that bundlers can remove unused Arri functions from JS bundles at build time. You can also enforce this in your codebase using the [arri/prefer-modular-imports](/languages/ts/eslint-plugin/README.md) lint rule.
 
+Using the modular import syntax Arri's bundle size can be as small as 4kb depending on how many functions you import.
+
 ```ts
-// without prefix
+// tree-shakeable (no `a` prefix)
 import { string, boolean, object } from '@arrirpc/schema';
 const User = object({
     id: string(),
@@ -266,8 +268,16 @@ const User = object({
     isAdmin: boolean(),
 });
 
-// with prefix
+// tree-shakeable (with `a` prefix)
 import * as a from '@arrirpc/schema';
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+    isAdmin: a.boolean(),
+});
+
+// NOT tree-shakeable
+import { a } from '@arrirpc/schema';
 const User = a.object({
     id: a.string(),
     name: a.string(),
