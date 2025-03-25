@@ -2,7 +2,7 @@
 
 This library provides some useful lint rules when building schemas for Arri-RPC.
 
-If you are using Arri Schema standalone the only lint rule you probably want is `arri/prefer-modular-imports`.
+If you are using Arri Schema standalone and are not using any of the codegen features the only lint rule you will probably need is `arri/prefer-modular-imports`.
 
 ## Installation
 
