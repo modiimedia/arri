@@ -454,7 +454,7 @@ export function createWindowsCompatibleAbsoluteImport(input: string): string {
     }
     const parts = input.split(separator ?? '/');
     if (parts[0]?.endsWith(':')) {
-        parts.unshift('file:\\\\');
+        parts.unshift('file:\\');
     }
     const newStr = parts.join('\\');
     return newStr;
