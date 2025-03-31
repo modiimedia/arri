@@ -1,8 +1,8 @@
 import { ChildProcess, execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
-import path from 'node:path';
 
 import chokidar from 'chokidar';
+import path from 'pathe';
 
 import { logger } from '../common';
 import { defineServerConfig } from './_config';
