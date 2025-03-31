@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
-import path from 'node:path';
+import os from 'node:os';
 
 import { Generator, isAppDefinition } from '@arrirpc/codegen-utils';
 import {
@@ -21,6 +21,7 @@ import {
     fromNodeMiddleware,
     toNodeListener,
 } from 'h3';
+import path from 'pathe';
 import prettier from 'prettier';
 
 import { isInsideDir, logger } from '../common';
@@ -416,15 +417,16 @@ async function createDevServer(config: Required<TsServerConfig>) {
         );
     }
     async function reload(): Promise<AppDefinition> {
-        const appEntry = (
-            await import(
-                path.resolve(
-                    config.rootDir,
-                    '.output',
-                    `${OUT_APP_FILE}?version=${Date.now()}`,
-                )
-            )
-        ).default as ArriApp;
+        let importPath = path.resolve(
+            config.rootDir,
+            '.output',
+            `${OUT_APP_FILE}?version=${Date.now()}`,
+        );
+        // dumb windows things
+        if (os.type() === 'Windows_NT') {
+            importPath = createWindowsCompatibleAbsoluteImport(importPath);
+        }
+        const appEntry = (await import(importPath)).default as ArriApp;
         dynamicHandler.set(fromNodeMiddleware(appEntry.h3App.handler as any));
         ws = appEntry.h3App.websocket;
         return appEntry.getAppDefinition();
@@ -437,6 +439,25 @@ async function createDevServer(config: Required<TsServerConfig>) {
         reload,
         ws,
     };
+}
+
+export function createWindowsCompatibleAbsoluteImport(input: string): string {
+    let separator: '\\' | '/' | undefined;
+    for (const char of input) {
+        if (char === '\\') {
+            separator = '\\';
+            break;
+        }
+        if (char === '/') {
+            separator = '/';
+        }
+    }
+    const parts = input.split(separator ?? '/');
+    if (parts[0]?.endsWith(':')) {
+        parts.unshift('file:\\\\');
+    }
+    const newStr = parts.join('\\');
+    return newStr;
 }
 
 export async function startDevServer(
