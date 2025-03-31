@@ -183,4 +183,4 @@ While I have a Windows machine, I rarely ever boot it. Because of this, some of 
 
 The goal is that the Arri CLI and libraries work on all major operating systems (including Windows), but I'm not necessarily going to go out of my way to make Arri's internal scripts and tools work on Windows.
 
-If you are an Arri user who encounter's an issue on Windows please report it so it can be fixed. [I plan to add Windows runners to our CI test suite](https://github.com/modiimedia/arri/issues/165) to prevent regressions for Windows users, but that isn't in place yet.
+If you are an Arri user who encounters an issue on Windows please report it so it can be fixed. [I plan to add Windows runners to our CI test suite](https://github.com/modiimedia/arri/issues/165) to prevent regressions for Windows users, but that isn't in place yet.
