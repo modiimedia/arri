@@ -1,7 +1,7 @@
 import { ArriErrorInstance } from '@arrirpc/client';
 import { randomUUID } from 'crypto';
 import { FetchError, ofetch } from 'ofetch';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
     type ObjectWithEveryNullableType,
@@ -469,6 +469,122 @@ test('[SSE] reconnect with new credentials', async () => {
     expect(msgCount > 1).toBe(true);
     expect(openCount > 1).toBe(true);
     expect(errorCount).toBe(0);
+});
+
+describe('request options', () => {
+    test('global options', async () => {
+        let numRequest = 0;
+        let numRequestErr = 0;
+        let numResponse = 0;
+        let numResponseErr = 0;
+        const client = new TestClient({
+            baseUrl: baseUrl,
+            headers: headers,
+            options: {
+                retry: 2,
+                retryStatusCodes: [409],
+                onRequest: () => {
+                    numRequest++;
+                },
+                onRequestError: () => {
+                    numRequestErr++;
+                },
+                onResponse: () => {
+                    numResponse++;
+                },
+                onResponseError: () => {
+                    numResponseErr++;
+                },
+            },
+        });
+        await client.tests.emptyParamsGetRequest();
+        expect(numRequest).toBe(1);
+        expect(numRequestErr).toBe(0);
+        expect(numResponse).toBe(1);
+        expect(numResponseErr).toBe(0);
+        numRequest = 0;
+        numRequestErr = 0;
+        numResponse = 0;
+        numResponseErr = 0;
+        try {
+            await client.tests.sendError({ message: '', code: 409 });
+        } catch (_) {
+            // do nothing
+        }
+        expect(numRequest).toBe(3);
+        expect(numRequestErr).toBe(0);
+        expect(numResponse).toBe(3);
+        expect(numResponseErr).toBe(3);
+    });
+    test('local function options', async () => {
+        let numRequest = 0;
+        let numRequestErr = 0;
+        let numResponse = 0;
+        let numResponseErr = 0;
+        const client = new TestClient({
+            baseUrl: baseUrl,
+            headers: headers,
+            options: {
+                retry: false,
+                onRequest: () => {
+                    numRequest += 1000;
+                },
+                onRequestError: () => {
+                    numRequestErr += 1000;
+                },
+                onResponse: () => {
+                    numResponse += 1000;
+                },
+                onResponseError: () => {
+                    numResponseErr += 1000;
+                },
+            },
+        });
+
+        await client.tests.emptyParamsGetRequest({
+            onRequest: () => {
+                numRequest++;
+            },
+            onRequestError: () => {
+                numRequestErr++;
+            },
+            onResponse: () => {
+                numResponse++;
+            },
+            onResponseError: () => {
+                numResponseErr++;
+            },
+        });
+        expect(numRequest).toBe(1);
+        expect(numRequestErr).toBe(0);
+        expect(numResponse).toBe(1);
+        expect(numResponseErr).toBe(0);
+        numRequest = 0;
+        numRequestErr = 0;
+        numResponse = 0;
+        numResponseErr = 0;
+        try {
+            await client.tests.sendError(
+                { message: '', code: 409 },
+                {
+                    retry: 3,
+                    retryStatusCodes: [409],
+                    onRequest: () => {
+                        numRequest++;
+                    },
+                    onResponseError: () => {
+                        numResponseErr++;
+                    },
+                },
+            );
+        } catch (_) {
+            // do nothing
+        }
+        expect(numRequest).toBe(4);
+        expect(numRequestErr).toBe(0);
+        expect(numResponse).toBe(0);
+        expect(numResponseErr).toBe(4);
+    });
 });
 
 // test("[ws] support websockets", async () => {
