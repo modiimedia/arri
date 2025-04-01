@@ -147,6 +147,7 @@ export async function createTypescriptClient(
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    type ArriRequestOptions,
     arriRequest,
     ${context.usedFeatures.sse ? 'arriSseRequest,' : ''}
     ${context.usedFeatures.ws ? 'arriWsRequest,' : ''}

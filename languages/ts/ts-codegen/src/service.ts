@@ -74,23 +74,26 @@ export function tsServiceFromDefinition(
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void; 
+    private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
 ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
             fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? "";
-        if (options.fetch) {
-            this._fetch = createFetch({ fetch: options.fetch });
+        this._baseUrl = config.baseUrl ?? "";
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
         }
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-${subServices.map((service) => `        this.${service.key} = new ${service.name}(options);`).join('\n')}
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
+${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
 ${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}
 }
