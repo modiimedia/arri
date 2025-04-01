@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/eslint-plugin",
-  "version": "0.77.1",
+  "version": "0.78.0",
   "license": "MIT",
   "type": "module",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
