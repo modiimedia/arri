@@ -50,19 +50,35 @@ pnpm i --save @arrirpc/client
 import { MyClient } from './myClient.g';
 
 const client = new MyClient({
+    // only required field
     baseUrl: 'https://example.com',
+
+    // everything below is optional
     headers: () => {
         return {
             Authorization: '<some-token>',
         };
     },
-    // optional
-    onError: (err) => {
-        // do something
+    onError: (err) => {},
+    options: {
+        retry: 4,
+        retryDelay: 200,
+        retryStatusCodes: [400, 403, 500, 501],
+        onRequest: (ctx) => {},
+        onRequestError: (ctx) => {},
+        onResponse: (ctx) => {},
+        onResponseError: (ctx) => {},
+        signal: undefined, // abortcontroller signal
+        timeout: 200,
     },
 });
 
-await client.myProcedure();
+await client.myProcedure({ foo: 'foo' });
+
+// individual procedures can also override the global request options
+await client.myProcedure({ foo: 'foo' }, { timeout: 400 });
+// be aware that these options are not merged with the global request options so you will have to
+// re-specify every hook if you only want to change one thing
 ```
 
 The root client will be a class containing all of the services and procedures in a single class. If you only need a particular service. You can also import just that service.
