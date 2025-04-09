@@ -22,6 +22,7 @@ Go implementation of [Arri RPC](/README.md). It uses the `net/http` package from
 - [Helper Types](#helper-types)
     - [Pair](#pair)
     - [OrderedMap](#ordered-map)
+- [Extending the Event Type](#extending-the-event-type)
 
 ## Quickstart
 
@@ -62,7 +63,7 @@ import (
     "github.com/modiimedia/arri"
 )
 
-// this is the data type that will be passed around to every procedure
+// this is the type that will be passed around to every procedure
 // it must implement the `arri.Event` interface
 // if you don't want to define a custom event you can use `arri.DefaultEvent` and `arri.CreateDefaultEvent()` instead
 type MyCustomEvent struct {
@@ -80,13 +81,13 @@ func main() {
     // creates a CLI app that accepts parameters for outputting an Arri app definition
 	app := arri.NewApp(
 		http.DefaultServeMux
-		arri.AppOptions[arri.DefaultEvent]{},
+		arri.AppOptions[MyCustomEvent]{},
         // function to create your custom Event type using the incoming request
-		func(w http.ResponseWriter, r *http.Request) (*RpcEvent, arri.RpcError) {
+		func(w http.ResponseWriter, r *http.Request) (*MyCustomEvent, arri.RpcError) {
             return &MyCustomEvent{
                 r: r,
                 w: w,
-            }
+            }, nil
         },
 	)
 
@@ -95,6 +96,7 @@ func main() {
     arri.Rpc(&app, SayGoodbye, arri.RpcOptions{})
 
     // run the app on port 3000
+    // It's
 	err := app.Run(arri.RunOptions{Port: 3000})
 	if err != nil {
 		log.Fatal(err)
@@ -807,3 +809,70 @@ m := arri.OrderedMapWithData(
     arri.Pair("Bar", false),
 )
 ```
+
+## Extending the Event Type
+
+Every procedure receives an "event" that contains additional metadata about the request. You can add any fields you want to your `Event` type so long as it implements the `arri.Event` interface, which looks like this:
+
+```go
+type Event interface {
+	Request() *http.Request
+	Writer() http.ResponseWriter
+}
+```
+
+Let's say for example you want some user data in the Event struct. You could create your own event type like so:
+
+```go
+type User struct {
+    Uid string
+    Name string
+    Email string
+}
+
+type MyCustomEvent struct {
+    r *http.Request
+    w httpResponseWriter
+    User arri.Option[User]
+}
+
+func (e MyCustomEvent) Request() *http.Request {
+    return e.r
+}
+func (e MyCustomEvent) Writer() http.ResponseWriter {
+	return e.w
+}
+```
+
+Now we need to ensure the app is initialized using this new type and that it knows how to create `MyCustomEvent`
+
+```go
+app := arri.NewApp(
+    http.DefaultServeMux
+    arri.AppOptions[MyCustomEvent]{},
+    // this function is used to create your custom event type whenever a new request is made
+    func(w http.ResponseWriter, r *http.Request) (*MyCustomEvent, arri.RpcError) {
+        authToken := r.Header.Get("Authorization")
+        user := arri.None[User]{}
+        if len(authToken) > 0 {
+            // pseudo-code
+            user = getUserFromAuthToken(authToken)
+        }
+        return &MyCustomEvent{
+            r: r,
+            w: w,
+            User: user,
+        }, nil
+    },
+)
+```
+
+Lastly whenever you create a new procedure make sure to use your custom event type:
+
+```go
+func DoSomething(params SomeParamStruct, event MyCustomEvent) (SomeResponseStruct, arri.Error) {
+    return SomeResponseStruct{}, nil
+}
+```
+
+That's all! You can use this "event" paradigm to pass around all kinds of information to your procedures such as user metadata and database connections.
