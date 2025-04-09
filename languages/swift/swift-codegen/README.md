@@ -1,5 +1,7 @@
 # Arri Swift Codegen
 
+_Please note: The generated code does not yet support `swift-tools-version 6` or greater. Please track the status of this issue [here](https://github.com/modiimedia/arri/issues/167). In the meantime please set your `swift-tools-version` to `5.10` or lower._
+
 ## Setup
 
 ### 1) Add the Swift client generator to your arri config
