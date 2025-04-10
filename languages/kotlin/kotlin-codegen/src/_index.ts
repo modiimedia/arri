@@ -58,6 +58,7 @@ export interface KotlinClientOptions {
     clientName?: string;
     typePrefix?: string;
     outputFile: string;
+    rootService?: string;
 }
 
 export const kotlinClientGenerator = defineGeneratorPlugin(
@@ -102,7 +103,7 @@ export function kotlinClientFromAppDefinition(
     }
     const procedureParts: string[] = [];
     const subServiceParts: string[] = [];
-    const services = unflattenProcedures(def.procedures);
+    const services = unflattenProcedures(def.procedures, options.rootService);
     for (const key of Object.keys(services)) {
         const subSchema = services[key];
         if (isServiceDefinition(subSchema)) {

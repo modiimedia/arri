@@ -18,6 +18,7 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
     - [Server Language Roadmap](#server-language-roadmap)
 - [Client Generators](#client-generators)
 - [Other Tooling](#other-tooling)
+- [How Arri RPC Works](#how-arri-rpc-works)
 - [Manually Creating An App Definition](#manually-creating-an-app-definition)
 - [How To Contribute](#how-to-contribute)
 
@@ -51,6 +52,8 @@ See this [guide](/docs/implementing-an-arri-server.md) for information on how to
 
 ## Client Generators
 
+Generators get run by the [Arri CLI](/tooling/cli/README.md) during `arri build`, `arri dev`, and `arri codegen`. You can register which generators you want to run in your Arri config (`arri.config.ts` by default)
+
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
 | Language                                            | HTTP | SSE    |
@@ -72,6 +75,37 @@ Below are the language client generators that are planned to have first party su
 ## Other Tooling
 
 - [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
+
+## How Arri RPC Works
+
+Arri RPC requires two things:
+
+- The [Arri CLI](/tooling/cli/README.md)
+- A valid Arri RPC [server implementation](/docs/implementing-an-arri-server.md)
+
+All official server implementations are able to create an [Arri App Definition](/specifications/arri_app_definition.md) based on the server defined types and procedures. It also is able to communicate with the Arri CLI via a server plugin (to be documented). Server plugins tell the CLI important information such as: "How to build the server", "How to start the server" and "How to get the server's app definition".
+
+Once these things are in place the Arri CLI has everything it needs to grab up-to-date type information and pass it to the [client generators](#client-generators)
+
+### What Happens When We Run `arri build`?
+
+The Arri CLI will do the following:
+
+- Build the server
+- Have the compiled output generate an app definition
+- Take the app definition and pass to the client generators defined in the `arri.config.ts`
+
+### What Happens When We Run `arri dev`
+
+The Arri CLI will do the following:
+
+- Build the server and start it
+- Request the server's app definition and pass it to the client generators
+- Start a file watcher to watch for file changes
+- When a file is changed:
+    - Do whatever logic is necessary to reload the server (hot-reload for Javascript and kill + restart for Go lang)
+    - Request the server's app definition
+    - If the app definition has changed then pass it to the client generators
 
 ## Manually Creating an App Definition
 

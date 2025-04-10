@@ -140,6 +140,7 @@ export function rustServiceFromSchema(
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
                 generatedTypes: context.generatedTypes,
+                rootService: context.rootService,
             });
             if (subService.content) {
                 subServices.push({
@@ -157,6 +158,7 @@ export function rustServiceFromSchema(
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
                 generatedTypes: context.generatedTypes,
+                rootService: context.rootService,
             });
             if (rpc) {
                 rpcParts.push(rpc);

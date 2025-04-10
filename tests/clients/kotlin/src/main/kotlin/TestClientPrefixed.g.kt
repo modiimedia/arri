@@ -38,27 +38,6 @@ class TestClientPrefixed(
     private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    val tests: TestClientPrefixedTestsService = TestClientPrefixedTestsService(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )
-
-    val users: TestClientPrefixedUsersService = TestClientPrefixedUsersService(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )
-}
-
-class TestClientPrefixedTestsService(
-    private val httpClient: HttpClient,
-    private val baseUrl: String,
-    private val headers: __TestClientPrefixedHeadersFn,
-    private val onError: ((err: Exception) -> Unit) = {},
-) {
     suspend fun emptyParamsGetRequest(): FooDefaultPayload {
         try {
             val response = __prepareRequest(
@@ -615,48 +594,6 @@ suspend fun streamTenEventsThenEnd(
                 onResponseError = onResponseError,
                 onData = { str ->
                     val data = FooChatMessage.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
-}
-
-
-
-class TestClientPrefixedUsersService(
-    private val httpClient: HttpClient,
-    private val baseUrl: String,
-    private val headers: __TestClientPrefixedHeadersFn,
-    private val onError: ((err: Exception) -> Unit) = {},
-) {
-    suspend fun watchUser(
-            params: FooUsersWatchUserParams,
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
-            onData: ((data: FooUsersWatchUserResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/users/watch-user",
-                method = HttpMethod.Get,
-                params = params,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = FooUsersWatchUserResponse.fromJson(str)
                     onData(data)
                 }
             )

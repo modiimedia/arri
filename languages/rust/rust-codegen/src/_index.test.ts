@@ -38,6 +38,7 @@ test('Generated code matches codegen reference', async () => {
         instancePath: '',
         schemaPath: '',
         generatedTypes: [],
+        rootService: undefined,
     });
     const outputFile = path.resolve(tmpDir, 'example_client.g.rs');
     writeFileSync(outputFile, result);

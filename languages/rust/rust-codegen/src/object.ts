@@ -81,6 +81,7 @@ export default function rustObjectFromSchema(
             instancePath: `/${structName}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             generatedTypes: context.generatedTypes,
+            rootService: context.rootService,
         });
         if (innerType.content) {
             subContent.push(innerType.content);
@@ -142,6 +143,7 @@ export default function rustObjectFromSchema(
             schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
             generatedTypes: context.generatedTypes,
             isOptional: true,
+            rootService: context.rootService,
         });
         if (innerType.content) {
             subContent.push(innerType.content);

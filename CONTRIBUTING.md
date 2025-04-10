@@ -13,6 +13,7 @@ If you need any additional guidance, feel free to pop into the Arri RPC [discord
 - [Project Scaffolds](#project-scaffolds)
 - [Guidelines For Pull Requests](#guidelines-for-pull-requests)
 - [Obtaining Commit Access](#obtaining-commit-access)
+- [Notice For Windows Users](#notice-for-windows-users)
 
 ## Prerequisites
 
@@ -25,11 +26,11 @@ pnpm i
 pnpm build
 ```
 
-Which will build all the TS projects needed to get started.
+Which will build all the TS projects needed to get started. If you just want to contribute to a TS project then you are all set. (All of the Arri generators are written in TS)
 
-You will also need to install the toolchain for whatever language libraries you are looking to work in. For example you need to Rust compiler and Cargo to work on the Rust client library.
+If you want to contribute to a non-TS library you will also need to install the toolchain for whatever language you are looking to work in. For example you need to Rust compiler and Cargo to work on the Rust client library.
 
-To be able to build and run everything you currently need:
+To be able to build and run everything in this repo you currently need:
 
 - [The Dart SDK](https://dart.dev/get-dart) for Dart
 - [The Rust compiler & Cargo](https://www.rust-lang.org/learn/get-started) for Rust
@@ -175,3 +176,11 @@ For a more complete guide on creating a code generator see [here](/docs/creating
 Anyone who has submitted multiple high-quality PRs may be qualified for getting commit access. I'm pretty open to other people joining on the project so long as they hold themselves to the same vision and quality standard that I have for this project.
 
 This project is not something I will be able to make succeed alone. We will need multiple people who have the same passion and vision for end-to-end type-safety to really bring it over the finish line.
+
+## Notice For Windows Users
+
+While I have a Windows machine, I rarely ever boot it. Because of this, some of the scripts and tools used for Arri development may not work as expected or may not even work at all. If you run into these scenarios you will likely have to make use of [WSL](https://learn.microsoft.com/en-us/windows/wsl/) when contributing to Arri.
+
+The goal is that the Arri CLI and libraries work on all major operating systems (including Windows), but I'm not necessarily going to go out of my way to make Arri's internal scripts and tools work on Windows.
+
+If you are an Arri user who encounters an issue on Windows please report it so it can be fixed. [I plan to add Windows runners to our CI test suite](https://github.com/modiimedia/arri/issues/165) to prevent regressions for Windows users, but that isn't in place yet.

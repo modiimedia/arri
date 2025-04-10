@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/source",
-  "version": "0.76.4",
+  "version": "0.78.0",
   "author": {
     "name": "joshmossas",
     "url": "https://github.com/joshmossas"
@@ -50,36 +50,33 @@
   },
   "private": true,
   "devDependencies": {
-    "@eslint/js": "9.22.0",
-    "@sinclair/typebox": "^0.34.30",
+    "@eslint/js": "9.23.0",
     "@types/lodash": "^4.17.16",
-    "@types/node": "22.13.10",
-    "@vitest/coverage-v8": "3.0.8",
-    "@vitest/ui": "3.0.8",
+    "@types/node": "22.13.13",
+    "@vitest/coverage-v8": "3.0.9",
+    "@vitest/ui": "3.0.9",
     "autocannon": "^8.0.0",
     "bun-types": "^1.2.5",
     "citty": "^0.1.6",
     "depcheck": "^1.4.7",
     "esbuild": "0.25.1",
-    "eslint": "9.22.0",
+    "eslint": "9.23.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-plugin-n": "^17.16.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globby": "^14.1.0",
     "jiti": "^2.4.2",
     "lodash": "^4.17.21",
-    "nx": "20.6.0",
+    "nx": "20.6.2",
     "pathe": "^2.0.3",
     "prettier": "^3.5.3",
     "scule": "^1.3.0",
     "start-server-and-test": "^2.0.11",
     "typescript": "5.8.2",
-    "typescript-eslint": "^8.26.1",
+    "typescript-eslint": "^8.27.0",
     "unbuild": "^3.5.0",
-    "valibot": "1.0.0-rc.4",
-    "vite": "6.2.2",
-    "vitest": "3.0.8",
-    "zod": "^3.24.2"
+    "vite": "6.2.3",
+    "vitest": "3.0.9"
   },
   "nx": {
     "includedScripts": []

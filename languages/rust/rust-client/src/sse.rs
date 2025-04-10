@@ -260,6 +260,10 @@ impl<'a> EventSource<'a> {
                                     return SseAction::Abort;
                                 }
                             }
+                            "" => on_event(
+                                SseEvent::Message(T::from_json_string(message.data)),
+                                &mut controller,
+                            ),
                             _ => {}
                         }
                     }

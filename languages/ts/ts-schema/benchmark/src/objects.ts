@@ -1,15 +1,27 @@
-import { Type } from '@sinclair/typebox';
+import assert from 'node:assert';
+
+import { Static, Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Check, Decode, Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
 import AjvJtd from 'ajv/dist/jtd';
+import { type as arktype } from 'arktype';
 import benny from 'benny';
+import typia from 'typia';
 import * as v from 'valibot';
+import { assertType } from 'vitest';
 import { z } from 'zod';
 
 import { a } from '../../src/_index';
+import {
+    badInput,
+    badJsonInput,
+    goodInput,
+    goodInputWithStringValues,
+    goodJsonInput,
+} from './_common';
 
-const ArriUser = a.object({
+export const ArriUser = a.object({
     id: a.int32(),
     role: a.stringEnum(['standard', 'admin', 'moderator']),
     name: a.string(),
@@ -36,94 +48,15 @@ const ArriUser = a.object({
         }),
     ),
 });
-const $$ArriUser = a.compile(ArriUser);
-type ArriUser = a.infer<typeof ArriUser>;
-
-const input: ArriUser = {
-    id: 12345,
-    role: 'moderator',
-    name: 'John Doe',
-    email: null,
-    createdAt: 0,
-    updatedAt: 0,
-    settings: {
-        preferredTheme: 'system',
-        allowNotifications: true,
-    },
-    recentNotifications: [
-        {
-            type: 'POST_LIKE',
-            postId: '1',
-            userId: '2',
-        },
-        {
-            type: 'POST_COMMENT',
-            postId: '1',
-            userId: '1',
-            commentText: '',
-        },
-    ],
-};
-const inputJson = JSON.stringify(input);
-
-const badInput: ArriUser = {
-    id: 12345,
-    role: 'moderator',
-    name: 'John Doe',
-    email: null,
-    createdAt: 0,
-    updatedAt: 0,
-    settings: {
-        preferredTheme: 'system',
-        allowNotifications: true,
-    },
-    recentNotifications: [
-        {
-            type: 'POST_LIKE',
-            postId: '1',
-            userId: '2',
-        },
-        {
-            type: 'POST_BOOKMARK',
-            postId: '1',
-            userId: '2',
-        } as any,
-    ],
-};
-const badInputJson = JSON.stringify(badInput);
-
-if (a.parse(ArriUser, badInput).success) {
-    throw new Error('ArriUser should fail at badInputJson');
-}
-if ($$ArriUser.parse(badInputJson).success) {
-    throw new Error('$$ArriUser should failed at badInputJson');
-}
-
-const inputWithStringKeys = {
-    id: '12345',
-    role: 'moderator',
-    name: 'John Doe',
-    email: 'null',
-    createdAt: '12135151',
-    updatedAt: '13141343',
-    settings: {
-        preferredTheme: 'system',
-        allowNotifications: 'true',
-    },
-    recentNotifications: [
-        {
-            type: 'POST_LIKE',
-            postId: '1',
-            userId: '2',
-        },
-        {
-            type: 'POST_COMMENT',
-            postId: '1',
-            userId: '1',
-            commentText: '',
-        },
-    ],
-};
+export const $$ArriUser = a.compile(ArriUser);
+export type ArriUser = a.infer<typeof ArriUser>;
+assertType<ArriUser>(goodInput);
+assert(a.validate(ArriUser, goodInput) === true);
+assert(a.validate(ArriUser, badInput) == false);
+assert(a.parse(ArriUser, goodInput).success === true);
+assert(a.parse(ArriUser, badInput).success === false);
+assert($$ArriUser.validate(goodInput) === true);
+assert($$ArriUser.validate(badInput) === false);
 
 const ZodUser = z.object({
     id: z.number(),
@@ -153,6 +86,7 @@ const ZodUser = z.object({
         ]),
     ),
 });
+type ZodUser = z.infer<typeof ZodUser>;
 const ZodCoercedUser = z.object({
     id: z.coerce.number(),
     role: z.enum(['standard', 'admin', 'moderator']),
@@ -182,14 +116,11 @@ const ZodCoercedUser = z.object({
         ]),
     ),
 });
-if (!ZodUser.safeParse(input).success) {
-    throw new Error(`Zod should parse input`);
-}
-if (ZodUser.safeParse(badInput).success) {
-    throw new Error(`Zod should not parse badInput`);
-}
+assertType<ZodUser>(goodInput);
+assert(ZodUser.safeParse(goodInput).success === true);
+assert(ZodUser.safeParse(badInput).success === false);
 
-const TypeBoxUser = Type.Object({
+const TypeboxUser = Type.Object({
     id: Type.Integer(),
     role: Type.Union([
         Type.Literal('standard'),
@@ -228,16 +159,16 @@ const TypeBoxUser = Type.Object({
         ]),
     ),
 });
-const TypeBoxUserValidator = TypeCompiler.Compile(TypeBoxUser);
-if (!Check(TypeBoxUser, input)) {
-    throw new Error(`Typebox should pass input`);
-}
-if (Check(TypeBoxUser, badInput)) {
-    throw new Error(`Typebox should not pass bad input`);
-}
+type TypeboxUser = Static<typeof TypeboxUser>;
+const $$TypeboxUser = TypeCompiler.Compile(TypeboxUser);
+assertType<TypeboxUser>(goodInput);
+assert(Check(TypeboxUser, goodInput) === true);
+assert(Check(TypeboxUser, badInput) === false);
+assert($$TypeboxUser.Check(goodInput) === true);
+assert($$TypeboxUser.Check(badInput) === false);
 
 const ajv = new Ajv({ strict: false });
-const AjvUserValidator = ajv.compile<ArriUser>(TypeBoxUser);
+const AjvUserValidator = ajv.compile<ArriUser>(TypeboxUser);
 const ajvJtd = new AjvJtd({ strictSchema: false });
 const AjvInput = {
     properties: {
@@ -293,12 +224,10 @@ const AjvInput = {
 const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
 const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
 const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
-if (!AjvUserValidator(input)) {
-    throw new Error('Ajv should pass input');
-}
-if (AjvUserValidator(badInput)) {
-    throw new Error('Ajv should fail bad input');
-}
+assert(AjvUserValidator(goodInput) === true);
+assert(AjvUserValidator(badInput) === false);
+assert(AjvJtdUserValidator(goodInput) === true);
+assert(AjvJtdUserValidator(badInput) === false);
 
 const ValibotUser = v.object({
     id: v.pipe(v.number(), v.integer()),
@@ -330,62 +259,124 @@ const ValibotUser = v.object({
     ),
 });
 type ValibotUser = v.InferOutput<typeof ValibotUser>;
-if (!v.is(ValibotUser, input)) {
-    throw new Error('Valibot should pass input');
-}
-if (!v.safeParse(ValibotUser, input).success) {
-    throw new Error('Validbot should parse input');
-}
-if (v.is(ValibotUser, badInput)) {
-    throw new Error('Valibot should fail badInput');
-}
-if (v.safeParse(ValibotUser, badInput).success) {
-    throw new Error('Valibot should not parse badInput');
-}
+assertType<ValibotUser>(goodInput);
+assert(v.is(ValibotUser, goodInput) === true);
+assert(v.is(ValibotUser, badInput) === false);
+assert(v.safeParse(ValibotUser, goodInput).success === true);
+assert(v.safeParse(ValibotUser, badInput).success === false);
+
+const ArktypeUser = arktype({
+    id: 'number.integer',
+    role: "'standard' | 'admin' | 'moderator'",
+    name: 'string',
+    email: 'string | null',
+    createdAt: 'number.integer',
+    updatedAt: 'number.integer',
+    'settings?': {
+        preferredTheme: "'light' | 'dark' | 'system'",
+        allowNotifications: 'boolean',
+    },
+    recentNotifications: arktype({
+        type: "'POST_LIKE'",
+        userId: 'string',
+        postId: 'string',
+    })
+        .or({
+            type: "'POST_COMMENT'",
+            userId: 'string',
+            postId: 'string',
+            commentText: 'string',
+        })
+        .array(),
+});
+type ArkTypeUser = arktype.infer<typeof ArktypeUser>;
+assertType<ArkTypeUser>(goodInput);
+assert(!(ArktypeUser(goodInput) instanceof arktype.errors));
+assert(ArktypeUser(badInput) instanceof arktype.errors);
+
+type TypiaInt32 = number & typia.tags.Type<'int32'>;
+type TypiaUser = {
+    id: TypiaInt32;
+    role: 'standard' | 'admin' | 'moderator';
+    name: string;
+    email: string | null;
+    createdAt: TypiaInt32;
+    updatedAt: TypiaInt32;
+    settings?: {
+        preferredTheme: 'light' | 'dark' | 'system';
+        allowNotifications: boolean;
+    };
+    recentNotifications: Array<
+        | {
+              type: 'POST_LIKE';
+              userId: string;
+              postId: string;
+          }
+        | {
+              type: 'POST_COMMENT';
+              userId: string;
+              postId: string;
+              commentText: string;
+          }
+    >;
+};
+const TypiaValidate = typia.createIs<TypiaUser>();
+const TypiaJsonParse = typia.json.createValidateParse<TypiaUser>();
+const TypiaJsonStringify = typia.json.createStringify<TypiaUser>();
+const TypiaValidateAndJsonStringify =
+    typia.json.createValidateStringify<TypiaUser>();
+
+assertType<TypiaUser>(goodInput);
+assert(TypiaValidate(goodInput) === true);
+assert(TypiaValidate(badInput) === false);
+assert(TypiaJsonParse(goodJsonInput).success === true);
+assert(TypiaJsonParse(badJsonInput).success === false);
+assert(typeof TypiaJsonStringify(goodInput) === 'string');
+assert(TypiaValidateAndJsonStringify(goodInput).success === true);
 
 void benny.suite(
     'Object Validation - Good Input',
     benny.add('Arri', () => {
-        a.validate(ArriUser, input);
+        a.validate(ArriUser, goodInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.validate(input);
+        $$ArriUser.validate(goodInput);
     }),
-    benny.add('Arri (Standard-Schema)', () => {
-        const result = ArriUser['~standard'].validate(input);
-        if (result instanceof Promise) {
-            throw new Error('Should not return a promise');
-        }
+    benny.add('Arri - Standard Schema', () => {
+        ArriUser['~standard'].validate(goodInput);
     }),
-    benny.add('Arri (Compiled + Standard Schema)', () => {
-        const result = $$ArriUser['~standard'].validate(input);
-        if (result instanceof Promise) {
-            throw new Error('Should not return a promise');
-        }
+    benny.add('Arri (Compiled) - Standard Schema', () => {
+        $$ArriUser['~standard'].validate(goodInput);
     }),
     benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriUser, input);
+        ajvJtd.validate(ArriUser, goodInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserValidator(input);
+        AjvJtdUserValidator(goodInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
-        ajv.validate(TypeBoxUser, input);
+        ajv.validate(TypeboxUser, goodInput);
     }),
     benny.add('Ajv - JSON Schema (Compiled)', () => {
-        AjvUserValidator(input);
+        AjvUserValidator(goodInput);
     }),
     benny.add('TypeBox', () => {
-        Value.Check(TypeBoxUser, input);
+        Value.Check(TypeboxUser, goodInput);
     }),
     benny.add('TypeBox (Compiled)', () => {
-        TypeBoxUserValidator.Check(input);
+        $$TypeboxUser.Check(goodInput);
     }),
     benny.add('Zod', () => {
-        ZodUser.parse(input);
+        ZodUser.parse(goodInput);
     }),
     benny.add('Valibot', () => {
-        v.is(ValibotUser, input);
+        v.is(ValibotUser, goodInput);
+    }),
+    benny.add('Arktype', () => {
+        ArktypeUser(goodInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaValidate(goodInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -404,70 +395,46 @@ void benny.suite(
 void benny.suite(
     'Object Validation - Bad Input',
     benny.add('Arri', () => {
-        if (a.validate(ArriUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        a.validate(ArriUser, badInput);
+    }),
+    benny.add('Arri - Standard-Schema', () => {
+        ArriUser['~standard'].validate(badInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        if ($$ArriUser.validate(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        $$ArriUser.validate(badInput);
     }),
-    benny.add('Arri (Standard-Schema)', () => {
-        const result = ArriUser['~standard'].validate(badInput);
-        if (result instanceof Promise) {
-            throw new Error('Expected not to be a promise');
-        }
-        if (typeof result.issues === 'undefined') {
-            throw new Error('Expected to fail');
-        }
-    }),
-    benny.add('Arri (Compiled + Standard Schema)', () => {
-        const result = $$ArriUser['~standard'].validate(badInput);
-        if (result instanceof Promise) {
-            throw new Error('Expected not to be a promise');
-        }
-        if (typeof result.issues === 'undefined') {
-            throw new Error('Expected to fail');
-        }
+    benny.add('Arri (Compiled) - Standard Schema', () => {
+        $$ArriUser['~standard'].validate(badInput);
     }),
     benny.add('Ajv - JTD', () => {
-        if (ajvJtd.validate(ArriUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        ajvJtd.validate(ArriUser, badInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
-        if (AjvJtdUserValidator(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        AjvJtdUserValidator(badInput);
     }),
     benny.add('Ajv - JSON Schema', () => {
-        if (ajv.validate(TypeBoxUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        ajv.validate(TypeboxUser, badInput);
     }),
     benny.add('Ajv - JSON Schema (Compiled)', () => {
-        if (AjvUserValidator(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        AjvUserValidator(badInput);
     }),
     benny.add('TypeBox', () => {
-        if (Value.Check(TypeBoxUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        Value.Check(TypeboxUser, badInput);
     }),
     benny.add('TypeBox (Compiled)', () => {
-        if (TypeBoxUserValidator.Check(badInput)) {
-            throw new Error('Expected to fail');
-        }
+        $$TypeboxUser.Check(badInput);
     }),
     benny.add('Zod', () => {
         ZodUser.safeParse(badInput);
     }),
     benny.add('Valibot', () => {
-        if (v.is(ValibotUser, badInput)) {
-            throw new Error('Expected to fail');
-        }
+        v.is(ValibotUser, badInput);
+    }),
+    benny.add('Arktype', () => {
+        ArktypeUser(badInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaValidate(badInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -486,40 +453,40 @@ void benny.suite(
 void benny.suite(
     'Object Parsing - Good Input',
     benny.add('Arri', () => {
-        a.parse(ArriUser, inputJson);
+        a.parse(ArriUser, goodJsonInput);
     }),
-    benny.add('Arri Unsafe', () => {
-        a.parseUnsafe(ArriUser, inputJson);
-    }),
-    benny.add('Arri (StandardSchema)', () => {
-        ArriUser['~standard'].validate(inputJson);
+    benny.add('Arri - Standard Schema', () => {
+        ArriUser['~standard'].validate(goodJsonInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.parse(inputJson);
+        $$ArriUser.parse(goodJsonInput);
     }),
-    benny.add('Arri (Compiled) Unsafe', () => {
-        $$ArriUser.parseUnsafe(inputJson);
-    }),
-    benny.add('Arri (Compiled Standard Schema)', () => {
-        $$ArriUser['~standard'].validate(inputJson);
+    benny.add('Arri (Compiled) - Standard Schema', () => {
+        $$ArriUser['~standard'].validate(goodJsonInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserParser(inputJson);
+        AjvJtdUserParser(goodJsonInput);
     }),
     benny.add('JSON.parse', () => {
-        JSON.parse(inputJson);
+        JSON.parse(goodJsonInput);
     }),
     benny.add('JSON.parse + Typebox', () => {
-        Decode(TypeBoxUser, JSON.parse(inputJson));
+        Decode(TypeboxUser, JSON.parse(goodJsonInput));
     }),
     benny.add('JSON.parse + Typebox (Compiled)', () => {
-        TypeBoxUserValidator.Decode(JSON.parse(inputJson));
+        $$TypeboxUser.Decode(JSON.parse(goodJsonInput));
     }),
     benny.add('JSON.parse + Valibot', () => {
-        v.safeParse(ValibotUser, JSON.parse(inputJson));
+        v.safeParse(ValibotUser, JSON.parse(goodJsonInput));
     }),
     benny.add('JSON.parse + Zod', () => {
-        ZodUser.parse(JSON.parse(inputJson));
+        ZodUser.parse(JSON.parse(goodJsonInput));
+    }),
+    benny.add('JSON.parse + Arktype', () => {
+        ArktypeUser(JSON.parse(goodJsonInput));
+    }),
+    benny.add('Typia (json.createValidateParse)', () => {
+        TypiaJsonParse(goodJsonInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -537,7 +504,7 @@ void benny.suite(
 
 function TypeBoxDecodeSafe(input: unknown) {
     try {
-        const val = Decode(TypeBoxUser, input);
+        const val = Decode(TypeboxUser, input);
         return {
             success: true,
             value: val,
@@ -552,7 +519,7 @@ function TypeBoxDecodeSafe(input: unknown) {
 
 function TypeboxDecodeSafeCompiled(input: unknown) {
     try {
-        const val = TypeBoxUserValidator.Decode(input);
+        const val = $$TypeboxUser.Decode(input);
         return {
             success: true,
             value: val,
@@ -568,34 +535,40 @@ function TypeboxDecodeSafeCompiled(input: unknown) {
 void benny.suite(
     'Object Parsing - Bad Input',
     benny.add('Arri', () => {
-        a.parse(ArriUser, badInputJson);
+        a.parse(ArriUser, badJsonInput);
     }),
     benny.add('Arri (StandardSchema)', () => {
-        ArriUser['~standard'].validate(badInputJson);
+        ArriUser['~standard'].validate(badJsonInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.parse(badInputJson);
+        $$ArriUser.parse(badJsonInput);
     }),
-    benny.add('Arri (Compiled Standard Schema)', () => {
-        $$ArriUser['~standard'].validate(badInputJson);
+    benny.add('Arri (Compiled) - Standard Schema', () => {
+        $$ArriUser['~standard'].validate(badJsonInput);
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserParser(badInputJson);
+        AjvJtdUserParser(badJsonInput);
     }),
     benny.add('JSON.parse', () => {
-        JSON.parse(badInputJson);
+        JSON.parse(badJsonInput);
     }),
     benny.add('JSON.parse + Typebox', () => {
-        TypeBoxDecodeSafe(JSON.parse(badInputJson));
+        TypeBoxDecodeSafe(JSON.parse(badJsonInput));
     }),
     benny.add('JSON.parse + Typebox (Compiled)', () => {
         TypeboxDecodeSafeCompiled(badInput);
     }),
     benny.add('JSON.parse + Valibot', () => {
-        v.safeParse(ValibotUser, JSON.parse(badInputJson));
+        v.safeParse(ValibotUser, JSON.parse(badJsonInput));
     }),
     benny.add('JSON.parse + Zod', () => {
-        ZodUser.safeParse(JSON.parse(badInputJson));
+        ZodUser.safeParse(JSON.parse(badJsonInput));
+    }),
+    benny.add('JSON.parse + Arktype', () => {
+        ArktypeUser(JSON.parse(badJsonInput));
+    }),
+    benny.add('Typia (json.createValidateParse)', () => {
+        TypiaJsonParse(badJsonInput);
     }),
     benny.cycle(),
     benny.complete(),
@@ -614,16 +587,16 @@ void benny.suite(
 void benny.suite(
     'Object Coercion',
     benny.add('Arri', () => {
-        a.coerce(ArriUser, inputWithStringKeys);
+        a.coerce(ArriUser, goodInputWithStringValues);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.coerce(inputWithStringKeys);
+        $$ArriUser.coerce(goodInputWithStringValues);
     }),
     benny.add('TypeBox', () => {
-        Value.Convert(TypeBoxUser, inputWithStringKeys);
+        Value.Convert(TypeboxUser, goodInputWithStringValues);
     }),
     benny.add('Zod', () => {
-        ZodCoercedUser.parse(inputWithStringKeys);
+        ZodCoercedUser.parse(goodInputWithStringValues);
     }),
     benny.cycle(),
     benny.complete(),
@@ -642,32 +615,27 @@ void benny.suite(
 void benny.suite(
     'Object Serialization',
     benny.add('Arri', () => {
-        a.serialize(ArriUser, input);
-    }),
-    benny.add('Arri (Unsafe)', () => {
-        a.serializeUnsafe(ArriUser, input);
+        a.serialize(ArriUser, goodInput);
     }),
     benny.add('Arri (Compiled)', () => {
-        $$ArriUser.serialize(input);
+        $$ArriUser.serialize(goodInput);
     }),
-    benny.add('Arri (Compiled Unsafe)', () => {
-        $$ArriUser.serializeUnsafe(input);
-    }),
-    benny.add('Arri (Compiled) Validate and Serialize', () => {
-        if ($$ArriUser.validate(input)) {
-            $$ArriUser.serialize(input);
-        }
-    }),
-    benny.add('Arri (Compiled) Validate and Serialize Unsafe', () => {
-        if ($$ArriUser.validate(input)) {
-            $$ArriUser.serializeUnsafe(input);
+    benny.add('Arri (Compiled) - Validate and Serialize', () => {
+        if ($$ArriUser.validate(goodInput)) {
+            $$ArriUser.serialize(goodInput);
         }
     }),
     benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserSerializer(input);
+        AjvJtdUserSerializer(goodInput);
+    }),
+    benny.add('Typia', () => {
+        TypiaJsonStringify(goodInput);
+    }),
+    benny.add('Typia - Validate and Serialize', () => {
+        TypiaValidateAndJsonStringify(goodInput);
     }),
     benny.add('JSON.stringify', () => {
-        JSON.stringify(input);
+        JSON.stringify(goodInput);
     }),
     benny.cycle(),
     benny.complete(),

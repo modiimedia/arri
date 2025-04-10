@@ -38,14 +38,39 @@ export * from './common';
 export * from './rpc';
 
 export interface TypescriptGeneratorOptions {
-    clientName: string;
+    /**
+     * Defaults to 'Client'
+     */
+    clientName?: string;
     outputFile: string;
+    /**
+     * Add a prefix to the generated types
+     */
     typePrefix?: string;
+    /**
+     * Set the root service of the generated client
+     *
+     * __Example:__
+     *
+     * Given the following procedures:
+     * - users.getUser
+     * - users.updateUser
+     * - posts.getPost
+     * - posts.updatePosts
+     *
+     * Setting the rootService to `posts` means the generated client will only have the following procedures:
+     * - getPost
+     * - updatePosts
+     */
+    rootService?: string;
+    /**
+     * Options for how to format the outputted typescript code
+     */
     prettierOptions?: Omit<prettier.Config, 'parser'>;
     /**
      * Override the default functions used for creating procedures
      */
-    rpcGenerators?: Record<RpcDefinition['transport'], RpcGenerator>;
+    rpcGenerators?: Partial<Record<RpcDefinition['transport'], RpcGenerator>>;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
@@ -75,7 +100,7 @@ export async function createTypescriptClient(
 ): Promise<string> {
     const types: string[] = [];
     const context: CodegenContext = {
-        clientName: options.clientName,
+        clientName: options.clientName ?? 'Client',
         typePrefix: options.typePrefix ?? '',
         generatedTypes: [],
         instancePath: '',
@@ -90,7 +115,10 @@ export async function createTypescriptClient(
         },
         rpcGenerators: options.rpcGenerators ?? {},
     };
-    const serviceDefinitions = unflattenProcedures(def.procedures);
+    const serviceDefinitions = unflattenProcedures(
+        def.procedures,
+        options.rootService,
+    );
     const mainService = tsServiceFromDefinition(serviceDefinitions, context);
     for (const key of Object.keys(def.definitions)) {
         const typeDef = def.definitions[key]!;
@@ -119,6 +147,7 @@ export async function createTypescriptClient(
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    type ArriRequestOptions,
     arriRequest,
     ${context.usedFeatures.sse ? 'arriSseRequest,' : ''}
     ${context.usedFeatures.ws ? 'arriWsRequest,' : ''}

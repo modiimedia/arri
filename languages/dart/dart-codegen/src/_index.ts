@@ -53,6 +53,7 @@ export interface DartClientGeneratorOptions {
      */
     typePrefix?: string;
     format?: boolean;
+    rootService?: string;
 }
 
 export const dartClientGenerator = defineGeneratorPlugin(
@@ -93,7 +94,7 @@ export function createDartClient(
         schemaPath: '',
         clientVersion: def.info?.version ?? '',
     };
-    const services = unflattenProcedures(def.procedures);
+    const services = unflattenProcedures(def.procedures, options.rootService);
     const subServices: { key: string; name: string }[] = [];
     const subServiceParts: string[] = [];
     const rpcParts: string[] = [];

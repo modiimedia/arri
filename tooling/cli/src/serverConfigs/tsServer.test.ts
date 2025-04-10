@@ -1,4 +1,8 @@
-import { getRpcMetaFromPath, TsServerConfig } from './tsServer';
+import {
+    createWindowsCompatibleAbsoluteImport,
+    getRpcMetaFromPath,
+    TsServerConfig,
+} from './tsServer';
 
 describe('Naming RPCs', () => {
     test('Basic route', () => {
@@ -45,4 +49,15 @@ describe('Naming RPCs', () => {
         expect(result?.id).toBe('users.getUser');
         expect(result?.httpPath).toBe('/users/get-user');
     });
+});
+
+test('windows compatible absolute imports', () => {
+    const result = createWindowsCompatibleAbsoluteImport(
+        'C:/Users/foo/Documents/file.js',
+    );
+    expect(result).toBe(`file:\\\\C:\\Users\\foo\\Documents\\file.js`);
+    const result2 = createWindowsCompatibleAbsoluteImport(
+        'ZZ:\\Users\\foo\\Documents\\file.mjs',
+    );
+    expect(result2).toBe('file:\\\\ZZ:\\Users\\foo\\Documents\\file.mjs');
 });

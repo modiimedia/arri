@@ -32,9 +32,32 @@ import { swiftDictionaryFromSchema } from './record';
 import { swiftRefFromSchema } from './ref';
 
 export interface SwiftClientGeneratorOptions {
-    clientName: string;
+    /**
+     * Defaults to "Client"
+     */
+    clientName?: string;
     outputFile: string;
+    /**
+     * Add a prefix to the generated structs
+     */
     typePrefix?: string;
+    /**
+     * Set the root service of the generated client
+     *
+     *
+     * __Example:__
+     *
+     * Given the following procedures:
+     * - users.getUser
+     * - users.updateUser
+     * - posts.getPost
+     * - posts.updatePosts
+     *
+     * Setting the rootService to `posts` means the generated client will only have the following procedures:
+     * - getPost
+     * - updatePosts
+     */
+    rootService?: string;
 }
 
 export const swiftClientGenerator = defineGeneratorPlugin(
@@ -55,14 +78,14 @@ export function createSwiftClient(
 ) {
     const context: GeneratorContext = {
         clientVersion: def.info?.version ?? '',
-        clientName: options.clientName,
+        clientName: options.clientName ?? 'Client',
         typePrefix: options.typePrefix ?? '',
         instancePath: '',
         schemaPath: '',
         generatedTypes: [],
         containsRequiredRef: {},
     };
-    const services = unflattenProcedures(def.procedures);
+    const services = unflattenProcedures(def.procedures, options.rootService);
     const mainService = swiftServiceFromSchema(services, context);
     const typeContent: string[] = [];
     for (const key of Object.keys(def.definitions)) {

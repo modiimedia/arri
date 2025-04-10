@@ -74,7 +74,7 @@ export function httpRpcFromDefinition(
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(${params ? `params: ${params}` : ''}): Promise<${response ?? 'undefined'}> {
+    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: ArriRequestOptions): Promise<${response ?? 'undefined'}> {
         return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
             method: "${def.method.toLowerCase()}",
@@ -86,6 +86,7 @@ export function httpRpcFromDefinition(
             responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
             serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
             clientVersion: "${context.versionNumber}",
+            options: options ?? this._options,
         });
     }`;
 }

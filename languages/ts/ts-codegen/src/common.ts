@@ -35,7 +35,7 @@ export interface CodegenContext {
         sse: boolean;
         ws: boolean;
     };
-    rpcGenerators: Record<string, RpcGenerator>;
+    rpcGenerators: Partial<Record<string, RpcGenerator>>;
 }
 
 export function getJsDocComment(metadata: Schema['metadata']) {

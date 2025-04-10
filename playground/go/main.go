@@ -8,7 +8,12 @@ import (
 )
 
 func main() {
-	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultEvent]{}, arri.CreateDefaultEvent)
+	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultEvent]{
+		OnRequest: func(event *arri.DefaultEvent) arri.RpcError {
+			event.Writer().Header().Add("Access-Control-Allow-Origin", "*")
+			return nil
+		},
+	}, arri.CreateDefaultEvent)
 	arri.Rpc(&app, SayHello, arri.RpcOptions{})
 	app.Run(arri.RunOptions{})
 }
@@ -18,7 +23,7 @@ type SayHelloParams struct {
 }
 
 type SayHelloResponse struct {
-	Message string `enum:"HELLO,WORLD" enumName:"MESSAGE"`
+	Message string
 }
 
 func SayHello(params SayHelloParams, event arri.DefaultEvent) (SayHelloResponse, arri.RpcError) {

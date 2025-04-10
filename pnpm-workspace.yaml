@@ -7,3 +7,4 @@ onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - nx
+  - typia

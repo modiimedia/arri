@@ -6,6 +6,7 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    type ArriRequestOptions,
     arriRequest,
     arriSseRequest,
     type EventSourceController,
@@ -37,51 +38,28 @@ export class TestClientPrefixed {
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
-    tests: TestClientPrefixedTestsService;
-    users: TestClientPrefixedUsersService;
+    private readonly _options?: ArriRequestOptions;
+
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
             fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? '';
-        if (options.fetch) {
-            this._fetch = createFetch({ fetch: options.fetch });
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
         }
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-        this.tests = new TestClientPrefixedTestsService(options);
-        this.users = new TestClientPrefixedUsersService(options);
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
     }
-}
-
-export class TestClientPrefixedTestsService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-
-    constructor(
-        options: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-        } = {},
-    ) {
-        this._baseUrl = options.baseUrl ?? '';
-        if (options.fetch) {
-            this._fetch = createFetch({ fetch: options.fetch });
-        }
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-    }
-    async emptyParamsGetRequest(): Promise<FooDefaultPayload> {
+    async emptyParamsGetRequest(
+        options?: ArriRequestOptions,
+    ): Promise<FooDefaultPayload> {
         return arriRequest<FooDefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
             method: 'get',
@@ -93,9 +71,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooDefaultPayload.fromJsonString,
             serializer: () => {},
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async emptyParamsPostRequest(): Promise<FooDefaultPayload> {
+    async emptyParamsPostRequest(
+        options?: ArriRequestOptions,
+    ): Promise<FooDefaultPayload> {
         return arriRequest<FooDefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
             method: 'post',
@@ -107,10 +88,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooDefaultPayload.fromJsonString,
             serializer: () => {},
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async emptyResponseGetRequest(
         params: FooDefaultPayload,
+        options?: ArriRequestOptions,
     ): Promise<undefined> {
         return arriRequest<undefined, FooDefaultPayload>({
             url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
@@ -123,10 +106,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: () => {},
             serializer: $$FooDefaultPayload.toUrlQueryString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async emptyResponsePostRequest(
         params: FooDefaultPayload,
+        options?: ArriRequestOptions,
     ): Promise<undefined> {
         return arriRequest<undefined, FooDefaultPayload>({
             url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
@@ -139,13 +124,17 @@ export class TestClientPrefixedTestsService {
             responseFromString: () => {},
             serializer: $$FooDefaultPayload.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
      * @deprecated
      */
-    async deprecatedRpc(params: FooDeprecatedRpcParams): Promise<undefined> {
+    async deprecatedRpc(
+        params: FooDeprecatedRpcParams,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
         return arriRequest<undefined, FooDeprecatedRpcParams>({
             url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
             method: 'post',
@@ -157,10 +146,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: () => {},
             serializer: $$FooDeprecatedRpcParams.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendDiscriminatorWithEmptyObject(
         params: FooDiscriminatorWithEmptyObject,
+        options?: ArriRequestOptions,
     ): Promise<FooDiscriminatorWithEmptyObject> {
         return arriRequest<
             FooDiscriminatorWithEmptyObject,
@@ -177,9 +168,13 @@ export class TestClientPrefixedTestsService {
                 $$FooDiscriminatorWithEmptyObject.fromJsonString,
             serializer: $$FooDiscriminatorWithEmptyObject.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async sendError(params: FooSendErrorParams): Promise<undefined> {
+    async sendError(
+        params: FooSendErrorParams,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
         return arriRequest<undefined, FooSendErrorParams>({
             url: `${this._baseUrl}/rpcs/tests/send-error`,
             method: 'post',
@@ -191,10 +186,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: () => {},
             serializer: $$FooSendErrorParams.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObject(
         params: FooObjectWithEveryType,
+        options?: ArriRequestOptions,
     ): Promise<FooObjectWithEveryType> {
         return arriRequest<FooObjectWithEveryType, FooObjectWithEveryType>({
             url: `${this._baseUrl}/rpcs/tests/send-object`,
@@ -207,10 +204,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooObjectWithEveryType.fromJsonString,
             serializer: $$FooObjectWithEveryType.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObjectWithNullableFields(
         params: FooObjectWithEveryNullableType,
+        options?: ArriRequestOptions,
     ): Promise<FooObjectWithEveryNullableType> {
         return arriRequest<
             FooObjectWithEveryNullableType,
@@ -226,10 +225,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooObjectWithEveryNullableType.fromJsonString,
             serializer: $$FooObjectWithEveryNullableType.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObjectWithPascalCaseKeys(
         params: FooObjectWithPascalCaseKeys,
+        options?: ArriRequestOptions,
     ): Promise<FooObjectWithPascalCaseKeys> {
         return arriRequest<
             FooObjectWithPascalCaseKeys,
@@ -245,10 +246,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooObjectWithPascalCaseKeys.fromJsonString,
             serializer: $$FooObjectWithPascalCaseKeys.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObjectWithSnakeCaseKeys(
         params: FooObjectWithSnakeCaseKeys,
+        options?: ArriRequestOptions,
     ): Promise<FooObjectWithSnakeCaseKeys> {
         return arriRequest<
             FooObjectWithSnakeCaseKeys,
@@ -264,10 +267,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooObjectWithSnakeCaseKeys.fromJsonString,
             serializer: $$FooObjectWithSnakeCaseKeys.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendPartialObject(
         params: FooObjectWithEveryOptionalType,
+        options?: ArriRequestOptions,
     ): Promise<FooObjectWithEveryOptionalType> {
         return arriRequest<
             FooObjectWithEveryOptionalType,
@@ -283,10 +288,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooObjectWithEveryOptionalType.fromJsonString,
             serializer: $$FooObjectWithEveryOptionalType.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendRecursiveObject(
         params: FooRecursiveObject,
+        options?: ArriRequestOptions,
     ): Promise<FooRecursiveObject> {
         return arriRequest<FooRecursiveObject, FooRecursiveObject>({
             url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
@@ -299,10 +306,12 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooRecursiveObject.fromJsonString,
             serializer: $$FooRecursiveObject.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendRecursiveUnion(
         params: FooRecursiveUnion,
+        options?: ArriRequestOptions,
     ): Promise<FooRecursiveUnion> {
         return arriRequest<FooRecursiveUnion, FooRecursiveUnion>({
             url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
@@ -315,6 +324,7 @@ export class TestClientPrefixedTestsService {
             responseFromString: $$FooRecursiveUnion.fromJsonString,
             serializer: $$FooRecursiveUnion.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     streamAutoReconnect(
@@ -450,54 +460,6 @@ export class TestClientPrefixedTestsService {
                 responseFromJson: $$FooChatMessage.fromJson,
                 responseFromString: $$FooChatMessage.fromJsonString,
                 serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
-        );
-    }
-}
-
-export class TestClientPrefixedUsersService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-
-    constructor(
-        options: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-        } = {},
-    ) {
-        this._baseUrl = options.baseUrl ?? '';
-        if (options.fetch) {
-            this._fetch = createFetch({ fetch: options.fetch });
-        }
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-    }
-    watchUser(
-        params: FooUsersWatchUserParams,
-        options: SseOptions<FooUsersWatchUserResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            FooUsersWatchUserResponse,
-            FooUsersWatchUserParams
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/users/watch-user`,
-                method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$FooUsersWatchUserResponse.fromJson,
-                responseFromString: $$FooUsersWatchUserResponse.fromJsonString,
-                serializer: $$FooUsersWatchUserParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
