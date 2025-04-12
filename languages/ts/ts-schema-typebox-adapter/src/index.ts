@@ -34,7 +34,7 @@ export function typeboxAdapter<TInput extends CleanedTSchema>(
         CleanedStatic<TInput>
     >[typeof VALIDATOR_KEY] = {
         output: {} as any as CleanedStatic<TInput>,
-        optional: (input as any)[OptionalKind] === 'Optional',
+        optional: ((input as any)[OptionalKind] === 'Optional') as false,
         parse(val: unknown, context) {
             if (typeof val === 'string') {
                 const parsedVal = JSON.parse(val);
