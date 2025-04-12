@@ -649,7 +649,7 @@ const User = a.object({
  * Resulting type
  * {
  *   id: string;
- *   email: string | undefined;
+ *   email?: string | undefined;
  *   date: Date;
  * }
  */
@@ -694,6 +694,62 @@ const name = a.nullable(a.string());
 {
     "type": "string",
     "nullable": true
+}
+```
+
+### Undefinable
+
+This is similar to `a.optional()` except that when initializing the object the key will still be required.
+
+```ts
+const Foo = a.object({
+    foo: a.undefinable(a.string()),
+});
+type Foo = a.infer<typeof Foo>;
+
+const fooInstance: Foo = {
+    // this field must still be present
+    // while with a.optional() we could omit the key
+    foo: undefined,
+};
+```
+
+As far as parsing and validating goes this functions exactly the same as `a.optional()`.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    email: a.undefinable(a.string()),
+    date: a.timestamp();
+})
+
+/**
+ * Resulting type (Notice how the email key is still required)
+ * {
+ *   id: string;
+ *   email: string | undefined;
+ *   date: Date;
+ * }
+ */
+```
+
+**Outputted ATD**
+
+```json
+{
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "date": {
+            "type": "timestamp"
+        }
+    },
+    "optionalProperties": {
+        "email": {
+            "type": "string"
+        }
+    }
 }
 ```
 
