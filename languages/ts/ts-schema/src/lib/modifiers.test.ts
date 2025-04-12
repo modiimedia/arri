@@ -2,7 +2,7 @@ import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 
-describe('nullable', () => {
+describe('nullable()', () => {
     describe('type inference', () => {
         it('infers scalar types', () => {
             const NullableString = a.nullable(a.string());
@@ -267,5 +267,66 @@ describe('clone()', () => {
             type: 'boolean',
             metadata: {},
         });
+    });
+});
+
+describe('undefinable()', () => {
+    const ObjectSchema = a.object({
+        foo: a.string(),
+        bar: a.undefinable(a.boolean()),
+        baz: a.number(),
+    });
+    type ObjectSchema = a.infer<typeof ObjectSchema>;
+    const ObjectSchemaGoodInputs: ObjectSchema[] = [
+        {
+            foo: '',
+            bar: undefined,
+            baz: 0,
+        },
+        {
+            foo: '',
+            bar: true,
+            baz: 1,
+        },
+    ];
+    const ObjectSchemaBadInputs = [
+        {
+            foo: '',
+            bar: null,
+            baz: 0,
+        },
+        {
+            foo: '',
+            bar: 'true',
+            baz: 1,
+        },
+    ];
+
+    const ArraySchema = a.array(a.undefinable(a.number()));
+    type ArraySchema = a.infer<typeof ArraySchema>;
+
+    it('infers undefinable properties', () => {
+        assertType<ObjectSchema>({
+            foo: '',
+            bar: undefined,
+            baz: 0,
+        });
+        assertType<ObjectSchema>({
+            foo: '',
+            bar: true,
+            baz: 0,
+        });
+        assertType<ArraySchema>([1, 2, undefined]);
+    });
+
+    test('validation', () => {
+        for (const input of ObjectSchemaGoodInputs) {
+            expect(a.validate(ObjectSchema, input)).toBe(true);
+            expect(a.parse(ObjectSchema, input).success).toBe(true);
+        }
+        for (const input of ObjectSchemaBadInputs) {
+            expect(a.validate(ObjectSchema, input)).toBe(false);
+            expect(a.parse(ObjectSchema, input).success).toBe(false);
+        }
     });
 });

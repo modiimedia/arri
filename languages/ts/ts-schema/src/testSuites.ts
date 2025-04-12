@@ -436,16 +436,16 @@ export const validationTestSuites: Record<
         ],
     },
     'object with optional fields': {
-        schema: a.partial(
-            a.object({
-                id: a.string(),
-                createdAt: a.timestamp(),
-                type: a.stringEnum(['a', 'b']),
-                object: a.object({
+        schema: a.object({
+            id: a.optional(a.string()),
+            createdAt: a.optional(a.timestamp()),
+            type: a.optional(a.stringEnum(['a', 'b'])),
+            object: a.optional(
+                a.object({
                     foo: a.string(),
                 }),
-            }),
-        ),
+            ),
+        }),
         goodInputs: [
             {
                 id: '',
@@ -473,6 +473,53 @@ export const validationTestSuites: Record<
                 createdAt: new Date(),
                 type: 'b',
                 object: [],
+            },
+        ],
+    },
+    'object with undefinable fields': {
+        schema: a.object({
+            id: a.undefinable(a.string()),
+            createdAt: a.undefinable(a.timestamp()),
+            count: a.undefinable(a.number()),
+            isActive: a.undefinable(a.boolean()),
+            tags: a.undefinable(a.array(a.string())),
+            metadata: a.undefinable(a.record(a.string())),
+            unknown: a.undefinable(a.any()),
+        }),
+        goodInputs: [
+            {},
+            {
+                id: undefined,
+                createdAt: undefined,
+                count: undefined,
+                isActive: undefined,
+                tags: undefined,
+                metadata: undefined,
+                unknown: undefined,
+            },
+            {
+                id: '',
+                createdAt: new Date(),
+                count: 0,
+                isActive: true,
+                tags: [],
+                metadata: {
+                    a: 'a',
+                    b: 'b',
+                },
+                unknown: {
+                    blah: true,
+                },
+            },
+        ],
+        badInputs: [
+            'hello world',
+            {
+                id: null,
+                createdAt: 'hello world',
+                count: null,
+                isActive: null,
+                metadata: { a: false },
             },
         ],
     },

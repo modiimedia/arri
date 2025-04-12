@@ -9,7 +9,7 @@ export { array } from './array';
 export { boolean } from './boolean';
 export { discriminator } from './discriminator';
 export { enumerator, stringEnum } from './enum';
-export { clone, nullable, optional } from './modifiers';
+export { clone, nullable, optional, undefinable } from './modifiers';
 export {
     float32,
     float64,

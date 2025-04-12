@@ -6,7 +6,6 @@ import {
     type ASchema,
     type ASchemaOptions,
     ASchemaWithAdapters,
-    InferType,
     SchemaValidator,
     ValidationContext,
     VALIDATOR_KEY,
@@ -24,21 +23,20 @@ import {
  *   })
  * )
  */
-export function nullable<TInput extends ASchema>(
-    schema: TInput,
+export function nullable<T = any, TOptional extends boolean = false>(
+    schema: ASchema<T, TOptional>,
     opts: ASchemaOptions = {},
-): ASchemaWithAdapters<
-    InferType<TInput> | null,
-    TInput[typeof VALIDATOR_KEY]['optional']
-> {
-    type T = InferType<TInput> | null;
-    const isType = (val: unknown): val is T => {
+): ASchemaWithAdapters<T | null, TOptional> {
+    const isType = (val: unknown): val is T | null => {
         if (val === null) {
             return true;
         }
         return schema[VALIDATOR_KEY].validate(val);
     };
-    const parse = (val: unknown, data: ValidationContext): T | undefined => {
+    const parse = (
+        val: unknown,
+        data: ValidationContext,
+    ): T | null | undefined => {
         if (
             data.instancePath.length === 0 &&
             typeof val === 'string' &&
@@ -51,7 +49,7 @@ export function nullable<TInput extends ASchema>(
         }
         return schema[VALIDATOR_KEY].parse(val, data);
     };
-    const validator: SchemaValidator<T | null> = {
+    const validator: SchemaValidator<T | null, TOptional> = {
         output: null as T | null,
         optional: schema[VALIDATOR_KEY].optional,
         validate: isType,
@@ -72,7 +70,7 @@ export function nullable<TInput extends ASchema>(
             return schema[VALIDATOR_KEY].serialize(val, data);
         },
     };
-    const result: ASchemaWithAdapters<T | null> = {
+    const result: ASchemaWithAdapters<T | null, TOptional> = {
         ...schema,
         nullable: true,
         metadata: {
@@ -102,8 +100,8 @@ export function nullable<TInput extends ASchema>(
  *   email: a.optional(a.string())
  * })
  */
-export function optional<T>(
-    input: ASchema<T>,
+export function optional<T, TOptional extends boolean = false>(
+    input: ASchema<T, TOptional>,
     opts: ASchemaOptions = {},
 ): ASchema<T | undefined, true> {
     const isType = (val: unknown): val is T | undefined => {
@@ -154,6 +152,23 @@ export function optional<T>(
     };
     hideInvalidProperties(result);
     return result;
+}
+
+/**
+ * Make an object property able to be `undefined` without making the key optional
+ *
+ * @example
+ * const User = a.object({
+ *   id: a.string(),
+ *   // this field can be `string | undefined` but it is still required by TS
+ *   email: a.undefinable(a.string())
+ * })
+ */
+export function undefinable<T, TOptional extends boolean = false>(
+    input: ASchema<T, TOptional>,
+    opts: ASchemaOptions = {},
+): ASchema<T | undefined, TOptional> {
+    return optional(input, opts) as ASchema<T | undefined, TOptional>;
 }
 
 export function clone<T>(
