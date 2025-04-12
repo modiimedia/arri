@@ -3,8 +3,13 @@
   "version": "0.78.0",
   "type": "module",
   "license": "MIT",
-  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
-  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -13,6 +18,11 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
-  "dependencies": { "@arrirpc/codegen-utils": "workspace:*", "pathe": "^2.0.3" }
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@arrirpc/codegen-utils": "workspace:*",
+    "pathe": "^2.0.3"
+  }
 }

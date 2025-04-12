@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.34.31",
+    "@sinclair/typebox": "^0.34.33",
     "arri": "workspace:*"
   },
   "scripts": {
