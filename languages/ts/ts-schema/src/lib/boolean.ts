@@ -21,6 +21,7 @@ export function boolean(
 ): AScalarSchemaWithAdapters<'boolean', boolean> {
     const validator: SchemaValidator<boolean> = {
         output: false,
+        optional: false,
         parse: parse,
         validate,
         serialize: serialize,

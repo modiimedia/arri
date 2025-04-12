@@ -33,7 +33,7 @@ export function createStandardSchemaProperty<T>(
 /**
  * Ensure that non ATD compliant properties get hidden when serialized to JSON
  */
-export function hideInvalidProperties(schema: ASchema) {
+export function hideInvalidProperties(schema: ASchema<any, any>) {
     Object.defineProperty(schema, '~standard', { enumerable: false });
 }
 

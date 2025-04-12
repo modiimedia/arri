@@ -200,6 +200,7 @@ export function int64(
     }
     const validator: SchemaValidator<bigint> = {
         output: BigInt('0'),
+        optional: false,
         validate: isType,
         parse: parse,
         coerce: parse,
@@ -271,6 +272,7 @@ export function uint64(
     }
     const validator: SchemaValidator<bigint> = {
         output: BigInt('0'),
+        optional: false,
         validate: isType,
         parse: parse,
         coerce: parse,
@@ -371,6 +373,7 @@ function numberScalarType<TType extends NumberType>(
     };
     const validator: SchemaValidator<number> = {
         output: 0,
+        optional: false,
         validate,
         parse: parse,
         serialize: serializeNumber,

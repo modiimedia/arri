@@ -31,14 +31,14 @@ import { optional } from './modifiers';
  * a.validate(Schema, {foo: null, bar: 0}) // false
  */
 export function object<
-    TInput extends Record<any, ASchema> = any,
+    TInput extends Record<any, ASchema<any, any>> = any,
     TAdditionalProps extends boolean = false,
 >(
     input: TInput,
     opts?: AObjectSchemaOptions<TAdditionalProps>,
 ): AObjectSchemaWithAdapters<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
-    TInput extends Record<any, ASchema> = any,
+    TInput extends Record<any, ASchema<any, any>> = any,
     TAdditionalProps extends boolean = false,
 >(
     id: string,
@@ -46,7 +46,7 @@ export function object<
 ): AObjectSchemaWithAdapters<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    TInput extends Record<any, ASchema> = {},
+    TInput extends Record<any, ASchema<any, any>> = {},
     TAdditionalProps extends boolean = false,
 >(
     propA: TInput | string,
@@ -90,6 +90,7 @@ export function object<
     };
     const validator: SchemaValidator<any> = {
         output: {} as any satisfies InferObjectOutput<TInput>,
+        optional: false,
         parse: decode,
         coerce(input: unknown, context) {
             return decodeObjectSchema(
@@ -531,6 +532,7 @@ export function extend<
         validateObjectSchema(schema as any, input);
     const validator: ASchema[typeof VALIDATOR_KEY] = {
         output: {},
+        optional: false,
         parse(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, false);
         },

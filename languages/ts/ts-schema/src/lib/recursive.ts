@@ -80,10 +80,11 @@ export function recursive<T = any>(
     const id = options.id ?? `TypeRef${recursiveTypeCount}`;
     const recursiveFns: Record<
         string,
-        Omit<SchemaValidator<any>, 'output'>
+        Omit<SchemaValidator<any>, 'output' | 'optional'>
     > = {};
     const validator: SchemaValidator<T> = {
         output: '' as T,
+        optional: false,
         parse(input, context) {
             if (context.depth >= context.maxDepth) {
                 context.errors.push({

@@ -31,6 +31,7 @@ import {
     newValidationContext,
     SchemaValidator,
     ValidationContext,
+    VALIDATOR_KEY,
 } from './schemas';
 
 export {
@@ -243,7 +244,8 @@ export function compile<
 }
 
 type CompiledParser<TSchema extends ASchema<any>> = SchemaValidator<
-    InferType<TSchema>
+    InferType<TSchema>,
+    TSchema[typeof VALIDATOR_KEY]['optional'] | false
 >['parse'];
 
 export function getCompiledParser<TSchema extends ASchema<any>>(

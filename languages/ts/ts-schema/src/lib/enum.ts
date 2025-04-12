@@ -81,6 +81,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     };
     const validator: SchemaValidator<TKeys> = {
         output: paramA[0] ?? ('' as any),
+        optional: false,
         parse: parse,
         coerce: (input, context) => {
             if (isType(input)) {

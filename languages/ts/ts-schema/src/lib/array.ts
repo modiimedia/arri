@@ -28,8 +28,12 @@ export function array<TInnerSchema extends ASchema<any> = any>(
     ): InferType<AArraySchema<TInnerSchema>> | undefined => {
         return parse(schema, input, context, false);
     };
-    const validator: SchemaValidator<InferType<AArraySchema<TInnerSchema>>> = {
+    const validator: SchemaValidator<
+        InferType<AArraySchema<TInnerSchema>>,
+        false
+    > = {
         output: [] as any,
+        optional: false,
         parse: parseType,
         coerce(input, context) {
             return parse(schema, input, context, true);

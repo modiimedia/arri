@@ -21,6 +21,7 @@ export function string(
 ): AScalarSchemaWithAdapters<'string', string> {
     const validator: AScalarSchema<'string', string>[typeof VALIDATOR_KEY] = {
         output: '',
+        optional: false,
         parse: decode,
         coerce,
         validate,
