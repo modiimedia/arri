@@ -28,8 +28,9 @@ export function any(options: ASchemaOptions = {}): ASchemaWithAdapters<any> {
         }
         return input;
     };
-    const validator: SchemaValidator<any> = {
+    const validator: SchemaValidator<any, false> = {
         output: undefined as any,
+        optional: false,
         parse: parse,
         coerce: (input, context) => {
             if (

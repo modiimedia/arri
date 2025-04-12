@@ -31,7 +31,7 @@ import { serializeString } from './string';
  * )
  * a.validate(ObjectRecord, {foo: {id: "1", date: new Date()}}) // true
  */
-export function record<TInnerSchema extends ASchema<any>>(
+export function record<TInnerSchema extends ASchema<any, any>>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
 ): ARecordSchemaWithAdapters<TInnerSchema> {
@@ -58,6 +58,7 @@ export function record<TInnerSchema extends ASchema<any>>(
     };
     const validator: SchemaValidator<InferRecordType<TInnerSchema>> = {
         output: {},
+        optional: false,
         validate: validateFn,
         parse: parseFn,
         coerce(input: unknown, data) {

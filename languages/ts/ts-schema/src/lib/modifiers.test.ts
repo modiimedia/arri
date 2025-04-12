@@ -179,7 +179,6 @@ describe('optional()', () => {
             assertType<Schema1>({
                 id: '',
                 name: 'john',
-                tags: undefined,
             });
         });
     });

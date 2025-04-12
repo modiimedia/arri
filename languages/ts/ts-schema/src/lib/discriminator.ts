@@ -124,9 +124,11 @@ export function discriminator<
             TDiscriminatorKey,
             TMapping,
             JoinedDiscriminator<TDiscriminatorKey, TMapping>
-        >
+        >,
+        false
     > = {
         output: {} as any,
+        optional: false,
         validate: isType,
         parse: parseType,
         coerce: (input, context) => {

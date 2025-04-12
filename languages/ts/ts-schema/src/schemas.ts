@@ -48,9 +48,9 @@ export function newValidationContext(
 
 export const VALIDATOR_KEY = secretSymbol('arri/schema/validator/v1');
 
-export interface SchemaValidator<T> {
+export interface SchemaValidator<T, TOptional extends boolean = false> {
     output: T;
-    optional?: boolean;
+    optional: TOptional;
     validate: (input: unknown) => input is T;
     parse: (input: unknown, context: ValidationContext) => T | undefined;
     coerce: (input: unknown, context: ValidationContext) => T | undefined;
@@ -66,10 +66,10 @@ export interface SchemaMetadata {
 
 export type WithAdapters<T = any> = StandardSchemaV1<T>;
 
-export interface ASchema<T = any> {
+export interface ASchema<T = any, TOptional extends boolean = false> {
     metadata?: SchemaMetadata;
     nullable?: boolean;
-    [VALIDATOR_KEY]: SchemaValidator<T>;
+    [VALIDATOR_KEY]: SchemaValidator<T, TOptional>;
 }
 export type ASchemaStrict<TSchema extends ASchema> = Omit<
     TSchema,
@@ -108,7 +108,10 @@ export function isASchema(input: unknown): input is ASchema {
     }
     return VALIDATOR_KEY in input;
 }
-export type ASchemaWithAdapters<T = any> = ASchema<T> & WithAdapters<T>;
+export type ASchemaWithAdapters<
+    T = any,
+    TOptional extends boolean = false,
+> = ASchema<T, TOptional> & WithAdapters<T>;
 
 export interface ASchemaOptions {
     id?: string;
@@ -266,18 +269,24 @@ export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>
 }
 
 // object helper types
-export type InferObjectOutput<TInput = any> = ResolveObject<
-    InferObjectRawType<TInput>
+export type InferObjectOutput<
+    TInput extends Record<any, ASchema<any, any>> = any,
+> = ResolveObject<
+    PartialBy<InferObjectRawType<TInput>, InferObjectOptionalKeys<TInput>>
 >;
 
-export type InferObjectRawType<TInput> =
-    TInput extends Record<any, any>
-        ? {
-              [TKey in keyof TInput]: TInput[TKey][typeof VALIDATOR_KEY]['optional'] extends true
-                  ? TInput[TKey][typeof VALIDATOR_KEY]['output'] | undefined
-                  : TInput[TKey][typeof VALIDATOR_KEY]['output'];
-          }
+export type InferObjectOptionalKeys<
+    TInput extends Record<any, ASchema<any, any>>,
+> = {
+    [K in keyof TInput]: TInput[K][typeof VALIDATOR_KEY]['optional'] extends true
+        ? K
         : never;
+}[keyof TInput];
+
+export type InferObjectRawType<TInput extends Record<any, ASchema<any, any>>> =
+    {
+        [TKey in keyof TInput]: TInput[TKey][typeof VALIDATOR_KEY]['output'];
+    };
 
 export function isObject(input: unknown): input is Record<any, any> {
     return typeof input === 'object' && input !== null;

@@ -21,6 +21,7 @@ export function timestamp(
 ): AScalarSchemaWithAdapters<'timestamp', Date> {
     const validator: SchemaValidator<Date> = {
         output: new Date(),
+        optional: false,
         validate,
         parse: parse,
         coerce,

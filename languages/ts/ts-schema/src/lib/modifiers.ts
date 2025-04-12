@@ -6,6 +6,7 @@ import {
     type ASchema,
     type ASchemaOptions,
     ASchemaWithAdapters,
+    InferType,
     SchemaValidator,
     ValidationContext,
     VALIDATOR_KEY,
@@ -23,20 +24,21 @@ import {
  *   })
  * )
  */
-export function nullable<T>(
-    schema: ASchema<T>,
+export function nullable<TInput extends ASchema>(
+    schema: TInput,
     opts: ASchemaOptions = {},
-): ASchemaWithAdapters<T | null> {
-    const isType = (val: unknown): val is T | null => {
+): ASchemaWithAdapters<
+    InferType<TInput> | null,
+    TInput[typeof VALIDATOR_KEY]['optional']
+> {
+    type T = InferType<TInput> | null;
+    const isType = (val: unknown): val is T => {
         if (val === null) {
             return true;
         }
         return schema[VALIDATOR_KEY].validate(val);
     };
-    const parse = (
-        val: unknown,
-        data: ValidationContext,
-    ): T | null | undefined => {
+    const parse = (val: unknown, data: ValidationContext): T | undefined => {
         if (
             data.instancePath.length === 0 &&
             typeof val === 'string' &&
@@ -103,7 +105,7 @@ export function nullable<T>(
 export function optional<T>(
     input: ASchema<T>,
     opts: ASchemaOptions = {},
-): ASchema<T | undefined> {
+): ASchema<T | undefined, true> {
     const isType = (val: unknown): val is T | undefined => {
         if (val === undefined) {
             return true;
@@ -119,7 +121,7 @@ export function optional<T>(
         }
         return input[VALIDATOR_KEY].parse(val, context);
     };
-    const validator: SchemaValidator<T | undefined> = {
+    const validator: SchemaValidator<T | undefined, true> = {
         output: undefined as T | undefined,
         optional: true,
         validate: isType,
@@ -140,7 +142,7 @@ export function optional<T>(
             return input[VALIDATOR_KEY].serialize(val, data);
         },
     };
-    const result: ASchemaWithAdapters<T | undefined> = {
+    const result: ASchemaWithAdapters<T | undefined, true> = {
         ...input,
         metadata: {
             id: opts.id ?? input.metadata?.id,
