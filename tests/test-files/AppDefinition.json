@@ -208,23 +208,27 @@
     },
     "ObjectWithNullableFields": {
       "properties": {
-        "string": { "type": "string", "metadata": {}, "nullable": true },
-        "boolean": { "type": "boolean", "metadata": {}, "nullable": true },
-        "timestamp": { "type": "timestamp", "metadata": {}, "nullable": true },
-        "float32": { "type": "float32", "metadata": {}, "nullable": true },
-        "float64": { "type": "float64", "metadata": {}, "nullable": true },
-        "int8": { "type": "int8", "metadata": {}, "nullable": true },
-        "uint8": { "type": "uint8", "metadata": {}, "nullable": true },
-        "int16": { "type": "int16", "metadata": {}, "nullable": true },
-        "uint16": { "type": "uint16", "metadata": {}, "nullable": true },
-        "int32": { "type": "int32", "metadata": {}, "nullable": true },
-        "uint32": { "type": "uint32", "metadata": {}, "nullable": true },
-        "int64": { "type": "int64", "metadata": {}, "nullable": true },
-        "uint64": { "type": "uint64", "metadata": {}, "nullable": true },
+        "string": { "type": "string", "metadata": {}, "isNullable": true },
+        "boolean": { "type": "boolean", "metadata": {}, "isNullable": true },
+        "timestamp": {
+          "type": "timestamp",
+          "metadata": {},
+          "isNullable": true
+        },
+        "float32": { "type": "float32", "metadata": {}, "isNullable": true },
+        "float64": { "type": "float64", "metadata": {}, "isNullable": true },
+        "int8": { "type": "int8", "metadata": {}, "isNullable": true },
+        "uint8": { "type": "uint8", "metadata": {}, "isNullable": true },
+        "int16": { "type": "int16", "metadata": {}, "isNullable": true },
+        "uint16": { "type": "uint16", "metadata": {}, "isNullable": true },
+        "int32": { "type": "int32", "metadata": {}, "isNullable": true },
+        "uint32": { "type": "uint32", "metadata": {}, "isNullable": true },
+        "int64": { "type": "int64", "metadata": {}, "isNullable": true },
+        "uint64": { "type": "uint64", "metadata": {}, "isNullable": true },
         "enum": {
           "enum": ["FOO", "BAR", "BAZ"],
           "metadata": { "id": "Enumerator" },
-          "nullable": true
+          "isNullable": true
         },
         "object": {
           "properties": {
@@ -232,17 +236,17 @@
             "content": { "type": "string", "metadata": {} }
           },
           "metadata": { "id": "NestedObject" },
-          "nullable": true
+          "isNullable": true
         },
         "array": {
           "elements": { "type": "boolean", "metadata": {} },
           "metadata": {},
-          "nullable": true
+          "isNullable": true
         },
         "record": {
           "values": { "type": "boolean", "metadata": {} },
           "metadata": {},
-          "nullable": true
+          "isNullable": true
         },
         "discriminator": {
           "discriminator": "typeName",
@@ -268,16 +272,24 @@
             }
           },
           "metadata": { "id": "Discriminator" },
-          "nullable": true
+          "isNullable": true
         },
-        "any": { "metadata": {}, "nullable": true }
+        "any": { "metadata": {}, "isNullable": true }
       },
       "metadata": { "id": "ObjectWithNullableFields" }
     },
     "RecursiveObject": {
       "properties": {
-        "left": { "ref": "RecursiveObject", "nullable": true, "metadata": {} },
-        "right": { "ref": "RecursiveObject", "nullable": true, "metadata": {} }
+        "left": {
+          "ref": "RecursiveObject",
+          "isNullable": true,
+          "metadata": {}
+        },
+        "right": {
+          "ref": "RecursiveObject",
+          "isNullable": true,
+          "metadata": {}
+        }
       },
       "metadata": { "id": "RecursiveObject" }
     }

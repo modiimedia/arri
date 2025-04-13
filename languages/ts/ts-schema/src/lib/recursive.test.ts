@@ -240,12 +240,12 @@ it('produces valid ATD', () => {
         properties: {
             left: {
                 ref: 'BinaryTree',
-                nullable: true,
+                isNullable: true,
                 metadata: {},
             },
             right: {
                 ref: 'BinaryTree',
-                nullable: true,
+                isNullable: true,
                 metadata: {},
             },
         },
