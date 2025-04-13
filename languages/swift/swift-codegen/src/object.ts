@@ -30,7 +30,7 @@ export function swiftObjectFromSchema(
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.dictionary != nil {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
@@ -41,7 +41,7 @@ export function swiftObjectFromSchema(
             if (context.isOptional) {
                 return `        ${target} += ${input}!.toJSONString()`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += ${input}!.toJSONString()
                 } else {

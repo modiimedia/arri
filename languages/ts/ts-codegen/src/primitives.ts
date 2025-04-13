@@ -6,13 +6,13 @@ export function tsStringFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? 'string | null' : 'string';
-    const defaultValue = schema.nullable ? 'null' : '""';
+    const typeName = schema.isNullable ? 'string | null' : 'string';
+    const defaultValue = schema.isNullable ? 'null' : '""';
     return {
         typeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `(typeof ${input} === 'string' || ${input} === null)`;
             }
             return `typeof ${input} === 'string'`;
@@ -25,7 +25,7 @@ export function tsStringFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (typeof ${input} === 'string') {
                     ${target} += serializeString(${input});
                 } else {
@@ -45,13 +45,13 @@ export function tsBooleanFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? `boolean | null` : 'boolean';
-    const defaultValue = schema.nullable ? `null` : 'false';
+    const typeName = schema.isNullable ? `boolean | null` : 'boolean';
+    const defaultValue = schema.isNullable ? `null` : 'false';
     return {
         typeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `(typeof ${input} === 'boolean' || ${input} === null)`;
             }
             return `typeof ${input} === 'boolean'`;
@@ -77,13 +77,13 @@ export function tsDateFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? `Date | null` : 'Date';
-    const defaultValue = schema.nullable ? `null` : 'new Date()';
+    const typeName = schema.isNullable ? `Date | null` : 'Date';
+    const defaultValue = schema.isNullable ? `null` : 'new Date()';
     return {
         typeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `(${input} instanceof Date || ${input} === null)`;
             }
             return `${input} instanceof Date`;
@@ -98,7 +98,7 @@ export function tsDateFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} instanceof Date) {
                     ${target} += \`"\${${input}.toISOString()}"\`
                 } else {
@@ -108,7 +108,7 @@ export function tsDateFromSchema(
             return `${target} += \`"\${${input}.toISOString()}"\``;
         },
         toQueryStringTemplate(input, target, key) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target}.push(\`${key}=\${${input}?.toISOString()}\`)`;
             }
             return `${target}.push(\`${key}=\${${input}.toISOString()}\`)`;
@@ -121,13 +121,13 @@ export function tsFloatFromSchema(
     schema: SchemaFormType,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? 'number | null' : 'number';
-    const defaultValue = schema.nullable ? 'null' : '0';
+    const typeName = schema.isNullable ? 'number | null' : 'number';
+    const defaultValue = schema.isNullable ? 'null' : '0';
     return {
         typeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `(typeof ${input} === 'number' || ${input} === null)`;
             }
             return `typeof ${input} === 'number'`;
@@ -154,8 +154,8 @@ export function tsIntFromSchema(
     intType: 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'uint32',
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? 'number | null' : 'number';
-    const defaultValue = schema.nullable ? 'null' : '0';
+    const typeName = schema.isNullable ? 'number | null' : 'number';
+    const defaultValue = schema.isNullable ? 'null' : '0';
     let min: string;
     let max: string;
     switch (intType) {
@@ -192,7 +192,7 @@ export function tsIntFromSchema(
         defaultValue,
         validationTemplate(input) {
             const mainPart = `typeof ${input} === 'number' && Number.isInteger(${input}) && ${input} >= ${min} && ${input} <= ${max}`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `((${mainPart}) || ${input} === null)`;
             }
             return mainPart;
@@ -224,8 +224,8 @@ export function tsBigIntFromSchema(
     isUnsigned: boolean,
     _context: CodegenContext,
 ): TsProperty {
-    const typeName = schema.nullable ? `bigint | null` : `bigint`;
-    const defaultValue = schema.nullable ? `null` : 'BigInt(0)';
+    const typeName = schema.isNullable ? `bigint | null` : `bigint`;
+    const defaultValue = schema.isNullable ? `null` : 'BigInt(0)';
     return {
         typeName,
         defaultValue,
@@ -233,7 +233,7 @@ export function tsBigIntFromSchema(
             const mainPart = isUnsigned
                 ? `typeof ${input} === 'bigint' && ${input} >= BigInt(0) && ${input} <= UINT64_MAX`
                 : `typeof ${input} === 'bigint' && ${input} >= INT64_MIN && ${input} <= INT64_MAX`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `((${mainPart}) || ${input} === null)`;
             }
             return mainPart;
@@ -258,7 +258,7 @@ export function tsBigIntFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (typeof ${input} === 'bigint') {
                     ${target} += \`"\${${input}}"\`
                 } else {

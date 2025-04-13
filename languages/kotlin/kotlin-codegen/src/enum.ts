@@ -84,7 +84,7 @@ export function kotlinEnumFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += when (${input}) {
                     is ${prefixedClassName} -> "\\"\${${input}.serialValue}\\""
                     else -> "null"
@@ -98,7 +98,7 @@ export function kotlinEnumFromSchema(
                     ${target}.add("${key}=\${${input}.serialValue}")
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target}.add("${key}=\${${input}?.serialValue}")`;
             }
             return `${target}.add("${key}=\${${input}.serialValue}")`;

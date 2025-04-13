@@ -258,7 +258,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
         switch (schema.type) {
             case 'float32':
             case 'float64':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn: nullableFloatDecoder,
                         code,
@@ -274,7 +274,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         return bigIntDecoder(
                             input,
                             false,
-                            schema.nullable ?? false,
+                            schema.isNullable ?? false,
                             context,
                         );
                     },
@@ -286,14 +286,14 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         return bigIntDecoder(
                             input,
                             true,
-                            schema.nullable ?? false,
+                            schema.isNullable ?? false,
                             context,
                         );
                     },
                     code,
                 };
             case 'int32':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             return nullableIntDecoder(
@@ -313,7 +313,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'int16':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             return nullableIntDecoder(
@@ -333,7 +333,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'int8':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             return nullableIntDecoder(
@@ -353,7 +353,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'uint32':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             return nullableIntDecoder(
@@ -373,7 +373,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'uint16':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             return nullableIntDecoder(
@@ -393,7 +393,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'uint8':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             return nullableIntDecoder(
@@ -414,7 +414,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 };
             case 'boolean':
                 if (shouldCoerce) {
-                    if (schema.nullable) {
+                    if (schema.isNullable) {
                         return {
                             code,
                             fn(input, context) {
@@ -476,7 +476,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         },
                     };
                 }
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         code,
                         fn(input, context) {
@@ -529,7 +529,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     code,
                 };
             case 'string':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             if (typeof input === 'string') {
@@ -567,7 +567,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                 };
             case 'timestamp':
                 if (shouldCoerce) {
-                    if (schema.nullable) {
+                    if (schema.isNullable) {
                         return {
                             fn(input, context) {
                                 if (typeof input === 'string') {
@@ -638,7 +638,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         code,
                     };
                 }
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input, context) {
                             if (typeof input === 'string') {
@@ -697,7 +697,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
         }
     }
     if (isSchemaFormEnum(schema)) {
-        if (schema.nullable) {
+        if (schema.isNullable) {
             return {
                 fn(input, context) {
                     if (typeof input === 'string') {
@@ -961,7 +961,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'string':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input: string | null) {
                             if (typeof input === 'string') {
@@ -979,7 +979,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
                     code,
                 };
             case 'timestamp':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input: Date | null) {
                             if (typeof input === 'object' && input !== null) {
@@ -997,7 +997,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
                     code,
                 };
             case 'boolean':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input: boolean | null) {
                             if (typeof input === 'boolean') {
@@ -1022,7 +1022,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
             case 'uint8':
             case 'uint16':
             case 'uint32':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input: number) {
                             if (typeof input === 'number') {
@@ -1041,7 +1041,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
                 };
             case 'int64':
             case 'uint64':
-                if (schema.nullable) {
+                if (schema.isNullable) {
                     return {
                         fn(input: bigint | null) {
                             if (typeof input === 'bigint') {
@@ -1061,7 +1061,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
         }
     }
     if (isSchemaFormEnum(schema)) {
-        if (schema.nullable) {
+        if (schema.isNullable) {
             return {
                 fn(input: string | null) {
                     if (

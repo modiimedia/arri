@@ -8,7 +8,7 @@ export function swiftAnyFromSchema(
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
     let defaultValue = 'JSON()';
-    if (schema.nullable) {
+    if (schema.isNullable) {
         defaultValue = 'JSON(parseJSON: "null")';
     } else if (context.isOptional) {
         defaultValue = '';

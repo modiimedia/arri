@@ -36,7 +36,7 @@ export function dartRefFromSchema(
             if (context.isOptional) {
                 return `${input}!.toJson()`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${input}?.toJson()`;
             }
             return `${input}.toJson()`;

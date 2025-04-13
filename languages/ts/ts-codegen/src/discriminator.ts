@@ -14,18 +14,18 @@ export function tsTaggedUnionFromSchema(
 ): TsProperty {
     const typeName = getTsTypeName(schema, context);
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
-    const defaultValue = schema.nullable
+    const defaultValue = schema.isNullable
         ? 'null'
         : `$$${prefixedTypeName}.new()`;
 
     const result: TsProperty = {
-        typeName: schema.nullable
+        typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
             : prefixedTypeName,
         defaultValue,
         validationTemplate(input: string): string {
             const mainPart = `$$${prefixedTypeName}.validate(${input})`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `(${mainPart} || ${input} === null)`;
             }
             return mainPart;
@@ -38,7 +38,7 @@ export function tsTaggedUnionFromSchema(
             }`;
         },
         toJsonTemplate(input: string, target: string, _key: string): string {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} != null) {
                     ${target} += $$${prefixedTypeName}.toJsonString(${input});
                 } else {

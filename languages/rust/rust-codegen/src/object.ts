@@ -30,7 +30,7 @@ export default function rustObjectFromSchema(
         typeId: structName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {

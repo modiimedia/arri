@@ -529,7 +529,7 @@ describe('a.pick()', () => {
 
 describe('a.omit()', () => {
     const UserSubsetSchema = a.omit(UserSchema, ['id', 'isAdmin'], {
-        strict: true,
+        isStrict: true,
     });
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
     const parse = (input: unknown) => a.parse(UserSubsetSchema, input);

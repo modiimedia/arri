@@ -21,16 +21,16 @@ export function tsArrayFromSchema(
         rpcGenerators: context.rpcGenerators,
     });
     const typeName = `(${innerType.typeName})[]`;
-    const defaultValue = schema.nullable ? 'null' : '[]';
+    const defaultValue = schema.isNullable ? 'null' : '[]';
     return {
-        typeName: schema.nullable ? `${typeName} | null` : typeName,
+        typeName: schema.isNullable ? `${typeName} | null` : typeName,
         defaultValue,
         validationTemplate(input) {
             const mainPart = `Array.isArray(${input}) 
                 && ${input}.every(
                     (_element) => ${innerType.validationTemplate('_element')}
             )`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `((${mainPart}) || 
                 ${input} === null)`;
             }
@@ -51,7 +51,7 @@ export function tsArrayFromSchema(
         toJsonTemplate(input, target) {
             const elVar = `_${camelCase(validVarName(input.split('.').join('_')), { normalize: true })}El`;
             const elKeyVar = `${elVar}Key`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} !== null) {
                     ${target} += '[';
                     for (let i = 0; i < ${input}.length; i++) {

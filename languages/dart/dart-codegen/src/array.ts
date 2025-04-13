@@ -42,7 +42,7 @@ export function dartListFromSchema(
             if (context.isOptional) {
                 return `${input}!.map((_el_) => ${innerType.toJson('_el_', '', '')}).toList()`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${input}?.map((_el_) => ${innerType.toJson('_el_', '', '')}).toList()`;
             }
             return `${input}.map((_el_) => ${innerType.toJson('_el_', '', '')}).toList()`;

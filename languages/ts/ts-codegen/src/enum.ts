@@ -17,17 +17,17 @@ export function tsEnumFromSchema(
         );
     const enumName = getTsTypeName(schema, context);
     const prefixedEnumName = `${context.typePrefix}${enumName}`;
-    const typeName = schema.nullable
+    const typeName = schema.isNullable
         ? `${prefixedEnumName} | null`
         : prefixedEnumName;
-    const defaultValue = schema.nullable
+    const defaultValue = schema.isNullable
         ? 'null'
         : `$$${prefixedEnumName}.new()`;
     const result: TsProperty = {
         typeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `($$${prefixedEnumName}.validate(${input}) || ${input} === null)`;
             }
             return `$$${prefixedEnumName}.validate(${input})`;
@@ -40,7 +40,7 @@ export function tsEnumFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (typeof ${input} === 'string') {
                     ${target} += \`"\${${input}}"\`;
                 } else {

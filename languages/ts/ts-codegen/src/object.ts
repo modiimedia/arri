@@ -15,16 +15,16 @@ export function tsObjectFromSchema(
 ): TsProperty {
     const typeName = getTsTypeName(schema, context);
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
-    const defaultValue = schema.nullable
+    const defaultValue = schema.isNullable
         ? 'null'
         : `$$${prefixedTypeName}.new()`;
     const result: TsProperty = {
-        typeName: schema.nullable
+        typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
             : prefixedTypeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `($$${prefixedTypeName}.validate(${input}) || ${input} === null)`;
             }
             return `$$${prefixedTypeName}.validate(${input})`;
@@ -37,7 +37,7 @@ export function tsObjectFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} !== null) {
                     ${target} += $$${prefixedTypeName}.toJsonString(${input}); 
                 } else {

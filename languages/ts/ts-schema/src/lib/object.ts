@@ -60,8 +60,8 @@ export function object<
     const schema: SchemaFormProperties = {
         properties: {},
     };
-    if (typeof options.strict === 'boolean') {
-        schema.strict = options.strict;
+    if (typeof options.isStrict === 'boolean') {
+        schema.isStrict = options.isStrict;
     }
     for (const key of Object.keys(input)) {
         const prop = input[key]!;
@@ -156,7 +156,7 @@ export function decodeObjectSchema<T>(
     const inputKeys = Object.keys(parsedInput);
     const requiredKeys = Object.keys(schema.properties);
     const optionalKeys = Object.keys(optionalProps);
-    if (schema.strict) {
+    if (schema.isStrict) {
         for (const key of inputKeys) {
             if (
                 !requiredKeys.includes(key) &&
@@ -253,7 +253,7 @@ export function validateObjectSchema(
     if (!isObject(input)) {
         return false;
     }
-    const allowedKeys: string[] | undefined = schema.strict ? [] : undefined;
+    const allowedKeys: string[] | undefined = schema.isStrict ? [] : undefined;
     for (const key of Object.keys(schema.properties)) {
         const propSchema = schema.properties[key]!;
         const isValid = propSchema[VALIDATOR_KEY].validate(input[key]);
@@ -300,10 +300,10 @@ export function pick<
     type TOutput = Pick<InferType<TSchema>, TKeys>;
     const schema: SchemaFormProperties = {
         properties: {},
-        nullable: inputSchema.nullable,
+        isNullable: inputSchema.isNullable,
     };
-    if (typeof options.strict === 'boolean') {
-        schema.strict = options.strict;
+    if (typeof options.isStrict === 'boolean') {
+        schema.isStrict = options.isStrict;
     }
 
     Object.keys(inputSchema.properties).forEach((key) => {
@@ -391,10 +391,10 @@ export function omit<
         properties: {
             ...inputSchema.properties,
         },
-        nullable: inputSchema.nullable,
+        isNullable: inputSchema.isNullable,
     };
-    if (typeof options.strict === 'boolean') {
-        schema.strict = options.strict;
+    if (typeof options.isStrict === 'boolean') {
+        schema.isStrict = options.isStrict;
     }
     Object.keys(inputSchema.properties).forEach((key) => {
         if (keys.includes(key as any)) {
@@ -522,8 +522,8 @@ export function extend<
             description: options.description,
         },
     };
-    if (typeof options.strict === 'boolean') {
-        schema.strict = options.strict;
+    if (typeof options.isStrict === 'boolean') {
+        schema.isNullable = options.isStrict;
     }
 
     const isType = (
@@ -566,14 +566,14 @@ export function partial<
     const newSchema: SchemaFormProperties = {
         properties: {},
         optionalProperties: {},
-        nullable: schema.nullable,
+        isNullable: schema.isNullable,
         metadata: {
             id: options.id,
             description: options.description,
         },
     };
-    if (typeof options.strict === 'boolean') {
-        schema.strict = options.strict;
+    if (typeof options.isStrict === 'boolean') {
+        schema.isStrict = options.isStrict;
     }
     for (const key of Object.keys(schema.properties)) {
         const prop = schema.properties[key]!;

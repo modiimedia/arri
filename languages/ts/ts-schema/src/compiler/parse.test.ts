@@ -183,7 +183,7 @@ it('respects the strict option', () => {
                 id: a.string(),
                 name: a.string(),
             },
-            { strict: true },
+            { isStrict: true },
         ),
     );
     const input = {

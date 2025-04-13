@@ -756,7 +756,7 @@ export const validationTestSuites: Record<
                 id: a.string(),
                 name: a.string(),
             },
-            { strict: true },
+            { isStrict: true },
         ),
         goodInputs: [
             {
@@ -786,7 +786,7 @@ export const validationTestSuites: Record<
                 id: a.string(),
                 name: a.string(),
             },
-            { strict: false },
+            { isStrict: false },
         ),
         goodInputs: [
             {

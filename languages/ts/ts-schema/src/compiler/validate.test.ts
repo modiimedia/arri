@@ -469,7 +469,7 @@ it('uses strict properly', () => {
                 id: a.string(),
                 name: a.string(),
             },
-            { strict: true },
+            { isStrict: true },
         ),
     );
     const input = {

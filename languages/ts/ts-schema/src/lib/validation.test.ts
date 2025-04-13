@@ -187,7 +187,7 @@ describe('errors()', () => {
                 id: a.string(),
                 date: a.timestamp(),
             },
-            { strict: true },
+            { isStrict: true },
         );
         const looseResult = a.errors(looseSchema, {
             id: '1',

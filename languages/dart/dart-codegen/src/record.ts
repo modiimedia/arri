@@ -48,7 +48,7 @@ export function dartMapFromSchema(
             if (context.isOptional) {
                 return `${input}!.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson('_val_', '', '')},),)`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${input}?.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson('_val_', '', '')},),)`;
             }
             return `${input}.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson('_val_', '', '')},),)`;
