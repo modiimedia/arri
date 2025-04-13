@@ -159,7 +159,7 @@ func (s Nullable[T]) TypeDef(tc TypeDefContext) (*TypeDef, error) {
 	if err != nil {
 		return nil, err
 	}
-	def.Nullable.Set(true)
+	def.IsNullable.Set(true)
 	return def, nil
 }
 

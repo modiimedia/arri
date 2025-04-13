@@ -36,13 +36,13 @@ type TypeDefMetadata struct {
 
 type TypeDef struct {
 	Metadata           Option[TypeDefMetadata]     `key:"metadata" `
-	Nullable           Option[bool]                `key:"nullable"`
+	IsNullable         Option[bool]                `key:"isNullable"`
 	Type               Option[Type]                `key:"type"`
 	Enum               Option[[]string]            `key:"enum"`
 	Elements           Option[*TypeDef]            `key:"elements"`
 	Properties         Option[OrderedMap[TypeDef]] `key:"properties"`
 	OptionalProperties Option[OrderedMap[TypeDef]] `key:"optionalProperties"`
-	Strict             Option[bool]                `key:"strict"`
+	IsStrict           Option[bool]                `key:"isStrict"`
 	Values             Option[*TypeDef]            `key:"values"`
 	Discriminator      Option[string]              `key:"discriminator"`
 	Mapping            Option[OrderedMap[TypeDef]] `key:"mapping"`
@@ -174,11 +174,11 @@ func typeToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error)
 		}
 		if input.Name() == "Time" {
 			t := Timestamp
-			return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+			return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 		}
 		return structToTypeDef(input, context)
 	case reflect.Interface:
-		return &TypeDef{Nullable: context.IsNullable}, nil
+		return &TypeDef{IsNullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. %s is not a supported type", context.InstancePath, input.Kind())
 	}
@@ -189,43 +189,43 @@ func primitiveTypeToTypeDef(value reflect.Type, context TypeDefContext) (*TypeDe
 	switch kind {
 	case reflect.Bool:
 		t := Boolean
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Int:
 		t := Int64
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Int8:
 		t := Int8
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Int16:
 		t := Int16
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Int32:
 		t := Int32
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Int64:
 		t := Int64
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Uint:
 		t := Uint64
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Uint8:
 		t := Uint8
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Uint16:
 		t := Uint16
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Uint32:
 		t := Uint32
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Uint64:
 		t := Uint64
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Float32:
 		t := Float32
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.Float64:
 		t := Float64
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	case reflect.String:
 		if context.EnumValues.IsSome() {
 			metadata := None[TypeDefMetadata]()
@@ -233,13 +233,13 @@ func primitiveTypeToTypeDef(value reflect.Type, context TypeDefContext) (*TypeDe
 				metadata = Some(TypeDefMetadata{Id: Some(context.EnumName.Unwrap())})
 			}
 			return &TypeDef{
-				Enum:     context.EnumValues,
-				Nullable: context.IsNullable,
-				Metadata: metadata,
+				Enum:       context.EnumValues,
+				IsNullable: context.IsNullable,
+				Metadata:   metadata,
 			}, nil
 		}
 		t := String
-		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		return &TypeDef{Type: Some(t), IsNullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. '%s' is not a supported primitive type", context.InstancePath, kind)
 	}
@@ -281,7 +281,7 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 		for i := 0; i < len(context.ParentStructs); i++ {
 			name := context.ParentStructs[i]
 			if name == typeId.Unwrap() {
-				return &TypeDef{Ref: typeId, Nullable: context.IsNullable}, nil
+				return &TypeDef{Ref: typeId, IsNullable: context.IsNullable}, nil
 			}
 		}
 		context.ParentStructs = append(context.ParentStructs, typeId.Unwrap())
@@ -398,12 +398,12 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 		return &TypeDef{
 			Properties:         Some(requiredFields),
 			OptionalProperties: Some(optionalFields),
-			Nullable:           context.IsNullable,
+			IsNullable:         context.IsNullable,
 			Metadata:           Some(TypeDefMetadata{Id: typeId})}, nil
 	}
 	return &TypeDef{
 		Properties: Some(requiredFields),
-		Nullable:   context.IsNullable,
+		IsNullable: context.IsNullable,
 		Metadata:   Some(TypeDefMetadata{Id: typeId}),
 	}, nil
 }
@@ -487,7 +487,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context TypeD
 	return &TypeDef{
 		Discriminator: Some(discriminatorKey),
 		Mapping:       Some(mapping),
-		Nullable:      context.IsNullable,
+		IsNullable:    context.IsNullable,
 		Metadata:      Some(TypeDefMetadata{Id: name}),
 	}, nil
 }
@@ -516,7 +516,7 @@ func arrayToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error
 		return nil, err
 	}
 	r := Some(subTypeResult)
-	return &TypeDef{Elements: r, Nullable: context.IsNullable}, nil
+	return &TypeDef{Elements: r, IsNullable: context.IsNullable}, nil
 }
 
 func mapToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) {
@@ -551,5 +551,5 @@ func mapToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) 
 		return nil, err
 	}
 	r := Some(subTypeResult)
-	return &TypeDef{Values: r, Nullable: context.IsNullable}, nil
+	return &TypeDef{Values: r, IsNullable: context.IsNullable}, nil
 }

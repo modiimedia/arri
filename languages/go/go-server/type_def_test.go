@@ -27,7 +27,7 @@ func TestStringToTypeDef(t *testing.T) {
 		t.Fatal(deepEqualErrString(result, expectedResult))
 		return
 	}
-	expectedResult.Nullable = arri.Some(true)
+	expectedResult.IsNullable = arri.Some(true)
 	if !reflect.DeepEqual(nullableResult, expectedResult) {
 		t.Fatal(deepEqualErrString(nullableResult, expectedResult))
 		return
@@ -48,7 +48,7 @@ func TestArrayToTypeDef(t *testing.T) {
 		return
 	}
 	nullableResult, nullableErr := arri.ToTypeDef(arri.Null[[]string](), options)
-	expectedResult.Nullable = arri.Some(true)
+	expectedResult.IsNullable = arri.Some(true)
 	if nullableErr != nil {
 		t.Fatal(nullableErr.Error())
 		return
@@ -111,8 +111,8 @@ func TestOrderedMapToTypeDef(t *testing.T) {
 
 func TestNullableStringToTypeDef(t *testing.T) {
 	expectedResult := &arri.TypeDef{
-		Type:     arri.Some(arri.String),
-		Nullable: arri.Some(true),
+		Type:       arri.Some(arri.String),
+		IsNullable: arri.Some(true),
 	}
 	result, err := arri.ToTypeDef(arri.Null[string](), options)
 	if err != nil {
