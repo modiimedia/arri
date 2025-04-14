@@ -6,9 +6,9 @@ This documents defines the Arri Type Definition (ATD) specification for Arri RPC
 
 ## Table of Contents
 
--   [Goals](#goals)
--   [Schema Forms](#schema-forms)
--   [Global Keywords](#global-keywords)
+- [Goals](#goals)
+- [Schema Forms](#schema-forms)
+- [Global Keywords](#global-keywords)
 
 ## Goals
 
@@ -20,14 +20,14 @@ ATD schemas are not intended to be written by hand. Their intended workflow is t
 
 Arri Type Definitions are JSON documents that can take on one of eight forms.
 
--   The [empty form](#empty-schema-form)
--   The [type form](#type-schema-form)
--   The [enum form](#enum-schema-form)
--   The [elements form](#elements-schema-form)
--   The [properties form](#properties-schema-form)
--   The [values form](#values-schema-form)
--   The [discriminator form](#discriminator-schema-form)
--   The [ref form](#ref-schema-form)
+- The [empty form](#empty-schema-form)
+- The [type form](#type-schema-form)
+- The [enum form](#enum-schema-form)
+- The [elements form](#elements-schema-form)
+- The [properties form](#properties-schema-form)
+- The [values form](#values-schema-form)
+- The [discriminator form](#discriminator-schema-form)
+- The [ref form](#ref-schema-form)
 
 ### "Empty" Schema Form
 
@@ -150,7 +150,7 @@ However the following input is not valid:
 
 #### Strict Mode
 
-By default, **properties / optionalProperties** will accept inputs with "extra" properties not mentioned explicitly in the schema. If you need to reject inputs that have any properties not mentioned explicitly in the schema you can use **"strict": true**. For example:
+By default, **properties / optionalProperties** will accept inputs with "extra" properties not mentioned explicitly in the schema. If you need to reject inputs that have any properties not mentioned explicitly in the schema you can use **"isStrict": true**. For example:
 
 ```json
 {
@@ -158,7 +158,7 @@ By default, **properties / optionalProperties** will accept inputs with "extra" 
         "name": { "type": "string" },
         "isAdmin": { "type": "boolean" }
     },
-    "strict": true
+    "isStrict": true
 }
 ```
 
@@ -199,8 +199,8 @@ To describe objects that work like a tagged union (aka: "discriminated union", o
 
 A "discriminator" schema has two keywords:
 
--   `discriminator` which tells you what property is the "tag" property
--   `mapping` which tells you what schema to use, based on the value of the "tag" property.
+- `discriminator` which tells you what property is the "tag" property
+- `mapping` which tells you what schema to use, based on the value of the "tag" property.
 
 For example, let's say you have messages that look like this:
 
@@ -286,11 +286,11 @@ Having a recursive schema of a different form is invalid ATD. For example,
     "properties": {
         "left": {
             "ref": "BinaryTree",
-            "nullable": true
+            "isNullable": true
         },
         "right": {
             "ref": "BinaryTree",
-            "nullable": true
+            "isNullable": true
         },
         "metadata": {
             "id": "BinaryTree"
@@ -319,19 +319,19 @@ Accepts
 
 ## Global Keywords
 
-### The `nullable` keyword
+### The `isNullable` keyword
 
-You can put `nullable` on any schema (regardless of which "form" it takes), and that will make `null` an acceptable value for the schema.
+You can put `isNullable` on any schema (regardless of which "form" it takes), and that will make `null` an acceptable value for the schema.
 
 For example,
 
 ```json
-{ "type": "string", "nullable": true }
+{ "type": "string", "isNullable": true }
 ```
 
 Will accept `"foo"` and `null`
 
-Note: you can't put `nullable` on a schema in a [discriminator **mapping**](#discriminator-schema-form). If you want a discriminator to be nullable, you have to put it at the same level as the `discriminator` and `mapping` keywords.
+Note: you can't put `isNullable` on a schema in a [discriminator **mapping**](#discriminator-schema-form). If you want a discriminator to be nullable, you have to put it at the same level as the `discriminator` and `mapping` keywords.
 
 ### The `metadata` keyword
 
