@@ -14,6 +14,7 @@ Go implementation of [Arri RPC](/README.md). It uses the `net/http` package from
     - [Enums](#enums)
     - [Arrays and Slices](#arrays-and-slices)
     - [Objects](#objects)
+        - [Struct Field Tags](#struct-field-tags)
     - [Maps](#maps)
     - [Discriminated Unions / Tagged Unions](#discriminated-unions--tagged-unions)
     - [Recursive Types](#recursive-types)
@@ -437,6 +438,23 @@ func GetPost(
     arri.RpcError,
 ) {
     // rpc content
+}
+```
+
+#### Struct Field Tags
+
+Arri comes with a number of struct field tags which provide additional metadata to Arri.
+
+```go
+type Foo struct {
+    // manually specify the serialized key name
+    Foo string `key:"foo_foo"`
+
+    // add a description which will become doc comments in the target client(s)
+    Bar string `description:"this is a description"`
+
+    // set this field as deprecated
+    Baz bool `arri:"deprecated"`
 }
 ```
 
