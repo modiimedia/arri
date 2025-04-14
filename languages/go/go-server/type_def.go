@@ -29,9 +29,11 @@ const (
 type Type = string
 
 type TypeDefMetadata struct {
-	Id           Option[string] `key:"id"`
-	Description  Option[string] `key:"description"`
-	IsDeprecated Option[bool]   `key:"isDeprecated"`
+	Id              Option[string] `key:"id"`
+	Description     Option[string] `key:"description"`
+	IsDeprecated    Option[bool]   `key:"isDeprecated"`
+	DeprecatedNote  Option[string] `key:"deprecatedNote"`
+	DeprecatedSince Option[string] `key:"deprecatedSince"`
 }
 
 type TypeDef struct {
@@ -324,6 +326,12 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 				deprecated = true
 			}
 		}
+		deprecatedNote := None[string]()
+		deprecatedAnnotation := field.Tag.Get("deprecated")
+		if len(deprecatedAnnotation) > 0 {
+			deprecated = true
+			deprecatedNote.Set(deprecatedAnnotation)
+		}
 		fieldType := field.Type
 		description := field.Tag.Get("description")
 		enumValues := None[Option[[]string]]()
@@ -382,9 +390,10 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 			}
 			if desc.IsSome() || isDeprecated.IsSome() {
 				fieldResult.Metadata.Set(TypeDefMetadata{
-					Id:           fieldResult.Metadata.Unwrap().Id,
-					Description:  desc,
-					IsDeprecated: isDeprecated,
+					Id:             fieldResult.Metadata.Unwrap().Id,
+					Description:    desc,
+					IsDeprecated:   isDeprecated,
+					DeprecatedNote: deprecatedNote,
 				})
 			}
 		}

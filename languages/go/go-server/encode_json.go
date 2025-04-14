@@ -52,7 +52,7 @@ func EncodeJSON(input any, options EncodingOptions) ([]byte, error) {
 
 func encodeValueToJSON(v reflect.Value, c *EncodingContext) error {
 	if c.CurrentDepth > c.MaxDepth {
-		return fmt.Errorf("max depth of %s exceeded", c.MaxDepth)
+		return fmt.Errorf("max depth of %+v exceeded", c.MaxDepth)
 	}
 	kind := v.Kind()
 	switch kind {
