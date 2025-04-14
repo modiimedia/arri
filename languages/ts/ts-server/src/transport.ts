@@ -1,13 +1,5 @@
-import { Server } from 'node:http';
-
 import { RpcDefinition } from '@arrirpc/codegen-utils';
-import {
-    defineEventHandler,
-    getQuery,
-    readBody,
-    readRawBody,
-    Router,
-} from 'h3';
+import { defineEventHandler, getQuery, readRawBody, Router } from 'h3';
 
 type ProcedureHandler = (params: unknown, event: any) => string;
 
