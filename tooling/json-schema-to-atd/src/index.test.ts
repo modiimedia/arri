@@ -23,7 +23,7 @@ it('Converts integers', () => {
     const expectedOutput: SchemaFormType = {
         type: 'int32',
         metadata: emptyMetadata,
-        nullable: undefined,
+        isNullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(integerSchema)).toStrictEqual(expectedOutput);
 });
@@ -35,7 +35,7 @@ it('Converts strings', () => {
     const expectedOutput: SchemaFormType = {
         type: 'string',
         metadata: emptyMetadata,
-        nullable: undefined,
+        isNullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
@@ -48,7 +48,7 @@ it('Converts strings that are marked as format "date-time"', () => {
     const expectedOutput: SchemaFormType = {
         type: 'timestamp',
         metadata: emptyMetadata,
-        nullable: undefined,
+        isNullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
     const input2: JsonSchemaScalarType = {
@@ -59,7 +59,7 @@ it('Converts strings that are marked as format "date-time"', () => {
     const expectedOutput2: SchemaFormType = {
         type: 'timestamp',
         metadata: emptyMetadata,
-        nullable: true,
+        isNullable: true,
     };
     expect(jsonSchemaToJtdSchema(input2)).toStrictEqual(expectedOutput2);
 });
@@ -88,27 +88,27 @@ it('Converts objects', () => {
             id: {
                 type: 'string',
                 metadata: emptyMetadata,
-                nullable: undefined,
+                isNullable: undefined,
             },
             title: {
                 type: 'string',
                 metadata: emptyMetadata,
-                nullable: undefined,
+                isNullable: undefined,
             },
             numLikes: {
                 type: 'int32',
                 metadata: emptyMetadata,
-                nullable: undefined,
+                isNullable: undefined,
             },
             createdAt: {
                 type: 'int32',
                 metadata: emptyMetadata,
-                nullable: undefined,
+                isNullable: undefined,
             },
         },
         metadata: emptyMetadata,
-        strict: undefined,
-        nullable: undefined,
+        isStrict: undefined,
+        isNullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
@@ -130,7 +130,7 @@ it('Converts objects with optional values', () => {
         properties: {
             id: {
                 type: 'string',
-                nullable: undefined,
+                isNullable: undefined,
                 metadata: emptyMetadata,
             },
         },
@@ -138,12 +138,12 @@ it('Converts objects with optional values', () => {
             name: {
                 type: 'string',
                 metadata: emptyMetadata,
-                nullable: undefined,
+                isNullable: undefined,
             },
         },
         metadata: emptyMetadata,
-        strict: undefined,
-        nullable: undefined,
+        isStrict: undefined,
+        isNullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
@@ -160,10 +160,10 @@ it('Converts dictionary types', () => {
     const expectedOutput1: SchemaFormValues = {
         values: {
             type: 'string',
-            nullable: undefined,
+            isNullable: undefined,
             metadata: emptyMetadata,
         },
-        nullable: undefined,
+        isNullable: undefined,
         metadata: emptyMetadata,
     };
     expect(jsonSchemaToJtdSchema(input1)).toStrictEqual(expectedOutput1);
@@ -190,21 +190,21 @@ it('Converts dictionary types', () => {
             optionalProperties: {
                 id: {
                     type: 'string',
-                    nullable: undefined,
+                    isNullable: undefined,
                     metadata: emptyMetadata,
                 },
                 name: {
                     type: 'string',
-                    nullable: true,
+                    isNullable: true,
                     metadata: emptyMetadata,
                 },
             },
             metadata: emptyMetadata,
-            nullable: undefined,
-            strict: undefined,
+            isNullable: undefined,
+            isStrict: undefined,
         },
         metadata: emptyMetadata,
-        nullable: undefined,
+        isNullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input2)).toStrictEqual(expectedOutput2);
 });

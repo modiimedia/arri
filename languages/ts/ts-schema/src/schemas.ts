@@ -68,7 +68,7 @@ export type WithAdapters<T = any> = StandardSchemaV1<T>;
 
 export interface ASchema<T = any, TOptional extends boolean = false> {
     metadata?: SchemaMetadata;
-    nullable?: boolean;
+    isNullable?: boolean;
     [VALIDATOR_KEY]: SchemaValidator<T, TOptional>;
 }
 export type ASchemaStrict<TSchema extends ASchema> = Omit<
@@ -250,7 +250,7 @@ export interface AObjectSchema<TVal = any, TStrict extends boolean = false>
     extends ASchema<TVal> {
     properties: Record<string, ASchema>;
     optionalProperties?: Record<string, ASchema>;
-    strict?: TStrict;
+    isStrict?: TStrict;
 }
 export function isAObjectSchema(input: unknown): input is AObjectSchema {
     return isASchema(input) && isSchemaFormProperties(input);
@@ -265,7 +265,7 @@ export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>
     /**
      * Allow this object to include additional properties not specified here
      */
-    strict?: TAdditionalProps;
+    isStrict?: TAdditionalProps;
 }
 
 // object helper types

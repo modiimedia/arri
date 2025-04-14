@@ -17,15 +17,21 @@ type EncodingContext struct {
 	InstancePath       string
 	SchemaPath         string
 	CurrentDepth       uint32
+	MaxDepth           uint32
 	HasKeys            bool
 	EnumValues         map[string][]string
 	DiscriminatorKey   string
 	DiscriminatorValue string
 }
 
-func NewEncodingContext(keyCasing string) *EncodingContext {
+func NewEncodingContext(options EncodingOptions) *EncodingContext {
+	maxDepth := options.MaxDepth
+	if maxDepth == 0 {
+		maxDepth = 200
+	}
 	return &EncodingContext{
-		KeyCasing:    keyCasing,
+		KeyCasing:    options.KeyCasing,
+		MaxDepth:     maxDepth,
 		Buffer:       []byte{},
 		InstancePath: "",
 		SchemaPath:   "",
@@ -35,7 +41,7 @@ func NewEncodingContext(keyCasing string) *EncodingContext {
 }
 
 func EncodeJSON(input any, options EncodingOptions) ([]byte, error) {
-	ctx := NewEncodingContext(options.KeyCasing)
+	ctx := NewEncodingContext(options)
 	value := reflect.ValueOf(input)
 	err := encodeValueToJSON(value, ctx)
 	if err != nil {
@@ -45,6 +51,9 @@ func EncodeJSON(input any, options EncodingOptions) ([]byte, error) {
 }
 
 func encodeValueToJSON(v reflect.Value, c *EncodingContext) error {
+	if c.CurrentDepth > c.MaxDepth {
+		return fmt.Errorf("max depth of %+v exceeded", c.MaxDepth)
+	}
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
@@ -369,7 +378,7 @@ func encodeMapToJSON(v reflect.Value, c *EncodingContext) error {
 	keyVals := []string{}
 	for _, key := range v.MapKeys() {
 		if key.Kind() != reflect.String {
-			return fmt.Errorf("error at %s, map keys must be strings", instancePath)
+			return fmt.Errorf("error at %+v, map keys must be strings", instancePath)
 		}
 		keyName := key.String()
 		keys[keyName] = key

@@ -8,14 +8,16 @@ export function tsRefFromSchema(
 ): TsProperty {
     const typeName = pascalCase(validVarName(schema.ref), { normalize: true });
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
-    const defaultValue = schema.nullable ? 'null' : `${prefixedTypeName}.new()`;
+    const defaultValue = schema.isNullable
+        ? 'null'
+        : `${prefixedTypeName}.new()`;
     return {
-        typeName: schema.nullable
+        typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
             : prefixedTypeName,
         defaultValue,
         validationTemplate(input) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `($$${prefixedTypeName}.validate(${input}) || ${input} === null)`;
             }
             return `$$${prefixedTypeName}.validate(${input})`;
@@ -28,7 +30,7 @@ export function tsRefFromSchema(
                 }`;
         },
         toJsonTemplate(input, target, _key) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} !== null) {
                     ${target} += $$${prefixedTypeName}.toJsonString(${input});
                 } else {

@@ -27,7 +27,7 @@ export function swiftRefFromSchema(
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if ${input}.dictionary != nil {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
@@ -36,7 +36,7 @@ export function swiftRefFromSchema(
         },
         toJsonTemplate(input, target) {
             const mainContent = `${target} += ${input}${isNullable ? '!' : ''}.toJSONString()`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if ${input} != nil {
                     ${mainContent}
                 } else {

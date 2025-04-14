@@ -72,7 +72,7 @@ export function nullable<T = any, TOptional extends boolean = false>(
     };
     const result: ASchemaWithAdapters<T | null, TOptional> = {
         ...schema,
-        nullable: true,
+        isNullable: true,
         metadata: {
             id: opts.id ?? schema.metadata?.id,
             description: opts.description ?? schema.metadata?.description,

@@ -84,7 +84,7 @@ export function dartDateTimeFromSchema(
                 // the null check will happen at the object level
                 return `${input}!.toUtc().toIso8601String()`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${input}?.toUtc().toIso8601String()`;
             }
             return `${input}.toUtc().toIso8601String()`;
@@ -93,7 +93,7 @@ export function dartDateTimeFromSchema(
             if (context.isOptional) {
                 return `if (${input} != null) ${target}.add("${key}=\${${input}!.toUtc().toIso8601String()}")`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target}.add("${key}=\${${input}?.toUtc().toIso8601String()}")`;
             }
             return `${target}.add("${key}=\${${input}.toUtc().toIso8601String()}")`;
@@ -183,7 +183,7 @@ export function dartBigIntFromSchema(
             if (context.isOptional) {
                 return `${input}!.toString()`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${input}?.toString()`;
             }
             return `${input}.toString()`;

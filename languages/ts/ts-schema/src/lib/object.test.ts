@@ -224,7 +224,7 @@ describe('a.object()', () => {
                 name: {
                     type: 'string',
                     metadata: {},
-                    nullable: true,
+                    isNullable: true,
                 },
                 createdAt: {
                     type: 'timestamp',
@@ -480,7 +480,7 @@ describe('a.pick()', () => {
                 email: {
                     type: 'string',
                     metadata: {},
-                    nullable: true,
+                    isNullable: true,
                 },
             },
             optionalProperties: {},
@@ -529,7 +529,7 @@ describe('a.pick()', () => {
 
 describe('a.omit()', () => {
     const UserSubsetSchema = a.omit(UserSchema, ['id', 'isAdmin'], {
-        strict: true,
+        isStrict: true,
     });
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
     const parse = (input: unknown) => a.parse(UserSubsetSchema, input);
@@ -576,7 +576,7 @@ describe('a.omit()', () => {
                 email: {
                     type: 'string',
                     metadata: {},
-                    nullable: true,
+                    isNullable: true,
                 },
             },
             optionalProperties: {
@@ -585,7 +585,7 @@ describe('a.omit()', () => {
                     metadata: {},
                 },
             },
-            strict: true,
+            isStrict: true,
             metadata: {},
         });
     });
@@ -742,7 +742,7 @@ describe('a.partial()', () => {
                 name: {
                     type: 'string',
                     metadata: {},
-                    nullable: true,
+                    isNullable: true,
                 },
                 createdAt: {
                     type: 'timestamp',

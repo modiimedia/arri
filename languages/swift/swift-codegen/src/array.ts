@@ -45,7 +45,7 @@ export function swiftArrayFromSchema(
 ${mainContent}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.array != nil {
 ${mainContent}
                 }`;
@@ -61,7 +61,7 @@ ${mainContent}
                 ${subType.toJsonTemplate(`__element`, target)}
             }
             ${target} += "]"`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${mainContent}
                 } else {

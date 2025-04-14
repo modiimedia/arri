@@ -69,7 +69,12 @@ export interface RpcDefinitionBase<T = string> {
     response?: T;
     description?: string;
     isDeprecated?: boolean;
+    deprecatedNote?: string;
+    deprecatedSince?: string;
 }
+
+// procedures
+// channels
 
 export interface HttpRpcDefinition<T = string> extends RpcDefinitionBase<T> {
     transport: 'http';

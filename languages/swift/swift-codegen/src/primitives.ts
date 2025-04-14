@@ -21,7 +21,7 @@ export function swiftStringFromSchema(
             ${target} = ${input}.string    
         }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.string != nil {
             ${target} = ${input}.string
         }`;
@@ -32,7 +32,7 @@ export function swiftStringFromSchema(
             if (context.isOptional) {
                 return `        ${target} += serializeString(input: ${input}!)`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += serializeString(input: ${input}!)
                 } else {
@@ -47,7 +47,7 @@ export function swiftStringFromSchema(
                     ${target}.append(URLQueryItem(name: "${key}", value: ${input}!))
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: ${input}!))
                 } else {
@@ -79,7 +79,7 @@ export function swiftBooleanFromSchema(
                     ${target} = ${input}.bool
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.bool != nil {
                     ${target} = ${input}.bool
                 }`;
@@ -90,7 +90,7 @@ export function swiftBooleanFromSchema(
             if (context.isOptional) {
                 return `${target} += "\\(${input}!)"`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += "\\(${input}!)"
                 } else {
@@ -105,7 +105,7 @@ export function swiftBooleanFromSchema(
                     ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 } else {
@@ -137,7 +137,7 @@ export function swiftTimestampFromSchema(
                     ${target} = parseDate(${input}.string ?? "") ?? Date()
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.string != nil {
                     ${target} = parseDate(${input}.string ?? "") ?? Date()
                 }`;
@@ -148,7 +148,7 @@ export function swiftTimestampFromSchema(
             if (context.isOptional) {
                 return `        ${target} += serializeDate(${input}!)`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += serializeDate(${input}!)
                 } else {
@@ -163,7 +163,7 @@ export function swiftTimestampFromSchema(
                     ${target}.append(URLQueryItem(name: "${key}", value: serializeDate(${input}!, withQuotes: false)))
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: serializeDate(${input}!, withQuotes: false)))
                 } else {
@@ -196,7 +196,7 @@ export function swiftNumberFromSchema(
                     ${target} = ${input}.${jsonAccessor}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.${jsonAccessor} != nil {
                     ${target} = ${input}.${jsonAccessor}
                 }`;
@@ -207,7 +207,7 @@ export function swiftNumberFromSchema(
             if (context.isOptional) {
                 return `        ${target} += "\\(${input}!)"`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += "\\(${input}!)"
                 } else {
@@ -222,7 +222,7 @@ export function swiftNumberFromSchema(
                     ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 } else {
@@ -253,7 +253,7 @@ export function swiftLargeIntFromSchema(
                     ${target} = ${typeName}(${input}.string ?? "0")
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.string != nil {
                     ${target} = ${typeName}(${input}.string ?? "0")
                 }`;
@@ -264,7 +264,7 @@ export function swiftLargeIntFromSchema(
             if (context.isOptional) {
                 return `        ${target} += "\\"\\(${input}!)\\""`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += "\\"\\(${input}!)\\""
                 } else {
@@ -279,7 +279,7 @@ export function swiftLargeIntFromSchema(
                     ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 } else {

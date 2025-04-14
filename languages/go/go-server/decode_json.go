@@ -116,7 +116,7 @@ func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError
 	}
 	maxDepth := options.MaxDepth
 	if maxDepth == 0 {
-		maxDepth = 10000
+		maxDepth = 200
 	}
 	dc := DecoderContext{
 		MaxDepth:  maxDepth,

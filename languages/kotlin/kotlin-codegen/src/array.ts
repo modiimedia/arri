@@ -58,7 +58,7 @@ export function kotlinArrayFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} == null) {
                     ${target} += "null"
                 } else {

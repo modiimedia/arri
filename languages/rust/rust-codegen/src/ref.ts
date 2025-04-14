@@ -32,7 +32,7 @@ export default function rustRefFromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             const valFromJson = (input: string) => {

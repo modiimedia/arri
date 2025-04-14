@@ -27,7 +27,7 @@ export default function rustEnumFromSchema(
         typeId: enumName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -58,7 +58,7 @@ export default function rustEnumFromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}.serial_value()));

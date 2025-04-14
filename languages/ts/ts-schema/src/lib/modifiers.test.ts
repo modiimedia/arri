@@ -156,7 +156,7 @@ describe('nullable()', () => {
         const result = JSON.parse(JSON.stringify(a.nullable(a.boolean())));
         expect(result).toStrictEqual({
             type: 'boolean',
-            nullable: true,
+            isNullable: true,
             metadata: {},
         });
     });

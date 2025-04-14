@@ -52,7 +52,7 @@ export function kotlinStringFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += when (${input}) {
                     is String -> buildString { printQuoted(${input}) }
                     else -> "null"
@@ -122,7 +122,7 @@ export function kotlinTimestampFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += when (${input}) {
                     is Instant -> "\\"\${timestampFormatter.format(${input})}\\""
                     else -> "null"
@@ -140,7 +140,7 @@ export function kotlinTimestampFromSchema(
                 )
             }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target}.add(
                     "${key}=\${
                         when (${input}) {
@@ -349,7 +349,7 @@ export function kotlinInt64FromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += when (${input}) {
                     is Long -> "\\"\${${input}}\\""
                     else -> "null"
@@ -487,7 +487,7 @@ export function kotlinUint64FromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += when (${input}) {
                     is ULong -> "\\"\${${input}}\\""
                     else -> "null"
