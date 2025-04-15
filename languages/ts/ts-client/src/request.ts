@@ -27,7 +27,6 @@ export interface ArriRequestOptions {
 }
 
 export interface ArriRequest<TParams, TOutput> {
-    transport: string;
     path: string;
     clientVersion: string;
     method?: string;
@@ -95,11 +94,6 @@ export class HttpRequestHandler implements ArriRequestHandler {
     async handleRequest<TParams, TOutput>(
         req: ArriRequest<TParams, TOutput>,
     ): Promise<TOutput> {
-        if (req.transport !== this.transport) {
-            throw new Error(
-                `HttpRequestHandler doesn't support the following transport: ${req.transport}`,
-            );
-        }
         let url = this.baseUrl + req.path;
         let body: undefined | string;
         let contentType: undefined | string;
@@ -179,99 +173,99 @@ export interface ArriRequestConfig<
     options?: ArriRequestOptions;
 }
 
-export async function arriRequest<
-    TType,
-    TParams extends Record<any, any> | undefined = undefined,
->(config: ArriRequestConfig<TType, TParams>): Promise<TType> {
-    let url = config.url;
-    let body: undefined | string;
-    let contentType: undefined | string;
-    switch (config.method) {
-        case 'get':
-        case 'head':
-            if (config.params && typeof config.params === 'object') {
-                url = `${config.url}?${config.serializer(config.params)}`;
-            }
-            break;
-        default:
-            if (config.params && typeof config.params === 'object') {
-                body = config.serializer(config.params);
-                contentType = 'application/json';
-            }
-            break;
-    }
-    try {
-        const headers = (await getHeaders(config.headers)) ?? {};
-        if (contentType) headers['Content-Type'] = contentType;
-        if (config.clientVersion)
-            headers['client-version'] = config.clientVersion;
-        const fetchInstance = config.ofetch ?? ofetch;
-        const result = await fetchInstance(url, {
-            method: config.method,
-            body,
-            headers,
-            ...(config.options ?? {}),
-        });
-        return config.responseFromJson(result);
-    } catch (err) {
-        const error = err as any as FetchError;
-        let arriError: ArriErrorInstance;
-        if (isArriError(error.data)) {
-            arriError = new ArriErrorInstance(error.data);
-        } else {
-            arriError = new ArriErrorInstance({
-                code: error.statusCode ?? 500,
-                message:
-                    error.statusMessage ??
-                    error.message ??
-                    `Error connecting to ${url}`,
-                data: error.data,
-                stack: error.stack,
-            });
-        }
-        if (config.onError) config.onError(arriError);
-        throw arriError;
-    }
-}
+// export async function arriRequest<
+//     TType,
+//     TParams extends Record<any, any> | undefined = undefined,
+// >(config: ArriRequestConfig<TType, TParams>): Promise<TType> {
+//     let url = config.url;
+//     let body: undefined | string;
+//     let contentType: undefined | string;
+//     switch (config.method) {
+//         case 'get':
+//         case 'head':
+//             if (config.params && typeof config.params === 'object') {
+//                 url = `${config.url}?${config.serializer(config.params)}`;
+//             }
+//             break;
+//         default:
+//             if (config.params && typeof config.params === 'object') {
+//                 body = config.serializer(config.params);
+//                 contentType = 'application/json';
+//             }
+//             break;
+//     }
+//     try {
+//         const headers = (await getHeaders(config.headers)) ?? {};
+//         if (contentType) headers['Content-Type'] = contentType;
+//         if (config.clientVersion)
+//             headers['client-version'] = config.clientVersion;
+//         const fetchInstance = config.ofetch ?? ofetch;
+//         const result = await fetchInstance(url, {
+//             method: config.method,
+//             body,
+//             headers,
+//             ...(config.options ?? {}),
+//         });
+//         return config.responseFromJson(result);
+//     } catch (err) {
+//         const error = err as any as FetchError;
+//         let arriError: ArriErrorInstance;
+//         if (isArriError(error.data)) {
+//             arriError = new ArriErrorInstance(error.data);
+//         } else {
+//             arriError = new ArriErrorInstance({
+//                 code: error.statusCode ?? 500,
+//                 message:
+//                     error.statusMessage ??
+//                     error.message ??
+//                     `Error connecting to ${url}`,
+//                 data: error.data,
+//                 stack: error.stack,
+//             });
+//         }
+//         if (config.onError) config.onError(arriError);
+//         throw arriError;
+//     }
+// }
 
-export async function arriSafeRequest<
-    TType,
-    TParams extends Record<any, any> | undefined = undefined,
->(config: ArriRequestConfig<TType, TParams>): Promise<SafeResponse<TType>> {
-    try {
-        const result = await arriRequest<TType, TParams>(config);
-        return {
-            success: true,
-            value: result,
-        };
-    } catch (err) {
-        if (err instanceof ArriErrorInstance) {
-            return {
-                success: false,
-                error: err,
-            };
-        }
-        if (err instanceof FetchError) {
-            return {
-                success: false,
-                error: new ArriErrorInstance({
-                    code: err.statusCode ?? 0,
-                    message: err.statusMessage ?? '',
-                    stack: err.stack,
-                    data: err.data,
-                }),
-            };
-        }
-        return {
-            success: false,
-            error: new ArriErrorInstance({
-                code: 500,
-                message: `Unknown error connecting to ${config.url}`,
-                data: err,
-            }),
-        };
-    }
-}
+// export async function arriSafeRequest<
+//     TType,
+//     TParams extends Record<any, any> | undefined = undefined,
+// >(config: ArriRequestConfig<TType, TParams>): Promise<SafeResponse<TType>> {
+//     try {
+//         const result = await arriRequest<TType, TParams>(config);
+//         return {
+//             success: true,
+//             value: result,
+//         };
+//     } catch (err) {
+//         if (err instanceof ArriErrorInstance) {
+//             return {
+//                 success: false,
+//                 error: err,
+//             };
+//         }
+//         if (err instanceof FetchError) {
+//             return {
+//                 success: false,
+//                 error: new ArriErrorInstance({
+//                     code: err.statusCode ?? 0,
+//                     message: err.statusMessage ?? '',
+//                     stack: err.stack,
+//                     data: err.data,
+//                 }),
+//             };
+//         }
+//         return {
+//             success: false,
+//             error: new ArriErrorInstance({
+//                 code: 500,
+//                 message: `Unknown error connecting to ${config.url}`,
+//                 data: err,
+//             }),
+//         };
+//     }
+// }
 
 export type SafeResponse<T> =
     | {

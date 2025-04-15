@@ -31,6 +31,8 @@ import {
     createFetch,
     type WsController,
     type WsOptions,
+    ArriRequestHandler,
+    HttpRequestHandler,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
@@ -43,6 +45,7 @@ export class ExampleClient {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
+    private readonly _transports: Record<string, ArriRequestHandler>;
     books: ExampleClientBooksService;
     constructor(
         config: {
@@ -51,6 +54,7 @@ export class ExampleClient {
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
             options?: ArriRequestOptions;
+            transports?: Record<string, ArriRequestHandler>;
         } = {},
     ) {
         this._baseUrl = config.baseUrl ?? '';
@@ -60,6 +64,25 @@ export class ExampleClient {
         this._headers = config.headers ?? {};
         this._onError = config.onError;
         this._options = config.options;
+        if (!config.transports) {
+            config.transports = {};
+        }
+        if (!config.transports['http']) {
+            config.transports['http'] = new HttpRequestHandler({
+                baseUrl: this._baseUrl,
+                fetch: config.fetch,
+                headers: config.headers,
+                onRequest: config.options?.onRequest,
+                onRequestError: config.options?.onRequestError,
+                onResponse: config.options?.onResponse,
+                onResponseError: config.options?.onResponseError,
+                retry: config.options?.retry,
+                retryDelay: config.options?.retryDelay,
+                retryStatusCodes: config.options?.retryStatusCodes,
+                timeout: config.options?.timeout,
+            });
+        }
+        this._transports = config.transports;
         this.books = new ExampleClientBooksService(config);
     }
 
@@ -67,19 +90,32 @@ export class ExampleClient {
         params: NestedObject,
         options?: ArriRequestOptions,
     ): Promise<NestedObject> {
-        return arriRequest<NestedObject, NestedObject>({
-            url: `${this._baseUrl}/send-object`,
+        const transport = this._transports['http'];
+        if (!transport) throw new Error(`Missing transport http`);
+        return transport.handleRequest({
+            path: '/send-object',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$NestedObject.fromJson,
-            responseFromString: $$NestedObject.fromJsonString,
-            serializer: $$NestedObject.toJsonString,
             clientVersion: '20',
-            options: options ?? this._options,
+            params: params,
+            queryStringEncoder: $$NestedObject.toUrlQueryString,
+            bodyEncoder: $$NestedObject.toJsonString,
+            responseDecoder: $$NestedObject.fromJsonString,
+            onError: this._onError,
+            timeout: options?.timeout,
         });
+        // return arriRequest<NestedObject, NestedObject>({
+        //     url: `${this._baseUrl}/send-object`,
+        //     method: 'post',
+        //     ofetch: this._fetch,
+        //     headers: this._headers,
+        //     onError: this._onError,
+        //     params: params,
+        //     responseFromJson: $$NestedObject.fromJson,
+        //     responseFromString: $$NestedObject.fromJsonString,
+        //     serializer: $$NestedObject.toJsonString,
+        //     clientVersion: '20',
+        //     options: options ?? this._options,
+        // });
     }
 }
 
@@ -91,6 +127,7 @@ export class ExampleClientBooksService {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
+    private readonly _transports: Record<string, ArriRequestHandler>;
     constructor(
         config: {
             baseUrl?: string;
@@ -98,6 +135,7 @@ export class ExampleClientBooksService {
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
             options?: ArriRequestOptions;
+            transports?: Record<string, ArriRequestHandler>;
         } = {},
     ) {
         this._baseUrl = config.baseUrl ?? '';
@@ -107,6 +145,25 @@ export class ExampleClientBooksService {
         this._headers = config.headers ?? {};
         this._onError = config.onError;
         this._options = config.options;
+        if (!config.transports) {
+            config.transports = {};
+        }
+        if (!config.transports['http']) {
+            config.transports['http'] = new HttpRequestHandler({
+                baseUrl: this._baseUrl,
+                fetch: config.fetch,
+                headers: config.headers,
+                onRequest: config.options?.onRequest,
+                onRequestError: config.options?.onRequestError,
+                onResponse: config.options?.onResponse,
+                onResponseError: config.options?.onResponseError,
+                retry: config.options?.retry,
+                retryDelay: config.options?.retryDelay,
+                retryStatusCodes: config.options?.retryStatusCodes,
+                timeout: config.options?.timeout,
+            });
+        }
+        this._transports = config.transports;
     }
     /**
      * Get a book
@@ -115,18 +172,18 @@ export class ExampleClientBooksService {
         params: BookParams,
         options?: ArriRequestOptions,
     ): Promise<Book> {
-        return arriRequest<Book, BookParams>({
-            url: `${this._baseUrl}/books/get-book`,
+        const transport = this._transports['http'];
+        if (!transport) throw new Error('Missing transport http');
+        return transport.handleRequest({
+            path: '/books/get-book',
             method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toUrlQueryString,
             clientVersion: '20',
-            options: options ?? this._options,
+            params: params,
+            queryStringEncoder: $$BookParams.toUrlQueryString,
+            bodyEncoder: $$BookParams.toJsonString,
+            responseDecoder: $$Book.fromJsonString,
+            onError: this._onError,
+            timeout: options?.timeout,
         });
     }
     /**
@@ -137,18 +194,18 @@ export class ExampleClientBooksService {
         params: Book,
         options?: ArriRequestOptions,
     ): Promise<Book> {
-        return arriRequest<Book, Book>({
-            url: `${this._baseUrl}/books/create-book`,
+        const transport = this._transports['http'];
+        if (!transport) throw new Error('Missing transport http');
+        return transport.handleRequest({
+            path: '/books/get-book',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$Book.toJsonString,
             clientVersion: '20',
-            options: options ?? this._options,
+            params: params,
+            queryStringEncoder: $$Book.toUrlQueryString,
+            bodyEncoder: $$Book.toJsonString,
+            responseDecoder: $$Book.fromJsonString,
+            onError: this._onError,
+            timeout: options?.timeout,
         });
     }
     /**
@@ -173,23 +230,6 @@ export class ExampleClientBooksService {
             },
             options,
         );
-    }
-    async createConnection(
-        options: WsOptions<Book> = {},
-    ): Promise<WsController<BookParams, Book>> {
-        return arriWsRequest<BookParams, Book>({
-            url: `${this._baseUrl}/books/create-connection`,
-            headers: this._headers,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: '20',
-        });
     }
 }
 

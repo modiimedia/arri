@@ -1,10 +1,8 @@
 import {
-    HttpRpcDefinition,
     isRpcDefinition,
     isServiceDefinition,
     RpcDefinition,
     ServiceDefinition,
-    WsRpcDefinition,
 } from '@arrirpc/codegen-utils';
 import assert from 'assert';
 
@@ -33,7 +31,7 @@ export function rustRpcFromSchema(
 }
 
 export function rustHttpRpcFromSchema(
-    schema: HttpRpcDefinition,
+    schema: RpcDefinition,
     context: GeneratorContext,
 ): string {
     const functionName = getFunctionName(context.instancePath);
@@ -66,7 +64,7 @@ export function rustHttpRpcFromSchema(
                 ArriParsedSseRequestOptions {
                     client: &self._config.http_client,
                     url: format!("{}${schema.path}", &self._config.base_url),
-                    method: reqwest::Method::${schema.method.toUpperCase()},
+                    method: reqwest::Method::${schema.method?.toUpperCase() ?? 'POST'},
                     headers: self._config.headers.clone(),
                     client_version: "${context.clientVersion}".to_string(),
                     max_retry_count,
@@ -86,7 +84,7 @@ export function rustHttpRpcFromSchema(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
                 url: format!("{}${schema.path}", &self._config.base_url),
-                method: reqwest::Method::${schema.method.toUpperCase()},
+                method: reqwest::Method::${schema.method?.toUpperCase() ?? 'POST'},
                 headers: self._config.headers.clone(),
                 client_version: "${context.clientVersion}".to_string(),
             },
@@ -98,7 +96,7 @@ export function rustHttpRpcFromSchema(
 }
 
 export function rustWsRpcFromSchema(
-    schema: WsRpcDefinition,
+    schema: RpcDefinition,
     context: GeneratorContext,
 ): string {
     console.warn(

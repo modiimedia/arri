@@ -8,7 +8,7 @@ import {
 } from 'event-source-plus';
 
 import { ArriErrorInstance } from './errors';
-import { type ArriRequestConfig } from './request';
+import { ArriRequestConfig } from './request';
 import { getHeaders } from './utils';
 
 export interface SseEvent<TData = string> {

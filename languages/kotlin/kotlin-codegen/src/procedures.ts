@@ -1,11 +1,9 @@
 import {
-    type HttpRpcDefinition,
     isRpcDefinition,
     isServiceDefinition,
     pascalCase,
     type RpcDefinition,
     type ServiceDefinition,
-    type WsRpcDefinition,
 } from '@arrirpc/codegen-utils';
 
 import {
@@ -33,7 +31,7 @@ export function kotlinProcedureFromSchema(
 }
 
 export function kotlinHttpRpcFromSchema(
-    schema: HttpRpcDefinition,
+    schema: RpcDefinition,
     context: CodegenContext,
 ): string {
     const name = getProcedureName(context);
@@ -67,7 +65,7 @@ export function kotlinHttpRpcFromSchema(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl${schema.path}",
-                method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
+                method = HttpMethod.${pascalCase(schema.method ?? 'post', { normalize: true })},
                 params = ${params ? 'params' : 'null'},
                 headers = headers,
                 backoffTime = 0,
@@ -99,7 +97,7 @@ export function kotlinHttpRpcFromSchema(
             val response = __prepareRequest(
                 client = httpClient,
                 url = "$baseUrl${schema.path}",
-                method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
+                method = HttpMethod.${pascalCase(schema.method ?? 'post', { normalize: true })},
                 params = ${params ? 'params' : null},
                 headers = headers?.invoke(),
             ).execute()
@@ -116,7 +114,7 @@ export function kotlinHttpRpcFromSchema(
 }
 
 export function kotlinWsRpcFromSchema(
-    _schema: WsRpcDefinition,
+    _schema: RpcDefinition,
     _context: CodegenContext,
 ): string {
     return '';

@@ -175,12 +175,12 @@ const def = createAppDefinition({
             isEventStream: true,
             isDeprecated: true,
         },
-        'books.createConnection': {
-            path: '/books/create-connection',
-            transport: 'ws',
-            params: BookParams,
-            response: Book,
-        },
+        // 'books.createConnection': {
+        //     path: '/books/create-connection',
+        //     transport: 'ws',
+        //     params: BookParams,
+        //     response: Book,
+        // },
     },
     definitions: {
         EmptyObject,

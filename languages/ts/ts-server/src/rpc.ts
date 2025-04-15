@@ -1,5 +1,4 @@
 import {
-    type HttpRpcDefinition,
     isRpcHttpMethod,
     removeDisallowedChars,
     type RpcDefinition,
@@ -151,7 +150,7 @@ export function createHttpRpcDefinition(
     rpcName: string,
     httpPath: string,
     procedure: HttpRpc<any, any, any>,
-): HttpRpcDefinition {
+): RpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
         method = procedure.method ?? 'get';

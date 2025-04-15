@@ -1,9 +1,4 @@
-import {
-    HttpRpcDefinition,
-    pascalCase,
-    RpcDefinition,
-    WsRpcDefinition,
-} from '@arrirpc/codegen-utils';
+import { pascalCase, RpcDefinition } from '@arrirpc/codegen-utils';
 
 import { CodegenContext, getJsDocComment, validVarName } from './common';
 
@@ -36,7 +31,7 @@ export function tsRpcFromDefinition(
 }
 
 export function httpRpcFromDefinition(
-    def: HttpRpcDefinition,
+    def: RpcDefinition,
     context: CodegenContext,
 ): string {
     const key = getRpcKey(context);
@@ -57,7 +52,7 @@ export function httpRpcFromDefinition(
         return arriSseRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>(
             {
                 url: \`\${this._baseUrl}${def.path}\`,
-                method: "${def.method.toLowerCase()}",
+                method: "${def.method?.toLowerCase() ?? 'post'}",
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -77,7 +72,7 @@ export function httpRpcFromDefinition(
     })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: ArriRequestOptions): Promise<${response ?? 'undefined'}> {
         return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
-            method: "${def.method.toLowerCase()}",
+            method: "${def.method?.toLowerCase() ?? 'post'}",
             ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
@@ -92,7 +87,7 @@ export function httpRpcFromDefinition(
 }
 
 export function wsRpcFromDefinition(
-    def: WsRpcDefinition,
+    def: RpcDefinition,
     context: CodegenContext,
 ): string {
     context.usedFeatures.ws = true;

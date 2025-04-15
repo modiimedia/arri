@@ -1,11 +1,9 @@
 import {
-    HttpRpcDefinition,
     isRpcDefinition,
     isServiceDefinition,
     RpcDefinition,
     Schema,
     ServiceDefinition,
-    WsRpcDefinition,
 } from '@arrirpc/codegen-utils';
 
 import {
@@ -33,7 +31,7 @@ export function dartRpcFromSchema(
 }
 
 export function dartHttpRpcFromSchema(
-    schema: HttpRpcDefinition,
+    schema: RpcDefinition,
     context: CodegenContext,
 ): string {
     const functionName = getFunctionName(context.instancePath);
@@ -62,7 +60,7 @@ export function dartHttpRpcFromSchema(
         }) {
             return parsedArriSseRequest(
                 "$_baseUrl${schema.path}",
-                method: HttpMethod.${schema.method.toLowerCase()},
+                method: HttpMethod.${schema.method?.toLowerCase() ?? 'post'},
                 httpClient: _httpClient,
                 headers: _headers,
                 clientVersion: _clientVersion,
@@ -90,7 +88,7 @@ export function dartHttpRpcFromSchema(
     return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ''}) async {
         return parsedArriRequest(
             "$_baseUrl${schema.path}",
-            method: HttpMethod.${schema.method.toLowerCase()},
+            method: HttpMethod.${schema.method?.toLowerCase() ?? 'post'},
             httpClient: _httpClient,
             headers: _headers,
             clientVersion: _clientVersion,
@@ -107,7 +105,7 @@ function getFunctionName(instancePath: string) {
 }
 
 export function dartWsRpcFromSchema(
-    _: WsRpcDefinition,
+    _: RpcDefinition,
     __: CodegenContext,
 ): string {
     return '';
