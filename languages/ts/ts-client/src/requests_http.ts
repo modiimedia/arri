@@ -8,7 +8,7 @@ import {
 } from 'ofetch';
 
 import { ArriErrorInstance, isArriError } from './errors';
-import { HeaderInput, RpcDispatcher, RpcRequest } from './request';
+import { HeaderInput, RpcDispatcher, RpcRequest } from './requests';
 import { arriSseRequest, SseOptions } from './sse';
 import { getHeaders } from './utils';
 
@@ -85,7 +85,6 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
                 onResponseError:
                     req.options?.onResponseError ??
                     this.options?.onResponseError,
-                // ignoreResponseError: true,
                 responseType: 'text',
                 retry: req.options?.retry ?? this.options?.retry,
                 retryDelay: req.options?.retryDelay ?? this.options?.retryDelay,
@@ -95,14 +94,6 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
                 signal: req.options?.signal ?? this.options?.signal,
                 timeout: req.options?.timeout ?? this.options?.timeout,
             });
-            // if (response.status < 200 || response.status >= 300) {
-            //     const err = ArriErrorInstance.fromJson(
-            //         response._data ?? (await response.text()),
-            //     );
-            //     if (!err.code) err.code = response.status;
-            //     throw err;
-            // }
-            // const resBody = response._data ?? (await response.text());
             return req.responseValidator.fromJsonString(response);
         } catch (err) {
             const error = err as any as FetchError;

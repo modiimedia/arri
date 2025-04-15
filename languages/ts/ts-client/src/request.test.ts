@@ -1,4 +1,4 @@
-import { InferRequestHandlerOptions, RpcDispatcher } from './request';
+import { InferRequestHandlerOptions, RpcDispatcher } from './requests';
 
 test('Infer Transport Options', () => {
     type Foo = RpcDispatcher<{ foo: string }>;

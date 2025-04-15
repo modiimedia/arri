@@ -1,5 +1,5 @@
 export * from './errors';
-export * from './request';
+export * from './requests';
 export * from './requests_http';
 export * from './sse';
 export * from './ws';
