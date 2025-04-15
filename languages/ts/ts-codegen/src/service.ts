@@ -70,29 +70,36 @@ export function tsServiceFromDefinition(
     return {
         key,
         name: serviceName,
-        content: `export class ${serviceName} {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+        content: `export class ${serviceName}<
+    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    TDispatchers extends TransportMap = {},
+> {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly _httpDispatcher: THttp;
+    private readonly _customTransportDispatchers: TDispatchers;
 ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
+            options?: InferRequestHandlerOptions<THttp>;
+            httpDispatcher?: THttp;
+            customTransportDispatchers?: TDispatchers;
         } = {},
     ) {
-        this._baseUrl = config.baseUrl ?? "";
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
-        }
-        this._headers = config.headers ?? {};
         this._onError = config.onError;
-        this._options = config.options;
+        this._httpDispatcher = 
+            config.httpDispatcher ??
+            (new HttpRpcDispatcher({
+                baseUrl: config.baseUrl ?? '',
+                fetch: config.fetch,
+                headers: config.headers,
+                options: config.options,
+            }) as any);
+        this._customTransportDispatchers =
+            config.customTransportDispatchers ?? ({} as TDispatchers);
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
 ${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}

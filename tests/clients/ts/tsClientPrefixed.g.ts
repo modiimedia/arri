@@ -6,9 +6,6 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
-    type ArriRequestOptions,
-    arriRequest,
-    arriSseRequest,
     type EventSourceController,
     INT8_MAX,
     INT8_MIN,
@@ -26,105 +23,102 @@ import {
     UINT32_MAX,
     UINT64_MAX,
     type Fetch,
-    type $Fetch,
-    createFetch,
+    HeaderInput,
+    TransportMap,
+    InferRequestHandlerOptions,
+    RpcDispatcher,
+    HttpRpcDispatcher,
+    UndefinedModelValidator,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
-export class TestClientPrefixed {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+export class TestClientPrefixed<
+    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    TDispatchers extends TransportMap = {},
+> {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly _httpDispatcher: THttp;
+    private readonly _customTransportDispatchers: TDispatchers;
 
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
+            options?: InferRequestHandlerOptions<THttp>;
+            httpDispatcher?: THttp;
+            customTransportDispatchers?: TDispatchers;
         } = {},
     ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
-        }
-        this._headers = config.headers ?? {};
         this._onError = config.onError;
-        this._options = config.options;
+        this._httpDispatcher =
+            config.httpDispatcher ??
+            (new HttpRpcDispatcher({
+                baseUrl: config.baseUrl ?? '',
+                fetch: config.fetch,
+                headers: config.headers,
+                options: config.options,
+            }) as any);
+        this._customTransportDispatchers =
+            config.customTransportDispatchers ?? ({} as TDispatchers);
     }
     async emptyParamsGetRequest(
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooDefaultPayload> {
-        return arriRequest<FooDefaultPayload, undefined>({
-            url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
+        return this._httpDispatcher.handleRpc<undefined, FooDefaultPayload>({
+            path: '/rpcs/tests/empty-params-get-request',
             method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-
-            responseFromJson: $$FooDefaultPayload.fromJson,
-            responseFromString: $$FooDefaultPayload.fromJsonString,
-            serializer: () => {},
             clientVersion: '10',
-            options: options ?? this._options,
+            params: undefined,
+            paramValidator: UndefinedModelValidator,
+            responseValidator: $$FooDefaultPayload,
+            onError: this._onError,
+            options: options,
         });
     }
     async emptyParamsPostRequest(
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooDefaultPayload> {
-        return arriRequest<FooDefaultPayload, undefined>({
-            url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
+        return this._httpDispatcher.handleRpc<undefined, FooDefaultPayload>({
+            path: '/rpcs/tests/empty-params-post-request',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-
-            responseFromJson: $$FooDefaultPayload.fromJson,
-            responseFromString: $$FooDefaultPayload.fromJsonString,
-            serializer: () => {},
             clientVersion: '10',
-            options: options ?? this._options,
+            params: undefined,
+            paramValidator: UndefinedModelValidator,
+            responseValidator: $$FooDefaultPayload,
+            onError: this._onError,
+            options: options,
         });
     }
     async emptyResponseGetRequest(
         params: FooDefaultPayload,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<undefined> {
-        return arriRequest<undefined, FooDefaultPayload>({
-            url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
+        return this._httpDispatcher.handleRpc<FooDefaultPayload, undefined>({
+            path: '/rpcs/tests/empty-response-get-request',
             method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$FooDefaultPayload.toUrlQueryString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooDefaultPayload,
+            responseValidator: UndefinedModelValidator,
+            onError: this._onError,
+            options: options,
         });
     }
     async emptyResponsePostRequest(
         params: FooDefaultPayload,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<undefined> {
-        return arriRequest<undefined, FooDefaultPayload>({
-            url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
+        return this._httpDispatcher.handleRpc<FooDefaultPayload, undefined>({
+            path: '/rpcs/tests/empty-response-post-request',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$FooDefaultPayload.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooDefaultPayload,
+            responseValidator: UndefinedModelValidator,
+            onError: this._onError,
+            options: options,
         });
     }
     /**
@@ -133,216 +127,197 @@ export class TestClientPrefixed {
      */
     async deprecatedRpc(
         params: FooDeprecatedRpcParams,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<undefined> {
-        return arriRequest<undefined, FooDeprecatedRpcParams>({
-            url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
+        return this._httpDispatcher.handleRpc<
+            FooDeprecatedRpcParams,
+            undefined
+        >({
+            path: '/rpcs/tests/deprecated-rpc',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$FooDeprecatedRpcParams.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooDeprecatedRpcParams,
+            responseValidator: UndefinedModelValidator,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendDiscriminatorWithEmptyObject(
         params: FooDiscriminatorWithEmptyObject,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooDiscriminatorWithEmptyObject> {
-        return arriRequest<
+        return this._httpDispatcher.handleRpc<
             FooDiscriminatorWithEmptyObject,
             FooDiscriminatorWithEmptyObject
         >({
-            url: `${this._baseUrl}/rpcs/tests/send-discriminator-with-empty-object`,
+            path: '/rpcs/tests/send-discriminator-with-empty-object',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooDiscriminatorWithEmptyObject.fromJson,
-            responseFromString:
-                $$FooDiscriminatorWithEmptyObject.fromJsonString,
-            serializer: $$FooDiscriminatorWithEmptyObject.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooDiscriminatorWithEmptyObject,
+            responseValidator: $$FooDiscriminatorWithEmptyObject,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendError(
         params: FooSendErrorParams,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<undefined> {
-        return arriRequest<undefined, FooSendErrorParams>({
-            url: `${this._baseUrl}/rpcs/tests/send-error`,
+        return this._httpDispatcher.handleRpc<FooSendErrorParams, undefined>({
+            path: '/rpcs/tests/send-error',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$FooSendErrorParams.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooSendErrorParams,
+            responseValidator: UndefinedModelValidator,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendObject(
         params: FooObjectWithEveryType,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooObjectWithEveryType> {
-        return arriRequest<FooObjectWithEveryType, FooObjectWithEveryType>({
-            url: `${this._baseUrl}/rpcs/tests/send-object`,
+        return this._httpDispatcher.handleRpc<
+            FooObjectWithEveryType,
+            FooObjectWithEveryType
+        >({
+            path: '/rpcs/tests/send-object',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooObjectWithEveryType.fromJson,
-            responseFromString: $$FooObjectWithEveryType.fromJsonString,
-            serializer: $$FooObjectWithEveryType.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooObjectWithEveryType,
+            responseValidator: $$FooObjectWithEveryType,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendObjectWithNullableFields(
         params: FooObjectWithEveryNullableType,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooObjectWithEveryNullableType> {
-        return arriRequest<
+        return this._httpDispatcher.handleRpc<
             FooObjectWithEveryNullableType,
             FooObjectWithEveryNullableType
         >({
-            url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
+            path: '/rpcs/tests/send-object-with-nullable-fields',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooObjectWithEveryNullableType.fromJson,
-            responseFromString: $$FooObjectWithEveryNullableType.fromJsonString,
-            serializer: $$FooObjectWithEveryNullableType.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooObjectWithEveryNullableType,
+            responseValidator: $$FooObjectWithEveryNullableType,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendObjectWithPascalCaseKeys(
         params: FooObjectWithPascalCaseKeys,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooObjectWithPascalCaseKeys> {
-        return arriRequest<
+        return this._httpDispatcher.handleRpc<
             FooObjectWithPascalCaseKeys,
             FooObjectWithPascalCaseKeys
         >({
-            url: `${this._baseUrl}/rpcs/tests/send-object-with-pascal-case-keys`,
+            path: '/rpcs/tests/send-object-with-pascal-case-keys',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooObjectWithPascalCaseKeys.fromJson,
-            responseFromString: $$FooObjectWithPascalCaseKeys.fromJsonString,
-            serializer: $$FooObjectWithPascalCaseKeys.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooObjectWithPascalCaseKeys,
+            responseValidator: $$FooObjectWithPascalCaseKeys,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendObjectWithSnakeCaseKeys(
         params: FooObjectWithSnakeCaseKeys,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooObjectWithSnakeCaseKeys> {
-        return arriRequest<
+        return this._httpDispatcher.handleRpc<
             FooObjectWithSnakeCaseKeys,
             FooObjectWithSnakeCaseKeys
         >({
-            url: `${this._baseUrl}/rpcs/tests/send-object-with-snake-case-keys`,
+            path: '/rpcs/tests/send-object-with-snake-case-keys',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooObjectWithSnakeCaseKeys.fromJson,
-            responseFromString: $$FooObjectWithSnakeCaseKeys.fromJsonString,
-            serializer: $$FooObjectWithSnakeCaseKeys.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooObjectWithSnakeCaseKeys,
+            responseValidator: $$FooObjectWithSnakeCaseKeys,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendPartialObject(
         params: FooObjectWithEveryOptionalType,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooObjectWithEveryOptionalType> {
-        return arriRequest<
+        return this._httpDispatcher.handleRpc<
             FooObjectWithEveryOptionalType,
             FooObjectWithEveryOptionalType
         >({
-            url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
+            path: '/rpcs/tests/send-partial-object',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooObjectWithEveryOptionalType.fromJson,
-            responseFromString: $$FooObjectWithEveryOptionalType.fromJsonString,
-            serializer: $$FooObjectWithEveryOptionalType.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooObjectWithEveryOptionalType,
+            responseValidator: $$FooObjectWithEveryOptionalType,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendRecursiveObject(
         params: FooRecursiveObject,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooRecursiveObject> {
-        return arriRequest<FooRecursiveObject, FooRecursiveObject>({
-            url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
+        return this._httpDispatcher.handleRpc<
+            FooRecursiveObject,
+            FooRecursiveObject
+        >({
+            path: '/rpcs/tests/send-recursive-object',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooRecursiveObject.fromJson,
-            responseFromString: $$FooRecursiveObject.fromJsonString,
-            serializer: $$FooRecursiveObject.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooRecursiveObject,
+            responseValidator: $$FooRecursiveObject,
+            onError: this._onError,
+            options: options,
         });
     }
     async sendRecursiveUnion(
         params: FooRecursiveUnion,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<FooRecursiveUnion> {
-        return arriRequest<FooRecursiveUnion, FooRecursiveUnion>({
-            url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
+        return this._httpDispatcher.handleRpc<
+            FooRecursiveUnion,
+            FooRecursiveUnion
+        >({
+            path: '/rpcs/tests/send-recursive-union',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$FooRecursiveUnion.fromJson,
-            responseFromString: $$FooRecursiveUnion.fromJsonString,
-            serializer: $$FooRecursiveUnion.toJsonString,
             clientVersion: '10',
-            options: options ?? this._options,
+            params: params,
+            paramValidator: $$FooRecursiveUnion,
+            responseValidator: $$FooRecursiveUnion,
+            onError: this._onError,
+            options: options,
         });
     }
     streamAutoReconnect(
         params: FooAutoReconnectParams,
         options: SseOptions<FooAutoReconnectResponse> = {},
     ): EventSourceController {
-        return arriSseRequest<FooAutoReconnectResponse, FooAutoReconnectParams>(
+        return this._httpDispatcher.handleEventStreamRpc<
+            FooAutoReconnectParams,
+            FooAutoReconnectResponse
+        >(
             {
-                url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
+                path: '/rpcs/tests/stream-auto-reconnect',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$FooAutoReconnectResponse.fromJson,
-                responseFromString: $$FooAutoReconnectResponse.fromJsonString,
-                serializer: $$FooAutoReconnectParams.toUrlQueryString,
                 clientVersion: '10',
+                params: params,
+                paramValidator: $$FooAutoReconnectParams,
+                responseValidator: $$FooAutoReconnectResponse,
+                onError: this._onError,
             },
             options,
         );
@@ -354,24 +329,18 @@ export class TestClientPrefixed {
         params: FooStreamConnectionErrorTestParams,
         options: SseOptions<FooStreamConnectionErrorTestResponse> = {},
     ): EventSourceController {
-        return arriSseRequest<
-            FooStreamConnectionErrorTestResponse,
-            FooStreamConnectionErrorTestParams
+        return this._httpDispatcher.handleEventStreamRpc<
+            FooStreamConnectionErrorTestParams,
+            FooStreamConnectionErrorTestResponse
         >(
             {
-                url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
+                path: '/rpcs/tests/stream-connection-error-test',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson:
-                    $$FooStreamConnectionErrorTestResponse.fromJson,
-                responseFromString:
-                    $$FooStreamConnectionErrorTestResponse.fromJsonString,
-                serializer:
-                    $$FooStreamConnectionErrorTestParams.toUrlQueryString,
                 clientVersion: '10',
+                params: params,
+                paramValidator: $$FooStreamConnectionErrorTestParams,
+                responseValidator: $$FooStreamConnectionErrorTestResponse,
+                onError: this._onError,
             },
             options,
         );
@@ -382,19 +351,18 @@ export class TestClientPrefixed {
     streamLargeObjects(
         options: SseOptions<FooStreamLargeObjectsResponse> = {},
     ): EventSourceController {
-        return arriSseRequest<FooStreamLargeObjectsResponse, undefined>(
+        return this._httpDispatcher.handleEventStreamRpc<
+            undefined,
+            FooStreamLargeObjectsResponse
+        >(
             {
-                url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
+                path: '/rpcs/tests/stream-large-objects',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson: $$FooStreamLargeObjectsResponse.fromJson,
-                responseFromString:
-                    $$FooStreamLargeObjectsResponse.fromJsonString,
-                serializer: () => {},
                 clientVersion: '10',
+                params: undefined,
+                paramValidator: UndefinedModelValidator,
+                responseValidator: $$FooStreamLargeObjectsResponse,
+                onError: this._onError,
             },
             options,
         );
@@ -403,18 +371,18 @@ export class TestClientPrefixed {
         params: FooChatMessageParams,
         options: SseOptions<FooChatMessage> = {},
     ): EventSourceController {
-        return arriSseRequest<FooChatMessage, FooChatMessageParams>(
+        return this._httpDispatcher.handleEventStreamRpc<
+            FooChatMessageParams,
+            FooChatMessage
+        >(
             {
-                url: `${this._baseUrl}/rpcs/tests/stream-messages`,
+                path: '/rpcs/tests/stream-messages',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$FooChatMessage.fromJson,
-                responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: $$FooChatMessageParams.toUrlQueryString,
                 clientVersion: '10',
+                params: params,
+                paramValidator: $$FooChatMessageParams,
+                responseValidator: $$FooChatMessage,
+                onError: this._onError,
             },
             options,
         );
@@ -422,23 +390,19 @@ export class TestClientPrefixed {
     streamRetryWithNewCredentials(
         options: SseOptions<FooTestsStreamRetryWithNewCredentialsResponse> = {},
     ): EventSourceController {
-        return arriSseRequest<
-            FooTestsStreamRetryWithNewCredentialsResponse,
-            undefined
+        return this._httpDispatcher.handleEventStreamRpc<
+            undefined,
+            FooTestsStreamRetryWithNewCredentialsResponse
         >(
             {
-                url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
+                path: '/rpcs/tests/stream-retry-with-new-credentials',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse.fromJson,
-                responseFromString:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString,
-                serializer: () => {},
                 clientVersion: '10',
+                params: undefined,
+                paramValidator: UndefinedModelValidator,
+                responseValidator:
+                    $$FooTestsStreamRetryWithNewCredentialsResponse,
+                onError: this._onError,
             },
             options,
         );
@@ -449,18 +413,18 @@ export class TestClientPrefixed {
     streamTenEventsThenEnd(
         options: SseOptions<FooChatMessage> = {},
     ): EventSourceController {
-        return arriSseRequest<FooChatMessage, undefined>(
+        return this._httpDispatcher.handleEventStreamRpc<
+            undefined,
+            FooChatMessage
+        >(
             {
-                url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
+                path: '/rpcs/tests/stream-ten-events-then-end',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson: $$FooChatMessage.fromJson,
-                responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: () => {},
                 clientVersion: '10',
+                params: undefined,
+                paramValidator: UndefinedModelValidator,
+                responseValidator: $$FooChatMessage,
+                onError: this._onError,
             },
             options,
         );

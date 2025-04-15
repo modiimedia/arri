@@ -6,10 +6,6 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
-    type ArriRequestOptions,
-    arriRequest,
-    arriSseRequest,
-    arriWsRequest,
     type EventSourceController,
     INT8_MAX,
     INT8_MIN,
@@ -27,163 +23,112 @@ import {
     UINT32_MAX,
     UINT64_MAX,
     type Fetch,
-    type $Fetch,
-    createFetch,
-    type WsController,
-    type WsOptions,
-    ArriRequestHandler,
-    HttpRequestHandler,
+    HeaderInput,
+    TransportMap,
+    InferRequestHandlerOptions,
+    RpcDispatcher,
+    HttpRpcDispatcher,
+    UndefinedModelValidator,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
 
-export class ExampleClient {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+export class ExampleClient<
+    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    TDispatchers extends TransportMap = {},
+> {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
-    private readonly _transports: Record<string, ArriRequestHandler>;
+    private readonly _httpDispatcher: THttp;
+    private readonly _customTransportDispatchers: TDispatchers;
     books: ExampleClientBooksService;
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-            transports?: Record<string, ArriRequestHandler>;
+            options?: InferRequestHandlerOptions<THttp>;
+            httpDispatcher?: THttp;
+            customTransportDispatchers?: TDispatchers;
         } = {},
     ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
-        }
-        this._headers = config.headers ?? {};
         this._onError = config.onError;
-        this._options = config.options;
-        if (!config.transports) {
-            config.transports = {};
-        }
-        if (!config.transports['http']) {
-            config.transports['http'] = new HttpRequestHandler({
-                baseUrl: this._baseUrl,
+        this._httpDispatcher =
+            config.httpDispatcher ??
+            (new HttpRpcDispatcher({
+                baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 headers: config.headers,
-                onRequest: config.options?.onRequest,
-                onRequestError: config.options?.onRequestError,
-                onResponse: config.options?.onResponse,
-                onResponseError: config.options?.onResponseError,
-                retry: config.options?.retry,
-                retryDelay: config.options?.retryDelay,
-                retryStatusCodes: config.options?.retryStatusCodes,
-                timeout: config.options?.timeout,
-            });
-        }
-        this._transports = config.transports;
+                options: config.options,
+            }) as any);
+        this._customTransportDispatchers =
+            config.customTransportDispatchers ?? ({} as TDispatchers);
         this.books = new ExampleClientBooksService(config);
     }
 
     async sendObject(
         params: NestedObject,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<NestedObject> {
-        const transport = this._transports['http'];
-        if (!transport) throw new Error(`Missing transport http`);
-        return transport.handleRequest({
+        return this._httpDispatcher.handleRpc<NestedObject, NestedObject>({
             path: '/send-object',
             method: 'post',
             clientVersion: '20',
             params: params,
-            queryStringEncoder: $$NestedObject.toUrlQueryString,
-            bodyEncoder: $$NestedObject.toJsonString,
-            responseDecoder: $$NestedObject.fromJsonString,
+            paramValidator: $$NestedObject,
+            responseValidator: $$NestedObject,
             onError: this._onError,
-            timeout: options?.timeout,
+            options: options,
         });
-        // return arriRequest<NestedObject, NestedObject>({
-        //     url: `${this._baseUrl}/send-object`,
-        //     method: 'post',
-        //     ofetch: this._fetch,
-        //     headers: this._headers,
-        //     onError: this._onError,
-        //     params: params,
-        //     responseFromJson: $$NestedObject.fromJson,
-        //     responseFromString: $$NestedObject.fromJsonString,
-        //     serializer: $$NestedObject.toJsonString,
-        //     clientVersion: '20',
-        //     options: options ?? this._options,
-        // });
     }
 }
 
-export class ExampleClientBooksService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+export class ExampleClientBooksService<
+    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    TDispatchers extends TransportMap = {},
+> {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
-    private readonly _transports: Record<string, ArriRequestHandler>;
+    private readonly _httpDispatcher: THttp;
+    private readonly _customTransportDispatchers: TDispatchers;
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-            transports?: Record<string, ArriRequestHandler>;
+            options?: InferRequestHandlerOptions<THttp>;
+            httpDispatcher?: THttp;
+            customTransportDispatchers?: TDispatchers;
         } = {},
     ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
-        }
-        this._headers = config.headers ?? {};
         this._onError = config.onError;
-        this._options = config.options;
-        if (!config.transports) {
-            config.transports = {};
-        }
-        if (!config.transports['http']) {
-            config.transports['http'] = new HttpRequestHandler({
-                baseUrl: this._baseUrl,
+        this._httpDispatcher =
+            config.httpDispatcher ??
+            (new HttpRpcDispatcher({
+                baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 headers: config.headers,
-                onRequest: config.options?.onRequest,
-                onRequestError: config.options?.onRequestError,
-                onResponse: config.options?.onResponse,
-                onResponseError: config.options?.onResponseError,
-                retry: config.options?.retry,
-                retryDelay: config.options?.retryDelay,
-                retryStatusCodes: config.options?.retryStatusCodes,
-                timeout: config.options?.timeout,
-            });
-        }
-        this._transports = config.transports;
+                options: config.options,
+            }) as any);
+        this._customTransportDispatchers =
+            config.customTransportDispatchers ?? ({} as TDispatchers);
     }
     /**
      * Get a book
      */
     async getBook(
         params: BookParams,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<Book> {
-        const transport = this._transports['http'];
-        if (!transport) throw new Error('Missing transport http');
-        return transport.handleRequest({
+        return this._httpDispatcher.handleRpc<BookParams, Book>({
             path: '/books/get-book',
             method: 'get',
             clientVersion: '20',
             params: params,
-            queryStringEncoder: $$BookParams.toUrlQueryString,
-            bodyEncoder: $$BookParams.toJsonString,
-            responseDecoder: $$Book.fromJsonString,
+            paramValidator: $$BookParams,
+            responseValidator: $$Book,
             onError: this._onError,
-            timeout: options?.timeout,
+            options: options,
         });
     }
     /**
@@ -192,20 +137,17 @@ export class ExampleClientBooksService {
      */
     async createBook(
         params: Book,
-        options?: ArriRequestOptions,
+        options?: InferRequestHandlerOptions<THttp>,
     ): Promise<Book> {
-        const transport = this._transports['http'];
-        if (!transport) throw new Error('Missing transport http');
-        return transport.handleRequest({
-            path: '/books/get-book',
+        return this._httpDispatcher.handleRpc<Book, Book>({
+            path: '/books/create-book',
             method: 'post',
             clientVersion: '20',
             params: params,
-            queryStringEncoder: $$Book.toUrlQueryString,
-            bodyEncoder: $$Book.toJsonString,
-            responseDecoder: $$Book.fromJsonString,
+            paramValidator: $$Book,
+            responseValidator: $$Book,
             onError: this._onError,
-            timeout: options?.timeout,
+            options: options,
         });
     }
     /**
@@ -215,18 +157,15 @@ export class ExampleClientBooksService {
         params: BookParams,
         options: SseOptions<Book> = {},
     ): EventSourceController {
-        return arriSseRequest<Book, BookParams>(
+        return this._httpDispatcher.handleEventStreamRpc<BookParams, Book>(
             {
-                url: `${this._baseUrl}/books/watch-book`,
+                path: '/books/watch-book',
                 method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$BookParams.toUrlQueryString,
                 clientVersion: '20',
+                params: params,
+                paramValidator: $$BookParams,
+                responseValidator: $$Book,
+                onError: this._onError,
             },
             options,
         );

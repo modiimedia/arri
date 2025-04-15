@@ -41,26 +41,21 @@ export function httpRpcFromDefinition(
     const response = def.response
         ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
         : undefined;
-    const serializerMethod =
-        def.method === 'get' ? 'toUrlQueryString' : 'toJsonString';
     if (def.isEventStream) {
         context.usedFeatures.sse = true;
         return `${getJsDocComment({
             description: def.description,
             isDeprecated: def.isDeprecated,
         })}    ${key}(${params ? `params: ${params},` : ''} options: SseOptions<${response ?? 'undefined'}> = {}): EventSourceController {
-        return arriSseRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>(
+        return this._httpDispatcher.handleEventStreamRpc<${params}, ${response}>(
             {
-                url: \`\${this._baseUrl}${def.path}\`,
-                method: "${def.method?.toLowerCase() ?? 'post'}",
-                ofetch: this._fetch,
-                headers: this._headers,
+                path: '${def.path}',
+                method: ${def.method ? `'${def.method.toLowerCase()}'` : 'undefined'},
+                clientVersion: '${context.versionNumber}',
+                params: ${def.params ? 'params' : 'undefined'},
+                paramValidator: ${params ? `$$${params}` : 'UndefinedModelValidator'},
+                responseValidator: ${response ? `$$${response}` : 'UndefinedModelValidator'},
                 onError: this._onError,
-                ${params ? 'params: params,' : ''}
-                responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-                responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-                serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
-                clientVersion: "${context.versionNumber}",
             },
             options,
         );
@@ -69,19 +64,16 @@ export function httpRpcFromDefinition(
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: ArriRequestOptions): Promise<${response ?? 'undefined'}> {
-        return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
-            url: \`\${this._baseUrl}${def.path}\`,
-            method: "${def.method?.toLowerCase() ?? 'post'}",
-            ofetch: this._fetch,
-            headers: this._headers,
+    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: InferRequestHandlerOptions<THttp>): Promise<${response ?? 'undefined'}> {
+        return this._httpDispatcher.handleRpc<${params}, ${response}>({
+            path: '${def.path}',
+            method: ${def.method ? `'${def.method.toLowerCase()}'` : 'undefined'},
+            clientVersion: '${context.versionNumber}',
+            params: ${params ? 'params' : 'undefined'},
+            paramValidator: ${params ? `$$${params}` : 'UndefinedModelValidator'},
+            responseValidator: ${response ? `$$${response}` : 'UndefinedModelValidator'},
             onError: this._onError,
-            ${params ? 'params: params,' : ''}
-            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-            serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
-            clientVersion: "${context.versionNumber}",
-            options: options ?? this._options,
+            options: options,
         });
     }`;
 }

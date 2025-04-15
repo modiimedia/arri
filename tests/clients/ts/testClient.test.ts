@@ -582,7 +582,7 @@ describe('request options', () => {
         }
         expect(numRequest).toBe(4);
         expect(numRequestErr).toBe(0);
-        expect(numResponse).toBe(0);
+        expect(numResponse).toBe(4000);
         expect(numResponseErr).toBe(4);
     });
 });

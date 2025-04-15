@@ -1,177 +1,67 @@
 import { serializeSmallString } from '@arrirpc/schema';
-import { EventSourcePlusOptions, type HttpMethod } from 'event-source-plus';
-import {
-    $Fetch,
-    createFetch,
-    Fetch,
-    FetchError,
-    FetchOptions,
-    ofetch,
-} from 'ofetch';
+import { EventSourceController } from 'event-source-plus';
 
-import { ArriErrorInstance, isArriError } from './errors';
-import { getHeaders } from './utils';
+import { ArriErrorInstance } from './errors';
+import { SseOptions } from './sse';
 
 export { type $Fetch, createFetch, type Fetch, ofetch } from 'ofetch';
 
-export interface ArriRequestOptions {
-    retry?: FetchOptions['retry'];
-    retryDelay?: FetchOptions['retryDelay'];
-    retryStatusCodes?: FetchOptions['retryStatusCodes'];
-    onRequest?: FetchOptions['onRequest'];
-    onRequestError?: FetchOptions['onRequestError'];
-    onResponse?: FetchOptions['onResponse'];
-    onResponseError?: FetchOptions['onResponseError'];
-    timeout?: FetchOptions['timeout'];
-    signal?: FetchOptions['signal'];
-}
-
-export interface ArriRequest<TParams, TOutput> {
+export interface RpcRequest<TParams, TOutput, TOptions> {
     path: string;
     clientVersion: string;
     method?: string;
     params?: TParams;
+    paramValidator: ArriModelValidator<TParams>;
+    responseValidator: ArriModelValidator<TOutput>;
     onError?: (err: unknown) => void | Promise<void>;
-    queryStringEncoder: (params: TParams) => string;
-    bodyEncoder: (params: TParams) => string;
-    responseDecoder: (input: unknown) => TOutput;
-    timeout?: number;
+    options?: TOptions;
 }
 
-export interface ArriRequestHandler {
+export interface RpcDispatcher<TOptions = unknown> {
     transport: string;
-    handleRequest<TParams, TOutput>(
-        req: ArriRequest<TParams, TOutput>,
+    handleRpc<TParams, TOutput>(
+        req: RpcRequest<TParams, TOutput, TOptions>,
     ): Promise<TOutput> | TOutput;
+    handleEventStreamRpc<TParams, TOutput>(
+        req: RpcRequest<TParams, TOutput, TOptions>,
+        hooks?: SseOptions<TOutput>,
+    ): EventSourceController;
+    readonly options?: TOptions;
 }
 
-export type HeaderFn = () =>
-    | Promise<Record<string, string>>
-    | Record<string, string>;
+export type InferRequestHandlerOptions<T extends RpcDispatcher> = NonNullable<
+    T['options']
+>;
 
-export class HttpRequestHandler implements ArriRequestHandler {
-    transport: string = 'http';
-    baseUrl: string;
-    headers: Record<string, string> | HeaderFn;
-    ofetch: $Fetch;
-    retry?: FetchOptions['retry'];
-    retryDelay?: FetchOptions['retryDelay'];
-    retryStatusCodes?: FetchOptions['retryStatusCodes'];
-    onRequest?: FetchOptions['onRequest'];
-    onRequestError?: FetchOptions['onRequestError'];
-    onResponse?: FetchOptions['onResponse'];
-    onResponseError?: FetchOptions['onResponseError'];
-    timeout?: FetchOptions['timeout'];
+export type TransportMap = Record<string, RpcDispatcher>;
 
-    constructor(options?: {
-        baseUrl?: string;
-        headers?: Record<string, string> | HeaderFn;
-        fetch?: Fetch;
-        retry?: FetchOptions['retry'];
-        retryDelay?: FetchOptions['retryDelay'];
-        retryStatusCodes?: FetchOptions['retryStatusCodes'];
-        onRequest?: FetchOptions['onRequest'];
-        onRequestError?: FetchOptions['onRequestError'];
-        onResponse?: FetchOptions['onResponse'];
-        onResponseError?: FetchOptions['onResponseError'];
-        timeout?: FetchOptions['timeout'];
-    }) {
-        this.baseUrl = options?.baseUrl ?? '';
-        this.headers = options?.headers ?? {};
-        this.ofetch = options?.fetch
-            ? createFetch({ fetch: options.fetch })
-            : ofetch;
-        this.retry = options?.retry;
-        this.retryDelay = options?.retryDelay;
-        this.retryStatusCodes = options?.retryStatusCodes;
-        this.onRequest = options?.onRequest;
-        this.onRequestError = options?.onRequestError;
-        this.onResponse = options?.onResponse;
-        this.onResponseError = options?.onResponseError;
-        this.timeout = options?.timeout;
-    }
+export type HeaderInput =
+    | Record<string, string | undefined>
+    | (() =>
+          | Promise<Record<string, string | undefined>>
+          | Record<string, string | undefined>);
 
-    async handleRequest<TParams, TOutput>(
-        req: ArriRequest<TParams, TOutput>,
-    ): Promise<TOutput> {
-        let url = this.baseUrl + req.path;
-        let body: undefined | string;
-        let contentType: undefined | string;
-        switch (req.method) {
-            case 'get':
-            case 'GET':
-            case 'head':
-            case 'HEAD':
-                if (req.params && typeof req.params === 'object') {
-                    url = `${url}?${req.queryStringEncoder(req.params)}`;
-                }
-                break;
-            default:
-                if (req.params && typeof req.params === 'object') {
-                    body = req.bodyEncoder(req.params);
-                    contentType = 'application/json';
-                }
-                break;
-        }
-        try {
-            const headers = (await getHeaders(this.headers)) ?? {};
-            if (contentType) headers['Content-Type'] = contentType;
-            if (req.clientVersion)
-                headers['client-version'] = req.clientVersion;
-            const result = await this.ofetch(url, {
-                method: req.method?.toUpperCase() ?? 'POST',
-                body,
-                headers,
-                timeout: this.timeout,
-                onRequest: this.onRequest,
-                onRequestError: this.onRequestError,
-                onResponse: this.onResponse,
-                onResponseError: this.onResponseError,
-            });
-            return req.responseDecoder(result);
-        } catch (err) {
-            const error = err as any as FetchError;
-            let arriError: ArriErrorInstance;
-            if (isArriError(error.data)) {
-                arriError = new ArriErrorInstance(error.data);
-            } else {
-                arriError = new ArriErrorInstance({
-                    code: error.statusCode ?? 500,
-                    message:
-                        error.statusMessage ??
-                        error.message ??
-                        `Error connecting to ${url}`,
-                    data: error.data,
-                    stack: error.stack,
-                });
-            }
-            if (req.onError) req.onError(arriError);
-            throw arriError;
-        }
-    }
-}
-
-export interface ArriRequestConfig<
-    TType,
-    TParams extends Record<any, any> | undefined = undefined,
-> {
-    url: string;
-    method: HttpMethod;
-    headers: EventSourcePlusOptions['headers'];
-    params?: TParams;
-    responseFromJson: (input: Record<string, unknown>) => TType;
-    responseFromString: (input: string) => TType;
-    onError?: (err: unknown) => void;
-    /**
-     * Override the default ofetch implementation
-     */
-    ofetch?: $Fetch;
-    serializer: (
-        input: TParams,
-    ) => TParams extends undefined ? undefined : string;
-    clientVersion: string;
-    options?: ArriRequestOptions;
-}
+// export interface ArriRequestConfig<
+//     TType,
+//     TParams extends Record<any, any> | undefined = undefined,
+// > {
+//     url: string;
+//     method: HttpMethod;
+//     headers: EventSourcePlusOptions['headers'];
+//     params?: TParams;
+//     responseFromJson: (input: Record<string, unknown>) => TType;
+//     responseFromString: (input: string) => TType;
+//     onError?: (err: unknown) => void;
+//     /**
+//      * Override the default ofetch implementation
+//      */
+//     ofetch?: $Fetch;
+//     serializer: (
+//         input: TParams,
+//     ) => TParams extends undefined ? undefined : string;
+//     clientVersion: string;
+//     options?: ArriRequestOptions;
+// }
 
 // export async function arriRequest<
 //     TType,
@@ -282,6 +172,16 @@ export interface ArriModelValidator<T> {
     toJsonString: (input: T) => string;
     toUrlQueryString: (input: T) => string;
 }
+
+export const UndefinedModelValidator: ArriModelValidator<undefined> = {
+    new: () => undefined,
+    validate: (input: unknown): input is undefined => true,
+    fromJson: (_: Record<string, unknown>) => undefined,
+    fromJsonString: (_: string) => undefined,
+    toJsonString: (_: undefined) => '',
+    toUrlQueryString: (_: undefined) => '',
+};
+
 export interface ArriEnumValidator<T> {
     new: () => T;
     values: readonly T[];

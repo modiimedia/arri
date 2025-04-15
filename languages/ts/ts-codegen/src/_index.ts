@@ -147,10 +147,6 @@ export async function createTypescriptClient(
 import {
     ArriEnumValidator,
     ArriModelValidator,
-    type ArriRequestOptions,
-    arriRequest,
-    ${context.usedFeatures.sse ? 'arriSseRequest,' : ''}
-    ${context.usedFeatures.ws ? 'arriWsRequest,' : ''}
     ${context.usedFeatures.sse ? 'type EventSourceController,' : ''}
     INT8_MAX,
     INT8_MIN,
@@ -168,10 +164,14 @@ import {
     UINT32_MAX,
     UINT64_MAX,
     type Fetch,
-    type $Fetch,
-    createFetch,
+    HeaderInput,
     ${context.usedFeatures.ws ? 'type WsController,' : ''}
     ${context.usedFeatures.ws ? 'type WsOptions,' : ''}
+    TransportMap,
+    InferRequestHandlerOptions,
+    RpcDispatcher,
+    HttpRpcDispatcher,
+    UndefinedModelValidator,
 } from "@arrirpc/client";
 
 type HeaderMap = Record<string, string | undefined>;`;

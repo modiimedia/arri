@@ -8,7 +8,7 @@ import {
 } from 'event-source-plus';
 
 import { ArriErrorInstance } from './errors';
-import { ArriRequestConfig } from './request';
+import { $Fetch, HeaderInput } from './request';
 import { getHeaders } from './utils';
 
 export interface SseEvent<TData = string> {
@@ -36,35 +36,21 @@ export interface SseOptions<TData> {
     maxRetryInterval?: number;
 }
 
-export function arriSseRequest<
-    TType,
-    TParams extends Record<any, any> | undefined = undefined,
->(
-    opts: ArriRequestConfig<TType, TParams>,
+export function arriSseRequest<TType>(
+    opts: {
+        url: string;
+        method?: string;
+        ofetch?: $Fetch;
+        body?: string;
+        headers?: HeaderInput;
+        responseDecoder: (input: string) => TType;
+        clientVersion?: string;
+        onError?: (err: unknown) => void | Promise<void>;
+    },
     options: SseOptions<TType>,
 ): EventSourceController {
-    let url = opts.url;
-    let body: undefined | string;
-    switch (opts.method) {
-        case 'get':
-        case 'head':
-            if (
-                opts.params &&
-                typeof opts.params === 'object' &&
-                opts.params !== null
-            ) {
-                url = `${opts.url}?${opts.serializer(opts.params)}`;
-            }
-            break;
-        default:
-            if (opts.params && typeof opts.params === 'object') {
-                body = opts.serializer(opts.params);
-            }
-            break;
-    }
-
-    const eventSource = new EventSourcePlus(url, {
-        method: opts.method ?? 'get',
+    const eventSource = new EventSourcePlus(opts.url, {
+        method: (opts.method as any) ?? 'post',
         fetch: opts.ofetch?.native,
         headers: async () => {
             const headers: Record<string, string> =
@@ -74,7 +60,7 @@ export function arriSseRequest<
             }
             return headers;
         },
-        body,
+        body: opts.body,
         maxRetryCount: options.maxRetryCount,
         maxRetryInterval: options.maxRetryInterval,
     });
@@ -85,7 +71,7 @@ export function arriSseRequest<
                 message.event === undefined ||
                 message.event === ''
             ) {
-                options.onMessage?.(opts.responseFromString(message.data));
+                options.onMessage?.(opts.responseDecoder(message.data));
                 return;
             }
             if (message.event === 'done') {
