@@ -1,21 +1,14 @@
 {
   "name": "@arrirpc/typebox-adapter",
-  "version": "0.78.0",
+  "version": "0.79.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -25,10 +18,6 @@
     "@arrirpc/schema": "workspace:*",
     "json-schema-to-atd": "workspace:*"
   },
-  "devDependencies": {
-    "@arrirpc/server": "workspace:*"
-  },
-  "peerDependencies": {
-    "@sinclair/typebox": "^0.32"
-  }
+  "devDependencies": { "@arrirpc/server": "workspace:*" },
+  "peerDependencies": { "@sinclair/typebox": "^0.32" }
 }
