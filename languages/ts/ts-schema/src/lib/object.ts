@@ -62,6 +62,8 @@ export function object<
     };
     if (typeof options.isStrict === 'boolean') {
         schema.isStrict = options.isStrict;
+    } else if (typeof options.strict === 'boolean') {
+        schema.isStrict = options.strict;
     }
     for (const key of Object.keys(input)) {
         const prop = input[key]!;

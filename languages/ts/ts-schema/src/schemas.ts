@@ -263,6 +263,10 @@ export type AObjectSchemaWithAdapters<
 export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>
     extends ASchemaOptions {
     /**
+     * @deprecated use "isStrict" instead
+     */
+    strict?: TAdditionalProps;
+    /**
      * Allow this object to include additional properties not specified here
      */
     isStrict?: TAdditionalProps;
