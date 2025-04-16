@@ -6,6 +6,7 @@ export interface SchemaMetadata {
     id?: string;
     description?: string;
     isDeprecated?: boolean;
+    deprecatedNote?: string;
 }
 
 export type Schema =
