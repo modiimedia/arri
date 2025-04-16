@@ -337,11 +337,12 @@ Note: you can't put `isNullable` on a schema in a [discriminator **mapping**](#d
 
 The `metadata` keyword is legal on any schema, and if it's present it has to be a JSON object. `metadata` has no affect on validation instead it is used to convey additional information to the target code generator(s). Arri has a few reserved in `metadata` keywords which have an explicit meaning. They are:
 
-| key          | description                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| id           | A unique ID that will be used as the type name when running code generators. Used for "properties" and "discriminator" schemas only. |
-| description  | A string that will be added as a code comment in the target code generator                                                           |
-| isDeprecated | A boolean that indicates that code generators should mark a field or type as `deprecated`                                            |
+| key            | description                                                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id             | A unique ID that will be used as the type name when running code generators. Used for "properties", "discriminator", and "enum" schemas only.                                      |
+| description    | A string that will be added as a code comment in the target code generator                                                                                                         |
+| isDeprecated   | A boolean that indicates that code generators should mark a field or type as "deprecate"                                                                                           |
+| deprecatedNote | A string that will be added as a deprecation message by code generators if deprecation messages are supported by the target language. This should be used alongside `isDeprecated` |
 
 Aside from those keywords there is no constraint on what you can put inside `metadata`
 

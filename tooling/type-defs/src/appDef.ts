@@ -28,7 +28,7 @@ export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== 'head';
 };
 
-export const SCHEMA_VERSION = '0.0.7';
+export const SCHEMA_VERSION = '0.0.8';
 
 export interface AppDefinition {
     schemaVersion: typeof SCHEMA_VERSION;
@@ -223,7 +223,7 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
         };
     }
     const result: AppDefinition = {
-        schemaVersion: '0.0.7',
+        schemaVersion: '0.0.8',
         ...input,
         procedures,
         definitions,

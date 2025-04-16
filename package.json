@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/source",
-  "version": "0.78.0",
+  "version": "0.79.0",
   "author": {
     "name": "joshmossas",
     "url": "https://github.com/joshmossas"
@@ -67,15 +67,15 @@
     "globby": "^14.1.0",
     "jiti": "^2.4.2",
     "lodash": "^4.17.21",
-    "nx": "20.7.2",
+    "nx": "20.8.0",
     "pathe": "^2.0.3",
     "prettier": "^3.5.3",
     "scule": "^1.3.0",
     "start-server-and-test": "^2.0.11",
     "typescript": "5.8.3",
-    "typescript-eslint": "^8.29.1",
+    "typescript-eslint": "^8.30.1",
     "unbuild": "^3.5.0",
-    "vite": "6.2.6",
+    "vite": "6.3.0",
     "vitest": "3.1.1"
   },
   "nx": {

@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/schema",
-  "version": "0.78.0",
+  "version": "0.79.0",
   "type": "module",
   "license": "MIT",
   "author": {
@@ -29,10 +29,10 @@
   },
   "devDependencies": {
     "@ryoppippi/unplugin-typia": "^2.2.0",
-    "@samchon/openapi": "^4.0.0",
+    "@samchon/openapi": "^4.1.0",
     "@sinclair/typebox": "^0.34.33",
     "ajv": "^8.17.1",
-    "arktype": "^2.1.19",
+    "arktype": "^2.1.20",
     "benny": "^3.7.1",
     "typia": "^9.1.1",
     "valibot": "1.0.0",

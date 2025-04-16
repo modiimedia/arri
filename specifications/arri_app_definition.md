@@ -76,54 +76,23 @@ Additionally keys can make use of `.` to nest procedures into services. For exam
 
 Tells client generators that `getUser()` and `createUser()` are functions that should be accessible under the `users` key. (Ex: `client.users.getUser()`)
 
-These two examples show HTTP procedure schemas. However there are multiple procedure schema forms. They are:
+#### Procedure Object Properties
 
-- HTTP Procedure
-- WS Procedure (Very Experimental)
-- Custom
+| Property       | Type                                       | Required | Description                                                                                                                                                                                                   |
+| -------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| transport      | string                                     | yes      | The transport used to invoke the RPC. (Right now only `"http"` is supported natively.)                                                                                                                        |
+| path           | string                                     | yes      | URL path used to invoke the procedure                                                                                                                                                                         |
+| method         | "get", "post", "patch", "put", or "delete" | no       | HTTP method. If not present Arri will use `post` by default.                                                                                                                                                  |
+| params         | string                                     | no       | A string indicating which type from the [Definitions Object](#definitions-object) this procedure receives as an input. If not defined then the procedure will be treated as having no inputs.                 |
+| response       | string                                     | no       | A string indicating which type from the [Definitions Object](#definitions-object) this procedure returns. If not defined then the procedure will be treated as having no response.                            |
+| description    | string                                     | no       | A string that will become doc comments for this procedure when passed to the arri code generators                                                                                                             |
+| isEventStream  | boolean                                    | no       | Setting this to `true` makes this an "event stream" procedure. Meaning that the server will stream realtime events back to the client. Over HTTP Arri will make use of server sent events to accomplish this. |
+| isDeprecated   | boolean                                    | no       | Mark a procedure as deprecated                                                                                                                                                                                |
+| deprecatedNote | string                                     | no       | Add a deprecation message to the procedure (use alongside `isDeprecated`)                                                                                                                                     |
 
-The `transport` field is used to determine what schema form is being used.
+#### A Note On Transports
 
-#### HTTP Procedure
-
-Http procedures are procedures that are called over HTTP. They have the following fields:
-
-| Field Name    | Type    | Required | Description                                                                                                                                                                                                  |
-| ------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| transport     | string  | true     | Must be "http"                                                                                                                                                                                               |
-| path          | string  | true     | A string indicated the url path that this procedure has been mapped to. (Must begin with "/")                                                                                                                |
-| method        | string  | true     | A string indicating the HTTP method needed to call this procedure. The only accepted values are "get", "post", "put", "patch", or "delete"                                                                   |
-| params        | string  | false    | A string indicating which type from the [Definitions Object](#definitions-object) this procedure receives as an input. If not defined then the procedure will be treated as having no inputs.                |
-| response      | string  | false    | A string indicating which type from the [Definitions Object](#definitions-object) this procedure returns. If not defined then the procedure will be treated as having no response.                           |
-| isEventStream | boolean | false    | Setting to `true` indicates that this procedure makes use of Server Sent Events to send a stream of messages that the client can subscribe to (rather than returning a single response). Default is `false`. |
-
-#### Websocket Procedure
-
-!todo!
-
-#### Custom Procedure
-
-Procedures that have some arbitrary set of keys that will be used by a custom generator plugin.
-
-| Field Name | Type   | Required | Description                                                                                                                                                                                                                   |
-| ---------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| transport  | string | true     | A string prefixed with `"custom:"` indicating which transport mechanism is being used to send and receive messages. Example `"custom:tcp"` indicates the procedure uses a custom TCP implementation to send/receive messages. |
-
-No other fields are required. Any additional fields will depend on the needs of the custom implementation.
-
-##### Example Custom Procedure Schema
-
-```json
-{
-    "books.getBook": {
-        "transport": "custom:udp",
-        // include whatever additional information
-        // you need for your custom generator
-        "foo": "foo",
-        "bar": "bar"
-    }
-}
-```
+Currently Arri only supports `http` however work is being done to allow for swapping of the transport protocol. Long term, Arri plans to have first class support for HTTP and Websockets with the ability for users to use their own custom transports as desired.
 
 ### Definitions Object
 
