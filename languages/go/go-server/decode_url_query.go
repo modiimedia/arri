@@ -53,7 +53,7 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 		urlValue := values.Get(key)
 		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
-			ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
+			ctx.Depth = ctxSnapshot.Depth + 1
 			ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
 			ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties"
 			ctx.EnumValues = enumValues
@@ -67,7 +67,7 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 			)
 			continue
 		}
-		ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
+		ctx.Depth = ctxSnapshot.Depth + 1
 		ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
 		ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties"
 		ctx.EnumValues = enumValues
