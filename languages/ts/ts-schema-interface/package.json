@@ -1,0 +1,20 @@
+{
+  "name": "@arrirpc/schema-interface",
+  "private": true,
+  "version": "0.79.0",
+  "type": "module",
+  "license": "MIT",
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modiimedia/arri.git",
+    "directory": "languages/ts/ts-schema-interface"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "dependencies": { "@arrirpc/type-defs": "workspace:*" },
+  "devDependencies": {}
+}

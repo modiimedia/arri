@@ -1,13 +1,14 @@
 import {
-    type ASchemaOptions,
-    type AStringEnumSchema,
-    SCHEMA_METADATA,
-    ValidationContext,
-} from '../schemas';
-import {
     createStandardSchemaProperty,
     hideInvalidProperties,
-} from '../standardSchema';
+} from '../adapters';
+import {
+    type ASchemaOptions,
+    AStringEnumSchemaWithAdapters,
+    SchemaValidator,
+    ValidationContext,
+    VALIDATOR_KEY,
+} from '../schemas';
 
 export const stringEnum = enumerator;
 
@@ -26,7 +27,7 @@ export const stringEnum = enumerator;
 export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     values: TValues,
     opts?: ASchemaOptions,
-): AStringEnumSchema<TValues>;
+): AStringEnumSchemaWithAdapters<TValues>;
 /**
  * An enumeration of string values
  *
@@ -42,11 +43,11 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
 export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     id: string,
     values: TValues,
-): AStringEnumSchema<TValues>;
+): AStringEnumSchemaWithAdapters<TValues>;
 export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     paramA: TValues | string,
     paramB?: ASchemaOptions | TValues,
-): AStringEnumSchema<TValues> {
+): AStringEnumSchemaWithAdapters<TValues> {
     const isIdShorthand = typeof paramA === 'string';
     const enumVal = isIdShorthand ? (paramB as TValues) : paramA;
     const meta = isIdShorthand
@@ -78,39 +79,41 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
         });
         return undefined;
     };
-    const result: AStringEnumSchema<TValues> = {
+    const validator: SchemaValidator<TKeys> = {
+        output: paramA[0] ?? ('' as any),
+        optional: false,
+        parse: parse,
+        coerce: (input, context) => {
+            if (isType(input)) {
+                return input;
+            }
+            context.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/enum`,
+                message: `Error at ${
+                    context.instancePath
+                }. Invalid enum value. Expected one of the following values: [${enumVal.join(
+                    ', ',
+                )}]`,
+            });
+            return undefined;
+        },
+        validate: isType,
+        serialize(input, context) {
+            if (context.instancePath.length === 0) {
+                return input;
+            }
+            return `"${input}"`;
+        },
+    };
+    const result: AStringEnumSchemaWithAdapters<TValues> = {
         enum: enumVal,
         metadata: {
             id: meta?.id,
             description: meta?.description,
             isDeprecated: meta?.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: paramA[0] ?? ('' as any),
-                parse,
-                coerce: (input, context) => {
-                    if (isType(input)) {
-                        return input;
-                    }
-                    context.errors.push({
-                        instancePath: context.instancePath,
-                        schemaPath: `${context.schemaPath}/enum`,
-                        message: `Error at ${
-                            context.instancePath
-                        }. Invalid enum value. Expected one of the following values: [${enumVal.join(
-                            ', ',
-                        )}]`,
-                    });
-                    return undefined;
-                },
-                validate: isType,
-                serialize(input, context) {
-                    if (context.instancePath.length === 0) {
-                        return input;
-                    }
-                    return `"${input}"`;
-                },
-            },
         },
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(isType, parse),
     };
     hideInvalidProperties(result);

@@ -30,22 +30,22 @@ test('Type Inference', () => {
 
 describe('Parsing', () => {
     it('accepts good input', () => {
-        expect(a.safeParse(NumberRecordSchema, { '1': 1, '2': 2 }).success);
+        expect(a.parse(NumberRecordSchema, { '1': 1, '2': 2 }).success);
         expect(
-            a.safeParse(StringRecordSchema, {
+            a.parse(StringRecordSchema, {
                 '1': '1',
                 '2': '2',
                 [`A song titled "Song"`]: `A song titled "Song"`,
             }).success,
         );
         expect(
-            a.safeParse(ObjectRecordSchema, {
+            a.parse(ObjectRecordSchema, {
                 a: { id: '12345', type: 'notification' },
                 b: { id: '12345', type: 'alert' },
             }).success,
         );
         expect(
-            a.safeParse(
+            a.parse(
                 ObjectRecordSchema,
                 JSON.stringify({
                     a: { id: '12345', type: 'notification' },
@@ -55,13 +55,13 @@ describe('Parsing', () => {
     });
     it('rejects bad input', () => {
         expect(
-            a.safeParse(NumberRecordSchema, { '1': '1', '2': '2' }).success,
+            a.parse(NumberRecordSchema, { '1': '1', '2': '2' }).success,
         ).toBe(false);
         expect(
-            a.safeParse(StringRecordSchema, { '1': null, '2': '2' }).success,
+            a.parse(StringRecordSchema, { '1': null, '2': '2' }).success,
         ).toBe(false);
         expect(
-            a.safeParse(ObjectRecordSchema, {
+            a.parse(ObjectRecordSchema, {
                 a: { id: '12345', type: 'blahasdlfkj' },
                 b: { id: '12345', type: 'alert' },
             }).success,
@@ -88,7 +88,7 @@ describe('Serialization', () => {
             Baz: 2,
             '"Foo" "Bar" "Baz"': 3,
         };
-        const result = a.serialize(NumberRecordSchema, inputs);
+        const result = a.serializeUnsafe(NumberRecordSchema, inputs);
         JSON.parse(result);
         expect(result).toBe(
             `{"Foo":0,"Bar":1,"Baz":2,"\\"Foo\\" \\"Bar\\" \\"Baz\\"":3}`,

@@ -58,6 +58,7 @@ export function httpRpcFromDefinition(
             {
                 url: \`\${this._baseUrl}${def.path}\`,
                 method: "${def.method.toLowerCase()}",
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 ${params ? 'params: params,' : ''}
@@ -73,10 +74,11 @@ export function httpRpcFromDefinition(
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(${params ? `params: ${params}` : ''}): Promise<${response ?? 'undefined'}> {
+    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: ArriRequestOptions): Promise<${response ?? 'undefined'}> {
         return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
             method: "${def.method.toLowerCase()}",
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             ${params ? 'params: params,' : ''}
@@ -84,6 +86,7 @@ export function httpRpcFromDefinition(
             responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
             serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
             clientVersion: "${context.versionNumber}",
+            options: options ?? this._options,
         });
     }`;
 }

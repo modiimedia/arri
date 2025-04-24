@@ -162,3 +162,44 @@ enum MyClientUserRole implements Comparable<MyClientUserRole> {
 }`),
     );
 });
+
+test('Does not output invalid enum sub type names', () => {
+    const result = dartTypeFromSchema(
+        {
+            enum: ['DEFAULT', 'SEALED', 'RETURN'],
+            metadata: {
+                id: 'MyEnum',
+            },
+        },
+        {
+            clientName: '',
+            modelPrefix: '',
+            generatedTypes: [],
+            instancePath: '',
+            schemaPath: '',
+            clientVersion: '',
+        },
+    );
+    expect(normalizeWhitespace(result.content)).toBe(
+        normalizeWhitespace(`enum MyEnum implements Comparable<MyEnum> {
+            k_default("DEFAULT"),
+            sealed("SEALED"),
+            k_return("RETURN");
+
+            const MyEnum(this.serialValue);
+            final String serialValue;
+
+            factory MyEnum.fromString(String input) {
+                for (final val in values) {
+                    if (val.serialValue == input) {
+                        return val;
+                    }
+                }
+                return k_default;
+            }
+            
+            @override
+            int compareTo(MyEnum other) => name.compareTo(other.name);
+        }`),
+    );
+});

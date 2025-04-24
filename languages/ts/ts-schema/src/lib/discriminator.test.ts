@@ -42,7 +42,7 @@ describe('Type Inference', () => {
 
 describe('Parsing', () => {
     const parse = (input: unknown) =>
-        a.safeParse(DiscriminatorSchema, input).success;
+        a.parse(DiscriminatorSchema, input).success;
     it('parses compliant objects', () => {
         const createdInput: DiscriminatorSchema = {
             eventType: 'USER_CREATED',
@@ -114,7 +114,9 @@ test('overloaded functions produce the same result', () => {
     assertType<SchemaB>(input);
     expect(JSON.stringify(SchemaA)).toBe(JSON.stringify(SchemaB));
     expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
-    expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+    expect(a.serializeUnsafe(SchemaA, input)).toBe(
+        a.serializeUnsafe(SchemaB, input),
+    );
 });
 
 it('produces valid ATD', () => {

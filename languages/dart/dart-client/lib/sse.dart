@@ -59,6 +59,7 @@ class EventSource<T> {
   final FutureOr<Map<String, String>> Function()? _headers;
   String? lastEventId;
   StreamController<T>? _streamController;
+  StreamSubscription<List<int>>? _requestStream;
   final Duration _retryDelay;
   int _internalRetryDelay = 100;
   final int? _maxRetryCount;
@@ -148,6 +149,7 @@ class EventSource<T> {
       request.headers["Last-Event-ID"] = lastEventId!;
     }
     try {
+      await _requestStream?.cancel();
       final response = await _httpClient.send(request);
       _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
@@ -175,9 +177,22 @@ class EventSource<T> {
       _retryCount = 0;
       _internalRetryDelay = 100;
 
-      response.stream.listen(
+      List<int>? pendingBytes;
+
+      _requestStream = response.stream.listen(
         (value) {
-          final input = utf8.decode(value);
+          String input;
+          try {
+            if (pendingBytes != null) {
+              input = utf8.decode([...pendingBytes!, ...value]);
+            } else {
+              input = utf8.decode(value);
+            }
+            pendingBytes = null;
+          } catch (err) {
+            pendingBytes = value;
+            return;
+          }
           final eventResult = parseSseEvents(pendingData + input, parser);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
@@ -255,6 +270,9 @@ class EventSource<T> {
 
   void close() {
     _closedByClient = true;
+    try {
+      _requestStream?.cancel();
+    } catch (_) {}
     _httpClient.close();
     _onClose();
   }

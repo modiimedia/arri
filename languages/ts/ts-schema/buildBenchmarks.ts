@@ -1,6 +1,7 @@
 import { rmSync } from 'node:fs';
 
-import { buildSync } from 'esbuild';
+import UnpluginTypia from '@ryoppippi/unplugin-typia/esbuild';
+import { build } from 'esbuild';
 import path from 'pathe';
 
 try {
@@ -9,10 +10,11 @@ try {
     /* empty */
 }
 
-buildSync({
+build({
     entryPoints: ['benchmark/src/_index.ts'],
     outfile: 'benchmark/dist/_index.cjs',
     target: 'node20',
     platform: 'node',
     bundle: true,
+    plugins: [UnpluginTypia()],
 });

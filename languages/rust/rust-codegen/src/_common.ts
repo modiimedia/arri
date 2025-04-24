@@ -16,6 +16,7 @@ export interface GeneratorContext {
     discriminatorKey?: string;
     discriminatorValue?: string;
     isOptional?: boolean;
+    rootService: string | undefined;
 }
 
 export interface RustProperty {
@@ -128,7 +129,7 @@ export function outputIsOptionType(
     schema: Schema,
     context: GeneratorContext,
 ): boolean {
-    return schema.nullable === true || context.isOptional === true;
+    return schema.isNullable === true || context.isOptional === true;
 }
 
 export function getTypeName(schema: Schema, context: GeneratorContext): string {
@@ -153,4 +154,11 @@ export function formatDescriptionComment(
         .split('\n')
         .map((line) => `${leading}/// ${line}`)
         .join('\n');
+}
+
+export function maybeStr(show: boolean, char: string) {
+    if (show) {
+        return char;
+    }
+    return '';
 }

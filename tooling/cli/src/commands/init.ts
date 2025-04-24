@@ -50,7 +50,7 @@ export default defineCommand({
         },
     },
     async run(context) {
-        const args = a.parse(CliArgs, context.args);
+        const args = a.parseUnsafe(CliArgs, context.args);
         if (!args.type) {
             const { projectType } = await enquirer.prompt<{
                 projectType: 'application' | 'generator plugin';

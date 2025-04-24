@@ -65,7 +65,7 @@ export function kotlinDiscriminatorFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += ${input}?.toJson()`;
             }
             return `${target} += ${input}.toJson()`;

@@ -1,16 +1,17 @@
 import {
-    type ARecordSchema,
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
+import {
+    ARecordSchemaWithAdapters,
     type ASchema,
     type ASchemaOptions,
     type InferType,
     isObject,
-    SCHEMA_METADATA,
+    SchemaValidator,
     type ValidationContext,
+    VALIDATOR_KEY,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../standardSchema';
 import { serializeString } from './string';
 
 /**
@@ -30,10 +31,10 @@ import { serializeString } from './string';
  * )
  * a.validate(ObjectRecord, {foo: {id: "1", date: new Date()}}) // true
  */
-export function record<TInnerSchema extends ASchema<any>>(
+export function record<TInnerSchema extends ASchema<any, any>>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
-): ARecordSchema<TInnerSchema> {
+): ARecordSchemaWithAdapters<TInnerSchema> {
     const validateFn = (
         input: unknown,
     ): input is InferRecordType<TInnerSchema> => {
@@ -42,7 +43,7 @@ export function record<TInnerSchema extends ASchema<any>>(
         }
         for (const key of Object.keys(input)) {
             const val = input[key];
-            const isValid = schema.metadata[SCHEMA_METADATA].validate(val);
+            const isValid = schema[VALIDATOR_KEY].validate(val);
             if (!isValid) {
                 return false;
             }
@@ -55,42 +56,52 @@ export function record<TInnerSchema extends ASchema<any>>(
     ): InferRecordType<TInnerSchema> | undefined => {
         return parse(schema, input, ctx, false);
     };
-    const result: ARecordSchema<TInnerSchema> = {
+    const validator: SchemaValidator<InferRecordType<TInnerSchema>> = {
+        output: {},
+        optional: false,
+        validate: validateFn,
+        parse: parseFn,
+        coerce(input: unknown, data) {
+            return parse(schema, input, data, true);
+        },
+        serialize(input, context) {
+            if (context.depth >= context.maxDepth) {
+                context.errors.push({
+                    instancePath: context.instancePath,
+                    schemaPath: context.schemaPath,
+                    message: 'Max depth reached',
+                });
+                return undefined;
+            }
+            let result = '{';
+            const keys = Object.keys(input);
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i]!;
+                const val = input[key];
+                if (i > 0) result += ',';
+                result += serializeString(key);
+                result += ':';
+                result += schema[VALIDATOR_KEY].serialize(val, {
+                    instancePath: `${context.instancePath}/${key}`,
+                    schemaPath: `${context.schemaPath}/values`,
+                    errors: context.errors,
+                    exitOnFirstError: context.exitOnFirstError,
+                    depth: context.depth + 1,
+                    maxDepth: context.maxDepth,
+                });
+            }
+            result += '}';
+            return result;
+        },
+    };
+    const result: ARecordSchemaWithAdapters<TInnerSchema> = {
         values: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: {},
-                validate: validateFn,
-                parse: parseFn,
-                coerce(input: unknown, data) {
-                    return parse(schema, input, data, true);
-                },
-                serialize(input, context) {
-                    let result = '{';
-                    const keys = Object.keys(input);
-                    for (let i = 0; i < keys.length; i++) {
-                        const key = keys[i]!;
-                        const val = input[key];
-                        if (i > 0) result += ',';
-                        result += serializeString(key);
-                        result += ':';
-                        result += schema.metadata[SCHEMA_METADATA].serialize(
-                            val,
-                            {
-                                instancePath: `${context.instancePath}/${key}`,
-                                schemaPath: `${context.schemaPath}/values`,
-                                errors: context.errors,
-                            },
-                        );
-                    }
-                    result += '}';
-                    return result;
-                },
-            },
         },
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validateFn, parseFn),
     };
     hideInvalidProperties(result);
@@ -103,9 +114,31 @@ function parse<T>(
     data: ValidationContext,
     coerce = false,
 ): Record<string, T> | undefined {
+    if (data.depth >= data.maxDepth) {
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            message: 'Max depth reached',
+        });
+        return undefined;
+    }
     let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === 'string') {
-        parsedInput = JSON.parse(input);
+    if (
+        data.instancePath.length === 0 &&
+        typeof input === 'string' &&
+        input.length > 0
+    ) {
+        try {
+            parsedInput = JSON.parse(input);
+        } catch (err) {
+            data.errors.push({
+                message: err instanceof Error ? err.message : `${err}`,
+                instancePath: data.instancePath,
+                schemaPath: data.schemaPath,
+                data: err,
+            });
+            return undefined;
+        }
     }
     if (!isObject(parsedInput)) {
         data.errors.push({
@@ -119,16 +152,22 @@ function parse<T>(
     for (const key of Object.keys(parsedInput)) {
         const val = parsedInput[key];
         if (coerce) {
-            result[key] = schema.metadata[SCHEMA_METADATA].coerce(val, {
+            result[key] = schema[VALIDATOR_KEY].coerce(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,
+                maxDepth: data.maxDepth,
+                depth: data.depth + 1,
+                exitOnFirstError: data.exitOnFirstError,
             });
         } else {
-            result[key] = schema.metadata[SCHEMA_METADATA].parse(val, {
+            result[key] = schema[VALIDATOR_KEY].parse(val, {
                 instancePath: `${data.instancePath}/${key}`,
                 schemaPath: `${data.schemaPath}/values`,
                 errors: data.errors,
+                maxDepth: data.maxDepth,
+                depth: data.depth + 1,
+                exitOnFirstError: data.exitOnFirstError,
             });
         }
     }

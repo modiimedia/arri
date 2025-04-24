@@ -44,7 +44,7 @@ export function swiftDictionaryFromSchema(
 ${mainContent}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.dictionary != nil {
 ${mainContent}
                 }`;
@@ -61,7 +61,7 @@ ${mainContent}
                 ${subType.toJsonTemplate('__value', target)}
             }
             ${target} += "}"`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if ${input} != nil {
                     ${mainContent}
                 } else {

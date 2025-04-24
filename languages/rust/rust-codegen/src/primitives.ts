@@ -18,7 +18,7 @@ export function rustStringFromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -45,7 +45,7 @@ export function rustStringFromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -72,7 +72,7 @@ export function rustBooleanFromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -99,7 +99,7 @@ export function rustBooleanFromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -128,7 +128,7 @@ export function rustTimestampFromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -166,7 +166,7 @@ export function rustTimestampFromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!(
@@ -199,7 +199,7 @@ export function rustF32FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -231,7 +231,7 @@ export function rustF32FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -258,7 +258,7 @@ export function rustF64FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -290,7 +290,7 @@ export function rustF64FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -317,7 +317,7 @@ export function rustI8FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -352,7 +352,7 @@ export function rustI8FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -379,7 +379,7 @@ export function rustU8FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -414,7 +414,7 @@ export function rustU8FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -441,7 +441,7 @@ export function rustI16FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -476,7 +476,7 @@ export function rustI16FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -503,7 +503,7 @@ export function rustU16FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -538,7 +538,7 @@ export function rustU16FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -565,7 +565,7 @@ export function rustI32FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -600,7 +600,7 @@ export function rustI32FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -627,7 +627,7 @@ export function rustU32FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -662,7 +662,7 @@ export function rustU32FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -689,7 +689,7 @@ export function rustI64FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -721,7 +721,7 @@ export function rustI64FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
@@ -748,7 +748,7 @@ export function rustU64FromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
@@ -780,7 +780,7 @@ export function rustU64FromSchema(
                     _ => {}
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));

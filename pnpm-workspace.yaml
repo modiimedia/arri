@@ -3,3 +3,8 @@ packages:
   - playground/**
   - tooling/**
   - tests/**
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
+  - nx
+  - typia

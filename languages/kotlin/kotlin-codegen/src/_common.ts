@@ -154,7 +154,7 @@ export function instanceDepth(context: CodegenContext) {
 }
 
 export function isNullable(schema: Schema, context: CodegenContext) {
-    return schema.nullable === true || context.isOptional === true;
+    return schema.isNullable === true || context.isOptional === true;
 }
 
 export function getCodeComment(

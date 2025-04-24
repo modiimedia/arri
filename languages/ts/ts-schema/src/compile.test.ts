@@ -1,6 +1,7 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import { a } from './_index';
+import { CompiledValidatorCompiledCode } from './compile';
 
 const User = a.object({
     id: a.string(),
@@ -11,6 +12,14 @@ const User = a.object({
 });
 type User = a.infer<typeof User>;
 const $$User = a.compile(User);
+const $$UserWCompiledCode = a.compile(User, true);
+
+it('Omits compiled code by default', () => {
+    expect(typeof $$User.compiledCode === 'undefined').toBe(true);
+    expect(typeof $$UserWCompiledCode.compiledCode === 'object').toBe(true);
+    assertType<undefined>($$User.compiledCode);
+    assertType<CompiledValidatorCompiledCode>($$UserWCompiledCode.compiledCode);
+});
 
 describe('standard-schema support', () => {
     it('properly infers types', async () => {

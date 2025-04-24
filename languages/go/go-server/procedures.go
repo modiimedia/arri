@@ -94,42 +94,46 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	app.procedures.Set(rpcName, *rpcSchema)
 	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t *TEvent) RpcError {
+		onRequest = func(t *TEvent) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t *TEvent, a any) RpcError {
+		onBeforeResponse = func(t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t *TEvent, a any) RpcError {
+		onAfterResponse = func(t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
 	onError := app.options.OnError
 	if onError == nil {
-		onError = func(r *http.Request, t *TEvent, err error) {}
+		onError = func(t *TEvent, err error) {}
 	}
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			handlePreflightRequest(w)
+			return
+		}
 		w.Header().Add("Content-Type", "application/json")
 		event, err := app.createEvent(w, r)
 		if err != nil {
-			handleError(false, w, r, nil, err, onError)
+			handleError(false, w, nil, err, onError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, r, event, Error(404, "Not found"), onError)
+			handleError(false, w, event, Error(404, "Not found"), onError)
 			return
 		}
 
-		err = onRequest(r, event)
+		err = onRequest(event)
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
 
@@ -138,7 +142,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 				fn := app.middleware[i]
 				err := fn(r, *event, rpcName)
 				if err != nil {
-					handleError(false, w, r, event, err, onError)
+					handleError(false, w, event, err, onError)
 					return
 				}
 			}
@@ -146,7 +150,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, r, event, Error(500, "Error initializing empty params"), onError)
+			handleError(false, w, event, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
@@ -155,18 +159,18 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, r, event, fromUrlQueryErr, onError)
+					handleError(false, w, event, fromUrlQueryErr, onError)
 					return
 				}
 			default:
 				b, err := io.ReadAll(r.Body)
 				if err != nil {
-					handleError(false, w, r, event, Error(400, err.Error()), onError)
+					handleError(false, w, event, Error(400, err.Error()), onError)
 					return
 				}
 				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
 				if fromJSONErr != nil {
-					handleError(false, w, r, event, fromJSONErr, onError)
+					handleError(false, w, event, fromJSONErr, onError)
 					return
 				}
 			}
@@ -175,13 +179,13 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		response, err := handler(params, *event)
 		if err != nil {
 			payload := err
-			handleError(false, w, r, event, payload, onError)
+			handleError(false, w, event, payload, onError)
 			return
 		}
 
-		err = onBeforeResponse(r, event, "")
+		err = onBeforeResponse(event, "")
 		if err != nil {
-			handleError(false, w, r, event, err, onError)
+			handleError(false, w, event, err, onError)
 			return
 		}
 
@@ -190,7 +194,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		if hasResponse {
 			json, err := EncodeJSON(response, encodingOpts)
 			if err != nil {
-				handleError(false, w, r, event, ErrorWithData(500, err.Error(), Some[any](err)), onError)
+				handleError(false, w, event, ErrorWithData(500, err.Error(), Some[any](err)), onError)
 				return
 			}
 			body = json
@@ -199,9 +203,9 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		}
 		w.Write([]byte(body))
 
-		err = onAfterResponse(r, event, "")
+		err = onAfterResponse(event, "")
 		if err != nil {
-			handleError(true, w, r, event, err, onError)
+			handleError(true, w, event, err, onError)
 		}
 	})
 }
@@ -219,4 +223,12 @@ func Rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], handler func(TP
 
 func ScopedRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, handler func(TParams, TEvent) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
+}
+
+func handlePreflightRequest(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Method", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(200)
+	w.Write([]byte("ok"))
 }

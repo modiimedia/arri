@@ -6,6 +6,7 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    type ArriRequestOptions,
     arriRequest,
     arriSseRequest,
     type EventSourceController,
@@ -24,54 +25,76 @@ import {
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
+    type Fetch,
+    type $Fetch,
+    createFetch,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
 export class TestClient {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
     tests: TestClientTestsService;
     users: TestClientUsersService;
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? '';
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-        this.tests = new TestClientTestsService(options);
-        this.users = new TestClientUsersService(options);
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
+        }
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
+        this.tests = new TestClientTestsService(config);
+        this.users = new TestClientUsersService(config);
     }
 }
 
 export class TestClientTestsService {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
 
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? '';
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
+        }
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
     }
-    async emptyParamsGetRequest(): Promise<DefaultPayload> {
+    async emptyParamsGetRequest(
+        options?: ArriRequestOptions,
+    ): Promise<DefaultPayload> {
         return arriRequest<DefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
             method: 'get',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
 
@@ -79,12 +102,16 @@ export class TestClientTestsService {
             responseFromString: $$DefaultPayload.fromJsonString,
             serializer: () => {},
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async emptyParamsPostRequest(): Promise<DefaultPayload> {
+    async emptyParamsPostRequest(
+        options?: ArriRequestOptions,
+    ): Promise<DefaultPayload> {
         return arriRequest<DefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
 
@@ -92,12 +119,17 @@ export class TestClientTestsService {
             responseFromString: $$DefaultPayload.fromJsonString,
             serializer: () => {},
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async emptyResponseGetRequest(params: DefaultPayload): Promise<undefined> {
+    async emptyResponseGetRequest(
+        params: DefaultPayload,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
         return arriRequest<undefined, DefaultPayload>({
             url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
             method: 'get',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -105,12 +137,17 @@ export class TestClientTestsService {
             responseFromString: () => {},
             serializer: $$DefaultPayload.toUrlQueryString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async emptyResponsePostRequest(params: DefaultPayload): Promise<undefined> {
+    async emptyResponsePostRequest(
+        params: DefaultPayload,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
         return arriRequest<undefined, DefaultPayload>({
             url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -118,16 +155,21 @@ export class TestClientTestsService {
             responseFromString: () => {},
             serializer: $$DefaultPayload.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
      * @deprecated
      */
-    async deprecatedRpc(params: DeprecatedRpcParams): Promise<undefined> {
+    async deprecatedRpc(
+        params: DeprecatedRpcParams,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
         return arriRequest<undefined, DeprecatedRpcParams>({
             url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -135,12 +177,38 @@ export class TestClientTestsService {
             responseFromString: () => {},
             serializer: $$DeprecatedRpcParams.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async sendError(params: SendErrorParams): Promise<undefined> {
+    async sendDiscriminatorWithEmptyObject(
+        params: DiscriminatorWithEmptyObject,
+        options?: ArriRequestOptions,
+    ): Promise<DiscriminatorWithEmptyObject> {
+        return arriRequest<
+            DiscriminatorWithEmptyObject,
+            DiscriminatorWithEmptyObject
+        >({
+            url: `${this._baseUrl}/rpcs/tests/send-discriminator-with-empty-object`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$DiscriminatorWithEmptyObject.fromJson,
+            responseFromString: $$DiscriminatorWithEmptyObject.fromJsonString,
+            serializer: $$DiscriminatorWithEmptyObject.toJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
+    async sendError(
+        params: SendErrorParams,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
         return arriRequest<undefined, SendErrorParams>({
             url: `${this._baseUrl}/rpcs/tests/send-error`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -148,14 +216,17 @@ export class TestClientTestsService {
             responseFromString: () => {},
             serializer: $$SendErrorParams.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObject(
         params: ObjectWithEveryType,
+        options?: ArriRequestOptions,
     ): Promise<ObjectWithEveryType> {
         return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
             url: `${this._baseUrl}/rpcs/tests/send-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -163,10 +234,12 @@ export class TestClientTestsService {
             responseFromString: $$ObjectWithEveryType.fromJsonString,
             serializer: $$ObjectWithEveryType.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObjectWithNullableFields(
         params: ObjectWithEveryNullableType,
+        options?: ArriRequestOptions,
     ): Promise<ObjectWithEveryNullableType> {
         return arriRequest<
             ObjectWithEveryNullableType,
@@ -174,6 +247,7 @@ export class TestClientTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -181,14 +255,17 @@ export class TestClientTestsService {
             responseFromString: $$ObjectWithEveryNullableType.fromJsonString,
             serializer: $$ObjectWithEveryNullableType.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObjectWithPascalCaseKeys(
         params: ObjectWithPascalCaseKeys,
+        options?: ArriRequestOptions,
     ): Promise<ObjectWithPascalCaseKeys> {
         return arriRequest<ObjectWithPascalCaseKeys, ObjectWithPascalCaseKeys>({
             url: `${this._baseUrl}/rpcs/tests/send-object-with-pascal-case-keys`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -196,14 +273,17 @@ export class TestClientTestsService {
             responseFromString: $$ObjectWithPascalCaseKeys.fromJsonString,
             serializer: $$ObjectWithPascalCaseKeys.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendObjectWithSnakeCaseKeys(
         params: ObjectWithSnakeCaseKeys,
+        options?: ArriRequestOptions,
     ): Promise<ObjectWithSnakeCaseKeys> {
         return arriRequest<ObjectWithSnakeCaseKeys, ObjectWithSnakeCaseKeys>({
             url: `${this._baseUrl}/rpcs/tests/send-object-with-snake-case-keys`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -211,10 +291,12 @@ export class TestClientTestsService {
             responseFromString: $$ObjectWithSnakeCaseKeys.fromJsonString,
             serializer: $$ObjectWithSnakeCaseKeys.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendPartialObject(
         params: ObjectWithEveryOptionalType,
+        options?: ArriRequestOptions,
     ): Promise<ObjectWithEveryOptionalType> {
         return arriRequest<
             ObjectWithEveryOptionalType,
@@ -222,6 +304,7 @@ export class TestClientTestsService {
         >({
             url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -229,14 +312,17 @@ export class TestClientTestsService {
             responseFromString: $$ObjectWithEveryOptionalType.fromJsonString,
             serializer: $$ObjectWithEveryOptionalType.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     async sendRecursiveObject(
         params: RecursiveObject,
+        options?: ArriRequestOptions,
     ): Promise<RecursiveObject> {
         return arriRequest<RecursiveObject, RecursiveObject>({
             url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -244,12 +330,17 @@ export class TestClientTestsService {
             responseFromString: $$RecursiveObject.fromJsonString,
             serializer: $$RecursiveObject.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
-    async sendRecursiveUnion(params: RecursiveUnion): Promise<RecursiveUnion> {
+    async sendRecursiveUnion(
+        params: RecursiveUnion,
+        options?: ArriRequestOptions,
+    ): Promise<RecursiveUnion> {
         return arriRequest<RecursiveUnion, RecursiveUnion>({
             url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -257,6 +348,7 @@ export class TestClientTestsService {
             responseFromString: $$RecursiveUnion.fromJsonString,
             serializer: $$RecursiveUnion.toJsonString,
             clientVersion: '10',
+            options: options ?? this._options,
         });
     }
     streamAutoReconnect(
@@ -267,6 +359,7 @@ export class TestClientTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -292,6 +385,7 @@ export class TestClientTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -314,6 +408,7 @@ export class TestClientTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
 
@@ -333,6 +428,7 @@ export class TestClientTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -354,6 +450,7 @@ export class TestClientTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
 
@@ -377,6 +474,7 @@ export class TestClientTestsService {
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
 
@@ -392,21 +490,29 @@ export class TestClientTestsService {
 
 export class TestClientUsersService {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
 
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? '';
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
+        }
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
     }
     watchUser(
         params: UsersWatchUserParams,
@@ -416,6 +522,7 @@ export class TestClientUsersService {
             {
                 url: `${this._baseUrl}/rpcs/users/watch-user`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -554,6 +661,192 @@ export const $$DeprecatedRpcParams: ArriModelValidator<DeprecatedRpcParams> = {
         return queryParts.join('&');
     },
 };
+
+export type DiscriminatorWithEmptyObject =
+    | DiscriminatorWithEmptyObjectEmpty
+    | DiscriminatorWithEmptyObjectNotEmpty;
+export const $$DiscriminatorWithEmptyObject: ArriModelValidator<DiscriminatorWithEmptyObject> =
+    {
+        new(): DiscriminatorWithEmptyObject {
+            return $$DiscriminatorWithEmptyObjectEmpty.new();
+        },
+        validate(input): input is DiscriminatorWithEmptyObject {
+            if (!isObject(input)) {
+                return false;
+            }
+            if (typeof input.type !== 'string') {
+                return false;
+            }
+            switch (input.type) {
+                case 'EMPTY':
+                    return $$DiscriminatorWithEmptyObjectEmpty.validate(input);
+                case 'NOT_EMPTY':
+                    return $$DiscriminatorWithEmptyObjectNotEmpty.validate(
+                        input,
+                    );
+                default:
+                    return false;
+            }
+        },
+        fromJson(input): DiscriminatorWithEmptyObject {
+            switch (input.type) {
+                case 'EMPTY':
+                    return $$DiscriminatorWithEmptyObjectEmpty.fromJson(input);
+                case 'NOT_EMPTY':
+                    return $$DiscriminatorWithEmptyObjectNotEmpty.fromJson(
+                        input,
+                    );
+                default:
+                    return $$DiscriminatorWithEmptyObjectEmpty.new();
+            }
+        },
+        fromJsonString(input): DiscriminatorWithEmptyObject {
+            return $$DiscriminatorWithEmptyObject.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            switch (input.type) {
+                case 'EMPTY':
+                    return $$DiscriminatorWithEmptyObjectEmpty.toJsonString(
+                        input,
+                    );
+                case 'NOT_EMPTY':
+                    return $$DiscriminatorWithEmptyObjectNotEmpty.toJsonString(
+                        input,
+                    );
+                default:
+                    throw new Error(`Unhandled case "${(input as any).type}"`);
+            }
+        },
+        toUrlQueryString(input): string {
+            switch (input.type) {
+                case 'EMPTY':
+                    return $$DiscriminatorWithEmptyObjectEmpty.toUrlQueryString(
+                        input,
+                    );
+                case 'NOT_EMPTY':
+                    return $$DiscriminatorWithEmptyObjectNotEmpty.toUrlQueryString(
+                        input,
+                    );
+                default:
+                    throw new Error('Unhandled case');
+            }
+        },
+    };
+export interface DiscriminatorWithEmptyObjectEmpty {
+    type: 'EMPTY';
+}
+const $$DiscriminatorWithEmptyObjectEmpty: ArriModelValidator<DiscriminatorWithEmptyObjectEmpty> =
+    {
+        new(): DiscriminatorWithEmptyObjectEmpty {
+            return {
+                type: 'EMPTY',
+            };
+        },
+        validate(input): input is DiscriminatorWithEmptyObjectEmpty {
+            return isObject(input) && input.type === 'EMPTY';
+        },
+        fromJson(input): DiscriminatorWithEmptyObjectEmpty {
+            const _type = 'EMPTY';
+            return {
+                type: _type,
+            };
+        },
+        fromJsonString(input): DiscriminatorWithEmptyObjectEmpty {
+            return $$DiscriminatorWithEmptyObjectEmpty.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"type":"EMPTY"';
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push('type=EMPTY');
+            return queryParts.join('&');
+        },
+    };
+
+export interface DiscriminatorWithEmptyObjectNotEmpty {
+    type: 'NOT_EMPTY';
+    foo: string;
+    bar: number;
+    baz: boolean;
+}
+const $$DiscriminatorWithEmptyObjectNotEmpty: ArriModelValidator<DiscriminatorWithEmptyObjectNotEmpty> =
+    {
+        new(): DiscriminatorWithEmptyObjectNotEmpty {
+            return {
+                type: 'NOT_EMPTY',
+                foo: '',
+                bar: 0,
+                baz: false,
+            };
+        },
+        validate(input): input is DiscriminatorWithEmptyObjectNotEmpty {
+            return (
+                isObject(input) &&
+                input.type === 'NOT_EMPTY' &&
+                typeof input.foo === 'string' &&
+                typeof input.bar === 'number' &&
+                typeof input.baz === 'boolean'
+            );
+        },
+        fromJson(input): DiscriminatorWithEmptyObjectNotEmpty {
+            const _type = 'NOT_EMPTY';
+            let _foo: string;
+            if (typeof input.foo === 'string') {
+                _foo = input.foo;
+            } else {
+                _foo = '';
+            }
+            let _bar: number;
+            if (typeof input.bar === 'number') {
+                _bar = input.bar;
+            } else {
+                _bar = 0;
+            }
+            let _baz: boolean;
+            if (typeof input.baz === 'boolean') {
+                _baz = input.baz;
+            } else {
+                _baz = false;
+            }
+            return {
+                type: _type,
+                foo: _foo,
+                bar: _bar,
+                baz: _baz,
+            };
+        },
+        fromJsonString(input): DiscriminatorWithEmptyObjectNotEmpty {
+            return $$DiscriminatorWithEmptyObjectNotEmpty.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"type":"NOT_EMPTY"';
+            json += ',"foo":';
+            json += serializeString(input.foo);
+            json += ',"bar":';
+            json += `${input.bar}`;
+            json += ',"baz":';
+            json += `${input.baz}`;
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push('type=NOT_EMPTY');
+            queryParts.push(`foo=${input.foo}`);
+            queryParts.push(`bar=${input.bar}`);
+            queryParts.push(`baz=${input.baz}`);
+            return queryParts.join('&');
+        },
+    };
 
 export interface SendErrorParams {
     code: number;

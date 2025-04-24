@@ -47,7 +47,9 @@ test('create rpc definition', () => {
     expect(rpcDef.isEventStream).toBe(undefined);
     const eventStreamRpc = defineEventStreamRpc({
         params: undefined,
-        response: undefined,
+        response: a.object({
+            id: a.string(),
+        }),
         handler() {},
     });
     const eventStreamDef = createHttpRpcDefinition(

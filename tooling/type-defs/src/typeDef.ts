@@ -6,6 +6,7 @@ export interface SchemaMetadata {
     id?: string;
     description?: string;
     isDeprecated?: boolean;
+    deprecatedNote?: string;
 }
 
 export type Schema =
@@ -20,14 +21,14 @@ export type Schema =
 export function isSchema(input: unknown): input is Schema {
     const allowedProperties = [
         'metadata',
-        'nullable',
+        'isNullable',
+        'isStrict',
         'type',
         'enum',
         'elements',
         'values',
         'properties',
         'optionalProperties',
-        'strict',
         'discriminator',
         'mapping',
         'ref',
@@ -46,8 +47,8 @@ export function isSchema(input: unknown): input is Schema {
 
 // ANY //
 export interface SchemaFormEmpty {
-    nullable?: boolean;
     metadata?: SchemaMetadata;
+    isNullable?: boolean;
 }
 export function isSchemaFormEmpty(input: unknown): input is SchemaFormEmpty {
     if (!isObject(input)) {
@@ -127,7 +128,7 @@ export function isSchemaFormElements(
 export interface SchemaFormProperties extends SchemaFormEmpty {
     properties: Record<string, Schema>;
     optionalProperties?: Record<string, Schema>;
-    strict?: boolean;
+    isStrict?: boolean;
 }
 export function isSchemaFormProperties(
     input: unknown,

@@ -12,6 +12,7 @@ config.push({
         "arri/no-anonymous-discriminator": 2,
         "arri/no-anonymous-object": 2,
         "arri/no-anonymous-recursive": 2,
+        'arri/prefer-modular-imports': 2,
     },
 });
 

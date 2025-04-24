@@ -35,10 +35,18 @@ import {
 } from '../lib/numberConstants';
 import { type TemplateInput } from './common';
 
-export function createParsingTemplate(input: string, schema: Schema): string {
+export function createParsingTemplate(
+    input: string,
+    schema: Schema,
+    shouldCoerce = false,
+): string {
     const fallbackTemplate = `
-    function $fallback(instancePath, schemaPath) {
-        throw new Error(\`Error parsing input. InstancePath: "\${instancePath}". SchemaPath: "\${schemaPath}"\`);
+    function $fallback(instancePath, schemaPath, message) {
+        context.errors.push({
+            message: message,
+            instancePath: instancePath,
+            schemaPath: schemaPath,
+        })
     }`;
     let jsonParseCheck = '';
 
@@ -50,6 +58,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         instancePath: '',
         schemaPath: '',
         subFunctions,
+        shouldCoerce: shouldCoerce,
     });
     const jsonTemplate = schemaTemplate({
         val: 'json',
@@ -58,6 +67,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         instancePath: '',
         schemaPath: '',
         subFunctions,
+        shouldCoerce: shouldCoerce,
     });
 
     if (
@@ -158,10 +168,27 @@ export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
 }
 
 export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
-    const errorMessage = input.instancePath.length
-        ? `Expected boolean for ${input.instancePath}`
-        : `Expected boolean`;
+    const errorMessage = 'expected boolean';
     const templateParts: string[] = [];
+    if (input.shouldCoerce) {
+        templateParts.push(`if (${input.val} === true || ${input.val} === 'true' || ${input.val} === 'TRUE' || ${input.val} === 1 || ${input.val} === '1') {
+                ${input.targetVal} = true;
+            }
+            else if (${input.val} === false || ${input.val} === 'false' || ${input.val} === 'FALSE' || ${input.val} === 0 || ${input.val} === '0') {
+                ${input.targetVal} = false;
+            }`);
+        if (input.schema.isNullable) {
+            templateParts.push(`else if (${input.val} === null || ${input.val} === 'null') {
+                    ${input.targetVal} = null;
+                }`);
+        }
+        templateParts.push(
+            `else {
+                $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
+            }`,
+        );
+        return templateParts.join('\n');
+    }
     if (input.instancePath.length === 0) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             if (${input.val} === 'true') {
@@ -170,7 +197,7 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
             if (${input.val} === 'false') {
                 ${input.targetVal} = false;
             }`);
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             templateParts.push(`if (${input.val} === 'null') {
                 ${input.targetVal} = null;
             }`);
@@ -185,7 +212,7 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         templateParts.push(`if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
@@ -198,13 +225,13 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
-    const errorMessage = `Expected string at ${input.instancePath}`;
+    const errorMessage = `expected string`;
     const mainTemplate = `if (typeof ${input.val} === 'string') {
         ${input.targetVal} = ${input.val};
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = ${input.val};
         } else {
@@ -223,19 +250,21 @@ function getVarName(input: string): string {
 export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
     const valName = getVarName(`${input.val}Val`);
     const templateParts: string[] = [];
-    if (input.instancePath.length === 0) {
+    if (input.instancePath.length === 0 || input.shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const ${valName} = Number(${input.val});
-            if (!Number.isNaN(parsedVal)) {
+            if (!Number.isNaN(${valName})) {
                 ${input.targetVal} = ${valName};
             }`);
-        if (input.schema.nullable) {
-            templateParts.push(`if (${input.val} === 'null') {
+        if (input.schema.isNullable) {
+            templateParts.push(`else if (${input.val} === 'null') {
                 ${input.targetVal} = null;
             }`);
         }
         templateParts.push(
-            `$fallback("${input.instancePath}", "${input.schemaPath}/type", \`Could not parse number from \${${input.val}}\`);`,
+            `else { 
+                $fallback("${input.instancePath}", "${input.schemaPath}/type", \`Could not parse number from \${${input.val}}\`);
+            }`,
         );
         templateParts.push('}');
     }
@@ -245,14 +274,16 @@ export function floatTemplate(input: TemplateInput<SchemaFormType>): string {
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
-    if (input.schema.nullable) {
-        templateParts.push(`if (${input.val} === null) {
+    if (input.schema.isNullable) {
+        templateParts.push(`${input.instancePath.length === 0 || input.shouldCoerce ? 'else ' : ''}if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
         }`);
     } else {
-        templateParts.push(mainTemplate);
+        templateParts.push(
+            `${input.instancePath.length === 0 || input.shouldCoerce ? 'else ' : ''}${mainTemplate}`,
+        );
     }
     return templateParts.join('\n');
 }
@@ -263,20 +294,22 @@ export function intTemplate(
     max: number,
 ) {
     const templateParts: string[] = [];
-
-    if (input.instancePath.length === 0) {
+    const shouldCoerce = input.shouldCoerce || input.instancePath.length === 0;
+    if (shouldCoerce) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = Number(${input.val});
             if (Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
-                ${input.targetVal} = ${input.val};
+                ${input.targetVal} = parsedVal;
             }`);
-        if (input.schema.nullable) {
-            templateParts.push(`if (${input.val} === 'null') {
+        if (input.schema.isNullable) {
+            templateParts.push(`else if (${input.val} === 'null') {
                 ${input.targetVal} = null;
             }`);
         }
         templateParts.push(
-            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max});`,
+            `else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");
+            }`,
         );
         templateParts.push('}');
     }
@@ -285,15 +318,15 @@ export function intTemplate(
         } else {
             $fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");
         }`;
-
-    if (input.schema.nullable) {
-        templateParts.push(`if (${input.val} === null) {
+    const prefix = shouldCoerce ? `else ` : '';
+    if (input.schema.isNullable) {
+        templateParts.push(`${prefix}if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
         }`);
     } else {
-        templateParts.push(mainTemplate);
+        templateParts.push(prefix + mainTemplate);
     }
     return templateParts.join('\n');
 }
@@ -306,7 +339,10 @@ export function bigIntTemplate(
     templateParts.push(
         `if (typeof ${input.val} === 'string' || typeof ${input.val} === 'number') {`,
     );
-    if (input.instancePath.length === 0 && input.schema.nullable) {
+    if (
+        (input.instancePath.length === 0 || input.shouldCoerce) &&
+        input.schema.isNullable
+    ) {
         templateParts.push(`if (${input.val} === 'null') {
             ${input.targetVal} = null;
         } else {`);
@@ -323,9 +359,12 @@ export function bigIntTemplate(
         templateParts.push(`${input.targetVal} = val;`);
     }
     templateParts.push(`} catch(err) {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse BigInt from ${input.val}.");
+        $fallback("${input.instancePath}", "${input.schemaPath}", \`Unable to parse BigInt from \${${input.val}}\`);
     }`);
-    if (input.instancePath.length === 0 && input.schema.nullable) {
+    if (
+        (input.instancePath.length === 0 || input.shouldCoerce) &&
+        input.schema.isNullable
+    ) {
         templateParts.push('}');
     }
     templateParts.push('}');
@@ -342,26 +381,63 @@ export function bigIntTemplate(
             ${input.targetVal} = ${input.val};
         }`);
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         templateParts.push(`else if (${input.val} === null) {
             ${input.targetVal} = null;
         }`);
     }
     templateParts.push(`else {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected BigInt or Integer string. Got \${${input.val}}");
+        $fallback("${input.instancePath}", "${input.schemaPath}", \`Expected BigInt or Integer string. Got \${${input.val}}\`);
     }`);
     return templateParts.join('\n');
 }
 
 export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     const templateParts: string[] = [];
+    if (input.shouldCoerce) {
+        return `if (typeof ${input.val} === 'string') {
+            try {
+                const parsedVal = new Date(${input.val});
+                if (!Number.isNaN(parsedVal.getMonth())) {
+                    ${input.targetVal} = parsedVal;
+                } ${
+                    input.schema.isNullable
+                        ? `else if (${input.val} === 'null') {
+                                ${input.targetVal} = null;
+                            }`
+                        : ''
+                } else {
+                    $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to coerce date"); 
+                }
+            } catch (err) {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date"); 
+            }    
+        } else if (typeof ${input.val} === 'number') {
+            const parsedVal = new Date(${input.val});
+            if (!Number.isNaN(parsedVal.getMonth())) {
+                ${input.targetVal} = parsedVal;
+            } else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
+            }
+        } else if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+            ${input.targetVal} = ${input.val};
+        }${
+            input.schema.isNullable
+                ? ` else if (${input.val} === null) {
+                    ${input.targetVal} = null;    
+                }`
+                : ''
+        } else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
+            }`;
+    }
     if (input.instancePath.length === 0) {
         templateParts.push(`if (typeof ${input.val} === 'string') {
             const parsedVal = new Date(${input.val});
             if (!Number.isNaN(parsedVal.getMonth())) {
                 ${input.targetVal} = parsedVal;
             }`);
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             templateParts.push(`if (${input.val} === 'null') {
                 ${input.targetVal} = null;
             }`);
@@ -376,9 +452,9 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     } else if (typeof ${input.val} === 'string') {
         ${input.targetVal} = new Date(${input.val});
     } else {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string at ${input.instancePath}")
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string")
     }`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         templateParts.push(`if (${input.val} === null) {
             ${input.targetVal} = null
         } else {
@@ -390,20 +466,20 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
     return templateParts.join('\n');
 }
 
-function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
+export function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
     const enumTemplate = input.schema.enum
         .map((val) => `${input.val} === "${val}"`)
         .join(' || ');
     const errorMessage = `Expected one of the following values: [${input.schema.enum.join(
         ', ',
-    )}]${input.instancePath.length ? ` at ${input.instancePath}` : ''}.`;
+    )}]`;
     const templateParts: string[] = [];
     templateParts.push(`if (typeof ${input.val} === 'string') {
         if (${enumTemplate}) {
             ${input.targetVal} = ${input.val};
         }
     `);
-    if (input.instancePath.length === 0 && input.schema.nullable) {
+    if (input.instancePath.length === 0 && input.schema.isNullable) {
         templateParts.push(`else if (${input.val} === 'null') {
             ${input.targetVal} = null;
         }`);
@@ -417,7 +493,7 @@ function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
     }`,
     );
     const mainTemplate = templateParts.join('\n');
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
@@ -436,7 +512,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             `${innerTargetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
         );
     }
-    if (input.schema.strict) {
+    if (input.schema.isStrict) {
         const keyVal = `_${depthStr}_keys`;
         const optionalKeyVal = `_${depthStr}_optionalKeys`;
         const keys = Object.keys(input.schema.properties)
@@ -458,6 +534,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
     }
     for (const key of Object.keys(input.schema.properties)) {
         const subSchema = input.schema.properties[key];
+
         const innerTemplate = schemaTemplate({
             val: `${input.val}.${key}`,
             targetVal: `${innerTargetVal}.${key}`,
@@ -465,6 +542,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
             subFunctions: input.subFunctions,
+            shouldCoerce: input.shouldCoerce,
         });
         parsingParts.push(innerTemplate);
     }
@@ -478,6 +556,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 subFunctions: input.subFunctions,
+                shouldCoerce: input.shouldCoerce,
             });
             parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
                 // ignore undefined
@@ -516,7 +595,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
         }
         mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
@@ -535,10 +614,11 @@ export function arrayTemplate(
     const innerTemplate = schemaTemplate({
         val: itemVar,
         targetVal: itemResultVar,
-        instancePath: `${input.instancePath}/[0]`,
+        instancePath: `${input.instancePath}/[i]`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         subFunctions: input.subFunctions,
+        shouldCoerce: input.shouldCoerce,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
         const ${resultVar} = [];
@@ -552,7 +632,7 @@ export function arrayTemplate(
         $fallback("${input.instancePath}", "${input.schemaPath}", "Expected Array");
     }`;
 
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
@@ -578,6 +658,7 @@ export function discriminatorTemplate(
             discriminatorKey: input.schema.discriminator,
             discriminatorValue: type,
             subFunctions: input.subFunctions,
+            shouldCoerce: input.shouldCoerce,
         });
         switchParts.push(`case "${type}": {
             ${template}
@@ -621,7 +702,7 @@ export function discriminatorTemplate(
         }
         mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
@@ -649,6 +730,7 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         schemaPath: `${input.schemaPath}/values`,
         schema: input.schema.values,
         subFunctions: input.subFunctions,
+        shouldCoerce: input.shouldCoerce,
     });
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
         const ${resultVal} = {};
@@ -661,7 +743,7 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}", "Expected object.");
     }`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
@@ -680,7 +762,7 @@ export function refTemplate(input: TemplateInput<SchemaFormRef>): string {
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {

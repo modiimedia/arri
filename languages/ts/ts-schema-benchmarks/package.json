@@ -1,0 +1,20 @@
+{
+  "name": "ts-schema-benchmarks",
+  "private": true,
+  "dependencies": {
+    "@arrirpc/schema": "workspace:*",
+    "@sinclair/typebox": "^0.34.33",
+    "arktype": "^2.1.20",
+    "prettier": "^3.5.3",
+    "typia": "^9.1.1",
+    "valibot": "1.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@ryoppippi/unplugin-typia": "^2.2.0",
+    "@samchon/openapi": "^4.1.0",
+    "autocannon": "^8.0.0",
+    "citty": "^0.1.6"
+  },
+  "version": "0.79.0"
+}

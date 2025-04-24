@@ -20,34 +20,9 @@ use std::collections::{BTreeMap, HashMap};
 #[derive(Clone)]
 pub struct TestClientPrefixed {
     _config: InternalArriClientConfig,
-    pub tests: TestClientPrefixedTestsService,
-    pub users: TestClientPrefixedUsersService,
 }
 
 impl ArriClientService for TestClientPrefixed {
-    fn create(config: ArriClientConfig) -> Self {
-        Self {
-            _config: InternalArriClientConfig::from(config.clone()),
-            tests: TestClientPrefixedTestsService::create(config.clone()),
-            users: TestClientPrefixedUsersService::create(config),
-        }
-    }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
-        *unwrapped_headers = headers.clone();
-        self.tests.update_headers(headers.clone());
-        self.users.update_headers(headers);
-    }
-}
-
-impl TestClientPrefixed {}
-
-#[derive(Clone)]
-pub struct TestClientPrefixedTestsService {
-    _config: InternalArriClientConfig,
-}
-
-impl ArriClientService for TestClientPrefixedTestsService {
     fn create(config: ArriClientConfig) -> Self {
         Self {
             _config: InternalArriClientConfig::from(config),
@@ -59,7 +34,7 @@ impl ArriClientService for TestClientPrefixedTestsService {
     }
 }
 
-impl TestClientPrefixedTestsService {
+impl TestClientPrefixed {
     pub async fn empty_params_get_request(&self) -> Result<FooDefaultPayload, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -147,6 +122,26 @@ impl TestClientPrefixedTestsService {
             },
             Some(params),
             |body| {},
+        )
+        .await
+    }
+    pub async fn send_discriminator_with_empty_object(
+        &self,
+        params: FooDiscriminatorWithEmptyObject,
+    ) -> Result<FooDiscriminatorWithEmptyObject, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-discriminator-with-empty-object",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return FooDiscriminatorWithEmptyObject::from_json_string(body),
         )
         .await
     }
@@ -468,52 +463,6 @@ impl TestClientPrefixedTestsService {
     }
 }
 
-#[derive(Clone)]
-pub struct TestClientPrefixedUsersService {
-    _config: InternalArriClientConfig,
-}
-
-impl ArriClientService for TestClientPrefixedUsersService {
-    fn create(config: ArriClientConfig) -> Self {
-        Self {
-            _config: InternalArriClientConfig::from(config),
-        }
-    }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
-        *unwrapped_headers = headers.clone();
-    }
-}
-
-impl TestClientPrefixedUsersService {
-    pub async fn watch_user<OnEvent>(
-        &self,
-        params: FooUsersWatchUserParams,
-        on_event: &mut OnEvent,
-        max_retry_count: Option<u64>,
-        max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<FooUsersWatchUserResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!("{}/rpcs/users/watch-user", &self._config.base_url),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct FooManuallyAddedModel {
     pub hello: String,
@@ -646,6 +595,94 @@ impl ArriModel for FooDeprecatedRpcParams {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("deprecatedField={}", &self.deprecated_field));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FooDiscriminatorWithEmptyObject {
+    Empty {},
+    NotEmpty { foo: String, bar: f64, baz: bool },
+}
+
+impl ArriModel for FooDiscriminatorWithEmptyObject {
+    fn new() -> Self {
+        Self::Empty {}
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let r#type = match _val_.get("type") {
+                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match r#type.as_str() {
+                    "EMPTY" => Self::Empty {},
+                    "NOT_EMPTY" => {
+                        let foo = match _val_.get("foo") {
+                            Some(serde_json::Value::String(foo_val)) => foo_val.to_owned(),
+                            _ => "".to_string(),
+                        };
+                        let bar = match _val_.get("bar") {
+                            Some(serde_json::Value::Number(bar_val)) => {
+                                bar_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        let baz = match _val_.get("baz") {
+                            Some(serde_json::Value::Bool(baz_val)) => baz_val.to_owned(),
+                            _ => false,
+                        };
+                        Self::NotEmpty { foo, bar, baz }
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Empty {} => {
+                _json_output_.push_str("\"type\":\"EMPTY\"");
+            }
+            Self::NotEmpty { foo, bar, baz } => {
+                _json_output_.push_str("\"type\":\"NOT_EMPTY\"");
+                _json_output_.push_str(",\"foo\":");
+                _json_output_.push_str(serialize_string(foo).as_str());
+                _json_output_.push_str(",\"bar\":");
+                _json_output_.push_str(bar.to_string().as_str());
+                _json_output_.push_str(",\"baz\":");
+                _json_output_.push_str(baz.to_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::Empty {} => {
+                _query_parts_.push(format!("type=EMPTY"));
+            }
+            Self::NotEmpty { foo, bar, baz } => {
+                _query_parts_.push(format!("type=NOT_EMPTY"));
+                _query_parts_.push(format!("foo={}", foo));
+                _query_parts_.push(format!("bar={}", bar));
+                _query_parts_.push(format!("baz={}", baz));
+            }
+        }
         _query_parts_.join("&")
     }
 }

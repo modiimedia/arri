@@ -1,6 +1,5 @@
 import { DefinitionMap } from './app';
 import { HttpRpc, NamedHttpRpc, Rpc } from './rpc';
-import { NamedWebsocketRpc, WebsocketRpc } from './websocketRpc';
 
 export class ArriService {
     name: string;
@@ -9,10 +8,7 @@ export class ArriService {
         this.name = name;
     }
 
-    private readonly procedures: (
-        | NamedHttpRpc<any, any, any>
-        | NamedWebsocketRpc<any, any>
-    )[] = [];
+    private readonly procedures: NamedHttpRpc<any, any, any>[] = [];
 
     private readonly definitions: DefinitionMap = {};
 
@@ -38,10 +34,7 @@ export class ArriService {
 
 export function defineService(
     name: string,
-    procedures?: Record<
-        string,
-        HttpRpc<any, any, any> | WebsocketRpc<any, any>
-    >,
+    procedures?: Record<string, HttpRpc<any, any, any>>,
 ): ArriService {
     const service = new ArriService(name);
     for (const key of Object.keys(procedures ?? {})) {

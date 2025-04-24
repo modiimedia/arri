@@ -35,7 +35,7 @@ export function swiftEnumFromSchema(
                     ${target} = ${prefixedTypeName}(serialValue: ${input}.string ?? "")
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.string != nil {
                     ${target} = ${prefixedTypeName}(serialValue: ${input}.string ?? "")
                 }`;
@@ -46,7 +46,7 @@ export function swiftEnumFromSchema(
             if (context.isOptional) {
                 return `        ${target} += "\\"\\(${input}!.serialValue())\\""`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += "\\"\\(${input}!.serialValue())\\""
                 } else {
@@ -61,7 +61,7 @@ export function swiftEnumFromSchema(
                     ${target}.append(URLQueryItem(name: "${key}", value: ${input}!.serialValue()))
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: ${input}!.serialValue()))
                 } else {

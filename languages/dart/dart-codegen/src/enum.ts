@@ -5,6 +5,7 @@ import {
     DartProperty,
     getDartClassName,
     outputIsNullable,
+    validDartIdentifier,
 } from './_common';
 
 export function dartEnumFromSchema(
@@ -17,7 +18,7 @@ export function dartEnumFromSchema(
         ? `${context.modelPrefix}${enumName}?`
         : `${context.modelPrefix}${enumName}`;
     const enumValues = schema.enum.map((val) => ({
-        name: camelCase(val, { normalize: true }),
+        name: validDartIdentifier(camelCase(val, { normalize: true })),
         serialValue: val,
     }));
     if (!enumValues.length) {
@@ -42,7 +43,7 @@ export function dartEnumFromSchema(
             if (context.isOptional) {
                 return `${input}!.serialValue`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${input}?.serialValue`;
             }
             return `${input}.serialValue`;
@@ -51,7 +52,7 @@ export function dartEnumFromSchema(
             if (context.isOptional) {
                 return `if (${input} != null) ${target}.add("${key}=\${${input}!.serialValue}")`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target}.add("${key}=\${${input}?.serialValue}")`;
             }
             return `${target}.add("${key}=\${${input}.serialValue}")`;

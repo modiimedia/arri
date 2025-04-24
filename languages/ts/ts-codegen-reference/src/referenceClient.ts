@@ -6,6 +6,7 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    type ArriRequestOptions,
     arriRequest,
     arriSseRequest,
     arriWsRequest,
@@ -25,6 +26,9 @@ import {
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
+    type Fetch,
+    type $Fetch,
+    createFetch,
     type WsController,
     type WsOptions,
 } from '@arrirpc/client';
@@ -33,28 +37,40 @@ type HeaderMap = Record<string, string | undefined>;
 
 export class ExampleClient {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
     books: ExampleClientBooksService;
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? '';
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
-        this.books = new ExampleClientBooksService(options);
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
+        }
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
+        this.books = new ExampleClientBooksService(config);
     }
 
-    async sendObject(params: NestedObject): Promise<NestedObject> {
+    async sendObject(
+        params: NestedObject,
+        options?: ArriRequestOptions,
+    ): Promise<NestedObject> {
         return arriRequest<NestedObject, NestedObject>({
             url: `${this._baseUrl}/send-object`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -62,34 +78,47 @@ export class ExampleClient {
             responseFromString: $$NestedObject.fromJsonString,
             serializer: $$NestedObject.toJsonString,
             clientVersion: '20',
+            options: options ?? this._options,
         });
     }
 }
 
 export class ExampleClientBooksService {
     private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
     constructor(
-        options: {
+        config: {
             baseUrl?: string;
+            fetch?: Fetch;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
             onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
         } = {},
     ) {
-        this._baseUrl = options.baseUrl ?? '';
-        this._headers = options.headers ?? {};
-        this._onError = options.onError;
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
+        }
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
     }
     /**
      * Get a book
      */
-    async getBook(params: BookParams): Promise<Book> {
+    async getBook(
+        params: BookParams,
+        options?: ArriRequestOptions,
+    ): Promise<Book> {
         return arriRequest<Book, BookParams>({
             url: `${this._baseUrl}/books/get-book`,
             method: 'get',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -97,16 +126,21 @@ export class ExampleClientBooksService {
             responseFromString: $$Book.fromJsonString,
             serializer: $$BookParams.toUrlQueryString,
             clientVersion: '20',
+            options: options ?? this._options,
         });
     }
     /**
      * Create a book
      * @deprecated
      */
-    async createBook(params: Book): Promise<Book> {
+    async createBook(
+        params: Book,
+        options?: ArriRequestOptions,
+    ): Promise<Book> {
         return arriRequest<Book, Book>({
             url: `${this._baseUrl}/books/create-book`,
             method: 'post',
+            ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
@@ -114,6 +148,7 @@ export class ExampleClientBooksService {
             responseFromString: $$Book.fromJsonString,
             serializer: $$Book.toJsonString,
             clientVersion: '20',
+            options: options ?? this._options,
         });
     }
     /**
@@ -127,6 +162,7 @@ export class ExampleClientBooksService {
             {
                 url: `${this._baseUrl}/books/watch-book`,
                 method: 'get',
+                ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
@@ -156,6 +192,32 @@ export class ExampleClientBooksService {
         });
     }
 }
+
+export interface EmptyObject {}
+export const $$EmptyObject: ArriModelValidator<EmptyObject> = {
+    new(): EmptyObject {
+        return {};
+    },
+    validate(input): input is EmptyObject {
+        return isObject(input);
+    },
+    fromJson(input): EmptyObject {
+        return {};
+    },
+    fromJsonString(input): EmptyObject {
+        return $$EmptyObject.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        let _hasKey = false;
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        return queryParts.join('&');
+    },
+};
 
 /**
  * This is a book

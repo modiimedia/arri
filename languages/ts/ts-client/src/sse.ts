@@ -8,7 +8,7 @@ import {
 } from 'event-source-plus';
 
 import { ArriErrorInstance } from './errors';
-import { type ArriRequestOpts } from './request';
+import { type ArriRequestConfig } from './request';
 import { getHeaders } from './utils';
 
 export interface SseEvent<TData = string> {
@@ -40,7 +40,7 @@ export function arriSseRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
 >(
-    opts: ArriRequestOpts<TType, TParams>,
+    opts: ArriRequestConfig<TType, TParams>,
     options: SseOptions<TType>,
 ): EventSourceController {
     let url = opts.url;
@@ -65,6 +65,7 @@ export function arriSseRequest<
 
     const eventSource = new EventSourcePlus(url, {
         method: opts.method ?? 'get',
+        fetch: opts.ofetch?.native,
         headers: async () => {
             const headers: Record<string, string> =
                 (await getHeaders(opts.headers)) ?? {};

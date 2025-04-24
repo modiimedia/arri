@@ -30,6 +30,8 @@ export default defineConfig({
                 '../../clients/ts/tsClientPrefixed.g.ts',
             ),
             typePrefix: 'Foo',
+            prettierOptions: prettierConfig,
+            rootService: 'tests',
         }),
         generators.dartClient({
             clientName: 'TestClient',
@@ -45,6 +47,7 @@ export default defineConfig({
                 '../../clients/dart/lib/test_client_prefixed.g.dart',
             ),
             typePrefix: 'Foo',
+            rootService: 'tests',
         }),
         generators.kotlinClient({
             clientName: 'TestClient',
@@ -60,6 +63,7 @@ export default defineConfig({
                 '../../clients/kotlin/src/main/kotlin/TestClientPrefixed.g.kt',
             ),
             typePrefix: 'Foo',
+            rootService: 'tests',
         }),
         generators.rustClient({
             clientName: 'TestClient',
@@ -75,6 +79,7 @@ export default defineConfig({
                 '../../clients/rust/src/test_client_prefixed.g.rs',
             ),
             typePrefix: 'Foo',
+            rootService: 'tests',
         }),
         generators.swiftClient({
             clientName: 'TestClient',
@@ -90,6 +95,7 @@ export default defineConfig({
                 '../../clients/swift/Sources/TestClientPrefixed.g.swift',
             ),
             typePrefix: 'Foo',
+            rootService: 'tests',
         }),
     ],
 });

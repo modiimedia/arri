@@ -7,7 +7,7 @@ export function tsAnyFromSchema(
     context: CodegenContext,
 ): TsProperty {
     const typeName = 'any';
-    const defaultValue = schema.nullable ? 'null' : 'undefined';
+    const defaultValue = schema.isNullable ? 'null' : 'undefined';
     return {
         typeName,
         defaultValue,

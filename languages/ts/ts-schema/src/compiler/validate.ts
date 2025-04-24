@@ -45,6 +45,7 @@ export function createValidationTemplate(
         schemaPath: ``,
         instancePath: '',
         subFunctions,
+        shouldCoerce: undefined,
     });
 
     const subFunctionBodies = Object.keys(subFunctions).map(
@@ -109,7 +110,7 @@ function schemaTemplate(input: TemplateInput): string {
 function booleanTemplate(
     input: TemplateInput<AScalarSchema<'boolean'>>,
 ): string {
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `(${input.val} === null || typeof ${input.val} === 'boolean')`;
     }
     return `typeof ${input.val} === 'boolean'`;
@@ -118,7 +119,7 @@ function booleanTemplate(
 function floatTemplate(
     input: TemplateInput<AScalarSchema<'float32' | 'float64'>>,
 ): string {
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) || ${input.val} === null)`;
     }
     return `(typeof ${input.val} === 'number' && !Number.isNaN(${input.val}))`;
@@ -133,7 +134,7 @@ function intTemplate(
     min: number,
     max: number,
 ): string {
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max}) || ${input.val} === null)`;
     }
     return `(typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max})`;
@@ -146,14 +147,14 @@ function bigIntTemplate(
     const mainTemplate = isUnsigned
         ? `typeof ${input.val} === 'bigint' && ${input.val} >= BigInt("0")`
         : `typeof ${input.val} === 'bigint' && ${input.val} < BigInt("9223372036854775808") && ${input.val} > BigInt("-9223372036854775809")`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `(${mainTemplate}) || ${input.val} === null`;
     }
     return mainTemplate;
 }
 
 function stringTemplate(input: TemplateInput<AScalarSchema<'string'>>): string {
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `(typeof ${input.val} === 'string' || ${input.val} === null)`;
     }
     return `typeof ${input.val} === 'string'`;
@@ -162,7 +163,7 @@ function stringTemplate(input: TemplateInput<AScalarSchema<'string'>>): string {
 function timestampTemplate(
     input: TemplateInput<AScalarSchema<'timestamp'>>,
 ): string {
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((typeof ${input.val} === 'object' && ${input.val} instanceof Date) || ${input.val} === null)`;
     }
     return `typeof ${input.val} === 'object' && ${input.val}  instanceof Date`;
@@ -177,7 +178,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
     } else {
         parts.push(`typeof ${input.val} === 'object' && ${input.val} !== null`);
     }
-    if (input.schema.strict) {
+    if (input.schema.isStrict) {
         const allowedKeys = Object.keys(input.schema.properties);
         for (const key of Object.keys(input.schema.optionalProperties ?? {})) {
             allowedKeys.push(key);
@@ -196,6 +197,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 val: `${input.val}.${key}`,
                 targetVal: '',
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             }),
         );
     }
@@ -209,6 +211,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 val: `${input.val}.${key}`,
                 targetVal: '',
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             parts.push(
                 `(typeof ${input.val}.${key} === 'undefined' || (${template}))`,
@@ -216,7 +219,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         }
     }
     let mainTemplate = parts.join(' && ');
-    const fnName = refFunctionName(input.schema.metadata.id ?? '');
+    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(input) {
@@ -226,7 +229,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         mainTemplate = `${fnName}(${input.val})`;
     }
 
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((${mainTemplate}) || ${input.val} === null)`;
     }
 
@@ -239,7 +242,7 @@ function enumTemplate(
     const enumPart = input.schema.enum
         .map((val) => `${input.val} === "${val}"`)
         .join(' || ');
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((typeof ${input.val} === 'string' && (${enumPart})) || ${input.val} === null)`;
     }
     return `(typeof ${input.val} === 'string' && (${enumPart}))`;
@@ -253,9 +256,10 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         schema: input.schema.elements,
         targetVal: '',
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
 
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((Array.isArray(${input.val}) && ${input.val}.every((item) => ${innerTemplate})) || ${input.val} === null)`;
     }
     return `(Array.isArray(${input.val}) && ${input.val}.every((item) => ${innerTemplate}))`;
@@ -269,9 +273,10 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         val: `${input.val}[key]`,
         targetVal: '',
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((${mainTemplate}) || ${input.val} === null)`;
     }
     return mainTemplate;
@@ -296,13 +301,14 @@ function discriminatorTemplate(
                 discriminatorKey: input.schema.discriminator,
                 discriminatorValue: discriminatorVal,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             }),
         );
     }
     let mainTemplate = `typeof ${input.val} === 'object' && ${
         input.val
     } !== null && (${parts.join(' || ')})`;
-    const fnName = refFunctionName(input.schema.metadata.id ?? '');
+    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
 
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
@@ -313,7 +319,7 @@ function discriminatorTemplate(
         mainTemplate = `${fnName}(${input.val})`;
     }
 
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `((${mainTemplate}) || ${input.val} === null)`;
     }
     return mainTemplate;
@@ -328,7 +334,7 @@ function refTemplate(input: TemplateInput<ARefSchema<any>>) {
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `(${input.val} === null || ${fnName}(${input.val}))`;
     }
     return `${fnName}(${input.val})`;

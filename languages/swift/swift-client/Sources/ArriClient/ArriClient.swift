@@ -424,14 +424,18 @@ extension URLSession {
 //// Server Sent Events ////
 public enum SSEEvent<T: ArriClientModel> {
     case message(SSEMessageEvent<T>)
+    case start
     case ping
     case done
+    case unknown
 
     init(rawEvent: RawSSEEvent) {
-        switch (rawEvent.event) {
-           
+        switch (rawEvent.event) { 
             case "ping":
                 self = .ping
+                break;
+            case "start":
+                self = .start
                 break;
             case "done":
                 self = .done
@@ -443,12 +447,14 @@ public enum SSEEvent<T: ArriClientModel> {
                     retry: rawEvent.retry
                 ))
                 break;
-            default:
+            case "":
                 self = .message(SSEMessageEvent<T>(
                     id: rawEvent.id,
                     data: T.init(JSONString: rawEvent.data),
                     retry: rawEvent.retry
                 ))
+            default:
+                self = .unknown
                 break;
         }
     }
@@ -845,7 +851,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                                 lastEventId = rawEvent.id!
                             }
                             let event = SSEEvent<T>(rawEvent: rawEvent)
-                            switch (event) {                        
+                            switch (event) {    
                                 case .done: 
                                     cancelled = true
                                     self.options.onClose()
@@ -857,8 +863,12 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                                         return
                                     }
                                     break 
+                                case .start:
+                                    break;                    
                                 case .ping:
                                     break 
+                                case .unknown:
+                                    break;
                             }
                         }
                     }

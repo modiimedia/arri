@@ -10,4 +10,5 @@ export interface TemplateInput<TSchema extends Schema = any> {
     discriminatorValue?: string;
     subFunctions: Record<string, string>;
     finalFunctionBody?: string;
+    shouldCoerce: boolean | undefined;
 }

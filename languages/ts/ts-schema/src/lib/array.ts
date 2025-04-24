@@ -1,20 +1,22 @@
 import {
+    createStandardSchemaProperty,
+    hideInvalidProperties,
+} from '../adapters';
+import {
     type AArraySchema,
     type ASchema,
     type ASchemaOptions,
     type InferType,
-    SCHEMA_METADATA,
+    SchemaValidator,
     type ValidationContext,
+    VALIDATOR_KEY,
+    WithAdapters,
 } from '../schemas';
-import {
-    createStandardSchemaProperty,
-    hideInvalidProperties,
-} from '../standardSchema';
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
-): AArraySchema<TInnerSchema> {
+): AArraySchema<TInnerSchema> & WithAdapters<InferType<TInnerSchema>[]> {
     const validateType = (
         input: unknown,
     ): input is InferType<AArraySchema<TInnerSchema>> => {
@@ -26,35 +28,46 @@ export function array<TInnerSchema extends ASchema<any> = any>(
     ): InferType<AArraySchema<TInnerSchema>> | undefined => {
         return parse(schema, input, context, false);
     };
-    const result: AArraySchema<TInnerSchema> = {
+    const validator: SchemaValidator<
+        InferType<AArraySchema<TInnerSchema>>,
+        false
+    > = {
+        output: [] as any,
+        optional: false,
+        parse: parseType,
+        coerce(input, context) {
+            return parse(schema, input, context, true);
+        },
+        validate: validateType,
+        serialize(input, context) {
+            const strParts: string[] = [];
+            for (let i = 0; i < input.length; i++) {
+                const item = input[i];
+                const part = schema[VALIDATOR_KEY].serialize(item, {
+                    instancePath: `${context.instancePath}/${i}`,
+                    schemaPath: `${context.schemaPath}/elements`,
+                    errors: context.errors,
+                    depth: context.depth + 1,
+                    maxDepth: context.maxDepth,
+                    exitOnFirstError: context.exitOnFirstError,
+                });
+                if (!part) {
+                    return undefined;
+                }
+                strParts.push(part);
+            }
+            return `[${strParts.join(',')}]`;
+        },
+    };
+    const result: AArraySchema<TInnerSchema> &
+        WithAdapters<InferType<TInnerSchema>[]> = {
         elements: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             isDeprecated: opts.isDeprecated,
-            [SCHEMA_METADATA]: {
-                output: [] as any,
-                parse: parseType,
-                coerce(input, context) {
-                    return parse(schema, input, context, true);
-                },
-                validate: validateType,
-                serialize(input, context) {
-                    const strParts: string[] = [];
-                    for (let i = 0; i < input.length; i++) {
-                        const item = input[i];
-                        strParts.push(
-                            schema.metadata[SCHEMA_METADATA].serialize(item, {
-                                instancePath: `${context.instancePath}/${i}`,
-                                schemaPath: `${context.schemaPath}/elements`,
-                                errors: context.errors,
-                            }),
-                        );
-                    }
-                    return `[${strParts.join(',')}]`;
-                },
-            },
         },
+        [VALIDATOR_KEY]: validator,
         '~standard': createStandardSchemaProperty(validateType, parseType),
     };
     hideInvalidProperties(result);
@@ -66,7 +79,7 @@ function validate<T>(innerSchema: ASchema<T>, input: unknown): input is T[] {
         return false;
     }
     for (const item of input) {
-        const isValid = innerSchema.metadata[SCHEMA_METADATA].validate(item);
+        const isValid = innerSchema[VALIDATOR_KEY].validate(item);
         if (!isValid) {
             return false;
         }
@@ -77,28 +90,28 @@ function validate<T>(innerSchema: ASchema<T>, input: unknown): input is T[] {
 function parse<T>(
     innerSchema: ASchema<T>,
     input: unknown,
-    data: ValidationContext,
+    context: ValidationContext,
     coerce = false,
 ): T[] | undefined {
     let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === 'string') {
+    if (context.instancePath.length === 0 && typeof input === 'string') {
         try {
             parsedInput = JSON.parse(input);
         } catch (_) {
-            data.errors.push({
-                instancePath: data.instancePath,
-                schemaPath: `${data.schemaPath}/elements`,
-                message: `Error at ${data.instancePath}. Invalid JSON.`,
+            context.errors.push({
+                instancePath: context.instancePath,
+                schemaPath: `${context.schemaPath}/elements`,
+                message: `Error at ${context.instancePath}. Invalid JSON.`,
             });
             return undefined;
         }
     }
     if (!Array.isArray(parsedInput)) {
-        data.errors.push({
-            instancePath: data.instancePath,
-            schemaPath: `${data.schemaPath}/elements`,
+        context.errors.push({
+            instancePath: context.instancePath,
+            schemaPath: `${context.schemaPath}/elements`,
             message: `Error at ${
-                data.instancePath
+                context.instancePath
             }. Expected array. Got ${typeof input}.`,
         });
         return undefined;
@@ -107,34 +120,34 @@ function parse<T>(
     for (let i = 0; i < parsedInput.length; i++) {
         const item = parsedInput[i];
         if (coerce) {
-            const parsedItem = innerSchema.metadata[SCHEMA_METADATA].coerce(
-                item,
-                {
-                    instancePath: `${data.instancePath}/${i}`,
-                    schemaPath: `${data.schemaPath}/elements`,
-                    errors: data.errors,
-                },
-            );
+            const parsedItem = innerSchema[VALIDATOR_KEY].coerce(item, {
+                instancePath: `${context.instancePath}/${i}`,
+                schemaPath: `${context.schemaPath}/elements`,
+                errors: context.errors,
+                depth: context.depth + 1,
+                maxDepth: context.maxDepth,
+                exitOnFirstError: context.exitOnFirstError,
+            });
             // if (data.errors.length) {
             //     return undefined;
             // }
             result.push(parsedItem as any);
         } else {
-            const parsedItem = innerSchema.metadata[SCHEMA_METADATA].parse(
-                item,
-                {
-                    instancePath: `${data.instancePath}/${i}`,
-                    schemaPath: `${data.schemaPath}/elements`,
-                    errors: data.errors,
-                },
-            );
+            const parsedItem = innerSchema[VALIDATOR_KEY].parse(item, {
+                instancePath: `${context.instancePath}/${i}`,
+                schemaPath: `${context.schemaPath}/elements`,
+                errors: context.errors,
+                depth: context.depth + 1,
+                maxDepth: context.maxDepth,
+                exitOnFirstError: context.exitOnFirstError,
+            });
             // if (data.errors.length) {
             //     return undefined;
             // }
             result.push(parsedItem as any);
         }
     }
-    if (data.errors.length) {
+    if (context.errors.length) {
         return undefined;
     }
     return result;

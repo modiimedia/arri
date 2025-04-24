@@ -11,6 +11,7 @@
       }
     },
     "compile": {
+      "dependsOn": ["^compile"],
       "executor": "nx:run-commands",
       "options": {
         "command": "swift build",

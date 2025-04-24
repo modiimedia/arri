@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/client",
-  "version": "0.73.0",
+  "version": "0.79.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -18,7 +18,7 @@
     "@arrirpc/schema": "workspace:*",
     "event-source-plus": "^0.1.8",
     "ofetch": "^1.4.1",
-    "ws": "^8.18.0"
+    "ws": "^8.18.1"
   },
-  "devDependencies": { "@types/ws": "^8.5.14" }
+  "devDependencies": { "@types/ws": "^8.18.1" }
 }

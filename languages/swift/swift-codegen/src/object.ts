@@ -30,7 +30,7 @@ export function swiftObjectFromSchema(
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input}.dictionary != nil {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
@@ -41,7 +41,7 @@ export function swiftObjectFromSchema(
             if (context.isOptional) {
                 return `        ${target} += ${input}!.toJSONString()`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `        if ${input} != nil {
                     ${target} += ${input}!.toJSONString()
                 } else {
@@ -253,6 +253,7 @@ export function swiftObjectFromSchema(
 ${fieldNames.map((field) => `               lhs.${field} == rhs.${field}`).join(' &&\n')}
         }`;
     }
+    const hasProperties = initArgParts.length > 0;
     result.content = `${codeComments(schema)}public ${declaration} ${prefixedTypeName}: ArriClientModel {
 ${fieldNameParts.join('\n')}
     ${initPrefix} init(
@@ -260,7 +261,7 @@ ${initArgParts.join(',\n')}
     ) {
 ${initBodyParts.join('\n')}
     }
-    ${initPrefix} init() {}
+    ${hasProperties ? `${initPrefix} init() {}` : ''}
     ${initPrefix} init(json: JSON) {
 ${initFromJsonParts.join('\n')}
     }

@@ -5,11 +5,11 @@
   "projectType": "library",
   "targets": {
     "benchmark": {
-      "inputs": ["default", "{projectRoot}/benchmark/src"],
+      "inputs": ["default", "{projectRoot}/benchmark/src", "{projectRoot}/src"],
       "outputs": ["{projectRoot}/benchmark/dist"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "jiti buildBenchmarks.ts && node benchmark/dist/_index.cjs",
+        "command": "jiti buildBenchmarks.ts && node benchmark/dist/_index.cjs && jiti addBenchmarksToReadme.ts",
         "cwd": "languages/ts/ts-schema"
       }
     },

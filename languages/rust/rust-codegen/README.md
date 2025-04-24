@@ -6,13 +6,13 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.rustClient({
-            clientName: "MyClient",
-            outputFile: "./some-project/my_client.g.rs",
+            clientName: 'MyClient',
+            outputFile: './some-project/my_client.g.rs',
         }),
     ],
 });
@@ -22,10 +22,11 @@ export default defineConfig({
 
 | Name                  | Descriptions                                                               |
 | --------------------- | -------------------------------------------------------------------------- |
-| clientName            | The named of the generated client struct (Defaults to "Client")            |
 | outputFile (required) | Path to the file that will be created by the generator                     |
+| clientName            | The named of the generated client struct (Defaults to "Client")            |
 | typePrefix            | Add a prefix to the generated struct names                                 |
 | format                | Whether to run `rustfmt` on the generated file or not (Defaults to "true") |
+| rootService           | The root service of the generated client                                   |
 
 ### 2) Install the Rust client library
 
@@ -136,19 +137,19 @@ client
 
 All the generated types will have the following methods implemented
 
--   `from_json_string(String input) -> Self`
--   `from_json(serde_json::Value input) -> Self`
--   `to_json(&Self) -> serde_json::Value`
--   `to_json_string(&Self) -> String`
--   `to_query_params_string(&Self) -> String`
+- `from_json_string(String input) -> Self`
+- `from_json(serde_json::Value input) -> Self`
+- `to_json(&Self) -> serde_json::Value`
+- `to_json_string(&Self) -> String`
+- `to_query_params_string(&Self) -> String`
 
 `serde_json` is used for parsing JSON. However we do not rely on `serde` itself for serializing and deserializing.
 
 The generated types also derive the following traits
 
--   Clone
--   Debug
--   PartialEq
+- Clone
+- Debug
+- PartialEq
 
 # Development
 

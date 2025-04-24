@@ -19,6 +19,7 @@ export default function rustRecordFromSchema(
         instancePath: `${context.instancePath}/value`,
         schemaPath: `${context.schemaPath}/values`,
         generatedTypes: context.generatedTypes,
+        rootService: context.rootService,
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
@@ -29,7 +30,7 @@ export default function rustRecordFromSchema(
         typeId: typeName,
         finalTypeName: typeName,
         defaultValue,
-        isNullable: schema.nullable ?? false,
+        isNullable: schema.isNullable ?? false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {

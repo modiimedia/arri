@@ -6,13 +6,13 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.typescriptClient({
-            clientName: "MyClient",
-            outputFile: "./client/src/myClient.g.ts",
+            clientName: 'MyClient',
+            outputFile: './client/src/myClient.g.ts',
         }),
     ],
 });
@@ -20,11 +20,14 @@ export default defineConfig({
 
 **Options:**
 
-| Name                  | Description                                          |
-| --------------------- | ---------------------------------------------------- |
-| clientName (required) | The name of the generated client                     |
-| outputFile (required) | Path to a file that will be created by the generator |
-| prettierOptions       | Formatting options for the generated code            |
+| Name                  | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| outputFile (required) | Path to a file that will be created by the generator       |
+| clientName            | The name of the generated client                           |
+| typePrefix            | Add a prefix to the generated type names                   |
+| rootService           | Set the root service of the generated client               |
+| prettierOptions       | Formatting options for the generated code                  |
+| rpcGenerators         | Override the default function used for creating procedures |
 
 ### 2) Install the TS client library
 
@@ -44,22 +47,38 @@ pnpm i --save @arrirpc/client
 
 ```ts
 // This will match whatever you put in the arri config
-import { MyClient } from "./myClient.g";
+import { MyClient } from './myClient.g';
 
 const client = new MyClient({
-    baseUrl: "https://example.com",
+    // only required field
+    baseUrl: 'https://example.com',
+
+    // everything below is optional
     headers: () => {
         return {
-            Authorization: "<some-token>",
+            Authorization: '<some-token>',
         };
     },
-    // optional
-    onError: (err) => {
-        // do something
+    onError: (err) => {},
+    options: {
+        retry: 4,
+        retryDelay: 200,
+        retryStatusCodes: [400, 403, 500, 501],
+        onRequest: (ctx) => {},
+        onRequestError: (ctx) => {},
+        onResponse: (ctx) => {},
+        onResponseError: (ctx) => {},
+        signal: undefined, // abortcontroller signal
+        timeout: 200,
     },
 });
 
-await client.myProcedure();
+await client.myProcedure({ foo: 'foo' });
+
+// individual procedures can also override the global request options
+await client.myProcedure({ foo: 'foo' }, { timeout: 400 });
+// be aware that these options are not merged with the global request options so you will have to
+// re-specify every hook if you only want to change one thing
 ```
 
 The root client will be a class containing all of the services and procedures in a single class. If you only need a particular service. You can also import just that service.
@@ -67,13 +86,13 @@ The root client will be a class containing all of the services and procedures in
 For example if we have a some procedures grouped under `"users"` we can import just that service like so.
 
 ```ts
-import { MyClientUsersService } from "./myClient.g";
+import { MyClientUsersService } from './myClient.g';
 
 const usersService = new MyClientUsersService({
-    baseUrl: "https://example.com",
+    baseUrl: 'https://example.com',
     headers: () => {
         return {
-            Authorization: "<some-token>",
+            Authorization: '<some-token>',
         };
     },
 });
@@ -87,14 +106,14 @@ All generated types and serializers/parsers can be imported from the generated c
 
 ```ts
 // import the user type and the user helper
-import { type User, $$User } from "./myClient.g";
+import { type User, $$User } from './myClient.g';
 
 const bob: User = {
     // field
 };
 
 $$User.serialize(bob); // outputs valid JSON
-$$User.parse("<some-json-string>"); // outputs a User
+$$User.parse('<some-json-string>'); // outputs a User
 ```
 
 # Development

@@ -29,7 +29,7 @@ export interface DartProperty {
 }
 
 export function outputIsNullable(schema: Schema, context: CodegenContext) {
-    if (schema.nullable) {
+    if (schema.isNullable) {
         return true;
     }
     if (context.isOptional) {

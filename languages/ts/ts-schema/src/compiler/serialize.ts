@@ -40,6 +40,7 @@ export function createSerializationV2Template(
         outputPrefix: '',
         needsSanitization: [],
         subFunctions,
+        shouldCoerce: undefined,
     };
     const result = template(context);
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
@@ -116,7 +117,7 @@ export function stringTemplate(
     input: SerializeTemplateInput<SchemaFormType>,
 ): string {
     if (input.instancePath.length === 0) {
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             return `if (typeof ${input.val} === 'string') {
                 return ${input.val};
             }
@@ -156,7 +157,7 @@ if (${input.val}.length < 42) {
 } else {
     ${input.targetVal} += JSON.stringify(${input.val});
 }`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
         } else {
@@ -173,7 +174,7 @@ export function booleanTemplate(
         return `return \`\${${input.val}}\`;`;
     }
     const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}\${${input.val}}\`;`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'boolean') {
             ${mainTemplate}
         } else {
@@ -187,7 +188,7 @@ export function timestampTemplate(
     input: SerializeTemplateInput<SchemaFormType>,
 ): string {
     if (input.instancePath.length === 0) {
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             return `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
                 return ${input.val}.toISOString();
             }
@@ -196,7 +197,7 @@ export function timestampTemplate(
         return `return ${input.val}.toISOString();`;
     }
     const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}"\${${input.val}.toISOString()}"\`;`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
             ${mainTemplate}
         } else {
@@ -210,7 +211,7 @@ export function numberTemplate(
     input: SerializeTemplateInput<SchemaFormType>,
 ): string {
     if (input.instancePath.length === 0) {
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
                 return \`\${${input.val}}\`;
             }
@@ -223,7 +224,7 @@ export function numberTemplate(
         throw new Error("Expected number at ${input.instancePath} got NaN");
     }
     ${input.targetVal} += \`${input.outputPrefix}\${${input.val}}\`;`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
             ${mainTemplate}
         } else {
@@ -237,7 +238,7 @@ export function bigIntTemplate(
     input: SerializeTemplateInput<SchemaFormType>,
 ): string {
     if (input.instancePath.length === 0) {
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             return `if (typeof ${input.val} === 'bigint') {
                 return ${input.val}.toString();
             }
@@ -246,7 +247,7 @@ export function bigIntTemplate(
         return `return ${input.val}.toString();`;
     }
     const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}"\${${input.val}.toString()}"\`;`;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'bigint') {
             ${mainTemplate}
         } else {
@@ -260,7 +261,7 @@ export function enumTemplate(
     input: SerializeTemplateInput<SchemaFormEnum>,
 ): string {
     if (input.instancePath.length === 0) {
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             return `if (typeof ${input.val} === 'string') {
                 return ${input.val};
             }
@@ -269,7 +270,7 @@ export function enumTemplate(
         return `return ${input.val};`;
     }
     const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}"\${${input.val}}"\``;
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
         } else {
@@ -313,6 +314,7 @@ export function objectTemplate(
             outputPrefix: includeComma ? `,"${key}":` : `"${key}":`,
             needsSanitization: input.needsSanitization,
             subFunctions: input.subFunctions,
+            shouldCoerce: undefined,
         });
         templateParts.push(innerTemplate);
     }
@@ -345,6 +347,7 @@ export function objectTemplate(
                 outputPrefix: `"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             const innerTemplateWithComma = template({
                 schema: optionalPropSchema,
@@ -355,6 +358,7 @@ export function objectTemplate(
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
                 if (${hasFieldsVar}) {
@@ -382,6 +386,7 @@ export function objectTemplate(
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
                 subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
             });
             const completeInnerTemplate = `if (typeof ${innerVal} !== 'undefined') {
                 ${innerTemplate}
@@ -400,7 +405,7 @@ export function objectTemplate(
         }
         mainTemplate = `${fnName}(${input.val});`;
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${input.targetVal} += '${input.outputPrefix}';
             ${mainTemplate.split('___val___').join(input.val)}
@@ -437,6 +442,7 @@ export function arrayTemplate(
         outputPrefix: '',
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
         const ${itemVarName} = ${input.val}[i];
@@ -447,7 +453,7 @@ export function arrayTemplate(
     }`);
     templateParts.push(`${input.targetVal} += ']';`);
     const mainTemplate = templateParts.join('\n');
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (Array.isArray(${input.val})) {
             ${mainTemplate}
         } else {
@@ -476,6 +482,7 @@ export function recordTemplate(
         outputPrefix: '',
         needsSanitization: input.needsSanitization,
         subFunctions: input.subFunctions,
+        shouldCoerce: undefined,
     });
     templateParts.push(`for (let i = 0; i < ${keysVarName}.length; i++) {
         const key = ${keysVarName}[i];
@@ -518,7 +525,7 @@ export function recordTemplate(
     }`);
     templateParts.push(`${input.targetVal} += '}';`);
     const mainTemplate = templateParts.join('\n');
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
@@ -548,6 +555,7 @@ function discriminatorTemplate(
             outputPrefix: input.outputPrefix,
             needsSanitization: input.needsSanitization,
             subFunctions: input.subFunctions,
+            shouldCoerce: undefined,
         });
         templateParts.push(`case '${val}': {
             ${innerTemplate}
@@ -566,7 +574,7 @@ function discriminatorTemplate(
         mainTemplate = `${fnName}(${input.val});`;
     }
 
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate.split(inputPlaceholder).join(input.val)}
         } else {
@@ -583,7 +591,7 @@ export function anyTemplate(
         const mainTemplate = `if (typeof ${input.val} !== 'undefined') {
             ${input.targetVal} += '${input.outputPrefix}' + JSON.stringify(${input.val});
         }`;
-        if (input.schema.nullable) {
+        if (input.schema.isNullable) {
             return `if (${input.val} === null) {
                 ${input.targetVal} += '${input.outputPrefix}null';
             } else {
@@ -608,7 +616,7 @@ export function refTemplate(
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }
-    if (input.schema.nullable) {
+    if (input.schema.isNullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} += '${input.outputPrefix}null';
         } else {

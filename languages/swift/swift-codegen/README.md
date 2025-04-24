@@ -1,18 +1,20 @@
 # Arri Swift Codegen
 
+_Please note: The generated code does not yet support `swift-tools-version 6` or greater. Please track the status of this issue [here](https://github.com/modiimedia/arri/issues/167). In the meantime please set your `swift-tools-version` to `5.10` or lower._
+
 ## Setup
 
 ### 1) Add the Swift client generator to your arri config
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators } from 'arri';
 
 export default defineConfig({
     generators: [
         generators.swiftClient({
-            clientName: "MyClient",
-            outputFile: "./client/Sources/MyClient.g.swift",
+            clientName: 'MyClient',
+            outputFile: './client/Sources/MyClient.g.swift',
         }),
     ],
 });
@@ -22,9 +24,10 @@ export default defineConfig({
 
 | Name                  | Description                                            |
 | --------------------- | ------------------------------------------------------ |
-| clientName (required) | The name of the generated client                       |
 | outputFile (required) | Path to the file that will be created by the generator |
+| clientName            | The name of the generated client                       |
 | typePrefix            | Add a prefix to all of the generated types             |
+| rootService           | The root service of the generated client               |
 
 ### 2) Install the Swift client library
 

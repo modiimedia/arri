@@ -2,7 +2,7 @@ import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import * as a from './_namespace';
 
-describe('nullable', () => {
+describe('nullable()', () => {
     describe('type inference', () => {
         it('infers scalar types', () => {
             const NullableString = a.nullable(a.string());
@@ -103,9 +103,8 @@ describe('nullable', () => {
         });
     });
     describe('parsing', () => {
-        const parseNum = (input: unknown) => a.safeParse(NullableNum, input);
-        const parseObject = (input: unknown) =>
-            a.safeParse(NullableObject, input);
+        const parseNum = (input: unknown) => a.parse(NullableNum, input);
+        const parseObject = (input: unknown) => a.parse(NullableObject, input);
         it('accepts good input', () => {
             expect(parseNum('1').success);
             expect(parseNum(null).success);
@@ -127,13 +126,13 @@ describe('nullable', () => {
         });
         it('rejects bad input', () => {
             const numResult = parseNum('hello world');
-            expect(!numResult.success && numResult.error.errors.length > 0);
+            expect(!numResult.success && numResult.errors.length > 0);
             const objResult = parseObject({
                 id: '12355',
                 name: undefined,
                 createdAt: new Date(),
             });
-            expect(!objResult.success && objResult.error.errors.length > 0);
+            expect(!objResult.success && objResult.errors.length > 0);
         });
     });
     describe('standard-schema support', () => {
@@ -157,7 +156,7 @@ describe('nullable', () => {
         const result = JSON.parse(JSON.stringify(a.nullable(a.boolean())));
         expect(result).toStrictEqual({
             type: 'boolean',
-            nullable: true,
+            isNullable: true,
             metadata: {},
         });
     });
@@ -180,7 +179,6 @@ describe('optional()', () => {
             assertType<Schema1>({
                 id: '',
                 name: 'john',
-                tags: undefined,
             });
         });
     });
@@ -238,13 +236,13 @@ describe('clone()', () => {
         const ClonedStringSchema = a.clone(StringSchema);
         type ClonedStringSchema = a.infer<typeof ClonedStringSchema>;
         assertType<ClonedStringSchema>('hello world');
-        expect(ClonedStringSchema.metadata.id).toBe(undefined);
+        expect(ClonedStringSchema.metadata?.id).toBe(undefined);
         const ModifiedStringSchema = a.clone(StringSchema, {
             id: 'cloned_string_schema',
         });
         type ModifiedStringSchema = a.infer<typeof ModifiedStringSchema>;
         assertType<ModifiedStringSchema>('hello world');
-        expect(ModifiedStringSchema.metadata.id).toBe('cloned_string_schema');
+        expect(ModifiedStringSchema.metadata?.id).toBe('cloned_string_schema');
     });
 
     describe('standard-schema support', () => {
@@ -269,5 +267,66 @@ describe('clone()', () => {
             type: 'boolean',
             metadata: {},
         });
+    });
+});
+
+describe('undefinable()', () => {
+    const ObjectSchema = a.object({
+        foo: a.string(),
+        bar: a.undefinable(a.boolean()),
+        baz: a.number(),
+    });
+    type ObjectSchema = a.infer<typeof ObjectSchema>;
+    const ObjectSchemaGoodInputs: ObjectSchema[] = [
+        {
+            foo: '',
+            bar: undefined,
+            baz: 0,
+        },
+        {
+            foo: '',
+            bar: true,
+            baz: 1,
+        },
+    ];
+    const ObjectSchemaBadInputs = [
+        {
+            foo: '',
+            bar: null,
+            baz: 0,
+        },
+        {
+            foo: '',
+            bar: 'true',
+            baz: 1,
+        },
+    ];
+
+    const ArraySchema = a.array(a.undefinable(a.number()));
+    type ArraySchema = a.infer<typeof ArraySchema>;
+
+    it('infers undefinable properties', () => {
+        assertType<ObjectSchema>({
+            foo: '',
+            bar: undefined,
+            baz: 0,
+        });
+        assertType<ObjectSchema>({
+            foo: '',
+            bar: true,
+            baz: 0,
+        });
+        assertType<ArraySchema>([1, 2, undefined]);
+    });
+
+    test('validation', () => {
+        for (const input of ObjectSchemaGoodInputs) {
+            expect(a.validate(ObjectSchema, input)).toBe(true);
+            expect(a.parse(ObjectSchema, input).success).toBe(true);
+        }
+        for (const input of ObjectSchemaBadInputs) {
+            expect(a.validate(ObjectSchema, input)).toBe(false);
+            expect(a.parse(ObjectSchema, input).success).toBe(false);
+        }
     });
 });

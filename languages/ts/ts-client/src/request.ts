@@ -1,11 +1,25 @@
 import { serializeSmallString } from '@arrirpc/schema';
 import { EventSourcePlusOptions, type HttpMethod } from 'event-source-plus';
-import { FetchError, ofetch } from 'ofetch';
+import { $Fetch, FetchError, FetchOptions, ofetch } from 'ofetch';
 
 import { ArriErrorInstance, isArriError } from './errors';
 import { getHeaders } from './utils';
 
-export interface ArriRequestOpts<
+export { type $Fetch, createFetch, type Fetch, ofetch } from 'ofetch';
+
+export interface ArriRequestOptions {
+    retry?: FetchOptions['retry'];
+    retryDelay?: FetchOptions['retryDelay'];
+    retryStatusCodes?: FetchOptions['retryStatusCodes'];
+    onRequest?: FetchOptions['onRequest'];
+    onRequestError?: FetchOptions['onRequestError'];
+    onResponse?: FetchOptions['onResponse'];
+    onResponseError?: FetchOptions['onResponseError'];
+    timeout?: FetchOptions['timeout'];
+    signal?: FetchOptions['signal'];
+}
+
+export interface ArriRequestConfig<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
 > {
@@ -16,43 +30,51 @@ export interface ArriRequestOpts<
     responseFromJson: (input: Record<string, unknown>) => TType;
     responseFromString: (input: string) => TType;
     onError?: (err: unknown) => void;
+    /**
+     * Override the default ofetch implementation
+     */
+    ofetch?: $Fetch;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
     clientVersion: string;
+    options?: ArriRequestOptions;
 }
 
 export async function arriRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
->(opts: ArriRequestOpts<TType, TParams>): Promise<TType> {
-    let url = opts.url;
+>(config: ArriRequestConfig<TType, TParams>): Promise<TType> {
+    let url = config.url;
     let body: undefined | string;
     let contentType: undefined | string;
-    switch (opts.method) {
+    switch (config.method) {
         case 'get':
         case 'head':
-            if (opts.params && typeof opts.params === 'object') {
-                url = `${opts.url}?${opts.serializer(opts.params)}`;
+            if (config.params && typeof config.params === 'object') {
+                url = `${config.url}?${config.serializer(config.params)}`;
             }
             break;
         default:
-            if (opts.params && typeof opts.params === 'object') {
-                body = opts.serializer(opts.params);
+            if (config.params && typeof config.params === 'object') {
+                body = config.serializer(config.params);
                 contentType = 'application/json';
             }
             break;
     }
     try {
-        const headers = (await getHeaders(opts.headers)) ?? {};
+        const headers = (await getHeaders(config.headers)) ?? {};
         if (contentType) headers['Content-Type'] = contentType;
-        if (opts.clientVersion) headers['client-version'] = opts.clientVersion;
-        const result = await ofetch(url, {
-            method: opts.method,
+        if (config.clientVersion)
+            headers['client-version'] = config.clientVersion;
+        const fetchInstance = config.ofetch ?? ofetch;
+        const result = await fetchInstance(url, {
+            method: config.method,
             body,
             headers,
+            ...(config.options ?? {}),
         });
-        return opts.responseFromJson(result);
+        return config.responseFromJson(result);
     } catch (err) {
         const error = err as any as FetchError;
         let arriError: ArriErrorInstance;
@@ -69,7 +91,7 @@ export async function arriRequest<
                 stack: error.stack,
             });
         }
-        if (opts.onError) opts.onError(arriError);
+        if (config.onError) config.onError(arriError);
         throw arriError;
     }
 }
@@ -77,9 +99,9 @@ export async function arriRequest<
 export async function arriSafeRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
->(opts: ArriRequestOpts<TType, TParams>): Promise<SafeResponse<TType>> {
+>(config: ArriRequestConfig<TType, TParams>): Promise<SafeResponse<TType>> {
     try {
-        const result = await arriRequest<TType, TParams>(opts);
+        const result = await arriRequest<TType, TParams>(config);
         return {
             success: true,
             value: result,
@@ -106,7 +128,7 @@ export async function arriSafeRequest<
             success: false,
             error: new ArriErrorInstance({
                 code: 500,
-                message: `Unknown error connecting to ${opts.url}`,
+                message: `Unknown error connecting to ${config.url}`,
                 data: err,
             }),
         };

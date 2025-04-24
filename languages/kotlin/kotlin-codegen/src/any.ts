@@ -24,7 +24,7 @@ export function kotlinAnyFromSchema(
                     else -> ${input} 
                 }`;
             }
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `when (${input}) {
                     JsonNull -> null
                     null -> null
@@ -37,7 +37,7 @@ export function kotlinAnyFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `${target} += when (${input}) {
                     null -> "null"
                     else -> JsonInstance.encodeToString(${input})

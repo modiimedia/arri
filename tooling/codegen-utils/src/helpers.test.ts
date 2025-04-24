@@ -1,9 +1,11 @@
 import {
+    AppDefinition,
     removeDisallowedChars,
     type RpcDefinition,
     setNestedObjectProperty,
     stringStartsWithNumber,
     unflattenObject,
+    unflattenProcedures,
 } from './index';
 
 describe('unflattenObject()', () => {
@@ -95,6 +97,74 @@ describe('unflattenObject()', () => {
                 },
             }),
         );
+    });
+});
+
+describe('unflatten procedures', () => {
+    const procedures: AppDefinition['procedures'] = {
+        'users.getUser': {
+            transport: 'http',
+            path: '/users/get-user',
+            method: 'get',
+            params: 'GetUserParams',
+            response: 'User',
+        },
+        'users.updateUser': {
+            transport: 'http',
+            path: '/users/update-user',
+            method: 'post',
+            params: 'UpdateUserParams',
+            response: 'User',
+        },
+        'posts.getPost': {
+            transport: 'http',
+            path: '/posts/get-posts',
+            method: 'get',
+            params: 'GetPostParams',
+            response: 'Post',
+        },
+    };
+    test('without root service', () => {
+        const result = unflattenProcedures(procedures);
+        expect(result).toStrictEqual({
+            users: {
+                getUser: {
+                    transport: 'http',
+                    path: '/users/get-user',
+                    method: 'get',
+                    params: 'GetUserParams',
+                    response: 'User',
+                },
+                updateUser: {
+                    transport: 'http',
+                    path: '/users/update-user',
+                    method: 'post',
+                    params: 'UpdateUserParams',
+                    response: 'User',
+                },
+            },
+            posts: {
+                getPost: {
+                    transport: 'http',
+                    path: '/posts/get-posts',
+                    method: 'get',
+                    params: 'GetPostParams',
+                    response: 'Post',
+                },
+            },
+        });
+    });
+    test('with root service', () => {
+        const result = unflattenProcedures(procedures, 'posts');
+        expect(result).toStrictEqual({
+            getPost: {
+                transport: 'http',
+                path: '/posts/get-posts',
+                method: 'get',
+                params: 'GetPostParams',
+                response: 'Post',
+            },
+        });
     });
 });
 

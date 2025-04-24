@@ -21,15 +21,15 @@ export function tsRecordFromSchema(
         rpcGenerators: context.rpcGenerators,
     });
     const typeName = `Record<string, ${innerType.typeName}>`;
-    const defaultValue = schema.nullable ? 'null' : '{}';
+    const defaultValue = schema.isNullable ? 'null' : '{}';
     return {
-        typeName: schema.nullable ? `${typeName} | null` : typeName,
+        typeName: schema.isNullable ? `${typeName} | null` : typeName,
         defaultValue,
         validationTemplate(input) {
             const mainPart = `isObject(${input}) && Object.values(${input}).every(
                 (_value) => ${innerType.validationTemplate('_value')},
             )`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `((${mainPart}) || ${input} === null)`;
             }
             return mainPart;
@@ -48,7 +48,7 @@ export function tsRecordFromSchema(
         },
         toJsonTemplate(input, target, key) {
             const countVal = `_${validVarName(key)}PropertyCount`;
-            if (schema.nullable) {
+            if (schema.isNullable) {
                 return `if (${input} !== null) {
                     ${target} += '{';
                     let ${countVal} = 0;
