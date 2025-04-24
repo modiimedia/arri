@@ -28,7 +28,7 @@ func GetPackages(rootDir string) (PackageMap, error) {
 		if !slices.Contains(dirs, d.Name()) {
 			dirs = append(dirs, d.Name())
 		}
-		fmt.Println("DIR_ENTRY", d.Name())
+		// fmt.Println("DIR_ENTRY", d.Name())
 		return nil
 	})
 	result := map[string]string{}

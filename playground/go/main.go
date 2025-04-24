@@ -1,7 +1,6 @@
 package main
 
 import (
-	"arri_go_playground/internalpck"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,7 +16,6 @@ func main() {
 		},
 	}, arri.CreateDefaultEvent)
 	arri.Rpc(&app, SayHello, arri.RpcOptions{})
-	arri.RegisterDef(&app, internalpck.User{}, arri.DefOptions{})
 	err := app.Run(arri.RunOptions{})
 	if err != nil {
 		log.Fatal(err)
