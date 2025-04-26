@@ -1,4 +1,5 @@
 import { EventSourceController } from 'event-source-plus';
+import { IncomingMessage } from 'http';
 import ws from 'websocket';
 
 import { ArriErrorInstance } from './errors';
@@ -23,7 +24,7 @@ export class WsRpcDispatcher implements RpcDispatcher {
     async setupConnection() {
         if (this.connection?.connected) return;
         return new Promise((res, rej) => {
-            this.client.on('connect', (connection) => {
+            const onConnection = (connection: ws.connection) => {
                 this.connection = connection;
                 connection.on('error', (_err) => {});
                 connection.on('close', (_code, _desc) => {});
@@ -47,14 +48,27 @@ export class WsRpcDispatcher implements RpcDispatcher {
                     if (!handler) return;
                     return handler(parsedMsg);
                 });
+                this.client.removeListener('connect', onConnection);
+                this.client.removeListener('connectFailed', onConnectionFailed);
+                this.client.removeListener('httpResponse', onHttpResponse);
                 res(undefined);
-            });
-            this.client.on('connectFailed', (err) => {
+            };
+            const onConnectionFailed = (err: Error) => {
+                this.client.removeListener('connect', onConnection);
+                this.client.removeListener('connectFailed', onConnectionFailed);
+                this.client.removeListener('httpResponse', onHttpResponse);
                 rej(err);
-            });
-            this.client.on('httpResponse', (res, client) => {
+            };
+            const onHttpResponse = (
+                res: IncomingMessage,
+                client: ws.client,
+            ) => {
                 console.log(res, client);
-            });
+            };
+            this.client
+                .on('connect', onConnection)
+                .on('connectFailed', onConnectionFailed)
+                .on('httpResponse', onHttpResponse);
         });
     }
 
