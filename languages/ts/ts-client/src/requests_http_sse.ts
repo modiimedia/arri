@@ -8,8 +8,7 @@ import {
 } from 'event-source-plus';
 
 import { ArriErrorInstance } from './errors';
-import { $Fetch, HeaderInput } from './requests';
-import { getHeaders } from './utils';
+import { $Fetch, getHeaders, HeaderInput } from './requests';
 
 export interface SseEvent<TData = string> {
     id?: string;

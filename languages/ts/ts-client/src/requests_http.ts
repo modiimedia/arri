@@ -8,9 +8,14 @@ import {
 } from 'ofetch';
 
 import { ArriErrorInstance, isArriError } from './errors';
-import { HeaderInput, RpcDispatcher, RpcRequest } from './requests';
-import { arriSseRequest, SseOptions } from './sse';
-import { getHeaders } from './utils';
+import {
+    getHeaders,
+    HeaderInput,
+    RpcDispatcher,
+    RpcRequest,
+    RpcRequestValidator,
+} from './requests';
+import { arriSseRequest, SseOptions } from './requests_http_sse';
 
 export interface HttpRpcRequestOptions {
     retry?: FetchOptions['retry'];
@@ -27,7 +32,6 @@ export interface HttpRpcRequestOptions {
 export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
     transport: string = 'http';
     baseUrl: string;
-    headers: HeaderInput;
     ofetch: $Fetch;
     options?: HttpRpcRequestOptions;
 
@@ -41,15 +45,16 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
     ) {
         this.options = config?.options;
         this.baseUrl = config?.baseUrl ?? '';
-        this.headers = config?.headers ?? {};
         this.ofetch = config?.fetch
             ? createFetch({ fetch: config.fetch })
             : ofetch;
     }
 
-    async handleRpc<TParams, TOutput>(
-        req: RpcRequest<TParams, TOutput, HttpRpcRequestOptions>,
-    ): Promise<TOutput> {
+    async handleRpc<TParams, TResponse>(
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TResponse>,
+        options: HttpRpcRequestOptions,
+    ): Promise<TResponse> {
         let url = this.baseUrl + req.path;
         let body: undefined | string;
         let contentType: undefined | string;
@@ -58,19 +63,19 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
             case 'GET':
             case 'head':
             case 'HEAD':
-                if (req.params && typeof req.params === 'object') {
-                    url = `${url}?${req.paramValidator.toUrlQueryString(req.params)}`;
+                if (req.data && typeof req.data === 'object') {
+                    url = `${url}?${validator.params.toUrlQueryString(req.data)}`;
                 }
                 break;
             default:
-                if (req.params && typeof req.params === 'object') {
-                    body = req.paramValidator.toJsonString(req.params);
+                if (req.data && typeof req.data === 'object') {
+                    body = validator.params.toJsonString(req.data);
                     contentType = 'application/json';
                 }
                 break;
         }
         try {
-            const headers = (await getHeaders(this.headers)) ?? {};
+            const headers = await getHeaders(req.customHeaders);
             if (contentType) headers['Content-Type'] = contentType;
             if (req.clientVersion)
                 headers['client-version'] = req.clientVersion;
@@ -78,23 +83,21 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
                 method: req.method?.toUpperCase() ?? 'POST',
                 body,
                 headers,
-                onRequest: req.options?.onRequest ?? this.options?.onRequest,
+                onRequest: options?.onRequest ?? this.options?.onRequest,
                 onRequestError:
-                    req.options?.onRequestError ?? this.options?.onRequestError,
-                onResponse: req.options?.onResponse ?? this.options?.onResponse,
+                    options?.onRequestError ?? this.options?.onRequestError,
+                onResponse: options?.onResponse ?? this.options?.onResponse,
                 onResponseError:
-                    req.options?.onResponseError ??
-                    this.options?.onResponseError,
+                    options?.onResponseError ?? this.options?.onResponseError,
                 responseType: 'text',
-                retry: req.options?.retry ?? this.options?.retry,
-                retryDelay: req.options?.retryDelay ?? this.options?.retryDelay,
+                retry: options?.retry ?? this.options?.retry,
+                retryDelay: options?.retryDelay ?? this.options?.retryDelay,
                 retryStatusCodes:
-                    req.options?.retryStatusCodes ??
-                    this.options?.retryStatusCodes,
-                signal: req.options?.signal ?? this.options?.signal,
-                timeout: req.options?.timeout ?? this.options?.timeout,
+                    options?.retryStatusCodes ?? this.options?.retryStatusCodes,
+                signal: options?.signal ?? this.options?.signal,
+                timeout: options?.timeout ?? this.options?.timeout,
             });
-            return req.responseValidator.fromJsonString(response);
+            return validator.response.fromJsonString(response);
         } catch (err) {
             const error = err as any as FetchError;
             let arriError: ArriErrorInstance;
@@ -113,14 +116,15 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
                     stack: error.stack,
                 });
             }
-            if (req.onError) req.onError(arriError);
+            if (validator.onError) validator.onError(arriError);
             throw arriError;
         }
     }
 
-    handleEventStreamRpc<TParams, TOutput>(
-        req: RpcRequest<TParams, TOutput, HttpRpcRequestOptions>,
-        hooks?: SseOptions<TOutput>,
+    handleEventStreamRpc<TParams, TResponse>(
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TResponse>,
+        options?: SseOptions<TResponse>,
     ) {
         let url = this.baseUrl + req.path;
         let body: string | undefined;
@@ -129,28 +133,28 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
             case 'GET':
             case 'head':
             case 'HEAD':
-                if (req.params) {
-                    url += `?${req.paramValidator.toUrlQueryString(req.params)}`;
+                if (req.data) {
+                    url += `?${validator.params.toUrlQueryString(req.data)}`;
                 }
                 break;
             default:
-                if (req.params) {
-                    body = req.paramValidator.toJsonString(req.params);
+                if (req.data) {
+                    body = validator.params.toJsonString(req.data);
                 }
                 break;
         }
         return arriSseRequest(
             {
                 url,
-                headers: this.headers,
+                headers: req.customHeaders,
                 clientVersion: req.clientVersion,
                 ofetch: this.ofetch,
                 method: (req.method as any) ?? 'post',
                 body,
-                responseDecoder: req.responseValidator.fromJsonString,
-                onError: req.onError,
+                responseDecoder: validator.response.fromJsonString,
+                onError: validator.onError,
             },
-            hooks ?? {},
+            options ?? {},
         );
     }
 }

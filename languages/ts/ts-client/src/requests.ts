@@ -1,37 +1,68 @@
 import { serializeSmallString } from '@arrirpc/schema';
-import { EventSourceController } from 'event-source-plus';
-
-import { ArriErrorInstance } from './errors';
-import { SseOptions } from './sse';
-
 export { type $Fetch, createFetch, type Fetch, ofetch } from 'ofetch';
 
-export interface RpcRequest<TParams, TOutput, TOptions> {
-    path: string;
-    clientVersion: string;
-    method?: string;
-    params?: TParams;
-    paramValidator: ArriModelValidator<TParams>;
-    responseValidator: ArriModelValidator<TOutput>;
+import { ArriErrorInstance } from './errors';
+
+export interface RpcRequestValidator<TParams, TResponse> {
+    params: ArriModelValidator<TParams>;
+    response: ArriModelValidator<TResponse>;
     onError?: (err: unknown) => void | Promise<void>;
-    options?: TOptions;
 }
 
-export interface RpcDispatcher<TOptions = unknown> {
+export interface RpcRawRequest {
+    procedure: string;
+    reqId?: string;
+    path: string;
+    method?: string;
+    clientVersion?: string;
+    customHeaders?: HeaderInput;
+    data?: string | Uint8Array;
+}
+
+export interface RpcRawResponse {
+    procedure: string;
+    reqId?: string;
+    path: string;
+    method?: string;
+    success: boolean;
+    data?: string | Uint8Array;
+}
+
+export interface RpcRequest<TParams> extends Omit<RpcRawRequest, 'data'> {
+    data: TParams;
+}
+
+export interface RpcResponse<TResponse> extends Omit<RpcRawResponse, 'data'> {
+    data: TResponse;
+}
+
+export interface RpcDispatcher<
+    TOptions = unknown,
+    TEventStreamOptions = unknown,
+> {
     transport: string;
     handleRpc<TParams, TOutput>(
-        req: RpcRequest<TParams, TOutput, TOptions>,
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TOutput>,
+        options: TOptions,
     ): Promise<TOutput> | TOutput;
     handleEventStreamRpc<TParams, TOutput>(
-        req: RpcRequest<TParams, TOutput, TOptions>,
-        hooks?: SseOptions<TOutput>,
-    ): EventSourceController;
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TOutput>,
+        hooks: TEventStreamOptions,
+    ): EventStreamController;
     readonly options?: TOptions;
+    readonly eventStreamOptions?: TEventStreamOptions;
 }
 
-export type InferRequestHandlerOptions<T extends RpcDispatcher> = NonNullable<
-    T['options']
->;
+export type InferRpcDispatcherOptions<T extends RpcDispatcher<any, any>> =
+    NonNullable<T['options']>;
+export type InferRpcDispatcherEventStreamOptions<
+    T extends RpcDispatcher<any, any>,
+> = NonNullable<T['eventStreamOptions']>;
+export interface EventStreamController {
+    abort(): void;
+}
 
 export type TransportMap = Record<string, RpcDispatcher>;
 
@@ -101,4 +132,17 @@ export const UINT64_MAX = BigInt('18446744073709551615');
 
 export function isObject(input: unknown): input is Record<string, unknown> {
     return typeof input === 'object' && input !== null;
+}
+
+export async function getHeaders(
+    input?: HeaderInput,
+): Promise<Record<string, string>> {
+    if (typeof input === 'function') {
+        const result = input();
+        if ('then' in result && typeof result.then === 'function') {
+            return result.then((data) => data as Record<string, string>);
+        }
+        return result as Record<string, string>;
+    }
+    return (input ?? {}) as Record<string, string>;
 }

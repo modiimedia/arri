@@ -3,16 +3,22 @@ import { IncomingMessage } from 'http';
 import ws from 'websocket';
 
 import { ArriErrorInstance } from './errors';
-import { RpcDispatcher, RpcRequest } from './requests';
-import { SseOptions } from './sse';
+import {
+    getHeaders,
+    RpcDispatcher,
+    RpcRawResponse,
+    RpcRequest,
+    RpcRequestValidator,
+} from './requests';
+import { SseOptions } from './requests_http_sse';
 
-export class WsRpcDispatcher implements RpcDispatcher {
+export class WsRpcDispatcher implements RpcDispatcher<undefined, any> {
     private readonly client: ws.client;
     private connection: ws.connection | undefined;
     private readonly connectionUrl: string;
     private reqCount = 0;
 
-    private messageHandlers: Map<string, (msg: WebsocketServerMessage) => any> =
+    private responseHandlers: Map<string, (msg: RpcRawResponse) => any> =
         new Map();
 
     constructor(options?: { connectionUrl: string }) {
@@ -29,12 +35,10 @@ export class WsRpcDispatcher implements RpcDispatcher {
                 connection.on('error', (_err) => {});
                 connection.on('close', (_code, _desc) => {});
                 connection.on('message', (msg) => {
-                    let parsedMsg: WebsocketServerMessage | undefined;
+                    let parsedMsg: RpcRawResponse | undefined;
                     switch (msg.type) {
                         case 'utf8':
-                            parsedMsg = websocketServerMessageFromString(
-                                msg.utf8Data,
-                            );
+                            parsedMsg = decodeWsRpcRequest(msg.utf8Data);
                             break;
                         case 'binary':
                             throw new Error(
@@ -42,9 +46,8 @@ export class WsRpcDispatcher implements RpcDispatcher {
                             );
                     }
                     if (!parsedMsg) return;
-                    const handler = this.messageHandlers.get(
-                        parsedMsg.metadata.id,
-                    );
+                    if (!parsedMsg.reqId) return;
+                    const handler = this.responseHandlers.get(parsedMsg.reqId);
                     if (!handler) return;
                     return handler(parsedMsg);
                 });
@@ -72,78 +75,178 @@ export class WsRpcDispatcher implements RpcDispatcher {
         });
     }
 
-    encodeMsg(msg: WebsocketClientMessage) {
-        const result = `{"${msg.metadata.id}":"${msg.metadata.id}","path":"${msg.metadata.path}","clientVersion":"${msg.metadata['clientVersion']}"}`;
-        if (!msg.data) return `${result}\n\n`;
-        return `${result}\n${msg.data}\n\n`;
-    }
-
     transport: string = 'ws';
 
-    async handleRpc<TParams, TOutput>(
-        req: RpcRequest<TParams, TOutput, unknown>,
-    ): Promise<TOutput> {
+    async handleRpc<TParams, TResponse>(
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TResponse>,
+        _: undefined,
+    ): Promise<TResponse> {
         this.reqCount++;
         const reqId = `${this.reqCount}`;
         await this.setupConnection();
-        const msgPayload = this.encodeMsg({
-            metadata: {
-                id: reqId,
-                path: req.path,
-                clientVersion: req.clientVersion,
-            },
-            data: req.params
-                ? req.paramValidator.toJsonString(req.params!)
-                : undefined,
-        });
+        const msgPayload = encodeWsRpcRequest(
+            req,
+            validator.params.toJsonString,
+        );
         if (!this.connection)
             throw new Error("Connection hasn't been established");
         return new Promise((res, rej) => {
-            this.messageHandlers.set(reqId, (msg: WebsocketServerMessage) => {
-                this.messageHandlers.delete(reqId);
-                if (!msg.metadata.success) {
+            this.responseHandlers.set(reqId, (msg) => {
+                this.responseHandlers.delete(reqId);
+                if (!msg.success) {
                     rej(ArriErrorInstance.fromJson(msg.data));
                     return;
                 }
-                const parsedMsg = req.responseValidator.fromJsonString(
-                    msg.data,
+                if (!msg.data) {
+                    res(undefined as any);
+                    return;
+                }
+                if (typeof msg.data === 'string') {
+                    res(validator.response.fromJsonString(msg.data));
+                    return;
+                }
+                const parsedData = validator.response.fromJsonString(
+                    new TextDecoder().decode(msg.data),
                 );
-                res(parsedMsg);
+                res(parsedData);
             });
             this.connection!.send(msgPayload);
         });
     }
 
     handleEventStreamRpc<TParams, TOutput>(
-        _req: RpcRequest<TParams, TOutput, unknown>,
+        _req: RpcRequest<TParams>,
+        _validator: RpcRequestValidator<TParams, TOutput>,
         _hooks?: SseOptions<TOutput> | undefined,
     ): EventSourceController {
         throw new Error('Method not implemented.');
     }
-    options?: unknown;
+    options?: any;
 }
 
-interface WebsocketClientMessage {
-    metadata: {
-        id: string;
-        path: string;
-        clientVersion: string;
+export async function encodeWsRpcRequest<TParams>(
+    req: RpcRequest<TParams>,
+    paramEncoder: (input: TParams) => string,
+) {
+    if (!req.reqId) {
+        throw new Error(`reqId is required for transporting over websockets`);
+    }
+    let result = `procedure: ${req.procedure}\npath: ${req.path}\nclient-version: ${req.clientVersion ?? ''}\nreq-id: ${req.reqId ?? ''}`;
+    if (typeof req.customHeaders !== 'undefined') {
+        const headers = await getHeaders(req.customHeaders);
+        for (const [key, value] of Object.entries(headers)) {
+            result += `\n${key}: ${value}`;
+        }
+    }
+    result += '\n\n';
+    if (req.data) {
+        result += paramEncoder(req.data);
+    }
+    return result;
+}
+
+function decodeWsRpcRequest(input: string): RpcRawResponse {
+    let reqId: string | undefined;
+    let procedure: string = '';
+    let path: string = '';
+    let success: boolean = false;
+    let method: string | undefined;
+
+    let previousChar = '';
+    let currentLine = '';
+    let bodyIndex = -1;
+
+    function handleParseLine() {
+        const parseResult = parseLine(currentLine);
+        switch (parseResult.type) {
+            case 'invalid':
+                break;
+            case 'method':
+                method = parseResult.value;
+                break;
+            case 'path':
+                path = parseResult.value;
+                break;
+            case 'procedure':
+                procedure = parseResult.value;
+                break;
+            case 'reqId':
+                reqId = parseResult.value;
+                break;
+            case 'success':
+                success =
+                    parseResult.value === 'true' ||
+                    parseResult.value === 'TRUE';
+                break;
+            default:
+                parseResult satisfies never;
+                break;
+        }
+    }
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i]!;
+        if (char === '\n') {
+            handleParseLine();
+            if (previousChar === '\n') {
+                bodyIndex = i + 1;
+                break;
+            }
+            previousChar = char;
+            continue;
+        }
+        currentLine += char;
+        previousChar = char;
+    }
+    const result: RpcRawResponse = {
+        procedure: procedure,
+        reqId: reqId,
+        path: path,
+        method: method,
+        success: success,
     };
-    data?: string;
+    if (!input[bodyIndex]) return result;
+    result.data = input.substring(bodyIndex);
+    return result;
 }
 
-interface WebsocketServerMessage {
-    metadata: {
-        id: string;
-        path: string;
-        success: boolean;
+function parseLine(input: string):
+    | {
+          type: 'procedure' | 'reqId' | 'path' | 'method' | 'success';
+          value: string;
+      }
+    | { type: 'invalid' } {
+    if (input.startsWith('procedure:')) {
+        return {
+            type: 'procedure',
+            value: input.substring(10).trim(),
+        };
+    }
+    if (input.startsWith('req-id:')) {
+        return {
+            type: 'reqId',
+            value: input.substring(7).trim(),
+        };
+    }
+    if (input.startsWith('path:')) {
+        return {
+            type: 'path',
+            value: input.substring(5).trim(),
+        };
+    }
+    if (input.startsWith('method:')) {
+        return {
+            type: 'method',
+            value: input.substring(7).trim(),
+        };
+    }
+    if (input.startsWith('success:')) {
+        return {
+            type: 'success',
+            value: input.substring(8).trim(),
+        };
+    }
+    return {
+        type: 'invalid',
     };
-    data: string;
-}
-
-function websocketServerMessageFromString(
-    _input: string,
-): WebsocketServerMessage {
-    // TODO
-    throw new Error('Not implemented');
 }

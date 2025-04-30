@@ -25,10 +25,11 @@ import {
     type Fetch,
     HeaderInput,
     TransportMap,
-    InferRequestHandlerOptions,
+    InferRpcDispatcherOptions,
     RpcDispatcher,
     HttpRpcDispatcher,
     UndefinedModelValidator,
+    InferRpcDispatcherEventStreamOptions,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
@@ -38,48 +39,61 @@ export class ExampleClient<
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _httpDispatcher: THttp;
-    private readonly _customTransportDispatchers: TDispatchers;
-    books: ExampleClientBooksService;
+    private readonly _headers?: HeaderInput;
+    private readonly _http: THttp;
+    private readonly _customTransports: TDispatchers;
+    books: ExampleClientBooksService<THttp, TDispatchers>;
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
             headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: InferRequestHandlerOptions<THttp>;
-            httpDispatcher?: THttp;
-            customTransportDispatchers?: TDispatchers;
+            options?: InferRpcDispatcherOptions<THttp>;
+            /**
+             * Override the default HTTP transport dispatcher
+             */
+            http?: THttp;
+            /**
+             * Add a custom transport dispatcher
+             */
+            customTransports?: TDispatchers;
         } = {},
     ) {
         this._onError = config.onError;
-        this._httpDispatcher =
-            config.httpDispatcher ??
+        this._headers = config.headers;
+        this._http =
+            config.http ??
             (new HttpRpcDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
-                headers: config.headers,
                 options: config.options,
             }) as any);
-        this._customTransportDispatchers =
-            config.customTransportDispatchers ?? ({} as TDispatchers);
+        this._customTransports =
+            config.customTransports ?? ({} as TDispatchers);
         this.books = new ExampleClientBooksService(config);
     }
 
     async sendObject(
         params: NestedObject,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<NestedObject> {
-        return this._httpDispatcher.handleRpc<NestedObject, NestedObject>({
-            path: '/send-object',
-            method: 'post',
-            clientVersion: '20',
-            params: params,
-            paramValidator: $$NestedObject,
-            responseValidator: $$NestedObject,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<NestedObject, NestedObject>(
+            {
+                procedure: 'sendObject',
+                path: '/send-object',
+                method: 'post',
+                clientVersion: '20',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$NestedObject,
+                response: $$NestedObject,
+                onError: this._onError,
+            },
+            options,
+        );
     }
 }
 
@@ -88,48 +102,54 @@ export class ExampleClientBooksService<
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _httpDispatcher: THttp;
-    private readonly _customTransportDispatchers: TDispatchers;
+    private readonly _headers?: HeaderInput;
+    private readonly _http: THttp;
+    private readonly _transports: TDispatchers;
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
             headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: InferRequestHandlerOptions<THttp>;
-            httpDispatcher?: THttp;
-            customTransportDispatchers?: TDispatchers;
+            options?: InferRpcDispatcherOptions<THttp>;
+            http?: THttp;
+            transports?: TDispatchers;
         } = {},
     ) {
         this._onError = config.onError;
-        this._httpDispatcher =
-            config.httpDispatcher ??
+        this._headers = config.headers;
+        this._http =
+            config.http ??
             (new HttpRpcDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
-                headers: config.headers,
                 options: config.options,
             }) as any);
-        this._customTransportDispatchers =
-            config.customTransportDispatchers ?? ({} as TDispatchers);
+        this._transports = config.transports ?? ({} as TDispatchers);
     }
     /**
      * Get a book
      */
     async getBook(
         params: BookParams,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<Book> {
-        return this._httpDispatcher.handleRpc<BookParams, Book>({
-            path: '/books/get-book',
-            method: 'get',
-            clientVersion: '20',
-            params: params,
-            paramValidator: $$BookParams,
-            responseValidator: $$Book,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<BookParams, Book>(
+            {
+                procedure: 'books.getBook',
+                path: '/books/get-book',
+                method: 'get',
+                clientVersion: '20',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$BookParams,
+                response: $$Book,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     /**
      * Create a book
@@ -137,34 +157,44 @@ export class ExampleClientBooksService<
      */
     async createBook(
         params: Book,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<Book> {
-        return this._httpDispatcher.handleRpc<Book, Book>({
-            path: '/books/create-book',
-            method: 'post',
-            clientVersion: '20',
-            params: params,
-            paramValidator: $$Book,
-            responseValidator: $$Book,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<Book, Book>(
+            {
+                procedure: 'books.createBook',
+                path: '/books/create-book',
+                method: 'post',
+                clientVersion: '20',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$Book,
+                response: $$Book,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     /**
      * @deprecated
      */
     watchBook(
         params: BookParams,
-        options: SseOptions<Book> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<BookParams, Book>(
+        return this._http.handleEventStreamRpc<BookParams, Book>(
             {
+                procedure: 'books.watchBook',
                 path: '/books/watch-book',
                 method: 'get',
                 clientVersion: '20',
-                params: params,
-                paramValidator: $$BookParams,
-                responseValidator: $$Book,
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$BookParams,
+                response: $$Book,
                 onError: this._onError,
             },
             options,
