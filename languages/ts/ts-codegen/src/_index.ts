@@ -168,9 +168,10 @@ import {
     ${context.usedFeatures.ws ? 'type WsController,' : ''}
     ${context.usedFeatures.ws ? 'type WsOptions,' : ''}
     TransportMap,
-    InferRequestHandlerOptions,
     RpcDispatcher,
     HttpRpcDispatcher,
+    InferRpcDispatcherOptions,
+    InferRpcDispatcherEventStreamOptions,
     UndefinedModelValidator,
 } from "@arrirpc/client";
 

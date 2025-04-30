@@ -23,8 +23,10 @@ export function tsServiceFromDefinition(
                 clientName: context.clientName,
                 typePrefix: context.typePrefix,
                 generatedTypes: context.generatedTypes,
-                instancePath: `${context.instancePath}.${key}`,
-                schemaPath: `${context.instancePath}.${key}`,
+                instancePath: context.instancePath.length
+                    ? `${context.instancePath}.${key}`
+                    : key,
+                schemaPath: `${context.schemaPath}.${key}`,
                 discriminatorParent: '',
                 discriminatorKey: '',
                 discriminatorValue: '',
@@ -42,7 +44,9 @@ export function tsServiceFromDefinition(
                 clientName: context.clientName,
                 typePrefix: context.typePrefix,
                 generatedTypes: context.generatedTypes,
-                instancePath: `${context.instancePath}.${key}`,
+                instancePath: context.instancePath.length
+                    ? `${context.instancePath}.${key}`
+                    : key,
                 schemaPath: `${context.schemaPath}.${key}`,
                 discriminatorParent: '',
                 discriminatorKey: '',
@@ -75,31 +79,38 @@ export function tsServiceFromDefinition(
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _httpDispatcher: THttp;
-    private readonly _customTransportDispatchers: TDispatchers;
-${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
+    private readonly _headers?: HeaderInput;
+    private readonly _http: THttp;
+    private readonly _transports: TDispatchers;
+${subServices.map((service) => `    ${service.key}: ${service.name}<THttp, TDispatchers>;`).join('\n')}
     constructor(
         config: {
             baseUrl?: string;
             fetch?: Fetch;
             headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: InferRequestHandlerOptions<THttp>;
-            httpDispatcher?: THttp;
-            customTransportDispatchers?: TDispatchers;
+            options?: InferRpcDispatcherOptions<THttp>;
+            /**
+             * Override the default HTTP transport dispatcher
+             */
+            http?: THttp;
+            /**
+             * Add a custom transport dispatcher
+             */
+            transports?: TDispatchers;
         } = {},
     ) {
         this._onError = config.onError;
-        this._httpDispatcher = 
-            config.httpDispatcher ??
+        this._headers = config.headers;
+        this._http = 
+            config.http ??
             (new HttpRpcDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
-                headers: config.headers,
                 options: config.options,
             }) as any);
-        this._customTransportDispatchers =
-            config.customTransportDispatchers ?? ({} as TDispatchers);
+        this._transports =
+            config.transports ?? ({} as TDispatchers);
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
 ${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}

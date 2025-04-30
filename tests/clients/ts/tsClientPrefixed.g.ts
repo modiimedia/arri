@@ -25,9 +25,10 @@ import {
     type Fetch,
     HeaderInput,
     TransportMap,
-    InferRequestHandlerOptions,
     RpcDispatcher,
     HttpRpcDispatcher,
+    InferRpcDispatcherOptions,
+    InferRpcDispatcherEventStreamOptions,
     UndefinedModelValidator,
 } from '@arrirpc/client';
 
@@ -37,8 +38,9 @@ export class TestClientPrefixed<
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
-    private readonly _httpDispatcher: THttp;
-    private readonly _customTransportDispatchers: TDispatchers;
+    private readonly _headers?: HeaderInput;
+    private readonly _http: THttp;
+    private readonly _transports: TDispatchers;
 
     constructor(
         config: {
@@ -46,80 +48,109 @@ export class TestClientPrefixed<
             fetch?: Fetch;
             headers?: HeaderInput;
             onError?: (err: unknown) => void;
-            options?: InferRequestHandlerOptions<THttp>;
-            httpDispatcher?: THttp;
-            customTransportDispatchers?: TDispatchers;
+            options?: InferRpcDispatcherOptions<THttp>;
+            /**
+             * Override the default HTTP transport dispatcher
+             */
+            http?: THttp;
+            /**
+             * Add a custom transport dispatcher
+             */
+            transports?: TDispatchers;
         } = {},
     ) {
         this._onError = config.onError;
-        this._httpDispatcher =
-            config.httpDispatcher ??
+        this._headers = config.headers;
+        this._http =
+            config.http ??
             (new HttpRpcDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
-                headers: config.headers,
                 options: config.options,
             }) as any);
-        this._customTransportDispatchers =
-            config.customTransportDispatchers ?? ({} as TDispatchers);
+        this._transports = config.transports ?? ({} as TDispatchers);
     }
     async emptyParamsGetRequest(
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooDefaultPayload> {
-        return this._httpDispatcher.handleRpc<undefined, FooDefaultPayload>({
-            path: '/rpcs/tests/empty-params-get-request',
-            method: 'get',
-            clientVersion: '10',
-            params: undefined,
-            paramValidator: UndefinedModelValidator,
-            responseValidator: $$FooDefaultPayload,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<undefined, FooDefaultPayload>(
+            {
+                procedure: 'emptyParamsGetRequest',
+                path: '/rpcs/tests/empty-params-get-request',
+                method: 'get',
+                clientVersion: '10',
+                data: undefined,
+                customHeaders: this._headers,
+            },
+            {
+                params: UndefinedModelValidator,
+                response: UndefinedModelValidator,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async emptyParamsPostRequest(
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooDefaultPayload> {
-        return this._httpDispatcher.handleRpc<undefined, FooDefaultPayload>({
-            path: '/rpcs/tests/empty-params-post-request',
-            method: 'post',
-            clientVersion: '10',
-            params: undefined,
-            paramValidator: UndefinedModelValidator,
-            responseValidator: $$FooDefaultPayload,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<undefined, FooDefaultPayload>(
+            {
+                procedure: 'emptyParamsPostRequest',
+                path: '/rpcs/tests/empty-params-post-request',
+                method: 'post',
+                clientVersion: '10',
+                data: undefined,
+                customHeaders: this._headers,
+            },
+            {
+                params: UndefinedModelValidator,
+                response: UndefinedModelValidator,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async emptyResponseGetRequest(
         params: FooDefaultPayload,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<undefined> {
-        return this._httpDispatcher.handleRpc<FooDefaultPayload, undefined>({
-            path: '/rpcs/tests/empty-response-get-request',
-            method: 'get',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooDefaultPayload,
-            responseValidator: UndefinedModelValidator,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<FooDefaultPayload, undefined>(
+            {
+                procedure: 'emptyResponseGetRequest',
+                path: '/rpcs/tests/empty-response-get-request',
+                method: 'get',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$DefaultPayload,
+                response: $$undefined,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async emptyResponsePostRequest(
         params: FooDefaultPayload,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<undefined> {
-        return this._httpDispatcher.handleRpc<FooDefaultPayload, undefined>({
-            path: '/rpcs/tests/empty-response-post-request',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooDefaultPayload,
-            responseValidator: UndefinedModelValidator,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<FooDefaultPayload, undefined>(
+            {
+                procedure: 'emptyResponsePostRequest',
+                path: '/rpcs/tests/empty-response-post-request',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$DefaultPayload,
+                response: $$undefined,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
@@ -127,196 +158,251 @@ export class TestClientPrefixed<
      */
     async deprecatedRpc(
         params: FooDeprecatedRpcParams,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<undefined> {
-        return this._httpDispatcher.handleRpc<
-            FooDeprecatedRpcParams,
-            undefined
-        >({
-            path: '/rpcs/tests/deprecated-rpc',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooDeprecatedRpcParams,
-            responseValidator: UndefinedModelValidator,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<FooDeprecatedRpcParams, undefined>(
+            {
+                procedure: 'deprecatedRpc',
+                path: '/rpcs/tests/deprecated-rpc',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$DeprecatedRpcParams,
+                response: $$undefined,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendDiscriminatorWithEmptyObject(
         params: FooDiscriminatorWithEmptyObject,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooDiscriminatorWithEmptyObject> {
-        return this._httpDispatcher.handleRpc<
+        return this._http.handleRpc<
             FooDiscriminatorWithEmptyObject,
             FooDiscriminatorWithEmptyObject
-        >({
-            path: '/rpcs/tests/send-discriminator-with-empty-object',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooDiscriminatorWithEmptyObject,
-            responseValidator: $$FooDiscriminatorWithEmptyObject,
-            onError: this._onError,
-            options: options,
-        });
+        >(
+            {
+                procedure: 'sendDiscriminatorWithEmptyObject',
+                path: '/rpcs/tests/send-discriminator-with-empty-object',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$DiscriminatorWithEmptyObject,
+                response: $$DiscriminatorWithEmptyObject,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendError(
         params: FooSendErrorParams,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<undefined> {
-        return this._httpDispatcher.handleRpc<FooSendErrorParams, undefined>({
-            path: '/rpcs/tests/send-error',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooSendErrorParams,
-            responseValidator: UndefinedModelValidator,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<FooSendErrorParams, undefined>(
+            {
+                procedure: 'sendError',
+                path: '/rpcs/tests/send-error',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$SendErrorParams,
+                response: $$undefined,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendObject(
         params: FooObjectWithEveryType,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooObjectWithEveryType> {
-        return this._httpDispatcher.handleRpc<
+        return this._http.handleRpc<
             FooObjectWithEveryType,
             FooObjectWithEveryType
-        >({
-            path: '/rpcs/tests/send-object',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooObjectWithEveryType,
-            responseValidator: $$FooObjectWithEveryType,
-            onError: this._onError,
-            options: options,
-        });
+        >(
+            {
+                procedure: 'sendObject',
+                path: '/rpcs/tests/send-object',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$ObjectWithEveryType,
+                response: $$ObjectWithEveryType,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendObjectWithNullableFields(
         params: FooObjectWithEveryNullableType,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooObjectWithEveryNullableType> {
-        return this._httpDispatcher.handleRpc<
+        return this._http.handleRpc<
             FooObjectWithEveryNullableType,
             FooObjectWithEveryNullableType
-        >({
-            path: '/rpcs/tests/send-object-with-nullable-fields',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooObjectWithEveryNullableType,
-            responseValidator: $$FooObjectWithEveryNullableType,
-            onError: this._onError,
-            options: options,
-        });
+        >(
+            {
+                procedure: 'sendObjectWithNullableFields',
+                path: '/rpcs/tests/send-object-with-nullable-fields',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$ObjectWithEveryNullableType,
+                response: $$ObjectWithEveryNullableType,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendObjectWithPascalCaseKeys(
         params: FooObjectWithPascalCaseKeys,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooObjectWithPascalCaseKeys> {
-        return this._httpDispatcher.handleRpc<
+        return this._http.handleRpc<
             FooObjectWithPascalCaseKeys,
             FooObjectWithPascalCaseKeys
-        >({
-            path: '/rpcs/tests/send-object-with-pascal-case-keys',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooObjectWithPascalCaseKeys,
-            responseValidator: $$FooObjectWithPascalCaseKeys,
-            onError: this._onError,
-            options: options,
-        });
+        >(
+            {
+                procedure: 'sendObjectWithPascalCaseKeys',
+                path: '/rpcs/tests/send-object-with-pascal-case-keys',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$ObjectWithPascalCaseKeys,
+                response: $$ObjectWithPascalCaseKeys,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendObjectWithSnakeCaseKeys(
         params: FooObjectWithSnakeCaseKeys,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooObjectWithSnakeCaseKeys> {
-        return this._httpDispatcher.handleRpc<
+        return this._http.handleRpc<
             FooObjectWithSnakeCaseKeys,
             FooObjectWithSnakeCaseKeys
-        >({
-            path: '/rpcs/tests/send-object-with-snake-case-keys',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooObjectWithSnakeCaseKeys,
-            responseValidator: $$FooObjectWithSnakeCaseKeys,
-            onError: this._onError,
-            options: options,
-        });
+        >(
+            {
+                procedure: 'sendObjectWithSnakeCaseKeys',
+                path: '/rpcs/tests/send-object-with-snake-case-keys',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$ObjectWithSnakeCaseKeys,
+                response: $$ObjectWithSnakeCaseKeys,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendPartialObject(
         params: FooObjectWithEveryOptionalType,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooObjectWithEveryOptionalType> {
-        return this._httpDispatcher.handleRpc<
+        return this._http.handleRpc<
             FooObjectWithEveryOptionalType,
             FooObjectWithEveryOptionalType
-        >({
-            path: '/rpcs/tests/send-partial-object',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooObjectWithEveryOptionalType,
-            responseValidator: $$FooObjectWithEveryOptionalType,
-            onError: this._onError,
-            options: options,
-        });
+        >(
+            {
+                procedure: 'sendPartialObject',
+                path: '/rpcs/tests/send-partial-object',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$ObjectWithEveryOptionalType,
+                response: $$ObjectWithEveryOptionalType,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendRecursiveObject(
         params: FooRecursiveObject,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooRecursiveObject> {
-        return this._httpDispatcher.handleRpc<
-            FooRecursiveObject,
-            FooRecursiveObject
-        >({
-            path: '/rpcs/tests/send-recursive-object',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooRecursiveObject,
-            responseValidator: $$FooRecursiveObject,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<FooRecursiveObject, FooRecursiveObject>(
+            {
+                procedure: 'sendRecursiveObject',
+                path: '/rpcs/tests/send-recursive-object',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$RecursiveObject,
+                response: $$RecursiveObject,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     async sendRecursiveUnion(
         params: FooRecursiveUnion,
-        options?: InferRequestHandlerOptions<THttp>,
+        options?: InferRpcDispatcherOptions<THttp>,
     ): Promise<FooRecursiveUnion> {
-        return this._httpDispatcher.handleRpc<
-            FooRecursiveUnion,
-            FooRecursiveUnion
-        >({
-            path: '/rpcs/tests/send-recursive-union',
-            method: 'post',
-            clientVersion: '10',
-            params: params,
-            paramValidator: $$FooRecursiveUnion,
-            responseValidator: $$FooRecursiveUnion,
-            onError: this._onError,
-            options: options,
-        });
+        return this._http.handleRpc<FooRecursiveUnion, FooRecursiveUnion>(
+            {
+                procedure: 'sendRecursiveUnion',
+                path: '/rpcs/tests/send-recursive-union',
+                method: 'post',
+                clientVersion: '10',
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$RecursiveUnion,
+                response: $$RecursiveUnion,
+                onError: this._onError,
+            },
+            options,
+        );
     }
     streamAutoReconnect(
         params: FooAutoReconnectParams,
-        options: SseOptions<FooAutoReconnectResponse> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<
+        return this._http.handleEventStreamRpc<
             FooAutoReconnectParams,
             FooAutoReconnectResponse
         >(
             {
+                procedure: 'streamAutoReconnect',
                 path: '/rpcs/tests/stream-auto-reconnect',
                 method: 'get',
                 clientVersion: '10',
-                params: params,
-                paramValidator: $$FooAutoReconnectParams,
-                responseValidator: $$FooAutoReconnectResponse,
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$AutoReconnectParams,
+                response: $$AutoReconnectResponse,
                 onError: this._onError,
             },
             options,
@@ -327,19 +413,23 @@ export class TestClientPrefixed<
      */
     streamConnectionErrorTest(
         params: FooStreamConnectionErrorTestParams,
-        options: SseOptions<FooStreamConnectionErrorTestResponse> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<
+        return this._http.handleEventStreamRpc<
             FooStreamConnectionErrorTestParams,
             FooStreamConnectionErrorTestResponse
         >(
             {
+                procedure: 'streamConnectionErrorTest',
                 path: '/rpcs/tests/stream-connection-error-test',
                 method: 'get',
                 clientVersion: '10',
-                params: params,
-                paramValidator: $$FooStreamConnectionErrorTestParams,
-                responseValidator: $$FooStreamConnectionErrorTestResponse,
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$StreamConnectionErrorTestParams,
+                response: $$StreamConnectionErrorTestResponse,
                 onError: this._onError,
             },
             options,
@@ -349,19 +439,23 @@ export class TestClientPrefixed<
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
-        options: SseOptions<FooStreamLargeObjectsResponse> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<
+        return this._http.handleEventStreamRpc<
             undefined,
             FooStreamLargeObjectsResponse
         >(
             {
+                procedure: 'streamLargeObjects',
                 path: '/rpcs/tests/stream-large-objects',
                 method: 'get',
                 clientVersion: '10',
-                params: undefined,
-                paramValidator: UndefinedModelValidator,
-                responseValidator: $$FooStreamLargeObjectsResponse,
+                data: undefined,
+                customHeaders: this._headers,
+            },
+            {
+                params: UndefinedModelValidator,
+                response: $$StreamLargeObjectsResponse,
                 onError: this._onError,
             },
             options,
@@ -369,39 +463,46 @@ export class TestClientPrefixed<
     }
     streamMessages(
         params: FooChatMessageParams,
-        options: SseOptions<FooChatMessage> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<
+        return this._http.handleEventStreamRpc<
             FooChatMessageParams,
             FooChatMessage
         >(
             {
+                procedure: 'streamMessages',
                 path: '/rpcs/tests/stream-messages',
                 method: 'get',
                 clientVersion: '10',
-                params: params,
-                paramValidator: $$FooChatMessageParams,
-                responseValidator: $$FooChatMessage,
+                data: params,
+                customHeaders: this._headers,
+            },
+            {
+                params: $$ChatMessageParams,
+                response: $$ChatMessage,
                 onError: this._onError,
             },
             options,
         );
     }
     streamRetryWithNewCredentials(
-        options: SseOptions<FooTestsStreamRetryWithNewCredentialsResponse> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<
+        return this._http.handleEventStreamRpc<
             undefined,
             FooTestsStreamRetryWithNewCredentialsResponse
         >(
             {
+                procedure: 'streamRetryWithNewCredentials',
                 path: '/rpcs/tests/stream-retry-with-new-credentials',
                 method: 'get',
                 clientVersion: '10',
-                params: undefined,
-                paramValidator: UndefinedModelValidator,
-                responseValidator:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse,
+                data: undefined,
+                customHeaders: this._headers,
+            },
+            {
+                params: UndefinedModelValidator,
+                response: $$TestsStreamRetryWithNewCredentialsResponse,
                 onError: this._onError,
             },
             options,
@@ -411,19 +512,20 @@ export class TestClientPrefixed<
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
      */
     streamTenEventsThenEnd(
-        options: SseOptions<FooChatMessage> = {},
+        options: InferRpcDispatcherEventStreamOptions<THttp> = {},
     ): EventSourceController {
-        return this._httpDispatcher.handleEventStreamRpc<
-            undefined,
-            FooChatMessage
-        >(
+        return this._http.handleEventStreamRpc<undefined, FooChatMessage>(
             {
+                procedure: 'streamTenEventsThenEnd',
                 path: '/rpcs/tests/stream-ten-events-then-end',
                 method: 'get',
                 clientVersion: '10',
-                params: undefined,
-                paramValidator: UndefinedModelValidator,
-                responseValidator: $$FooChatMessage,
+                data: undefined,
+                customHeaders: this._headers,
+            },
+            {
+                params: UndefinedModelValidator,
+                response: $$ChatMessage,
                 onError: this._onError,
             },
             options,

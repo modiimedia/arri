@@ -25,11 +25,11 @@ import {
     type Fetch,
     HeaderInput,
     TransportMap,
-    InferRpcDispatcherOptions,
     RpcDispatcher,
     HttpRpcDispatcher,
-    UndefinedModelValidator,
+    InferRpcDispatcherOptions,
     InferRpcDispatcherEventStreamOptions,
+    UndefinedModelValidator,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
@@ -41,7 +41,7 @@ export class ExampleClient<
     private readonly _onError?: (err: unknown) => void;
     private readonly _headers?: HeaderInput;
     private readonly _http: THttp;
-    private readonly _customTransports: TDispatchers;
+    private readonly _transports: TDispatchers;
     books: ExampleClientBooksService<THttp, TDispatchers>;
     constructor(
         config: {
@@ -57,7 +57,7 @@ export class ExampleClient<
             /**
              * Add a custom transport dispatcher
              */
-            customTransports?: TDispatchers;
+            transports?: TDispatchers;
         } = {},
     ) {
         this._onError = config.onError;
@@ -69,8 +69,7 @@ export class ExampleClient<
                 fetch: config.fetch,
                 options: config.options,
             }) as any);
-        this._customTransports =
-            config.customTransports ?? ({} as TDispatchers);
+        this._transports = config.transports ?? ({} as TDispatchers);
         this.books = new ExampleClientBooksService(config);
     }
 
@@ -112,7 +111,13 @@ export class ExampleClientBooksService<
             headers?: HeaderInput;
             onError?: (err: unknown) => void;
             options?: InferRpcDispatcherOptions<THttp>;
+            /**
+             * Override the default HTTP transport dispatcher
+             */
             http?: THttp;
+            /**
+             * Add a custom transport dispatcher
+             */
             transports?: TDispatchers;
         } = {},
     ) {
