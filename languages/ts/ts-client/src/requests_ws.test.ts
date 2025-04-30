@@ -1,7 +1,6 @@
 import { a } from '@arrirpc/schema';
 
-import { RpcRequest } from './requests';
-import { encodeWsRpcRequest } from './requests_ws';
+import { encodeRequest, RpcRequest } from './requests';
 
 const ReqData = a.object({
     foo: a.string(),
@@ -32,7 +31,7 @@ test('Encoding Messages', () => {
             baz: 15.5,
         },
     };
-    const result = encodeWsRpcRequest(input, $$ReqData.serializeUnsafe);
+    const result = encodeRequest(input, $$ReqData.serializeUnsafe);
     expect(result).toBe(`procedure: users.getUser
 path: /users/get-user
 client-version: 
