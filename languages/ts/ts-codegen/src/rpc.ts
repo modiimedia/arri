@@ -80,7 +80,7 @@ export function httpRpcFromDefinition(
             },
             {
                 params: ${def.params ? `$$${def.params}` : 'UndefinedModelValidator'},
-                response: ${def.params ? `$$${def.response}` : 'UndefinedModelValidator'},
+                response: ${def.response ? `$$${def.response}` : 'UndefinedModelValidator'},
                 onError: this._onError,
             },
             options,

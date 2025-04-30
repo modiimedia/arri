@@ -126,7 +126,7 @@ export class TestClientTestsService<
             },
             {
                 params: UndefinedModelValidator,
-                response: UndefinedModelValidator,
+                response: $$DefaultPayload,
                 onError: this._onError,
             },
             options,
@@ -146,7 +146,7 @@ export class TestClientTestsService<
             },
             {
                 params: UndefinedModelValidator,
-                response: UndefinedModelValidator,
+                response: $$DefaultPayload,
                 onError: this._onError,
             },
             options,
@@ -167,7 +167,7 @@ export class TestClientTestsService<
             },
             {
                 params: $$DefaultPayload,
-                response: $$undefined,
+                response: UndefinedModelValidator,
                 onError: this._onError,
             },
             options,
@@ -188,7 +188,7 @@ export class TestClientTestsService<
             },
             {
                 params: $$DefaultPayload,
-                response: $$undefined,
+                response: UndefinedModelValidator,
                 onError: this._onError,
             },
             options,
@@ -213,7 +213,7 @@ export class TestClientTestsService<
             },
             {
                 params: $$DeprecatedRpcParams,
-                response: $$undefined,
+                response: UndefinedModelValidator,
                 onError: this._onError,
             },
             options,
@@ -258,7 +258,7 @@ export class TestClientTestsService<
             },
             {
                 params: $$SendErrorParams,
-                response: $$undefined,
+                response: UndefinedModelValidator,
                 onError: this._onError,
             },
             options,

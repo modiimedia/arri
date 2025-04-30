@@ -53,7 +53,7 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
     async handleRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        options: HttpRpcRequestOptions,
+        options?: HttpRpcRequestOptions,
     ): Promise<TResponse> {
         let url = this.baseUrl + req.path;
         let body: undefined | string;
