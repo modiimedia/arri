@@ -14,7 +14,7 @@ func main() {
 			return nil
 		},
 	}, arri.CreateDefaultEvent)
-	arri.Rpc(&app, SayHello, arri.RpcOptions{})
+	arri.Rpc(&app, SayHello, arri.RpcOptions{Method: "GET"})
 	app.Run(arri.RunOptions{})
 }
 

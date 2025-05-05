@@ -16,10 +16,10 @@ import { type MiddlewareEvent } from './middleware';
 import { type RouteOptions } from './route';
 import {
     getSchemaValidator,
-    type HttpRpc,
     isRpc,
     isRpcParamSchema,
     RequestValidator,
+    Rpc,
     type RpcEvent,
     type RpcParamSchema,
     validateRpcRequestInput,
@@ -28,17 +28,17 @@ import {
 export function defineEventStreamRpc<
     TResponse extends RpcParamSchema<any>,
     TParams extends RpcParamSchema<any> | undefined = undefined,
+    TTransport extends string = 'http',
 >(
     config: Omit<
-        EventStreamRpc<TParams, TResponse>,
-        'isEventStream' | 'transport'
+        EventStreamRpc<TParams, TResponse, TTransport>,
+        'isEventStream'
     >,
-): EventStreamRpc<TParams, TResponse> {
+): EventStreamRpc<TParams, TResponse, TTransport> {
     return {
         ...config,
         method: config.method ?? 'get',
         isEventStream: true,
-        transport: 'http',
     };
 }
 
@@ -53,7 +53,11 @@ export function isEventStreamRpc(
 export interface EventStreamRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> extends Omit<HttpRpc<true, TParams, TResponse>, 'handler' | 'postHandler'> {
+    TTransport extends string = 'http',
+> extends Omit<
+        Rpc<true, TParams, TResponse, TTransport>,
+        'handler' | 'postHandler'
+    > {
     isEventStream: true;
     handler: EventStreamRpcHandler<
         TParams extends RpcParamSchema ? InferType<TParams> : undefined,
@@ -68,7 +72,7 @@ export type EventStreamRpcHandler<TParams, TResponse> = (
 
 export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
     extends RpcEventContext<TParams> {
-    stream: EventStreamConnection<TResponse>;
+    stream: H3EventStreamConnection<TResponse>;
 }
 
 export interface EventStreamConnectionOptions<TData> {
@@ -76,7 +80,25 @@ export interface EventStreamConnectionOptions<TData> {
     pingInterval?: number;
 }
 
-export class EventStreamConnection<TData> {
+export interface EventStreamConnection<TData> {
+    readonly lastEventId?: string;
+
+    send(): void;
+
+    push(msg: TData[], eventId?: string): Promise<SsePushResult[]>;
+    push(msg: TData, eventId?: string): Promise<SsePushResult>;
+    push(
+        _: TData | TData[],
+        __?: string,
+    ): Promise<SsePushResult> | Promise<SsePushResult[]>;
+
+    close(): void;
+    onClosed(cb: () => any): void;
+}
+
+export class H3EventStreamConnection<TData>
+    implements EventStreamConnection<TData>
+{
     readonly lastEventId?: string;
     private readonly validator?: RequestValidator<TData>;
     // for some reason Rollup cannot output DTS when this is set to NodeJS.Timeout
@@ -224,7 +246,7 @@ export function registerEventStreamRpc(
                     paramValidator!,
                 );
             }
-            const stream = new EventStreamConnection(event, {
+            const stream = new H3EventStreamConnection(event, {
                 pingInterval: procedure.pingInterval,
                 validator: responseValidator,
             });

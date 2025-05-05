@@ -26,7 +26,7 @@ import { type Middleware, MiddlewareEvent } from './middleware';
 import { type ArriRoute, registerRoute } from './route';
 import { ArriRouter } from './router';
 import {
-    createHttpRpcDefinition,
+    createRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
@@ -36,6 +36,7 @@ import {
     Rpc,
 } from './rpc';
 import { ArriService } from './service';
+import { TransportDispatcher } from './transport';
 
 export type DefinitionMap = Record<
     string,
@@ -60,6 +61,8 @@ export class ArriApp {
     private readonly _onError: ArriOptions['onError'];
     private readonly _debug: boolean;
     readonly definitionPath: string;
+
+    private _transports: Record<string, TransportDispatcher> = {};
 
     constructor(opts: ArriOptions = {}) {
         this.appInfo = opts?.appInfo;
@@ -152,33 +155,46 @@ export class ArriApp {
             }),
         );
     }
-    use(input: Middleware): void;
+    use(input: TransportDispatcher): void;
     use(input: ArriRouter): void;
     use(input: ArriService): void;
-    use(input: Middleware | ArriRouter | ArriService): void {
-        if (typeof input === 'object' && input instanceof ArriRouter) {
+    use(input: TransportDispatcher | ArriRouter | ArriService): void {
+        if (typeof input !== 'object' || input === null) return;
+        if ('transportId' in input) {
+            if (this._transports[input.transportId]) {
+                console.warn(
+                    `[WARNING] Overriding transport already registered for ${input.transportId}`,
+                );
+            }
+            this._transports[input.transportId] = input;
+            return;
+        }
+        if (input instanceof ArriRouter) {
             for (const route of input.getRoutes()) {
                 this.route(route);
             }
             this.registerDefinitions(input.getDefinitions());
             return;
         }
-        if (typeof input === 'object' && input instanceof ArriService) {
+        if (input instanceof ArriService) {
             for (const rpc of input.getProcedures()) {
                 this.rpc(rpc.name, rpc);
             }
             this.registerDefinitions(input.getDefinitions());
             return;
         }
-        this._middlewares.push(input);
     }
 
     rpc(name: string, procedure: Rpc<any, any, any>) {
         (procedure as any).name = name;
         const p = procedure as NamedHttpRpc;
+        const transport = this._transports[p.transport];
+        if (!transport) {
+            throw new Error(`Missing transport ${p.transport}`);
+        }
         const path = p.path ?? getRpcPath(p.name, this._rpcRoutePrefix);
         if (p.transport === 'http') {
-            this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
+            this._procedures[p.name] = createRpcDefinition(p.name, path, p);
         }
 
         if (isRpcParamSchema(p.params)) {
@@ -193,19 +209,10 @@ export class ArriApp {
                 this._definitions[responseName] = p.response;
             }
         }
-        if (p.transport === 'http') {
-            if (isEventStreamRpc(p)) {
-                registerEventStreamRpc(this.h3Router, path, p, {
-                    middleware: this._middlewares,
-                    onRequest: this._onRequest,
-                    onError: this._onError,
-                    onAfterResponse: this._onAfterResponse,
-                    onBeforeResponse: this._onBeforeResponse,
-                    debug: this._debug,
-                });
-                return;
-            }
-            registerRpc(this.h3Router, path, p, {
+
+        if (isEventStreamRpc(p)) {
+            transport.RegisterEventStreamRpc(name, p, procedure.handler);
+            registerEventStreamRpc(this.h3Router, path, p, {
                 middleware: this._middlewares,
                 onRequest: this._onRequest,
                 onError: this._onError,
@@ -215,6 +222,8 @@ export class ArriApp {
             });
             return;
         }
+        transport.RegisterRpc(name, procedure, procedure.handler);
+        return;
     }
 
     route<

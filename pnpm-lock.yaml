@@ -306,6 +306,28 @@ importers:
         specifier: ^1.2.9
         version: 1.2.9
 
+  languages/ts/ts-server-core:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../ts-schema
+      arri:
+        specifier: workspace:*
+        version: link:../../../tooling/cli
+      h3:
+        specifier: ^1.15.1
+        version: 1.15.1
+      scule:
+        specifier: ^1.3.0
+        version: 1.3.0
+    devDependencies:
+      bun-types:
+        specifier: ^1.2.9
+        version: 1.2.9
+
   playground/go:
     devDependencies:
       '@types/node':

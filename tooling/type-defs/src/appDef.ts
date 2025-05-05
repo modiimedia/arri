@@ -64,9 +64,9 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
 }
 
 export interface RpcDefinition<T = string> {
-    transport: string;
+    transports: string[];
     path: string;
-    method?: string;
+    method?: RpcHttpMethod;
     params?: T;
     response?: T;
     description?: string;
@@ -93,7 +93,7 @@ export interface RpcDefinition<T = string> {
 //     | WsRpcDefinition<T>
 //     | CustomRpcDefinition<T>;
 
-export function isRpcDefinitionBase(input: unknown): input is RpcDefinition {
+export function isRpcDefinition(input: unknown): input is RpcDefinition {
     if (typeof input !== 'object' || input === null) {
         return false;
     }
@@ -125,31 +125,13 @@ export function isRpcDefinitionBase(input: unknown): input is RpcDefinition {
     }
     return (
         'transport' in input &&
-        typeof input.transport === 'string' &&
+        Array.isArray(input.transport) &&
+        input.transport.every((val) => typeof val === 'string') &&
         input.transport.length > 0 &&
         'path' in input &&
         typeof input.path === 'string' &&
         input.path.length > 0
     );
-}
-
-export function isRpcDefinition(input: unknown): input is RpcDefinition {
-    if (!isRpcDefinitionBase(input)) {
-        return false;
-    }
-    if (!('transport' in input) || typeof input.transport !== 'string') {
-        return false;
-    }
-    if (input.transport === 'http') {
-        return 'method' in input && isRpcHttpMethod(input.method);
-    }
-    if (input.transport === 'ws') {
-        return true;
-    }
-    if (input.transport.startsWith('custom:')) {
-        return true;
-    }
-    return false;
 }
 
 export interface ServiceDefinition {
