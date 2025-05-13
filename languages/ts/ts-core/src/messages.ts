@@ -1,22 +1,31 @@
+import { ArriError, parseArriError, serializeArriError } from './errors';
 import { Result } from './helpers';
 
 export interface ClientMessage<T = string> {
     rpcName: string;
     reqId?: string;
-    // path?: string;
-    // method?: string;
     contentType: 'application/json';
     clientVersion?: string;
     customHeaders: Record<string, string>;
     body?: T;
 }
 
-export interface ServerMessage<T = string> {
-    rpcName: string;
-    success: boolean;
+export type ServerMessage<T = string> =
+    | ServerSuccessMessage<T>
+    | ServerFailureMessage;
+export interface ServerSuccessMessage<T = string> {
+    success: true;
     reqId?: string;
     customHeaders: Record<string, string>;
+    contentType: 'application/json';
     body?: T;
+}
+export interface ServerFailureMessage {
+    success: false;
+    reqId?: string;
+    customHeaders: Record<string, string>;
+    contentType: 'application/json';
+    error: ArriError;
 }
 
 export function parseClientMessage(
@@ -39,12 +48,6 @@ export function parseClientMessage(
         }
         const [key, value] = parseHeaderLine(currentLine);
         switch (key) {
-            // case 'path':
-            //     path = value;
-            //     break;
-            // case 'method':
-            //     method = value;
-            //     break;
             case 'client-version':
                 clientVersion = value;
                 break;
@@ -121,7 +124,7 @@ export function parseClientMessage(
 }
 
 export function encodeClientMessage(input: ClientMessage<string>): string {
-    let output = `ARRIRPC/1.0 ${input.rpcName}`;
+    let output = `ARRIRPC/0.0.8 ${input.rpcName}`;
     output += `\ncontent-type: ${input.contentType}`;
     if (input.reqId) output += `\nreq-id: ${input.reqId}`;
     if (input.clientVersion)
@@ -137,30 +140,30 @@ export function encodeClientMessage(input: ClientMessage<string>): string {
 export function parseServerMessage(
     input: string,
 ): Result<ServerMessage, string> {
-    let rpcName: string | undefined;
     let reqId: string | undefined;
     let success: boolean | undefined;
-    let clientVersion: string | undefined;
+    let contentType: string | undefined;
     const customHeaders: Record<string, string> = {};
     let currentLine = '';
-    let previousChar = '';
     let bodyStartIndex: number | undefined;
     function processLine() {
-        if (!rpcName) {
-            rpcName = currentLine.trim();
+        if (typeof success === 'undefined') {
+            if (currentLine === 'ARRIRPC/0.0.8 SUCCESS') {
+                success = true;
+                currentLine = '';
+                return;
+            }
+            success = false;
             currentLine = '';
             return;
         }
         const [key, value] = parseHeaderLine(currentLine);
         switch (key) {
-            case 'client-version':
-                clientVersion = value;
-                break;
             case 'req-id':
                 reqId = value;
                 break;
-            case 'success':
-                success = value === 'true' || value === 'TRUE';
+            case 'content-type':
+                contentType = value;
                 break;
             default:
                 customHeaders[key] = value;
@@ -171,22 +174,34 @@ export function parseServerMessage(
 
     for (let i = 0; i < input.length; i++) {
         const char = input[i]!;
-        if (char === '\n' && previousChar === '\n') {
-            bodyStartIndex = i + 1;
+        if (char === '\n' && input[i + 1] === '\n') {
+            processLine();
+            bodyStartIndex = i + 2;
             break;
         }
         if (char === '\n') {
             processLine();
             continue;
         }
-        previousChar = char;
         currentLine += char;
     }
 
-    if (!rpcName || typeof success == 'undefined') {
+    if (typeof success == 'undefined') {
         return {
             success: false,
-            error: "Invalid message. Didn't contain procedure name.",
+            error: 'Invalid message. Must begin with success header.',
+        };
+    }
+    if (typeof contentType == 'undefined') {
+        return {
+            success: false,
+            error: 'Invalid message. Must include content-type error.',
+        };
+    }
+    if (contentType !== 'application/json') {
+        return {
+            success: false,
+            error: 'Invalid message. Only "application/json" is supported as a content type.',
         };
     }
     if (typeof bodyStartIndex === 'undefined') {
@@ -196,18 +211,73 @@ export function parseServerMessage(
         };
     }
     const bodyStr = input.slice(bodyStartIndex);
-    if (bodyStr.length === 0) {
+    if (success && bodyStr.length === 0) {
         return {
             success: true,
             value: {
-                rpcName: rpcName,
                 reqId: reqId,
                 success: success,
                 customHeaders: customHeaders,
+                contentType: contentType,
                 body: undefined,
             },
         };
     }
+    if (success) {
+        return {
+            success: true,
+            value: {
+                reqId: reqId,
+                success: success,
+                customHeaders: customHeaders,
+                contentType: contentType,
+                body: bodyStr,
+            },
+        };
+    }
+    const err = parseArriError(JSON.parse(bodyStr));
+    if (!err.success) {
+        return {
+            success: false,
+            error: err.error,
+        };
+    }
+    return {
+        success: true,
+        value: {
+            reqId: reqId,
+            success: success,
+            customHeaders: customHeaders,
+            contentType: contentType,
+            error: err.value,
+        },
+    };
+}
+export function encodeServerMessage(
+    input: ServerMessage,
+    options?: { includeErrorStackTrack?: boolean },
+): string {
+    let output = `ARRIRPC/0.0.8`;
+    if (input.success) {
+        output += ` SUCCESS`;
+    } else {
+        output += ` FAILURE`;
+    }
+    output += `\ncontent-type: ${input.contentType}`;
+    if (input.reqId) output += `\nreq-id: ${input.reqId}`;
+    for (const [key, value] of Object.entries(input.customHeaders)) {
+        output += `\n${key}: ${value}`;
+    }
+    output += `\n\n`;
+    if (input.success) {
+        if (input.body) output += input.body;
+        return output;
+    }
+    output += serializeArriError(
+        input.error,
+        options?.includeErrorStackTrack ?? false,
+    );
+    return output;
 }
 
 export function parseHeaderLine(input: string): [string, string] {
