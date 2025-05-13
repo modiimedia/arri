@@ -1,6 +1,7 @@
 import { ArriError, parseArriError, serializeArriError } from './errors';
 import { Result } from './helpers';
 
+// TODO: make it so body can also be binary
 export interface ClientMessage<T = string> {
     rpcName: string;
     reqId?: string;
@@ -10,6 +11,7 @@ export interface ClientMessage<T = string> {
     body?: T;
 }
 
+// TODO: make it so body can also be binary
 export type ServerMessage<T = string> =
     | ServerSuccessMessage<T>
     | ServerFailureMessage;
