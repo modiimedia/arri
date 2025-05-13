@@ -24,6 +24,7 @@
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
+    "@arrirpc/core": "workspace:*",
     "@joshmossas/listhen": "^1.11.1",
     "arri": "workspace:*",
     "crossws": "^0.3.4",

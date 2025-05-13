@@ -1,3 +1,4 @@
+import { ArriError } from '@arrirpc/core';
 import { a, serializeString, ValueError } from '@arrirpc/schema';
 import * as h3 from 'h3';
 
@@ -168,20 +169,6 @@ const ERROR_RESPONSE_DEFAULTS: Record<
         message: 'Network Authentication Required',
     },
 };
-
-export class ArriError extends Error {
-    code: number;
-    data: any;
-    constructor(config: { message: string; code: number; data?: any }) {
-        super(config.message);
-        this.code = config.code;
-        this.data = config.data;
-    }
-
-    get stackList() {
-        return this.stack?.split('\n');
-    }
-}
 
 export const ArriErrorResponse = a.object({
     code: a.uint32(),

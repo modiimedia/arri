@@ -22,14 +22,7 @@
     "directory": "languages/ts/ts-client"
   },
   "dependencies": {
-    "@arrirpc/schema": "workspace:*",
-    "event-source-plus": "^0.1.8",
-    "ofetch": "^1.4.1",
-    "websocket": "^1.0.35",
-    "ws": "^8.18.1"
+    "@arrirpc/schema": "workspace:*"
   },
-  "devDependencies": {
-    "@types/websocket": "^1.0.10",
-    "@types/ws": "^8.18.1"
-  }
+  "devDependencies": {}
 }

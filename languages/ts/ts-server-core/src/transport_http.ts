@@ -3,17 +3,14 @@ import {
     RpcDefinition,
     RpcHttpMethod,
 } from '@arrirpc/codegen-utils';
+import { ArriError } from '@arrirpc/core';
 import { CompiledValidator } from '@arrirpc/schema';
 import * as listhen from '@joshmossas/listhen';
 import * as ws from 'crossws';
 import * as h3 from 'h3';
 
 import { RpcContext } from './context';
-import {
-    ArriError,
-    getValidationErrorMessage,
-    serializeArriErrorResponse,
-} from './error';
+import { getValidationErrorMessage, serializeArriErrorResponse } from './error';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import {
     EventStreamRpcHandler,
