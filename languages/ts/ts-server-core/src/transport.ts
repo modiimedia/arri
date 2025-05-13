@@ -4,7 +4,7 @@ import { CompiledValidator } from '@arrirpc/schema';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
-export interface Dispatcher {
+export interface TransportDispatcher {
     transportId: string;
 
     registerRpc(
@@ -44,4 +44,6 @@ export interface Dispatcher {
     ): void;
 
     start(): void;
+
+    stop(): void;
 }

@@ -314,9 +314,15 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../ts-schema
+      '@joshmossas/listhen':
+        specifier: ^1.11.1
+        version: 1.11.1
       arri:
         specifier: workspace:*
         version: link:../../../tooling/cli
+      crossws:
+        specifier: ^0.3.4
+        version: 0.3.4
       h3:
         specifier: ^1.15.1
         version: 1.15.1

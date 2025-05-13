@@ -32,7 +32,6 @@ import {
     getRpcResponseName,
     isRpcParamSchema,
     type NamedHttpRpc,
-    registerRpc,
     Rpc,
 } from './rpc';
 import { ArriService } from './service';

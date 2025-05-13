@@ -1,5 +1,6 @@
 import { RpcHttpMethod } from '@arrirpc/codegen-utils';
 import {
+    a,
     ASchema,
     CompiledValidator,
     InferType,
@@ -12,7 +13,7 @@ import { RpcContext } from './context';
 export interface EventStreamHandlerContext<TParams, TResponse>
     extends RpcContext {
     params: TParams;
-    stream: EventStreamConnection<TResponse>;
+    stream: RpcEventStreamConnection<TResponse>;
 }
 
 export type EventStreamRpcHandler<TParams, TResponse> = (
@@ -49,7 +50,7 @@ export function isEventStreamRpc(
     );
 }
 
-export interface EventStreamInterface {
+export interface EventStreamDispatcher {
     lastEventId?: string;
 
     send(): void;
@@ -70,35 +71,35 @@ export type EventStreamPushResult =
       }
     | { success: false; errors: ValueError[] };
 
-export class EventStreamConnection<TData> {
-    readonly connection: EventStreamInterface;
+export class RpcEventStreamConnection<TData> {
+    readonly dispatcher: EventStreamDispatcher;
 
     private readonly _validator: CompiledValidator<ASchema<TData>>;
     private _pingInterval: any | undefined = undefined;
     private readonly _pingIntervalMs: number;
 
     constructor(
-        connection: EventStreamInterface,
-        validator: CompiledValidator<ASchema<TData>>,
+        dispatcher: EventStreamDispatcher,
+        validator: CompiledValidator<ASchema<TData>> | undefined,
         pingInterval: number,
     ) {
-        this.connection = connection;
-        this._validator = validator;
+        this.dispatcher = dispatcher;
+        this._validator = validator ?? a.compile(a.any());
         this._pingIntervalMs = pingInterval;
     }
 
     get lastEventId(): string | undefined {
-        return this.connection.lastEventId;
+        return this.dispatcher.lastEventId;
     }
 
     send() {
-        void this.connection.send();
-        this.connection.push({
+        void this.dispatcher.send();
+        this.dispatcher.push({
             event: 'start',
             data: 'connection successful',
         });
         this._pingInterval = setInterval(async () => {
-            await this.connection.push({
+            await this.dispatcher.push({
                 event: 'ping',
                 data: '',
             });
@@ -134,7 +135,7 @@ export class EventStreamConnection<TData> {
                     data: serialResult.value,
                 });
             }
-            await this.connection.push(events);
+            await this.dispatcher.push(events);
             return results;
         }
         if (!this._validator.validate(data)) {
@@ -148,7 +149,7 @@ export class EventStreamConnection<TData> {
         if (!serialResult.success) {
             return serialResult;
         }
-        await this.connection.push({
+        await this.dispatcher.push({
             id: eventId,
             event: 'message',
             data: serialResult.value,
@@ -166,18 +167,18 @@ export class EventStreamConnection<TData> {
 
     async close() {
         try {
-            await this.connection.push({
+            await this.dispatcher.push({
                 event: 'done',
                 data: 'this stream has ended',
             });
         } catch (_) {
             // do nothing
         }
-        this.connection.close();
+        this.dispatcher.close();
     }
 
     onClosed(cb: () => any): void {
-        this.connection.onClosed(cb);
+        this.dispatcher.onClosed(cb);
     }
 }
 

@@ -1,14 +1,22 @@
-import { kebabCase, pascalCase, RpcDefinition } from '@arrirpc/codegen-utils';
+import {
+    AppDefinition,
+    camelCase,
+    kebabCase,
+    pascalCase,
+    RpcDefinition,
+    Schema,
+} from '@arrirpc/codegen-utils';
 import { a, ASchema, CompiledValidator } from '@arrirpc/schema';
 
 import { Rpc } from './rpc';
 import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
-import { Dispatcher } from './transport';
+import { TransportDispatcher } from './transport';
 
 export class ArriApp implements ArriServiceBase {
     name?: string;
     description?: string;
     version?: string;
+    externalDocs?: AppDefinition['externalDocs'];
 
     rpcRoutePrefix?: string;
     rpcDefinitionPath?: string;
@@ -17,21 +25,27 @@ export class ArriApp implements ArriServiceBase {
 
     private _defaultTransports: string[] = ['http'];
     private _hasDispatcher: boolean = false;
-    private readonly _dispatchers: Record<string, Dispatcher> = {};
+    private readonly _dispatchers: Record<string, TransportDispatcher> = {};
+    private _procedures: Record<string, RpcDefinition> = {};
+    private _definitions: Record<string, Schema> = {};
 
-    constructor(options: {
-        name?: string;
-        description?: string;
-        version?: string;
-        rpcRoutePrefix?: string;
-        rpcDefinitionPath?: string;
-        disableDefaultRoute?: boolean;
-        disableDefinitionRoute?: boolean;
-        defaultTransport?: string | string[];
-    }) {
+    constructor(
+        options: {
+            name?: string;
+            description?: string;
+            version?: string;
+            externalDocs?: AppDefinition['externalDocs'];
+            rpcRoutePrefix?: string;
+            rpcDefinitionPath?: string;
+            disableDefaultRoute?: boolean;
+            disableDefinitionRoute?: boolean;
+            defaultTransport?: string | string[];
+        } = {},
+    ) {
         this.name = options.name;
         this.description = options.description;
         this.version = options.version;
+        this.externalDocs = options.externalDocs;
         this.rpcRoutePrefix = options.rpcRoutePrefix;
         this.rpcDefinitionPath = options.rpcDefinitionPath;
         this.disableDefaultRoute = options.disableDefaultRoute ?? false;
@@ -43,8 +57,19 @@ export class ArriApp implements ArriServiceBase {
         }
     }
 
-    use(dispatcher: Dispatcher) {
-        this._dispatchers[dispatcher.transportId] = dispatcher;
+    use(service: ArriService): void;
+    use(dispatcher: TransportDispatcher): void;
+    use(input: ArriService | TransportDispatcher) {
+        if (input instanceof ArriService) {
+            for (const [key, value] of Object.entries(input.definitions)) {
+                this._definitions[key] = value;
+            }
+            for (const [key, value] of Object.entries(input.procedures)) {
+                this.rpc(key, value);
+            }
+            return;
+        }
+        this._dispatchers[input.transportId] = input;
         if (!this._hasDispatcher) this._hasDispatcher = true;
     }
 
@@ -83,6 +108,16 @@ export class ArriApp implements ArriServiceBase {
             params: this._resolveValidator(procedure.params),
             response: this._resolveValidator(procedure.response),
         };
+        this._registerRpcType(
+            procedure.name ?? name,
+            'params',
+            procedure.params,
+        );
+        this._registerRpcType(
+            procedure.name ?? name,
+            'response',
+            procedure.response,
+        );
         if (isEventStreamRpc(procedure)) {
             const def: RpcDefinition<string> = {
                 transports: transports,
@@ -95,6 +130,7 @@ export class ArriApp implements ArriServiceBase {
                 isDeprecated: isDeprecated,
                 deprecationNote: deprecatedNote,
             };
+            this._procedures[procedure.name ?? name] = def;
             for (const t of transports) {
                 const dispatcher = this._dispatchers[t];
                 if (!dispatcher) {
@@ -121,6 +157,7 @@ export class ArriApp implements ArriServiceBase {
             isDeprecated: isDeprecated,
             deprecationNote: deprecatedNote,
         };
+        this._procedures[procedure.name ?? name] = def;
         for (const t of transports) {
             const dispatcher = this._dispatchers[t];
             if (!dispatcher) {
@@ -136,6 +173,49 @@ export class ArriApp implements ArriServiceBase {
                 procedure.postHandler,
             );
         }
+    }
+
+    registerDefinitions(definitions: Record<string, Schema>): void {
+        for (const [key, value] of Object.entries(definitions)) {
+            this._definitions[key] = value;
+        }
+    }
+
+    getAppDefinition(): AppDefinition {
+        const result: AppDefinition = {
+            schemaVersion: '0.0.8',
+            info: {
+                title: this.name,
+                description: this.description,
+                version: this.version,
+            },
+            externalDocs: this.externalDocs,
+            procedures: this._procedures,
+            definitions: this._definitions,
+        };
+        return result;
+    }
+
+    private _registerRpcType(
+        rpcName: string,
+        type: 'params' | 'response',
+        def?: Schema,
+    ) {
+        if (!def) return;
+        let key = def.metadata?.id ?? '';
+        if (!key) {
+            key = rpcName.split('.').join('_');
+            switch (type) {
+                case 'params':
+                    key += `_params`;
+                    break;
+                case 'response':
+                    key += '_response';
+            }
+            key = pascalCase(key, { normalize: true });
+        }
+        if (this._definitions[key]) return;
+        this._definitions[key] = def;
     }
 
     private _resolveValidator(
@@ -175,6 +255,46 @@ export interface ArriServiceBase {
         name: string,
         procedure: Rpc<any, any> | EventStreamRpc<any, any>,
     ): void;
+
+    registerDefinitions(definitions: Record<string, Schema>): void;
+}
+
+export class ArriService implements ArriServiceBase {
+    name: string;
+
+    procedures: Record<string, Rpc<any, any> | EventStreamRpc<any, any>> = {};
+    definitions: Record<string, Schema> = {};
+
+    private get formattedName() {
+        return this.name.toLowerCase();
+    }
+
+    constructor(
+        name: string,
+        procedures?: Record<string, Rpc<any, any> | EventStreamRpc<any, any>>,
+    ) {
+        this.name = name;
+
+        if (!procedures) return;
+        for (const [key, value] of Object.entries(procedures)) {
+            const newKey = `${this.formattedName}.${key}`;
+            this.procedures[newKey] = value;
+        }
+    }
+
+    rpc(
+        name: string,
+        procedure: Rpc<any, any> | EventStreamRpc<any, any>,
+    ): void {
+        const key = `${this.formattedName}.${camelCase(name, { normalize: true })}`;
+        this.procedures[key] = procedure;
+    }
+
+    registerDefinitions(definitions: Record<string, Schema>): void {
+        for (const [key, value] of Object.entries(definitions)) {
+            this.definitions[key] = value;
+        }
+    }
 }
 
 export function resolveTypeDefId(

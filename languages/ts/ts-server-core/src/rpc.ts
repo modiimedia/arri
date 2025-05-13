@@ -17,30 +17,47 @@ export interface RpcPostHandlerContext<TParams, TResponse> extends RpcContext {
     response: TResponse;
 }
 
-export interface Rpc<TParams extends ASchema, TResponse extends ASchema> {
+export interface Rpc<
+    TParams extends ASchema | undefined = undefined,
+    TResponse extends ASchema | undefined = undefined,
+> {
     transport?: string | string[];
     name?: string;
     method?: RpcHttpMethod;
     path?: string;
     params?: TParams;
     response?: TResponse;
-    handler: RpcHandler<InferType<TParams>, InferType<TResponse>>;
-    postHandler?: RpcPostHandler<InferType<TParams>, InferType<TResponse>>;
+    handler: RpcHandler<
+        TParams extends ASchema ? InferType<TParams> : undefined,
+        TResponse extends ASchema ? InferType<TResponse> : undefined
+    >;
+    postHandler?: RpcPostHandler<
+        TParams extends ASchema ? InferType<TParams> : undefined,
+        TResponse extends ASchema ? InferType<TResponse> : undefined
+    >;
     isDeprecated?: boolean | string;
     description?: string;
 }
 
-export type RpcHandler<TParams, TResponse> = (
+export type RpcHandler<TParams = undefined, TResponse = undefined> = (
     context: RpcHandlerContext<TParams>,
-) => Promise<TResponse> | TResponse;
+) => TResponse extends undefined
+    ? Promise<void> | void
+    : Promise<TResponse> | TResponse;
 
-export type RpcPostHandler<TParams, TResponse> = (
+export type RpcPostHandler<TParams = undefined, TResponse = undefined> = (
     context: RpcPostHandlerContext<TParams, TResponse>,
 ) => Promise<void> | void;
 
 export function defineRpc<
-    TParams extends AObjectSchema | ADiscriminatorSchema<any>,
-    TResponse extends AObjectSchema | ADiscriminatorSchema<any>,
+    TParams extends
+        | AObjectSchema
+        | ADiscriminatorSchema<any>
+        | undefined = undefined,
+    TResponse extends
+        | AObjectSchema
+        | ADiscriminatorSchema<any>
+        | undefined = undefined,
 >(config: Rpc<TParams, TResponse>) {
     return config;
 }
