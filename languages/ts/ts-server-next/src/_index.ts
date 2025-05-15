@@ -1,7 +1,6 @@
 export * from './app';
 export * from './context';
 export * from './error';
-export * from './middleware';
 export * from './rpc';
 export * from './rpc_event_stream';
 export * from './transport';

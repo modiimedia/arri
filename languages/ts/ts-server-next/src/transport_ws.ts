@@ -18,7 +18,7 @@ import {
 } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 import { TransportDispatcher } from './transport';
-import { WebsocketHttpRegister } from './transport_http';
+import { WebsocketHttpDispatcher } from './transport_http';
 
 export interface WsOptions {
     connectionPath?: string;
@@ -41,11 +41,6 @@ export interface WsOptions {
 
 type HandlerItem = RpcHandlerObj | EventStreamRpcHandlerObj;
 
-type WsMiddleware = (
-    peer: Peer,
-    context: RpcHandlerContext<any>,
-) => Promise<void> | void;
-
 interface RpcHandlerObj {
     isEventStream: false;
     validators: {
@@ -65,10 +60,18 @@ interface EventStreamRpcHandlerObj {
     handler: EventStreamRpcHandler<any, any>;
 }
 
+export type WsMiddleware = (
+    peer: Peer,
+    context: RpcHandlerContext<any>,
+) => Promise<void> | void;
+export function defineWsMiddleware(middleware: WsMiddleware) {
+    return middleware;
+}
+
 export class WsDispatcher implements TransportDispatcher {
     transportId: string = 'ws';
 
-    register: WebsocketHttpRegister;
+    dispatcher: WebsocketHttpDispatcher;
 
     options: WsOptions;
 
@@ -80,8 +83,8 @@ export class WsDispatcher implements TransportDispatcher {
 
     peers: Map<string, Peer> = new Map();
 
-    constructor(register: WebsocketHttpRegister, options?: WsOptions) {
-        this.register = register;
+    constructor(dispatcher: WebsocketHttpDispatcher, options?: WsOptions) {
+        this.dispatcher = dispatcher;
         this.options = options ?? {};
         this.hooks = defineHooks({
             upgrade: (_) => {
@@ -95,7 +98,7 @@ export class WsDispatcher implements TransportDispatcher {
             message: (peer, message) => this._handleMessage(peer, message),
         });
 
-        this.register.registerWebsocketEndpoint(
+        this.dispatcher.registerWebsocketEndpoint(
             this.options.connectionPath ?? '/ws',
             this.options.connectionMethod ?? 'GET',
             this.hooks,

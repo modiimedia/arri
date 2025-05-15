@@ -20,11 +20,11 @@ import { isInsideDir, logger } from '../common';
 import { defineServerConfig } from './_config';
 import { createWindowsCompatibleAbsoluteImport } from './tsServer';
 
-export function tsServer(serverConfig?: TsServerV2Config) {
+export function tsServerNext(serverConfig?: TsServerNextConfig) {
     return defineServerConfig({
         devArgs: undefined,
         async devFn(_, generators) {
-            const resolvedConfig: Required<TsServerV2Config> = {
+            const resolvedConfig: Required<TsServerNextConfig> = {
                 entry: serverConfig?.entry ?? defaultTsServerConfig.entry,
                 rootDir: serverConfig?.rootDir ?? defaultTsServerConfig.rootDir,
                 srcDir: serverConfig?.srcDir ?? defaultTsServerConfig.srcDir,
@@ -44,7 +44,7 @@ export function tsServer(serverConfig?: TsServerV2Config) {
         },
         buildArgs: undefined,
         async buildFn(args, generators) {
-            const resolvedConfig: Required<TsServerV2Config> = {
+            const resolvedConfig: Required<TsServerNextConfig> = {
                 entry: serverConfig?.entry ?? 'app.ts',
                 rootDir: serverConfig?.rootDir ?? defaultTsServerConfig.rootDir,
                 srcDir: serverConfig?.srcDir ?? defaultTsServerConfig.srcDir,
@@ -73,7 +73,7 @@ export function tsServer(serverConfig?: TsServerV2Config) {
     });
 }
 
-export interface TsServerV2Config {
+export interface TsServerNextConfig {
     entry?: string;
     rootDir?: string;
     srcDir?: string;
@@ -98,15 +98,10 @@ export interface TsServerV2Config {
          * Use this to add directories outside of the srcDir that should trigger a dev server reload
          */
         additionalWatchDirs?: string[];
-        /**
-         * If you want to serve both https and http on the dev server
-         */
-        httpWithHttps?: boolean;
-        httpWithHttpsPort?: number;
     };
 }
 
-const defaultTsServerConfig: Required<TsServerV2Config> = {
+const defaultTsServerConfig: Required<TsServerNextConfig> = {
     entry: 'app.ts',
     rootDir: '.',
     srcDir: 'src',
@@ -116,8 +111,6 @@ const defaultTsServerConfig: Required<TsServerV2Config> = {
     esbuild: {},
     devServer: {
         additionalWatchDirs: undefined,
-        httpWithHttps: undefined,
-        httpWithHttpsPort: undefined,
     },
 };
 
@@ -125,7 +118,7 @@ const defaultTsServerConfig: Required<TsServerV2Config> = {
 
 export async function startBuild(
     generators: Generator<any>[],
-    serverConfig: Required<TsServerV2Config>,
+    serverConfig: Required<TsServerNextConfig>,
     skipCodeGen = false,
 ) {
     logger.log('Bundling server....');
@@ -193,7 +186,7 @@ export async function startBuild(
 }
 
 async function bundleAppEntry(
-    config: Required<TsServerV2Config>,
+    config: Required<TsServerNextConfig>,
     _allowCodegen = true,
 ) {
     const appEntry = path.resolve(
@@ -220,7 +213,7 @@ const require = topLevelCreateRequire(import.meta.url);`,
     });
 }
 
-async function createCodegenEntryFile(config: Required<TsServerV2Config>) {
+async function createCodegenEntryFile(config: Required<TsServerNextConfig>) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
@@ -247,7 +240,7 @@ async function createCodegenEntryFile(config: Required<TsServerV2Config>) {
     );
 }
 
-async function bundleFilesContext(config: Required<TsServerV2Config>) {
+async function bundleFilesContext(config: Required<TsServerNextConfig>) {
     return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
@@ -271,7 +264,7 @@ type ArriApp = {
 
 ///// DEV SERVER ////////
 
-async function createDevServer(config: Required<TsServerV2Config>) {
+async function createDevServer(config: Required<TsServerNextConfig>) {
     let app: ArriApp | undefined;
     async function reload(): Promise<AppDefinition> {
         let importPath = path.resolve(
@@ -291,7 +284,7 @@ async function createDevServer(config: Required<TsServerV2Config>) {
 }
 
 export async function startDevServer(
-    config: Required<TsServerV2Config>,
+    config: Required<TsServerNextConfig>,
     generators: Generator<any>[],
 ) {
     await setupWorkingDir(config);
@@ -429,7 +422,7 @@ export const VIRTUAL_MODULES = {
     APP: 'virtual:arri/app',
 } as const;
 
-export async function setupWorkingDir(config: Required<TsServerV2Config>) {
+export async function setupWorkingDir(config: Required<TsServerNextConfig>) {
     const arriDir = path.resolve(config.rootDir, config.buildDir);
     const outDir = path.resolve(config.rootDir, '.output');
     if (existsSync(arriDir)) {
@@ -449,7 +442,7 @@ interface RpcRoute {
 }
 
 export async function createAppWithRoutesModule(
-    config: Required<TsServerV2Config>,
+    config: Required<TsServerNextConfig>,
 ) {
     const glob = await import('globby');
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
@@ -496,7 +489,7 @@ export async function createAppWithRoutesModule(
 export async function getFsRouteBatch(
     glob: typeof globby,
     globPattern: string,
-    config: Required<TsServerV2Config>,
+    config: Required<TsServerNextConfig>,
 ): Promise<RpcRoute[]> {
     if (!config.procedureDir) {
         return [];
@@ -531,7 +524,7 @@ export async function getFsRouteBatch(
 const disallowedNameChars = '~`!@#$%^&*()-+=[]{}\\|:;"\'<>,./';
 
 export const getRpcMetaFromPath = (
-    config: Required<TsServerV2Config>,
+    config: Required<TsServerNextConfig>,
     filePath: string,
 ): { id: string; httpPath: string } | undefined => {
     if (!config.procedureDir) {

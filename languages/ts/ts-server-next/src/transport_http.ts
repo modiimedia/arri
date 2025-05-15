@@ -56,7 +56,7 @@ export type HttpMiddleware = (
     context: HttpMiddlewareContext,
 ) => Promise<void> | void;
 
-export interface WebsocketHttpRegister {
+export interface WebsocketHttpDispatcher {
     registerWebsocketEndpoint(
         path: string,
         method: h3.HTTPMethod,
@@ -70,7 +70,7 @@ export interface WebsocketHttpRegister {
  * Meaning it can work in NodeJs, Cloudflare Workers, Bun, and Deno.
  */
 export class HttpDispatcher
-    implements TransportDispatcher, WebsocketHttpRegister
+    implements TransportDispatcher, WebsocketHttpDispatcher
 {
     readonly h3App: h3.App;
     readonly h3Router: h3.Router;
