@@ -24,5 +24,7 @@
   "dependencies": {
     "@arrirpc/schema": "workspace:*"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "benny": "^3.7.1"
+  }
 }

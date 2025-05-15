@@ -175,6 +175,10 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../ts-schema
+    devDependencies:
+      benny:
+        specifier: ^3.7.1
+        version: 3.7.1
 
   languages/ts/ts-schema:
     dependencies:
@@ -312,7 +316,7 @@ importers:
         specifier: ^1.2.9
         version: 1.2.9
 
-  languages/ts/ts-server-core:
+  languages/ts/ts-server-v2:
     dependencies:
       '@arrirpc/codegen-utils':
         specifier: workspace:*

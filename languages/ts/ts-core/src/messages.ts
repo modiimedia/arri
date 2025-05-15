@@ -18,6 +18,8 @@ export type ServerMessage<T = string> =
 export interface ServerSuccessMessage<T = string> {
     success: true;
     reqId?: string;
+    path?: string;
+    method?: string;
     customHeaders: Record<string, string>;
     contentType: 'application/json';
     body?: T;
@@ -25,6 +27,8 @@ export interface ServerSuccessMessage<T = string> {
 export interface ServerFailureMessage {
     success: false;
     reqId?: string;
+    path?: string;
+    method?: string;
     customHeaders: Record<string, string>;
     contentType: 'application/json';
     error: ArriError;
@@ -39,12 +43,13 @@ export function parseClientMessage(
     let contentType: string | undefined;
     const customHeaders: Record<string, string> = {};
     let currentLine = '';
-    let previousChar = '';
     let bodyStartIndex: number | undefined;
 
     function processLine() {
         if (!procedure) {
-            procedure = currentLine.trim();
+            const [arriVersion, rpcName] = currentLine.split(' ');
+            if (!arriVersion || !rpcName) return;
+            procedure = rpcName.trim();
             currentLine = '';
             return;
         }
@@ -68,15 +73,15 @@ export function parseClientMessage(
 
     for (let i = 0; i < input.length; i++) {
         const char = input[i]!;
-        if (char === '\n' && previousChar === '\n') {
-            bodyStartIndex = i + 1;
+        if (char === '\n' && input[i + 1] === '\n') {
+            processLine();
+            bodyStartIndex = i + 2;
             break;
         }
         if (char === '\n') {
             processLine();
             continue;
         }
-        previousChar = char;
         currentLine += char;
     }
 

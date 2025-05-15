@@ -34,6 +34,11 @@ export interface HttpOptions {
     onError?: (event: h3.H3Event, error: unknown) => void | Promise<void>;
     https?: boolean | listhen.HTTPSOptions;
     http2?: boolean;
+    autoClose?: boolean;
+    port?: number;
+    public?: boolean;
+    httpWithHttps?: boolean;
+    httpWithHttpsPort?: number;
 }
 
 export interface HttpMiddlewareContext extends Omit<RpcContext, 'rpcName'> {
@@ -81,6 +86,14 @@ export class HttpDispatcher
 
     private _https: HttpOptions['https'];
     private _http2: HttpOptions['http2'];
+    private _autoClose: HttpOptions['autoClose'];
+    private _port: HttpOptions['port'];
+    private _public: NonNullable<HttpOptions['public']>;
+    private _httpWithHttps?: HttpOptions['httpWithHttps'];
+    private _httpWithHttpsPort?: HttpOptions['httpWithHttpsPort'];
+
+    private _listener: listhen.Listener | undefined;
+    private _secondaryListener: listhen.Listener | undefined;
 
     constructor(options: HttpOptions = {}) {
         this.h3App = options.h3App ?? h3.createApp({ debug: options.debug });
@@ -93,6 +106,9 @@ export class HttpDispatcher
         this._onError = options.onError;
         this._https = options.https;
         this._http2 = options.http2;
+        this._autoClose = options.autoClose;
+        this._port = options.port;
+        this._public = options.public ?? true;
     }
 
     use(middleware: HttpMiddleware): void {
@@ -500,16 +516,47 @@ export class HttpDispatcher
         }
     }
 
-    start(): void {
-        const listener = h3.toNodeListener(this.h3App);
-        listhen.listen(listener, {
+    async start(): Promise<void> {
+        this._listener = await listhen.listen(h3.toNodeListener(this.h3App), {
+            port: this._port ?? 3000,
             http2: this._http2,
             https: this._https,
+            public: this._public,
+            autoClose: this._autoClose,
+            ws: this.h3App.websocket.resolve
+                ? {
+                      resolve: this.h3App.websocket.resolve,
+                  }
+                : undefined,
         });
-        throw new Error('Not implemented');
+        if (this._httpWithHttps) {
+            this._secondaryListener = await listhen.listen(
+                h3.toNodeListener(this.h3App),
+                {
+                    port: this._httpWithHttpsPort ?? (this._port ?? 3000) + 1,
+                    public: this._public,
+                    http2: this._http2,
+                    https: false,
+                    autoClose: this._autoClose,
+                    ws: this.h3App.websocket.resolve
+                        ? {
+                              resolve: this.h3App.websocket.resolve,
+                          }
+                        : undefined,
+                    showURL: false,
+                    qr: false,
+                },
+            );
+            console.info(
+                `Serving unencrypted traffic from port ${this._secondaryListener.address.port}`,
+            );
+        }
     }
 
-    stop(): void {
-        throw new Error('Not implemented');
+    async stop(): Promise<void> {
+        await this._listener?.close();
+        this._listener = undefined;
+        await this._secondaryListener?.close();
+        this._secondaryListener = undefined;
     }
 }

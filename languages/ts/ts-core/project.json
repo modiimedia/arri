@@ -4,6 +4,13 @@
   "sourceRoot": "languages/ts/ts-core/src",
   "projectType": "library",
   "targets": {
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jiti buildBenchmarks.ts && node benchmark/dist/main.cjs",
+        "cwd": "languages/ts/ts-core"
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],

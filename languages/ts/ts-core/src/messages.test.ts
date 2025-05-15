@@ -33,7 +33,8 @@ foo: foo
     });
     test('decoding', () => {
         const result = parseClientMessage(encodedMsg);
-        expect(result.success);
+        if (!result.success) console.error(result.error);
+        expect(result.success).toBe(true);
         if (!result.success) return;
         expect(result.value).toStrictEqual(decodedMsg);
     });

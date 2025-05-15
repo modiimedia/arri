@@ -248,6 +248,24 @@ export class ArriApp implements ArriServiceBase {
         if (typeof rpcTransport === 'undefined') return this._defaultTransports;
         return rpcTransport;
     }
+
+    async start() {
+        const tasks: Promise<unknown>[] = [];
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            const p = dispatcher.start();
+            if (p instanceof Promise) tasks.push(p);
+        }
+        await Promise.allSettled(tasks);
+    }
+
+    async stop() {
+        const tasks: Promise<unknown>[] = [];
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            const p = dispatcher.stop();
+            if (p instanceof Promise) tasks.push(p);
+        }
+        await Promise.allSettled(tasks);
+    }
 }
 
 export interface ArriServiceBase {

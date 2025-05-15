@@ -43,7 +43,7 @@ export interface TransportDispatcher {
         getDefinition: () => AppDefinition,
     ): void;
 
-    start(): void;
+    start(): Promise<void> | void;
 
-    stop(): void;
+    stop(): Promise<void> | void;
 }

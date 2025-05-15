@@ -1,7 +1,7 @@
 {
-  "name": "ts-server-core",
+  "name": "ts-server-v2",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "languages/ts/ts-server-core/src",
+  "sourceRoot": "languages/ts/ts-server-v2/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,20 +9,20 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "languages/ts/ts-server-core"
+        "cwd": "languages/ts/ts-server-v2"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint languages/ts/ts-server-core"
+        "command": "pnpm eslint languages/ts/ts-server-v2"
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "languages/ts/ts-server-core"
+        "cwd": "languages/ts/ts-server-v2"
       }
     },
     "publish": {
@@ -30,14 +30,14 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "languages/ts/ts-server-core"
+        "cwd": "languages/ts/ts-server-v2"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "languages/ts/ts-server-core"
+        "cwd": "languages/ts/ts-server-v2"
       }
     }
   },

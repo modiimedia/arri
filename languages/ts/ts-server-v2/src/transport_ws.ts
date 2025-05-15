@@ -78,6 +78,8 @@ export class WsDispatcher implements TransportDispatcher {
 
     middlewares: WsMiddleware[] = [];
 
+    peers: Map<string, Peer> = new Map();
+
     constructor(register: WebsocketHttpRegister, options?: WsOptions) {
         this.register = register;
         this.options = options ?? {};
@@ -146,10 +148,16 @@ export class WsDispatcher implements TransportDispatcher {
 
     start(): void {}
     stop(): void {
-        throw new Error('Method not implemented.');
+        for (const peer of this.peers.values()) {
+            peer.close();
+        }
+        this.peers.clear();
     }
 
     private _handleOpen(peer: Peer) {
+        const existing = this.peers.get(peer.id);
+        if (existing) existing.close();
+        this.peers.set(peer.id, peer);
         if (!this.options.onOpen) return;
         try {
             this.options.onOpen(peer);
@@ -160,6 +168,7 @@ export class WsDispatcher implements TransportDispatcher {
     }
 
     private async _handleError(peer: Peer, error: WSError) {
+        console.log('ONERROR', peer, error);
         if (!this.options.onError) return;
         await this.options.onError(peer, error);
     }
@@ -168,6 +177,7 @@ export class WsDispatcher implements TransportDispatcher {
         peer: Peer,
         details: { code?: number; reason?: string },
     ) {
+        this.peers.delete(peer.id);
         if (!this.options.onClose) return;
         try {
             await this.options.onClose(peer, details);
