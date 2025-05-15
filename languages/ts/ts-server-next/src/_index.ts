@@ -6,3 +6,5 @@ export * from './rpc_event_stream';
 export * from './transport';
 export * from './transport_http';
 export * from './transport_ws';
+export * from 'crossws';
+export * from 'h3';
