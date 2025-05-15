@@ -1,7 +1,7 @@
 import { a } from '@arrirpc/schema';
 
 import { defineEventStreamRpc } from './eventStreamRpc';
-import { createRpcDefinition, defineRpc } from './rpc';
+import { createHttpRpcDefinition, defineRpc } from './rpc';
 describe('Type Inference', () => {
     it('infers types properly', async () => {
         const Params = a.object({
@@ -42,7 +42,7 @@ test('create rpc definition', () => {
         response: undefined,
         handler() {},
     });
-    const rpcDef = createRpcDefinition('hello.world', '/hello/world', rpc);
+    const rpcDef = createHttpRpcDefinition('hello.world', '/hello/world', rpc);
     expect(rpcDef.method).toBe('post');
     expect(rpcDef.isEventStream).toBe(undefined);
     const eventStreamRpc = defineEventStreamRpc({
@@ -52,7 +52,7 @@ test('create rpc definition', () => {
         }),
         handler() {},
     });
-    const eventStreamDef = createRpcDefinition(
+    const eventStreamDef = createHttpRpcDefinition(
         'hello.world',
         '/hello/world',
         eventStreamRpc,

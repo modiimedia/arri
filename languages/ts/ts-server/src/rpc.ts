@@ -8,7 +8,6 @@ import {
     a,
     ADiscriminatorSchema,
     AObjectSchema,
-    CompiledValidator,
     errorMessageFromErrors,
     InferType,
     isADiscriminatorSchema,
@@ -50,17 +49,22 @@ export interface NamedHttpRpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> extends Rpc<TIsEventStream, TParams, TResponse> {
+> extends HttpRpc<TIsEventStream, TParams, TResponse> {
     name: string;
 }
 
-export interface Rpc<
+export type Rpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-    TTransport extends string = 'http',
+> = HttpRpc<TIsEventStream, TParams, TResponse>;
+
+export interface HttpRpc<
+    TIsEventStream extends boolean = false,
+    TParams extends RpcParamSchema | undefined = undefined,
+    TResponse extends RpcParamSchema | undefined = undefined,
 > {
-    transport?: TTransport;
+    transport: 'http';
     method?: RpcHttpMethod;
     path?: string;
     description?: string;
@@ -110,13 +114,15 @@ export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
 
 export type RpcHandler<TParams, TResponse> = (
     context: RpcEventContext<TParams>,
+    event: RpcEvent<TParams>,
 ) => TResponse | Promise<TResponse>;
 
 export type RpcPostHandler<TParams, TResponse> = (
     context: RpcPostEventContext<TParams, TResponse>,
+    event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
-export function isRpc(input: unknown): input is Rpc<any, any> {
+export function isRpc(input: unknown): input is HttpRpc<any, any> {
     return (
         typeof input === 'object' &&
         input !== null &&
@@ -130,18 +136,20 @@ export function isRpc(input: unknown): input is Rpc<any, any> {
 export function defineRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined | never = undefined,
-    TTransport extends string = 'http',
 >(
-    config: Omit<Rpc<false, TParams, TResponse, TTransport>, 'isEventStream'>,
-): Rpc<false, TParams, TResponse> {
+    config: Omit<
+        HttpRpc<false, TParams, TResponse>,
+        'transport' | 'isEventStream'
+    >,
+): HttpRpc<false, TParams, TResponse> {
+    (config as any).transport = 'http';
     return config as any;
 }
 
-export function createRpcDefinition(
+export function createHttpRpcDefinition(
     rpcName: string,
     httpPath: string,
-    procedure: Rpc<any, any, any>,
-    defaultTransport: string,
+    procedure: HttpRpc<any, any, any>,
 ): RpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
@@ -150,7 +158,7 @@ export function createRpcDefinition(
         method = procedure.method ?? 'post';
     }
     return {
-        transport: procedure.transport ?? defaultTransport,
+        transports: ['http'],
         description: procedure.description,
         path: httpPath,
         method,
@@ -177,7 +185,7 @@ export function getRpcPath(rpcName: string, prefix = ''): string {
 
 export function getRpcParamName(
     rpcName: string,
-    procedure: Rpc<any, any, any>,
+    procedure: HttpRpc<any, any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.params)) {
         return undefined;
@@ -188,7 +196,7 @@ export function getRpcParamName(
 
 export function getRpcResponseName(
     rpcName: string,
-    procedure: Rpc<any, any, any>,
+    procedure: HttpRpc<any, any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -199,7 +207,7 @@ export function getRpcResponseName(
 
 function getRpcResponseDefinition(
     rpcName: string,
-    procedure: Rpc<any, any, any> | EventStreamRpc<any, any>,
+    procedure: HttpRpc<any, any> | EventStreamRpc<any, any>,
 ): RpcDefinition['response'] {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -214,19 +222,18 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    name: string,
-    def: RpcDefinition,
-    validators: {
-        params?: CompiledValidator<any>;
-        response?: CompiledValidator<any>;
-    },
-    rpcHandler: RpcHandler<any, any>,
-    rpcPostHandler: RpcPostHandler<any, any> | undefined,
+    procedure: NamedHttpRpc<any, any, any>,
     opts: RouteOptions,
 ) {
-    const httpMethod = (def.method ?? 'post') as any;
+    const paramValidator = procedure.params
+        ? getSchemaValidator(procedure.name, 'params', procedure.params)
+        : undefined;
+    const responseValidator = procedure.response
+        ? getSchemaValidator(procedure.name, 'response', procedure.response)
+        : undefined;
+    const httpMethod = procedure.method ?? 'post';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
-        event.context.rpcName = name;
+        event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
             return 'ok';
         }
@@ -239,21 +246,25 @@ export function registerRpc(
                     await m(event);
                 }
             }
-            if (validators.params) {
+            if (isRpcParamSchema(procedure.params)) {
                 await validateRpcRequestInput(
                     event,
                     httpMethod,
-                    validators.params!,
+                    paramValidator!,
                 );
             }
 
-            const response = await rpcHandler(event.context as any);
+            const response = await procedure.handler(
+                event.context as any,
+
+                event as any,
+            );
             event.context.response = response;
             if (opts.onBeforeResponse) {
                 await opts.onBeforeResponse(event);
             }
             if (typeof response === 'object') {
-                const payload = validators.response?.serialize(response);
+                const payload = responseValidator?.serialize(response);
                 if (payload && payload.success !== true) {
                     throw defineError(500, {
                         message:
@@ -270,8 +281,11 @@ export function registerRpc(
             if (opts.onAfterResponse) {
                 await opts.onAfterResponse(event);
             }
-            if (rpcPostHandler) {
-                await rpcPostHandler(event.context as RpcPostEventContext);
+            if (procedure.postHandler) {
+                await procedure.postHandler(
+                    event.context as RpcPostEventContext,
+                    event as RpcPostEvent,
+                );
             }
         } catch (err) {
             await handleH3Error(err, event, opts.onError, opts.debug ?? false);
@@ -301,7 +315,7 @@ export function registerRpc(
 export async function validateRpcRequestInput(
     event: H3Event,
     httpMethod: RpcHttpMethod,
-    validator: CompiledValidator<any>,
+    validator: RequestValidator,
 ) {
     switch (httpMethod) {
         case 'get': {

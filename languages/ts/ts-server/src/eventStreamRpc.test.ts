@@ -2,7 +2,7 @@ import { a } from '@arrirpc/schema';
 
 import {
     defineEventStreamRpc,
-    type H3EventStreamConnection,
+    type EventStreamConnection,
     isEventStreamRpc,
 } from './eventStreamRpc';
 
@@ -22,7 +22,7 @@ test('type inference', () => {
         response: ResponseSchema,
         handler({ params, stream }) {
             assertType<ParamsSchema>(params);
-            assertType<H3EventStreamConnection<a.infer<typeof ResponseSchema>>>(
+            assertType<EventStreamConnection<a.infer<typeof ResponseSchema>>>(
                 stream,
             );
         },

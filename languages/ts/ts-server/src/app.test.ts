@@ -54,14 +54,14 @@ it('creates valid app definition', () => {
         schemaVersion: '0.0.8',
         procedures: {
             sayHello: {
-                transport: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/say-hello',
                 params: 'SayHelloParams',
                 response: 'SayHelloResponse',
             },
             sayHelloStream: {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/say-hello-stream',
                 params: 'SayHelloParams',
