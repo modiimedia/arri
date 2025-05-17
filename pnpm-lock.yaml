@@ -437,6 +437,9 @@ importers:
       '@arrirpc/server':
         specifier: workspace:*
         version: link:../../../languages/ts/ts-server
+      '@arrirpc/server-next':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-server-next
       '@arrirpc/typebox-adapter':
         specifier: workspace:*
         version: link:../../../languages/ts/ts-schema-typebox-adapter

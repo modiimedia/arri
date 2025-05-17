@@ -1,5 +1,6 @@
 import { a } from '@arrirpc/schema';
-import { ArriRouter, defineRpc, defineService } from '@arrirpc/server';
+import { ArriRouter } from '@arrirpc/server';
+import { defineRpc, defineService } from '@arrirpc/server-next';
 
 export const manualRouter = new ArriRouter();
 const DefaultPayload = a.object('DefaultPayload', {

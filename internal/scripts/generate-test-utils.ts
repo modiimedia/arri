@@ -144,14 +144,14 @@ const def = createAppDefinition({
     procedures: {
         sendObject: {
             path: '/send-object',
-            transport: 'http',
+            transports: ['http'],
             method: 'post',
             params: NestedObject,
             response: NestedObject,
         },
         'books.getBook': {
             path: '/books/get-book',
-            transport: 'http',
+            transports: ['http'],
             method: 'get',
             params: BookParams,
             response: Book,
@@ -159,7 +159,7 @@ const def = createAppDefinition({
         },
         'books.createBook': {
             path: '/books/create-book',
-            transport: 'http',
+            transports: ['http'],
             method: 'post',
             params: Book,
             response: Book,
@@ -168,7 +168,7 @@ const def = createAppDefinition({
         },
         'books.watchBook': {
             path: '/books/watch-book',
-            transport: 'http',
+            transports: ['http'],
             method: 'get',
             params: BookParams,
             response: Book,

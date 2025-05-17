@@ -16,6 +16,7 @@
     "@arrirpc/eslint-plugin": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
+    "@arrirpc/server-next": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
     "@faker-js/faker": "^9.7.0",
     "arri": "workspace:*"

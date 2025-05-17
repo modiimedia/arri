@@ -57,6 +57,13 @@ export class ArriApp implements ArriServiceBase {
         }
     }
 
+    get definitionPath(): string {
+        return (
+            this.rpcDefinitionPath ??
+            `${this.rpcRoutePrefix ?? ''}/app-definition`
+        );
+    }
+
     use(service: ArriService): void;
     use(dispatcher: TransportDispatcher): void;
     use(input: ArriService | TransportDispatcher) {
@@ -69,18 +76,29 @@ export class ArriApp implements ArriServiceBase {
             }
             return;
         }
+        if (typeof input.registerHomeRoute === 'function') {
+            input.registerHomeRoute('/', () => ({
+                name: this.name,
+                description: this.description,
+                version: this.version,
+                definitionPath: this.definitionPath,
+            }));
+        }
+        if (typeof input.registerDefinitionRoute === 'function') {
+            input.registerDefinitionRoute(this.definitionPath, () =>
+                this.getAppDefinition(),
+            );
+        }
         this._dispatchers[input.transportId] = input;
         if (!this._hasDispatcher) this._hasDispatcher = true;
     }
 
     rpc(name: string, procedure: Rpc<any, any> | EventStreamRpc<any, any>) {
         const transports = this._resolveTransports(procedure.transport);
-        let path =
-            procedure.path ??
-            (procedure.name ?? name)
-                ?.split('.')
-                .map((part) => kebabCase(part).toLowerCase())
-                .join('/');
+        let path = (procedure.name ?? name)
+            ?.split('.')
+            .map((part) => kebabCase(part).toLowerCase())
+            .join('/');
         if (!path.startsWith('/')) {
             path = `/${path}`;
         }
@@ -121,7 +139,7 @@ export class ArriApp implements ArriServiceBase {
         if (isEventStreamRpc(procedure)) {
             const def: RpcDefinition<string> = {
                 transports: transports,
-                path: path,
+                path: (this.rpcRoutePrefix ?? '') + path,
                 method: procedure.method,
                 params: paramsId,
                 response: responseId,
@@ -149,7 +167,7 @@ export class ArriApp implements ArriServiceBase {
         }
         const def: RpcDefinition<string> = {
             transports: transports,
-            path: path,
+            path: (this.rpcRoutePrefix ?? '') + path,
             method: procedure.method,
             params: paramsId,
             response: responseId,
@@ -255,7 +273,12 @@ export class ArriApp implements ArriServiceBase {
             const p = dispatcher.start();
             if (p instanceof Promise) tasks.push(p);
         }
-        await Promise.allSettled(tasks);
+        const results = await Promise.allSettled(tasks);
+        for (const result of results.filter(
+            (item) => item.status === 'rejected',
+        )) {
+            console.error(result.reason);
+        }
     }
 
     async stop() {
@@ -264,7 +287,12 @@ export class ArriApp implements ArriServiceBase {
             const p = dispatcher.stop();
             if (p instanceof Promise) tasks.push(p);
         }
-        await Promise.allSettled(tasks);
+        const results = await Promise.allSettled(tasks);
+        for (const result of results.filter(
+            (item) => item.status === 'rejected',
+        )) {
+            console.error(result.reason);
+        }
     }
 }
 
@@ -313,6 +341,13 @@ export class ArriService implements ArriServiceBase {
             this.definitions[key] = value;
         }
     }
+}
+
+export function defineService(
+    name: string,
+    procedures?: Record<string, Rpc<any, any> | EventStreamRpc<any, any>>,
+) {
+    return new ArriService(name, procedures);
 }
 
 export function resolveTypeDefId(

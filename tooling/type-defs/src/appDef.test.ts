@@ -26,12 +26,12 @@ test('create app definition', () => {
     const result = createAppDefinition({
         procedures: {
             sayHello: {
-                transports: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/say-hello',
             },
             createConnection: {
-                transports: 'ws',
+                transports: ['ws'],
                 path: '/ws',
                 params: {
                     properties: {
@@ -49,7 +49,7 @@ test('create app definition', () => {
                 },
             },
             'utils.getSettings': {
-                transports: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/utils/get-settings',
                 params: SettingsParams,
@@ -61,20 +61,20 @@ test('create app definition', () => {
         schemaVersion: '0.0.8',
         procedures: {
             sayHello: {
-                transports: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/say-hello',
                 params: undefined,
                 response: undefined,
             },
             createConnection: {
-                transports: 'ws',
+                transports: ['ws'],
                 path: '/ws',
                 params: 'CreateConnectionParams',
                 response: 'CreateConnectionResponse',
             },
             'utils.getSettings': {
-                transports: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/utils/get-settings',
                 params: 'SettingsParams',

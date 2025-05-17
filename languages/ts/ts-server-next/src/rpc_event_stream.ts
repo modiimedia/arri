@@ -165,14 +165,16 @@ export class RpcEventStreamConnection<TData> {
         }
     }
 
-    async close() {
-        try {
-            await this.dispatcher.push({
-                event: 'done',
-                data: 'this stream has ended',
-            });
-        } catch (_) {
-            // do nothing
+    async close(notifyClients = true) {
+        if (notifyClients) {
+            try {
+                await this.dispatcher.push({
+                    event: 'done',
+                    data: 'this stream has ended',
+                });
+            } catch (_) {
+                // do nothing
+            }
         }
         this.dispatcher.close();
     }
@@ -182,4 +184,6 @@ export class RpcEventStreamConnection<TData> {
     }
 }
 
-export function defineEventStreamRpc() {}
+export function defineEventStreamRpc<TParams, TResponse>(
+    config: EventStreamRpc<TParams, TResponse>,
+): EventStreamRpc<TParams, TResponse> {}

@@ -124,10 +124,10 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
         return false;
     }
     return (
-        'transport' in input &&
-        Array.isArray(input.transport) &&
-        input.transport.every((val) => typeof val === 'string') &&
-        input.transport.length > 0 &&
+        'transports' in input &&
+        Array.isArray(input.transports) &&
+        input.transports.every((val) => typeof val === 'string') &&
+        input.transports.length > 0 &&
         'path' in input &&
         typeof input.path === 'string' &&
         input.path.length > 0

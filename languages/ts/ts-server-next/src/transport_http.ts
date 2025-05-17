@@ -10,7 +10,11 @@ import * as ws from 'crossws';
 import * as h3 from 'h3';
 
 import { RpcContext } from './context';
-import { getValidationErrorMessage, serializeArriErrorResponse } from './error';
+import {
+    defineError,
+    getValidationErrorMessage,
+    serializeArriErrorResponse,
+} from './error';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import {
     EventStreamRpcHandler,
@@ -55,6 +59,9 @@ export type HttpMiddleware = (
     event: h3.H3Event,
     context: HttpMiddlewareContext,
 ) => Promise<void> | void;
+export function defineHttpMiddleware(middleware: HttpMiddleware) {
+    return middleware;
+}
 
 export interface WebsocketHttpDispatcher {
     registerWebsocketEndpoint(
@@ -96,7 +103,11 @@ export class HttpDispatcher
     private _secondaryListener: listhen.Listener | undefined;
 
     constructor(options: HttpOptions = {}) {
-        this.h3App = options.h3App ?? h3.createApp({ debug: options.debug });
+        this.h3App =
+            options.h3App ??
+            h3.createApp({
+                debug: options.debug,
+            });
         this.h3Router = options.h3Router ?? h3.createRouter();
         this.h3App.use(this.h3Router);
         this._debug = options.debug ?? false;
@@ -109,6 +120,29 @@ export class HttpDispatcher
         this._autoClose = options.autoClose;
         this._port = options.port;
         this._public = options.public ?? true;
+
+        // default fallback route
+        this.h3Router.use(
+            '/**',
+            h3.defineEventHandler(async (event) => {
+                h3.setResponseStatus(event, 404);
+                const error = defineError(404);
+                const context: RpcContext = {
+                    rpcName: '',
+                };
+                try {
+                    if (this._onRequest) {
+                        await this._onRequest(event, context);
+                    }
+                } catch (err) {
+                    return this._handleError(event, err);
+                }
+                if (event.handled) {
+                    return;
+                }
+                return this._handleError(event, error);
+            }),
+        );
     }
 
     use(middleware: HttpMiddleware): void {
@@ -290,7 +324,9 @@ export class HttpDispatcher
         },
         handler: EventStreamRpcHandler<any, any>,
     ): void {
+        console.log('DEF_PATH', definition.path);
         const requestHandler = h3.defineEventHandler(async (event) => {
+            console.log('NEW EVENT STREAM RPC', event.path);
             try {
                 if (h3.isPreflightRequest(event)) {
                     h3.setResponseStatus(event, 200);
@@ -371,7 +407,7 @@ export class HttpDispatcher
 
             h3.setResponseStatus(event, 200);
             h3.setResponseHeader(event, 'Content-Type', 'application/json');
-            await h3.send(event, response, 'application/json');
+            await h3.send(event, JSON.stringify(response));
             if (this._onAfterResponse) {
                 await this._onAfterResponse(event, context as any);
             }
@@ -402,7 +438,11 @@ export class HttpDispatcher
                 }
                 h3.setResponseStatus(event, 200);
                 h3.setResponseHeader(event, 'Content-Type', 'application/json');
-                await h3.send(event, response, 'application/json');
+                await h3.send(
+                    event,
+                    JSON.stringify(response),
+                    'application/json',
+                );
                 if (this._onAfterResponse) {
                     await this._onAfterResponse(event, context);
                 }

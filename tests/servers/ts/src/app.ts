@@ -2,33 +2,42 @@ import { a } from '@arrirpc/schema';
 import {
     ArriApp,
     defineError,
-    defineMiddleware,
+    defineEventHandler,
+    defineHttpMiddleware,
     getHeader,
     handleCors,
-} from '@arrirpc/server';
+    HttpDispatcher,
+    WsDispatcher,
+} from '@arrirpc/server-next';
 
-import { manualRouter, manualTestService } from './routes/other';
+import { manualTestService } from './routes/other';
+
+console.log('HELLO WORLD!');
 
 const app = new ArriApp({
-    rpcRoutePrefix: 'rpcs',
-    appInfo: {
-        version: '10',
-    },
-    onRequest(event) {
+    rpcRoutePrefix: '/rpcs',
+    version: '10',
+});
+const http = new HttpDispatcher({
+    port: 2020,
+    onRequest(event, _) {
         handleCors(event, {
             origin: '*',
         });
     },
+    onError(event, err) {
+        console.log('ERROR', event.path, err);
+    },
 });
-
-app.use(
-    defineMiddleware(async (event) => {
+http.use(
+    defineHttpMiddleware(async (event, _) => {
         const authHeader = getHeader(event, 'x-test-header');
         if (
             !authHeader?.length &&
             event.path !== '/' &&
             event.path !== '/status' &&
-            event.path !== '/favicon.ico'
+            event.path !== '/favicon.ico' &&
+            !event.path.endsWith('definition')
         ) {
             throw defineError(401, {
                 message: "Missing test auth header 'x-test-header'",
@@ -36,14 +45,15 @@ app.use(
         }
     }),
 );
+const ws = new WsDispatcher(http);
+app.use(http);
+app.use(ws);
+app.use(manualTestService);
 
-app.route({
-    path: '/status',
-    method: 'get',
-    handler() {
-        return 'ok';
-    },
-});
+http.h3Router.get(
+    '/status',
+    defineEventHandler((_) => 'ok'),
+);
 
 app.registerDefinitions({
     ManuallyAddedModel: a.object({
@@ -51,7 +61,7 @@ app.registerDefinitions({
     }),
 });
 
-app.use(manualRouter);
-app.use(manualTestService);
+// http.h3App.use(manualRouter);
+// app.use(manualTestService);
 
 export default app;

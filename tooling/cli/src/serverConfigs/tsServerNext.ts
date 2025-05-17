@@ -267,6 +267,7 @@ type ArriApp = {
 async function createDevServer(config: Required<TsServerNextConfig>) {
     let app: ArriApp | undefined;
     async function reload(): Promise<AppDefinition> {
+        await app?.stop();
         let importPath = path.resolve(
             config.rootDir,
             '.output',
@@ -277,6 +278,7 @@ async function createDevServer(config: Required<TsServerNextConfig>) {
             importPath = createWindowsCompatibleAbsoluteImport(importPath);
         }
         app = (await import(importPath)).default as ArriApp;
+        await app.start();
         return app.getAppDefinition();
     }
     await reload();

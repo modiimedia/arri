@@ -4,16 +4,18 @@ import { CompiledValidator } from '@arrirpc/schema';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
+export type RpcValidators = {
+    params?: CompiledValidator<any>;
+    response?: CompiledValidator<any>;
+};
+
 export interface TransportDispatcher {
     transportId: string;
 
     registerRpc(
         name: string,
         definition: RpcDefinition,
-        validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
-        },
+        validators: RpcValidators,
         handler: RpcHandler<any, any>,
         postHandler?: RpcPostHandler<any, any>,
     ): void;
@@ -21,10 +23,7 @@ export interface TransportDispatcher {
     registerEventStreamRpc(
         name: string,
         definition: RpcDefinition,
-        validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
-        },
+        validators: RpcValidators,
         handler: EventStreamRpcHandler<any, any>,
     ): void;
 
