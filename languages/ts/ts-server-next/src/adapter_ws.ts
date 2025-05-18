@@ -9,6 +9,8 @@ import { CompiledValidator, errorMessageFromErrors } from '@arrirpc/schema';
 import { defineHooks, Hooks, Message, Peer, WSError } from 'crossws';
 import { HTTPMethod } from 'h3';
 
+import { TransportAdapter } from './adapter';
+import { WsHttpRegister } from './adapter_http';
 import { RpcContext } from './context';
 import {
     RpcHandler,
@@ -17,8 +19,6 @@ import {
     RpcPostHandlerContext,
 } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
-import { TransportDispatcher } from './transport';
-import { WebsocketHttpDispatcher } from './transport_http';
 
 export interface WsOptions {
     connectionPath?: string;
@@ -68,10 +68,10 @@ export function defineWsMiddleware(middleware: WsMiddleware) {
     return middleware;
 }
 
-export class WsDispatcher implements TransportDispatcher {
+export class WsAdapter implements TransportAdapter {
     transportId: string = 'ws';
 
-    dispatcher: WebsocketHttpDispatcher;
+    dispatcher: WsHttpRegister;
 
     options: WsOptions;
 
@@ -83,7 +83,7 @@ export class WsDispatcher implements TransportDispatcher {
 
     peers: Map<string, Peer> = new Map();
 
-    constructor(dispatcher: WebsocketHttpDispatcher, options?: WsOptions) {
+    constructor(dispatcher: WsHttpRegister, options?: WsOptions) {
         this.dispatcher = dispatcher;
         this.options = options ?? {};
         this.hooks = defineHooks({
@@ -98,7 +98,7 @@ export class WsDispatcher implements TransportDispatcher {
             message: (peer, message) => this._handleMessage(peer, message),
         });
 
-        this.dispatcher.registerWebsocketEndpoint(
+        this.dispatcher.registerWsEndpoint(
             this.options.connectionPath ?? '/ws',
             this.options.connectionMethod ?? 'GET',
             this.hooks,

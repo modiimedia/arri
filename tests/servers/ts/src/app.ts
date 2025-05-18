@@ -12,8 +12,6 @@ import {
 
 import { manualTestService } from './routes/other';
 
-console.log('HELLO WORLD!');
-
 const app = new ArriApp({
     rpcRoutePrefix: '/rpcs',
     version: '10',
@@ -30,8 +28,9 @@ const http = new HttpDispatcher({
     },
 });
 http.use(
-    defineHttpMiddleware(async (event, _) => {
+    defineHttpMiddleware(async (event, context) => {
         const authHeader = getHeader(event, 'x-test-header');
+        context.xTestHeader = authHeader;
         if (
             !authHeader?.length &&
             event.path !== '/' &&

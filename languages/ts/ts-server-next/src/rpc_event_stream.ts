@@ -1,6 +1,8 @@
 import { RpcHttpMethod } from '@arrirpc/codegen-utils';
 import {
     a,
+    ADiscriminatorSchema,
+    AObjectSchema,
     ASchema,
     CompiledValidator,
     InferType,
@@ -21,8 +23,8 @@ export type EventStreamRpcHandler<TParams, TResponse> = (
 ) => Promise<void> | void;
 
 export interface EventStreamRpc<
-    TParams extends ASchema,
-    TResponse extends ASchema,
+    TParams extends ASchema | undefined = undefined,
+    TResponse extends ASchema | undefined = undefined,
 > {
     isEventStream: true;
     transport?: string | string[];
@@ -31,7 +33,10 @@ export interface EventStreamRpc<
     path?: string;
     params?: TParams;
     response?: TResponse;
-    handler: EventStreamRpcHandler<InferType<TParams>, InferType<TResponse>>;
+    handler: EventStreamRpcHandler<
+        TParams extends ASchema ? InferType<TParams> : undefined,
+        TResponse extends ASchema ? InferType<TResponse> : undefined
+    >;
     isDeprecated?: boolean | string;
     description?: string;
 }
@@ -184,6 +189,20 @@ export class RpcEventStreamConnection<TData> {
     }
 }
 
-export function defineEventStreamRpc<TParams, TResponse>(
-    config: EventStreamRpc<TParams, TResponse>,
-): EventStreamRpc<TParams, TResponse> {}
+export function defineEventStreamRpc<
+    TParams extends
+        | AObjectSchema
+        | ADiscriminatorSchema<any>
+        | undefined = undefined,
+    TResponse extends
+        | AObjectSchema
+        | ADiscriminatorSchema<any>
+        | undefined = undefined,
+>(
+    config: Omit<EventStreamRpc<TParams, TResponse>, 'isEventStream'>,
+): EventStreamRpc<TParams, TResponse> {
+    return {
+        isEventStream: true,
+        ...config,
+    };
+}

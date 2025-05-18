@@ -9,7 +9,7 @@ export type RpcValidators = {
     response?: CompiledValidator<any>;
 };
 
-export interface TransportDispatcher {
+export interface TransportAdapter {
     transportId: string;
 
     registerRpc(

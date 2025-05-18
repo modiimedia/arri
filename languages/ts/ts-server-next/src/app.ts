@@ -10,7 +10,7 @@ import { a, ASchema, CompiledValidator } from '@arrirpc/schema';
 
 import { Rpc } from './rpc';
 import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
-import { TransportDispatcher } from './transport';
+import { TransportAdapter } from './adapter';
 
 export class ArriApp implements ArriServiceBase {
     name?: string;
@@ -25,7 +25,7 @@ export class ArriApp implements ArriServiceBase {
 
     private _defaultTransports: string[] = ['http'];
     private _hasDispatcher: boolean = false;
-    private readonly _dispatchers: Record<string, TransportDispatcher> = {};
+    private readonly _dispatchers: Record<string, TransportAdapter> = {};
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: Record<string, Schema> = {};
 
@@ -65,8 +65,8 @@ export class ArriApp implements ArriServiceBase {
     }
 
     use(service: ArriService): void;
-    use(dispatcher: TransportDispatcher): void;
-    use(input: ArriService | TransportDispatcher) {
+    use(dispatcher: TransportAdapter): void;
+    use(input: ArriService | TransportAdapter) {
         if (input instanceof ArriService) {
             for (const [key, value] of Object.entries(input.definitions)) {
                 this._definitions[key] = value;

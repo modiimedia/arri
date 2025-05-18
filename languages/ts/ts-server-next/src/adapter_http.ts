@@ -9,6 +9,7 @@ import * as listhen from '@joshmossas/listhen';
 import * as ws from 'crossws';
 import * as h3 from 'h3';
 
+import { TransportAdapter } from './adapter';
 import { RpcContext } from './context';
 import {
     defineError,
@@ -20,7 +21,6 @@ import {
     EventStreamRpcHandler,
     RpcEventStreamConnection,
 } from './rpc_event_stream';
-import { TransportDispatcher } from './transport';
 
 export interface HttpOptions {
     debug?: boolean;
@@ -63,8 +63,8 @@ export function defineHttpMiddleware(middleware: HttpMiddleware) {
     return middleware;
 }
 
-export interface WebsocketHttpDispatcher {
-    registerWebsocketEndpoint(
+export interface WsHttpRegister {
+    registerWsEndpoint(
         path: string,
         method: h3.HTTPMethod,
         hooks: ws.Hooks,
@@ -76,9 +76,7 @@ export interface WebsocketHttpDispatcher {
  * H3 is designed to be used in any JS runtime.
  * Meaning it can work in NodeJs, Cloudflare Workers, Bun, and Deno.
  */
-export class HttpDispatcher
-    implements TransportDispatcher, WebsocketHttpDispatcher
-{
+export class HttpAdapter implements TransportAdapter, WsHttpRegister {
     readonly h3App: h3.App;
     readonly h3Router: h3.Router;
 
@@ -149,7 +147,7 @@ export class HttpDispatcher
         this._middlewares.push(middleware);
     }
 
-    registerWebsocketEndpoint(
+    registerWsEndpoint(
         path: string,
         method: h3.HTTPMethod,
         hooks: ws.Hooks,

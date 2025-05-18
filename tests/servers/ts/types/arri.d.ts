@@ -1,7 +1,8 @@
-import '@arrirpc/server';
+import '@arrirpc/server-next';
 
-declare module '@arrirpc/server' {
-    interface ArriEventContext {
+declare module '@arrirpc/server-next' {
+    interface RpcContext {
         foo?: string;
+        xTestHeader?: string;
     }
 }

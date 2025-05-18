@@ -1,10 +1,10 @@
 import { ArriApp } from './app';
 import { defineRpc } from './rpc';
-import { HttpDispatcher } from './transport_http';
+import { HttpAdapter } from './adapter_http';
 
 test('Type Inference', () => {
     const app = new ArriApp();
-    const httpDispatcher = new HttpDispatcher();
+    const httpDispatcher = new HttpAdapter();
     app.use(httpDispatcher);
 
     app.rpc(
