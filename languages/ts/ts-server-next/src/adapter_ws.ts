@@ -72,19 +72,14 @@ export function defineWsMiddleware(middleware: WsMiddleware) {
 export class WsAdapter implements TransportAdapter {
     transportId: string = 'ws';
 
-    dispatcher: WsHttpRegister;
+    private readonly _register: WsHttpRegister;
+    private readonly _connectionPath: string;
+    private readonly _options: WsOptions;
+    private readonly _hooks: Hooks;
 
-    connectionPath: string;
-
-    options: WsOptions;
-
-    hooks: Hooks;
-
-    handlers: Map<string, HandlerItem> = new Map();
-
-    middlewares: WsMiddleware[] = [];
-
-    peers: Map<string, Peer> = new Map();
+    private _handlers: Map<string, HandlerItem> = new Map();
+    private _middlewares: WsMiddleware[] = [];
+    private _peers: Map<string, Peer> = new Map();
 
     constructor(
         dispatcher: WsHttpRegister,
@@ -92,10 +87,10 @@ export class WsAdapter implements TransportAdapter {
         options?: WsOptions,
     ) {
         assert(connectionPath.startsWith('/'));
-        this.connectionPath = connectionPath;
-        this.dispatcher = dispatcher;
-        this.options = options ?? {};
-        this.hooks = defineHooks({
+        this._connectionPath = connectionPath;
+        this._register = dispatcher;
+        this._options = options ?? {};
+        this._hooks = defineHooks({
             upgrade: (_) => {
                 return {
                     headers: {},
@@ -107,11 +102,15 @@ export class WsAdapter implements TransportAdapter {
             message: (peer, message) => this._handleMessage(peer, message),
         });
 
-        this.dispatcher.registerWsEndpoint(
-            this.connectionPath,
-            this.options.connectionMethod ?? 'GET',
-            this.hooks,
+        this._register.registerWsEndpoint(
+            this._connectionPath,
+            this._options.connectionMethod ?? 'GET',
+            this._hooks,
         );
+    }
+
+    use(middleware: WsMiddleware) {
+        this._middlewares.push(middleware);
     }
 
     registerRpc(
@@ -129,7 +128,7 @@ export class WsAdapter implements TransportAdapter {
                 `Procedure "${name}" doesn't support transport: "${this.transportId}"`,
             );
         }
-        this.handlers.set(name, {
+        this._handlers.set(name, {
             isEventStream: false,
             validators,
             handler,
@@ -151,7 +150,7 @@ export class WsAdapter implements TransportAdapter {
                 `Procedure "${name}" doesn't support transport: "${this.transportId}"`,
             );
         }
-        this.handlers.set(name, {
+        this._handlers.set(name, {
             isEventStream: true,
             validators,
             handler,
@@ -160,42 +159,42 @@ export class WsAdapter implements TransportAdapter {
 
     start(): void {}
     stop(): void {
-        for (const peer of this.peers.values()) {
+        for (const peer of this._peers.values()) {
             peer.close();
         }
-        this.peers.clear();
+        this._peers.clear();
     }
 
     private _handleOpen(peer: Peer) {
-        const existing = this.peers.get(peer.id);
+        const existing = this._peers.get(peer.id);
         if (existing) existing.close();
-        this.peers.set(peer.id, peer);
-        if (!this.options.onOpen) return;
+        this._peers.set(peer.id, peer);
+        if (!this._options.onOpen) return;
         try {
-            this.options.onOpen(peer);
+            this._options.onOpen(peer);
         } catch (err) {
-            if (!this.options.onError) return;
-            this.options.onError(peer, err);
+            if (!this._options.onError) return;
+            this._options.onError(peer, err);
         }
     }
 
     private async _handleError(peer: Peer, error: WSError) {
         console.log('ONERROR', peer, error);
-        if (!this.options.onError) return;
-        await this.options.onError(peer, error);
+        if (!this._options.onError) return;
+        await this._options.onError(peer, error);
     }
 
     private async _handleClose(
         peer: Peer,
         details: { code?: number; reason?: string },
     ) {
-        this.peers.delete(peer.id);
-        if (!this.options.onClose) return;
+        this._peers.delete(peer.id);
+        if (!this._options.onClose) return;
         try {
-            await this.options.onClose(peer, details);
+            await this._options.onClose(peer, details);
         } catch (err) {
-            if (!this.options.onError) return;
-            await this.options.onError(peer, err);
+            if (!this._options.onError) return;
+            await this._options.onError(peer, err);
         }
     }
 
@@ -216,12 +215,14 @@ export class WsAdapter implements TransportAdapter {
         const msg = result.value;
         try {
             const context: RpcContext = {
+                transport: this.transportId,
                 rpcName: msg.rpcName,
+                headers: result.value.customHeaders,
             };
-            if (this.options.onRequest) {
-                await this.options.onRequest(peer, context);
+            if (this._options.onRequest) {
+                await this._options.onRequest(peer, context);
             }
-            const handler = this.handlers.get(msg.rpcName);
+            const handler = this._handlers.get(msg.rpcName);
             if (!handler) {
                 return this._handleArriError(
                     peer,
@@ -247,7 +248,7 @@ export class WsAdapter implements TransportAdapter {
                 }
                 (context as any).params = result.value;
             }
-            for (const m of this.middlewares) {
+            for (const m of this._middlewares) {
                 await m(peer, context as any);
             }
             if (handler.isEventStream) {
@@ -322,16 +323,16 @@ export class WsAdapter implements TransportAdapter {
         message: ServerMessage,
         context: RpcPostHandlerContext<any, any>,
     ) {
-        if (this.options.onBeforeResponse) {
+        if (this._options.onBeforeResponse) {
             try {
-                await this.options.onBeforeResponse(peer, context);
+                await this._options.onBeforeResponse(peer, context);
             } catch (err) {
                 if (err instanceof ArriError) {
                     return this._handleArriError(peer, message.reqId, err);
                 }
-                if (this.options.onError) {
+                if (this._options.onError) {
                     try {
-                        this.options.onError(peer, err);
+                        this._options.onError(peer, err);
                     } catch (_) {
                         // do nothing
                     }
@@ -339,16 +340,16 @@ export class WsAdapter implements TransportAdapter {
             }
         }
         const payload = encodeServerMessage(message, {
-            includeErrorStackTrack: this.options.debug,
+            includeErrorStackTrack: this._options.debug,
         });
         peer.send(payload);
-        if (this.options.onAfterResponse) {
+        if (this._options.onAfterResponse) {
             try {
-                await this.options.onAfterResponse(peer, context);
+                await this._options.onAfterResponse(peer, context);
             } catch (err) {
-                if (!this.options.onError) return;
+                if (!this._options.onError) return;
                 try {
-                    await this.options.onError(peer, err);
+                    await this._options.onError(peer, err);
                 } catch (_) {
                     // do nothing
                 }
@@ -368,9 +369,9 @@ export class WsAdapter implements TransportAdapter {
             customHeaders: {},
             error: error,
         };
-        if (this.options.onError) {
+        if (this._options.onError) {
             try {
-                await this.options.onError(peer, error);
+                await this._options.onError(peer, error);
             } catch (_) {
                 // do nothing
             }
@@ -378,7 +379,7 @@ export class WsAdapter implements TransportAdapter {
         console.log('SENDING_ERROR', error);
         peer.send(
             encodeServerMessage(response, {
-                includeErrorStackTrack: this.options.debug,
+                includeErrorStackTrack: this._options.debug,
             }),
         );
     }

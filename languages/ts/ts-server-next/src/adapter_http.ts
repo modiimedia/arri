@@ -129,7 +129,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 h3.setResponseStatus(event, 404);
                 const error = defineError(404);
                 const context: RpcContext = {
+                    transport: this.transportId,
                     rpcName: '',
+                    headers: h3.getHeaders(event),
                 };
                 try {
                     if (this._onRequest) {
@@ -246,7 +248,11 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     h3.setResponseStatus(event, 200);
                     return h3.send(event, 'ok');
                 }
-                const context: RpcContext = { rpcName: name };
+                const context: RpcContext = {
+                    transport: this.transportId,
+                    rpcName: name,
+                    headers: h3.getHeaders(event),
+                };
                 if (this._onRequest) await this._onRequest(event, context);
                 const params: any | undefined = await this._getParams(
                     event,
@@ -333,7 +339,11 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     h3.setResponseStatus(event, 200);
                     return h3.send(event, 'ok');
                 }
-                const context: RpcContext = { rpcName: name };
+                const context: RpcContext = {
+                    transport: this.transportId,
+                    rpcName: name,
+                    headers: h3.getHeaders(event),
+                };
                 if (this._onRequest) await this._onRequest(event, context);
                 const params = await this._getParams(
                     event,
@@ -395,13 +405,17 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 h3.setResponseStatus(event, 200);
                 return 'ok';
             }
-            const context: Record<string, any> = {};
+            const context: RpcContext = {
+                transport: 'http',
+                rpcName: '',
+                headers: h3.getHeaders(event),
+            };
             if (this._onRequest) await this._onRequest(event, context);
             for (const m of this._middlewares) {
                 await m(event, context);
             }
             const response = getAppInfo();
-            context.response = response;
+            (context as any).response = response;
             if (this._onBeforeResponse) {
                 await this._onBeforeResponse(event, context as any);
             }
@@ -427,13 +441,17 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     h3.setResponseStatus(event, 200);
                     return 'ok';
                 }
-                const context: Record<string, any> = {};
+                const context: RpcContext = {
+                    transport: this.transportId,
+                    rpcName: '',
+                    headers: {},
+                };
                 if (this._onRequest) await this._onRequest(event, context);
                 for (const m of this._middlewares) {
                     await m(event, context);
                 }
                 const response = getDefinition();
-                context.response = response;
+                (context as any).response = response;
                 if (this._onBeforeResponse) {
                     await this._onBeforeResponse(event, context);
                 }

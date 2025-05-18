@@ -3,7 +3,6 @@ import {
     ArriApp,
     defineError,
     defineEventHandler,
-    defineHttpMiddleware,
     getHeader,
     handleCors,
     HttpAdapter,
@@ -27,24 +26,23 @@ const http = new HttpAdapter({
         console.log('ERROR', event.path, err);
     },
 });
-http.use(
-    defineHttpMiddleware(async (event, context) => {
-        const authHeader = getHeader(event, 'x-test-header');
-        context.xTestHeader = authHeader;
-        if (
-            !authHeader?.length &&
-            event.path !== '/' &&
-            event.path !== '/status' &&
-            event.path !== '/favicon.ico' &&
-            !event.path.endsWith('definition')
-        ) {
-            throw defineError(401, {
-                message: "Missing test auth header 'x-test-header'",
-            });
-        }
-    }),
-);
-const ws = new WsAdapter(http);
+http.use(async (event, context) => {
+    const authHeader = getHeader(event, 'x-test-header');
+    context.xTestHeader = authHeader;
+    if (
+        !authHeader?.length &&
+        event.path !== '/' &&
+        event.path !== '/status' &&
+        event.path !== '/favicon.ico' &&
+        !event.path.endsWith('definition')
+    ) {
+        throw defineError(401, {
+            message: "Missing test auth header 'x-test-header'",
+        });
+    }
+});
+const ws = new WsAdapter(http, '/establish-connection');
+ws.use((peer, context) => {});
 app.use(http);
 app.use(ws);
 app.use(manualTestService);
