@@ -1,3 +1,5 @@
+import assert from 'node:assert';
+
 import { RpcDefinition } from '@arrirpc/codegen-utils';
 import {
     ArriError,
@@ -21,7 +23,6 @@ import {
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
 export interface WsOptions {
-    connectionPath?: string;
     connectionMethod?: HTTPMethod;
     debug?: boolean;
     onOpen?: (peer: Peer) => Promise<void> | void;
@@ -73,6 +74,8 @@ export class WsAdapter implements TransportAdapter {
 
     dispatcher: WsHttpRegister;
 
+    connectionPath: string;
+
     options: WsOptions;
 
     hooks: Hooks;
@@ -83,7 +86,13 @@ export class WsAdapter implements TransportAdapter {
 
     peers: Map<string, Peer> = new Map();
 
-    constructor(dispatcher: WsHttpRegister, options?: WsOptions) {
+    constructor(
+        dispatcher: WsHttpRegister,
+        connectionPath: string,
+        options?: WsOptions,
+    ) {
+        assert(connectionPath.startsWith('/'));
+        this.connectionPath = connectionPath;
         this.dispatcher = dispatcher;
         this.options = options ?? {};
         this.hooks = defineHooks({
@@ -99,7 +108,7 @@ export class WsAdapter implements TransportAdapter {
         });
 
         this.dispatcher.registerWsEndpoint(
-            this.options.connectionPath ?? '/ws',
+            this.connectionPath,
             this.options.connectionMethod ?? 'GET',
             this.hooks,
         );
@@ -193,7 +202,15 @@ export class WsAdapter implements TransportAdapter {
     private async _handleMessage(peer: Peer, message: Message) {
         const result = parseClientMessage(message.text());
         if (!result.success) {
-            peer.close();
+            await this._handleArriError(
+                peer,
+                undefined,
+                new ArriError({
+                    code: 400,
+                    message: result.error,
+                }),
+            );
+            peer.close(1003, result.error);
             return;
         }
         const msg = result.value;
@@ -358,6 +375,7 @@ export class WsAdapter implements TransportAdapter {
                 // do nothing
             }
         }
+        console.log('SENDING_ERROR', error);
         peer.send(
             encodeServerMessage(response, {
                 includeErrorStackTrack: this.options.debug,

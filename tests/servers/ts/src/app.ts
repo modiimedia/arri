@@ -6,8 +6,8 @@ import {
     defineHttpMiddleware,
     getHeader,
     handleCors,
-    HttpDispatcher,
-    WsDispatcher,
+    HttpAdapter,
+    WsAdapter,
 } from '@arrirpc/server-next';
 
 import { manualTestService } from './routes/other';
@@ -16,7 +16,7 @@ const app = new ArriApp({
     rpcRoutePrefix: '/rpcs',
     version: '10',
 });
-const http = new HttpDispatcher({
+const http = new HttpAdapter({
     port: 2020,
     onRequest(event, _) {
         handleCors(event, {
@@ -44,7 +44,7 @@ http.use(
         }
     }),
 );
-const ws = new WsDispatcher(http);
+const ws = new WsAdapter(http);
 app.use(http);
 app.use(ws);
 app.use(manualTestService);

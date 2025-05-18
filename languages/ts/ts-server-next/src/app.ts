@@ -8,9 +8,9 @@ import {
 } from '@arrirpc/codegen-utils';
 import { a, ASchema, CompiledValidator } from '@arrirpc/schema';
 
+import { TransportAdapter } from './adapter';
 import { Rpc } from './rpc';
 import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
-import { TransportAdapter } from './adapter';
 
 export class ArriApp implements ArriServiceBase {
     name?: string;
@@ -40,6 +40,7 @@ export class ArriApp implements ArriServiceBase {
             disableDefaultRoute?: boolean;
             disableDefinitionRoute?: boolean;
             defaultTransport?: string | string[];
+            transports?: TransportAdapter[];
         } = {},
     ) {
         this.name = options.name;
@@ -54,6 +55,11 @@ export class ArriApp implements ArriServiceBase {
             this._defaultTransports = [options.defaultTransport];
         } else if (Array.isArray(options.defaultTransport)) {
             this._defaultTransports = options.defaultTransport;
+        }
+        if (typeof options.transports !== 'undefined') {
+            for (const adapter of options.transports) {
+                this.use(adapter);
+            }
         }
     }
 
@@ -95,10 +101,12 @@ export class ArriApp implements ArriServiceBase {
 
     rpc(name: string, procedure: Rpc<any, any> | EventStreamRpc<any, any>) {
         const transports = this._resolveTransports(procedure.transport);
-        let path = (procedure.name ?? name)
-            ?.split('.')
-            .map((part) => kebabCase(part).toLowerCase())
-            .join('/');
+        let path =
+            procedure.path ??
+            (procedure.name ?? name)
+                ?.split('.')
+                .map((part) => kebabCase(part).toLowerCase())
+                .join('/');
         if (!path.startsWith('/')) {
             path = `/${path}`;
         }

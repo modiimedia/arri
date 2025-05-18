@@ -105,6 +105,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
             options.h3App ??
             h3.createApp({
                 debug: options.debug,
+                onError: (err, event) => {
+                    return this._handleError(event, err);
+                },
             });
         this.h3Router = options.h3Router ?? h3.createRouter();
         this.h3App.use(this.h3Router);
@@ -552,6 +555,13 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 ),
             );
         }
+    }
+
+    get isStarted(): boolean {
+        return (
+            typeof this._listener === 'undefined' &&
+            typeof this._secondaryListener === 'undefined'
+        );
     }
 
     async start(): Promise<void> {

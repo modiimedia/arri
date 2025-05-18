@@ -1,6 +1,6 @@
 import { defineConfig, servers } from 'arri';
 
 export default defineConfig({
-    server: servers.tsServer(),
+    server: servers.tsServerNext(),
     generators: [],
 });

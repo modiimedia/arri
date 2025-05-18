@@ -10,8 +10,10 @@ export type RpcValidators = {
 };
 
 export interface TransportAdapter {
+    /**
+     * The name of the transport, such as "http", "ws", "tcp", etc
+     */
     transportId: string;
-
     registerRpc(
         name: string,
         definition: RpcDefinition,

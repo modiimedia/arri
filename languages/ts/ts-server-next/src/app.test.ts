@@ -1,6 +1,6 @@
+import { HttpAdapter } from './adapter_http';
 import { ArriApp } from './app';
 import { defineRpc } from './rpc';
-import { HttpAdapter } from './adapter_http';
 
 test('Type Inference', () => {
     const app = new ArriApp();
