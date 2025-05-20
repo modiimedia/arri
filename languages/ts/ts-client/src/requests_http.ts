@@ -17,7 +17,7 @@ import {
 } from './requests';
 import { arriSseRequest, SseOptions } from './requests_http_sse';
 
-export interface HttpRpcRequestOptions {
+export interface HttpRequestOptions {
     retry?: FetchOptions['retry'];
     retryDelay?: FetchOptions['retryDelay'];
     retryStatusCodes?: FetchOptions['retryStatusCodes'];
@@ -29,18 +29,18 @@ export interface HttpRpcRequestOptions {
     signal?: FetchOptions['signal'];
 }
 
-export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
+export class HttpDispatcher implements RpcDispatcher<HttpRequestOptions> {
     transport: string = 'http';
     baseUrl: string;
     ofetch: $Fetch;
-    options?: HttpRpcRequestOptions;
+    options?: HttpRequestOptions;
 
     constructor(
-        config?: HttpRpcRequestOptions & {
+        config?: HttpRequestOptions & {
             baseUrl: string;
             headers?: HeaderInput;
             fetch?: Fetch;
-            options?: HttpRpcRequestOptions;
+            options?: HttpRequestOptions;
         },
     ) {
         this.options = config?.options;
@@ -53,7 +53,7 @@ export class HttpRpcDispatcher implements RpcDispatcher<HttpRpcRequestOptions> {
     async handleRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        options?: HttpRpcRequestOptions,
+        options?: HttpRequestOptions,
     ): Promise<TResponse> {
         let url = this.baseUrl + req.path;
         let body: undefined | string;

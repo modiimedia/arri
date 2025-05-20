@@ -13,7 +13,7 @@ import {
 } from './requests';
 import { SseOptions } from './requests_http_sse';
 
-export class WsRpcDispatcher implements RpcDispatcher<undefined, any> {
+export class WsDispatcher implements RpcDispatcher<undefined, any> {
     private readonly client: ws.client;
     private connection: ws.connection | undefined;
     private readonly connectionUrl: string;
