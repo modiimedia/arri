@@ -10,7 +10,7 @@ import benny from 'benny';
 import typia from 'typia';
 import * as v from 'valibot';
 import { assertType } from 'vitest';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { a } from '../../src/_index';
 import {
