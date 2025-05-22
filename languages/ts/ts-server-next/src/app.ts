@@ -304,8 +304,8 @@ export class ArriApp implements ArriServiceBase {
 
     async stop() {
         const tasks: Promise<unknown>[] = [];
-        for (const dispatcher of Object.values(this._adapters)) {
-            const p = dispatcher.stop();
+        for (const adapter of Object.values(this._adapters)) {
+            const p = adapter.stop();
             if (p instanceof Promise) tasks.push(p);
         }
         const results = await Promise.allSettled(tasks);

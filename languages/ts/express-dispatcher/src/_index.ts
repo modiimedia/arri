@@ -110,20 +110,12 @@ export class ExpressAdapter implements TransportAdapter {
             }
         }
         const routeHandler = async (req: Request, res: Response) => {
-            const headers: Record<string, string> = {};
-            for (const [key, value] of Object.entries(req.headers)) {
-                if (Array.isArray(value)) {
-                    headers[key] = value.join(',');
-                    continue;
-                }
-                if (typeof value === 'string') {
-                    headers[key] = value;
-                }
-            }
+            const reqStart = new Date();
             try {
                 const clientVersion = req.headers['client-version'];
                 const context: RpcMiddlewareContext = {
                     rpcName: name,
+                    reqStart: reqStart,
                     transport: this.transportId,
                     headers: this._getHeaders(req),
                     clientVersion:
@@ -218,10 +210,12 @@ export class ExpressAdapter implements TransportAdapter {
             }
         }
         const reqHandler = async (req: Request, res: Response) => {
+            const reqStart = new Date();
             try {
                 const clientVersion = req.headers['client-version'];
                 const context: RpcMiddlewareContext = {
                     rpcName: name,
+                    reqStart: reqStart,
                     transport: this.transportId,
                     clientVersion:
                         typeof clientVersion === 'string'
@@ -308,10 +302,12 @@ export class ExpressAdapter implements TransportAdapter {
         getDefinition: () => AppDefinition,
     ): void {
         this._app.get(path, async (req, res) => {
+            const reqStart = new Date();
             try {
                 const clientVersion = req.headers['client-version'];
                 const context: RpcMiddlewareContext = {
                     rpcName: '',
+                    reqStart: reqStart,
                     transport: this.transportId,
                     clientVersion:
                         typeof clientVersion === 'string'
