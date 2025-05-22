@@ -6,43 +6,86 @@ import {
     EventStreamDispatcher,
     EventStreamMessage,
     EventStreamRpcHandler,
-    RpcContext,
     RpcEventStreamConnection,
     RpcHandler,
+    RpcMiddleware,
+    RpcMiddlewareContext,
+    RpcOnErrorContext,
     RpcPostHandler,
+    RpcPostHandlerContext,
     RpcValidators,
-    TransportDispatcher,
+    TransportAdapter,
 } from '@arrirpc/server-next';
 import { AppDefinition, RpcDefinition } from '@arrirpc/type-defs';
 import { Express, Request, Response } from 'express';
 import express from 'express';
 
-export type ExpressDispatcherMiddleware = (
-    req: Request & { context: RpcContext & { params?: any } },
-) => Promise<void> | void;
-export function defineMiddleware(middleware: ExpressDispatcherMiddleware) {
-    return middleware;
+export interface ExpressAdapterOptions {
+    app?: Express;
+    port?: number;
+    debug?: boolean;
+    extendContext?: (
+        req: Request,
+        context: RpcMiddlewareContext,
+    ) => Promise<void> | void;
+    onRequest?(
+        req: Request,
+        context: RpcMiddlewareContext,
+    ): Promise<void> | void;
+    onBeforeResponse?(
+        req: Request,
+        context: RpcPostHandlerContext<any, any>,
+    ): Promise<void> | void;
+    onAfterResponse?(
+        req: Request,
+        context: RpcPostHandlerContext<any, any>,
+    ): Promise<void> | void;
+    onError?(req: Request, context: RpcOnErrorContext): Promise<void> | void;
 }
 
-export class HttpExpressDispatcher implements TransportDispatcher {
+export class ExpressAdapter implements TransportAdapter {
     transportId: string = 'http';
 
-    constructor(options?: { app?: Express; port?: number; debug?: boolean }) {
+    constructor(options?: ExpressAdapterOptions) {
         this._app = options?.app ?? express();
         this._port = options?.port ?? 3000;
         this._debug = options?.debug ?? false;
     }
 
-    private _middlewares: ExpressDispatcherMiddleware[] = [];
+    private _middlewares: RpcMiddleware[] = [];
 
     private readonly _app: Express;
     private readonly _port: number;
     private readonly _debug: boolean;
 
+    private readonly _onRequest: ExpressAdapterOptions['onRequest'];
+    private readonly _onBeforeResponse: ExpressAdapterOptions['onBeforeResponse'];
+    private readonly _onAfterResponse: ExpressAdapterOptions['onAfterResponse'];
+    private readonly _onError: ExpressAdapterOptions['onError'];
+
     private _listener: Server | undefined;
 
-    use(middleware: ExpressDispatcherMiddleware) {
+    use(middleware: RpcMiddleware) {
         this._middlewares.push(middleware);
+    }
+
+    private _getHeaders(req: Request): Record<string, string> {
+        let currentKey: string | undefined;
+        const result: Record<string, string> = {};
+        for (const item of req.rawHeaders) {
+            if (!currentKey) {
+                currentKey = item;
+                continue;
+            }
+            if (result[currentKey]) {
+                result[currentKey] += `,${item}`;
+                currentKey = undefined;
+                continue;
+            }
+            result[currentKey] = item;
+            continue;
+        }
+        return result;
     }
 
     registerRpc(
@@ -66,20 +109,28 @@ export class HttpExpressDispatcher implements TransportDispatcher {
                     };
             }
         }
-        const routeHandler = async (
-            req: Request & { context?: RpcContext },
-            res: Response,
-        ) => {
+        const routeHandler = async (req: Request, res: Response) => {
+            const headers: Record<string, string> = {};
+            for (const [key, value] of Object.entries(req.headers)) {
+                if (Array.isArray(value)) {
+                    headers[key] = value.join(',');
+                    continue;
+                }
+                if (typeof value === 'string') {
+                    headers[key] = value;
+                }
+            }
             try {
                 const clientVersion = req.headers['client-version'];
-                const context: RpcContext = {
+                const context: RpcMiddlewareContext = {
                     rpcName: name,
+                    transport: this.transportId,
+                    headers: this._getHeaders(req),
                     clientVersion:
                         typeof clientVersion === 'string'
                             ? clientVersion
                             : undefined,
                 };
-                req.context = context;
                 if (typeof getParams !== 'undefined') {
                     const result = getParams(req);
                     if (!result.success) {
@@ -92,12 +143,12 @@ export class HttpExpressDispatcher implements TransportDispatcher {
                             }),
                         );
                     }
-                    (req.context as any).params = result.value;
+                    context.params = result.value;
                 }
                 for (const m of this._middlewares) {
-                    await m(req as any);
+                    await m(context);
                 }
-                const response = await handler(req.context as any);
+                const response = await handler(context as any);
                 if (validators.response) {
                     const payload = validators.response.serialize(response);
                     if (!payload.success) {
@@ -112,12 +163,12 @@ export class HttpExpressDispatcher implements TransportDispatcher {
                     }
                     res.setHeader('Content-Type', 'application/json');
                     res.status(200).send(payload.value);
-                    (req.context as any).response = response;
+                    (context as any).response = response;
                 } else {
                     res.status(200).send('');
                 }
                 if (postHandler) {
-                    await postHandler(req.context as any);
+                    await postHandler(context as any);
                 }
             } catch (err) {
                 return this._handleError(res, err);
@@ -166,20 +217,18 @@ export class HttpExpressDispatcher implements TransportDispatcher {
                     };
             }
         }
-        const reqHandler = async (
-            req: Request & { context?: RpcContext },
-            res: Response,
-        ) => {
+        const reqHandler = async (req: Request, res: Response) => {
             try {
                 const clientVersion = req.headers['client-version'];
-                const context: RpcContext = {
+                const context: RpcMiddlewareContext = {
                     rpcName: name,
+                    transport: this.transportId,
                     clientVersion:
                         typeof clientVersion === 'string'
                             ? clientVersion
                             : undefined,
+                    headers: this._getHeaders(req),
                 };
-                req.context = context;
                 if (typeof getParams !== 'undefined') {
                     const result = getParams(req);
                     if (!result.success) {
@@ -192,7 +241,7 @@ export class HttpExpressDispatcher implements TransportDispatcher {
                             }),
                         );
                     }
-                    (req.context as any).params = result.value;
+                    context.params = result.value;
                 }
                 for (const m of this._middlewares) {
                     await m(req as any);
@@ -202,7 +251,7 @@ export class HttpExpressDispatcher implements TransportDispatcher {
                     validators.params,
                     30000,
                 );
-                (req.context as any).stream = eventStream;
+                (context as any).stream = eventStream;
                 await handler(context as any);
                 if (!res.headersSent) {
                     eventStream.send();
@@ -261,16 +310,17 @@ export class HttpExpressDispatcher implements TransportDispatcher {
         this._app.get(path, async (req, res) => {
             try {
                 const clientVersion = req.headers['client-version'];
-                const context: RpcContext = {
+                const context: RpcMiddlewareContext = {
                     rpcName: '',
+                    transport: this.transportId,
                     clientVersion:
                         typeof clientVersion === 'string'
                             ? clientVersion
                             : undefined,
+                    headers: this._getHeaders(req),
                 };
-                (req as any).context = context;
                 for (const m of this._middlewares) {
-                    await m(req as any);
+                    await m(context);
                 }
                 res.status(200);
                 res.setHeader('Content-Type', 'application/json');

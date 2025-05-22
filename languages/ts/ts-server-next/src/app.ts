@@ -9,6 +9,7 @@ import {
 import { a, ASchema, CompiledValidator } from '@arrirpc/schema';
 
 import { TransportAdapter } from './adapter';
+import { RpcMiddleware } from './middleware';
 import { Rpc } from './rpc';
 import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
 
@@ -24,8 +25,8 @@ export class ArriApp implements ArriServiceBase {
     disableDefinitionRoute: boolean;
 
     private _defaultTransports: string[] = ['http'];
-    private _hasDispatcher: boolean = false;
-    private readonly _dispatchers: Record<string, TransportAdapter> = {};
+    private _hasAdapter: boolean = false;
+    private readonly _adapters: Record<string, TransportAdapter> = {};
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: Record<string, Schema> = {};
 
@@ -71,8 +72,10 @@ export class ArriApp implements ArriServiceBase {
     }
 
     use(service: ArriService): void;
-    use(dispatcher: TransportAdapter): void;
-    use(input: ArriService | TransportAdapter) {
+    use(adapter: TransportAdapter): void;
+    use(middleware: RpcMiddleware): void;
+    use(input: ArriService | TransportAdapter | RpcMiddleware) {
+        // register service
         if (input instanceof ArriService) {
             for (const [key, value] of Object.entries(input.definitions)) {
                 this._definitions[key] = value;
@@ -82,21 +85,31 @@ export class ArriApp implements ArriServiceBase {
             }
             return;
         }
-        if (typeof input.registerHomeRoute === 'function') {
-            input.registerHomeRoute('/', () => ({
-                name: this.name,
-                description: this.description,
-                version: this.version,
-                definitionPath: this.definitionPath,
-            }));
+
+        // register adapters
+        if (typeof input === 'object') {
+            if (typeof input.registerHomeRoute === 'function') {
+                input.registerHomeRoute('/', () => ({
+                    name: this.name,
+                    description: this.description,
+                    version: this.version,
+                    definitionPath: this.definitionPath,
+                }));
+            }
+            if (typeof input.registerDefinitionRoute === 'function') {
+                input.registerDefinitionRoute(this.definitionPath, () =>
+                    this.getAppDefinition(),
+                );
+            }
+            this._adapters[input.transportId] = input;
+            if (!this._hasAdapter) this._hasAdapter = true;
+            return;
         }
-        if (typeof input.registerDefinitionRoute === 'function') {
-            input.registerDefinitionRoute(this.definitionPath, () =>
-                this.getAppDefinition(),
-            );
+
+        // register middlewares
+        for (const adapter of Object.values(this._adapters)) {
+            adapter.use(input);
         }
-        this._dispatchers[input.transportId] = input;
-        if (!this._hasDispatcher) this._hasDispatcher = true;
     }
 
     rpc(name: string, procedure: Rpc<any, any> | EventStreamRpc<any, any>) {
@@ -158,7 +171,7 @@ export class ArriApp implements ArriServiceBase {
             };
             this._procedures[procedure.name ?? name] = def;
             for (const t of transports) {
-                const dispatcher = this._dispatchers[t];
+                const dispatcher = this._adapters[t];
                 if (!dispatcher) {
                     throw new Error(
                         `Missing dispatcher for the following transport: "${t}"`,
@@ -185,7 +198,7 @@ export class ArriApp implements ArriServiceBase {
         };
         this._procedures[procedure.name ?? name] = def;
         for (const t of transports) {
-            const dispatcher = this._dispatchers[t];
+            const dispatcher = this._adapters[t];
             if (!dispatcher) {
                 throw new Error(
                     `Missing dispatcher for the following transport: "${t}"`,
@@ -277,7 +290,7 @@ export class ArriApp implements ArriServiceBase {
 
     async start() {
         const tasks: Promise<unknown>[] = [];
-        for (const dispatcher of Object.values(this._dispatchers)) {
+        for (const dispatcher of Object.values(this._adapters)) {
             const p = dispatcher.start();
             if (p instanceof Promise) tasks.push(p);
         }
@@ -291,7 +304,7 @@ export class ArriApp implements ArriServiceBase {
 
     async stop() {
         const tasks: Promise<unknown>[] = [];
-        for (const dispatcher of Object.values(this._dispatchers)) {
+        for (const dispatcher of Object.values(this._adapters)) {
             const p = dispatcher.stop();
             if (p instanceof Promise) tasks.push(p);
         }

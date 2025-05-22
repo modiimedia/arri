@@ -13,13 +13,8 @@ import { HTTPMethod } from 'h3';
 
 import { TransportAdapter } from './adapter';
 import { WsHttpRegister } from './adapter_http';
-import { RpcContext } from './context';
-import {
-    RpcHandler,
-    RpcHandlerContext,
-    RpcPostHandler,
-    RpcPostHandlerContext,
-} from './rpc';
+import { RpcMiddleware, RpcMiddlewareContext } from './middleware';
+import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
 export interface WsOptions {
@@ -27,7 +22,10 @@ export interface WsOptions {
     debug?: boolean;
     onOpen?: (peer: Peer) => Promise<void> | void;
     onUpgrade?: Hooks['upgrade'];
-    onRequest?: (peer: Peer, context: RpcContext) => Promise<void> | void;
+    onRequest?: (
+        peer: Peer,
+        context: RpcMiddlewareContext,
+    ) => Promise<void> | void;
     onBeforeResponse?: (
         peer: Peer,
         context: RpcPostHandlerContext<any, any>,
@@ -61,14 +59,6 @@ interface EventStreamRpcHandlerObj {
     handler: EventStreamRpcHandler<any, any>;
 }
 
-export type WsMiddleware = (
-    peer: Peer,
-    context: RpcHandlerContext<any>,
-) => Promise<void> | void;
-export function defineWsMiddleware(middleware: WsMiddleware) {
-    return middleware;
-}
-
 export class WsAdapter implements TransportAdapter {
     transportId: string = 'ws';
 
@@ -78,7 +68,7 @@ export class WsAdapter implements TransportAdapter {
     private readonly _hooks: Hooks;
 
     private _handlers: Map<string, HandlerItem> = new Map();
-    private _middlewares: WsMiddleware[] = [];
+    private _middlewares: RpcMiddleware[] = [];
     private _peers: Map<string, Peer> = new Map();
 
     constructor(
@@ -86,7 +76,10 @@ export class WsAdapter implements TransportAdapter {
         connectionPath: string,
         options?: WsOptions,
     ) {
-        assert(connectionPath.startsWith('/'));
+        assert(
+            connectionPath.startsWith('/'),
+            'connection path must start with "/"',
+        );
         this._connectionPath = connectionPath;
         this._register = dispatcher;
         this._options = options ?? {};
@@ -109,7 +102,7 @@ export class WsAdapter implements TransportAdapter {
         );
     }
 
-    use(middleware: WsMiddleware) {
+    use(middleware: RpcMiddleware) {
         this._middlewares.push(middleware);
     }
 
@@ -199,6 +192,7 @@ export class WsAdapter implements TransportAdapter {
     }
 
     private async _handleMessage(peer: Peer, message: Message) {
+        const reqStart = new Date();
         const result = parseClientMessage(message.text());
         if (!result.success) {
             await this._handleArriError(
@@ -214,9 +208,11 @@ export class WsAdapter implements TransportAdapter {
         }
         const msg = result.value;
         try {
-            const context: RpcContext = {
-                transport: this.transportId,
+            const context: RpcMiddlewareContext = {
                 rpcName: msg.rpcName,
+                reqStart: reqStart,
+                transport: this.transportId,
+                clientVersion: msg.clientVersion,
                 headers: result.value.customHeaders,
             };
             if (this._options.onRequest) {
@@ -249,7 +245,7 @@ export class WsAdapter implements TransportAdapter {
                 (context as any).params = result.value;
             }
             for (const m of this._middlewares) {
-                await m(peer, context as any);
+                await m(context);
             }
             if (handler.isEventStream) {
                 throw new Error('Not implemented');
@@ -376,7 +372,6 @@ export class WsAdapter implements TransportAdapter {
                 // do nothing
             }
         }
-        console.log('SENDING_ERROR', error);
         peer.send(
             encodeServerMessage(response, {
                 includeErrorStackTrack: this._options.debug,

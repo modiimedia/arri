@@ -3,8 +3,6 @@ import {
     ArriApp,
     defineError,
     defineEventHandler,
-    getHeader,
-    handleCors,
     HttpAdapter,
     WsAdapter,
 } from '@arrirpc/server-next';
@@ -17,35 +15,29 @@ const app = new ArriApp({
 });
 const http = new HttpAdapter({
     port: 2020,
-    onRequest(event, _) {
-        handleCors(event, {
-            origin: '*',
-        });
+    cors: {
+        origin: '*',
     },
     onError(event, err) {
         console.log('ERROR', event.path, err);
     },
 });
-http.use(async (event, context) => {
-    const authHeader = getHeader(event, 'x-test-header');
+
+const ws = new WsAdapter(http, '/establish-connection');
+app.use(http);
+app.use(ws);
+app.use(manualTestService);
+
+// auth middleware
+app.use(async (context) => {
+    const authHeader = context.headers['x-test-header'];
     context.xTestHeader = authHeader;
-    if (
-        !authHeader?.length &&
-        event.path !== '/' &&
-        event.path !== '/status' &&
-        event.path !== '/favicon.ico' &&
-        !event.path.endsWith('definition')
-    ) {
+    if (!authHeader?.length && context.rpcName.length) {
         throw defineError(401, {
             message: "Missing test auth header 'x-test-header'",
         });
     }
 });
-const ws = new WsAdapter(http, '/establish-connection');
-ws.use((peer, context) => {});
-app.use(http);
-app.use(ws);
-app.use(manualTestService);
 
 http.h3Router.get(
     '/status',

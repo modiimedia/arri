@@ -6,13 +6,17 @@ import {
     InferType,
 } from '@arrirpc/schema';
 
-import { RpcContext } from './context';
-
-export interface RpcHandlerContext<TParams> extends RpcContext {
+export interface RpcContext<TParams> {
+    rpcName: string;
+    reqStart: Date;
+    transport: string;
+    clientVersion?: string;
+    headers: Record<string, string | undefined>;
     params: TParams;
 }
 
-export interface RpcPostHandlerContext<TParams, TResponse> extends RpcContext {
+export interface RpcPostHandlerContext<TParams, TResponse>
+    extends Omit<RpcContext<TParams>, 'params'> {
     params: TParams;
     response: TResponse;
 }
@@ -40,7 +44,7 @@ export interface Rpc<
 }
 
 export type RpcHandler<TParams = undefined, TResponse = undefined> = (
-    context: RpcHandlerContext<TParams>,
+    context: RpcContext<TParams>,
 ) => TResponse extends undefined
     ? Promise<void> | void
     : Promise<TResponse> | TResponse;

@@ -10,11 +10,10 @@ import {
 } from '@arrirpc/schema';
 import * as h3 from 'h3';
 
-import { RpcContext } from './context';
+import { RpcContext } from './rpc';
 
 export interface EventStreamHandlerContext<TParams, TResponse>
-    extends RpcContext {
-    params: TParams;
+    extends RpcContext<TParams> {
     stream: RpcEventStreamConnection<TResponse>;
 }
 

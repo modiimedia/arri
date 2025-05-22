@@ -1,6 +1,7 @@
 import { AppDefinition, RpcDefinition } from '@arrirpc/codegen-utils';
 import { CompiledValidator } from '@arrirpc/schema';
 
+import { RpcMiddleware } from './middleware';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
@@ -14,6 +15,9 @@ export interface TransportAdapter {
      * The name of the transport, such as "http", "ws", "tcp", etc
      */
     transportId: string;
+
+    use(middleware: RpcMiddleware): void;
+
     registerRpc(
         name: string,
         definition: RpcDefinition,
