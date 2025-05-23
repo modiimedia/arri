@@ -492,7 +492,7 @@ describe('request options', () => {
         } catch (_) {
             // do nothing
         }
-        expect(numErr).toBe(3);
+        expect(numErr).toBe(2);
     });
     test('local function options', async () => {
         let numErr = 0;
@@ -527,7 +527,7 @@ describe('request options', () => {
         } catch (_) {
             // do nothing
         }
-        expect(numErr).toBe(2);
+        expect(numErr).toBe(10);
     });
 });
 
