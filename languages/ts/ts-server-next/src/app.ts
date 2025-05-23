@@ -25,6 +25,7 @@ export class ArriApp implements ArriServiceBase {
     disableDefinitionRoute: boolean;
 
     private _defaultTransports: string[] = ['http'];
+    private _registeredTransports: string[] = [];
     private _hasAdapter: boolean = false;
     private readonly _adapters: Record<string, TransportAdapter> = {};
     private _procedures: Record<string, RpcDefinition> = {};
@@ -103,6 +104,9 @@ export class ArriApp implements ArriServiceBase {
             }
             this._adapters[input.transportId] = input;
             if (!this._hasAdapter) this._hasAdapter = true;
+            if (!this._registeredTransports.includes(input.transportId)) {
+                this._registeredTransports.push(input.transportId);
+            }
             return;
         }
 
@@ -228,6 +232,7 @@ export class ArriApp implements ArriServiceBase {
                 description: this.description,
                 version: this.version,
             },
+            transports: this._registeredTransports,
             externalDocs: this.externalDocs,
             procedures: this._procedures,
             definitions: this._definitions,

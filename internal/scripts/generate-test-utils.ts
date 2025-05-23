@@ -151,7 +151,7 @@ const def = createAppDefinition({
         },
         'books.getBook': {
             path: '/books/get-book',
-            transports: ['http'],
+            transports: ['http', 'ws'],
             method: 'get',
             params: BookParams,
             response: Book,
@@ -159,7 +159,7 @@ const def = createAppDefinition({
         },
         'books.createBook': {
             path: '/books/create-book',
-            transports: ['http'],
+            transports: ['http', 'ws'],
             method: 'post',
             params: Book,
             response: Book,

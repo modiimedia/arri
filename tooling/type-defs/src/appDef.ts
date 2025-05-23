@@ -42,6 +42,7 @@ export interface AppDefinition {
         description?: string;
         url: string;
     };
+    transports: string[];
     procedures: Record<string, RpcDefinition>;
     definitions: Record<string, Schema>;
 }
@@ -58,6 +59,12 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
         return false;
     }
     if (typeof inputObj.definitions !== 'object') {
+        return false;
+    }
+    if (
+        !Array.isArray(inputObj.transports) ||
+        !inputObj.transports.every((val) => typeof val === 'string')
+    ) {
         return false;
     }
     return true;
@@ -172,17 +179,21 @@ type RpcDefinitionHelper = RpcDefinition<
 
 type AppDefinitionHelper = Omit<
     AppDefinition,
-    'procedures' | 'definitions' | 'schemaVersion'
+    'procedures' | 'definitions' | 'schemaVersion' | 'transports'
 > & {
-    procedures: Record<string, RpcDefinitionHelper>;
+    procedures?: Record<string, RpcDefinitionHelper>;
     definitions?: AppDefinition['definitions'];
 };
 
 export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
     const definitions = { ...input.definitions };
     const procedures: AppDefinition['procedures'] = {};
-    for (const key of Object.keys(input.procedures)) {
-        const def = input.procedures[key]!;
+    const transports: string[] = [];
+    for (const key of Object.keys(input.procedures ?? {})) {
+        const def = input.procedures![key]!;
+        for (const t of def.transports) {
+            if (!transports.includes(t)) transports.push(t);
+        }
         let paramName: string | undefined;
         if (def.params) {
             paramName =
@@ -208,6 +219,7 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
     const result: AppDefinition = {
         schemaVersion: '0.0.8',
         ...input,
+        transports: transports,
         procedures,
         definitions,
     };

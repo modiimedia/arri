@@ -4,14 +4,14 @@
   "procedures": {
     "sendObject": {
       "path": "/send-object",
-      "transport": "http",
+      "transports": ["http"],
       "method": "post",
       "params": "NestedObject",
       "response": "NestedObject"
     },
     "books.getBook": {
       "path": "/books/get-book",
-      "transport": "http",
+      "transports": ["http", "ws"],
       "method": "get",
       "description": "Get a book",
       "params": "BookParams",
@@ -19,7 +19,7 @@
     },
     "books.createBook": {
       "path": "/books/create-book",
-      "transport": "http",
+      "transports": ["http", "ws"],
       "method": "post",
       "description": "Create a book",
       "isDeprecated": true,
@@ -28,7 +28,7 @@
     },
     "books.watchBook": {
       "path": "/books/watch-book",
-      "transport": "http",
+      "transports": ["http"],
       "method": "get",
       "isEventStream": true,
       "isDeprecated": true,

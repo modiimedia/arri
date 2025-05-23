@@ -12,6 +12,23 @@ export interface RpcDispatcherOptions {
     signal?: AbortController['signal'];
     onError?: (req: RpcRequest<any>, error: unknown) => Promise<void> | void;
 }
+
+export function resolveDispatcherOptions(
+    local: RpcDispatcherOptions | undefined,
+    global: RpcDispatcherOptions | undefined,
+) {
+    const result: RpcDispatcherOptions = {
+        headers: local?.headers ?? global?.headers,
+        timeout: local?.timeout ?? global?.timeout,
+        retry: local?.retry ?? global?.retry,
+        retryDelay: local?.retryDelay ?? global?.retryDelay,
+        retryErrorCodes: local?.retryErrorCodes ?? global?.retryErrorCodes,
+        signal: local?.signal ?? global?.signal,
+        onError: local?.onError ?? global?.onError,
+    };
+    return result;
+}
+
 export interface EventStreamHooks<TData> {
     onMessage?: (data: TData) => any;
     onOpen?: () => any;
@@ -49,3 +66,20 @@ export type SafeResponse<T> =
           value: T;
       }
     | { success: false; error: ArriErrorInstance };
+
+export function resolveTransport(
+    availableTransports: string[],
+    selectedTransport: string | undefined,
+    globalDefault: string | undefined,
+): string {
+    if (availableTransports.length === 1) {
+        return availableTransports[0]!;
+    }
+    if (selectedTransport && availableTransports.includes(selectedTransport)) {
+        return selectedTransport;
+    }
+    if (globalDefault && availableTransports.includes(globalDefault)) {
+        return globalDefault;
+    }
+    return availableTransports[0] ?? '';
+}

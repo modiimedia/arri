@@ -64,6 +64,7 @@ test('create app definition', () => {
     });
     const expectedResult: AppDefinition = {
         schemaVersion: '0.0.8',
+        transports: ['http', 'ws'],
         procedures: {
             sayHello: {
                 transports: ['http'],

@@ -78,43 +78,29 @@ export function tsServiceFromDefinition(
     return {
         key,
         name: serviceName,
-        content: `export class ${serviceName}<
-    THttp extends RpcDispatcher = HttpDispatcher,
-    TDispatchers extends TransportMap = {},
-> {
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _headers?: HeaderInput;
-    private readonly _http: THttp;
-    private readonly _transports: TDispatchers;
+        content: `export class ${serviceName} {
+    private readonly _dispatchers: Record<string, RpcDispatcher>;
+    private readonly _options: RpcDispatcherOptions;
+    private readonly _defaultTransport: string;
 ${subServices.map((service) => `    ${service.key}: ${service.name}<THttp, TDispatchers>;`).join('\n')}
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderInput;
-            onError?: (err: unknown) => void;
-            options?: InferRpcDispatcherOptions<THttp>;
-            /**
-             * Override the default HTTP transport dispatcher
-             */
-            http?: THttp;
-            /**
-             * Add a custom transport dispatcher
-             */
-            transports?: TDispatchers;
-        } = {},
-    ) {
-        this._onError = config.onError;
-        this._headers = config.headers;
-        this._http = 
-            config.http ??
-            (new HttpDispatcher({
-                baseUrl: config.baseUrl ?? '',
-                fetch: config.fetch,
-                options: config.options,
-            }) as any);
-        this._transports =
-            config.transports ?? ({} as TDispatchers);
+    constructor(config: ${context.clientName}Options) {
+        this._options = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this._defaultTransport = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) = {
+            config.dispatchers['http'] = new HttpDispatcher(config);
+        }
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this._dispatchers = config.dispatchers!
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
 ${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}
