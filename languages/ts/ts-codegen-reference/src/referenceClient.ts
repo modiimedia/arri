@@ -2,11 +2,10 @@
 // For more information visit https://github.com/modiimedia/arri
 
 /* eslint-disable */
-// @ts-nocheck
+// @ts-nocheck--
 import {
     ArriEnumValidator,
     ArriModelValidator,
-    type EventSourceController,
     INT8_MAX,
     INT8_MIN,
     INT16_MAX,
@@ -17,7 +16,6 @@ import {
     INT64_MIN,
     isObject,
     serializeString,
-    type SseOptions,
     UINT8_MAX,
     UINT16_MAX,
     UINT32_MAX,
@@ -26,16 +24,17 @@ import {
     HeaderInput,
     TransportMap,
     RpcDispatcher,
-    HttpRpcDispatcher,
+    HttpDispatcher,
     InferRpcDispatcherOptions,
     InferRpcDispatcherEventStreamOptions,
     UndefinedModelValidator,
+    EventStreamController,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
 
 export class ExampleClient<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -64,7 +63,7 @@ export class ExampleClient<
         this._headers = config.headers;
         this._http =
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,
@@ -97,7 +96,7 @@ export class ExampleClient<
 }
 
 export class ExampleClientBooksService<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -125,7 +124,7 @@ export class ExampleClientBooksService<
         this._headers = config.headers;
         this._http =
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,
@@ -187,7 +186,7 @@ export class ExampleClientBooksService<
     watchBook(
         params: BookParams,
         options: InferRpcDispatcherEventStreamOptions<THttp> = {},
-    ): EventSourceController {
+    ): EventStreamController {
         return this._http.handleEventStreamRpc<BookParams, Book>(
             {
                 procedure: 'books.watchBook',

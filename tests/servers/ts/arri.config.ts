@@ -11,24 +11,24 @@ const prettierConfig = JSON.parse(
 export default defineConfig({
     server: servers.tsServerNext({}),
     generators: [
-        // generators.typescriptClient({
-        //     clientName: 'TestClient',
-        //     outputFile: path.resolve(
-        //         __dirname,
-        //         '../../clients/ts/testClient.g.ts',
-        //     ),
-        //     prettierOptions: prettierConfig,
-        // }),
-        // generators.typescriptClient({
-        //     clientName: 'TestClientPrefixed',
-        //     outputFile: path.resolve(
-        //         __dirname,
-        //         '../../clients/ts/tsClientPrefixed.g.ts',
-        //     ),
-        //     typePrefix: 'Foo',
-        //     prettierOptions: prettierConfig,
-        //     rootService: 'tests',
-        // }),
+        generators.typescriptClient({
+            clientName: 'TestClient',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/ts/testClient.g.ts',
+            ),
+            prettierOptions: prettierConfig,
+        }),
+        generators.typescriptClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/ts/tsClientPrefixed.g.ts',
+            ),
+            typePrefix: 'Foo',
+            prettierOptions: prettierConfig,
+            rootService: 'tests',
+        }),
         // generators.dartClient({
         //     clientName: 'TestClient',
         //     outputFile: path.resolve(

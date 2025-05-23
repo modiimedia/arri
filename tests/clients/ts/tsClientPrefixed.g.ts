@@ -26,7 +26,7 @@ import {
     HeaderInput,
     TransportMap,
     RpcDispatcher,
-    HttpRpcDispatcher,
+    HttpDispatcher,
     InferRpcDispatcherOptions,
     InferRpcDispatcherEventStreamOptions,
     UndefinedModelValidator,
@@ -34,7 +34,7 @@ import {
 
 type HeaderMap = Record<string, string | undefined>;
 export class TestClientPrefixed<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -63,7 +63,7 @@ export class TestClientPrefixed<
         this._headers = config.headers;
         this._http =
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,
@@ -97,7 +97,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'emptyParamsPostRequest',
                 path: '/rpcs/tests/empty-params-post-request',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: undefined,
                 customHeaders: this._headers,
@@ -139,7 +139,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'emptyResponsePostRequest',
                 path: '/rpcs/tests/empty-response-post-request',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -164,7 +164,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'deprecatedRpc',
                 path: '/rpcs/tests/deprecated-rpc',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -188,7 +188,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendDiscriminatorWithEmptyObject',
                 path: '/rpcs/tests/send-discriminator-with-empty-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -209,7 +209,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendError',
                 path: '/rpcs/tests/send-error',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -233,7 +233,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendObject',
                 path: '/rpcs/tests/send-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -257,7 +257,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendObjectWithNullableFields',
                 path: '/rpcs/tests/send-object-with-nullable-fields',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -281,7 +281,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendObjectWithPascalCaseKeys',
                 path: '/rpcs/tests/send-object-with-pascal-case-keys',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -305,7 +305,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendObjectWithSnakeCaseKeys',
                 path: '/rpcs/tests/send-object-with-snake-case-keys',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -329,7 +329,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendPartialObject',
                 path: '/rpcs/tests/send-partial-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -350,7 +350,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendRecursiveObject',
                 path: '/rpcs/tests/send-recursive-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -371,7 +371,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'sendRecursiveUnion',
                 path: '/rpcs/tests/send-recursive-union',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -395,7 +395,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'streamAutoReconnect',
                 path: '/rpcs/tests/stream-auto-reconnect',
-                method: 'get',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -495,7 +495,7 @@ export class TestClientPrefixed<
             {
                 procedure: 'streamRetryWithNewCredentials',
                 path: '/rpcs/tests/stream-retry-with-new-credentials',
-                method: 'get',
+                method: undefined,
                 clientVersion: '10',
                 data: undefined,
                 customHeaders: this._headers,
@@ -532,6 +532,46 @@ export class TestClientPrefixed<
         );
     }
 }
+
+export interface FooDefaultPayload {
+    message: string;
+}
+export const $$FooDefaultPayload: ArriModelValidator<FooDefaultPayload> = {
+    new(): FooDefaultPayload {
+        return {
+            message: '',
+        };
+    },
+    validate(input): input is FooDefaultPayload {
+        return isObject(input) && typeof input.message === 'string';
+    },
+    fromJson(input): FooDefaultPayload {
+        let _message: string;
+        if (typeof input.message === 'string') {
+            _message = input.message;
+        } else {
+            _message = '';
+        }
+        return {
+            message: _message,
+        };
+    },
+    fromJsonString(input): FooDefaultPayload {
+        return $$FooDefaultPayload.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"message":';
+        json += serializeString(input.message);
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push(`message=${input.message}`);
+        return queryParts.join('&');
+    },
+};
 
 export interface FooManuallyAddedModel {
     hello: string;
@@ -573,46 +613,6 @@ export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> 
             return queryParts.join('&');
         },
     };
-
-export interface FooDefaultPayload {
-    message: string;
-}
-export const $$FooDefaultPayload: ArriModelValidator<FooDefaultPayload> = {
-    new(): FooDefaultPayload {
-        return {
-            message: '',
-        };
-    },
-    validate(input): input is FooDefaultPayload {
-        return isObject(input) && typeof input.message === 'string';
-    },
-    fromJson(input): FooDefaultPayload {
-        let _message: string;
-        if (typeof input.message === 'string') {
-            _message = input.message;
-        } else {
-            _message = '';
-        }
-        return {
-            message: _message,
-        };
-    },
-    fromJsonString(input): FooDefaultPayload {
-        return $$FooDefaultPayload.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"message":';
-        json += serializeString(input.message);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`message=${input.message}`);
-        return queryParts.join('&');
-    },
-};
 
 /**
  * @deprecated

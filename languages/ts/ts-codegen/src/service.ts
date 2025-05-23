@@ -26,7 +26,9 @@ export function tsServiceFromDefinition(
                 instancePath: context.instancePath.length
                     ? `${context.instancePath}.${key}`
                     : key,
-                schemaPath: `${context.schemaPath}.${key}`,
+                schemaPath: context.schemaPath
+                    ? `${context.schemaPath}.${key}`
+                    : key,
                 discriminatorParent: '',
                 discriminatorKey: '',
                 discriminatorValue: '',
@@ -47,7 +49,9 @@ export function tsServiceFromDefinition(
                 instancePath: context.instancePath.length
                     ? `${context.instancePath}.${key}`
                     : key,
-                schemaPath: `${context.schemaPath}.${key}`,
+                schemaPath: context.schemaPath
+                    ? `${context.schemaPath}.${key}`
+                    : key,
                 discriminatorParent: '',
                 discriminatorKey: '',
                 discriminatorValue: '',
@@ -61,7 +65,7 @@ export function tsServiceFromDefinition(
             continue;
         }
         console.warn(
-            `Invalid definition found at procedures.${context.schemaPath}`,
+            `Invalid definition found at procedures.${context.schemaPath}.${key}`,
         );
     }
     if (subServices.length === 0 && rpcParts.length === 0) {
@@ -75,7 +79,7 @@ export function tsServiceFromDefinition(
         key,
         name: serviceName,
         content: `export class ${serviceName}<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -104,7 +108,7 @@ ${subServices.map((service) => `    ${service.key}: ${service.name}<THttp, TDisp
         this._headers = config.headers;
         this._http = 
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,

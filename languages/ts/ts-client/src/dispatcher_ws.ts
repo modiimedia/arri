@@ -2,34 +2,49 @@ import { EventSourceController } from 'event-source-plus';
 import { IncomingMessage } from 'http';
 import ws from 'websocket';
 
+import {
+    EventStreamHooks,
+    RpcDispatcher,
+    RpcDispatcherOptions,
+} from './dispatcher';
 import { ArriErrorInstance } from './errors';
 import {
     decodeRequest,
     encodeRequest,
-    RpcDispatcher,
+    getHeaders,
     RpcRawResponse,
     RpcRequest,
     RpcRequestValidator,
 } from './requests';
-import { SseOptions } from './requests_http_sse';
 
-export class WsDispatcher implements RpcDispatcher<undefined, any> {
+export interface WsDispatcherOptions extends RpcDispatcherOptions {
+    wsConnectionUrl: string;
+}
+
+export class WsDispatcher implements RpcDispatcher {
     private readonly client: ws.client;
     private connection: ws.connection | undefined;
-    private readonly connectionUrl: string;
     private reqCount = 0;
+
+    private options: WsDispatcherOptions;
 
     private responseHandlers: Map<string, (msg: RpcRawResponse) => any> =
         new Map();
 
-    constructor(options?: { connectionUrl: string }) {
+    constructor(options: WsDispatcherOptions) {
         this.client = new ws.client();
-        this.connectionUrl = options?.connectionUrl ?? '';
-        this.client.connect(this.connectionUrl);
+        this.options = options;
     }
 
     async setupConnection() {
         if (this.connection?.connected) return;
+        const headers = await getHeaders(this.options.headers);
+        this.client.connect(
+            this.options.wsConnectionUrl,
+            undefined,
+            undefined,
+            headers,
+        );
         return new Promise((res, rej) => {
             const onConnection = (connection: ws.connection) => {
                 this.connection = connection;
@@ -81,20 +96,46 @@ export class WsDispatcher implements RpcDispatcher<undefined, any> {
     async handleRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        _: undefined,
+        options?: RpcDispatcherOptions,
     ): Promise<TResponse> {
+        const errHandler =
+            options?.onError ?? this.options.onError ?? ((_, __) => {});
+        const timeout = options?.timeout ?? this.options.timeout;
         this.reqCount++;
         const reqId = `${this.reqCount}`;
         await this.setupConnection();
         const msgPayload = encodeRequest(req, validator.params.toJsonString);
         if (!this.connection) {
+            const err = new Error("Connection hasn't been established");
+            errHandler(req, err);
             throw new Error("Connection hasn't been established");
         }
         return new Promise((res, rej) => {
+            let responseReceived = false;
+            if (options?.signal) {
+                options.signal.onabort = (_) => {
+                    if (responseReceived) return;
+                    const err = new Error('Request was aborted');
+                    errHandler(req, err);
+                    rej(err);
+                };
+            }
+            if (timeout) {
+                setTimeout(() => {
+                    if (responseReceived) return;
+                    const err = new Error('Request timeout reached');
+                    errHandler(req, err);
+                    rej(err);
+                }, timeout);
+            }
+
             this.responseHandlers.set(reqId, (msg) => {
+                responseReceived = true;
                 this.responseHandlers.delete(reqId);
                 if (!msg.success) {
-                    rej(ArriErrorInstance.fromJson(msg.data));
+                    const err = ArriErrorInstance.fromJson(msg.data);
+                    errHandler(req, err);
+                    rej(err);
                     return;
                 }
                 if (!msg.data) {
@@ -117,9 +158,8 @@ export class WsDispatcher implements RpcDispatcher<undefined, any> {
     handleEventStreamRpc<TParams, TOutput>(
         _req: RpcRequest<TParams>,
         _validator: RpcRequestValidator<TParams, TOutput>,
-        _hooks?: SseOptions<TOutput> | undefined,
+        _hooks?: EventStreamHooks<TOutput> | undefined,
     ): EventSourceController {
         throw new Error('Method not implemented.');
     }
-    options?: any;
 }

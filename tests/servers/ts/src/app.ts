@@ -31,7 +31,6 @@ app.use(manualTestService);
 // auth middleware
 app.use(async (context) => {
     const authHeader = context.headers['x-test-header'];
-    context.xTestHeader = authHeader;
     if (!authHeader?.length && context.rpcName.length) {
         throw defineError(401, {
             message: "Missing test auth header 'x-test-header'",
@@ -42,6 +41,14 @@ app.use(async (context) => {
 http.h3Router.get(
     '/status',
     defineEventHandler((_) => 'ok'),
+);
+
+http.h3Router.use(
+    '/routes/hello-world',
+    defineEventHandler((_) => {
+        return 'hello world';
+    }),
+    ['get', 'post'],
 );
 
 app.registerDefinitions({

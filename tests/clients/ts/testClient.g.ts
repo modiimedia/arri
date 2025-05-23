@@ -26,7 +26,7 @@ import {
     HeaderInput,
     TransportMap,
     RpcDispatcher,
-    HttpRpcDispatcher,
+    HttpDispatcher,
     InferRpcDispatcherOptions,
     InferRpcDispatcherEventStreamOptions,
     UndefinedModelValidator,
@@ -34,7 +34,7 @@ import {
 
 type HeaderMap = Record<string, string | undefined>;
 export class TestClient<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -64,7 +64,7 @@ export class TestClient<
         this._headers = config.headers;
         this._http =
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,
@@ -76,7 +76,7 @@ export class TestClient<
 }
 
 export class TestClientTestsService<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -105,7 +105,7 @@ export class TestClientTestsService<
         this._headers = config.headers;
         this._http =
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,
@@ -139,7 +139,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.emptyParamsPostRequest',
                 path: '/rpcs/tests/empty-params-post-request',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: undefined,
                 customHeaders: this._headers,
@@ -181,7 +181,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.emptyResponsePostRequest',
                 path: '/rpcs/tests/empty-response-post-request',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -206,7 +206,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.deprecatedRpc',
                 path: '/rpcs/tests/deprecated-rpc',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -230,7 +230,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendDiscriminatorWithEmptyObject',
                 path: '/rpcs/tests/send-discriminator-with-empty-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -251,7 +251,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendError',
                 path: '/rpcs/tests/send-error',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -272,7 +272,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendObject',
                 path: '/rpcs/tests/send-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -296,7 +296,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendObjectWithNullableFields',
                 path: '/rpcs/tests/send-object-with-nullable-fields',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -320,7 +320,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendObjectWithPascalCaseKeys',
                 path: '/rpcs/tests/send-object-with-pascal-case-keys',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -344,7 +344,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendObjectWithSnakeCaseKeys',
                 path: '/rpcs/tests/send-object-with-snake-case-keys',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -368,7 +368,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendPartialObject',
                 path: '/rpcs/tests/send-partial-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -389,7 +389,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendRecursiveObject',
                 path: '/rpcs/tests/send-recursive-object',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -410,7 +410,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.sendRecursiveUnion',
                 path: '/rpcs/tests/send-recursive-union',
-                method: 'post',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -434,7 +434,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.streamAutoReconnect',
                 path: '/rpcs/tests/stream-auto-reconnect',
-                method: 'get',
+                method: undefined,
                 clientVersion: '10',
                 data: params,
                 customHeaders: this._headers,
@@ -531,7 +531,7 @@ export class TestClientTestsService<
             {
                 procedure: 'tests.streamRetryWithNewCredentials',
                 path: '/rpcs/tests/stream-retry-with-new-credentials',
-                method: 'get',
+                method: undefined,
                 clientVersion: '10',
                 data: undefined,
                 customHeaders: this._headers,
@@ -570,7 +570,7 @@ export class TestClientTestsService<
 }
 
 export class TestClientUsersService<
-    THttp extends RpcDispatcher = HttpRpcDispatcher,
+    THttp extends RpcDispatcher = HttpDispatcher,
     TDispatchers extends TransportMap = {},
 > {
     private readonly _onError?: (err: unknown) => void;
@@ -599,7 +599,7 @@ export class TestClientUsersService<
         this._headers = config.headers;
         this._http =
             config.http ??
-            (new HttpRpcDispatcher({
+            (new HttpDispatcher({
                 baseUrl: config.baseUrl ?? '',
                 fetch: config.fetch,
                 options: config.options,
@@ -631,46 +631,6 @@ export class TestClientUsersService<
         );
     }
 }
-
-export interface ManuallyAddedModel {
-    hello: string;
-}
-export const $$ManuallyAddedModel: ArriModelValidator<ManuallyAddedModel> = {
-    new(): ManuallyAddedModel {
-        return {
-            hello: '',
-        };
-    },
-    validate(input): input is ManuallyAddedModel {
-        return isObject(input) && typeof input.hello === 'string';
-    },
-    fromJson(input): ManuallyAddedModel {
-        let _hello: string;
-        if (typeof input.hello === 'string') {
-            _hello = input.hello;
-        } else {
-            _hello = '';
-        }
-        return {
-            hello: _hello,
-        };
-    },
-    fromJsonString(input): ManuallyAddedModel {
-        return $$ManuallyAddedModel.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"hello":';
-        json += serializeString(input.hello);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`hello=${input.hello}`);
-        return queryParts.join('&');
-    },
-};
 
 export interface DefaultPayload {
     message: string;
@@ -708,6 +668,46 @@ export const $$DefaultPayload: ArriModelValidator<DefaultPayload> = {
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
         queryParts.push(`message=${input.message}`);
+        return queryParts.join('&');
+    },
+};
+
+export interface ManuallyAddedModel {
+    hello: string;
+}
+export const $$ManuallyAddedModel: ArriModelValidator<ManuallyAddedModel> = {
+    new(): ManuallyAddedModel {
+        return {
+            hello: '',
+        };
+    },
+    validate(input): input is ManuallyAddedModel {
+        return isObject(input) && typeof input.hello === 'string';
+    },
+    fromJson(input): ManuallyAddedModel {
+        let _hello: string;
+        if (typeof input.hello === 'string') {
+            _hello = input.hello;
+        } else {
+            _hello = '';
+        }
+        return {
+            hello: _hello,
+        };
+    },
+    fromJsonString(input): ManuallyAddedModel {
+        return $$ManuallyAddedModel.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"hello":';
+        json += serializeString(input.hello);
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push(`hello=${input.hello}`);
         return queryParts.join('&');
     },
 };

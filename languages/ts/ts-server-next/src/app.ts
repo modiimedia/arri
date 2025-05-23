@@ -378,7 +378,7 @@ export function resolveTypeDefId(
 ) {
     if (schema.metadata?.id) return schema.metadata.id;
 
-    let id = pascalCase(rpcName.split('.'), { normalize: true });
+    let id = pascalCase(rpcName.split('.').join('_'), { normalize: true });
     switch (schemaType) {
         case 'PARAMS':
             id += `Params`;

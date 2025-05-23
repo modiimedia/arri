@@ -8,8 +8,8 @@ export default defineEventStreamRpc({
     response: a.object({
         message: a.string(),
     }),
-    async handler({ stream, xTestHeader }) {
-        const authToken = xTestHeader;
+    async handler({ stream, headers }) {
+        const authToken = headers['x-test-header'];
         if (!authToken) throw defineError(400);
         if (usedTokens[authToken]) {
             throw defineError(403, {

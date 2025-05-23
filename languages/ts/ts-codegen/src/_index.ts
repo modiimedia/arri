@@ -8,7 +8,6 @@ import {
     isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
-    RpcDefinition,
     type Schema,
     unflattenProcedures,
 } from '@arrirpc/codegen-utils';
@@ -70,7 +69,7 @@ export interface TypescriptGeneratorOptions {
     /**
      * Override the default functions used for creating procedures
      */
-    rpcGenerators?: Partial<Record<RpcDefinition['transport'], RpcGenerator>>;
+    rpcGenerators?: Partial<Record<string, RpcGenerator>>;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
@@ -169,7 +168,7 @@ import {
     ${context.usedFeatures.ws ? 'type WsOptions,' : ''}
     TransportMap,
     RpcDispatcher,
-    HttpRpcDispatcher,
+    HttpDispatcher,
     InferRpcDispatcherOptions,
     InferRpcDispatcherEventStreamOptions,
     UndefinedModelValidator,

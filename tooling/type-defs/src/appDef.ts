@@ -113,6 +113,7 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
     }
     if (
         'method' in input &&
+        typeof input.method !== 'undefined' &&
         (typeof input.method !== 'string' || !isRpcHttpMethod(input.method))
     ) {
         return false;

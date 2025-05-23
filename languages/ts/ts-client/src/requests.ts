@@ -1,7 +1,4 @@
 import { serializeSmallString } from '@arrirpc/schema';
-export { type $Fetch, createFetch, type Fetch, ofetch } from 'ofetch';
-
-import { ArriErrorInstance } from './errors';
 
 export interface RpcRequestValidator<TParams, TResponse> {
     params: ArriModelValidator<TParams>;
@@ -35,49 +32,6 @@ export interface RpcRequest<TParams> extends Omit<RpcRawRequest, 'data'> {
 export interface RpcResponse<TResponse> extends Omit<RpcRawResponse, 'data'> {
     data: TResponse;
 }
-
-export interface RpcDispatcher<
-    TOptions = unknown,
-    TEventStreamOptions = unknown,
-> {
-    transport: string;
-    handleRpc<TParams, TOutput>(
-        req: RpcRequest<TParams>,
-        validator: RpcRequestValidator<TParams, TOutput>,
-        options: TOptions,
-    ): Promise<TOutput> | TOutput;
-    handleEventStreamRpc<TParams, TOutput>(
-        req: RpcRequest<TParams>,
-        validator: RpcRequestValidator<TParams, TOutput>,
-        hooks: TEventStreamOptions,
-    ): EventStreamController;
-    readonly options?: TOptions;
-    readonly eventStreamOptions?: TEventStreamOptions;
-}
-
-export type InferRpcDispatcherOptions<T extends RpcDispatcher<any, any>> =
-    NonNullable<T['options']>;
-export type InferRpcDispatcherEventStreamOptions<
-    T extends RpcDispatcher<any, any>,
-> = NonNullable<T['eventStreamOptions']>;
-export interface EventStreamController {
-    abort(): void;
-}
-
-export type TransportMap = Record<string, RpcDispatcher>;
-
-export type HeaderInput =
-    | Record<string, string | undefined>
-    | (() =>
-          | Promise<Record<string, string | undefined>>
-          | Record<string, string | undefined>);
-
-export type SafeResponse<T> =
-    | {
-          success: true;
-          value: T;
-      }
-    | { success: false; error: ArriErrorInstance };
 
 export async function encodeRequest<TParams>(
     req: RpcRequest<TParams>,
@@ -273,3 +227,9 @@ export async function getHeaders(
     }
     return (input ?? {}) as Record<string, string>;
 }
+
+export type HeaderInput =
+    | Record<string, string | undefined>
+    | (() =>
+          | Promise<Record<string, string | undefined>>
+          | Record<string, string | undefined>);

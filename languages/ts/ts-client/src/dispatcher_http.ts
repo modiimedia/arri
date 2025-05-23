@@ -1,61 +1,37 @@
-import {
-    $Fetch,
-    createFetch,
-    Fetch,
-    FetchError,
-    FetchOptions,
-    ofetch,
-} from 'ofetch';
+import { $Fetch, createFetch, Fetch, FetchError, ofetch } from 'ofetch';
 
-import { ArriErrorInstance, isArriError } from './errors';
 import {
-    getHeaders,
-    HeaderInput,
+    EventStreamHooks,
     RpcDispatcher,
-    RpcRequest,
-    RpcRequestValidator,
-} from './requests';
-import { arriSseRequest, SseOptions } from './requests_http_sse';
+    RpcDispatcherOptions,
+} from './dispatcher';
+import { arriSseRequest } from './dispatcher_http_sse';
+import { ArriErrorInstance, isArriError } from './errors';
+import { getHeaders, RpcRequest, RpcRequestValidator } from './requests';
 
-export interface HttpRequestOptions {
-    retry?: FetchOptions['retry'];
-    retryDelay?: FetchOptions['retryDelay'];
-    retryStatusCodes?: FetchOptions['retryStatusCodes'];
-    onRequest?: FetchOptions['onRequest'];
-    onRequestError?: FetchOptions['onRequestError'];
-    onResponse?: FetchOptions['onResponse'];
-    onResponseError?: FetchOptions['onResponseError'];
-    timeout?: FetchOptions['timeout'];
-    signal?: FetchOptions['signal'];
+export interface HttpDispatcherOptions extends RpcDispatcherOptions {
+    baseUrl: string;
+    fetch?: Fetch;
 }
 
-export class HttpDispatcher implements RpcDispatcher<HttpRequestOptions> {
+export class HttpDispatcher implements RpcDispatcher {
     transport: string = 'http';
-    baseUrl: string;
     ofetch: $Fetch;
-    options?: HttpRequestOptions;
+    options: HttpDispatcherOptions;
 
-    constructor(
-        config?: HttpRequestOptions & {
-            baseUrl: string;
-            headers?: HeaderInput;
-            fetch?: Fetch;
-            options?: HttpRequestOptions;
-        },
-    ) {
-        this.options = config?.options;
-        this.baseUrl = config?.baseUrl ?? '';
-        this.ofetch = config?.fetch
-            ? createFetch({ fetch: config.fetch })
+    constructor(options: HttpDispatcherOptions) {
+        this.options = options;
+        this.ofetch = options?.fetch
+            ? createFetch({ fetch: options.fetch })
             : ofetch;
     }
 
     async handleRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        options?: HttpRequestOptions,
+        options?: RpcDispatcherOptions,
     ): Promise<TResponse> {
-        let url = this.baseUrl + req.path;
+        let url = this.options.baseUrl + req.path;
         let body: undefined | string;
         let contentType: undefined | string;
         switch (req.method) {
@@ -79,21 +55,36 @@ export class HttpDispatcher implements RpcDispatcher<HttpRequestOptions> {
             if (contentType) headers['Content-Type'] = contentType;
             if (req.clientVersion)
                 headers['client-version'] = req.clientVersion;
+            const errorHandler = options?.onError ?? this.options.onError;
             const response = await this.ofetch(url, {
                 method: req.method?.toUpperCase() ?? 'POST',
                 body,
                 headers,
-                onRequest: options?.onRequest ?? this.options?.onRequest,
-                onRequestError:
-                    options?.onRequestError ?? this.options?.onRequestError,
-                onResponse: options?.onResponse ?? this.options?.onResponse,
-                onResponseError:
-                    options?.onResponseError ?? this.options?.onResponseError,
+                onRequestError: errorHandler
+                    ? (context) => {
+                          errorHandler(req, context.error);
+                      }
+                    : undefined,
+                onResponseError: errorHandler
+                    ? async (context) => {
+                          try {
+                              const err = ArriErrorInstance.fromJson(
+                                  context.response._data ??
+                                      (await context.response.json()),
+                              );
+                              errorHandler(req, err);
+                              return;
+                          } catch (_) {
+                              // do nothing
+                          }
+                          errorHandler(req, context.error);
+                      }
+                    : undefined,
                 responseType: 'text',
                 retry: options?.retry ?? this.options?.retry,
                 retryDelay: options?.retryDelay ?? this.options?.retryDelay,
                 retryStatusCodes:
-                    options?.retryStatusCodes ?? this.options?.retryStatusCodes,
+                    options?.retryErrorCodes ?? this.options?.retryErrorCodes,
                 signal: options?.signal ?? this.options?.signal,
                 timeout: options?.timeout ?? this.options?.timeout,
             });
@@ -124,37 +115,15 @@ export class HttpDispatcher implements RpcDispatcher<HttpRequestOptions> {
     handleEventStreamRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        options?: SseOptions<TResponse>,
+        options?: EventStreamHooks<TResponse>,
     ) {
-        let url = this.baseUrl + req.path;
-        let body: string | undefined;
-        switch (req.method) {
-            case 'get':
-            case 'GET':
-            case 'head':
-            case 'HEAD':
-                if (req.data) {
-                    url += `?${validator.params.toUrlQueryString(req.data)}`;
-                }
-                break;
-            default:
-                if (req.data) {
-                    body = validator.params.toJsonString(req.data);
-                }
-                break;
-        }
         return arriSseRequest(
-            {
-                url,
-                headers: req.customHeaders,
-                clientVersion: req.clientVersion,
-                ofetch: this.ofetch,
-                method: (req.method as any) ?? 'post',
-                body,
-                responseDecoder: validator.response.fromJsonString,
-                onError: validator.onError,
-            },
+            this.options.baseUrl,
+            req,
+            validator,
             options ?? {},
+            this.options,
+            this.ofetch,
         );
     }
 }
