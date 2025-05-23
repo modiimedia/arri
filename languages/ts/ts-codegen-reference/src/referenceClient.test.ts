@@ -307,42 +307,26 @@ describe('RecursiveObject', () => {
 describe('HTTP options', () => {
     const client = new ExampleClient({
         baseUrl: 'https://foo.foo',
+        wsConnectionUrl: 'https://foo.foo/ws',
     });
     test('request hooks', async () => {
-        let didFireRequest = false;
         let didFireRequestError = false;
-        let didFireResponse = false;
-        let didFireResponseError = false;
         try {
             await client.books.getBook(
                 { bookId: '1' },
                 {
                     timeout: 200,
-                    onRequest: (_) => {
-                        didFireRequest = true;
-                    },
-                    onRequestError: (context) => {
+                    onError: (_req, error) => {
                         expect(
-                            `${context.error}`
-                                .toLowerCase()
-                                .includes('timeout'),
+                            `${error}`.toLowerCase().includes('timeout'),
                         ).toBe(true);
                         didFireRequestError = true;
-                    },
-                    onResponse: (_) => {
-                        didFireResponse = true;
-                    },
-                    onResponseError: (_) => {
-                        didFireResponseError = false;
                     },
                 },
             );
         } catch (_) {
             // do nothing
         }
-        expect(didFireRequest).toBe(true);
         expect(didFireRequestError).toBe(true);
-        expect(didFireResponse).toBe(false);
-        expect(didFireResponseError).toBe(false);
     });
 });

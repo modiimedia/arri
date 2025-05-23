@@ -107,7 +107,7 @@ export class HttpDispatcher implements RpcDispatcher {
                     stack: error.stack,
                 });
             }
-            if (validator.onError) validator.onError(arriError);
+            options?.onError?.(req, arriError);
             throw arriError;
         }
     }

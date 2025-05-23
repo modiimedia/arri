@@ -23,12 +23,14 @@ function wait(ms: number) {
 }
 
 const baseUrl = 'http://127.0.0.1:2020';
+const wsConnectionUrl = baseUrl + '/ws';
 const headers = {
     'x-test-header': 'test',
 };
 
 const client = new TestClient({
     baseUrl,
+    wsConnectionUrl,
     headers,
 });
 
@@ -173,6 +175,7 @@ test('unauthenticated RPC request returns a 401 error', async () => {
     let firedOnErr = false;
     const unauthenticatedClient = new TestClient({
         baseUrl,
+        wsConnectionUrl: baseUrl + '/create-connection',
         onError(_) {
             firedOnErr = true;
         },
@@ -191,6 +194,7 @@ test('unauthenticated RPC request returns a 401 error', async () => {
 test('can use async functions for headers', async () => {
     const _client = new TestClient({
         baseUrl: baseUrl,
+        wsConnectionUrl,
         async headers() {
             await new Promise((res) => {
                 setTimeout(() => {
@@ -337,6 +341,7 @@ test('onError hook fires properly', async () => {
     let onErrorFired = false;
     const customClient = new TestClient({
         baseUrl,
+        wsConnectionUrl,
         onError(err) {
             onErrorFired = true;
             expect(err instanceof ArriErrorInstance).toBe(true);
@@ -374,8 +379,8 @@ test('[SSE] supports server sent events', async () => {
                         break;
                 }
             },
-            onResponse({ response }) {
-                wasConnected = response.status === 200;
+            onOpen() {
+                wasConnected = true;
             },
         },
     );
@@ -388,24 +393,21 @@ test('[SSE] supports server sent events', async () => {
 test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriErrorInstance | undefined;
+    let errorReceived: unknown | undefined;
     const controller = client.tests.streamTenEventsThenEnd({
+        onOpen() {
+            timesConnected++;
+        },
         onMessage(_) {
             messageCount++;
         },
-        onRequestError({ error }) {
+        onError(error) {
             errorReceived = error;
-        },
-        onResponseError({ error }) {
-            errorReceived = error;
-        },
-        onRequest() {
-            timesConnected++;
         },
     });
     await wait(1000);
     expect(errorReceived).toBe(undefined);
-    expect(controller.signal.aborted).toBe(true);
+    expect((controller as any).signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
 });
@@ -419,14 +421,14 @@ test('[SSE] auto-reconnects when connection is closed by server', async () => {
             messageCount: 10,
         },
         {
-            onRequest() {
+            onOpen() {
                 connectionCount++;
             },
             onMessage(data) {
                 messageCount++;
                 expect(data.count > 0).toBe(true);
             },
-            onResponseError(_) {
+            onError(_) {
                 errorCount++;
             },
         },
@@ -441,6 +443,7 @@ test('[SSE] auto-reconnects when connection is closed by server', async () => {
 test('[SSE] reconnect with new credentials', async () => {
     const dynamicClient = new TestClient({
         baseUrl,
+        wsConnectionUrl,
         headers() {
             return {
                 'x-test-header': randomUUID(),
@@ -454,14 +457,11 @@ test('[SSE] reconnect with new credentials', async () => {
         onMessage(_) {
             msgCount++;
         },
-        onRequestError(_) {
+        onError(_) {
             errorCount++;
         },
-        onResponse(_) {
+        onOpen() {
             openCount++;
-        },
-        onResponseError(_) {
-            errorCount++;
         },
     });
     await wait(2000);
@@ -473,117 +473,61 @@ test('[SSE] reconnect with new credentials', async () => {
 
 describe('request options', () => {
     test('global options', async () => {
-        let numRequest = 0;
-        let numRequestErr = 0;
-        let numResponse = 0;
-        let numResponseErr = 0;
+        let numErr = 0;
         const client = new TestClient({
-            baseUrl: baseUrl,
-            headers: headers,
-            options: {
-                retry: 2,
-                retryStatusCodes: [409],
-                onRequest: () => {
-                    numRequest++;
-                },
-                onRequestError: () => {
-                    numRequestErr++;
-                },
-                onResponse: () => {
-                    numResponse++;
-                },
-                onResponseError: () => {
-                    numResponseErr++;
-                },
+            baseUrl,
+            wsConnectionUrl,
+            headers,
+            retry: 2,
+            retryErrorCodes: [409],
+            onError: () => {
+                numErr++;
             },
         });
         await client.tests.emptyParamsGetRequest();
-        expect(numRequest).toBe(1);
-        expect(numRequestErr).toBe(0);
-        expect(numResponse).toBe(1);
-        expect(numResponseErr).toBe(0);
-        numRequest = 0;
-        numRequestErr = 0;
-        numResponse = 0;
-        numResponseErr = 0;
+        expect(numErr).toBe(0);
+        numErr = 0;
         try {
             await client.tests.sendError({ message: '', code: 409 });
         } catch (_) {
             // do nothing
         }
-        expect(numRequest).toBe(3);
-        expect(numRequestErr).toBe(0);
-        expect(numResponse).toBe(3);
-        expect(numResponseErr).toBe(3);
+        expect(numErr).toBe(3);
     });
     test('local function options', async () => {
-        let numRequest = 0;
-        let numRequestErr = 0;
-        let numResponse = 0;
-        let numResponseErr = 0;
+        let numErr = 0;
         const client = new TestClient({
-            baseUrl: baseUrl,
-            headers: headers,
-            options: {
-                retry: false,
-                onRequest: () => {
-                    numRequest += 1000;
-                },
-                onRequestError: () => {
-                    numRequestErr += 1000;
-                },
-                onResponse: () => {
-                    numResponse += 1000;
-                },
-                onResponseError: () => {
-                    numResponseErr += 1000;
-                },
+            baseUrl,
+            wsConnectionUrl,
+            headers,
+            retry: false,
+            onError: () => {
+                numErr += 1000;
             },
         });
 
         await client.tests.emptyParamsGetRequest({
-            onRequest: () => {
-                numRequest++;
-            },
-            onRequestError: () => {
-                numRequestErr++;
-            },
-            onResponse: () => {
-                numResponse++;
-            },
-            onResponseError: () => {
-                numResponseErr++;
+            onError: () => {
+                numErr++;
             },
         });
-        expect(numRequest).toBe(1);
-        expect(numRequestErr).toBe(0);
-        expect(numResponse).toBe(1);
-        expect(numResponseErr).toBe(0);
-        numRequest = 0;
-        numRequestErr = 0;
-        numResponse = 0;
-        numResponseErr = 0;
+        expect(numErr).toBe(0);
+        numErr = 0;
         try {
             await client.tests.sendError(
                 { message: '', code: 409 },
                 {
-                    retry: 3,
-                    retryStatusCodes: [409],
-                    onRequest: () => {
-                        numRequest++;
-                    },
-                    onResponseError: () => {
-                        numResponseErr++;
+                    retry: 10,
+                    retryErrorCodes: [409],
+                    onError: () => {
+                        numErr++;
                     },
                 },
             );
         } catch (_) {
             // do nothing
         }
-        expect(numRequest).toBe(4);
-        expect(numRequestErr).toBe(0);
-        expect(numResponse).toBe(4000);
-        expect(numResponseErr).toBe(4);
+        expect(numErr).toBe(2);
     });
 });
 

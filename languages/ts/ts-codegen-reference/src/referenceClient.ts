@@ -6,6 +6,7 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    UndefinedModelValidator,
     INT8_MAX,
     INT8_MIN,
     INT16_MAX,
@@ -21,21 +22,21 @@ import {
     UINT32_MAX,
     UINT64_MAX,
     type Fetch,
-    RpcDispatcher,
+    type RpcDispatcher,
+    type RpcDispatcherOptions,
+    type RpcRequest,
+    type RpcRequestValidator,
     HttpDispatcher,
-    EventStreamController,
-    RpcDispatcherOptions,
-    RpcRequest,
-    RpcRequestValidator,
-    resolveDispatcherOptions,
-    EventStreamHooks,
-    resolveTransport,
     WsDispatcher,
+    type EventStreamController,
+    type EventStreamHooks,
+    resolveDispatcherOptions,
+    resolveTransport,
 } from '@arrirpc/client';
 
 export interface ExampleClientOptions
     extends Omit<RpcDispatcherOptions, 'signal'> {
-    transport?: 'http';
+    transport?: 'http' | 'ws';
     dispatchers?: Record<string, RpcDispatcher>;
     // HTTP options
     baseUrl: string;
@@ -43,8 +44,6 @@ export interface ExampleClientOptions
     // WS options
     wsConnectionUrl: string;
 }
-
-export type ExampleClientTransports = 'http';
 
 export interface RpcOptions<T extends string> extends RpcDispatcherOptions {
     transport?: T;
@@ -80,13 +79,14 @@ export class ExampleClient {
         params: NestedObject,
         options?: RpcOptions<'http'>,
     ): Promise<NestedObject> {
+        const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<NestedObject> = {
             procedure: 'sendObject',
             path: '/send-object',
             method: 'post',
             clientVersion: '20',
             data: params,
-            customHeaders: options?.headers ?? this._options.headers,
+            customHeaders: finalOptions.headers,
         };
         const validator: RpcRequestValidator<NestedObject, NestedObject> = {
             params: $$NestedObject,
@@ -96,15 +96,15 @@ export class ExampleClient {
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
-                `Missing dispatcher for transport \"${transport}"`,
+                `Missing dispatcher for transport "${transport}"`,
             );
-            options?.onError?.(req, err) ?? this._options.onError?.(req, err);
+            finalOptions.onError?.(req, err);
             throw err;
         }
         return dispatcher.handleRpc<NestedObject, NestedObject>(
             req,
             validator,
-            options,
+            finalOptions,
         );
     }
 }
@@ -160,11 +160,11 @@ export class ExampleClientBooksService {
         );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
-            const error = new Error(
+            const err = new Error(
                 `Missing dispatcher for transport "${transport}"`,
             );
-            finalOptions?.onError?.(req, error);
-            throw error;
+            finalOptions.onError?.(req, err);
+            throw err;
         }
         return dispatcher.handleRpc<BookParams, Book>(
             req,

@@ -82,7 +82,7 @@ export function tsServiceFromDefinition(
     private readonly _dispatchers: Record<string, RpcDispatcher>;
     private readonly _options: RpcDispatcherOptions;
     private readonly _defaultTransport: string;
-${subServices.map((service) => `    ${service.key}: ${service.name}<THttp, TDispatchers>;`).join('\n')}
+${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
     constructor(config: ${context.clientName}Options) {
         this._options = {
             headers: config.headers,
@@ -94,7 +94,7 @@ ${subServices.map((service) => `    ${service.key}: ${service.name}<THttp, TDisp
         };
         this._defaultTransport = config.transport ?? 'http';
         if (!config.dispatchers) config.dispatchers = {};
-        if (!config.dispatchers['http']) = {
+        if (!config.dispatchers['http']) {
             config.dispatchers['http'] = new HttpDispatcher(config);
         }
         if (!config.dispatchers['ws']) {

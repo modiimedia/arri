@@ -287,5 +287,6 @@
       },
       "metadata": { "id": "RecursiveObject" }
     }
-  }
+  },
+  "transports": ["http", "ws"]
 }

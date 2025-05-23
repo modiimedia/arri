@@ -3,7 +3,6 @@ import { serializeSmallString } from '@arrirpc/schema';
 export interface RpcRequestValidator<TParams, TResponse> {
     params: ArriModelValidator<TParams>;
     response: ArriModelValidator<TResponse>;
-    onError?: (err: unknown) => void | Promise<void>;
 }
 
 export interface RpcRawRequest {

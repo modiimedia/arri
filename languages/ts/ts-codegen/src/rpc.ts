@@ -22,49 +22,92 @@ export function tsRpcFromDefinition(
     const response = def.response
         ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
         : undefined;
+    const transportType = def.transports.map((val) => `'${val}'`).join(' | ');
+
     if (def.isEventStream) {
         context.usedFeatures.sse = true;
         return `${getJsDocComment({
             description: def.description,
             isDeprecated: def.isDeprecated,
-        })}    ${key}(${params ? `params: ${params},` : ''} options: InferRpcDispatcherEventStreamOptions<THttp> = {}): EventSourceController {
-        return this._http.handleEventStreamRpc<${params}, ${response}>(
-            {
-                procedure: '${context.instancePath}',
-                path: '${def.path}',
-                method: ${def.method ? `'${def.method.toLowerCase()}'` : 'undefined'},
-                clientVersion: '${context.versionNumber}',
-                data: ${def.params ? 'params' : 'undefined'},
-                customHeaders: this._headers,
-            },
-            {
-                params: ${def.params ? `$$${def.params}` : 'UndefinedModelValidator'},
-                response: ${def.response ? `$$${def.response}` : 'UndefinedModelValidator'},
-                onError: this._onError,
-            },
-            options,
+        })}    ${key}(
+        ${params ? `params: ${params},` : ''}
+        options?: EventStreamHooks<${response ?? 'undefined'}>
+    ): EventStreamController {
+        const req: RpcRequest<${params ?? 'undefined'}> = {
+            procedure: '${context.instancePath}',
+            path: '${def.path}',
+            method: ${def.method ? `'${def.method}'` : 'undefined'},
+            clientVersion: ${context.versionNumber ? `'${context.versionNumber}'` : 'undefined'},
+            data: ${params ? 'params' : 'undefined'},
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<${params ?? 'undefined'}, ${response ?? 'undefined'}> = {
+            params: ${params ? `$$${params}` : 'UndefinedModelValidator'},
+            response: ${response ? `$$${response}` : 'UndefinedModelValidator'},
+        };
+        const transport = ${
+            def.transports.length === 1
+                ? `'${def.transports[0]!}'`
+                : `resolveTransport(
+            [${def.transports.map((val) => `'${val}'`).join(', ')}],
+            options?.transport,
+            this._defaultTransport,
+        )`
+        };
+        const dispatcher = this._dispatchers[transport];
+        if(!dispatcher) {
+            const err = new Error(
+                \`Missing dispatcher for transport "\${transport}"\`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
+            req,
+            validator,
+            options ?? {},
         );
     }`;
     }
+
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: InferRpcDispatcherOptions<THttp>): Promise<${response ?? 'undefined'}> {
-        return this._http.handleRpc<${params}, ${response}>(
-            {
-                procedure: '${context.instancePath}',
-                path: '${def.path}',
-                method: ${def.method ? `'${def.method.toLowerCase()}'` : 'undefined'},
-                clientVersion: '${context.versionNumber}',
-                data: ${params ? 'params' : 'undefined'},
-                customHeaders: this._headers,
-            },
-            {
-                params: ${def.params ? `$$${def.params}` : 'UndefinedModelValidator'},
-                response: ${def.response ? `$$${def.response}` : 'UndefinedModelValidator'},
-                onError: this._onError,
-            },
-            options,
+    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: RpcOptions<${transportType}>): Promise<${response ?? 'undefined'}> {
+        const finalOptions = resolveDispatcherOptions(options, this._options);
+        const req: RpcRequest<${params ?? 'undefined'}> = {
+            procedure: '${context.instancePath}',
+            path: '${def.path}',
+            method: ${def.method ? `'${def.method}'` : 'undefined'},
+            clientVersion: ${context.versionNumber ? `'${context.versionNumber}'` : 'undefined'},
+            data: ${params ? 'params' : 'undefined'},
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<${params ?? 'undefined'}, ${response ?? 'undefined'}> = {
+            params: ${params ? `$$${params}` : 'UndefinedModelValidator'},
+            response: ${response ? `$$${response}` : 'UndefinedModelValidator'},
+        };
+        const transport = ${
+            def.transports.length === 1
+                ? `'${def.transports[0]!}'`
+                : `resolveTransport(
+            [${def.transports.map((val) => `'${val}'`).join(', ')}],
+            options?.transport,
+            this._defaultTransport,
+        )`
+        };
+        const dispatcher = this._dispatchers[transport];
+        if(!dispatcher) {
+            const err = new Error(
+                \`Missing dispatcher for transport "\${transport}"\`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
+            req,
+            validator,
+            finalOptions,
         );
     }`;
 }

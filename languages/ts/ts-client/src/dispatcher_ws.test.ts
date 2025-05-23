@@ -16,7 +16,7 @@ const ResData = a.object({
 type ResData = a.infer<typeof ResData>;
 const _$$ResData = a.compile(ResData);
 
-test('Encoding Messages', () => {
+test('Encoding Messages', async () => {
     const input: RpcRequest<ReqData> = {
         reqId: '15',
         procedure: 'users.getUser',
@@ -31,7 +31,7 @@ test('Encoding Messages', () => {
             baz: 15.5,
         },
     };
-    const result = encodeRequest(input, $$ReqData.serializeUnsafe);
+    const result = await encodeRequest(input, $$ReqData.serializeUnsafe);
     expect(result).toBe(`procedure: users.getUser
 path: /users/get-user
 client-version: 
