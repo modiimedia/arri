@@ -4,6 +4,7 @@ import {
     EventStreamHooks,
     RpcDispatcher,
     RpcDispatcherOptions,
+    waitFor,
 } from './dispatcher';
 import { arriSseRequest } from './dispatcher_http_sse';
 import { ArriErrorInstance, isArriError } from './errors';
@@ -30,6 +31,7 @@ export class HttpDispatcher implements RpcDispatcher {
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
         options?: RpcDispatcherOptions,
+        retryCount?: number,
     ): Promise<TResponse> {
         let url = this.options.baseUrl + req.path;
         let body: undefined | string;
@@ -56,7 +58,7 @@ export class HttpDispatcher implements RpcDispatcher {
             if (req.clientVersion)
                 headers['client-version'] = req.clientVersion;
             const errorHandler = options?.onError ?? this.options.onError;
-            const response = await this.ofetch(url, {
+            const response = await this.ofetch.raw(url, {
                 method: req.method?.toUpperCase() ?? 'POST',
                 body,
                 headers,
@@ -81,14 +83,17 @@ export class HttpDispatcher implements RpcDispatcher {
                       }
                     : undefined,
                 responseType: 'text',
-                retry: options?.retry ?? this.options?.retry,
-                retryDelay: options?.retryDelay ?? this.options?.retryDelay,
-                retryStatusCodes:
-                    options?.retryErrorCodes ?? this.options?.retryErrorCodes,
+                retry: false,
+                ignoreResponseError: true,
                 signal: options?.signal ?? this.options?.signal,
                 timeout: options?.timeout ?? this.options?.timeout,
             });
-            return validator.response.fromJsonString(response);
+            if (!response.ok) {
+                throw ArriErrorInstance.fromResponse(response);
+            }
+            return validator.response.fromJsonString(
+                response._data ?? (await response.text()),
+            );
         } catch (err) {
             const error = err as any as FetchError;
             let arriError: ArriErrorInstance;
@@ -107,7 +112,40 @@ export class HttpDispatcher implements RpcDispatcher {
                     stack: error.stack,
                 });
             }
+            const maxRetryCount =
+                typeof options?.retry === 'number'
+                    ? options.retry
+                    : typeof this.options.retry === 'number'
+                      ? this.options.retry
+                      : 0;
+            console.log('OPTIONS', options);
+            console.log('GLOABAL_OPTIONS', this.options);
+            const statusCodes =
+                options?.retryErrorCodes ?? this.options.retryErrorCodes ?? [];
+            const shouldRetry =
+                maxRetryCount !== 0 &&
+                (retryCount ?? 0) < maxRetryCount &&
+                (statusCodes.length === 0 ||
+                    statusCodes.includes(arriError.code));
             options?.onError?.(req, arriError);
+            console.log('SHOULD_RETRY', shouldRetry);
+            console.log('ERR', arriError);
+            if (shouldRetry) {
+                let retryDelay =
+                    options?.retryDelay ?? this.options.retryDelay ?? 0;
+                if (retryDelay === 0 && (retryCount ?? 0) > 0) {
+                    retryDelay = retryDelay * (retryCount ?? 1);
+                }
+                await waitFor(
+                    options?.retryDelay ?? this.options.retryDelay ?? 0,
+                );
+                return this.handleRpc(
+                    req,
+                    validator,
+                    options,
+                    (retryCount ?? 0) + 1,
+                );
+            }
             throw arriError;
         }
     }

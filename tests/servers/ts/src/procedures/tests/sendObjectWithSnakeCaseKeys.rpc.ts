@@ -1,7 +1,7 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server-next';
 
-const ObjectWithSnakeCaseKeys = a.object("ObjectWithSnakeCaseKeys", {
+const ObjectWithSnakeCaseKeys = a.object('ObjectWithSnakeCaseKeys', {
     created_at: a.timestamp(),
     display_name: a.string(),
     email_address: a.optional(a.string()),

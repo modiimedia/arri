@@ -1,7 +1,7 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server-next';
 
-const ObjectWithPascalCaseKeys = a.object("ObjectWithPascalCaseKeys", {
+const ObjectWithPascalCaseKeys = a.object('ObjectWithPascalCaseKeys', {
     CreatedAt: a.timestamp(),
     DisplayName: a.string(),
     EmailAddress: a.optional(a.string()),

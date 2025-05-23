@@ -33,7 +33,7 @@ export interface Rpc<
     response?: TResponse;
     handler: RpcHandler<
         TParams extends ASchema ? InferType<TParams> : undefined,
-        TResponse extends ASchema ? InferType<TResponse> : undefined
+        TResponse extends ASchema ? InferType<TResponse> : void | undefined
     >;
     postHandler?: RpcPostHandler<
         TParams extends ASchema ? InferType<TParams> : undefined,
@@ -43,11 +43,9 @@ export interface Rpc<
     description?: string;
 }
 
-export type RpcHandler<TParams = undefined, TResponse = undefined> = (
+export type RpcHandler<TParams, TResponse> = (
     context: RpcContext<TParams>,
-) => TResponse extends undefined
-    ? Promise<void> | void
-    : Promise<TResponse> | TResponse;
+) => TResponse | Promise<TResponse>;
 
 export type RpcPostHandler<TParams = undefined, TResponse = undefined> = (
     context: RpcPostHandlerContext<TParams, TResponse>,
@@ -55,13 +53,16 @@ export type RpcPostHandler<TParams = undefined, TResponse = undefined> = (
 
 export function defineRpc<
     TParams extends
-        | AObjectSchema
+        | AObjectSchema<any>
         | ADiscriminatorSchema<any>
         | undefined = undefined,
     TResponse extends
-        | AObjectSchema
+        | AObjectSchema<any>
         | ADiscriminatorSchema<any>
         | undefined = undefined,
 >(config: Rpc<TParams, TResponse>) {
+    if (config.params?.isNullable || config.response?.isNullable) {
+        throw new Error(`Root schemas for procedures cannot be nullable`);
+    }
     return config;
 }

@@ -609,7 +609,7 @@ export class TestClientTestsService {
         const req: RpcRequest<StreamConnectionErrorTestParams> = {
             procedure: 'tests.streamConnectionErrorTest',
             path: '/rpcs/tests/stream-connection-error-test',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: params,
             customHeaders: this._options.headers,
@@ -644,7 +644,7 @@ export class TestClientTestsService {
         const req: RpcRequest<undefined> = {
             procedure: 'tests.streamLargeObjects',
             path: '/rpcs/tests/stream-large-objects',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: undefined,
             customHeaders: this._options.headers,
@@ -677,7 +677,7 @@ export class TestClientTestsService {
         const req: RpcRequest<ChatMessageParams> = {
             procedure: 'tests.streamMessages',
             path: '/rpcs/tests/stream-messages',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: params,
             customHeaders: this._options.headers,
@@ -742,7 +742,7 @@ export class TestClientTestsService {
         const req: RpcRequest<undefined> = {
             procedure: 'tests.streamTenEventsThenEnd',
             path: '/rpcs/tests/stream-ten-events-then-end',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: undefined,
             customHeaders: this._options.headers,

@@ -1,10 +1,10 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server-next';
 
-import { ObjectWithEveryType } from "./sendObject.rpc";
+import { ObjectWithEveryType } from './sendObject.rpc';
 
 const input = a.partial(ObjectWithEveryType, {
-    id: "ObjectWithEveryOptionalType",
+    id: 'ObjectWithEveryOptionalType',
 });
 
 export default defineRpc({

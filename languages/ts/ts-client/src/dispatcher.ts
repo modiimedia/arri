@@ -46,6 +46,7 @@ export interface RpcDispatcher {
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TOutput>,
         options?: RpcDispatcherOptions,
+        retryCount?: number,
     ): Promise<TOutput> | TOutput;
     handleEventStreamRpc<TParams, TOutput>(
         req: RpcRequest<TParams>,
@@ -82,4 +83,12 @@ export function resolveTransport(
         return globalDefault;
     }
     return availableTransports[0] ?? '';
+}
+
+export function waitFor(ms: number): Promise<void> {
+    return new Promise((res, _) => {
+        setTimeout(() => {
+            res();
+        }, ms);
+    });
 }

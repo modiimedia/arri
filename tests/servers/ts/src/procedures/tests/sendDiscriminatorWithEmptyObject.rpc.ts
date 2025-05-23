@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineRpc } from '@arrirpc/server';
+import { defineRpc } from '@arrirpc/server-next';
 
 const DiscriminatorWithEmptyObject = a.discriminator(
     'DiscriminatorWithEmptyObject',

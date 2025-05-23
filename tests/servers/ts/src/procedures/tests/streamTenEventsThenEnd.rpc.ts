@@ -1,7 +1,7 @@
-import { defineEventStreamRpc } from "@arrirpc/server";
-import { randomUUID } from "crypto";
+import { defineEventStreamRpc } from '@arrirpc/server-next';
+import { randomUUID } from 'crypto';
 
-import { ChatMessage } from "./streamMessages.rpc";
+import { ChatMessage } from './streamMessages.rpc';
 
 export default defineEventStreamRpc({
     description:
@@ -14,15 +14,15 @@ export default defineEventStreamRpc({
             messageCount++;
             await stream.push({
                 id: randomUUID(),
-                channelId: "1",
+                channelId: '1',
                 date: new Date(),
-                messageType: "TEXT",
-                text: "hello world",
+                messageType: 'TEXT',
+                text: 'hello world',
                 userId: randomUUID(),
             });
             if (messageCount > 10) {
                 throw new Error(
-                    "Message count exceeded 10. This means setInterval was not properly cleaned up.",
+                    'Message count exceeded 10. This means setInterval was not properly cleaned up.',
                 );
             }
             if (messageCount === 10) {

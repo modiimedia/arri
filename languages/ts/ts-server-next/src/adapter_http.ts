@@ -114,6 +114,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         headers: h3.getHeaders(event),
                         error: err,
                     };
+                    console.log('H3 ON ERROR HOOK');
                     return this._handleError(event, context);
                 },
             });
@@ -500,7 +501,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
             h3.setResponseHeader(event, 'Content-Type', 'application/json');
             if (context.error instanceof ArriError) {
                 h3.setResponseStatus(event, context.error.code);
-                return h3.send(
+                await h3.send(
                     event,
                     serializeArriErrorResponse(
                         {
@@ -512,10 +513,11 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         this._debug,
                     ),
                 );
+                return;
             }
             if (context.error instanceof h3.H3Error) {
                 h3.setResponseStatus(event, context.error.statusCode);
-                return h3.send(
+                await h3.send(
                     event,
                     serializeArriErrorResponse(
                         {
@@ -529,9 +531,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         this._debug,
                     ),
                 );
+                return;
             }
             h3.setResponseStatus(event, 500);
-            return h3.send(
+            await h3.send(
                 event,
                 serializeArriErrorResponse(
                     {
@@ -549,11 +552,12 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     this._debug,
                 ),
             );
+            return;
         } catch (err) {
             h3.setResponseHeader(event, 'Content-Type', 'application/json');
             if (err instanceof ArriError) {
                 h3.setResponseStatus(event, err.code);
-                return h3.send(
+                await h3.send(
                     event,
                     serializeArriErrorResponse(
                         {
@@ -565,10 +569,11 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         this._debug,
                     ),
                 );
+                return;
             }
             if (err instanceof h3.H3Error) {
                 h3.setResponseStatus(event, err.statusCode);
-                return h3.send(
+                await h3.send(
                     event,
                     serializeArriErrorResponse(
                         {
@@ -580,9 +585,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         this._debug,
                     ),
                 );
+                return;
             }
             h3.setResponseStatus(event, 500);
-            return h3.send(
+            await h3.send(
                 event,
                 serializeArriErrorResponse(
                     {
@@ -597,6 +603,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     this._debug,
                 ),
             );
+            return;
         }
     }
 

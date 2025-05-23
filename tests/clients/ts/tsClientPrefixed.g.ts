@@ -587,7 +587,7 @@ export class TestClientPrefixed {
         const req: RpcRequest<FooStreamConnectionErrorTestParams> = {
             procedure: 'streamConnectionErrorTest',
             path: '/rpcs/tests/stream-connection-error-test',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: params,
             customHeaders: this._options.headers,
@@ -622,7 +622,7 @@ export class TestClientPrefixed {
         const req: RpcRequest<undefined> = {
             procedure: 'streamLargeObjects',
             path: '/rpcs/tests/stream-large-objects',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: undefined,
             customHeaders: this._options.headers,
@@ -655,7 +655,7 @@ export class TestClientPrefixed {
         const req: RpcRequest<FooChatMessageParams> = {
             procedure: 'streamMessages',
             path: '/rpcs/tests/stream-messages',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: params,
             customHeaders: this._options.headers,
@@ -722,7 +722,7 @@ export class TestClientPrefixed {
         const req: RpcRequest<undefined> = {
             procedure: 'streamTenEventsThenEnd',
             path: '/rpcs/tests/stream-ten-events-then-end',
-            method: 'get',
+            method: undefined,
             clientVersion: '10',
             data: undefined,
             customHeaders: this._options.headers,

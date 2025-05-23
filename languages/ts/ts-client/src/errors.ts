@@ -1,3 +1,5 @@
+import { FetchResponse } from 'ofetch';
+
 export interface ArriError {
     code: number;
     message: string;
@@ -75,7 +77,7 @@ export class ArriErrorInstance extends Error implements ArriError {
             code:
                 'code' in parsedJson && typeof parsedJson.code === 'number'
                     ? parsedJson.code
-                    : 500,
+                    : 0,
             message:
                 'message' in parsedJson &&
                 typeof parsedJson.message === 'string'
@@ -87,5 +89,20 @@ export class ArriErrorInstance extends Error implements ArriError {
                     : undefined,
             data: 'data' in parsedJson ? parsedJson.data : undefined,
         });
+    }
+
+    static async fromResponse(res: FetchResponse<unknown>) {
+        let data: unknown;
+        try {
+            data = res._data ?? (await res.json());
+        } catch (_) {
+            // do nothing
+        }
+        const err = this.fromJson(data);
+        if (err.code === 500 && res.status !== err.code) {
+            err.code = res.status;
+            err.message = res.statusText;
+        }
+        return err;
     }
 }
