@@ -10,7 +10,8 @@ import benny from 'benny';
 import typia from 'typia';
 import * as v from 'valibot';
 import { assertType } from 'vitest';
-import { z } from 'zod/v4';
+import { z } from 'zod';
+import { z as zV4 } from 'zod/v4';
 
 import { a } from '../../src/_index';
 import {
@@ -57,6 +58,68 @@ assert(a.parse(ArriUser, goodInput).success === true);
 assert(a.parse(ArriUser, badInput).success === false);
 assert($$ArriUser.validate(goodInput) === true);
 assert($$ArriUser.validate(badInput) === false);
+
+const ZodV4User = zV4.object({
+    id: zV4.number(),
+    role: zV4.enum(['standard', 'admin', 'moderator']),
+    name: zV4.string(),
+    email: zV4.string().nullable(),
+    createdAt: zV4.number(),
+    updatedAt: zV4.number(),
+    settings: zV4
+        .object({
+            preferredTheme: zV4.enum(['light', 'dark', 'system']),
+            allowNotifications: zV4.boolean(),
+        })
+        .optional(),
+    recentNotifications: zV4.array(
+        zV4.discriminatedUnion('type', [
+            zV4.object({
+                type: zV4.literal('POST_LIKE'),
+                userId: zV4.string(),
+                postId: zV4.string(),
+            }),
+            zV4.object({
+                type: zV4.literal('POST_COMMENT'),
+                userId: zV4.string(),
+                postId: zV4.string(),
+            }),
+        ]),
+    ),
+});
+type ZodV4User = zV4.infer<typeof ZodV4User>;
+const ZodV4CoercedUser = zV4.object({
+    id: zV4.coerce.number(),
+    role: zV4.enum(['standard', 'admin', 'moderator']),
+    name: zV4.coerce.string(),
+    email: zV4.coerce.string().nullable(),
+    createdAt: zV4.coerce.number(),
+    updatedAt: zV4.coerce.number(),
+    settings: zV4
+        .object({
+            preferredTheme: zV4.enum(['light', 'dark', 'system']),
+            allowNotifications: zV4.coerce.boolean(),
+        })
+        .optional(),
+    recentNotifications: zV4.array(
+        zV4.discriminatedUnion('type', [
+            zV4.object({
+                type: zV4.literal('POST_LIKE'),
+                userId: zV4.coerce.string(),
+                postId: zV4.coerce.string(),
+            }),
+            zV4.object({
+                type: zV4.literal('POST_COMMENT'),
+                userId: zV4.coerce.string(),
+                postId: zV4.coerce.string(),
+                commentText: zV4.coerce.string(),
+            }),
+        ]),
+    ),
+});
+assertType<ZodV4User>(goodInput);
+assert(ZodV4User.safeParse(goodInput).success === true);
+assert(ZodV4User.safeParse(badInput).success === false);
 
 const ZodUser = z.object({
     id: z.number(),
@@ -369,6 +432,9 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodUser.parse(goodInput);
     }),
+    benny.add('Zod/v4', () => {
+        ZodV4User.parse(goodInput);
+    }),
     benny.add('Valibot', () => {
         v.is(ValibotUser, goodInput);
     }),
@@ -427,6 +493,9 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodUser.safeParse(badInput);
     }),
+    benny.add('Zod/v4', () => {
+        ZodV4User.safeParse(badInput);
+    }),
     benny.add('Valibot', () => {
         v.is(ValibotUser, badInput);
     }),
@@ -481,6 +550,9 @@ void benny.suite(
     }),
     benny.add('JSON.parse + Zod', () => {
         ZodUser.parse(JSON.parse(goodJsonInput));
+    }),
+    benny.add('JSON.parse + Zod/v4', () => {
+        ZodV4User.parse(JSON.parse(goodJsonInput));
     }),
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(goodJsonInput));
@@ -564,6 +636,9 @@ void benny.suite(
     benny.add('JSON.parse + Zod', () => {
         ZodUser.safeParse(JSON.parse(badJsonInput));
     }),
+    benny.add('JSON.parse + Zod/v4', () => {
+        ZodV4User.safeParse(JSON.parse(badJsonInput));
+    }),
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(badJsonInput));
     }),
@@ -597,6 +672,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodCoercedUser.parse(goodInputWithStringValues);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4CoercedUser.parse(goodInputWithStringValues);
     }),
     benny.cycle(),
     benny.complete(),
