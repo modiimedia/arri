@@ -10,6 +10,7 @@ import benny from 'benny';
 import typia from 'typia';
 import * as v from 'valibot';
 import { z } from 'zod';
+import { z as zV4 } from 'zod/v4';
 
 import { a } from '../../src/_index';
 
@@ -56,6 +57,15 @@ const ZodIntSchemaCoerced = z.coerce
     .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
 assert(ZodIntSchema.safeParse(intGoodInput).success === true);
 assert(ZodIntSchema.safeParse(intBadInput).success === false);
+
+const ZodV4IntSchema = zV4
+    .number()
+    .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
+const ZodV4IntSchemaCoerced = zV4.coerce
+    .number()
+    .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
+assert(ZodV4IntSchema.safeParse(intGoodInput).success === true);
+assert(ZodV4IntSchema.safeParse(intBadInput).success === false);
 
 const ValibotIntSchema = v.pipe(v.number(), v.integer());
 assert(v.is(ValibotIntSchema, intGoodInput) === true);
@@ -104,6 +114,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodIntSchema.parse(intGoodInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchema.parse(intGoodInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotIntSchema, intGoodInput);
@@ -162,6 +175,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodIntSchema.safeParse(intBadInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchema.safeParse(intBadInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotIntSchema, intBadInput);
@@ -256,6 +272,9 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodIntSchemaCoerced.parse(intGoodStringInput);
     }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchemaCoerced.parse(intGoodStringInput);
+    }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -283,6 +302,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodIntSchemaCoerced.safeParse(intBadStringInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchemaCoerced.safeParse(intBadStringInput);
     }),
     benny.cycle(),
     benny.complete(),
