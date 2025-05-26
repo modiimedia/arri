@@ -25,13 +25,9 @@ export function dartClassFromSchema(
         defaultValue,
         fromJson(input) {
             if (isNullable) {
-                return `${input} is Map<String, dynamic>
-                ? ${finalClassName}.fromJson(${input})
-                : null`;
+                return `${input} is Map<String, dynamic> ? ${finalClassName}.fromJson(${input}) : null`;
             }
-            return `${input} is Map<String, dynamic>
-            ? ${finalClassName}.fromJson(${input})
-            : ${finalClassName}.empty()`;
+            return `${input} is Map<String, dynamic> ? ${finalClassName}.fromJson(${input}) : ${finalClassName}.empty()`;
         },
         toJson(input) {
             if (context.isOptional) {

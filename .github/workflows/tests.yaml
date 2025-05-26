@@ -18,6 +18,8 @@ jobs:
           fetch-depth: 0
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.7.2
       - name: Setup Golang
         uses: actions/setup-go@v5
       - name: Setup pnpm
@@ -52,6 +54,8 @@ jobs:
           fetch-depth: 0
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.7.2
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Setup Gradle

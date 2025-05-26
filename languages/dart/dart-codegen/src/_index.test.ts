@@ -33,9 +33,23 @@ test('Results match reference client', async () => {
         clientName: 'ExampleClient',
         outputFile: path.resolve(__dirname, '../.temp/dart_client.g.dart'),
     });
+    await fs.writeFile(path.resolve(tempDir, 'pubspec.yaml'), pubspecTemplate);
     await fs.writeFile(outputFile, fileContent);
+    execSync(`dart pub get`, { stdio: 'inherit', cwd: path.resolve(tempDir) });
     execSync(`dart format ${outputFile}`, { stdio: 'inherit' });
     const result = await fs.readFile(outputFile, 'utf8');
     const reference = await fs.readFile(referenceFile, 'utf8');
     expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(reference));
 });
+
+const pubspecTemplate = `name: arri_codegen_output_for_test
+description:
+publish_to: none
+environment:
+  sdk: '>=3.7.0 <4.0.0'
+dependencies:
+  arri_client:
+    path: '../../dart-client'
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.25.14`;
