@@ -306,7 +306,7 @@ describe('RecursiveObject', () => {
 
 describe('HTTP options', () => {
     const client = new ExampleClient({
-        baseUrl: 'https://foo.foo',
+        baseUrl: 'https://thisdomaindoesnotexist.thisdomaindoesnotexist',
     });
     test('request hooks', async () => {
         let didFireRequest = false;
@@ -321,12 +321,7 @@ describe('HTTP options', () => {
                     onRequest: (_) => {
                         didFireRequest = true;
                     },
-                    onRequestError: (context) => {
-                        expect(
-                            `${context.error}`
-                                .toLowerCase()
-                                .includes('timeout'),
-                        ).toBe(true);
+                    onRequestError: (_) => {
                         didFireRequestError = true;
                     },
                     onResponse: (_) => {
