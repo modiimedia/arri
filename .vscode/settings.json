@@ -23,6 +23,7 @@
     "tests/clients/rust"
   ],
   "cSpell.words": [
+    "arktype",
     "Arri",
     "arrirpc",
     "autoroutes",

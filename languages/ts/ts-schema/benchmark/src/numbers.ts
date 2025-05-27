@@ -4,7 +4,7 @@ import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
-import AjvJtd from 'ajv/dist/jtd';
+// import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
 import typia from 'typia';
@@ -40,14 +40,15 @@ assert(ArktypeIntSchema(intBadInput) instanceof arktype.errors);
 const ajv = new Ajv({ strict: false });
 const ajvIntValidator = ajv.compile(TypeBoxIntSchema);
 const ajvCoerce = new Ajv({ strict: false, coerceTypes: true });
-const ajvJtd = new AjvJtd({ strictSchema: false });
-const ajvJtdIntValidator = ajvJtd.compile(ArriIntSchema);
-const ajvJtdIntParser = ajvJtd.compileParser(ArriIntSchema);
-const ajvJtdSerializer = ajvJtd.compileSerializer(ArriIntSchema);
+// const ajvJtd = new AjvJtd({ strictSchema: false });
+// const ajvSchema = JSON.parse(JSON.stringify(ArriIntSchema));
+// const ajvJtdIntValidator = ajvJtd.compile(ajvSchema);
+// const ajvJtdIntParser = ajvJtd.compileParser(ajvSchema);
+// const ajvJtdSerializer = ajvJtd.compileSerializer(ajvSchema);
 assert(ajvIntValidator(intGoodInput) === true);
 assert(ajvIntValidator(intBadInput) === false);
-assert(ajvJtdIntValidator(intGoodInput) === true);
-assert(ajvJtdIntValidator(intBadInput) === false);
+// assert(ajvJtdIntValidator(intGoodInput) === true);
+// assert(ajvJtdIntValidator(intBadInput) === false);
 
 const ZodIntSchema = z
     .number()
@@ -100,12 +101,12 @@ void benny.suite(
     benny.add('Ajv - JSON Schema (Compiled)', () => {
         ajvIntValidator(intGoodInput);
     }),
-    benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriIntSchema, intGoodInput);
-    }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntValidator(intGoodInput);
-    }),
+    // benny.add('Ajv - JTD', () => {
+    //     ajvJtd.validate(ArriIntSchema, intGoodInput);
+    // }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntValidator(intGoodInput);
+    // }),
     benny.add('TypeBox', () => {
         Value.Check(TypeBoxIntSchema, intGoodInput);
     }),
@@ -161,12 +162,12 @@ void benny.suite(
     benny.add('Ajv - JSON Schema (Compiled)', () => {
         ajvIntValidator(intBadInput);
     }),
-    benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriIntSchema, intBadInput);
-    }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntValidator(intBadInput);
-    }),
+    // benny.add('Ajv - JTD', () => {
+    //     ajvJtd.validate(ArriIntSchema, intBadInput);
+    // }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntValidator(intBadInput);
+    // }),
     benny.add('TypeBox', () => {
         Value.Check(TypeBoxIntSchema, intBadInput);
     }),
@@ -210,9 +211,9 @@ void benny.suite(
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.parse(intGoodStringInput);
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntParser(intGoodStringInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntParser(intGoodStringInput);
+    // }),
     benny.add('JSON.parse()', () => {
         JSON.parse(intGoodStringInput);
     }),
@@ -238,9 +239,9 @@ void benny.suite(
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.parse(intBadStringInput);
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntParser(intBadStringInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntParser(intBadStringInput);
+    // }),
     benny.add('JSON.parse()', () => {
         JSON.parse(intBadStringInput);
     }),
@@ -333,9 +334,9 @@ void benny.suite(
             $$ArriIntSchema.serialize(intGoodInput);
         }
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdSerializer(intGoodInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdSerializer(intGoodInput);
+    // }),
     benny.add('Typia', () => {
         TypiaIntSerializer(intGoodInput);
     }),
