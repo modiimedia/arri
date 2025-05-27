@@ -8,7 +8,7 @@
     "prettier": "^3.5.3",
     "typia": "^9.3.1",
     "valibot": "1.1.0",
-    "zod": "^3.25.28"
+    "zod": "^3.25.30"
   },
   "devDependencies": {
     "@ryoppippi/unplugin-typia": "^2.6.4",

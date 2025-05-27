@@ -39,7 +39,7 @@
     "consola": "^3.4.2",
     "degit": "^2.8.4",
     "enquirer": "^2.4.1",
-    "esbuild": "^0.25.4",
+    "esbuild": "^0.25.5",
     "esbuild-plugin-replace": "^1.4.0",
     "globby": "^14.1.0",
     "h3": "^1.15.3",
