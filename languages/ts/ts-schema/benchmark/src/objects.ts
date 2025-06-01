@@ -4,13 +4,14 @@ import { Static, Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Check, Decode, Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
-import AjvJtd from 'ajv/dist/jtd';
+// import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
 import typia from 'typia';
 import * as v from 'valibot';
 import { assertType } from 'vitest';
 import { z } from 'zod';
+import { z as zV4 } from 'zod/v4';
 
 import { a } from '../../src/_index';
 import {
@@ -57,6 +58,68 @@ assert(a.parse(ArriUser, goodInput).success === true);
 assert(a.parse(ArriUser, badInput).success === false);
 assert($$ArriUser.validate(goodInput) === true);
 assert($$ArriUser.validate(badInput) === false);
+
+const ZodV4User = zV4.object({
+    id: zV4.number(),
+    role: zV4.enum(['standard', 'admin', 'moderator']),
+    name: zV4.string(),
+    email: zV4.string().nullable(),
+    createdAt: zV4.number(),
+    updatedAt: zV4.number(),
+    settings: zV4
+        .object({
+            preferredTheme: zV4.enum(['light', 'dark', 'system']),
+            allowNotifications: zV4.boolean(),
+        })
+        .optional(),
+    recentNotifications: zV4.array(
+        zV4.discriminatedUnion('type', [
+            zV4.object({
+                type: zV4.literal('POST_LIKE'),
+                userId: zV4.string(),
+                postId: zV4.string(),
+            }),
+            zV4.object({
+                type: zV4.literal('POST_COMMENT'),
+                userId: zV4.string(),
+                postId: zV4.string(),
+            }),
+        ]),
+    ),
+});
+type ZodV4User = zV4.infer<typeof ZodV4User>;
+const ZodV4CoercedUser = zV4.object({
+    id: zV4.coerce.number(),
+    role: zV4.enum(['standard', 'admin', 'moderator']),
+    name: zV4.coerce.string(),
+    email: zV4.coerce.string().nullable(),
+    createdAt: zV4.coerce.number(),
+    updatedAt: zV4.coerce.number(),
+    settings: zV4
+        .object({
+            preferredTheme: zV4.enum(['light', 'dark', 'system']),
+            allowNotifications: zV4.coerce.boolean(),
+        })
+        .optional(),
+    recentNotifications: zV4.array(
+        zV4.discriminatedUnion('type', [
+            zV4.object({
+                type: zV4.literal('POST_LIKE'),
+                userId: zV4.coerce.string(),
+                postId: zV4.coerce.string(),
+            }),
+            zV4.object({
+                type: zV4.literal('POST_COMMENT'),
+                userId: zV4.coerce.string(),
+                postId: zV4.coerce.string(),
+                commentText: zV4.coerce.string(),
+            }),
+        ]),
+    ),
+});
+assertType<ZodV4User>(goodInput);
+assert(ZodV4User.safeParse(goodInput).success === true);
+assert(ZodV4User.safeParse(badInput).success === false);
 
 const ZodUser = z.object({
     id: z.number(),
@@ -169,65 +232,65 @@ assert($$TypeboxUser.Check(badInput) === false);
 
 const ajv = new Ajv({ strict: false });
 const AjvUserValidator = ajv.compile<ArriUser>(TypeboxUser);
-const ajvJtd = new AjvJtd({ strictSchema: false });
-const AjvInput = {
-    properties: {
-        id: { type: 'int32', metadata: {} },
-        role: { enum: ['standard', 'admin', 'moderator'], metadata: {} },
-        name: { type: 'string', metadata: {} },
-        email: { type: 'string', metadata: {}, nullable: true },
-        createdAt: { type: 'int32', metadata: {} },
-        updatedAt: { type: 'int32', metadata: {} },
-        recentNotifications: {
-            elements: {
-                discriminator: 'type',
-                mapping: {
-                    POST_LIKE: {
-                        properties: {
-                            userId: { type: 'string', metadata: {} },
-                            postId: { type: 'string', metadata: {} },
-                        },
-                        metadata: {},
-                        additionalProperties: true,
-                    },
-                    POST_COMMENT: {
-                        properties: {
-                            userId: { type: 'string', metadata: {} },
-                            postId: { type: 'string', metadata: {} },
-                            commentText: { type: 'string', metadata: {} },
-                        },
-                        metadata: {},
-                        additionalProperties: true,
-                    },
-                },
-                metadata: {},
-            },
-            metadata: {},
-        },
-    },
-    optionalProperties: {
-        settings: {
-            properties: {
-                preferredTheme: {
-                    enum: ['light', 'dark', 'system'],
-                    metadata: {},
-                },
-                allowNotifications: { type: 'boolean', metadata: {} },
-            },
-            metadata: {},
-            additionalProperties: true,
-        },
-    },
-    metadata: {},
-    additionalProperties: true,
-};
-const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
-const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
-const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
+// const ajvJtd = new AjvJtd({ strictSchema: false });
+// const AjvInput = {
+//     properties: {
+//         id: { type: 'int32', metadata: {} },
+//         role: { enum: ['standard', 'admin', 'moderator'], metadata: {} },
+//         name: { type: 'string', metadata: {} },
+//         email: { type: 'string', metadata: {}, nullable: true },
+//         createdAt: { type: 'int32', metadata: {} },
+//         updatedAt: { type: 'int32', metadata: {} },
+//         recentNotifications: {
+//             elements: {
+//                 discriminator: 'type',
+//                 mapping: {
+//                     POST_LIKE: {
+//                         properties: {
+//                             userId: { type: 'string', metadata: {} },
+//                             postId: { type: 'string', metadata: {} },
+//                         },
+//                         metadata: {},
+//                         additionalProperties: true,
+//                     },
+//                     POST_COMMENT: {
+//                         properties: {
+//                             userId: { type: 'string', metadata: {} },
+//                             postId: { type: 'string', metadata: {} },
+//                             commentText: { type: 'string', metadata: {} },
+//                         },
+//                         metadata: {},
+//                         additionalProperties: true,
+//                     },
+//                 },
+//                 metadata: {},
+//             },
+//             metadata: {},
+//         },
+//     },
+//     optionalProperties: {
+//         settings: {
+//             properties: {
+//                 preferredTheme: {
+//                     enum: ['light', 'dark', 'system'],
+//                     metadata: {},
+//                 },
+//                 allowNotifications: { type: 'boolean', metadata: {} },
+//             },
+//             metadata: {},
+//             additionalProperties: true,
+//         },
+//     },
+//     metadata: {},
+//     additionalProperties: true,
+// };
+// const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
+// const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
+// const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
 assert(AjvUserValidator(goodInput) === true);
 assert(AjvUserValidator(badInput) === false);
-assert(AjvJtdUserValidator(goodInput) === true);
-assert(AjvJtdUserValidator(badInput) === false);
+// assert(AjvJtdUserValidator(goodInput) === true);
+// assert(AjvJtdUserValidator(badInput) === false);
 
 const ValibotUser = v.object({
     id: v.pipe(v.number(), v.integer()),
@@ -348,12 +411,12 @@ void benny.suite(
     benny.add('Arri (Compiled) - Standard Schema', () => {
         $$ArriUser['~standard'].validate(goodInput);
     }),
-    benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriUser, goodInput);
-    }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserValidator(goodInput);
-    }),
+    // benny.add('Ajv - JTD', () => {
+    //     ajvJtd.validate(ArriUser, goodInput);
+    // }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     AjvJtdUserValidator(goodInput);
+    // }),
     benny.add('Ajv - JSON Schema', () => {
         ajv.validate(TypeboxUser, goodInput);
     }),
@@ -368,6 +431,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodUser.parse(goodInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4User.parse(goodInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotUser, goodInput);
@@ -406,12 +472,12 @@ void benny.suite(
     benny.add('Arri (Compiled) - Standard Schema', () => {
         $$ArriUser['~standard'].validate(badInput);
     }),
-    benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriUser, badInput);
-    }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserValidator(badInput);
-    }),
+    // benny.add('Ajv - JTD', () => {
+    //     ajvJtd.validate(ArriUser, badInput);
+    // }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     AjvJtdUserValidator(badInput);
+    // }),
     benny.add('Ajv - JSON Schema', () => {
         ajv.validate(TypeboxUser, badInput);
     }),
@@ -426,6 +492,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodUser.safeParse(badInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4User.safeParse(badInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotUser, badInput);
@@ -464,9 +533,9 @@ void benny.suite(
     benny.add('Arri (Compiled) - Standard Schema', () => {
         $$ArriUser['~standard'].validate(goodJsonInput);
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserParser(goodJsonInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     AjvJtdUserParser(goodJsonInput);
+    // }),
     benny.add('JSON.parse', () => {
         JSON.parse(goodJsonInput);
     }),
@@ -481,6 +550,9 @@ void benny.suite(
     }),
     benny.add('JSON.parse + Zod', () => {
         ZodUser.parse(JSON.parse(goodJsonInput));
+    }),
+    benny.add('JSON.parse + Zod/v4', () => {
+        ZodV4User.parse(JSON.parse(goodJsonInput));
     }),
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(goodJsonInput));
@@ -546,9 +618,9 @@ void benny.suite(
     benny.add('Arri (Compiled) - Standard Schema', () => {
         $$ArriUser['~standard'].validate(badJsonInput);
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserParser(badJsonInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     AjvJtdUserParser(badJsonInput);
+    // }),
     benny.add('JSON.parse', () => {
         JSON.parse(badJsonInput);
     }),
@@ -563,6 +635,9 @@ void benny.suite(
     }),
     benny.add('JSON.parse + Zod', () => {
         ZodUser.safeParse(JSON.parse(badJsonInput));
+    }),
+    benny.add('JSON.parse + Zod/v4', () => {
+        ZodV4User.safeParse(JSON.parse(badJsonInput));
     }),
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(badJsonInput));
@@ -598,6 +673,9 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodCoercedUser.parse(goodInputWithStringValues);
     }),
+    benny.add('Zod/v4', () => {
+        ZodV4CoercedUser.parse(goodInputWithStringValues);
+    }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -625,9 +703,9 @@ void benny.suite(
             $$ArriUser.serialize(goodInput);
         }
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        AjvJtdUserSerializer(goodInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     AjvJtdUserSerializer(goodInput);
+    // }),
     benny.add('Typia', () => {
         TypiaJsonStringify(goodInput);
     }),

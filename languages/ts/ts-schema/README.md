@@ -1142,7 +1142,7 @@ $$User.compiledCode.serialize; // the generated serialization code
 
 ## Benchmarks
 
-_Last Updated: 2025-03-19T21:46:43.732Z_
+_Last Updated: 2025-05-27T19:44:35.569Z_
 
 All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
 
@@ -1193,94 +1193,92 @@ interface TestUser {
 
 | Library                               | op/s       |
 | ------------------------------------- | ---------- |
-| **Arri (Compiled)**                   | 54,124,628 |
-| TypeBox (Compiled)                    | 42,197,488 |
-| Ajv - JTD (Compiled)                  | 31,927,096 |
-| Arktype                               | 29,595,516 |
-| Typia                                 | 28,381,607 |
-| **Arri (Compiled) - Standard Schema** | 18,826,632 |
-| Ajv - JSON Schema (Compiled)          | 11,420,306 |
-| Ajv - JTD                             | 11,368,094 |
-| Ajv - JSON Schema                     | 8,370,741  |
-| **Arri**                              | 2,732,305  |
-| **Arri - Standard Schema**            | 757,117    |
-| TypeBox                               | 733,853    |
-| Valibot                               | 607,841    |
-| Zod                                   | 467,553    |
+| **Arri (Compiled)**                   | 51,886,617 |
+| TypeBox (Compiled)                    | 42,707,490 |
+| Arktype                               | 28,255,561 |
+| Typia                                 | 28,071,410 |
+| **Arri (Compiled) - Standard Schema** | 18,012,913 |
+| Ajv - JSON Schema (Compiled)          | 11,902,119 |
+| Ajv - JSON Schema                     | 10,896,289 |
+| **Arri**                              | 2,619,677  |
+| Zod/v4                                | 2,569,271  |
+| **Arri - Standard Schema**            | 743,338    |
+| TypeBox                               | 739,419    |
+| Valibot                               | 542,391    |
+| Zod                                   | 464,859    |
 
 #### Object Validation - Bad Input
 
 | Library                               | op/s       |
 | ------------------------------------- | ---------- |
-| **Arri (Compiled)**                   | 63,206,923 |
-| TypeBox (Compiled)                    | 47,209,177 |
-| Typia                                 | 30,610,871 |
-| Ajv - JTD (Compiled)                  | 25,543,957 |
-| Ajv - JTD                             | 13,095,043 |
-| **Arri (Compiled) - Standard Schema** | 8,184,643  |
-| Ajv - JSON Schema (Compiled)          | 4,543,106  |
-| **Arri**                              | 4,237,065  |
-| Ajv - JSON Schema                     | 3,790,517  |
-| TypeBox                               | 906,797    |
-| **Arri - Standard-Schema**            | 794,635    |
-| Valibot                               | 485,994    |
-| Zod                                   | 321,011    |
-| Arktype                               | 139,720    |
+| **Arri (Compiled)**                   | 60,991,987 |
+| TypeBox (Compiled)                    | 46,236,976 |
+| Typia                                 | 29,803,700 |
+| **Arri (Compiled) - Standard Schema** | 7,859,439  |
+| Ajv - JSON Schema (Compiled)          | 4,526,012  |
+| Ajv - JSON Schema                     | 4,222,744  |
+| **Arri**                              | 4,060,293  |
+| TypeBox                               | 881,187    |
+| **Arri - Standard-Schema**            | 760,250    |
+| Valibot                               | 450,846    |
+| Zod                                   | 326,257    |
+| Arktype                               | 140,836    |
+| Zod/v4                                | 94,839     |
 
 #### Object Parsing - Good Input
 
 | Library                               | op/s    |
 | ------------------------------------- | ------- |
-| JSON.parse                            | 773,939 |
-| JSON.parse + Typebox (Compiled)       | 746,709 |
-| Typia (json.createValidateParse)      | 736,675 |
-| JSON.parse + Arktype                  | 736,157 |
-| **Arri (Compiled)**                   | 722,323 |
-| **Arri (Compiled) - Standard Schema** | 711,010 |
-| **Arri - Standard Schema**            | 348,920 |
-| **Arri**                              | 348,467 |
-| JSON.parse + Valibot                  | 314,205 |
-| JSON.parse + Zod                      | 280,872 |
-| Ajv - JTD (Compiled)                  | 261,253 |
-| JSON.parse + Typebox                  | 215,239 |
+| JSON.parse                            | 787,088 |
+| **Arri (Compiled)**                   | 732,057 |
+| **Arri (Compiled) - Standard Schema** | 729,688 |
+| JSON.parse + Typebox (Compiled)       | 726,996 |
+| Typia (json.createValidateParse)      | 721,024 |
+| JSON.parse + Arktype                  | 718,584 |
+| JSON.parse + Zod/v4                   | 515,171 |
+| **Arri - Standard Schema**            | 355,727 |
+| **Arri**                              | 347,113 |
+| JSON.parse + Valibot                  | 296,863 |
+| JSON.parse + Zod                      | 269,964 |
+| JSON.parse + Typebox                  | 208,575 |
 
 #### Object Parsing - Bad Input
 
 | Library                               | op/s    |
 | ------------------------------------- | ------- |
-| JSON.parse                            | 871,925 |
-| **Arri (Compiled)**                   | 796,037 |
-| **Arri (Compiled) - Standard Schema** | 728,394 |
-| Typia (json.createValidateParse)      | 556,550 |
-| **Arri**                              | 415,938 |
-| **Arri - StandardSchema**             | 395,654 |
-| Ajv - JTD (Compiled)                  | 332,767 |
-| JSON.parse + Valibot                  | 300,625 |
-| JSON.parse + Zod                      | 215,862 |
-| JSON.parse + Arktype                  | 119,465 |
-| JSON.parse + Typebox (Compiled)       | 96,386  |
-| JSON.parse + Typebox                  | 77,921  |
+| JSON.parse                            | 864,013 |
+| **Arri (Compiled)**                   | 782,582 |
+| **Arri (Compiled) - Standard Schema** | 715,387 |
+| Typia (json.createValidateParse)      | 538,689 |
+| **Arri**                              | 400,125 |
+| **Arri (StandardSchema)**             | 384,140 |
+| JSON.parse + Valibot                  | 274,228 |
+| JSON.parse + Zod                      | 216,490 |
+| JSON.parse + Arktype                  | 117,883 |
+| JSON.parse + Typebox (Compiled)       | 95,677  |
+| JSON.parse + Zod/v4                   | 77,306  |
+| JSON.parse + Typebox                  | 74,066  |
 
 #### Object Serialization
 
 | Library                                      | op/s      |
 | -------------------------------------------- | --------- |
-| **Arri (Compiled)**                          | 4,342,282 |
-| **Arri (Compiled) - Validate and Serialize** | 3,869,687 |
-| Ajv - JTD (Compiled)                         | 2,100,923 |
-| Typia                                        | 1,823,903 |
-| JSON.stringify                               | 1,635,149 |
-| Typia - Validate and Serialize               | 1,570,486 |
-| **Arri**                                     | 471,954   |
+| **Arri (Compiled)**                          | 3,865,499 |
+| **Arri (Compiled) - Validate and Serialize** | 3,522,535 |
+| Typia                                        | 1,853,601 |
+| Typia - Validate and Serialize               | 1,564,740 |
+| JSON.stringify                               | 1,563,598 |
+| **Arri**                                     | 447,313   |
 
 #### Object Coercion
 
 | Library             | op/s       |
 | ------------------- | ---------- |
-| **Arri (Compiled)** | 19,743,175 |
-| **Arri**            | 787,241    |
-| Zod                 | 442,329    |
-| TypeBox             | 403,062    |
+| **Arri (Compiled)** | 17,999,503 |
+| Zod/v4              | 1,812,003  |
+| **Arri**            | 735,255    |
+| Zod                 | 425,427    |
+| TypeBox             | 392,915    |
 
 ### Integers
 
@@ -1290,87 +1288,84 @@ The following benchmarks measure how quickly each library operates on a single i
 
 | Library                               | op/s        |
 | ------------------------------------- | ----------- |
-| Ajv - JTD (Compiled)                  | 192,026,130 |
-| TypeBox (Compiled)                    | 190,783,837 |
-| **Arri (Compiled)**                   | 188,138,821 |
-| Ajv - JSON Schema (Compiled)          | 182,920,826 |
-| **Arri - Standard Schema**            | 110,055,872 |
-| **Arri (Compiled) - Standard Schema** | 109,070,056 |
-| **Arri**                              | 81,658,732  |
-| Typia                                 | 61,029,032  |
-| Arktype                               | 54,370,348  |
-| TypeBox                               | 48,673,070  |
-| Ajv - JTD                             | 31,204,944  |
-| Ajv - JSON Schema                     | 31,075,953  |
-| Valibot                               | 23,309,004  |
-| Zod                                   | 1,277,690   |
+| **Arri (Compiled)**                   | 190,895,017 |
+| TypeBox (Compiled)                    | 190,858,680 |
+| Ajv - JSON Schema (Compiled)          | 185,280,496 |
+| **Arri (Compiled) - Standard Schema** | 110,410,267 |
+| **Arri - Standard Schema**            | 109,312,865 |
+| **Arri**                              | 82,100,758  |
+| Typia                                 | 59,742,746  |
+| Arktype                               | 52,808,205  |
+| Ajv - JSON Schema                     | 49,878,644  |
+| TypeBox                               | 47,503,784  |
+| Valibot                               | 23,087,845  |
+| Zod/v4                                | 18,686,829  |
+| Zod                                   | 1,385,613   |
 
 #### Int Validation (Bad Input)
 
 | Library                               | op/s        |
 | ------------------------------------- | ----------- |
-| TypeBox (Compiled)                    | 190,126,454 |
-| **Arri (Compiled)**                   | 189,172,106 |
-| Ajv - JSON Schema (Compiled)          | 75,375,601  |
-| Ajv - JTD (Compiled)                  | 74,177,660  |
-| Typia                                 | 58,363,051  |
-| TypeBox                               | 45,205,805  |
-| **Arri**                              | 42,222,871  |
-| Ajv - JSON Schema                     | 19,876,104  |
-| Ajv - JTD                             | 19,027,047  |
-| **Arri (Compiled) - Standard Schema** | 17,164,858  |
-| **Arri - Standard Schema**            | 12,296,640  |
-| Valibot                               | 9,545,070   |
-| Zod                                   | 799,307     |
-| Arktype                               | 451,199     |
+| **Arri (Compiled)**                   | 202,863,076 |
+| TypeBox (Compiled)                    | 187,510,798 |
+| Ajv - JSON Schema (Compiled)          | 73,471,250  |
+| Typia                                 | 57,470,530  |
+| TypeBox                               | 45,190,826  |
+| **Arri**                              | 43,093,164  |
+| Ajv - JSON Schema                     | 24,956,061  |
+| **Arri (Compiled) - Standard Schema** | 16,083,689  |
+| **Arri - Standard Schema**            | 12,590,678  |
+| Valibot                               | 9,465,226   |
+| Zod                                   | 719,548     |
+| Arktype                               | 429,598     |
+| Zod/v4                                | 95,687      |
 
 #### Int Parsing (Good Input)
 
-| Library              | op/s        |
-| -------------------- | ----------- |
-| **Arri (Compiled)**  | 130,550,378 |
-| **Arri**             | 49,495,612  |
-| JSON.parse()         | 17,843,485  |
-| Ajv - JTD (Compiled) | 9,664,631   |
+| Library             | op/s        |
+| ------------------- | ----------- |
+| **Arri (Compiled)** | 135,079,091 |
+| **Arri**            | 49,521,733  |
+| JSON.parse()        | 21,099,309  |
 
 #### Int Parsing (Bad Input)
 
-| Library              | op/s       |
-| -------------------- | ---------- |
-| **Arri (Compiled)**  | 60,596,060 |
-| JSON.parse()         | 11,390,955 |
-| **Arri**             | 10,151,546 |
-| Ajv - JTD (Compiled) | 8,524,414  |
+| Library             | op/s       |
+| ------------------- | ---------- |
+| **Arri (Compiled)** | 57,789,069 |
+| JSON.parse()        | 12,763,902 |
+| **Arri**            | 10,048,561 |
 
 #### Int Serialization
 
 | Library                                      | op/s        |
 | -------------------------------------------- | ----------- |
-| **Arri (Compiled)**                          | 199,750,275 |
-| **Arri (Compiled) - Validate and Serialize** | 190,585,727 |
-| Ajv - JTD (Compiled)                         | 188,008,270 |
-| Typia                                        | 108,341,757 |
-| **Arri**                                     | 62,210,662  |
-| Typia - Validate and Serialize               | 45,562,047  |
-| JSON.stringify                               | 16,575,449  |
+| **Arri (Compiled) - Validate and Serialize** | 200,932,072 |
+| **Arri (Compiled)**                          | 197,127,776 |
+| Typia                                        | 110,458,659 |
+| **Arri**                                     | 64,034,193  |
+| Typia - Validate and Serialize               | 46,859,361  |
+| JSON.stringify                               | 16,479,198  |
 
 #### Int Coercion (Good Input)
 
 | Library           | op/s       |
 | ----------------- | ---------- |
-| **Arri**          | 51,421,819 |
-| TypeBox           | 35,333,297 |
-| Ajv - JSON Schema | 21,583,903 |
-| Zod               | 1,239,520  |
+| **Arri**          | 55,281,087 |
+| TypeBox           | 35,851,852 |
+| Ajv - JSON Schema | 33,557,328 |
+| Zod/v4            | 14,366,775 |
+| Zod               | 1,394,155  |
 
 #### Int Coercion (Bad Input)
 
 | Library           | op/s       |
 | ----------------- | ---------- |
-| **Arri**          | 10,442,645 |
-| TypeBox           | 7,919,097  |
-| Ajv - JSON Schema | 5,867,676  |
-| Zod               | 737,348    |
+| **Arri**          | 10,496,719 |
+| TypeBox           | 8,390,527  |
+| Ajv - JSON Schema | 7,057,207  |
+| Zod               | 727,647    |
+| Zod/v4            | 97,654     |
 
 <!-- BENCHMARK_END -->
 

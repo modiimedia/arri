@@ -64,3 +64,5 @@ build
 **/.kotlin
 
 **/benchmark/results
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

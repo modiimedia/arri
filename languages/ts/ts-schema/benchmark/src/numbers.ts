@@ -4,12 +4,13 @@ import { Type } from '@sinclair/typebox';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { Value } from '@sinclair/typebox/value';
 import Ajv from 'ajv';
-import AjvJtd from 'ajv/dist/jtd';
+// import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
 import typia from 'typia';
 import * as v from 'valibot';
 import { z } from 'zod';
+import { z as zV4 } from 'zod/v4';
 
 import { a } from '../../src/_index';
 
@@ -39,14 +40,15 @@ assert(ArktypeIntSchema(intBadInput) instanceof arktype.errors);
 const ajv = new Ajv({ strict: false });
 const ajvIntValidator = ajv.compile(TypeBoxIntSchema);
 const ajvCoerce = new Ajv({ strict: false, coerceTypes: true });
-const ajvJtd = new AjvJtd({ strictSchema: false });
-const ajvJtdIntValidator = ajvJtd.compile(ArriIntSchema);
-const ajvJtdIntParser = ajvJtd.compileParser(ArriIntSchema);
-const ajvJtdSerializer = ajvJtd.compileSerializer(ArriIntSchema);
+// const ajvJtd = new AjvJtd({ strictSchema: false });
+// const ajvSchema = JSON.parse(JSON.stringify(ArriIntSchema));
+// const ajvJtdIntValidator = ajvJtd.compile(ajvSchema);
+// const ajvJtdIntParser = ajvJtd.compileParser(ajvSchema);
+// const ajvJtdSerializer = ajvJtd.compileSerializer(ajvSchema);
 assert(ajvIntValidator(intGoodInput) === true);
 assert(ajvIntValidator(intBadInput) === false);
-assert(ajvJtdIntValidator(intGoodInput) === true);
-assert(ajvJtdIntValidator(intBadInput) === false);
+// assert(ajvJtdIntValidator(intGoodInput) === true);
+// assert(ajvJtdIntValidator(intBadInput) === false);
 
 const ZodIntSchema = z
     .number()
@@ -56,6 +58,15 @@ const ZodIntSchemaCoerced = z.coerce
     .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
 assert(ZodIntSchema.safeParse(intGoodInput).success === true);
 assert(ZodIntSchema.safeParse(intBadInput).success === false);
+
+const ZodV4IntSchema = zV4
+    .number()
+    .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
+const ZodV4IntSchemaCoerced = zV4.coerce
+    .number()
+    .refine((val) => Number.isInteger(val), { message: 'Must be an integer' });
+assert(ZodV4IntSchema.safeParse(intGoodInput).success === true);
+assert(ZodV4IntSchema.safeParse(intBadInput).success === false);
 
 const ValibotIntSchema = v.pipe(v.number(), v.integer());
 assert(v.is(ValibotIntSchema, intGoodInput) === true);
@@ -90,12 +101,12 @@ void benny.suite(
     benny.add('Ajv - JSON Schema (Compiled)', () => {
         ajvIntValidator(intGoodInput);
     }),
-    benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriIntSchema, intGoodInput);
-    }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntValidator(intGoodInput);
-    }),
+    // benny.add('Ajv - JTD', () => {
+    //     ajvJtd.validate(ArriIntSchema, intGoodInput);
+    // }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntValidator(intGoodInput);
+    // }),
     benny.add('TypeBox', () => {
         Value.Check(TypeBoxIntSchema, intGoodInput);
     }),
@@ -104,6 +115,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodIntSchema.parse(intGoodInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchema.parse(intGoodInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotIntSchema, intGoodInput);
@@ -148,12 +162,12 @@ void benny.suite(
     benny.add('Ajv - JSON Schema (Compiled)', () => {
         ajvIntValidator(intBadInput);
     }),
-    benny.add('Ajv - JTD', () => {
-        ajvJtd.validate(ArriIntSchema, intBadInput);
-    }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntValidator(intBadInput);
-    }),
+    // benny.add('Ajv - JTD', () => {
+    //     ajvJtd.validate(ArriIntSchema, intBadInput);
+    // }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntValidator(intBadInput);
+    // }),
     benny.add('TypeBox', () => {
         Value.Check(TypeBoxIntSchema, intBadInput);
     }),
@@ -162,6 +176,9 @@ void benny.suite(
     }),
     benny.add('Zod', () => {
         ZodIntSchema.safeParse(intBadInput);
+    }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchema.safeParse(intBadInput);
     }),
     benny.add('Valibot', () => {
         v.is(ValibotIntSchema, intBadInput);
@@ -194,9 +211,9 @@ void benny.suite(
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.parse(intGoodStringInput);
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntParser(intGoodStringInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntParser(intGoodStringInput);
+    // }),
     benny.add('JSON.parse()', () => {
         JSON.parse(intGoodStringInput);
     }),
@@ -222,9 +239,9 @@ void benny.suite(
     benny.add('Arri (Compiled)', () => {
         $$ArriIntSchema.parse(intBadStringInput);
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdIntParser(intBadStringInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdIntParser(intBadStringInput);
+    // }),
     benny.add('JSON.parse()', () => {
         JSON.parse(intBadStringInput);
     }),
@@ -256,6 +273,9 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodIntSchemaCoerced.parse(intGoodStringInput);
     }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchemaCoerced.parse(intGoodStringInput);
+    }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -284,6 +304,9 @@ void benny.suite(
     benny.add('Zod', () => {
         ZodIntSchemaCoerced.safeParse(intBadStringInput);
     }),
+    benny.add('Zod/v4', () => {
+        ZodV4IntSchemaCoerced.safeParse(intBadStringInput);
+    }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -311,9 +334,9 @@ void benny.suite(
             $$ArriIntSchema.serialize(intGoodInput);
         }
     }),
-    benny.add('Ajv - JTD (Compiled)', () => {
-        ajvJtdSerializer(intGoodInput);
-    }),
+    // benny.add('Ajv - JTD (Compiled)', () => {
+    //     ajvJtdSerializer(intGoodInput);
+    // }),
     benny.add('Typia', () => {
         TypiaIntSerializer(intGoodInput);
     }),

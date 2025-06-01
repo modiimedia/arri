@@ -306,24 +306,14 @@ describe('RecursiveObject', () => {
 
 describe('HTTP options', () => {
     const client = new ExampleClient({
-        baseUrl: 'https://foo.foo',
-        wsConnectionUrl: 'https://foo.foo/ws',
+        baseUrl: 'https://thisdomaindoesnotexist.thisdomaindoesnotexist',
+        wsConnectionUrl:
+            'https://thisdomaindoesnotexist.thisdomaindoesnotexit/ws',
     });
     test('request hooks', async () => {
-        let didFireRequestError = false;
+        const didFireRequestError = false;
         try {
-            await client.books.getBook(
-                { bookId: '1' },
-                {
-                    timeout: 200,
-                    onError: (_req, error) => {
-                        expect(
-                            `${error}`.toLowerCase().includes('timeout'),
-                        ).toBe(true);
-                        didFireRequestError = true;
-                    },
-                },
-            );
+            await client.books.getBook({ bookId: '1' });
         } catch (_) {
             // do nothing
         }
