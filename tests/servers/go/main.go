@@ -385,7 +385,7 @@ type AutoReconnectResponse struct {
 	Message string
 }
 
-func StreamAutoReconnect(params AutoReconnectParams, controller arri.SseController[AutoReconnectResponse], event RpcEvent) arri.RpcError {
+func StreamAutoReconnect(params AutoReconnectParams, controller arri.EventStream[AutoReconnectResponse], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	var msgCount uint8 = 0
@@ -418,7 +418,7 @@ type StreamConnectionErrorTestResponse struct {
 
 func StreamConnectionErrorTest(
 	params StreamConnectionErrorTestParams,
-	controller arri.SseController[StreamConnectionErrorTestResponse],
+	controller arri.EventStream[StreamConnectionErrorTestResponse],
 	_ RpcEvent,
 ) arri.RpcError {
 	return arri.Error(uint32(params.StatusCode), params.StatusMessage)
@@ -433,7 +433,7 @@ type StreamLargeObjectsResponse struct {
 	}
 }
 
-func StreamLargeObjects(params arri.EmptyMessage, controller arri.SseController[StreamLargeObjectsResponse], _ RpcEvent) arri.RpcError {
+func StreamLargeObjects(params arri.EmptyMessage, controller arri.EventStream[StreamLargeObjectsResponse], _ RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	for {
@@ -506,7 +506,7 @@ type ChatMessageUrl struct {
 	Url       string
 }
 
-func StreamMessages(params ChatMessageParams, controller arri.SseController[ChatMessage], event RpcEvent) arri.RpcError {
+func StreamMessages(params ChatMessageParams, controller arri.EventStream[ChatMessage], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	for {
 		select {
@@ -527,7 +527,7 @@ type TestsStreamRetryWithNewCredentialsResponse struct {
 
 var usedTokens map[string]bool = map[string]bool{}
 
-func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.SseController[TestsStreamRetryWithNewCredentialsResponse], event RpcEvent) arri.RpcError {
+func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.EventStream[TestsStreamRetryWithNewCredentialsResponse], event RpcEvent) arri.RpcError {
 	authToken := event.XTestHeader
 	if len(authToken) == 0 {
 		return arri.Error(400, "")
@@ -555,7 +555,7 @@ func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.SseContr
 	}
 }
 
-func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.SseController[ChatMessage], event RpcEvent) arri.RpcError {
+func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.EventStream[ChatMessage], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0
@@ -626,7 +626,7 @@ type UserSettings struct {
 	PreferredTheme       string `enum:"dark-mode,light-mode,system"`
 }
 
-func WatchUser(params UsersWatchUserParams, stream arri.SseController[UsersWatchUserResponse], event RpcEvent) arri.RpcError {
+func WatchUser(params UsersWatchUserParams, stream arri.EventStream[UsersWatchUserResponse], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0

@@ -7,16 +7,16 @@ import (
 	"os"
 )
 
-type App[TEvent Event] struct {
-	Mux                  *http.ServeMux
-	createEvent          func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)
-	initializationErrors []error
-	options              AppOptions[TEvent]
-	middleware           []Middleware[TEvent]
-	procedures           *OrderedMap[RpcDef]
-	definitions          *OrderedMap[TypeDef]
-	transports           []string
-	defaultTransports    []string
+type App[TMeta any] struct {
+	Mux               *http.ServeMux
+	middleware        []Middleware[TMeta]
+	procedures        *OrderedMap[RpcDef]
+	definitions       *OrderedMap[TypeDef]
+	transports        []string
+	defaultTransports []string
+	options           AppOptions
+	hooks             AppHooks[TMeta]
+	adapters          map[string]TransportAdapter[TMeta]
 }
 
 func (app *App[TEvent]) GetAppDefinition() AppDef {
@@ -94,7 +94,7 @@ func appDefToFile(appDef AppDef, output string, options EncodingOptions) error {
 	return nil
 }
 
-func printServerStartMessages[TEvent Event](app *App[TEvent], port uint32, isHttps bool) {
+func printServerStartMessages[TMeta any](app *App[TMeta], port uint32, isHttps bool) {
 	protocol := "http"
 	if isHttps {
 		protocol = "https"
@@ -111,7 +111,7 @@ func printServerStartMessages[TEvent Event](app *App[TEvent], port uint32, isHtt
 	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.options.RpcRoutePrefix+defPath)
 }
 
-func startServer[TEvent Event](app *App[TEvent], options RunOptions) error {
+func startServer[TMeta any](app *App[TMeta], options RunOptions) error {
 	port := options.Port
 	if port == 0 {
 		port = 3000
@@ -132,7 +132,7 @@ type RunOptions struct {
 	KeyFile  string
 }
 
-type AppOptions[TEvent Event] struct {
+type AppOptions struct {
 	AppName string
 	// The current app version. Generated clients will send this in the "client-version" header
 	AppVersion string
@@ -146,168 +146,74 @@ type AppOptions[TEvent Event] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         func(*TEvent) RpcError
-	OnBeforeResponse  func(*TEvent, any) RpcError
-	OnAfterResponse   func(*TEvent, any) RpcError
-	OnError           func(*TEvent, error)
 	DefaultTransports []string
+	// how long to send a "ping" message during persistent connections in ms
+	// default is 20000ms
+	PingInterval uint32
 }
 
-func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], createEvent func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)) App[TEvent] {
+type AppHooks[TMeta any] struct {
+	OnRequest        func(*Event[TMeta]) RpcError
+	OnBeforeResponse func(event *Event[TMeta], params any, response any) RpcError
+	OnAfterResponse  func(event *Event[TMeta], params any, response any) RpcError
+	OnError          func(event *Event[TMeta], err error)
+}
+
+func NewApp[TMeta any](mux *http.ServeMux, options AppOptions, hooks AppHooks[TMeta]) App[TMeta] {
 	transports := options.DefaultTransports
 	if len(transports) == 0 {
 		transports = []string{}
 	}
-	app := App[TEvent]{
-		Mux:                  mux,
-		createEvent:          createEvent,
-		options:              options,
-		initializationErrors: []error{},
-		middleware:           []Middleware[TEvent]{},
-		procedures:           &OrderedMap[RpcDef]{},
-		definitions:          &OrderedMap[TypeDef]{},
-		transports:           transports,
-		defaultTransports:    options.DefaultTransports,
+	app := App[TMeta]{
+		Mux:               mux,
+		options:           options,
+		middleware:        []Middleware[TMeta]{},
+		procedures:        &OrderedMap[RpcDef]{},
+		definitions:       &OrderedMap[TypeDef]{},
+		transports:        transports,
+		defaultTransports: options.DefaultTransports,
+		hooks:             hooks,
 	}
-	defPath := app.options.RpcRoutePrefix + "/__definition"
-	encodingOptions := EncodingOptions{
-		KeyCasing: app.options.KeyCasing,
-		MaxDepth:  app.options.MaxDepth,
+	if len(app.options.RpcDefinitionPath) == 0 {
+		app.options.RpcDefinitionPath = app.options.RpcRoutePrefix + "/app-definition"
 	}
-	if len(app.options.RpcDefinitionPath) > 0 {
-		defPath = app.options.RpcDefinitionPath
-	}
-	onRequest := app.options.OnRequest
-	if onRequest == nil {
-		onRequest = func(t *TEvent) RpcError {
+	if app.hooks.OnRequest == nil {
+		app.hooks.OnRequest = func(t *Event[TMeta]) RpcError {
 			return nil
 		}
 	}
-	onBeforeResponse := app.options.OnBeforeResponse
-	if onBeforeResponse == nil {
-		onBeforeResponse = func(t *TEvent, a any) RpcError {
+	if app.hooks.OnBeforeResponse == nil {
+		app.hooks.OnBeforeResponse = func(t *Event[TMeta], _ any, __ any) RpcError {
 			return nil
 		}
 	}
-	onAfterResponse := app.options.OnAfterResponse
-	if onAfterResponse == nil {
-		onAfterResponse = func(t *TEvent, a any) RpcError {
+	if app.hooks.OnAfterResponse == nil {
+		app.hooks.OnAfterResponse = func(t *Event[TMeta], _ any, __ any) RpcError {
 			return nil
 		}
 	}
-	onError := app.options.OnError
-	if onError == nil {
-		onError = func(t *TEvent, err error) {}
+	if app.hooks.OnError == nil {
+		app.hooks.OnError = func(t *Event[TMeta], err error) {}
 	}
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "OPTIONS" {
-			handlePreflightRequest(w)
-			return
-		}
-		w.Header().Add("Content-Type", "application/json")
-		event, err := app.createEvent(w, r)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-			return
-		}
-		err = onRequest(event)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-			return
-		}
-		if r.URL.Path != "/" {
-			handleError(false, w, event, Error(404, ""), onError)
-			return
-		}
-		w.WriteHeader(200)
-		response := struct {
-			Title       string
-			Description string
-			Version     Option[string]
-			SchemaPath  string
-		}{
-			Title:       app.options.AppName,
-			Description: app.options.AppDescription,
-			Version:     None[string](),
-			SchemaPath:  defPath,
-		}
-		if len(response.Title) == 0 {
-			response.Title = "Arri-RPC Server"
-		}
-		if len(response.Description) == 0 {
-			response.Description = "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures."
-		}
-		if len(options.AppVersion) > 0 {
-			response.Version = Some(options.AppVersion)
-		}
-		err = onBeforeResponse(event, response)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-			return
-		}
-		jsonResult, _ := EncodeJSON(response, encodingOptions)
-		w.Write(jsonResult)
-		onAfterResponseErr := onAfterResponse(event, response)
-		if onAfterResponseErr != nil {
-			handleError(true, w, event, onAfterResponseErr, onError)
-			return
-		}
-	})
-
-	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "OPTIONS" {
-			handlePreflightRequest(w)
-			return
-		}
-		w.Header().Add("Content-Type", "application/json")
-		event, err := app.createEvent(w, r)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-			return
-		}
-		err = onRequest(event)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-		}
-		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), encodingOptions)
-		beforeResponseErr := onBeforeResponse(event, jsonResult)
-		if beforeResponseErr != nil {
-			handleError(false, w, event, beforeResponseErr, onError)
-			return
-		}
-		w.WriteHeader(200)
-		w.Write(jsonResult)
-		err = onAfterResponse(event, jsonResult)
-		if err != nil {
-			handleError(true, w, event, err, onError)
-			return
-		}
-	})
+	if app.options.PingInterval == 0 {
+		app.options.PingInterval = 20000
+	}
 	return app
 }
 
-func handleError[TEvent Event](
-	responseSent bool,
-	w http.ResponseWriter,
-	event *TEvent,
-	err RpcError,
-	onError func(*TEvent, error),
-) {
-	onError(event, err)
-	if responseSent {
-		return
+func UseAdapter[TMeta any](app *App[TMeta], adapter TransportAdapter[TMeta]) {
+	transportId := adapter.TransportId()
+	app.adapters[transportId] = adapter
+	for _, val := range app.transports {
+		if val == transportId {
+			// no need to append to transport list
+			break
+		}
+		app.transports = append(app.transports, val)
 	}
-	w.WriteHeader(int(err.Code()))
-	body := RpcErrorToJSON(err)
-	w.Write(body)
 }
 
-type DefOptions struct {
-	IsDeprecated bool
-	Description  string
-}
-
-func RegisterDef[TEvent Event](app *App[TEvent], input any, options DefOptions) {
+func RegisterDef[T any](app *App[T], input any, options TypeDefOptions) {
 	encodingOpts := EncodingOptions{
 		KeyCasing: app.options.KeyCasing,
 		MaxDepth:  app.options.MaxDepth,

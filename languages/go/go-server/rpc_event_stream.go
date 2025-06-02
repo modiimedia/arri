@@ -1,0 +1,23 @@
+package arri
+
+import "time"
+
+type EventStream[T any] interface {
+	Start() // Send stream to client
+	Send(T) RpcError
+	SetPingInterval(time.Duration)
+	Close(notifyClient bool)
+	Done() <-chan struct{}
+}
+
+func IsEventStream[T any](input EventStream[T]) bool {
+	return true
+}
+
+func EventStreamRpc[TParams, TResponse any, TMeta any](app *App[TMeta], handler func(TParams, EventStream[TResponse], Event[TMeta]) RpcError, options RpcOptions) {
+	// TODO
+}
+
+func ScopedEventStreamRpc[TParams, TResponse any, TMeta any](app *App[TMeta], scope string, handler func(TParams, EventStream[TResponse], Event[TMeta]) RpcError, options RpcOptions) {
+	// TODO
+}

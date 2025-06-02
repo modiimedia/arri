@@ -51,6 +51,11 @@ type TypeDef struct {
 	Ref                Option[string]              `key:"ref"`
 }
 
+type TypeDefOptions struct {
+	Description  string
+	IsDeprecated bool
+}
+
 const (
 	KeyCasingPascalCase = "PASCAL_CASE"
 	KeyCasingCamelCase  = "CAMEL_CASE"
