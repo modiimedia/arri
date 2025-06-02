@@ -142,6 +142,7 @@ export async function startBuild(
     await setupWorkingDir(serverConfig);
     await Promise.all([
         createAppWithRoutesModule(serverConfig),
+        createServerEntryFile(serverConfig),
         createCodegenEntryFile(serverConfig),
     ]);
     await bundleAppEntry(serverConfig);
@@ -564,3 +565,9 @@ export const getRpcMetaFromPath = (
         httpPath: `/${httpParts.join('/')}`,
     };
 };
+
+async function createServerEntryFile(config: TsServerNextConfig) {
+    const outFile = path.resolve(config.rootDir ?? '', '.output', 'server.mjs');
+    const fileContent = `import app from './app.mjs';\napp.start();`;
+    await fs.writeFile(outFile, fileContent);
+}

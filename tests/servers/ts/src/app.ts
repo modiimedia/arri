@@ -18,14 +18,18 @@ const http = new HttpAdapter({
     cors: {
         origin: '*',
     },
-    onError(event, err) {
-        console.log('ERROR', event.path, err);
-    },
 });
 
 const ws = new WsAdapter(http, '/establish-connection');
 app.use(http);
 app.use(ws);
+
+app.registerDefinitions({
+    ManuallyAddedModel: a.object({
+        hello: a.string(),
+    }),
+});
+
 app.use(manualTestService);
 
 // auth middleware
@@ -50,12 +54,6 @@ http.h3Router.use(
     }),
     ['get', 'post'],
 );
-
-app.registerDefinitions({
-    ManuallyAddedModel: a.object({
-        hello: a.string(),
-    }),
-});
 
 // http.h3App.use(manualRouter);
 // app.use(manualTestService);

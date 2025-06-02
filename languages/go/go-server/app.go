@@ -15,6 +15,8 @@ type App[TEvent Event] struct {
 	middleware           []Middleware[TEvent]
 	procedures           *OrderedMap[RpcDef]
 	definitions          *OrderedMap[TypeDef]
+	transports           []string
+	defaultTransports    []string
 }
 
 func (app *App[TEvent]) GetAppDefinition() AppDef {
@@ -43,6 +45,7 @@ func (app *App[TEvent]) GetAppDefinition() AppDef {
 
 	return AppDef{
 		SchemaVersion: "0.0.8",
+		Transports:    app.transports,
 		Info:          info,
 		Procedures:    *app.procedures,
 		Definitions:   *app.definitions,
@@ -50,6 +53,9 @@ func (app *App[TEvent]) GetAppDefinition() AppDef {
 }
 
 func (app *App[TEvent]) Run(options RunOptions) error {
+	if len(app.transports) == 0 {
+		panic("Must specify at least one transport to run the app")
+	}
 	defOutput := flag.String("def-out", "", "definition-out")
 	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
 	appDefOutput := appDefCmd.String("output", "__definition.json", "output")
@@ -144,9 +150,14 @@ type AppOptions[TEvent Event] struct {
 	OnBeforeResponse  func(*TEvent, any) RpcError
 	OnAfterResponse   func(*TEvent, any) RpcError
 	OnError           func(*TEvent, error)
+	DefaultTransports []string
 }
 
 func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], createEvent func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)) App[TEvent] {
+	transports := options.DefaultTransports
+	if len(transports) == 0 {
+		transports = []string{}
+	}
 	app := App[TEvent]{
 		Mux:                  mux,
 		createEvent:          createEvent,
@@ -155,6 +166,8 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		middleware:           []Middleware[TEvent]{},
 		procedures:           &OrderedMap[RpcDef]{},
 		definitions:          &OrderedMap[TypeDef]{},
+		transports:           transports,
+		defaultTransports:    options.DefaultTransports,
 	}
 	defPath := app.options.RpcRoutePrefix + "/__definition"
 	encodingOptions := EncodingOptions{

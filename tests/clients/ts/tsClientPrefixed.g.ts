@@ -74,7 +74,7 @@ export class TestClientPrefixed {
         this._dispatchers = config.dispatchers!;
     }
     async emptyParamsGetRequest(
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooDefaultPayload> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<undefined> = {
@@ -89,7 +89,11 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooDefaultPayload,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -105,7 +109,7 @@ export class TestClientPrefixed {
         );
     }
     async emptyParamsPostRequest(
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooDefaultPayload> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<undefined> = {
@@ -120,7 +124,11 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooDefaultPayload,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -137,7 +145,7 @@ export class TestClientPrefixed {
     }
     async emptyResponseGetRequest(
         params: FooDefaultPayload,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDefaultPayload> = {
@@ -152,7 +160,11 @@ export class TestClientPrefixed {
             params: $$FooDefaultPayload,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -169,7 +181,7 @@ export class TestClientPrefixed {
     }
     async emptyResponsePostRequest(
         params: FooDefaultPayload,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDefaultPayload> = {
@@ -184,7 +196,11 @@ export class TestClientPrefixed {
             params: $$FooDefaultPayload,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -205,7 +221,7 @@ export class TestClientPrefixed {
      */
     async deprecatedRpc(
         params: FooDeprecatedRpcParams,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDeprecatedRpcParams> = {
@@ -223,7 +239,11 @@ export class TestClientPrefixed {
             params: $$FooDeprecatedRpcParams,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -240,7 +260,7 @@ export class TestClientPrefixed {
     }
     async sendDiscriminatorWithEmptyObject(
         params: FooDiscriminatorWithEmptyObject,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooDiscriminatorWithEmptyObject> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDiscriminatorWithEmptyObject> = {
@@ -258,7 +278,11 @@ export class TestClientPrefixed {
             params: $$FooDiscriminatorWithEmptyObject,
             response: $$FooDiscriminatorWithEmptyObject,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -274,7 +298,7 @@ export class TestClientPrefixed {
     }
     async sendError(
         params: FooSendErrorParams,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooSendErrorParams> = {
@@ -289,7 +313,11 @@ export class TestClientPrefixed {
             params: $$FooSendErrorParams,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -306,7 +334,7 @@ export class TestClientPrefixed {
     }
     async sendObject(
         params: FooObjectWithEveryType,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooObjectWithEveryType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithEveryType> = {
@@ -324,7 +352,11 @@ export class TestClientPrefixed {
             params: $$FooObjectWithEveryType,
             response: $$FooObjectWithEveryType,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -340,7 +372,7 @@ export class TestClientPrefixed {
     }
     async sendObjectWithNullableFields(
         params: FooObjectWithEveryNullableType,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooObjectWithEveryNullableType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithEveryNullableType> = {
@@ -358,7 +390,11 @@ export class TestClientPrefixed {
             params: $$FooObjectWithEveryNullableType,
             response: $$FooObjectWithEveryNullableType,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -374,7 +410,7 @@ export class TestClientPrefixed {
     }
     async sendObjectWithPascalCaseKeys(
         params: FooObjectWithPascalCaseKeys,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooObjectWithPascalCaseKeys> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithPascalCaseKeys> = {
@@ -392,7 +428,11 @@ export class TestClientPrefixed {
             params: $$FooObjectWithPascalCaseKeys,
             response: $$FooObjectWithPascalCaseKeys,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -408,7 +448,7 @@ export class TestClientPrefixed {
     }
     async sendObjectWithSnakeCaseKeys(
         params: FooObjectWithSnakeCaseKeys,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooObjectWithSnakeCaseKeys> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithSnakeCaseKeys> = {
@@ -426,7 +466,11 @@ export class TestClientPrefixed {
             params: $$FooObjectWithSnakeCaseKeys,
             response: $$FooObjectWithSnakeCaseKeys,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -442,7 +486,7 @@ export class TestClientPrefixed {
     }
     async sendPartialObject(
         params: FooObjectWithEveryOptionalType,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooObjectWithEveryOptionalType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithEveryOptionalType> = {
@@ -460,7 +504,11 @@ export class TestClientPrefixed {
             params: $$FooObjectWithEveryOptionalType,
             response: $$FooObjectWithEveryOptionalType,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -476,7 +524,7 @@ export class TestClientPrefixed {
     }
     async sendRecursiveObject(
         params: FooRecursiveObject,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooRecursiveObject> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooRecursiveObject> = {
@@ -494,7 +542,11 @@ export class TestClientPrefixed {
             params: $$FooRecursiveObject,
             response: $$FooRecursiveObject,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -511,7 +563,7 @@ export class TestClientPrefixed {
     }
     async sendRecursiveUnion(
         params: FooRecursiveUnion,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooRecursiveUnion> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooRecursiveUnion> = {
@@ -529,7 +581,11 @@ export class TestClientPrefixed {
             params: $$FooRecursiveUnion,
             response: $$FooRecursiveUnion,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -563,7 +619,11 @@ export class TestClientPrefixed {
             params: $$FooAutoReconnectParams,
             response: $$FooAutoReconnectResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -599,7 +659,11 @@ export class TestClientPrefixed {
             params: $$FooStreamConnectionErrorTestParams,
             response: $$FooStreamConnectionErrorTestResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -634,7 +698,11 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooStreamLargeObjectsResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -667,7 +735,11 @@ export class TestClientPrefixed {
             params: $$FooChatMessageParams,
             response: $$FooChatMessage,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -699,7 +771,11 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooTestsStreamRetryWithNewCredentialsResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -731,7 +807,11 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooChatMessage,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -747,6 +827,50 @@ export class TestClientPrefixed {
         );
     }
 }
+
+export interface FooManuallyAddedModel {
+    /**
+     * FOO
+     */
+    hello: string;
+}
+export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> =
+    {
+        new(): FooManuallyAddedModel {
+            return {
+                hello: '',
+            };
+        },
+        validate(input): input is FooManuallyAddedModel {
+            return isObject(input) && typeof input.hello === 'string';
+        },
+        fromJson(input): FooManuallyAddedModel {
+            let _hello: string;
+            if (typeof input.hello === 'string') {
+                _hello = input.hello;
+            } else {
+                _hello = '';
+            }
+            return {
+                hello: _hello,
+            };
+        },
+        fromJsonString(input): FooManuallyAddedModel {
+            return $$FooManuallyAddedModel.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"hello":';
+            json += serializeString(input.hello);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`hello=${input.hello}`);
+            return queryParts.join('&');
+        },
+    };
 
 export interface FooDefaultPayload {
     message: string;
@@ -787,47 +911,6 @@ export const $$FooDefaultPayload: ArriModelValidator<FooDefaultPayload> = {
         return queryParts.join('&');
     },
 };
-
-export interface FooManuallyAddedModel {
-    hello: string;
-}
-export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> =
-    {
-        new(): FooManuallyAddedModel {
-            return {
-                hello: '',
-            };
-        },
-        validate(input): input is FooManuallyAddedModel {
-            return isObject(input) && typeof input.hello === 'string';
-        },
-        fromJson(input): FooManuallyAddedModel {
-            let _hello: string;
-            if (typeof input.hello === 'string') {
-                _hello = input.hello;
-            } else {
-                _hello = '';
-            }
-            return {
-                hello: _hello,
-            };
-        },
-        fromJsonString(input): FooManuallyAddedModel {
-            return $$FooManuallyAddedModel.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"hello":';
-            json += serializeString(input.hello);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`hello=${input.hello}`);
-            return queryParts.join('&');
-        },
-    };
 
 /**
  * @deprecated

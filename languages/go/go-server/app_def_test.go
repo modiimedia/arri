@@ -20,6 +20,6 @@ func myTestFunc(_ message, _ any) (*message, error) {
 
 func BenchmarkToRpcDef(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		ToRpcDef(myTestFunc, ArriHttpRpcOptions{Path: "/my-test-func", Method: HttpMethodPost})
+		ToRpcDef(myTestFunc, RpcDefOptions{Path: "/my-test-func", Method: HttpMethodPost}, nil)
 	}
 }

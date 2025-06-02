@@ -1,6 +1,7 @@
 import { ChildProcess, execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 
+import { isAppDefinition } from '@arrirpc/codegen-utils';
 import chokidar from 'chokidar';
 import path from 'pathe';
 
@@ -125,9 +126,20 @@ export function goServer(options: GoServerOptions = {}) {
                 }
                 defFileCache = defFile;
                 const appDef = JSON.parse(defFile);
-                await Promise.allSettled(
+                if (!hasRunGenerators && !isAppDefinition(appDef)) {
+                    console.warn(
+                        `[WARNING] Invalid app definition found at ${resolvedOutDir}/__definition.json. Generators will not be run.`,
+                    );
+                    return;
+                }
+                const results = await Promise.allSettled(
                     generators.map((generator) => generator.run(appDef, true)),
                 );
+                for (const result of results) {
+                    if (result.status === 'rejected') {
+                        console.error('ERROR', result.reason);
+                    }
+                }
                 logger.success(
                     `Ran ${generators.length} generator(s) in ${new Date().getTime() - startTime.getTime()}ms`,
                 );

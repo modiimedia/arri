@@ -70,9 +70,8 @@ export class HttpDispatcher implements RpcDispatcher {
                 onResponseError: errorHandler
                     ? async (context) => {
                           try {
-                              const err = ArriErrorInstance.fromJson(
-                                  context.response._data ??
-                                      (await context.response.json()),
+                              const err = await ArriErrorInstance.fromResponse(
+                                  context.response,
                               );
                               errorHandler(req, err);
                               return;
@@ -89,27 +88,32 @@ export class HttpDispatcher implements RpcDispatcher {
                 timeout: options?.timeout ?? this.options?.timeout,
             });
             if (!response.ok) {
-                throw ArriErrorInstance.fromResponse(response);
+                throw await ArriErrorInstance.fromResponse(response);
             }
             return validator.response.fromJsonString(
                 response._data ?? (await response.text()),
             );
         } catch (err) {
-            const error = err as any as FetchError;
             let arriError: ArriErrorInstance;
             if (err instanceof ArriErrorInstance) {
                 arriError = err;
-            } else if (isArriError(error.data)) {
-                arriError = new ArriErrorInstance(error.data);
+            } else if (err instanceof FetchError && isArriError(err.data)) {
+                arriError = new ArriErrorInstance(err.data);
+            } else if (err instanceof FetchError) {
+                arriError = new ArriErrorInstance({
+                    code: err.statusCode ?? 500,
+                    message:
+                        err.statusMessage ??
+                        err.message ??
+                        `Error connecting to ${url}`,
+                    data: err.data,
+                    stack: err.stack,
+                });
             } else {
                 arriError = new ArriErrorInstance({
-                    code: error.statusCode ?? 500,
-                    message:
-                        error.statusMessage ??
-                        error.message ??
-                        `Error connecting to ${url}`,
-                    data: error.data,
-                    stack: error.stack,
+                    code: 0,
+                    message: err instanceof Error ? err.message : `${err}`,
+                    data: err,
                 });
             }
             const maxRetryCount =
@@ -118,8 +122,6 @@ export class HttpDispatcher implements RpcDispatcher {
                     : typeof this.options.retry === 'number'
                       ? this.options.retry
                       : 0;
-            console.log('OPTIONS', options);
-            console.log('GLOABAL_OPTIONS', this.options);
             const statusCodes =
                 options?.retryErrorCodes ?? this.options.retryErrorCodes ?? [];
             const shouldRetry =
@@ -128,8 +130,6 @@ export class HttpDispatcher implements RpcDispatcher {
                 (statusCodes.length === 0 ||
                     statusCodes.includes(arriError.code));
             options?.onError?.(req, arriError);
-            console.log('SHOULD_RETRY', shouldRetry);
-            console.log('ERR', arriError);
             if (shouldRetry) {
                 let retryDelay =
                     options?.retryDelay ?? this.options.retryDelay ?? 0;

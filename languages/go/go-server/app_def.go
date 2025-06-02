@@ -13,6 +13,7 @@ import (
 type AppDef struct {
 	SchemaVersion string              `key:"schemaVersion" json:"schemaVersion" `
 	Info          Option[AppDefInfo]  `key:"info" json:"info,omitempty" `
+	Transports    []string            `key:"transports" json:"transports"`
 	Procedures    OrderedMap[RpcDef]  `key:"procedures" json:"procedures" `
 	Definitions   OrderedMap[TypeDef] `key:"definitions" json:"definitions"`
 }
@@ -21,11 +22,6 @@ type AppDefInfo struct {
 	Name        Option[string] `key:"name" json:"name,omitempty"`
 	Description Option[string] `key:"description" json:"description,omitempty"`
 	Version     Option[string] `key:"version" json:"version,omitempty"`
-}
-
-type RpcDef struct {
-	DiscriminatorKey `discriminatorKey:"transport"`
-	Http             *HttpRpcDef `discriminator:"http"`
 }
 
 const (
@@ -38,25 +34,27 @@ const (
 
 type HttpMethod = string
 
-type HttpRpcDef struct {
-	Path          string         `key:"path"`
-	Method        HttpMethod     `key:"method"`
-	IsEventStream Option[bool]   `key:"isEventStream"`
-	Params        Option[string] `key:"params"`
-	Response      Option[string] `key:"response"`
-	Description   Option[string] `key:"description"`
-	IsDeprecated  Option[bool]   `key:"isDeprecated"`
+type RpcDef struct {
+	Transports    []string           `key:"transports"`
+	Path          string             `key:"path"`
+	Method        Option[HttpMethod] `key:"method"`
+	IsEventStream Option[bool]       `key:"isEventStream"`
+	Params        Option[string]     `key:"params"`
+	Response      Option[string]     `key:"response"`
+	Description   Option[string]     `key:"description"`
+	IsDeprecated  Option[bool]       `key:"isDeprecated"`
 }
 
-type ArriHttpRpcOptions struct {
+type RpcDefOptions struct {
 	Path          string
 	Method        HttpMethod
 	Description   string
 	IsDeprecated  bool
 	IsEventStream bool
+	Transports    []string
 }
 
-func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
+func ToRpcDef(value interface{}, options RpcDefOptions, defaultTransports []string) (*RpcDef, error) {
 	fnName := rpcNameFromFunctionName(GetFunctionName(value))
 	valueType := reflect.TypeOf(value)
 	valueKind := valueType.Kind()
@@ -82,9 +80,9 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	if len(options.Path) > 0 {
 		path = options.Path
 	}
-	method := HttpMethodPost
+	method := None[HttpMethod]()
 	if len(options.Method) > 0 {
-		method = strings.ToLower(options.Method)
+		method = Some(strings.ToLower(options.Method))
 	}
 	var description = None[string]()
 	if len(options.Description) > 0 {
@@ -98,16 +96,24 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	if options.IsEventStream {
 		isEventStream = Some(options.IsEventStream)
 	}
+
+	var transports []string
+	if options.Transports != nil {
+		transports = options.Transports
+	} else if defaultTransports != nil {
+		transports = defaultTransports
+	} else {
+		transports = []string{"http"}
+	}
 	return &RpcDef{
-			Http: &HttpRpcDef{
-				Path:          path,
-				Method:        method,
-				Params:        params,
-				Response:      response,
-				Description:   description,
-				IsEventStream: isEventStream,
-				IsDeprecated:  isDeprecated,
-			},
+			Path:          path,
+			Method:        method,
+			Params:        params,
+			Response:      response,
+			Description:   description,
+			IsEventStream: isEventStream,
+			IsDeprecated:  isDeprecated,
+			Transports:    transports,
 		},
 		nil
 }

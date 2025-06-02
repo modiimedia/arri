@@ -63,7 +63,8 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
     }
     if (
         !Array.isArray(inputObj.transports) ||
-        !inputObj.transports.every((val) => typeof val === 'string')
+        !inputObj.transports.every((val) => typeof val === 'string') ||
+        inputObj.transports.length === 0
     ) {
         return false;
     }

@@ -127,13 +127,16 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(
 		handler,
-		ArriHttpRpcOptions{
+		RpcDefOptions{
 			IsEventStream: true,
 			IsDeprecated:  options.IsDeprecated,
 			Description:   options.Description,
 			Method:        options.Method,
+			Transports:    options.Transports,
 		},
+		app.options.DefaultTransports,
 	)
+	app.transports = maybeAppendTransport(app.transports, rpcSchema.Transports)
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	encodingOpts := EncodingOptions{
 		KeyCasing: app.options.KeyCasing,
@@ -146,12 +149,12 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		panic(rpcError)
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
+		rpcSchema.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Path
 	} else {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + rpcSchema.Http.Path
+		rpcSchema.Path = app.options.RpcRoutePrefix + rpcSchema.Path
 	}
 	if len(options.Path) > 0 {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + options.Path
+		rpcSchema.Path = app.options.RpcRoutePrefix + options.Path
 	}
 	params := handlerType.In(0)
 	if params.Kind() != reflect.Struct {
@@ -168,10 +171,10 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Http.Params.Set(paramName)
+		rpcSchema.Params.Set(paramName)
 		app.definitions.Set(paramName, *paramsSchema)
 	} else {
-		rpcSchema.Http.Params.Unset()
+		rpcSchema.Params.Unset()
 	}
 	response := reflect.TypeFor[TResponse]()
 	if response.Kind() == reflect.Ptr {
@@ -188,15 +191,16 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		if responseSchema.Metadata.IsNone() {
 			panic("Procedures cannot return anonymous structs")
 		}
-		rpcSchema.Http.Response.Set(responseName)
+		rpcSchema.Response.Set(responseName)
 		app.definitions.Set(responseName, *responseSchema)
 	} else {
-		rpcSchema.Http.Response.Unset()
+		rpcSchema.Response.Unset()
 	}
 	app.procedures.Set(rpcName, *rpcSchema)
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
-	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
+	actualMethod := rpcSchema.Method.UnwrapOr(HttpMethodPost)
+	app.Mux.HandleFunc(rpcSchema.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
 			handlePreflightRequest(w)
 			return
@@ -206,7 +210,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 			handleError(false, w, nil, err, onError)
 			return
 		}
-		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
+		if strings.ToLower(r.Method) != actualMethod {
 			handleError(false, w, event, Error(404, "Not found"), onError)
 			return
 		}
@@ -233,7 +237,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 			return
 		}
 		if hasParams {
-			switch rpcSchema.Http.Method {
+			switch actualMethod {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)

@@ -387,3 +387,20 @@ type (
 type MessageType interface {
 	TextMessage | ImageMessage
 }
+
+func maybeAppendTransport(input []string, val []string) []string {
+	for _, valEl := range val {
+		shouldSkip := false
+		for _, inputEl := range input {
+			if inputEl == valEl {
+				shouldSkip = true
+				break
+			}
+		}
+		if shouldSkip {
+			continue
+		}
+		input = append(input, valEl)
+	}
+	return input
+}

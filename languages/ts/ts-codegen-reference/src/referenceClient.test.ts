@@ -311,9 +311,16 @@ describe('HTTP options', () => {
             'https://thisdomaindoesnotexist.thisdomaindoesnotexit/ws',
     });
     test('request hooks', async () => {
-        const didFireRequestError = false;
+        let didFireRequestError = false;
         try {
-            await client.books.getBook({ bookId: '1' });
+            await client.books.getBook(
+                { bookId: '1' },
+                {
+                    onError: (_, __) => {
+                        didFireRequestError = true;
+                    },
+                },
+            );
         } catch (_) {
             // do nothing
         }

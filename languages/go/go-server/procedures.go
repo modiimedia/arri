@@ -16,11 +16,20 @@ type RpcOptions struct {
 	Name         string
 	Description  string
 	IsDeprecated bool
+	Transports   []string
 }
 
 func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, options RpcOptions, handler func(TParams, TEvent) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
-	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
+	rpcSchema, rpcError := ToRpcDef(handler, RpcDefOptions{
+		Path:          options.Path,
+		Method:        options.Method,
+		Description:   options.Description,
+		IsDeprecated:  options.IsDeprecated,
+		IsEventStream: false,
+		Transports:    options.Transports,
+	}, app.options.DefaultTransports)
+	app.transports = maybeAppendTransport(app.transports, rpcSchema.Transports)
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	encodingOpts := EncodingOptions{
 		KeyCasing: app.options.KeyCasing,
@@ -30,24 +39,24 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		rpcName = serviceName + "." + rpcName
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
+		rpcSchema.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Path
 	} else {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + rpcSchema.Http.Path
+		rpcSchema.Path = app.options.RpcRoutePrefix + rpcSchema.Path
 	}
 	if rpcError != nil {
 		panic(rpcError)
 	}
 	if len(options.Method) > 0 {
-		rpcSchema.Http.Method = strings.ToLower(options.Method)
+		rpcSchema.Method.Set(strings.ToLower(options.Method))
 	}
 	if len(options.Path) > 0 {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + options.Path
+		rpcSchema.Path = app.options.RpcRoutePrefix + options.Path
 	}
 	if len(options.Description) > 0 {
-		rpcSchema.Http.Description.Set(options.Description)
+		rpcSchema.Description.Set(options.Description)
 	}
 	if options.IsDeprecated {
-		rpcSchema.Http.IsDeprecated.Set(options.IsDeprecated)
+		rpcSchema.IsDeprecated.Set(options.IsDeprecated)
 	}
 	params := handlerType.In(0)
 	if params.Kind() != reflect.Struct {
@@ -64,10 +73,10 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Http.Params.Set(paramsName)
+		rpcSchema.Params.Set(paramsName)
 		app.definitions.Set(paramsName, *paramsSchema)
 	} else {
-		rpcSchema.Http.Params.Unset()
+		rpcSchema.Params.Unset()
 	}
 	response := handlerType.Out(0)
 	if response.Kind() == reflect.Ptr {
@@ -84,10 +93,10 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		if responseSchema.Metadata.IsNone() {
 			panic("Procedures cannot return anonymous structs")
 		}
-		rpcSchema.Http.Response.Set(responseName)
+		rpcSchema.Response.Set(responseName)
 		app.definitions.Set(responseName, *responseSchema)
 	} else {
-		rpcSchema.Http.Response.Unset()
+		rpcSchema.Response.Unset()
 	}
 	app.procedures.Set(rpcName, *rpcSchema)
 	onRequest := app.options.OnRequest
@@ -113,7 +122,8 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		onError = func(t *TEvent, err error) {}
 	}
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
-	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
+	actualMethod := rpcSchema.Method.UnwrapOr(HttpMethodPost)
+	app.Mux.HandleFunc(rpcSchema.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
 			handlePreflightRequest(w)
 			return
@@ -124,7 +134,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 			handleError(false, w, nil, err, onError)
 			return
 		}
-		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
+		if strings.ToLower(r.Method) != actualMethod {
 			handleError(false, w, event, Error(404, "Not found"), onError)
 			return
 		}
@@ -152,7 +162,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 			return
 		}
 		if hasParams {
-			switch rpcSchema.Http.Method {
+			switch actualMethod {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)

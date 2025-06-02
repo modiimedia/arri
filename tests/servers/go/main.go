@@ -45,7 +45,8 @@ func main() {
 				event.Writer().Header().Set("Access-Control-Allow-Origin", "*")
 				return nil
 			},
-			OnError: func(ac *RpcEvent, err error) {},
+			OnError:           func(ac *RpcEvent, err error) {},
+			DefaultTransports: []string{"http", "ws"},
 		},
 		func(w http.ResponseWriter, r *http.Request) (*RpcEvent, arri.RpcError) {
 			return &RpcEvent{
@@ -88,18 +89,18 @@ func main() {
 	arri.ScopedRpc(&app, "tests", SendPartialObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveUnion, arri.RpcOptions{})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamAutoReconnect, arri.RpcOptions{Method: arri.HttpMethodGet})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamConnectionErrorTest, arri.RpcOptions{Method: arri.HttpMethodGet, Description: "This route will always return an error. The client should automatically retry with exponential backoff."})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamLargeObjects, arri.RpcOptions{Method: arri.HttpMethodGet, Description: "Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message"})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamMessages, arri.RpcOptions{Method: arri.HttpMethodGet})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamRetryWithNewCredentials, arri.RpcOptions{Method: arri.HttpMethodGet})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamTenEventsThenEnd, arri.RpcOptions{Method: arri.HttpMethodGet, Description: "When the client receives the 'done' event, it should close the connection and NOT reconnect"})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamAutoReconnect, arri.RpcOptions{})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamConnectionErrorTest, arri.RpcOptions{Description: "This route will always return an error. The client should automatically retry with exponential backoff."})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamLargeObjects, arri.RpcOptions{Description: "Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message"})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamMessages, arri.RpcOptions{})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamRetryWithNewCredentials, arri.RpcOptions{})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamTenEventsThenEnd, arri.RpcOptions{Description: "When the client receives the 'done' event, it should close the connection and NOT reconnect"})
 	arri.ScopedEventStreamRpc(&app, "users", WatchUser, arri.RpcOptions{Method: arri.HttpMethodGet})
 	app.Run(arri.RunOptions{Port: 2020})
 }
 
 type ManuallyAddedModel struct {
-	Hello string
+	Hello string `description:"FOO"`
 }
 
 type DeprecatedRpcParams struct {
