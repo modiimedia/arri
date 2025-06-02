@@ -13,13 +13,12 @@ import (
 
 type HttpAdapter[T any] struct {
 	Mux           *http.ServeMux
-	middlewares   [](func(event *Event[T]) RpcError)
-	hooks         AppHooks[T]
-	options       HttpAdapterOptions
-	globalOptions AppOptions
+	middlewares   [](func(req *Request[T]) RpcError)
+	options       HttpAdapterOptions[T]
+	globalOptions AppOptions[T]
 }
 
-type HttpAdapterOptions struct {
+type HttpAdapterOptions[T any] struct {
 	Port             uint32
 	KeyFile          string
 	CertFile         string
@@ -27,13 +26,14 @@ type HttpAdapterOptions struct {
 	AllowedMethods   []HttpMethod
 	AllowCredentials bool
 	AllowedHeaders   []string
+	OnRequest        func(arriReq *Request[T], httpReq *http.Request) RpcError
 }
 
-func NewHttpAdapter[T any](mux *http.ServeMux, options HttpAdapterOptions) *HttpAdapter[T] {
+func NewHttpAdapter[T any](mux *http.ServeMux, options HttpAdapterOptions[T]) *HttpAdapter[T] {
 	return &HttpAdapter[T]{
 		Mux:         mux,
 		options:     options,
-		middlewares: [](func(event *Event[T]) RpcError){},
+		middlewares: [](func(req *Request[T]) RpcError){},
 	}
 }
 
@@ -46,7 +46,7 @@ func (a *HttpAdapter[T]) RegisterRpc(
 	def RpcDef,
 	paramValidator Validator,
 	responseValidator Validator,
-	handler func(any, Event[T]) (any, RpcError),
+	handler func(any, Request[T]) (any, RpcError),
 ) {
 	a.Mux.HandleFunc(def.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
@@ -57,17 +57,24 @@ func (a *HttpAdapter[T]) RegisterRpc(
 		for key, val := range r.Header {
 			headers[key] = strings.Join(val, ",")
 		}
-		event := NewEvent[T](name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
+		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
 			err := Error(404, "")
-			handleError(false, w, event, err, a.hooks.OnError)
+			handleError(false, w, req, err, a.globalOptions.OnError)
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
-		err := a.hooks.OnRequest(event)
+		if a.options.OnRequest != nil {
+			err := a.options.OnRequest(req, r)
+			if err != nil {
+				handleError(false, w, req, err, a.globalOptions.OnError)
+				return
+			}
+		}
+		err := a.globalOptions.OnRequest(req)
 		if err != nil {
-			handleError(false, w, event, err, a.hooks.OnError)
+			handleError(false, w, req, err, a.globalOptions.OnError)
 			return
 		}
 		var params any
@@ -75,52 +82,50 @@ func (a *HttpAdapter[T]) RegisterRpc(
 		case HttpMethodGet:
 			result, err := paramValidator.DecodeURLQueryParams(r.URL.Query())
 			if err != nil {
-				handleError(false, w, event, err, a.hooks.OnError)
+				handleError(false, w, req, err, a.globalOptions.OnError)
 				return
 			}
 			params = result
-			break
 		default:
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
-				handleError(false, w, event, Error(400, err.Error()), a.hooks.OnError)
+				handleError(false, w, req, Error(400, err.Error()), a.globalOptions.OnError)
 				return
 			}
 			result, decodeErr := paramValidator.DecodeJSON(b)
 			if decodeErr != nil {
-				handleError(false, w, event, decodeErr, a.hooks.OnError)
+				handleError(false, w, req, decodeErr, a.globalOptions.OnError)
 				return
 			}
 			params = result
-			break
 		}
 		for _, middleware := range a.middlewares {
-			err := middleware(event)
+			err := middleware(req)
 			if err != nil {
-				handleError(false, w, event, err, a.hooks.OnError)
+				handleError(false, w, req, err, a.globalOptions.OnError)
 				return
 			}
 		}
-		response, err := handler(params, *event)
+		response, err := handler(params, *req)
 		if err != nil {
-			handleError(false, w, event, err, a.hooks.OnError)
+			handleError(false, w, req, err, a.globalOptions.OnError)
 			return
 		}
-		err = a.hooks.OnBeforeResponse(event, params, response)
+		err = a.globalOptions.OnBeforeResponse(req, params, response)
 		if err != nil {
-			handleError(false, w, event, err, a.hooks.OnError)
+			handleError(false, w, req, err, a.globalOptions.OnError)
 			return
 		}
 		payload, payloadErr := responseValidator.EncodeJSON(response)
 		if payloadErr != nil {
-			handleError(false, w, event, ErrorWithData(500, payloadErr.Error(), Some[any](payloadErr)), a.hooks.OnError)
+			handleError(false, w, req, ErrorWithData(500, payloadErr.Error(), Some[any](payloadErr)), a.globalOptions.OnError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(payload)
-		err = a.hooks.OnAfterResponse(event, params, response)
+		err = a.globalOptions.OnAfterResponse(req, params, response)
 		if err != nil {
-			handleError(true, w, event, err, a.hooks.OnError)
+			handleError(true, w, req, err, a.globalOptions.OnError)
 			return
 		}
 	})
@@ -131,7 +136,7 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 	def RpcDef,
 	paramValidator Validator,
 	responseValidator Validator,
-	handler func(any, EventStream[any], Event[T]) RpcError,
+	handler func(any, EventStream[any], Request[T]) RpcError,
 ) {
 	a.Mux.HandleFunc(def.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
@@ -142,17 +147,17 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 		for key, val := range r.Header {
 			headers[key] = strings.Join(val, ",")
 		}
-		event := NewEvent[T](name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
+		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
 			err := Error(404, "")
-			handleError(false, w, event, err, a.hooks.OnError)
+			handleError(false, w, req, err, a.globalOptions.OnError)
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
-		err := a.hooks.OnRequest(event)
+		err := a.globalOptions.OnRequest(req)
 		if err != nil {
-			handleError(false, w, event, err, a.hooks.OnError)
+			handleError(false, w, req, err, a.globalOptions.OnError)
 			return
 		}
 		var params any
@@ -160,7 +165,7 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 		case HttpMethodGet:
 			result, err := paramValidator.DecodeURLQueryParams(r.URL.Query())
 			if err != nil {
-				handleError(false, w, event, err, a.hooks.OnError)
+				handleError(false, w, req, err, a.globalOptions.OnError)
 				return
 			}
 			params = result
@@ -168,28 +173,28 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 		default:
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
-				handleError(false, w, event, Error(400, err.Error()), a.hooks.OnError)
+				handleError(false, w, req, Error(400, err.Error()), a.globalOptions.OnError)
 				return
 			}
 			result, decodeErr := paramValidator.DecodeJSON(b)
 			if decodeErr != nil {
-				handleError(false, w, event, decodeErr, a.hooks.OnError)
+				handleError(false, w, req, decodeErr, a.globalOptions.OnError)
 				return
 			}
 			params = result
 			break
 		}
 		for _, middleware := range a.middlewares {
-			err := middleware(event)
+			err := middleware(req)
 			if err != nil {
-				handleError(false, w, event, err, a.hooks.OnError)
+				handleError(false, w, req, err, a.globalOptions.OnError)
 				return
 			}
 		}
 		stream := NewHttpEventStream[any](w, r, a.globalOptions.KeyCasing)
-		responseErr := handler(params, stream, *event)
+		responseErr := handler(params, stream, *req)
 		if responseErr != nil {
-			handleError(false, w, event, responseErr, a.hooks.OnError)
+			handleError(false, w, req, responseErr, a.globalOptions.OnError)
 			return
 		}
 	})
@@ -220,15 +225,11 @@ func (a HttpAdapter[T]) Start() {
 	http.ListenAndServe(fmt.Sprintf(":%v", port), httpHandler)
 }
 
-func (a HttpAdapter[T]) Use(middleware func(event *Event[T]) RpcError) {
+func (a *HttpAdapter[T]) Use(middleware func(req *Request[T]) RpcError) {
 	a.middlewares = append(a.middlewares, middleware)
 }
 
-func (a *HttpAdapter[T]) SetHooks(hooks AppHooks[T]) {
-	a.hooks = hooks
-}
-
-func (a *HttpAdapter[T]) SetGlobalOptions(options AppOptions) {
+func (a *HttpAdapter[T]) SetGlobalOptions(options AppOptions[T]) {
 	a.globalOptions = options
 }
 
@@ -260,11 +261,11 @@ func handlePreflightRequest(w http.ResponseWriter) {
 func handleError[TMeta any](
 	responseSent bool,
 	w http.ResponseWriter,
-	event *Event[TMeta],
+	req *Request[TMeta],
 	err RpcError,
-	onError func(*Event[TMeta], error),
+	onError func(*Request[TMeta], error),
 ) {
-	onError(event, err)
+	onError(req, err)
 	if responseSent {
 		return
 	}
@@ -371,6 +372,6 @@ func (controller *HttpEventStream[T]) Done() <-chan struct{} {
 	return controller.context.Done()
 }
 
-func (controller HttpEventStream[T]) SetPingInterval(val time.Duration) {
+func (controller *HttpEventStream[T]) SetPingInterval(val time.Duration) {
 	controller.pingDuration = val
 }

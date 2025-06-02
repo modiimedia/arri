@@ -1,7 +1,7 @@
 package arri
 
-type Middleware[TMeta any] func(event Event[TMeta]) RpcError
+type Middleware[TMeta any] func(req *Request[TMeta]) RpcError
 
-func Use[TMeta any](app *App[TMeta], middleware Middleware[TMeta]) {
+func RegisterMiddleware[TMeta any](app *App[TMeta], middleware Middleware[TMeta]) {
 	app.middleware = append(app.middleware, middleware)
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	arri "github.com/modiimedia/arri/languages/go/go-server"
@@ -12,18 +11,8 @@ import (
 	"gopkg.in/loremipsum.v1"
 )
 
-type RpcEvent struct {
-	XTestHeader string
-	request     *http.Request
-	writer      http.ResponseWriter
-}
-
-func (e RpcEvent) Request() *http.Request {
-	return e.request
-}
-
-func (e RpcEvent) Writer() http.ResponseWriter {
-	return e.writer
+type CustomProps struct {
+	HasXTestHeader bool
 }
 
 func main() {
@@ -37,40 +26,25 @@ func main() {
 		w.Write([]byte("hello world"))
 	})
 	app := arri.NewApp(
-		mux,
-		arri.AppOptions[RpcEvent]{
-			AppVersion:     "10",
-			RpcRoutePrefix: "/rpcs",
-			OnRequest: func(event *RpcEvent) arri.RpcError {
-				event.Writer().Header().Set("Access-Control-Allow-Origin", "*")
-				return nil
-			},
-			OnError:           func(ac *RpcEvent, err error) {},
+		arri.AppOptions[CustomProps]{
+			AppVersion:        "10",
+			RpcRoutePrefix:    "/rpcs",
 			DefaultTransports: []string{"http", "ws"},
 		},
-		func(w http.ResponseWriter, r *http.Request) (*RpcEvent, arri.RpcError) {
-			return &RpcEvent{
-				request:     r,
-				writer:      w,
-				XTestHeader: r.Header.Get("x-test-header"),
-			}, nil
-		},
 	)
-	arri.Use(&app, func(r *http.Request, event RpcEvent, rpcName string) arri.RpcError {
-		if len(event.XTestHeader) == 0 &&
-			r.URL.Path != "/" &&
-			r.URL.Path != "/status" &&
-			r.URL.Path != "/favicon.ico" &&
-			!strings.HasSuffix(r.URL.Path, "__definition") {
+	arri.RegisterTransport(&app, arri.NewHttpAdapter(mux, arri.HttpAdapterOptions[CustomProps]{Port: 2020, AllowedOrigins: []string{"*"}}))
+	arri.RegisterMiddleware(&app, func(req *arri.Request[CustomProps]) arri.RpcError {
+		if len(req.Headers["x-test-header"]) == 0 {
 			return arri.Error(401, "Missing test auth header 'x-test-header'")
 		}
+		req.Props.HasXTestHeader = true
 		return nil
 	})
 
 	val := arri.OrderedMap[bool]{}
 	val.Add(arri.Pair("A", true))
 
-	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.DefOptions{})
+	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.TypeDefOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
 	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyResponseGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
@@ -79,7 +53,7 @@ func main() {
 		IsDeprecated: true,
 		Description:  "If the target language supports it. Generated code should mark this procedure as deprecated.",
 	})
-	arri.RegisterDef(&app, DeprecatedRpcParams{}, arri.DefOptions{IsDeprecated: true})
+	arri.RegisterDef(&app, DeprecatedRpcParams{}, arri.TypeDefOptions{IsDeprecated: true})
 	arri.ScopedRpc(&app, "tests", SendDiscriminatorWithEmptyObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendError, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObject, arri.RpcOptions{})
@@ -96,7 +70,7 @@ func main() {
 	arri.ScopedEventStreamRpc(&app, "tests", StreamRetryWithNewCredentials, arri.RpcOptions{})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamTenEventsThenEnd, arri.RpcOptions{Description: "When the client receives the 'done' event, it should close the connection and NOT reconnect"})
 	arri.ScopedEventStreamRpc(&app, "users", WatchUser, arri.RpcOptions{Method: arri.HttpMethodGet})
-	app.Run(arri.RunOptions{Port: 2020})
+	app.Start()
 }
 
 type ManuallyAddedModel struct {
@@ -107,7 +81,7 @@ type DeprecatedRpcParams struct {
 	DeprecatedField string `arri:"deprecated"`
 }
 
-func DeprecatedRpc(_ DeprecatedRpcParams, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
+func DeprecatedRpc(_ DeprecatedRpcParams, _ arri.Request[CustomProps]) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
@@ -124,7 +98,7 @@ type DiscriminatorWithEmptyObjectNotEmpty struct {
 	Baz bool
 }
 
-func SendDiscriminatorWithEmptyObject(params DiscriminatorWithEmptyObject, _ RpcEvent) (DiscriminatorWithEmptyObject, arri.RpcError) {
+func SendDiscriminatorWithEmptyObject(params DiscriminatorWithEmptyObject, _ arri.Request[CustomProps]) (DiscriminatorWithEmptyObject, arri.RpcError) {
 	return params, nil
 }
 
@@ -132,19 +106,19 @@ type DefaultPayload struct {
 	Message string
 }
 
-func EmptyParamsGetRequest(_ arri.EmptyMessage, _ RpcEvent) (DefaultPayload, arri.RpcError) {
+func EmptyParamsGetRequest(_ arri.EmptyMessage, _ arri.Request[CustomProps]) (DefaultPayload, arri.RpcError) {
 	return DefaultPayload{Message: "ok"}, nil
 }
 
-func EmptyParamsPostRequest(_ arri.EmptyMessage, _ RpcEvent) (DefaultPayload, arri.RpcError) {
+func EmptyParamsPostRequest(_ arri.EmptyMessage, _ arri.Request[CustomProps]) (DefaultPayload, arri.RpcError) {
 	return DefaultPayload{Message: "ok"}, nil
 }
 
-func EmptyResponseGetRequest(_ DefaultPayload, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
+func EmptyResponseGetRequest(_ DefaultPayload, _ arri.Request[CustomProps]) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
-func EmptyResponsePostRequest(_ DefaultPayload, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
+func EmptyResponsePostRequest(_ DefaultPayload, _ arri.Request[CustomProps]) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
@@ -153,7 +127,7 @@ type SendErrorParams struct {
 	Message string
 }
 
-func SendError(params SendErrorParams, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
+func SendError(params SendErrorParams, _ arri.Request[CustomProps]) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, arri.Error(uint32(params.Code), params.Message)
 }
 
@@ -207,7 +181,7 @@ type ObjectWithEveryType struct {
 	}
 }
 
-func SendObject(params ObjectWithEveryType, _ RpcEvent) (ObjectWithEveryType, arri.RpcError) {
+func SendObject(params ObjectWithEveryType, _ arri.Request[CustomProps]) (ObjectWithEveryType, arri.RpcError) {
 	return params, nil
 }
 
@@ -261,7 +235,7 @@ type ObjectWithEveryNullableType struct {
 	}]]]
 }
 
-func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ RpcEvent) (ObjectWithEveryNullableType, arri.RpcError) {
+func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ arri.Request[CustomProps]) (ObjectWithEveryNullableType, arri.RpcError) {
 	return params, nil
 }
 
@@ -273,7 +247,7 @@ type ObjectWithPascalCaseKeys struct {
 	IsAdmin      arri.Option[bool]     `key:"IsAdmin"`
 }
 
-func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ RpcEvent) (ObjectWithPascalCaseKeys, arri.RpcError) {
+func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ arri.Request[CustomProps]) (ObjectWithPascalCaseKeys, arri.RpcError) {
 	return params, nil
 }
 
@@ -285,7 +259,7 @@ type ObjectWithSnakeCaseKeys struct {
 	IsAdmin      arri.Option[bool]     `key:"is_admin"`
 }
 
-func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ RpcEvent) (ObjectWithSnakeCaseKeys, arri.RpcError) {
+func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ arri.Request[CustomProps]) (ObjectWithSnakeCaseKeys, arri.RpcError) {
 	return params, nil
 }
 
@@ -339,7 +313,7 @@ type ObjectWithEveryOptionalType struct {
 	}]
 }
 
-func SendPartialObject(params ObjectWithEveryOptionalType, _ RpcEvent) (ObjectWithEveryOptionalType, arri.RpcError) {
+func SendPartialObject(params ObjectWithEveryOptionalType, _ arri.Request[CustomProps]) (ObjectWithEveryOptionalType, arri.RpcError) {
 	return params, nil
 }
 
@@ -349,7 +323,7 @@ type RecursiveObject struct {
 	Value string
 }
 
-func SendRecursiveObject(params RecursiveObject, _ RpcEvent) (RecursiveObject, arri.RpcError) {
+func SendRecursiveObject(params RecursiveObject, _ arri.Request[CustomProps]) (RecursiveObject, arri.RpcError) {
 	return params, nil
 }
 
@@ -372,7 +346,7 @@ type RecursiveUnion struct {
 	} `discriminator:"SHAPE" description:"Shape node"`
 }
 
-func SendRecursiveUnion(params RecursiveUnion, _ RpcEvent) (RecursiveUnion, arri.RpcError) {
+func SendRecursiveUnion(params RecursiveUnion, _ arri.Request[CustomProps]) (RecursiveUnion, arri.RpcError) {
 	return params, nil
 }
 
@@ -385,7 +359,7 @@ type AutoReconnectResponse struct {
 	Message string
 }
 
-func StreamAutoReconnect(params AutoReconnectParams, controller arri.EventStream[AutoReconnectResponse], event RpcEvent) arri.RpcError {
+func StreamAutoReconnect(params AutoReconnectParams, stream arri.EventStream[AutoReconnectResponse], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	var msgCount uint8 = 0
@@ -393,15 +367,15 @@ func StreamAutoReconnect(params AutoReconnectParams, controller arri.EventStream
 		select {
 		case <-t.C:
 			msgCount++
-			controller.Push(AutoReconnectResponse{Count: msgCount, Message: "Hello World " + string(msgCount)})
+			stream.Send(AutoReconnectResponse{Count: msgCount, Message: "Hello World " + string(msgCount)})
 			if msgCount == params.MessageCount {
-				controller.Close(false)
+				stream.Close(false)
 				return nil
 			}
 			if msgCount > params.MessageCount {
 				panic("Request was not properly cancelled")
 			}
-		case <-controller.Done():
+		case <-stream.Done():
 			return nil
 		}
 	}
@@ -418,8 +392,8 @@ type StreamConnectionErrorTestResponse struct {
 
 func StreamConnectionErrorTest(
 	params StreamConnectionErrorTestParams,
-	controller arri.EventStream[StreamConnectionErrorTestResponse],
-	_ RpcEvent,
+	stream arri.EventStream[StreamConnectionErrorTestResponse],
+	_ arri.Request[CustomProps],
 ) arri.RpcError {
 	return arri.Error(uint32(params.StatusCode), params.StatusMessage)
 }
@@ -433,15 +407,15 @@ type StreamLargeObjectsResponse struct {
 	}
 }
 
-func StreamLargeObjects(params arri.EmptyMessage, controller arri.EventStream[StreamLargeObjectsResponse], _ RpcEvent) arri.RpcError {
+func StreamLargeObjects(params arri.EmptyMessage, stream arri.EventStream[StreamLargeObjectsResponse], _ arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	for {
 		select {
 		case <-t.C:
 			payload := randomLargeObjectResponse()
-			controller.Push(payload)
-		case <-controller.Done():
+			stream.Send(payload)
+		case <-stream.Done():
 			return nil
 		}
 	}
@@ -506,16 +480,16 @@ type ChatMessageUrl struct {
 	Url       string
 }
 
-func StreamMessages(params ChatMessageParams, controller arri.EventStream[ChatMessage], event RpcEvent) arri.RpcError {
+func StreamMessages(params ChatMessageParams, stream arri.EventStream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	for {
 		select {
 		case <-t.C:
-			controller.Push(ChatMessage{ChatMessageText: &ChatMessageText{
+			stream.Send(ChatMessage{ChatMessageText: &ChatMessageText{
 				ChannelId: params.ChannelId,
 				Text:      "Hello world",
 			}})
-		case <-controller.Done():
+		case <-stream.Done():
 			return nil
 		}
 	}
@@ -527,8 +501,12 @@ type TestsStreamRetryWithNewCredentialsResponse struct {
 
 var usedTokens map[string]bool = map[string]bool{}
 
-func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.EventStream[TestsStreamRetryWithNewCredentialsResponse], event RpcEvent) arri.RpcError {
-	authToken := event.XTestHeader
+func StreamRetryWithNewCredentials(
+	_ arri.EmptyMessage,
+	stream arri.EventStream[TestsStreamRetryWithNewCredentialsResponse],
+	req arri.Request[CustomProps],
+) arri.RpcError {
+	authToken := req.Headers["x-test-token"]
 	if len(authToken) == 0 {
 		return arri.Error(400, "")
 	}
@@ -544,18 +522,18 @@ func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.EventStr
 		select {
 		case <-t.C:
 			msgCount++
-			controller.Push(TestsStreamRetryWithNewCredentialsResponse{Message: "ok"})
+			stream.Send(TestsStreamRetryWithNewCredentialsResponse{Message: "ok"})
 			if msgCount >= 0 {
-				controller.Close(false)
+				stream.Close(false)
 				return nil
 			}
-		case <-controller.Done():
+		case <-stream.Done():
 			return nil
 		}
 	}
 }
 
-func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.EventStream[ChatMessage], event RpcEvent) arri.RpcError {
+func StreamTenEventsThenEnd(_ arri.EmptyMessage, stream arri.EventStream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0
@@ -563,17 +541,17 @@ func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.EventStream[Cha
 		select {
 		case <-t.C:
 			msgCount++
-			controller.Push(ChatMessage{
+			stream.Send(ChatMessage{
 				ChatMessageText: &ChatMessageText{},
 			})
 			if msgCount > 10 {
 				panic("Message count exceeded 10. This means the ticker was not properly cleaned up.")
 			}
 			if msgCount == 10 {
-				controller.Close(true)
+				stream.Close(true)
 				return nil
 			}
-		case <-controller.Done():
+		case <-stream.Done():
 			return nil
 		}
 	}
@@ -626,7 +604,7 @@ type UserSettings struct {
 	PreferredTheme       string `enum:"dark-mode,light-mode,system"`
 }
 
-func WatchUser(params UsersWatchUserParams, stream arri.EventStream[UsersWatchUserResponse], event RpcEvent) arri.RpcError {
+func WatchUser(params UsersWatchUserParams, stream arri.EventStream[UsersWatchUserResponse], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0
@@ -635,7 +613,7 @@ func WatchUser(params UsersWatchUserParams, stream arri.EventStream[UsersWatchUs
 		select {
 		case <-t.C:
 			msgCount++
-			stream.Push(user)
+			stream.Send(user)
 			if msgCount >= 10 {
 				stream.Close(true)
 				return nil

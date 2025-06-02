@@ -1,28 +1,38 @@
 package arri
 
 import (
+	"context"
 	"time"
 )
 
-// Event interface that is available in every RPC call
-type Event[T any] struct {
+// Request interface that is available in every RPC call
+type Request[T any] struct {
 	RpcName       string
-	ReqStart      time.Time
+	Time          time.Time
 	Transport     string
 	IpAddress     string
 	ClientVersion string
 	Headers       map[string]string
-	Metadata      T
+	Context       context.Context
+	Props         T
 }
 
-func NewEvent[T any](rpcName string, transport string, ipAddress string, clientVersion string, headers map[string]string) *Event[T] {
-	event := Event[T]{
+func NewRequest[T any](
+	context context.Context,
+	rpcName string,
+	transport string,
+	ipAddress string,
+	clientVersion string,
+	headers map[string]string,
+) *Request[T] {
+	req := Request[T]{
 		RpcName:       rpcName,
-		ReqStart:      time.Now(),
+		Time:          time.Now(),
 		Transport:     transport,
 		IpAddress:     ipAddress,
 		ClientVersion: clientVersion,
 		Headers:       headers,
+		Context:       context,
 	}
-	return &event
+	return &req
 }

@@ -18,7 +18,7 @@ type RpcOptions struct {
 	Transports   []string
 }
 
-func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, options RpcOptions, handler func(TParams, Event[TMeta]) (TResponse, RpcError)) {
+func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, options RpcOptions, handler func(TParams, Request[TMeta]) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, RpcDefOptions{
 		Path:          options.Path,
@@ -111,7 +111,7 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 			*rpcSchema,
 			paramsValidator,
 			responseValidator,
-			func(a any, e Event[TMeta]) (any, RpcError) {
+			func(a any, e Request[TMeta]) (any, RpcError) {
 				return handler(a.(TParams), e)
 			})
 	}
@@ -124,10 +124,10 @@ func getModelName(rpcName string, modelName string, fallbackSuffix string) strin
 	return modelName
 }
 
-func Rpc[TParams, TResponse any, TMeta any](app *App[TMeta], handler func(TParams, Event[TMeta]) (TResponse, RpcError), options RpcOptions) {
+func Rpc[TParams, TResponse any, TMeta any](app *App[TMeta], handler func(TParams, Request[TMeta]) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, "", options, handler)
 }
 
-func ScopedRpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, handler func(TParams, Event[TMeta]) (TResponse, RpcError), options RpcOptions) {
+func ScopedRpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, handler func(TParams, Request[TMeta]) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
 }

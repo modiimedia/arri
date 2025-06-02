@@ -8,7 +8,7 @@ import (
 )
 
 func TestHttpAdapterImplementsTransportAdapter(t *testing.T) {
-	adapter := arri.NewHttpAdapter[any](http.DefaultServeMux, arri.HttpAdapterOptions{})
+	adapter := arri.NewHttpAdapter(http.DefaultServeMux, arri.HttpAdapterOptions[any]{})
 	arri.IsTransportAdapter(adapter)
 }
 

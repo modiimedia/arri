@@ -12,18 +12,17 @@ type TransportAdapter[T any] interface {
 		def RpcDef,
 		paramValidator Validator,
 		responseValidator Validator,
-		handler func(any, Event[T]) (any, RpcError),
+		handler func(any, Request[T]) (any, RpcError),
 	)
 	RegisterEventStreamRpc(
 		name string,
 		def RpcDef,
 		paramValidator Validator,
 		responseValidator Validator,
-		handler func(any, EventStream[any], Event[T]) RpcError,
+		handler func(any, EventStream[any], Request[T]) RpcError,
 	)
-	SetHooks(hooks AppHooks[T])
-	SetGlobalOptions(options AppOptions)
-	Use(middleware func(event *Event[T]) RpcError)
+	SetGlobalOptions(options AppOptions[T])
+	Use(middleware func(req *Request[T]) RpcError)
 	Start()
 }
 

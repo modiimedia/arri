@@ -2,24 +2,20 @@ package arri
 
 import (
 	"flag"
-	"fmt"
-	"net/http"
 	"os"
 )
 
-type App[TMeta any] struct {
-	Mux               *http.ServeMux
-	middleware        []Middleware[TMeta]
+type App[T any] struct {
+	middleware        []Middleware[T]
 	procedures        *OrderedMap[RpcDef]
 	definitions       *OrderedMap[TypeDef]
 	transports        []string
 	defaultTransports []string
-	options           AppOptions
-	hooks             AppHooks[TMeta]
-	adapters          map[string]TransportAdapter[TMeta]
+	options           AppOptions[T]
+	adapters          map[string]TransportAdapter[T]
 }
 
-func (app *App[TEvent]) GetAppDefinition() AppDef {
+func (app *App[TMeta]) GetAppDefinition() AppDef {
 	info := None[AppDefInfo]()
 	name := None[string]()
 	description := None[string]()
@@ -52,9 +48,9 @@ func (app *App[TEvent]) GetAppDefinition() AppDef {
 	}
 }
 
-func (app *App[TEvent]) Run(options RunOptions) error {
+func (app *App[TMeta]) Start() error {
 	if len(app.transports) == 0 {
-		panic("Must specify at least one transport to run the app")
+		panic("Must register at least one transport adapter")
 	}
 	defOutput := flag.String("def-out", "", "definition-out")
 	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
@@ -79,7 +75,8 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 			return err
 		}
 	}
-	return startServer(app, options)
+	panic("NOT IMPLEMENTED")
+	// TODO: start all adapters
 }
 
 func appDefToFile(appDef AppDef, output string, options EncodingOptions) error {
@@ -94,45 +91,7 @@ func appDefToFile(appDef AppDef, output string, options EncodingOptions) error {
 	return nil
 }
 
-func printServerStartMessages[TMeta any](app *App[TMeta], port uint32, isHttps bool) {
-	protocol := "http"
-	if isHttps {
-		protocol = "https"
-	}
-	baseUrl := fmt.Sprintf("%v://localhost:%v", protocol, port)
-	fmt.Printf("Starting server at %v\n", baseUrl)
-	if len(app.options.RpcRoutePrefix) > 0 {
-		fmt.Printf("Procedures path: %v%v\n", baseUrl, app.options.RpcRoutePrefix)
-	}
-	defPath := app.options.RpcDefinitionPath
-	if len(defPath) == 0 {
-		defPath = "/__definition"
-	}
-	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.options.RpcRoutePrefix+defPath)
-}
-
-func startServer[TMeta any](app *App[TMeta], options RunOptions) error {
-	port := options.Port
-	if port == 0 {
-		port = 3000
-	}
-	keyFile := options.KeyFile
-	certFile := options.CertFile
-	if len(keyFile) > 0 && len(certFile) > 0 {
-		printServerStartMessages(app, port, true)
-		return http.ListenAndServeTLS(fmt.Sprintf(":%v", port), certFile, keyFile, app.Mux)
-	}
-	printServerStartMessages(app, port, false)
-	return http.ListenAndServe(fmt.Sprintf(":%v", port), app.Mux)
-}
-
-type RunOptions struct {
-	Port     uint32
-	CertFile string
-	KeyFile  string
-}
-
-type AppOptions struct {
+type AppOptions[T any] struct {
 	AppName string
 	// The current app version. Generated clients will send this in the "client-version" header
 	AppVersion string
@@ -149,51 +108,53 @@ type AppOptions struct {
 	DefaultTransports []string
 	// how long to send a "ping" message during persistent connections in ms
 	// default is 20000ms
-	PingInterval uint32
+	PingInterval     uint32
+	OnRequest        func(*Request[T]) RpcError
+	OnBeforeResponse func(req *Request[T], params any, response any) RpcError
+	OnAfterResponse  func(req *Request[T], params any, response any) RpcError
+	OnError          func(req *Request[T], err error)
 }
 
 type AppHooks[TMeta any] struct {
-	OnRequest        func(*Event[TMeta]) RpcError
-	OnBeforeResponse func(event *Event[TMeta], params any, response any) RpcError
-	OnAfterResponse  func(event *Event[TMeta], params any, response any) RpcError
-	OnError          func(event *Event[TMeta], err error)
+	OnRequest        func(*Request[TMeta]) RpcError
+	OnBeforeResponse func(req *Request[TMeta], params any, response any) RpcError
+	OnAfterResponse  func(req *Request[TMeta], params any, response any) RpcError
+	OnError          func(req *Request[TMeta], err error)
 }
 
-func NewApp[TMeta any](mux *http.ServeMux, options AppOptions, hooks AppHooks[TMeta]) App[TMeta] {
+func NewApp[T any](options AppOptions[T]) App[T] {
 	transports := options.DefaultTransports
 	if len(transports) == 0 {
 		transports = []string{}
 	}
-	app := App[TMeta]{
-		Mux:               mux,
+	app := App[T]{
 		options:           options,
-		middleware:        []Middleware[TMeta]{},
+		middleware:        []Middleware[T]{},
 		procedures:        &OrderedMap[RpcDef]{},
 		definitions:       &OrderedMap[TypeDef]{},
 		transports:        transports,
 		defaultTransports: options.DefaultTransports,
-		hooks:             hooks,
 	}
 	if len(app.options.RpcDefinitionPath) == 0 {
 		app.options.RpcDefinitionPath = app.options.RpcRoutePrefix + "/app-definition"
 	}
-	if app.hooks.OnRequest == nil {
-		app.hooks.OnRequest = func(t *Event[TMeta]) RpcError {
+	if app.options.OnRequest == nil {
+		app.options.OnRequest = func(t *Request[T]) RpcError {
 			return nil
 		}
 	}
-	if app.hooks.OnBeforeResponse == nil {
-		app.hooks.OnBeforeResponse = func(t *Event[TMeta], _ any, __ any) RpcError {
+	if app.options.OnBeforeResponse == nil {
+		app.options.OnBeforeResponse = func(t *Request[T], _ any, __ any) RpcError {
 			return nil
 		}
 	}
-	if app.hooks.OnAfterResponse == nil {
-		app.hooks.OnAfterResponse = func(t *Event[TMeta], _ any, __ any) RpcError {
+	if app.options.OnAfterResponse == nil {
+		app.options.OnAfterResponse = func(t *Request[T], _ any, __ any) RpcError {
 			return nil
 		}
 	}
-	if app.hooks.OnError == nil {
-		app.hooks.OnError = func(t *Event[TMeta], err error) {}
+	if app.options.OnError == nil {
+		app.options.OnError = func(t *Request[T], err error) {}
 	}
 	if app.options.PingInterval == 0 {
 		app.options.PingInterval = 20000
@@ -201,9 +162,10 @@ func NewApp[TMeta any](mux *http.ServeMux, options AppOptions, hooks AppHooks[TM
 	return app
 }
 
-func UseAdapter[TMeta any](app *App[TMeta], adapter TransportAdapter[TMeta]) {
-	transportId := adapter.TransportId()
-	app.adapters[transportId] = adapter
+func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAdapter[TMeta]) {
+	transportId := transportAdapter.TransportId()
+	transportAdapter.SetGlobalOptions(app.options)
+	app.adapters[transportId] = transportAdapter
 	for _, val := range app.transports {
 		if val == transportId {
 			// no need to append to transport list
