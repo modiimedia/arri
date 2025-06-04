@@ -134,6 +134,7 @@ func NewApp[T any](options AppOptions[T]) App[T] {
 		definitions:       &OrderedMap[TypeDef]{},
 		transports:        transports,
 		defaultTransports: options.DefaultTransports,
+		adapters:          map[string]TransportAdapter[T]{},
 	}
 	if len(app.options.RpcDefinitionPath) == 0 {
 		app.options.RpcDefinitionPath = app.options.RpcRoutePrefix + "/app-definition"
@@ -171,8 +172,9 @@ func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAda
 			// no need to append to transport list
 			break
 		}
-		app.transports = append(app.transports, val)
+		app.transports = append(app.transports, transportId)
 	}
+	println("transports", app.transports)
 }
 
 func RegisterDef[T any](app *App[T], input any, options TypeDefOptions) {
