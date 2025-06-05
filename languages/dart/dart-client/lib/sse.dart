@@ -66,6 +66,8 @@ class EventSource<T> {
   int _retryCount = 0;
   T Function(String data) parser;
   bool _closedByClient = false;
+  Timer? _heartbeatTimer;
+  int? _heartbeatTimerMs;
 
   // hooks
   late final void Function(T data) _onMessage;
@@ -110,6 +112,13 @@ class EventSource<T> {
       onClose?.call(this);
     };
     _connect();
+  }
+
+  _resetHeartbeatCheck() {
+    _heartbeatTimer?.cancel();
+    if (_heartbeatTimerMs == null || _heartbeatTimerMs! <= 0) return;
+    _heartbeatTimer =
+        Timer(Duration(milliseconds: _heartbeatTimerMs!), () => _connect());
   }
 
   Future<void> _connect({bool isRetry = false}) async {
@@ -171,6 +180,12 @@ class EventSource<T> {
           "Server must return statusCode 200. Instead got ${response.statusCode}",
         );
       }
+      final heartbeatIntervalHeader =
+          int.tryParse(response.headers["heartbeat-interval"] ?? "0");
+      if (heartbeatIntervalHeader != null && heartbeatIntervalHeader > 0) {
+        _heartbeatTimerMs = heartbeatIntervalHeader;
+      }
+      _resetHeartbeatCheck();
       String pendingData = "";
 
       // reset retry count when connection is successful
@@ -196,6 +211,7 @@ class EventSource<T> {
           final eventResult = parseSseEvents(pendingData + input, parser);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
+            _resetHeartbeatCheck();
             if (event.id != null) {
               lastEventId = event.id;
             }
@@ -270,6 +286,7 @@ class EventSource<T> {
 
   void close() {
     _closedByClient = true;
+    _heartbeatTimer?.cancel();
     try {
       _requestStream?.cancel();
     } catch (_) {}
@@ -280,6 +297,8 @@ class EventSource<T> {
   bool get isClosed {
     return _closedByClient;
   }
+
+  void reconnect() => _connect();
 
   Stream<T> toStream() {
     _streamController ??= StreamController<T>(onCancel: () {

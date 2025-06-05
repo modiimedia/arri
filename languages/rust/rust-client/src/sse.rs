@@ -5,6 +5,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use serde_json::from_str;
+
 use crate::{ArriError, ArriModel, ArriRequestErrorMethods};
 
 pub struct ArriParsedSseRequestOptions<'a> {
@@ -211,6 +213,14 @@ impl<'a> EventSource<'a> {
             return SseAction::Retry;
         }
         let mut ok_response = response.unwrap();
+
+        // TODO: use this header to setup a heartbeat watcher
+        // that will reset whenever a message is received
+        let _heartbeat_ms = match ok_response.headers().get("heartbeat-interval") {
+            Some(val) => from_str::<u64>(val.to_str().unwrap_or("0")).unwrap_or(0),
+            None => 0,
+        };
+
         on_event(SseEvent::Open, &mut controller);
         if controller.is_aborted {
             return SseAction::Abort;
