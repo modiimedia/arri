@@ -78,8 +78,18 @@ export function arriSseRequest<
         maxRetryCount: options.maxRetryCount,
         maxRetryInterval: options.maxRetryInterval,
     });
+    let interval: number | undefined;
+    let intervalDurationMs: number | undefined;
+    function resetInterval() {
+        if (interval) clearInterval(interval);
+        interval = setInterval(() => {
+            if (controller.signal.aborted) return;
+            controller.reconnect();
+        }, intervalDurationMs) as any;
+    }
     const controller = eventSource.listen({
         onMessage(message) {
+            resetInterval();
             if (
                 message.event === 'message' ||
                 message.event === undefined ||
@@ -89,6 +99,7 @@ export function arriSseRequest<
                 return;
             }
             if (message.event === 'done') {
+                if (interval) clearInterval(interval);
                 controller.abort();
             }
         },
@@ -96,9 +107,7 @@ export function arriSseRequest<
             options.onRequest?.(context);
         },
         onRequestError(context) {
-            if (opts.onError) {
-                opts.onError(context.error);
-            }
+            if (opts.onError) opts.onError(context.error);
             options.onRequestError?.({
                 ...context,
                 error: new ArriErrorInstance({
@@ -109,15 +118,23 @@ export function arriSseRequest<
             });
         },
         onResponse(context) {
+            const heartbeatIntervalHeader = Number(
+                context.response?.headers.get('heartbeat-interval') ?? 0,
+            );
+            if (
+                context.response.ok &&
+                !Number.isNaN(heartbeatIntervalHeader) &&
+                heartbeatIntervalHeader > 0
+            ) {
+                intervalDurationMs = heartbeatIntervalHeader;
+                resetInterval();
+            }
             options.onResponse?.(context);
         },
         async onResponseError(context) {
-            if (opts.onError) {
-                opts.onError(context.error);
-            }
-            if (!options.onResponseError) {
-                return;
-            }
+            clearInterval(interval);
+            if (opts.onError) opts.onError(context.error);
+            if (!options.onResponseError) return;
             try {
                 const arriError = ArriErrorInstance.fromJson(
                     await context.response.json(),

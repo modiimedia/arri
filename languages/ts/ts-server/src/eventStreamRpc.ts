@@ -8,6 +8,7 @@ import {
     type H3Event,
     isPreflightRequest,
     type Router,
+    setResponseHeader,
 } from 'h3';
 
 import { type RpcEventContext } from './context';
@@ -73,7 +74,7 @@ export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
 
 export interface EventStreamConnectionOptions<TData> {
     validator?: RequestValidator<TData>;
-    pingInterval?: number;
+    heartbeatInterval?: number;
 }
 
 export class EventStreamConnection<TData> {
@@ -81,13 +82,18 @@ export class EventStreamConnection<TData> {
     private readonly validator?: RequestValidator<TData>;
     // for some reason Rollup cannot output DTS when this is set to NodeJS.Timeout
     private pingInterval: any | undefined = undefined;
-    private readonly pingIntervalMs: number;
+    private readonly heartbeatIntervalMs: number;
     readonly eventStream: EventStream;
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
+        this.heartbeatIntervalMs = opts.heartbeatInterval ?? 20000; // 20 second default ping interval
+        setResponseHeader(
+            event,
+            'heartbeat-interval',
+            this.heartbeatIntervalMs.toString(),
+        );
         this.eventStream = createEventStream(event);
         this.lastEventId = getHeader(event, 'Last-Event-Id');
-        this.pingIntervalMs = opts.pingInterval ?? 60000;
         this.validator = opts.validator;
         this.eventStream.onClosed(() => {
             this.cleanup();
@@ -108,7 +114,7 @@ export class EventStreamConnection<TData> {
                 event: 'ping',
                 data: '',
             });
-        }, this.pingIntervalMs);
+        }, this.heartbeatIntervalMs);
     }
 
     /**
@@ -225,7 +231,7 @@ export function registerEventStreamRpc(
                 );
             }
             const stream = new EventStreamConnection(event, {
-                pingInterval: procedure.pingInterval,
+                heartbeatInterval: procedure.pingInterval,
                 validator: responseValidator,
             });
             event.context.stream = stream;

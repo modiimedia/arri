@@ -136,8 +136,8 @@ importers:
         specifier: workspace:*
         version: link:../ts-schema
       event-source-plus:
-        specifier: ^0.1.8
-        version: 0.1.8
+        specifier: ^0.1.10
+        version: 0.1.10
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
@@ -1954,8 +1954,8 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
-  event-source-plus@0.1.8:
-    resolution: {integrity: sha512-Zzj5lk73Qjh4Q4ax7kyHoKyEcZrw5FtK2wBGXSTCRX+BXw/4I/mM8b+fQ+OnEt3F79FqKavOyz5E5xUrnkzhoQ==}
+  event-source-plus@0.1.10:
+    resolution: {integrity: sha512-BXA7uco6QfXpOdSqARyKeDnO53JAvlXNQp66andW5/1Z+E9gCg08HRHRh3tJLTNcWuBG3gr15iKtTxn17ArKSA==}
 
   event-stream@3.3.4:
     resolution: {integrity: sha512-QHpkERcGsR0T7Qm3HNJSyXKEEj8AHNxkY3PK8TS2KJvQ7NiSHe3DDpwVKKtoYprL/AreyzFBeIkBIWChAqn60g==}
@@ -5162,7 +5162,7 @@ snapshots:
 
   esutils@2.0.3: {}
 
-  event-source-plus@0.1.8:
+  event-source-plus@0.1.10:
     dependencies:
       ofetch: 1.4.1
 
