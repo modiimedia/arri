@@ -10,7 +10,8 @@ export interface RpcContext<TParams> {
     rpcName: string;
     reqStart: Date;
     transport: string;
-    clientVersion?: string;
+    ipAddress: string | undefined;
+    clientVersion: string | undefined;
     headers: Record<string, string | undefined>;
     params: TParams;
 }

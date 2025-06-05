@@ -211,6 +211,7 @@ export class WsAdapter implements TransportAdapter {
             const context: RpcMiddlewareContext = {
                 rpcName: msg.rpcName,
                 reqStart: reqStart,
+                ipAddress: peer.remoteAddress,
                 transport: this.transportId,
                 clientVersion: msg.clientVersion,
                 headers: result.value.customHeaders,

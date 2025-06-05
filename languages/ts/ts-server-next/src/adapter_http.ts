@@ -56,6 +56,7 @@ export interface HttpOptions {
     public?: boolean;
     httpWithHttps?: boolean;
     httpWithHttpsPort?: number;
+    trustXForwardedFor?: boolean;
 }
 
 export interface WsHttpRegister {
@@ -92,6 +93,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
     private _public: NonNullable<HttpOptions['public']>;
     private _httpWithHttps?: HttpOptions['httpWithHttps'];
     private _httpWithHttpsPort?: HttpOptions['httpWithHttpsPort'];
+    private _trustXForwardedFor?: HttpOptions['trustXForwardedFor'];
 
     private _listener: listhen.Listener | undefined;
     private _secondaryListener: listhen.Listener | undefined;
@@ -109,6 +111,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     const context: RpcOnErrorContext = {
                         rpcName: '',
                         reqStart: event.context.reqStart,
+                        ipAddress: h3.getRequestIP(event, {
+                            xForwardedFor: this._trustXForwardedFor,
+                        }),
                         transport: this.transportId,
                         clientVersion: h3.getHeader(event, 'client-version'),
                         headers: h3.getHeaders(event),
@@ -131,6 +136,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
         this._autoClose = options.autoClose;
         this._port = options.port;
         this._public = options.public ?? true;
+        this._trustXForwardedFor = options.trustXForwardedFor;
 
         // default fallback route
         this.h3Router.use(
@@ -140,6 +146,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 const error = defineError(404);
                 const context: RpcMiddlewareContext = {
                     rpcName: '',
+                    ipAddress: h3.getRequestIP(event, {
+                        xForwardedFor: this._trustXForwardedFor,
+                    }),
                     reqStart: event.context.reqStart ?? new Date(),
                     transport: this.transportId,
                     clientVersion: h3.getHeader(event, 'client-version'),
@@ -258,12 +267,16 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 h3.setResponseStatus(event, 200);
                 return h3.send(event, 'ok');
             }
+            const headers = h3.getHeaders(event);
             const context: RpcMiddlewareContext = {
                 rpcName: name,
+                ipAddress: h3.getRequestIP(event, {
+                    xForwardedFor: this._trustXForwardedFor,
+                }),
                 reqStart: event.context.reqStart ?? new Date(),
                 transport: this.transportId,
-                clientVersion: h3.getHeader(event, 'client-version'),
-                headers: h3.getHeaders(event),
+                clientVersion: headers['client-version'],
+                headers: headers,
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);
@@ -351,6 +364,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
             const context: RpcMiddlewareContext = {
                 rpcName: name,
                 reqStart: event.context.reqStart ?? new Date(),
+                ipAddress: h3.getRequestIP(event, {
+                    xForwardedFor: this._trustXForwardedFor,
+                }),
                 transport: this.transportId,
                 clientVersion: h3.getHeader(event, 'client-version'),
                 headers: h3.getHeaders(event),
@@ -421,6 +437,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
             const context: RpcMiddlewareContext = {
                 transport: this.transportId,
                 reqStart: event.context.reqStart ?? new Date(),
+                ipAddress: h3.getRequestIP(event, {
+                    xForwardedFor: this._trustXForwardedFor,
+                }),
                 rpcName: '',
                 clientVersion: h3.getHeader(event, 'client-version'),
                 headers: h3.getHeaders(event),
@@ -462,6 +481,9 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
             const context: RpcMiddlewareContext = {
                 rpcName: '',
                 reqStart: event.context.reqStart ?? new Date(),
+                ipAddress: h3.getRequestIP(event, {
+                    xForwardedFor: this._trustXForwardedFor,
+                }),
                 transport: this.transportId,
                 clientVersion: h3.getHeader(event, 'client-version'),
                 headers: h3.getHeaders(event),
