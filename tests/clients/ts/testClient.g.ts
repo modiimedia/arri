@@ -384,7 +384,7 @@ export class TestClientTestsService {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -392,7 +392,7 @@ export class TestClientTestsService {
                 responseFromJson: $$StreamConnectionErrorTestResponse.fromJson,
                 responseFromString:
                     $$StreamConnectionErrorTestResponse.fromJsonString,
-                serializer: $$StreamConnectionErrorTestParams.toUrlQueryString,
+                serializer: $$StreamConnectionErrorTestParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -413,7 +413,7 @@ export class TestClientTestsService {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -422,8 +422,7 @@ export class TestClientTestsService {
                     $$StreamHeartbeatDetectionTestResponse.fromJson,
                 responseFromString:
                     $$StreamHeartbeatDetectionTestResponse.fromJsonString,
-                serializer:
-                    $$StreamHeartbeatDetectionTestParams.toUrlQueryString,
+                serializer: $$StreamHeartbeatDetectionTestParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -438,7 +437,7 @@ export class TestClientTestsService {
         return arriSseRequest<StreamLargeObjectsResponse, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -458,14 +457,14 @@ export class TestClientTestsService {
         return arriSseRequest<ChatMessage, ChatMessageParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$ChatMessage.fromJson,
                 responseFromString: $$ChatMessage.fromJsonString,
-                serializer: $$ChatMessageParams.toUrlQueryString,
+                serializer: $$ChatMessageParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -480,7 +479,7 @@ export class TestClientTestsService {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -504,7 +503,7 @@ export class TestClientTestsService {
         return arriSseRequest<ChatMessage, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -552,14 +551,14 @@ export class TestClientUsersService {
         return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
             {
                 url: `${this._baseUrl}/rpcs/users/watch-user`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$UsersWatchUserResponse.fromJson,
                 responseFromString: $$UsersWatchUserResponse.fromJsonString,
-                serializer: $$UsersWatchUserParams.toUrlQueryString,
+                serializer: $$UsersWatchUserParams.toJsonString,
                 clientVersion: '10',
             },
             options,

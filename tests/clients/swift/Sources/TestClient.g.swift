@@ -245,7 +245,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<StreamConnectionErrorTestResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-connection-error-test",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,
@@ -263,7 +263,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<StreamHeartbeatDetectionTestResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-heartbeat-detection-test",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,
@@ -279,7 +279,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<StreamLargeObjectsResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-large-objects",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: nil,
                 delegate: self.delegate,
@@ -294,7 +294,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<ChatMessage>(
                 url: "\(self.baseURL)/rpcs/tests/stream-messages",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,
@@ -309,7 +309,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<TestsStreamRetryWithNewCredentialsResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-retry-with-new-credentials",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: nil,
                 delegate: self.delegate,
@@ -325,7 +325,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<ChatMessage>(
                 url: "\(self.baseURL)/rpcs/tests/stream-ten-events-then-end",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: nil,
                 delegate: self.delegate,
@@ -363,7 +363,7 @@ public class TestClientUsersService {
         let task = Task {
             var eventSource = EventSource<UsersWatchUserResponse>(
                 url: "\(self.baseURL)/rpcs/users/watch-user",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,

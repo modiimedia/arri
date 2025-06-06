@@ -37,9 +37,7 @@ export function defineEventStreamRpc<
 ): EventStreamRpc<TParams, TResponse> {
     return {
         ...config,
-        // TODO: make post the default for consistency
-        // currently stream.onClosed is broken in post requests due to upstream issue in H3
-        method: config.method ?? 'get',
+        method: config.method ?? 'post',
         isEventStream: true,
         transport: 'http',
     };
@@ -97,7 +95,8 @@ export class EventStreamConnection<TData> {
             'heartbeat-interval',
             this.heartbeatMs.toString(),
         );
-        this.eventStream = createEventStream(event);
+        this.eventStream = createEventStream(event, { autoclose: false });
+        event.node.res.once('close', () => this.eventStream.close());
         this.lastEventId = getHeader(event, 'Last-Event-Id');
         this.validator = opts.validator;
         this.eventStream.onClosed(() => {
@@ -216,9 +215,7 @@ export function registerEventStreamRpc(
     const responseValidator = procedure.response
         ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
-    // TODO: make post the default
-    // currently stream.onClosed is broken in post requests due to upstream issue in H3
-    const httpMethod = procedure.method ?? 'get';
+    const httpMethod = procedure.method ?? 'post';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {

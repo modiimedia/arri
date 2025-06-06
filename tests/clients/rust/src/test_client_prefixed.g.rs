@@ -338,7 +338,7 @@ impl TestClientPrefixed {
                     "{}/rpcs/tests/stream-connection-error-test",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -370,7 +370,7 @@ impl TestClientPrefixed {
                     "{}/rpcs/tests/stream-heartbeat-detection-test",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -397,7 +397,7 @@ impl TestClientPrefixed {
             ArriParsedSseRequestOptions {
                 client: &self._config.http_client,
                 url: format!("{}/rpcs/tests/stream-large-objects", &self._config.base_url),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -423,7 +423,7 @@ impl TestClientPrefixed {
             ArriParsedSseRequestOptions {
                 client: &self._config.http_client,
                 url: format!("{}/rpcs/tests/stream-messages", &self._config.base_url),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -452,7 +452,7 @@ impl TestClientPrefixed {
                     "{}/rpcs/tests/stream-retry-with-new-credentials",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -482,7 +482,7 @@ impl TestClientPrefixed {
                     "{}/rpcs/tests/stream-ten-events-then-end",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,

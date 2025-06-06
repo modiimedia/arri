@@ -2,6 +2,7 @@ import { a } from '@arrirpc/schema';
 import { defineEventStreamRpc } from '@arrirpc/server';
 
 export default defineEventStreamRpc({
+    method: 'get',
     params: a.object('AutoReconnectParams', {
         messageCount: a.uint8(),
     }),
@@ -26,8 +27,14 @@ export default defineEventStreamRpc({
                 throw new Error('Interval was not properly cleaned up');
             }
         }, 1);
+        event.node.req.on('close', () => {
+            console.log('REQ_CLOSE');
+        });
+        event.node.res.once('close', () => {
+            console.log('RES_CLOSE');
+            clearInterval(interval);
+        });
         stream.onClosed(() => {
-            console.log('ON_CLOSED');
             clearInterval(interval);
         });
     },
