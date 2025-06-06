@@ -27,13 +27,6 @@ export default defineEventStreamRpc({
                 throw new Error('Interval was not properly cleaned up');
             }
         }, 1);
-        event.node.req.on('close', () => {
-            console.log('REQ_CLOSE');
-        });
-        event.node.res.once('close', () => {
-            console.log('RES_CLOSE');
-            clearInterval(interval);
-        });
         stream.onClosed(() => {
             clearInterval(interval);
         });
