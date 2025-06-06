@@ -399,6 +399,37 @@ export class TestClientTestsService {
         );
     }
     /**
+     * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+     * When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+     * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+     */
+    streamHeartbeatDetectionTest(
+        params: TestsStreamHeartbeatDetectionTestParams,
+        options: SseOptions<TestsStreamHeartbeatDetectionTestResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<
+            TestsStreamHeartbeatDetectionTestResponse,
+            TestsStreamHeartbeatDetectionTestParams
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
+                method: 'get',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson:
+                    $$TestsStreamHeartbeatDetectionTestResponse.fromJson,
+                responseFromString:
+                    $$TestsStreamHeartbeatDetectionTestResponse.fromJsonString,
+                serializer:
+                    $$TestsStreamHeartbeatDetectionTestParams.toUrlQueryString,
+                clientVersion: '10',
+            },
+            options,
+        );
+    }
+    /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
@@ -5407,6 +5438,94 @@ export const $$StreamConnectionErrorTestResponse: ArriModelValidator<StreamConne
         },
         fromJsonString(input): StreamConnectionErrorTestResponse {
             return $$StreamConnectionErrorTestResponse.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"message":';
+            json += serializeString(input.message);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`message=${input.message}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface TestsStreamHeartbeatDetectionTestParams {
+    heartbeatEnabled: boolean;
+}
+export const $$TestsStreamHeartbeatDetectionTestParams: ArriModelValidator<TestsStreamHeartbeatDetectionTestParams> =
+    {
+        new(): TestsStreamHeartbeatDetectionTestParams {
+            return {
+                heartbeatEnabled: false,
+            };
+        },
+        validate(input): input is TestsStreamHeartbeatDetectionTestParams {
+            return (
+                isObject(input) && typeof input.heartbeatEnabled === 'boolean'
+            );
+        },
+        fromJson(input): TestsStreamHeartbeatDetectionTestParams {
+            let _heartbeatEnabled: boolean;
+            if (typeof input.heartbeatEnabled === 'boolean') {
+                _heartbeatEnabled = input.heartbeatEnabled;
+            } else {
+                _heartbeatEnabled = false;
+            }
+            return {
+                heartbeatEnabled: _heartbeatEnabled,
+            };
+        },
+        fromJsonString(input): TestsStreamHeartbeatDetectionTestParams {
+            return $$TestsStreamHeartbeatDetectionTestParams.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"heartbeatEnabled":';
+            json += `${input.heartbeatEnabled}`;
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`heartbeatEnabled=${input.heartbeatEnabled}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface TestsStreamHeartbeatDetectionTestResponse {
+    message: string;
+}
+export const $$TestsStreamHeartbeatDetectionTestResponse: ArriModelValidator<TestsStreamHeartbeatDetectionTestResponse> =
+    {
+        new(): TestsStreamHeartbeatDetectionTestResponse {
+            return {
+                message: '',
+            };
+        },
+        validate(input): input is TestsStreamHeartbeatDetectionTestResponse {
+            return isObject(input) && typeof input.message === 'string';
+        },
+        fromJson(input): TestsStreamHeartbeatDetectionTestResponse {
+            let _message: string;
+            if (typeof input.message === 'string') {
+                _message = input.message;
+            } else {
+                _message = '';
+            }
+            return {
+                message: _message,
+            };
+        },
+        fromJsonString(input): TestsStreamHeartbeatDetectionTestResponse {
+            return $$TestsStreamHeartbeatDetectionTestResponse.fromJson(
                 JSON.parse(input),
             );
         },

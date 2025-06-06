@@ -483,6 +483,44 @@ suspend fun streamConnectionErrorTest(
         }
 
     /**
+* Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+* When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+* When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+*/
+suspend fun streamHeartbeatDetectionTest(
+            params: TestsStreamHeartbeatDetectionTestParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: TestsStreamHeartbeatDetectionTestResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-heartbeat-detection-test",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = TestsStreamHeartbeatDetectionTestResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    /**
 * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
 */
 suspend fun streamLargeObjects(
@@ -4908,6 +4946,104 @@ val message: String = when (__input.jsonObject["message"]) {
                 else -> ""
             }
             return StreamConnectionErrorTestResponse(
+                message,
+            )
+        }
+    }
+}
+
+
+
+data class TestsStreamHeartbeatDetectionTestParams(
+    val heartbeatEnabled: Boolean,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"heartbeatEnabled\":"
+output += heartbeatEnabled
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("heartbeatEnabled=$heartbeatEnabled")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<TestsStreamHeartbeatDetectionTestParams> {
+        @JvmStatic
+        override fun new(): TestsStreamHeartbeatDetectionTestParams {
+            return TestsStreamHeartbeatDetectionTestParams(
+                heartbeatEnabled = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): TestsStreamHeartbeatDetectionTestParams {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestsStreamHeartbeatDetectionTestParams {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] TestsStreamHeartbeatDetectionTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestsStreamHeartbeatDetectionTestParams.")
+                return new()
+            }
+val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
+                is JsonPrimitive -> __input.jsonObject["heartbeatEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return TestsStreamHeartbeatDetectionTestParams(
+                heartbeatEnabled,
+            )
+        }
+    }
+}
+
+
+
+data class TestsStreamHeartbeatDetectionTestResponse(
+    val message: String,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"message\":"
+output += buildString { printQuoted(message) }
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("message=$message")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<TestsStreamHeartbeatDetectionTestResponse> {
+        @JvmStatic
+        override fun new(): TestsStreamHeartbeatDetectionTestResponse {
+            return TestsStreamHeartbeatDetectionTestResponse(
+                message = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): TestsStreamHeartbeatDetectionTestResponse {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestsStreamHeartbeatDetectionTestResponse {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] TestsStreamHeartbeatDetectionTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestsStreamHeartbeatDetectionTestResponse.")
+                return new()
+            }
+val message: String = when (__input.jsonObject["message"]) {
+                is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return TestsStreamHeartbeatDetectionTestResponse(
                 message,
             )
         }

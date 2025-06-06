@@ -118,10 +118,11 @@ class EventSource<T> {
     _heartbeatTimer?.cancel();
     if (_heartbeatTimerMs == null || _heartbeatTimerMs! <= 0) return;
     _heartbeatTimer =
-        Timer(Duration(milliseconds: _heartbeatTimerMs!), () => _connect());
+        Timer(Duration(milliseconds: _heartbeatTimerMs! * 2), () => _connect());
   }
 
   Future<void> _connect({bool isRetry = false}) async {
+    _closedByClient = false;
     if (isRetry) {
       _retryCount++;
     }
@@ -298,7 +299,7 @@ class EventSource<T> {
     return _closedByClient;
   }
 
-  void reconnect() => _connect();
+  void reconnect() => _connect(isRetry: true);
 
   Stream<T> toStream() {
     _streamController ??= StreamController<T>(onCancel: () {

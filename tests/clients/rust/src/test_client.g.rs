@@ -374,6 +374,38 @@ impl TestClientTestsService {
         )
         .await;
     }
+    /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+    /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+    /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+    pub async fn stream_heartbeat_detection_test<OnEvent>(
+        &self,
+        params: TestsStreamHeartbeatDetectionTestParams,
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<TestsStreamHeartbeatDetectionTestResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-heartbeat-detection-test",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
     /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
     pub async fn stream_large_objects<OnEvent>(
         &self,
@@ -4864,6 +4896,96 @@ pub struct StreamConnectionErrorTestResponse {
 }
 
 impl ArriModel for StreamConnectionErrorTestResponse {
+    fn new() -> Self {
+        Self {
+            message: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let message = match _val_.get("message") {
+                    Some(serde_json::Value::String(message_val)) => message_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { message }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"message\":");
+        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct TestsStreamHeartbeatDetectionTestParams {
+    pub heartbeat_enabled: bool,
+}
+
+impl ArriModel for TestsStreamHeartbeatDetectionTestParams {
+    fn new() -> Self {
+        Self {
+            heartbeat_enabled: false,
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let heartbeat_enabled = match _val_.get("heartbeatEnabled") {
+                    Some(serde_json::Value::Bool(heartbeat_enabled_val)) => {
+                        heartbeat_enabled_val.to_owned()
+                    }
+                    _ => false,
+                };
+                Self { heartbeat_enabled }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"heartbeatEnabled\":");
+        _json_output_.push_str(&self.heartbeat_enabled.to_string().as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("heartbeatEnabled={}", &self.heartbeat_enabled));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct TestsStreamHeartbeatDetectionTestResponse {
+    pub message: String,
+}
+
+impl ArriModel for TestsStreamHeartbeatDetectionTestResponse {
     fn new() -> Self {
         Self {
             message: "".to_string(),
