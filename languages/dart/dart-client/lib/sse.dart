@@ -122,7 +122,6 @@ class EventSource<T> {
   }
 
   Future<void> _connect({bool isRetry = false}) async {
-    _closedByClient = false;
     if (isRetry) {
       _retryCount++;
     }
@@ -235,6 +234,7 @@ class EventSource<T> {
             _onClose();
             return;
           }
+          if (_closedByClient) return;
           Timer(_retryDelay, () => _connect(isRetry: true));
         },
       );
@@ -299,7 +299,10 @@ class EventSource<T> {
     return _closedByClient;
   }
 
-  void reconnect() => _connect(isRetry: true);
+  void reconnect() {
+    _closedByClient = false;
+    _connect(isRetry: true);
+  }
 
   Stream<T> toStream() {
     _streamController ??= StreamController<T>(onCancel: () {

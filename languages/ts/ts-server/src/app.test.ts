@@ -62,7 +62,7 @@ it('creates valid app definition', () => {
             },
             sayHelloStream: {
                 transport: 'http',
-                method: 'get',
+                method: 'post',
                 path: '/say-hello-stream',
                 params: 'SayHelloParams',
                 response: 'SayHelloResponse',
