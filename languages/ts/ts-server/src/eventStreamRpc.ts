@@ -37,7 +37,7 @@ export function defineEventStreamRpc<
 ): EventStreamRpc<TParams, TResponse> {
     return {
         ...config,
-        method: config.method ?? 'get',
+        method: config.method ?? 'post',
         isEventStream: true,
         transport: 'http',
     };
@@ -214,7 +214,7 @@ export function registerEventStreamRpc(
     const responseValidator = procedure.response
         ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
-    const httpMethod = procedure.method ?? 'get';
+    const httpMethod = procedure.method ?? 'post';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {

@@ -228,7 +228,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-auto-reconnect",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -273,7 +273,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-connection-error-test",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -323,7 +323,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-heartbeat-detection-test",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -368,7 +368,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-large-objects",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -408,7 +408,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-messages",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -460,7 +460,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -501,7 +501,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,

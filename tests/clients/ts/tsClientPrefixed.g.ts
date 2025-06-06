@@ -334,14 +334,14 @@ export class TestClientPrefixed {
         return arriSseRequest<FooAutoReconnectResponse, FooAutoReconnectParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$FooAutoReconnectResponse.fromJson,
                 responseFromString: $$FooAutoReconnectResponse.fromJsonString,
-                serializer: $$FooAutoReconnectParams.toUrlQueryString,
+                serializer: $$FooAutoReconnectParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -360,7 +360,7 @@ export class TestClientPrefixed {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -369,8 +369,7 @@ export class TestClientPrefixed {
                     $$FooStreamConnectionErrorTestResponse.fromJson,
                 responseFromString:
                     $$FooStreamConnectionErrorTestResponse.fromJsonString,
-                serializer:
-                    $$FooStreamConnectionErrorTestParams.toUrlQueryString,
+                serializer: $$FooStreamConnectionErrorTestParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -391,7 +390,7 @@ export class TestClientPrefixed {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -401,7 +400,7 @@ export class TestClientPrefixed {
                 responseFromString:
                     $$FooStreamHeartbeatDetectionTestResponse.fromJsonString,
                 serializer:
-                    $$FooStreamHeartbeatDetectionTestParams.toUrlQueryString,
+                    $$FooStreamHeartbeatDetectionTestParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -416,7 +415,7 @@ export class TestClientPrefixed {
         return arriSseRequest<FooStreamLargeObjectsResponse, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -437,14 +436,14 @@ export class TestClientPrefixed {
         return arriSseRequest<FooChatMessage, FooChatMessageParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$FooChatMessage.fromJson,
                 responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: $$FooChatMessageParams.toUrlQueryString,
+                serializer: $$FooChatMessageParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -459,7 +458,7 @@ export class TestClientPrefixed {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -483,7 +482,7 @@ export class TestClientPrefixed {
         return arriSseRequest<FooChatMessage, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
