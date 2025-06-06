@@ -87,6 +87,8 @@ export class EventStreamConnection<TData> {
     private readonly sendHeartbeat: boolean;
     readonly eventStream: EventStream;
 
+    private _isClosed: boolean = false;
+
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.heartbeatMs = opts.heartbeatMs ?? 20000; // 20 second default heartbeat interval
         this.sendHeartbeat = opts.heartbeatEnabled ?? true;
@@ -96,11 +98,18 @@ export class EventStreamConnection<TData> {
             this.heartbeatMs.toString(),
         );
         this.eventStream = createEventStream(event, { autoclose: false });
-        event.node.res.once('close', () => this.eventStream.close());
+        event.node.req.once('close', () => {
+            if (this._isClosed) return;
+            this.eventStream.close();
+        });
+        event.node.res.once('close', () => {
+            if (this._isClosed) return;
+            this.eventStream.close();
+        });
         this.lastEventId = getHeader(event, 'Last-Event-Id');
         this.validator = opts.validator;
         this.eventStream.onClosed(() => {
-            this.cleanup();
+            this._cleanup();
         });
     }
 
@@ -173,7 +182,8 @@ export class EventStreamConnection<TData> {
         };
     }
 
-    private cleanup() {
+    private _cleanup() {
+        this._isClosed = true;
         if (this.heartbeatInterval) {
             clearInterval(this.heartbeatInterval);
         }
