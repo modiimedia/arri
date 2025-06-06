@@ -379,12 +379,12 @@ impl TestClientTestsService {
     /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
     pub async fn stream_heartbeat_detection_test<OnEvent>(
         &self,
-        params: TestsStreamHeartbeatDetectionTestParams,
+        params: StreamHeartbeatDetectionTestParams,
         on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: FnMut(SseEvent<TestsStreamHeartbeatDetectionTestResponse>, &mut SseController)
+        OnEvent: FnMut(SseEvent<StreamHeartbeatDetectionTestResponse>, &mut SseController)
             + std::marker::Send
             + std::marker::Sync,
     {
@@ -4935,11 +4935,11 @@ impl ArriModel for StreamConnectionErrorTestResponse {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TestsStreamHeartbeatDetectionTestParams {
+pub struct StreamHeartbeatDetectionTestParams {
     pub heartbeat_enabled: bool,
 }
 
-impl ArriModel for TestsStreamHeartbeatDetectionTestParams {
+impl ArriModel for StreamHeartbeatDetectionTestParams {
     fn new() -> Self {
         Self {
             heartbeat_enabled: false,
@@ -4981,11 +4981,11 @@ impl ArriModel for TestsStreamHeartbeatDetectionTestParams {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TestsStreamHeartbeatDetectionTestResponse {
+pub struct StreamHeartbeatDetectionTestResponse {
     pub message: String,
 }
 
-impl ArriModel for TestsStreamHeartbeatDetectionTestResponse {
+impl ArriModel for StreamHeartbeatDetectionTestResponse {
     fn new() -> Self {
         Self {
             message: "".to_string(),

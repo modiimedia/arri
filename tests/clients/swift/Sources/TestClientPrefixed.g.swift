@@ -224,9 +224,9 @@ public class TestClientPrefixed {
     /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
     /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
     /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-    public func streamHeartbeatDetectionTest(_ params: FooTestsStreamHeartbeatDetectionTestParams, options: EventSourceOptions<FooTestsStreamHeartbeatDetectionTestResponse>) -> Task<(), Never> {
+    public func streamHeartbeatDetectionTest(_ params: FooStreamHeartbeatDetectionTestParams, options: EventSourceOptions<FooStreamHeartbeatDetectionTestResponse>) -> Task<(), Never> {
         let task = Task {
-            var eventSource = EventSource<FooTestsStreamHeartbeatDetectionTestResponse>(
+            var eventSource = EventSource<FooStreamHeartbeatDetectionTestResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-heartbeat-detection-test",
                 method: "GET",
                 headers: self.headers,
@@ -4648,7 +4648,7 @@ public struct FooStreamConnectionErrorTestResponse: ArriClientModel {
 }
     
 
-public struct FooTestsStreamHeartbeatDetectionTestParams: ArriClientModel {
+public struct FooStreamHeartbeatDetectionTestParams: ArriClientModel {
     public var heartbeatEnabled: Bool = false
     public init(
         heartbeatEnabled: Bool
@@ -4690,9 +4690,9 @@ public struct FooTestsStreamHeartbeatDetectionTestParams: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "heartbeatEnabled", value: "\(self.heartbeatEnabled)"))
         return __queryParts
     }
-    public func clone() -> FooTestsStreamHeartbeatDetectionTestParams {
+    public func clone() -> FooStreamHeartbeatDetectionTestParams {
 
-        return FooTestsStreamHeartbeatDetectionTestParams(
+        return FooStreamHeartbeatDetectionTestParams(
             heartbeatEnabled: self.heartbeatEnabled
         )
     }
@@ -4700,7 +4700,7 @@ public struct FooTestsStreamHeartbeatDetectionTestParams: ArriClientModel {
 }
     
 
-public struct FooTestsStreamHeartbeatDetectionTestResponse: ArriClientModel {
+public struct FooStreamHeartbeatDetectionTestResponse: ArriClientModel {
     public var message: String = ""
     public init(
         message: String
@@ -4742,9 +4742,9 @@ public struct FooTestsStreamHeartbeatDetectionTestResponse: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "message", value: self.message))
         return __queryParts
     }
-    public func clone() -> FooTestsStreamHeartbeatDetectionTestResponse {
+    public func clone() -> FooStreamHeartbeatDetectionTestResponse {
 
-        return FooTestsStreamHeartbeatDetectionTestResponse(
+        return FooStreamHeartbeatDetectionTestResponse(
             message: self.message
         )
     }

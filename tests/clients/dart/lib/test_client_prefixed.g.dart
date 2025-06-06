@@ -302,27 +302,20 @@ class TestClientPrefixed {
   /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
   /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
   /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-  EventSource<FooTestsStreamHeartbeatDetectionTestResponse>
+  EventSource<FooStreamHeartbeatDetectionTestResponse>
       streamHeartbeatDetectionTest(
-    FooTestsStreamHeartbeatDetectionTestParams params, {
-    void Function(
-            FooTestsStreamHeartbeatDetectionTestResponse data,
-            EventSource<FooTestsStreamHeartbeatDetectionTestResponse>
-                connection)?
+    FooStreamHeartbeatDetectionTestParams params, {
+    void Function(FooStreamHeartbeatDetectionTestResponse data,
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
         onMessage,
-    void Function(
-            http.StreamedResponse response,
-            EventSource<FooTestsStreamHeartbeatDetectionTestResponse>
-                connection)?
+    void Function(http.StreamedResponse response,
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
         onOpen,
     void Function(
-            EventSource<FooTestsStreamHeartbeatDetectionTestResponse>
-                connection)?
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
         onClose,
-    void Function(
-            ArriError error,
-            EventSource<FooTestsStreamHeartbeatDetectionTestResponse>
-                connection)?
+    void Function(ArriError error,
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
         onError,
     Duration? retryDelay,
     int? maxRetryCount,
@@ -339,7 +332,7 @@ class TestClientPrefixed {
       lastEventId: lastEventId,
       params: params.toJson(),
       parser: (body) =>
-          FooTestsStreamHeartbeatDetectionTestResponse.fromJsonString(body),
+          FooStreamHeartbeatDetectionTestResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
@@ -5118,31 +5111,29 @@ class FooStreamConnectionErrorTestResponse implements ArriModel {
   }
 }
 
-class FooTestsStreamHeartbeatDetectionTestParams implements ArriModel {
+class FooStreamHeartbeatDetectionTestParams implements ArriModel {
   final bool heartbeatEnabled;
-  const FooTestsStreamHeartbeatDetectionTestParams({
+  const FooStreamHeartbeatDetectionTestParams({
     required this.heartbeatEnabled,
   });
 
-  factory FooTestsStreamHeartbeatDetectionTestParams.empty() {
-    return FooTestsStreamHeartbeatDetectionTestParams(
+  factory FooStreamHeartbeatDetectionTestParams.empty() {
+    return FooStreamHeartbeatDetectionTestParams(
       heartbeatEnabled: false,
     );
   }
 
-  factory FooTestsStreamHeartbeatDetectionTestParams.fromJson(
+  factory FooStreamHeartbeatDetectionTestParams.fromJson(
       Map<String, dynamic> _input_) {
     final heartbeatEnabled =
         typeFromDynamic<bool>(_input_["heartbeatEnabled"], false);
-    return FooTestsStreamHeartbeatDetectionTestParams(
+    return FooStreamHeartbeatDetectionTestParams(
       heartbeatEnabled: heartbeatEnabled,
     );
   }
 
-  factory FooTestsStreamHeartbeatDetectionTestParams.fromJsonString(
-      String input) {
-    return FooTestsStreamHeartbeatDetectionTestParams.fromJson(
-        json.decode(input));
+  factory FooStreamHeartbeatDetectionTestParams.fromJsonString(String input) {
+    return FooStreamHeartbeatDetectionTestParams.fromJson(json.decode(input));
   }
 
   @override
@@ -5167,10 +5158,10 @@ class FooTestsStreamHeartbeatDetectionTestParams implements ArriModel {
   }
 
   @override
-  FooTestsStreamHeartbeatDetectionTestParams copyWith({
+  FooStreamHeartbeatDetectionTestParams copyWith({
     bool? heartbeatEnabled,
   }) {
-    return FooTestsStreamHeartbeatDetectionTestParams(
+    return FooStreamHeartbeatDetectionTestParams(
       heartbeatEnabled: heartbeatEnabled ?? this.heartbeatEnabled,
     );
   }
@@ -5182,7 +5173,7 @@ class FooTestsStreamHeartbeatDetectionTestParams implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooTestsStreamHeartbeatDetectionTestParams &&
+    return other is FooStreamHeartbeatDetectionTestParams &&
         listsAreEqual(props, other.props);
   }
 
@@ -5191,34 +5182,32 @@ class FooTestsStreamHeartbeatDetectionTestParams implements ArriModel {
 
   @override
   String toString() {
-    return "FooTestsStreamHeartbeatDetectionTestParams ${toJsonString()}";
+    return "FooStreamHeartbeatDetectionTestParams ${toJsonString()}";
   }
 }
 
-class FooTestsStreamHeartbeatDetectionTestResponse implements ArriModel {
+class FooStreamHeartbeatDetectionTestResponse implements ArriModel {
   final String message;
-  const FooTestsStreamHeartbeatDetectionTestResponse({
+  const FooStreamHeartbeatDetectionTestResponse({
     required this.message,
   });
 
-  factory FooTestsStreamHeartbeatDetectionTestResponse.empty() {
-    return FooTestsStreamHeartbeatDetectionTestResponse(
+  factory FooStreamHeartbeatDetectionTestResponse.empty() {
+    return FooStreamHeartbeatDetectionTestResponse(
       message: "",
     );
   }
 
-  factory FooTestsStreamHeartbeatDetectionTestResponse.fromJson(
+  factory FooStreamHeartbeatDetectionTestResponse.fromJson(
       Map<String, dynamic> _input_) {
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return FooTestsStreamHeartbeatDetectionTestResponse(
+    return FooStreamHeartbeatDetectionTestResponse(
       message: message,
     );
   }
 
-  factory FooTestsStreamHeartbeatDetectionTestResponse.fromJsonString(
-      String input) {
-    return FooTestsStreamHeartbeatDetectionTestResponse.fromJson(
-        json.decode(input));
+  factory FooStreamHeartbeatDetectionTestResponse.fromJsonString(String input) {
+    return FooStreamHeartbeatDetectionTestResponse.fromJson(json.decode(input));
   }
 
   @override
@@ -5243,10 +5232,10 @@ class FooTestsStreamHeartbeatDetectionTestResponse implements ArriModel {
   }
 
   @override
-  FooTestsStreamHeartbeatDetectionTestResponse copyWith({
+  FooStreamHeartbeatDetectionTestResponse copyWith({
     String? message,
   }) {
-    return FooTestsStreamHeartbeatDetectionTestResponse(
+    return FooStreamHeartbeatDetectionTestResponse(
       message: message ?? this.message,
     );
   }
@@ -5258,7 +5247,7 @@ class FooTestsStreamHeartbeatDetectionTestResponse implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooTestsStreamHeartbeatDetectionTestResponse &&
+    return other is FooStreamHeartbeatDetectionTestResponse &&
         listsAreEqual(props, other.props);
   }
 
@@ -5267,7 +5256,7 @@ class FooTestsStreamHeartbeatDetectionTestResponse implements ArriModel {
 
   @override
   String toString() {
-    return "FooTestsStreamHeartbeatDetectionTestResponse ${toJsonString()}";
+    return "FooStreamHeartbeatDetectionTestResponse ${toJsonString()}";
   }
 }
 

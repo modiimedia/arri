@@ -7,12 +7,12 @@ export default defineEventStreamRpc({
     description: `Sends 5 messages quickly then starts sending messages slowly (1s) after that.
 When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
 When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.`,
-    params: a.object({
+    params: a.object('StreamHeartbeatDetectionTestParams', {
         heartbeatEnabled: a.boolean(),
     }),
     heartbeatMs: heartbeatDuration,
     heartbeatEnabled: false,
-    response: a.object({
+    response: a.object('StreamHeartbeatDetectionTestResponse', {
         message: a.string(),
     }),
     async handler({ params, stream }, event) {

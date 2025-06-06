@@ -488,14 +488,14 @@ suspend fun streamConnectionErrorTest(
 * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
 */
 suspend fun streamHeartbeatDetectionTest(
-            params: TestsStreamHeartbeatDetectionTestParams,
+            params: StreamHeartbeatDetectionTestParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: TestsStreamHeartbeatDetectionTestResponse) -> Unit) = {},
+            onData: ((data: StreamHeartbeatDetectionTestResponse) -> Unit) = {},
             maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
@@ -514,7 +514,7 @@ suspend fun streamHeartbeatDetectionTest(
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
-                    val data = TestsStreamHeartbeatDetectionTestResponse.fromJson(str)
+                    val data = StreamHeartbeatDetectionTestResponse.fromJson(str)
                     onData(data)
                 }
             )
@@ -4954,7 +4954,7 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
-data class TestsStreamHeartbeatDetectionTestParams(
+data class StreamHeartbeatDetectionTestParams(
     val heartbeatEnabled: Boolean,
 ) : TestClientModel {
     override fun toJson(): String {
@@ -4971,30 +4971,30 @@ queryParts.add("heartbeatEnabled=$heartbeatEnabled")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<TestsStreamHeartbeatDetectionTestParams> {
+    companion object Factory : TestClientModelFactory<StreamHeartbeatDetectionTestParams> {
         @JvmStatic
-        override fun new(): TestsStreamHeartbeatDetectionTestParams {
-            return TestsStreamHeartbeatDetectionTestParams(
+        override fun new(): StreamHeartbeatDetectionTestParams {
+            return StreamHeartbeatDetectionTestParams(
                 heartbeatEnabled = false,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): TestsStreamHeartbeatDetectionTestParams {
+        override fun fromJson(input: String): StreamHeartbeatDetectionTestParams {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestsStreamHeartbeatDetectionTestParams {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamHeartbeatDetectionTestParams {
             if (__input !is JsonObject) {
-                __logError("[WARNING] TestsStreamHeartbeatDetectionTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestsStreamHeartbeatDetectionTestParams.")
+                __logError("[WARNING] StreamHeartbeatDetectionTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamHeartbeatDetectionTestParams.")
                 return new()
             }
 val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
                 is JsonPrimitive -> __input.jsonObject["heartbeatEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
-            return TestsStreamHeartbeatDetectionTestParams(
+            return StreamHeartbeatDetectionTestParams(
                 heartbeatEnabled,
             )
         }
@@ -5003,7 +5003,7 @@ val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
 
 
 
-data class TestsStreamHeartbeatDetectionTestResponse(
+data class StreamHeartbeatDetectionTestResponse(
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
@@ -5020,30 +5020,30 @@ queryParts.add("message=$message")
 return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<TestsStreamHeartbeatDetectionTestResponse> {
+    companion object Factory : TestClientModelFactory<StreamHeartbeatDetectionTestResponse> {
         @JvmStatic
-        override fun new(): TestsStreamHeartbeatDetectionTestResponse {
-            return TestsStreamHeartbeatDetectionTestResponse(
+        override fun new(): StreamHeartbeatDetectionTestResponse {
+            return StreamHeartbeatDetectionTestResponse(
                 message = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): TestsStreamHeartbeatDetectionTestResponse {
+        override fun fromJson(input: String): StreamHeartbeatDetectionTestResponse {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): TestsStreamHeartbeatDetectionTestResponse {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamHeartbeatDetectionTestResponse {
             if (__input !is JsonObject) {
-                __logError("[WARNING] TestsStreamHeartbeatDetectionTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestsStreamHeartbeatDetectionTestResponse.")
+                __logError("[WARNING] StreamHeartbeatDetectionTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamHeartbeatDetectionTestResponse.")
                 return new()
             }
 val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return TestsStreamHeartbeatDetectionTestResponse(
+            return StreamHeartbeatDetectionTestResponse(
                 message,
             )
         }

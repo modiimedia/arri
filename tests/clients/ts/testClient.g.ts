@@ -404,12 +404,12 @@ export class TestClientTestsService {
      * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
      */
     streamHeartbeatDetectionTest(
-        params: TestsStreamHeartbeatDetectionTestParams,
-        options: SseOptions<TestsStreamHeartbeatDetectionTestResponse> = {},
+        params: StreamHeartbeatDetectionTestParams,
+        options: SseOptions<StreamHeartbeatDetectionTestResponse> = {},
     ): EventSourceController {
         return arriSseRequest<
-            TestsStreamHeartbeatDetectionTestResponse,
-            TestsStreamHeartbeatDetectionTestParams
+            StreamHeartbeatDetectionTestResponse,
+            StreamHeartbeatDetectionTestParams
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
@@ -419,11 +419,11 @@ export class TestClientTestsService {
                 onError: this._onError,
                 params: params,
                 responseFromJson:
-                    $$TestsStreamHeartbeatDetectionTestResponse.fromJson,
+                    $$StreamHeartbeatDetectionTestResponse.fromJson,
                 responseFromString:
-                    $$TestsStreamHeartbeatDetectionTestResponse.fromJsonString,
+                    $$StreamHeartbeatDetectionTestResponse.fromJsonString,
                 serializer:
-                    $$TestsStreamHeartbeatDetectionTestParams.toUrlQueryString,
+                    $$StreamHeartbeatDetectionTestParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
@@ -5455,22 +5455,22 @@ export const $$StreamConnectionErrorTestResponse: ArriModelValidator<StreamConne
         },
     };
 
-export interface TestsStreamHeartbeatDetectionTestParams {
+export interface StreamHeartbeatDetectionTestParams {
     heartbeatEnabled: boolean;
 }
-export const $$TestsStreamHeartbeatDetectionTestParams: ArriModelValidator<TestsStreamHeartbeatDetectionTestParams> =
+export const $$StreamHeartbeatDetectionTestParams: ArriModelValidator<StreamHeartbeatDetectionTestParams> =
     {
-        new(): TestsStreamHeartbeatDetectionTestParams {
+        new(): StreamHeartbeatDetectionTestParams {
             return {
                 heartbeatEnabled: false,
             };
         },
-        validate(input): input is TestsStreamHeartbeatDetectionTestParams {
+        validate(input): input is StreamHeartbeatDetectionTestParams {
             return (
                 isObject(input) && typeof input.heartbeatEnabled === 'boolean'
             );
         },
-        fromJson(input): TestsStreamHeartbeatDetectionTestParams {
+        fromJson(input): StreamHeartbeatDetectionTestParams {
             let _heartbeatEnabled: boolean;
             if (typeof input.heartbeatEnabled === 'boolean') {
                 _heartbeatEnabled = input.heartbeatEnabled;
@@ -5481,8 +5481,8 @@ export const $$TestsStreamHeartbeatDetectionTestParams: ArriModelValidator<Tests
                 heartbeatEnabled: _heartbeatEnabled,
             };
         },
-        fromJsonString(input): TestsStreamHeartbeatDetectionTestParams {
-            return $$TestsStreamHeartbeatDetectionTestParams.fromJson(
+        fromJsonString(input): StreamHeartbeatDetectionTestParams {
+            return $$StreamHeartbeatDetectionTestParams.fromJson(
                 JSON.parse(input),
             );
         },
@@ -5500,20 +5500,20 @@ export const $$TestsStreamHeartbeatDetectionTestParams: ArriModelValidator<Tests
         },
     };
 
-export interface TestsStreamHeartbeatDetectionTestResponse {
+export interface StreamHeartbeatDetectionTestResponse {
     message: string;
 }
-export const $$TestsStreamHeartbeatDetectionTestResponse: ArriModelValidator<TestsStreamHeartbeatDetectionTestResponse> =
+export const $$StreamHeartbeatDetectionTestResponse: ArriModelValidator<StreamHeartbeatDetectionTestResponse> =
     {
-        new(): TestsStreamHeartbeatDetectionTestResponse {
+        new(): StreamHeartbeatDetectionTestResponse {
             return {
                 message: '',
             };
         },
-        validate(input): input is TestsStreamHeartbeatDetectionTestResponse {
+        validate(input): input is StreamHeartbeatDetectionTestResponse {
             return isObject(input) && typeof input.message === 'string';
         },
-        fromJson(input): TestsStreamHeartbeatDetectionTestResponse {
+        fromJson(input): StreamHeartbeatDetectionTestResponse {
             let _message: string;
             if (typeof input.message === 'string') {
                 _message = input.message;
@@ -5524,8 +5524,8 @@ export const $$TestsStreamHeartbeatDetectionTestResponse: ArriModelValidator<Tes
                 message: _message,
             };
         },
-        fromJsonString(input): TestsStreamHeartbeatDetectionTestResponse {
-            return $$TestsStreamHeartbeatDetectionTestResponse.fromJson(
+        fromJsonString(input): StreamHeartbeatDetectionTestResponse {
+            return $$StreamHeartbeatDetectionTestResponse.fromJson(
                 JSON.parse(input),
             );
         },

@@ -539,7 +539,7 @@ Future<void> main() async {
         var openCount = 0;
         final completer = Completer();
         final eventSource = client.tests.streamHeartbeatDetectionTest(
-          TestsStreamHeartbeatDetectionTestParams(heartbeatEnabled: false),
+          StreamHeartbeatDetectionTestParams(heartbeatEnabled: false),
           onMessage: (msg, connection) {
             msgCount++;
             if (msgCount >= 15) connection.close();
@@ -566,7 +566,7 @@ Future<void> main() async {
       var openCount = 0;
       final completer = Completer();
       final eventSource = client.tests.streamHeartbeatDetectionTest(
-        TestsStreamHeartbeatDetectionTestParams(heartbeatEnabled: true),
+        StreamHeartbeatDetectionTestParams(heartbeatEnabled: true),
         onMessage: (msg, connection) {
           msgCount++;
           if (msgCount >= 8) connection.close();
