@@ -333,7 +333,7 @@ impl TestClientTestsService {
                     "{}/rpcs/tests/stream-auto-reconnect",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::GET,
+                method: reqwest::Method::POST,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,

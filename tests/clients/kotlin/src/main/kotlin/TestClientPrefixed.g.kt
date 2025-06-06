@@ -406,7 +406,7 @@ suspend fun deprecatedRpc(params: FooDeprecatedRpcParams): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = params,
                 headers = headers,
                 backoffTime = 0,

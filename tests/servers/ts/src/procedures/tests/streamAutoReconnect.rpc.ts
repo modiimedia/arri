@@ -2,7 +2,6 @@ import { a } from '@arrirpc/schema';
 import { defineEventStreamRpc } from '@arrirpc/server';
 
 export default defineEventStreamRpc({
-    method: 'get',
     params: a.object('AutoReconnectParams', {
         messageCount: a.uint8(),
     }),

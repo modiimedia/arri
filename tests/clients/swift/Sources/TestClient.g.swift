@@ -229,7 +229,7 @@ public class TestClientTestsService {
         let task = Task {
             var eventSource = EventSource<AutoReconnectResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-auto-reconnect",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,

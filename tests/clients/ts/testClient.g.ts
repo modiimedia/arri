@@ -358,14 +358,14 @@ export class TestClientTestsService {
         return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$AutoReconnectResponse.fromJson,
                 responseFromString: $$AutoReconnectResponse.fromJsonString,
-                serializer: $$AutoReconnectParams.toUrlQueryString,
+                serializer: $$AutoReconnectParams.toJsonString,
                 clientVersion: '10',
             },
             options,

@@ -257,7 +257,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-auto-reconnect",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,

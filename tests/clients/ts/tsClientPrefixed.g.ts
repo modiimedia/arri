@@ -334,14 +334,14 @@ export class TestClientPrefixed {
         return arriSseRequest<FooAutoReconnectResponse, FooAutoReconnectParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$FooAutoReconnectResponse.fromJson,
                 responseFromString: $$FooAutoReconnectResponse.fromJsonString,
-                serializer: $$FooAutoReconnectParams.toUrlQueryString,
+                serializer: $$FooAutoReconnectParams.toJsonString,
                 clientVersion: '10',
             },
             options,
