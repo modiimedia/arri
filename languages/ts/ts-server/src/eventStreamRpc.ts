@@ -37,7 +37,9 @@ export function defineEventStreamRpc<
 ): EventStreamRpc<TParams, TResponse> {
     return {
         ...config,
-        method: config.method ?? 'post',
+        // TODO: make post the default for consistency
+        // currently stream.onClosed is broken in post requests due to upstream issue in H3
+        method: config.method ?? 'get',
         isEventStream: true,
         transport: 'http',
     };
@@ -214,7 +216,9 @@ export function registerEventStreamRpc(
     const responseValidator = procedure.response
         ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
-    const httpMethod = procedure.method ?? 'post';
+    // TODO: make post the default
+    // currently stream.onClosed is broken in post requests due to upstream issue in H3
+    const httpMethod = procedure.method ?? 'get';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {

@@ -1,11 +1,11 @@
-import { a } from "@arrirpc/schema";
-import { defineEventStreamRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineEventStreamRpc } from '@arrirpc/server';
 
 export default defineEventStreamRpc({
-    params: a.object("AutoReconnectParams", {
+    params: a.object('AutoReconnectParams', {
         messageCount: a.uint8(),
     }),
-    response: a.object("AutoReconnectResponse", {
+    response: a.object('AutoReconnectResponse', {
         count: a.uint8(),
         message: a.string(),
     }),
@@ -23,10 +23,11 @@ export default defineEventStreamRpc({
                 return;
             }
             if (messageCount > params.messageCount) {
-                throw new Error("Interval was not properly cleaned up");
+                throw new Error('Interval was not properly cleaned up');
             }
-        });
+        }, 1);
         stream.onClosed(() => {
+            console.log('ON_CLOSED');
             clearInterval(interval);
         });
     },

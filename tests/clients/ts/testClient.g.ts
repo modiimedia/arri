@@ -358,14 +358,14 @@ export class TestClientTestsService {
         return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$AutoReconnectResponse.fromJson,
                 responseFromString: $$AutoReconnectResponse.fromJsonString,
-                serializer: $$AutoReconnectParams.toJsonString,
+                serializer: $$AutoReconnectParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
@@ -384,7 +384,7 @@ export class TestClientTestsService {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -392,7 +392,7 @@ export class TestClientTestsService {
                 responseFromJson: $$StreamConnectionErrorTestResponse.fromJson,
                 responseFromString:
                     $$StreamConnectionErrorTestResponse.fromJsonString,
-                serializer: $$StreamConnectionErrorTestParams.toJsonString,
+                serializer: $$StreamConnectionErrorTestParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
@@ -413,7 +413,7 @@ export class TestClientTestsService {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -422,7 +422,8 @@ export class TestClientTestsService {
                     $$StreamHeartbeatDetectionTestResponse.fromJson,
                 responseFromString:
                     $$StreamHeartbeatDetectionTestResponse.fromJsonString,
-                serializer: $$StreamHeartbeatDetectionTestParams.toJsonString,
+                serializer:
+                    $$StreamHeartbeatDetectionTestParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
@@ -437,7 +438,7 @@ export class TestClientTestsService {
         return arriSseRequest<StreamLargeObjectsResponse, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -457,14 +458,14 @@ export class TestClientTestsService {
         return arriSseRequest<ChatMessage, ChatMessageParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$ChatMessage.fromJson,
                 responseFromString: $$ChatMessage.fromJsonString,
-                serializer: $$ChatMessageParams.toJsonString,
+                serializer: $$ChatMessageParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,
@@ -479,7 +480,7 @@ export class TestClientTestsService {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -503,7 +504,7 @@ export class TestClientTestsService {
         return arriSseRequest<ChatMessage, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -551,14 +552,14 @@ export class TestClientUsersService {
         return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
             {
                 url: `${this._baseUrl}/rpcs/users/watch-user`,
-                method: 'post',
+                method: 'get',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$UsersWatchUserResponse.fromJson,
                 responseFromString: $$UsersWatchUserResponse.fromJsonString,
-                serializer: $$UsersWatchUserParams.toJsonString,
+                serializer: $$UsersWatchUserParams.toUrlQueryString,
                 clientVersion: '10',
             },
             options,

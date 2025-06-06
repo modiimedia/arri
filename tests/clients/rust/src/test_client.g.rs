@@ -333,7 +333,7 @@ impl TestClientTestsService {
                     "{}/rpcs/tests/stream-auto-reconnect",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -363,7 +363,7 @@ impl TestClientTestsService {
                     "{}/rpcs/tests/stream-connection-error-test",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -395,7 +395,7 @@ impl TestClientTestsService {
                     "{}/rpcs/tests/stream-heartbeat-detection-test",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -422,7 +422,7 @@ impl TestClientTestsService {
             ArriParsedSseRequestOptions {
                 client: &self._config.http_client,
                 url: format!("{}/rpcs/tests/stream-large-objects", &self._config.base_url),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -448,7 +448,7 @@ impl TestClientTestsService {
             ArriParsedSseRequestOptions {
                 client: &self._config.http_client,
                 url: format!("{}/rpcs/tests/stream-messages", &self._config.base_url),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -477,7 +477,7 @@ impl TestClientTestsService {
                     "{}/rpcs/tests/stream-retry-with-new-credentials",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -507,7 +507,7 @@ impl TestClientTestsService {
                     "{}/rpcs/tests/stream-ten-events-then-end",
                     &self._config.base_url
                 ),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,
@@ -553,7 +553,7 @@ impl TestClientUsersService {
             ArriParsedSseRequestOptions {
                 client: &self._config.http_client,
                 url: format!("{}/rpcs/users/watch-user", &self._config.base_url),
-                method: reqwest::Method::POST,
+                method: reqwest::Method::GET,
                 headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
                 max_retry_count,

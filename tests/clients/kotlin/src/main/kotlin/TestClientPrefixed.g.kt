@@ -406,7 +406,7 @@ suspend fun deprecatedRpc(params: FooDeprecatedRpcParams): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -442,7 +442,7 @@ suspend fun streamConnectionErrorTest(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-connection-error-test",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -480,7 +480,7 @@ suspend fun streamHeartbeatDetectionTest(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-heartbeat-detection-test",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -516,7 +516,7 @@ suspend fun streamLargeObjects(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-large-objects",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = null,
                 headers = headers,
                 backoffTime = 0,
@@ -549,7 +549,7 @@ suspend fun streamLargeObjects(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-messages",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -582,7 +582,7 @@ suspend fun streamLargeObjects(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = null,
                 headers = headers,
                 backoffTime = 0,
@@ -618,7 +618,7 @@ suspend fun streamTenEventsThenEnd(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
-                method = HttpMethod.Post,
+                method = HttpMethod.Get,
                 params = null,
                 headers = headers,
                 backoffTime = 0,
