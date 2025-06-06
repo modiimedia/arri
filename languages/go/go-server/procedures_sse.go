@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -59,7 +60,7 @@ func (controller *defaultSseController[T]) startStream() {
 	controller.writer.Header().Set("Content-Type", "text/event-stream")
 	controller.writer.Header().Set("Cache-Control", "private, no-cache, no-store, no-transform, must-revalidate, max-age=0")
 	// send heartbeat-interval header
-	controller.writer.Header().Set("heartbeat-interval", string(controller.heartbeatDuration.Milliseconds()))
+	controller.writer.Header().Set("heartbeat-interval", strconv.FormatInt(controller.heartbeatDuration.Milliseconds(), 10))
 	// prevent nginx from buffering the response
 	controller.writer.Header().Set("x-accel-buffering", "no")
 
@@ -81,6 +82,7 @@ func (controller *defaultSseController[T]) startStream() {
 			for {
 				select {
 				case <-controller.heartbeatTicker.C:
+					fmt.Println("HEARTBEAT")
 					fmt.Fprintf(controller.writer, "event: heartbeat\ndata:\n\n")
 					controller.responseController.Flush()
 				case <-controller.Done():

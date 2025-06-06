@@ -571,7 +571,7 @@ Future<void> main() async {
           msgCount++;
           if (msgCount >= 8) connection.close();
         },
-        onOpen: (_, __) {
+        onOpen: (v, __) {
           openCount++;
         },
         onClose: (_) {
