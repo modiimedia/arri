@@ -82,7 +82,6 @@ func (controller *defaultSseController[T]) startStream() {
 			for {
 				select {
 				case <-controller.heartbeatTicker.C:
-					fmt.Println("HEARTBEAT")
 					fmt.Fprintf(controller.writer, "event: heartbeat\ndata:\n\n")
 					controller.responseController.Flush()
 				case <-controller.Done():
