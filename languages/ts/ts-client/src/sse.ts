@@ -33,6 +33,14 @@ export interface SseOptions<TData> {
     ) => any;
     maxRetryCount?: number;
     maxRetryInterval?: number;
+    /**
+     * Defines a multiplier for the Arri server's "Heartbeat-Interval" header.
+     * The client will wait for (Heartbeat-Interval * heartbeatTimeoutMultiplier)
+     * milliseconds without receiving a heartbeat before considering the connection disconnected.
+     *
+     * Default is 2.0 (e.g. if the server sends 10s interval, client waits 20s)
+     */
+    heartbeatTimeoutMultiplier?: number;
 }
 
 export function arriSseRequest<
@@ -79,6 +87,7 @@ export function arriSseRequest<
     });
     let interval: number | undefined;
     let intervalDurationMs: number | undefined;
+    const timeoutMultiplier = options.heartbeatTimeoutMultiplier ?? 2;
     function resetInterval() {
         if (interval) clearInterval(interval);
         if (!intervalDurationMs) return;
@@ -125,7 +134,8 @@ export function arriSseRequest<
                 !Number.isNaN(heartbeatIntervalHeader) &&
                 heartbeatIntervalHeader > 0
             ) {
-                intervalDurationMs = heartbeatIntervalHeader;
+                intervalDurationMs =
+                    heartbeatIntervalHeader * timeoutMultiplier;
                 resetInterval();
             }
             options.onResponse?.(context);

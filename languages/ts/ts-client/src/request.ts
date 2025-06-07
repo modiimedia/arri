@@ -15,7 +15,13 @@ export interface ArriRequestOptions {
     onRequestError?: FetchOptions['onRequestError'];
     onResponse?: FetchOptions['onResponse'];
     onResponseError?: FetchOptions['onResponseError'];
+    /**
+     * Set a timeout in milliseconds to wait for a response before throwing an error
+     */
     timeout?: FetchOptions['timeout'];
+    /**
+     * An AbortController signal - used for cancelling an individual request
+     */
     signal?: FetchOptions['signal'];
 }
 
