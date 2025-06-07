@@ -406,7 +406,7 @@ suspend fun deprecatedRpc(params: FooDeprecatedRpcParams): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -442,7 +442,7 @@ suspend fun streamConnectionErrorTest(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-connection-error-test",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -456,6 +456,44 @@ suspend fun streamConnectionErrorTest(
                 onResponseError = onResponseError,
                 onData = { str ->
                     val data = FooStreamConnectionErrorTestResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    /**
+* Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+* When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+* When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+*/
+suspend fun streamHeartbeatDetectionTest(
+            params: FooStreamHeartbeatDetectionTestParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientPrefixedError) -> Unit) = {},
+            onData: ((data: FooStreamHeartbeatDetectionTestResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-heartbeat-detection-test",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = FooStreamHeartbeatDetectionTestResponse.fromJson(str)
                     onData(data)
                 }
             )
@@ -478,7 +516,7 @@ suspend fun streamLargeObjects(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-large-objects",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = null,
                 headers = headers,
                 backoffTime = 0,
@@ -511,7 +549,7 @@ suspend fun streamLargeObjects(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-messages",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = params,
                 headers = headers,
                 backoffTime = 0,
@@ -544,7 +582,7 @@ suspend fun streamLargeObjects(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = null,
                 headers = headers,
                 backoffTime = 0,
@@ -580,7 +618,7 @@ suspend fun streamTenEventsThenEnd(
             __handleSseRequest(
                 httpClient = httpClient,
                 url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
-                method = HttpMethod.Get,
+                method = HttpMethod.Post,
                 params = null,
                 headers = headers,
                 backoffTime = 0,
@@ -4845,6 +4883,104 @@ val message: String = when (__input.jsonObject["message"]) {
                 else -> ""
             }
             return FooStreamConnectionErrorTestResponse(
+                message,
+            )
+        }
+    }
+}
+
+
+
+data class FooStreamHeartbeatDetectionTestParams(
+    val heartbeatEnabled: Boolean,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"heartbeatEnabled\":"
+output += heartbeatEnabled
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("heartbeatEnabled=$heartbeatEnabled")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooStreamHeartbeatDetectionTestParams> {
+        @JvmStatic
+        override fun new(): FooStreamHeartbeatDetectionTestParams {
+            return FooStreamHeartbeatDetectionTestParams(
+                heartbeatEnabled = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooStreamHeartbeatDetectionTestParams {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooStreamHeartbeatDetectionTestParams {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooStreamHeartbeatDetectionTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooStreamHeartbeatDetectionTestParams.")
+                return new()
+            }
+val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
+                is JsonPrimitive -> __input.jsonObject["heartbeatEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return FooStreamHeartbeatDetectionTestParams(
+                heartbeatEnabled,
+            )
+        }
+    }
+}
+
+
+
+data class FooStreamHeartbeatDetectionTestResponse(
+    val message: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"message\":"
+output += buildString { printQuoted(message) }
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("message=$message")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooStreamHeartbeatDetectionTestResponse> {
+        @JvmStatic
+        override fun new(): FooStreamHeartbeatDetectionTestResponse {
+            return FooStreamHeartbeatDetectionTestResponse(
+                message = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooStreamHeartbeatDetectionTestResponse {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooStreamHeartbeatDetectionTestResponse {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooStreamHeartbeatDetectionTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooStreamHeartbeatDetectionTestResponse.")
+                return new()
+            }
+val message: String = when (__input.jsonObject["message"]) {
+                is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooStreamHeartbeatDetectionTestResponse(
                 message,
             )
         }

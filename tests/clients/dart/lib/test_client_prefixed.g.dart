@@ -228,7 +228,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-auto-reconnect",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -273,7 +273,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-connection-error-test",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -283,6 +283,56 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) =>
           FooStreamConnectionErrorTestResponse.fromJsonString(body),
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
+    );
+  }
+
+  /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+  /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+  /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+  EventSource<FooStreamHeartbeatDetectionTestResponse>
+      streamHeartbeatDetectionTest(
+    FooStreamHeartbeatDetectionTestParams params, {
+    void Function(FooStreamHeartbeatDetectionTestResponse data,
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
+        onOpen,
+    void Function(
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
+        onClose,
+    void Function(ArriError error,
+            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
+        onError,
+    Duration? retryDelay,
+    int? maxRetryCount,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest(
+      "$_baseUrl/rpcs/tests/stream-heartbeat-detection-test",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      retryDelay: retryDelay,
+      maxRetryCount: maxRetryCount,
+      lastEventId: lastEventId,
+      params: params.toJson(),
+      parser: (body) =>
+          FooStreamHeartbeatDetectionTestResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
@@ -318,7 +368,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-large-objects",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -358,7 +408,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-messages",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -410,7 +460,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -451,7 +501,7 @@ class TestClientPrefixed {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -5058,6 +5108,155 @@ class FooStreamConnectionErrorTestResponse implements ArriModel {
   @override
   String toString() {
     return "FooStreamConnectionErrorTestResponse ${toJsonString()}";
+  }
+}
+
+class FooStreamHeartbeatDetectionTestParams implements ArriModel {
+  final bool heartbeatEnabled;
+  const FooStreamHeartbeatDetectionTestParams({
+    required this.heartbeatEnabled,
+  });
+
+  factory FooStreamHeartbeatDetectionTestParams.empty() {
+    return FooStreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: false,
+    );
+  }
+
+  factory FooStreamHeartbeatDetectionTestParams.fromJson(
+      Map<String, dynamic> _input_) {
+    final heartbeatEnabled =
+        typeFromDynamic<bool>(_input_["heartbeatEnabled"], false);
+    return FooStreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: heartbeatEnabled,
+    );
+  }
+
+  factory FooStreamHeartbeatDetectionTestParams.fromJsonString(String input) {
+    return FooStreamHeartbeatDetectionTestParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "heartbeatEnabled": heartbeatEnabled,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("heartbeatEnabled=$heartbeatEnabled");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooStreamHeartbeatDetectionTestParams copyWith({
+    bool? heartbeatEnabled,
+  }) {
+    return FooStreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: heartbeatEnabled ?? this.heartbeatEnabled,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        heartbeatEnabled,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooStreamHeartbeatDetectionTestParams &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooStreamHeartbeatDetectionTestParams ${toJsonString()}";
+  }
+}
+
+class FooStreamHeartbeatDetectionTestResponse implements ArriModel {
+  final String message;
+  const FooStreamHeartbeatDetectionTestResponse({
+    required this.message,
+  });
+
+  factory FooStreamHeartbeatDetectionTestResponse.empty() {
+    return FooStreamHeartbeatDetectionTestResponse(
+      message: "",
+    );
+  }
+
+  factory FooStreamHeartbeatDetectionTestResponse.fromJson(
+      Map<String, dynamic> _input_) {
+    final message = typeFromDynamic<String>(_input_["message"], "");
+    return FooStreamHeartbeatDetectionTestResponse(
+      message: message,
+    );
+  }
+
+  factory FooStreamHeartbeatDetectionTestResponse.fromJsonString(String input) {
+    return FooStreamHeartbeatDetectionTestResponse.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("message=$message");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooStreamHeartbeatDetectionTestResponse copyWith({
+    String? message,
+  }) {
+    return FooStreamHeartbeatDetectionTestResponse(
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        message,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooStreamHeartbeatDetectionTestResponse &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooStreamHeartbeatDetectionTestResponse ${toJsonString()}";
   }
 }
 

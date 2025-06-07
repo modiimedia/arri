@@ -257,7 +257,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-auto-reconnect",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -302,7 +302,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-connection-error-test",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -311,6 +311,55 @@ class TestClientTestsService {
       lastEventId: lastEventId,
       params: params.toJson(),
       parser: (body) => StreamConnectionErrorTestResponse.fromJsonString(body),
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
+    );
+  }
+
+  /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+  /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+  /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+  EventSource<StreamHeartbeatDetectionTestResponse>
+      streamHeartbeatDetectionTest(
+    StreamHeartbeatDetectionTestParams params, {
+    void Function(StreamHeartbeatDetectionTestResponse data,
+            EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onOpen,
+    void Function(EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onClose,
+    void Function(ArriError error,
+            EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onError,
+    Duration? retryDelay,
+    int? maxRetryCount,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest(
+      "$_baseUrl/rpcs/tests/stream-heartbeat-detection-test",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      retryDelay: retryDelay,
+      maxRetryCount: maxRetryCount,
+      lastEventId: lastEventId,
+      params: params.toJson(),
+      parser: (body) =>
+          StreamHeartbeatDetectionTestResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
@@ -345,7 +394,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-large-objects",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -385,7 +434,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-messages",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -430,7 +479,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -471,7 +520,7 @@ class TestClientTestsService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -530,7 +579,7 @@ class TestClientUsersService {
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/users/watch-user",
-      method: HttpMethod.get,
+      method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
@@ -5124,6 +5173,155 @@ class StreamConnectionErrorTestResponse implements ArriModel {
   @override
   String toString() {
     return "StreamConnectionErrorTestResponse ${toJsonString()}";
+  }
+}
+
+class StreamHeartbeatDetectionTestParams implements ArriModel {
+  final bool heartbeatEnabled;
+  const StreamHeartbeatDetectionTestParams({
+    required this.heartbeatEnabled,
+  });
+
+  factory StreamHeartbeatDetectionTestParams.empty() {
+    return StreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: false,
+    );
+  }
+
+  factory StreamHeartbeatDetectionTestParams.fromJson(
+      Map<String, dynamic> _input_) {
+    final heartbeatEnabled =
+        typeFromDynamic<bool>(_input_["heartbeatEnabled"], false);
+    return StreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: heartbeatEnabled,
+    );
+  }
+
+  factory StreamHeartbeatDetectionTestParams.fromJsonString(String input) {
+    return StreamHeartbeatDetectionTestParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "heartbeatEnabled": heartbeatEnabled,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("heartbeatEnabled=$heartbeatEnabled");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  StreamHeartbeatDetectionTestParams copyWith({
+    bool? heartbeatEnabled,
+  }) {
+    return StreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: heartbeatEnabled ?? this.heartbeatEnabled,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        heartbeatEnabled,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is StreamHeartbeatDetectionTestParams &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "StreamHeartbeatDetectionTestParams ${toJsonString()}";
+  }
+}
+
+class StreamHeartbeatDetectionTestResponse implements ArriModel {
+  final String message;
+  const StreamHeartbeatDetectionTestResponse({
+    required this.message,
+  });
+
+  factory StreamHeartbeatDetectionTestResponse.empty() {
+    return StreamHeartbeatDetectionTestResponse(
+      message: "",
+    );
+  }
+
+  factory StreamHeartbeatDetectionTestResponse.fromJson(
+      Map<String, dynamic> _input_) {
+    final message = typeFromDynamic<String>(_input_["message"], "");
+    return StreamHeartbeatDetectionTestResponse(
+      message: message,
+    );
+  }
+
+  factory StreamHeartbeatDetectionTestResponse.fromJsonString(String input) {
+    return StreamHeartbeatDetectionTestResponse.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("message=$message");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  StreamHeartbeatDetectionTestResponse copyWith({
+    String? message,
+  }) {
+    return StreamHeartbeatDetectionTestResponse(
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        message,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is StreamHeartbeatDetectionTestResponse &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "StreamHeartbeatDetectionTestResponse ${toJsonString()}";
   }
 }
 

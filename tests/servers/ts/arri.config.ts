@@ -1,6 +1,6 @@
 import { defineConfig, generators, servers } from 'arri';
 import { readFileSync } from 'fs';
-import path from 'path';
+import path from 'pathe';
 
 const prettierConfig = JSON.parse(
     readFileSync(path.resolve(__dirname, '../../../.prettierrc'), {

@@ -239,7 +239,7 @@ async function bundleAppEntry(
         ...config.esbuild,
         entryPoints: [appEntry],
         platform: config.esbuild.platform ?? 'node',
-        target: config.esbuild.target ?? 'node20',
+        target: config.esbuild.target ?? 'node22',
         bundle: true,
         packages: 'external',
         format: 'esm',

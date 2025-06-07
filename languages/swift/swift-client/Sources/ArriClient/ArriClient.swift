@@ -288,6 +288,10 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
         let httpRequest = self.prepareHttpRequest(request: request)
         let response = try await HTTPClient.shared.execute(httpRequest, timeout: .milliseconds(Int64(request.timeoutMs)))
         if response.status.code >= 200 && response.status.code < 300 && response.headers["Content-Type"].contains("text/event-stream") {
+            
+            // TODO: check "heartbeat-interval" header and use that to setup a heartbeat listener
+            // let heartbeatMsHeader = response.headers["heartbeat-interval"];
+
             return .ok(ArriHTTPResponse(
                 statusCode: UInt32(response.status.code),
                 statusMessage: response.status.reasonPhrase,

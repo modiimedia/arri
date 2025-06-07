@@ -194,7 +194,7 @@ public class TestClientPrefixed {
         let task = Task {
             var eventSource = EventSource<FooAutoReconnectResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-auto-reconnect",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,
@@ -210,7 +210,25 @@ public class TestClientPrefixed {
         let task = Task {
             var eventSource = EventSource<FooStreamConnectionErrorTestResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-connection-error-test",
-                method: "GET",
+                method: "POST",
+                headers: self.headers,
+                params: params,
+                delegate: self.delegate,
+                clientVersion: "10",
+                options: options
+            )
+            await eventSource.sendRequest()
+        }
+        return task
+    }
+    /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+    /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+    /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+    public func streamHeartbeatDetectionTest(_ params: FooStreamHeartbeatDetectionTestParams, options: EventSourceOptions<FooStreamHeartbeatDetectionTestResponse>) -> Task<(), Never> {
+        let task = Task {
+            var eventSource = EventSource<FooStreamHeartbeatDetectionTestResponse>(
+                url: "\(self.baseURL)/rpcs/tests/stream-heartbeat-detection-test",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,
@@ -226,7 +244,7 @@ public class TestClientPrefixed {
         let task = Task {
             var eventSource = EventSource<FooStreamLargeObjectsResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-large-objects",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: nil,
                 delegate: self.delegate,
@@ -241,7 +259,7 @@ public class TestClientPrefixed {
         let task = Task {
             var eventSource = EventSource<FooChatMessage>(
                 url: "\(self.baseURL)/rpcs/tests/stream-messages",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: params,
                 delegate: self.delegate,
@@ -256,7 +274,7 @@ public class TestClientPrefixed {
         let task = Task {
             var eventSource = EventSource<FooTestsStreamRetryWithNewCredentialsResponse>(
                 url: "\(self.baseURL)/rpcs/tests/stream-retry-with-new-credentials",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: nil,
                 delegate: self.delegate,
@@ -272,7 +290,7 @@ public class TestClientPrefixed {
         let task = Task {
             var eventSource = EventSource<FooChatMessage>(
                 url: "\(self.baseURL)/rpcs/tests/stream-ten-events-then-end",
-                method: "GET",
+                method: "POST",
                 headers: self.headers,
                 params: nil,
                 delegate: self.delegate,
@@ -4623,6 +4641,110 @@ public struct FooStreamConnectionErrorTestResponse: ArriClientModel {
     public func clone() -> FooStreamConnectionErrorTestResponse {
 
         return FooStreamConnectionErrorTestResponse(
+            message: self.message
+        )
+    }
+    
+}
+    
+
+public struct FooStreamHeartbeatDetectionTestParams: ArriClientModel {
+    public var heartbeatEnabled: Bool = false
+    public init(
+        heartbeatEnabled: Bool
+    ) {
+            self.heartbeatEnabled = heartbeatEnabled
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.heartbeatEnabled = json["heartbeatEnabled"].bool ?? false
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"heartbeatEnabled\":"
+        __json += "\(self.heartbeatEnabled)"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "heartbeatEnabled", value: "\(self.heartbeatEnabled)"))
+        return __queryParts
+    }
+    public func clone() -> FooStreamHeartbeatDetectionTestParams {
+
+        return FooStreamHeartbeatDetectionTestParams(
+            heartbeatEnabled: self.heartbeatEnabled
+        )
+    }
+    
+}
+    
+
+public struct FooStreamHeartbeatDetectionTestResponse: ArriClientModel {
+    public var message: String = ""
+    public init(
+        message: String
+    ) {
+            self.message = message
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.message = json["message"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"message\":"
+        __json += serializeString(input: self.message)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "message", value: self.message))
+        return __queryParts
+    }
+    public func clone() -> FooStreamHeartbeatDetectionTestResponse {
+
+        return FooStreamHeartbeatDetectionTestResponse(
             message: self.message
         )
     }

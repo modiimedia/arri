@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,7 +19,8 @@ type SseController[T any] interface {
 	Push(T) RpcError
 	Close(notifyClient bool)
 	Done() <-chan struct{}
-	SetPingInterval(time.Duration) // How often to send a "ping" event. Default is 10 seconds.
+	SetHeartbeatInterval(time.Duration) // How often to send a "ping" event. Default is 20 seconds.
+	SetHeartbeatEnabled(bool)           // enable or disable the auto heartbeat message. Default is true.
 }
 
 type defaultSseController[T any] struct {
@@ -29,8 +31,9 @@ type defaultSseController[T any] struct {
 	keyCasing          KeyCasing
 	cancelFunc         context.CancelFunc
 	context            context.Context
-	pingTicker         *time.Ticker
-	pingDuration       time.Duration
+	heartbeatTicker    *time.Ticker
+	heartbeatDuration  time.Duration
+	heartbeatEnabled   bool
 }
 
 func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *defaultSseController[T] {
@@ -43,7 +46,8 @@ func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyC
 		keyCasing:          keyCasing,
 		cancelFunc:         cancelFunc,
 		context:            ctx,
-		pingDuration:       time.Second * 10,
+		heartbeatDuration:  time.Second * 20,
+		heartbeatEnabled:   true,
 	}
 	return &controller
 }
@@ -55,7 +59,8 @@ func isHttp2(r *http.Request) bool {
 func (controller *defaultSseController[T]) startStream() {
 	controller.writer.Header().Set("Content-Type", "text/event-stream")
 	controller.writer.Header().Set("Cache-Control", "private, no-cache, no-store, no-transform, must-revalidate, max-age=0")
-
+	// send heartbeat-interval header
+	controller.writer.Header().Set("heartbeat-interval", strconv.FormatInt(controller.heartbeatDuration.Milliseconds(), 10))
 	// prevent nginx from buffering the response
 	controller.writer.Header().Set("x-accel-buffering", "no")
 
@@ -68,17 +73,24 @@ func (controller *defaultSseController[T]) startStream() {
 	controller.responseController.EnableFullDuplex()
 	controller.responseController.Flush()
 	controller.headersSent = true
-	controller.pingTicker = time.NewTicker(controller.pingDuration)
+	if controller.heartbeatEnabled {
+		controller.heartbeatTicker = time.NewTicker(controller.heartbeatDuration)
+	}
 	go func() {
-		defer controller.pingTicker.Stop()
-		for {
-			select {
-			case <-controller.pingTicker.C:
-				fmt.Fprintf(controller.writer, "event: ping\ndata:\n\n")
-				controller.responseController.Flush()
-			case <-controller.Done():
-				return
+		if controller.heartbeatTicker != nil {
+			defer controller.heartbeatTicker.Stop()
+			for {
+				select {
+				case <-controller.heartbeatTicker.C:
+					fmt.Fprintf(controller.writer, "event: heartbeat\ndata:\n\n")
+					controller.responseController.Flush()
+				case <-controller.Done():
+					return
+				}
 			}
+		}
+		for range controller.Done() {
+			return
 		}
 	}()
 }
@@ -119,8 +131,12 @@ func (controller *defaultSseController[T]) Done() <-chan struct{} {
 	return controller.context.Done()
 }
 
-func (controller *defaultSseController[T]) SetPingInterval(duration time.Duration) {
-	controller.pingDuration = duration
+func (controller *defaultSseController[T]) SetHeartbeatInterval(duration time.Duration) {
+	controller.heartbeatDuration = duration
+}
+
+func (controller *defaultSseController[T]) SetHeartbeatEnabled(val bool) {
+	controller.heartbeatEnabled = val
 }
 
 func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, options RpcOptions, handler func(TParams, SseController[TResponse], TEvent) RpcError) {

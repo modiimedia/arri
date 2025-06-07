@@ -334,14 +334,14 @@ export class TestClientPrefixed {
         return arriSseRequest<FooAutoReconnectResponse, FooAutoReconnectParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$FooAutoReconnectResponse.fromJson,
                 responseFromString: $$FooAutoReconnectResponse.fromJsonString,
-                serializer: $$FooAutoReconnectParams.toUrlQueryString,
+                serializer: $$FooAutoReconnectParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -360,7 +360,7 @@ export class TestClientPrefixed {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -369,8 +369,38 @@ export class TestClientPrefixed {
                     $$FooStreamConnectionErrorTestResponse.fromJson,
                 responseFromString:
                     $$FooStreamConnectionErrorTestResponse.fromJsonString,
+                serializer: $$FooStreamConnectionErrorTestParams.toJsonString,
+                clientVersion: '10',
+            },
+            options,
+        );
+    }
+    /**
+     * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+     * When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+     * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+     */
+    streamHeartbeatDetectionTest(
+        params: FooStreamHeartbeatDetectionTestParams,
+        options: SseOptions<FooStreamHeartbeatDetectionTestResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<
+            FooStreamHeartbeatDetectionTestResponse,
+            FooStreamHeartbeatDetectionTestParams
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson:
+                    $$FooStreamHeartbeatDetectionTestResponse.fromJson,
+                responseFromString:
+                    $$FooStreamHeartbeatDetectionTestResponse.fromJsonString,
                 serializer:
-                    $$FooStreamConnectionErrorTestParams.toUrlQueryString,
+                    $$FooStreamHeartbeatDetectionTestParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -385,7 +415,7 @@ export class TestClientPrefixed {
         return arriSseRequest<FooStreamLargeObjectsResponse, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -406,14 +436,14 @@ export class TestClientPrefixed {
         return arriSseRequest<FooChatMessage, FooChatMessageParams>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
                 responseFromJson: $$FooChatMessage.fromJson,
                 responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: $$FooChatMessageParams.toUrlQueryString,
+                serializer: $$FooChatMessageParams.toJsonString,
                 clientVersion: '10',
             },
             options,
@@ -428,7 +458,7 @@ export class TestClientPrefixed {
         >(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -452,7 +482,7 @@ export class TestClientPrefixed {
         return arriSseRequest<FooChatMessage, undefined>(
             {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                method: 'get',
+                method: 'post',
                 ofetch: this._fetch,
                 headers: this._headers,
                 onError: this._onError,
@@ -5417,6 +5447,94 @@ export const $$FooStreamConnectionErrorTestResponse: ArriModelValidator<FooStrea
         },
         fromJsonString(input): FooStreamConnectionErrorTestResponse {
             return $$FooStreamConnectionErrorTestResponse.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"message":';
+            json += serializeString(input.message);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`message=${input.message}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooStreamHeartbeatDetectionTestParams {
+    heartbeatEnabled: boolean;
+}
+export const $$FooStreamHeartbeatDetectionTestParams: ArriModelValidator<FooStreamHeartbeatDetectionTestParams> =
+    {
+        new(): FooStreamHeartbeatDetectionTestParams {
+            return {
+                heartbeatEnabled: false,
+            };
+        },
+        validate(input): input is FooStreamHeartbeatDetectionTestParams {
+            return (
+                isObject(input) && typeof input.heartbeatEnabled === 'boolean'
+            );
+        },
+        fromJson(input): FooStreamHeartbeatDetectionTestParams {
+            let _heartbeatEnabled: boolean;
+            if (typeof input.heartbeatEnabled === 'boolean') {
+                _heartbeatEnabled = input.heartbeatEnabled;
+            } else {
+                _heartbeatEnabled = false;
+            }
+            return {
+                heartbeatEnabled: _heartbeatEnabled,
+            };
+        },
+        fromJsonString(input): FooStreamHeartbeatDetectionTestParams {
+            return $$FooStreamHeartbeatDetectionTestParams.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"heartbeatEnabled":';
+            json += `${input.heartbeatEnabled}`;
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`heartbeatEnabled=${input.heartbeatEnabled}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooStreamHeartbeatDetectionTestResponse {
+    message: string;
+}
+export const $$FooStreamHeartbeatDetectionTestResponse: ArriModelValidator<FooStreamHeartbeatDetectionTestResponse> =
+    {
+        new(): FooStreamHeartbeatDetectionTestResponse {
+            return {
+                message: '',
+            };
+        },
+        validate(input): input is FooStreamHeartbeatDetectionTestResponse {
+            return isObject(input) && typeof input.message === 'string';
+        },
+        fromJson(input): FooStreamHeartbeatDetectionTestResponse {
+            let _message: string;
+            if (typeof input.message === 'string') {
+                _message = input.message;
+            } else {
+                _message = '';
+            }
+            return {
+                message: _message,
+            };
+        },
+        fromJsonString(input): FooStreamHeartbeatDetectionTestResponse {
+            return $$FooStreamHeartbeatDetectionTestResponse.fromJson(
                 JSON.parse(input),
             );
         },

@@ -37,7 +37,7 @@ export function defineEventStreamRpc<
 ): EventStreamRpc<TParams, TResponse> {
     return {
         ...config,
-        method: config.method ?? 'get',
+        method: config.method ?? 'post',
         isEventStream: true,
         transport: 'http',
     };
@@ -74,29 +74,42 @@ export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
 
 export interface EventStreamConnectionOptions<TData> {
     validator?: RequestValidator<TData>;
-    heartbeatInterval?: number;
+    heartbeatMs?: number;
+    heartbeatEnabled?: boolean;
 }
 
 export class EventStreamConnection<TData> {
     readonly lastEventId?: string;
     private readonly validator?: RequestValidator<TData>;
     // for some reason Rollup cannot output DTS when this is set to NodeJS.Timeout
-    private pingInterval: any | undefined = undefined;
-    private readonly heartbeatIntervalMs: number;
+    private heartbeatInterval: any | undefined = undefined;
+    private readonly heartbeatMs: number;
+    private readonly sendHeartbeat: boolean;
     readonly eventStream: EventStream;
 
+    private _isClosed: boolean = false;
+
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
-        this.heartbeatIntervalMs = opts.heartbeatInterval ?? 20000; // 20 second default ping interval
+        this.heartbeatMs = opts.heartbeatMs ?? 20000; // 20 second default heartbeat interval
+        this.sendHeartbeat = opts.heartbeatEnabled ?? true;
         setResponseHeader(
             event,
             'heartbeat-interval',
-            this.heartbeatIntervalMs.toString(),
+            this.heartbeatMs.toString(),
         );
-        this.eventStream = createEventStream(event);
+        this.eventStream = createEventStream(event, { autoclose: false });
+        event.node.req.once('close', () => {
+            if (this._isClosed) return;
+            this.eventStream.close();
+        });
+        event.node.res.once('close', () => {
+            if (this._isClosed) return;
+            this.eventStream.close();
+        });
         this.lastEventId = getHeader(event, 'Last-Event-Id');
         this.validator = opts.validator;
         this.eventStream.onClosed(() => {
-            this.cleanup();
+            this._cleanup();
         });
     }
 
@@ -109,12 +122,15 @@ export class EventStreamConnection<TData> {
             event: 'start',
             data: 'connection successful',
         });
-        this.pingInterval = setInterval(async () => {
-            await this.eventStream.push({
-                event: 'ping',
-                data: '',
-            });
-        }, this.heartbeatIntervalMs);
+        if (this.sendHeartbeat) {
+            this.heartbeatInterval = setInterval(async () => {
+                console.log('SENDING_HEARTBEAT');
+                await this.eventStream.push({
+                    event: 'heartbeat',
+                    data: '',
+                });
+            }, this.heartbeatMs);
+        }
     }
 
     /**
@@ -166,9 +182,10 @@ export class EventStreamConnection<TData> {
         };
     }
 
-    private cleanup() {
-        if (this.pingInterval) {
-            clearInterval(this.pingInterval);
+    private _cleanup() {
+        this._isClosed = true;
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
         }
     }
 
@@ -208,7 +225,7 @@ export function registerEventStreamRpc(
     const responseValidator = procedure.response
         ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
-    const httpMethod = procedure.method ?? 'get';
+    const httpMethod = procedure.method ?? 'post';
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
@@ -231,7 +248,8 @@ export function registerEventStreamRpc(
                 );
             }
             const stream = new EventStreamConnection(event, {
-                heartbeatInterval: procedure.pingInterval,
+                heartbeatMs: procedure.heartbeatMs,
+                heartbeatEnabled: procedure.heartbeatEnabled,
                 validator: responseValidator,
             });
             event.context.stream = stream;

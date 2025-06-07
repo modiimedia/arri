@@ -31,7 +31,6 @@ export interface SseOptions<TData> {
             error: ArriErrorInstance;
         },
     ) => any;
-    onClose?: () => any;
     maxRetryCount?: number;
     maxRetryInterval?: number;
 }
@@ -82,10 +81,11 @@ export function arriSseRequest<
     let intervalDurationMs: number | undefined;
     function resetInterval() {
         if (interval) clearInterval(interval);
+        if (!intervalDurationMs) return;
         interval = setInterval(() => {
             if (controller.signal.aborted) return;
             controller.reconnect();
-        }, intervalDurationMs) as any;
+        }, intervalDurationMs * 2) as any;
     }
     const controller = eventSource.listen({
         onMessage(message) {
@@ -103,10 +103,9 @@ export function arriSseRequest<
                 controller.abort();
             }
         },
-        onRequest(context) {
-            options.onRequest?.(context);
-        },
+        onRequest: options.onRequest,
         onRequestError(context) {
+            clearInterval(interval);
             if (opts.onError) opts.onError(context.error);
             options.onRequestError?.({
                 ...context,
