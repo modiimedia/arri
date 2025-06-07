@@ -86,15 +86,18 @@ export function arriSseRequest<
         maxRetryInterval: options.maxRetryInterval,
     });
     let interval: number | undefined;
-    let intervalDurationMs: number | undefined;
+    let intervalDuration: number | undefined;
     const timeoutMultiplier = options.heartbeatTimeoutMultiplier ?? 2;
+    if (timeoutMultiplier < 1) {
+        throw new Error(`heartbeatTimeoutMultiplier cannot be less than 1`);
+    }
     function resetInterval() {
         if (interval) clearInterval(interval);
-        if (!intervalDurationMs) return;
+        if (!intervalDuration) return;
         interval = setInterval(() => {
             if (controller.signal.aborted) return;
             controller.reconnect();
-        }, intervalDurationMs * 2) as any;
+        }, intervalDuration) as any;
     }
     const controller = eventSource.listen({
         onMessage(message) {
@@ -134,8 +137,7 @@ export function arriSseRequest<
                 !Number.isNaN(heartbeatIntervalHeader) &&
                 heartbeatIntervalHeader > 0
             ) {
-                intervalDurationMs =
-                    heartbeatIntervalHeader * timeoutMultiplier;
+                intervalDuration = heartbeatIntervalHeader * timeoutMultiplier;
                 resetInterval();
             }
             options.onResponse?.(context);

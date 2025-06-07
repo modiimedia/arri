@@ -27,6 +27,7 @@ EventSource<T> parsedArriSseRequest<T>(
   SseHookOnError<T>? onError,
   String? lastEventId,
   String? clientVersion,
+  int? heartbeatTimeoutMultiplier,
 }) {
   return EventSource(
     httpClient: httpClient,
@@ -41,6 +42,7 @@ EventSource<T> parsedArriSseRequest<T>(
       }
       return result;
     },
+    heartbeatTimerMultiplier: heartbeatTimeoutMultiplier,
     retryDelay: retryDelay ?? Duration.zero,
     maxRetryCount: maxRetryCount,
     lastEventId: lastEventId,
@@ -68,6 +70,7 @@ class EventSource<T> {
   bool _closedByClient = false;
   Timer? _heartbeatTimer;
   int? _heartbeatTimerMs;
+  final int _heartbeatTimerMultiplier;
 
   // hooks
   late final void Function(T data) _onMessage;
@@ -89,11 +92,14 @@ class EventSource<T> {
     SseHookOnOpen<T>? onOpen,
     SseHookOnClose<T>? onClose,
     SseHookOnError<T>? onError,
+    int? heartbeatTimerMultiplier,
     this.lastEventId,
   })  : _headers = headers,
         _params = params,
         _retryDelay = retryDelay,
-        _maxRetryCount = maxRetryCount {
+        _maxRetryCount = maxRetryCount,
+        _heartbeatTimerMultiplier = heartbeatTimerMultiplier ?? 2 {
+    assert(_heartbeatTimerMultiplier >= 1);
     this._httpClient = httpClient ?? http.Client();
 
     // set hooks
@@ -117,8 +123,11 @@ class EventSource<T> {
   _resetHeartbeatCheck() {
     _heartbeatTimer?.cancel();
     if (_heartbeatTimerMs == null || _heartbeatTimerMs! <= 0) return;
-    _heartbeatTimer =
-        Timer(Duration(milliseconds: _heartbeatTimerMs! * 2), () => _connect());
+    _heartbeatTimer = Timer(
+        Duration(
+          milliseconds: _heartbeatTimerMs! * _heartbeatTimerMultiplier,
+        ),
+        () => _connect());
   }
 
   Future<void> _connect({bool isRetry = false}) async {
