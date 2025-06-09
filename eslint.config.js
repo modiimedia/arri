@@ -74,5 +74,12 @@ export default tsEslint.config(
             "@typescript-eslint/no-unsafe-argument": 0,
         },
     },
+    {
+        ignores: ["**/*.test.ts", "languages/**/*-codegen/**/*", "internal/**/*", "tooling/json-schema-to-atd/**/*", "tooling/cli/**/*"],
+        rules: {
+            'no-console': 2,
+
+        }
+    },
     prettier,
 );

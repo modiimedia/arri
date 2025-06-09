@@ -39,7 +39,6 @@ const preferModularImports: Rule.RuleModule = {
                     let importPart = '';
                     let shouldExitNext = false;
                     const loc = node.loc;
-                    console.log('LOC', loc);
                     for (let i = 0; i < parent.tokens.length; i++) {
                         const token = parent.tokens[i]!;
                         if (shouldExitNext) {
@@ -48,7 +47,6 @@ const preferModularImports: Rule.RuleModule = {
                             }
                             break;
                         }
-                        console.log('TOKEN', token.loc);
                         if (token.loc.start.line > (loc?.start.line ?? 0))
                             break;
                         if (token.loc.start.line !== loc?.start.line) continue;

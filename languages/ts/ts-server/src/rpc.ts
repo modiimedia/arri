@@ -395,6 +395,7 @@ export function getSchemaValidator<T extends Record<string, any> = any>(
                 errors: (input) => a.errors(schema, input),
             };
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(
                 `Error compiling ${type} validator for ${rpcName}. Error: ${err}`,
             );

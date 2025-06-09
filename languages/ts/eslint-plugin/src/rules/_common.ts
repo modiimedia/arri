@@ -35,6 +35,7 @@ export function isNestedInSchema(
               ((context as any).getSourceCode() as SourceCode);
     const ancestors = sourceCode.getAncestors(node as any);
     if (log) {
+        // eslint-disable-next-line no-console
         console.log(ancestors);
     }
     for (const node of ancestors) {
