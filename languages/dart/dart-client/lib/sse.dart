@@ -5,7 +5,8 @@ import 'package:arri_client/errors.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
-typedef SseHookOnMessage<T> = void Function(T data, EventSource<T> connection);
+typedef SseHookOnMessage<T> = void Function(
+    T message, EventSource<T> connection);
 typedef SseHookOnError<T> = void Function(
     ArriError error, EventSource<T> connection);
 typedef SseHookOnOpen<T> = void Function(
@@ -42,7 +43,7 @@ EventSource<T> parsedArriSseRequest<T>(
       }
       return result;
     },
-    heartbeatTimerMultiplier: heartbeatTimeoutMultiplier,
+    heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
     retryDelay: retryDelay ?? Duration.zero,
     maxRetryCount: maxRetryCount,
     lastEventId: lastEventId,
@@ -92,13 +93,13 @@ class EventSource<T> {
     SseHookOnOpen<T>? onOpen,
     SseHookOnClose<T>? onClose,
     SseHookOnError<T>? onError,
-    int? heartbeatTimerMultiplier,
+    int? heartbeatTimeoutMultiplier,
     this.lastEventId,
   })  : _headers = headers,
         _params = params,
         _retryDelay = retryDelay,
         _maxRetryCount = maxRetryCount,
-        _heartbeatTimerMultiplier = heartbeatTimerMultiplier ?? 2 {
+        _heartbeatTimerMultiplier = heartbeatTimeoutMultiplier ?? 2 {
     assert(_heartbeatTimerMultiplier >= 1);
     this._httpClient = httpClient ?? http.Client();
 

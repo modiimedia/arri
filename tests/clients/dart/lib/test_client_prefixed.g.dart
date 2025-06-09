@@ -225,6 +225,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-auto-reconnect",
@@ -235,6 +236,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => FooAutoReconnectResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -270,6 +272,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-connection-error-test",
@@ -280,6 +283,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) =>
           FooStreamConnectionErrorTestResponse.fromJsonString(body),
@@ -320,6 +324,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-heartbeat-detection-test",
@@ -330,6 +335,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) =>
           FooStreamHeartbeatDetectionTestResponse.fromJsonString(body),
@@ -365,6 +371,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-large-objects",
@@ -375,6 +382,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       parser: (body) => FooStreamLargeObjectsResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -405,6 +413,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-messages",
@@ -415,6 +424,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => FooChatMessage.fromJsonString(body),
       onMessage: onMessage,
@@ -457,6 +467,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
@@ -467,6 +478,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       parser: (body) =>
           FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -498,6 +510,7 @@ class TestClientPrefixed {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
@@ -508,6 +521,7 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       parser: (body) => FooChatMessage.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,

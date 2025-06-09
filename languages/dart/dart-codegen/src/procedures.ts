@@ -59,6 +59,7 @@ export function dartHttpRpcFromSchema(
             Duration? retryDelay,
             int? maxRetryCount,
             String? lastEventId,
+            int? heartbeatTimeoutMultiplier,
         }) {
             return parsedArriSseRequest(
                 "$_baseUrl${schema.path}",
@@ -69,6 +70,7 @@ export function dartHttpRpcFromSchema(
                 retryDelay: retryDelay,
                 maxRetryCount: maxRetryCount,
                 lastEventId: lastEventId,
+                heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
                 ${paramsType ? 'params: params.toJson(),' : ''}
                 parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : `{}`},
                 onMessage: onMessage,
