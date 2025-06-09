@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -421,7 +420,6 @@ type StreamHeartbeatDetectionTestResponse struct {
 
 func StreamHeartbeatDetectionTest(params StreamHeartbeatDetectionTestParams, stream arri.SseController[StreamHeartbeatDetectionTestResponse], _ RpcEvent) arri.RpcError {
 	stream.SetHeartbeatInterval(time.Millisecond * 300)
-	fmt.Println("PARAMS", params)
 	stream.SetHeartbeatEnabled(params.HeartbeatEnabled)
 	for i := 0; i < 5; i++ {
 		stream.Push(StreamHeartbeatDetectionTestResponse{Message: "hello world"})
