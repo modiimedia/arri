@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/typebox-adapter",
-  "version": "0.79.1",
+  "version": "0.80.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
