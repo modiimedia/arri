@@ -30,6 +30,7 @@ a.discriminator('type', {
     }),
 });
 
+// eslint-disable-next-line no-console
 console.log('blah', boolean, string);
 
 // eslint-disable-next-line arri/no-anonymous-recursive

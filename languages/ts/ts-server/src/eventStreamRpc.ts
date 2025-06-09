@@ -124,7 +124,6 @@ export class EventStreamConnection<TData> {
         });
         if (this.sendHeartbeat) {
             this.heartbeatInterval = setInterval(async () => {
-                console.log('SENDING_HEARTBEAT');
                 await this.eventStream.push({
                     event: 'heartbeat',
                     data: '',
