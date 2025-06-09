@@ -171,6 +171,15 @@ For a more complete guide on creating a code generator see [here](/docs/creating
 - Before adding features or submitting a large PR please open up an issue or start a discussion on [discord](https://discord.gg/5m23HEQss7).
 - Provide a good PR description as a record of what change is being made and why it was made. Link to a GitHub issue if it exists.
 
+**On Logging:**
+
+There are lint rules in place that disallow`console.log()` in non-codegen and non-cli related packages. This doesn't mean no instances of `console.log()` are allowed. It primarily exists as a safe-guard to prevent us (primarily me) from accidentally publishing temporary logs that were only meant to be used during development. If there's a `console.log()` that you intend to keep in the published version you should add an eslint ignore statement so that it passes CI.
+
+```ts
+// eslint-disable-next-line no-console
+console.log('this log is intentional');
+```
+
 ## Obtaining Commit Access
 
 Anyone who has submitted multiple high-quality PRs may be qualified for getting commit access. I'm pretty open to other people joining on the project so long as they hold themselves to the same vision and quality standard that I have for this project.
