@@ -98,6 +98,7 @@ class ExampleClientBooksService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/books/watch-book",
@@ -108,6 +109,7 @@ class ExampleClientBooksService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
       onMessage: onMessage,

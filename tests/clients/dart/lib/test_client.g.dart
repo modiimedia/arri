@@ -254,6 +254,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-auto-reconnect",
@@ -264,6 +265,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => AutoReconnectResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -299,6 +301,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-connection-error-test",
@@ -309,6 +312,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => StreamConnectionErrorTestResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -347,6 +351,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-heartbeat-detection-test",
@@ -357,6 +362,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) =>
           StreamHeartbeatDetectionTestResponse.fromJsonString(body),
@@ -391,6 +397,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-large-objects",
@@ -401,6 +408,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       parser: (body) => StreamLargeObjectsResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -431,6 +439,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-messages",
@@ -441,6 +450,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => ChatMessage.fromJsonString(body),
       onMessage: onMessage,
@@ -476,6 +486,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
@@ -486,6 +497,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       parser: (body) =>
           TestsStreamRetryWithNewCredentialsResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -517,6 +529,7 @@ class TestClientTestsService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
@@ -527,6 +540,7 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       parser: (body) => ChatMessage.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -576,6 +590,7 @@ class TestClientUsersService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/rpcs/users/watch-user",
@@ -586,6 +601,7 @@ class TestClientUsersService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       params: params.toJson(),
       parser: (body) => UsersWatchUserResponse.fromJsonString(body),
       onMessage: onMessage,
