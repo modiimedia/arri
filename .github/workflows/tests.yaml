@@ -43,7 +43,10 @@ jobs:
       - run: pnpm nx affected -t typecheck
   unit-tests:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
     permissions:
       contents: read
       actions: write
