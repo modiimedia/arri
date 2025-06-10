@@ -116,7 +116,7 @@ jobs:
         with:
           version: 10.6.3
       - name: Setup Swift
-        if: runner.os != 'Windows' # temporary work around for https://github.com/swift-actions/setup-swift/issues/681 and https://github.com/swift-actions/setup-swift/issues/709
+        if: matrix.os != 'Windows' # temporary work around for https://github.com/swift-actions/setup-swift/issues/681 and https://github.com/swift-actions/setup-swift/issues/709
         # uses: swift-actions/setup-swift@v2
         uses: redsun82/setup-swift@b2b6f77ab14f6a9b136b520dc53ec8eca27d2b99 # temporary work around for https://github.com/swift-actions/setup-swift/issues/591
         with:
