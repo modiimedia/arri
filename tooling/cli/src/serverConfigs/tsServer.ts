@@ -190,11 +190,17 @@ export async function startBuild(
     const clientCount = generators.length ?? 0;
     if (!skipCodeGen) {
         logger.log('Generating Arri app definition (__definition.json)');
-        const app = (
-            await import(
-                path.resolve(serverConfig.rootDir, '.output', OUT_APP_FILE)
-            )
-        ).default as ArriApp;
+        let appImportPath = path.resolve(
+            serverConfig.rootDir,
+            '.output',
+            OUT_APP_FILE,
+        );
+        // dumb windows things
+        if (os.type() === 'Windows_NT') {
+            appImportPath =
+                createWindowsCompatibleAbsoluteImport(appImportPath);
+        }
+        const app = (await import(appImportPath)).default as ArriApp;
         const appDef = app.getAppDefinition();
         if (isAppDefinition(appDef) && clientCount > 0) {
             fs.writeFile(
