@@ -1,9 +1,9 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
-import path from 'node:path';
 
 import { defineCommand, runMain } from 'citty';
 import { consola } from 'consola';
+import path from 'pathe';
 
 const getOutput = () => ({
     ts: fs.readFileSync(
