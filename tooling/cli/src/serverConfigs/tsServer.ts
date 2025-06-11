@@ -1,5 +1,4 @@
-import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import os from 'node:os';
 
@@ -183,30 +182,34 @@ export async function startBuild(
     await Promise.all([
         createAppWithRoutesModule(serverConfig),
         createServerEntryFile(serverConfig),
-        createCodegenEntryFile(serverConfig),
+        // createCodegenEntryFile(serverConfig),
     ]);
+
     await bundleAppEntry(serverConfig);
     logger.log('Finished bundling');
     const clientCount = generators.length ?? 0;
-    const codegenModule = path.resolve(
-        serverConfig.rootDir,
-        '.output',
-        OUT_CODEGEN,
-    );
     if (!skipCodeGen) {
         logger.log('Generating Arri app definition (__definition.json)');
-        execSync(`node ${codegenModule}`, { env: process.env });
-        const defJson = path.resolve(
-            serverConfig.rootDir,
-            '.output',
-            '__definition.json',
-        );
-        const def = JSON.parse(readFileSync(defJson, { encoding: 'utf-8' }));
-        if (isAppDefinition(def) && clientCount > 0) {
+        const app = (
+            await import(
+                path.resolve(serverConfig.rootDir, '.output', OUT_APP_FILE)
+            )
+        ).default as ArriApp;
+        const appDef = app.getAppDefinition();
+        if (isAppDefinition(appDef) && clientCount > 0) {
+            fs.writeFile(
+                path.resolve(
+                    serverConfig.rootDir,
+                    '.output',
+                    '__definition.json',
+                ),
+                JSON.stringify(appDef),
+            );
             const startTime = new Date().getTime();
             logger.log(`Generating ${clientCount} client(s)...`);
             await Promise.all(
-                generators.map((generator) => generator.run(def, false)) ?? [],
+                generators.map((generator) => generator.run(appDef, false)) ??
+                    [],
             );
             logger.log(
                 `${clientCount} client(s) generated in ${new Date().getTime() - startTime}ms`,
@@ -219,11 +222,10 @@ export async function startBuild(
     } else {
         logger.log('Skipping codegen');
     }
-    logger.log('Cleaning up files');
-    await fs.rm(codegenModule);
     logger.success(
         `Build finished! You can start your server by running "node .output/${OUT_SERVER_ENTRY}"`,
     );
+    process.exit(0);
 }
 
 async function bundleAppEntry(
@@ -322,32 +324,32 @@ void listen(toNodeListener(app.h3App), {
     );
 }
 
-async function createCodegenEntryFile(config: Required<TsServerConfig>) {
-    const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
-    const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
-        .split('.');
-    appImportParts.pop();
-    const virtualModule = await prettier.format(
-        `
-    import { writeFileSync } from 'node:fs';
-    import path from 'node:path';
-    import app from './${OUT_APP_FILE}';
+// async function createCodegenEntryFile(config: Required<TsServerConfig>) {
+//     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
+//     const appImportParts = path
+//         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
+//         .split('.');
+//     appImportParts.pop();
+//     const virtualModule = await prettier.format(
+//         `
+//     import { writeFileSync } from 'node:fs';
+//     import path from 'node:path';
+//     import app from './${OUT_APP_FILE}';
 
-    const __dirname = new URL(".", import.meta.url).pathname;
-    const def = app.getAppDefinition();
-    writeFileSync(
-        path.resolve(__dirname, "../.output", "__definition.json"),
-        JSON.stringify(def),
-    );
-    process.exit(0);`,
-        { tabWidth: 4, parser: 'typescript' },
-    );
-    await fs.writeFile(
-        path.resolve(config.rootDir, '.output', OUT_CODEGEN),
-        virtualModule,
-    );
-}
+//     const __dirname = new URL(".", import.meta.url).pathname;
+//     const def = app.getAppDefinition();
+//     writeFileSync(
+//         path.resolve(__dirname, "../.output", "__definition.json"),
+//         JSON.stringify(def),
+//     );
+//     process.exit(0);`,
+//         { tabWidth: 4, parser: 'typescript' },
+//     );
+//     await fs.writeFile(
+//         path.resolve(config.rootDir, '.output', OUT_CODEGEN),
+//         virtualModule,
+//     );
+// }
 
 async function bundleFilesContext(config: Required<TsServerConfig>) {
     return await esbuild.context({
