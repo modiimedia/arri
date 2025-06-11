@@ -8,6 +8,11 @@
       "options": {
         "command": "./gradlew run",
         "cwd": "tests/clients/kotlin"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": ".\\gradlew run"
+        }
       }
     }
   }

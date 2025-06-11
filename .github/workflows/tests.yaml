@@ -90,13 +90,13 @@ jobs:
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
       - run: pnpm run build
       - if: matrix.os == 'windows-latest'
-        run: pnpm compile:no-swift
+        run: pnpm compile --configuration windows-ci
       - if: matrix.os != 'windows-latest'
         run: pnpm compile
       - name: Re-install Node Dependencies
         run: pnpm i -r --frozen-lockfile
       - if: matrix.os == 'windows-latest'
-        run: pnpm nx affected -t test --exclude swift-client,swift-codegen-reference,test-client-swift
+        run: pnpm nx affected -t test --configuration windows-ci
       - if: matrix.os != 'windows-latest'
         run: pnpm nx affected -t test
       - run: pnpm server-output-test

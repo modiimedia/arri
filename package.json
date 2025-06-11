@@ -23,7 +23,6 @@
     "build:skip-cache": "nx run-many -t build --skip-nx-cache --exclude=ts-playground,go-playground",
     "compile": "nx run-many -t compile",
     "compile:skip-cache": "nx run-many -t compile --skip-nx-cache",
-    "compile:no-swift": "nx run-many -t compile --exclude=swift-client,swift-codegen-reference,test-client-swift",
     "lint": "nx run-many -t lint",
     "lint:fix": "nx run-many -t lint --fix",
     "lint:skip-cache": "nx run-many -t lint --skip-nx-cache",
