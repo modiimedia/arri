@@ -90,7 +90,7 @@ jobs:
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
       - run: pnpm run build
       - if: matrix.os == 'windows-latest'
-        run: pnpm nx run-many -t compiled --exclude swift-\* # exclude compiling any projects starting with "swift-" on Windows
+        run: pnpm nx run-many -t compile --exclude swift-\* # exclude compiling any projects starting with "swift-" on Windows
       - if: matrix.os != 'windows-latest'
         run: pnpm nx run-many -t compile
       - name: Re-install Node Dependencies
