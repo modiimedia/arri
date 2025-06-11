@@ -16,6 +16,11 @@
       "options": {
         "command": "./node_modules/.bin/arri build",
         "cwd": "tests/servers/go"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": ".\\node_modules\\.bin\\arri build"
+        }
       }
     },
     "start": {
