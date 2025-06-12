@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
-import os from 'node:os';
 
 import { Generator, isAppDefinition } from '@arrirpc/codegen-utils';
 import {
@@ -24,6 +23,7 @@ import path from 'pathe';
 import prettier from 'prettier';
 
 import { isInsideDir, logger } from '../common';
+import { createWindowsCompatibleImportPath, isOnWindows } from './_common';
 import { defineServerConfig } from './_config';
 
 export function tsServer(serverConfig?: TsServerConfig) {
@@ -196,9 +196,8 @@ export async function startBuild(
             OUT_APP_FILE,
         );
         // dumb windows things
-        if (os.type() === 'Windows_NT') {
-            appImportPath =
-                createWindowsCompatibleAbsoluteImport(appImportPath);
+        if (isOnWindows()) {
+            appImportPath = createWindowsCompatibleImportPath(appImportPath);
         }
         const app = (await import(appImportPath)).default as ArriApp;
         const appDef = app.getAppDefinition();
@@ -431,8 +430,8 @@ async function createDevServer(config: Required<TsServerConfig>) {
             `${OUT_APP_FILE}?version=${Date.now()}`,
         );
         // dumb windows things
-        if (os.type() === 'Windows_NT') {
-            importPath = createWindowsCompatibleAbsoluteImport(importPath);
+        if (isOnWindows()) {
+            importPath = createWindowsCompatibleImportPath(importPath);
         }
         const appEntry = (await import(importPath)).default as ArriApp;
         dynamicHandler.set(fromNodeMiddleware(appEntry.h3App.handler as any));
@@ -447,25 +446,6 @@ async function createDevServer(config: Required<TsServerConfig>) {
         reload,
         ws,
     };
-}
-
-export function createWindowsCompatibleAbsoluteImport(input: string): string {
-    let separator: '\\' | '/' | undefined;
-    for (const char of input) {
-        if (char === '\\') {
-            separator = '\\';
-            break;
-        }
-        if (char === '/') {
-            separator = '/';
-        }
-    }
-    const parts = input.split(separator ?? '/');
-    if (parts[0]?.endsWith(':')) {
-        parts.unshift('file:\\');
-    }
-    const newStr = parts.join('\\');
-    return newStr;
 }
 
 export async function startDevServer(
