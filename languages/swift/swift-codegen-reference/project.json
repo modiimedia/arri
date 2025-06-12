@@ -16,6 +16,11 @@
       "options": {
         "command": "swift build",
         "cwd": "languages/swift/swift-codegen-reference"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": "echo \"swift not available in windows-ci. skipping...\""
+        }
       }
     },
     "test": {
@@ -31,6 +36,11 @@
       "options": {
         "command": "swift test",
         "cwd": "languages/swift/swift-codegen-reference"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": "echo \"swift not available in windows-ci. skipping...\""
+        }
       }
     }
   }

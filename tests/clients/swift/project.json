@@ -8,6 +8,11 @@
       "options": {
         "command": "swift test",
         "cwd": "tests/clients/swift"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": "echo \"swift not available in windows-ci. skipping...\""
+        }
       }
     },
     "compile": {
@@ -16,6 +21,11 @@
       "options": {
         "command": "swift build",
         "cwd": "tests/clients/swift"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": "echo \"swift not available in windows-ci. skipping...\""
+        }
       }
     }
   }

@@ -43,7 +43,10 @@ jobs:
       - run: pnpm nx affected -t typecheck
   unit-tests:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
     permissions:
       contents: read
       actions: write
@@ -66,7 +69,9 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 10.6.3
-      - name: Setup Swift
+      # temporary work around for https://github.com/swift-actions/setup-swift/issues/681 and https://github.com/swift-actions/setup-swift/issues/709
+      - if: matrix.os != 'windows-latest'
+        name: Setup Swift
         # uses: swift-actions/setup-swift@v2
         uses: redsun82/setup-swift@b2b6f77ab14f6a9b136b520dc53ec8eca27d2b992 # temporary work around for https://github.com/swift-actions/setup-swift/issues/591
         with:
@@ -84,11 +89,20 @@ jobs:
           main-branch-name: master
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
       - run: pnpm run build
-      - run: pnpm run compile
+      - if: matrix.os == 'windows-latest'
+        run: pnpm compile --configuration windows-ci
+      - if: matrix.os != 'windows-latest'
+        run: pnpm compile
       - name: Re-install Node Dependencies
         run: pnpm i -r --frozen-lockfile
-      - run: pnpm nx affected -t test
-      - run: pnpm server-output-test
+      - if: matrix.os == 'windows-latest'
+        run: pnpm nx affected -t test --configuration windows-ci
+      - if: matrix.os != 'windows-latest'
+        run: pnpm nx affected -t test
+      - if: matrix.os == 'windows-latest'
+        run: pnpm server-output-test --configuration windows-ci
+      - if: matrix.os != 'windows-latest'
+        run: pnpm server-output-test
   integration-tests-ts-server:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-22.04

@@ -1,8 +1,9 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
-import path from 'node:path';
 
+import { defineCommand, runMain } from 'citty';
 import { consola } from 'consola';
+import path from 'pathe';
 
 const getOutput = () => ({
     ts: fs.readFileSync(
@@ -15,25 +16,47 @@ const getOutput = () => ({
     ),
 });
 
-async function main() {
-    execSync(`nx build-server test-server-ts`, { stdio: 'inherit' });
-    const tsServerOutput = getOutput();
-    execSync(`nx build-server test-server-go`, { stdio: 'inherit' });
-    const goServerOutput = getOutput();
-    if (!deepEquals(tsServerOutput.ts, goServerOutput.ts)) {
-        throw new Error(
-            "Client generated from Go server doesn't match TS server. TS Output.",
-        );
-    }
-    if (!deepEquals(tsServerOutput.rustPrefixed, goServerOutput.rustPrefixed)) {
-        throw new Error(
-            "Client generated from Go server doesn't match TS server. Rust Output.",
-        );
-    }
-    consola.success('Generated clients match');
-}
+const main = defineCommand({
+    args: {
+        configuration: {
+            type: 'string',
+        },
+    },
+    run({ args }) {
+        let tsCmd = `nx build-server test-server-ts`;
+        if (args.configuration) {
+            tsCmd += ` --configuration=${args.configuration}`;
+        }
+        execSync(tsCmd, { stdio: 'inherit' });
+        const tsServerOutput = getOutput();
 
-main();
+        let goCmd = `nx build-server test-server-go`;
+        if (args.configuration) {
+            goCmd += ` --configuration=${args.configuration}`;
+        }
+        execSync(goCmd, { stdio: 'inherit' });
+        const goServerOutput = getOutput();
+
+        if (!deepEquals(tsServerOutput.ts, goServerOutput.ts)) {
+            throw new Error(
+                "Client generated from Go server doesn't match TS server. TS Output.",
+            );
+        }
+        if (
+            !deepEquals(
+                tsServerOutput.rustPrefixed,
+                goServerOutput.rustPrefixed,
+            )
+        ) {
+            throw new Error(
+                "Client generated from Go server doesn't match TS server. Rust Output.",
+            );
+        }
+        consola.success('Generated clients match');
+    },
+});
+
+runMain(main);
 
 function deepEquals(left: any, right: any): boolean {
     if (typeof left !== typeof right) return false;
