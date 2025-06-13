@@ -17,8 +17,8 @@ import path from 'pathe';
 import prettier from 'prettier';
 
 import { isInsideDir, logger } from '../common';
+import { createWindowsCompatibleImportPath } from './_common';
 import { defineServerConfig } from './_config';
-import { createWindowsCompatibleAbsoluteImport } from './tsServer';
 
 export function tsServerNext(serverConfig?: TsServerNextConfig) {
     return defineServerConfig({
@@ -276,7 +276,7 @@ async function createDevServer(config: Required<TsServerNextConfig>) {
         );
         // dumb windows things
         if (os.type() === 'Windows_NT') {
-            importPath = createWindowsCompatibleAbsoluteImport(importPath);
+            importPath = createWindowsCompatibleImportPath(importPath);
         }
         app = (await import(importPath)).default as ArriApp;
         await app.start();
