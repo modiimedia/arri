@@ -29,6 +29,7 @@ EventSource<T> parsedArriSseRequest<T>(
   String? lastEventId,
   String? clientVersion,
   int? heartbeatTimeoutMultiplier,
+  Duration? timeout,
 }) {
   return EventSource(
     httpClient: httpClient,
@@ -51,6 +52,7 @@ EventSource<T> parsedArriSseRequest<T>(
     onOpen: onOpen,
     onClose: onClose,
     onError: onError,
+    timeout: timeout,
   );
 }
 
@@ -72,6 +74,7 @@ class EventSource<T> {
   Timer? _heartbeatTimer;
   int? _heartbeatTimerMs;
   final int _heartbeatTimerMultiplier;
+  final Duration _timeout;
 
   // hooks
   late final void Function(T data) _onMessage;
@@ -95,11 +98,13 @@ class EventSource<T> {
     SseHookOnError<T>? onError,
     int? heartbeatTimeoutMultiplier,
     this.lastEventId,
+    Duration? timeout,
   })  : _headers = headers,
         _params = params,
         _retryDelay = retryDelay,
         _maxRetryCount = maxRetryCount,
-        _heartbeatTimerMultiplier = heartbeatTimeoutMultiplier ?? 2 {
+        _heartbeatTimerMultiplier = heartbeatTimeoutMultiplier ?? 2,
+        _timeout = timeout ?? timeoutDefault {
     assert(_heartbeatTimerMultiplier >= 1);
     this._httpClient = httpClient ?? http.Client();
 
@@ -169,7 +174,7 @@ class EventSource<T> {
     }
     try {
       await _requestStream?.cancel();
-      final response = await _httpClient.send(request);
+      final response = await _httpClient.send(request).timeout(_timeout);
       _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
         final body = await utf8.decodeStream(response.stream);
