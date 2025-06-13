@@ -11,21 +11,29 @@ class TestClient {
   final String _clientVersion = "10";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   TestClient({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
         _headers = headers,
-        _onError = onError;
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   TestClientTestsService get tests => TestClientTestsService(
         baseUrl: _baseUrl,
         headers: _headers,
         httpClient: _httpClient,
         onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
       );
 
   TestClientUsersService get users => TestClientUsersService(
@@ -33,6 +41,8 @@ class TestClient {
         headers: _headers,
         httpClient: _httpClient,
         onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
       );
 }
 
@@ -42,15 +52,21 @@ class TestClientTestsService {
   final String _clientVersion = "10";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   TestClientTestsService({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
         _headers = headers,
-        _onError = onError;
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   Future<DefaultPayload> emptyParamsGetRequest() async {
     return parsedArriRequest(
@@ -61,6 +77,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       parser: (body) => DefaultPayload.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -73,6 +90,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       parser: (body) => DefaultPayload.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -86,6 +104,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -99,6 +118,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -114,6 +134,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -128,6 +149,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => DiscriminatorWithEmptyObject.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -141,6 +163,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -154,6 +177,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => ObjectWithEveryType.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -168,6 +192,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => ObjectWithEveryNullableType.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -182,6 +207,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => ObjectWithPascalCaseKeys.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -196,6 +222,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => ObjectWithSnakeCaseKeys.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -210,6 +237,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => ObjectWithEveryOptionalType.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -223,6 +251,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => RecursiveObject.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -236,6 +265,7 @@ class TestClientTestsService {
       params: params.toJson(),
       parser: (body) => RecursiveUnion.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -265,7 +295,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => AutoReconnectResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -312,7 +344,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => StreamConnectionErrorTestResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -362,7 +396,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) =>
           StreamHeartbeatDetectionTestResponse.fromJsonString(body),
@@ -408,7 +444,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       parser: (body) => StreamLargeObjectsResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -450,7 +488,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => ChatMessage.fromJsonString(body),
       onMessage: onMessage,
@@ -497,7 +537,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       parser: (body) =>
           TestsStreamRetryWithNewCredentialsResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -540,7 +582,9 @@ class TestClientTestsService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       parser: (body) => ChatMessage.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -565,15 +609,21 @@ class TestClientUsersService {
   final String _clientVersion = "10";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   TestClientUsersService({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
         _headers = headers,
-        _onError = onError;
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   EventSource<UsersWatchUserResponse> watchUser(
     UsersWatchUserParams params, {
@@ -601,7 +651,9 @@ class TestClientUsersService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => UsersWatchUserResponse.fromJsonString(body),
       onMessage: onMessage,

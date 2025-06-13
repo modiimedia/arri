@@ -70,7 +70,8 @@ export function dartHttpRpcFromSchema(
                 retryDelay: retryDelay,
                 maxRetryCount: maxRetryCount,
                 lastEventId: lastEventId,
-                heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+                heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+                timeout: _timeout,
                 ${paramsType ? 'params: params.toJson(),' : ''}
                 parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : `{}`},
                 onMessage: onMessage,
@@ -99,6 +100,7 @@ export function dartHttpRpcFromSchema(
             ${paramsType ? 'params: params.toJson(),' : ''}
             parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : '{}'},
             onError: _onError,
+            timeout: _timeout,
         );
     }`;
 }
@@ -196,15 +198,21 @@ export function dartServiceFromSchema(
   final String _clientVersion = "${context.clientVersion}";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   ${serviceName}({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   }) : _httpClient = httpClient,
        _baseUrl = baseUrl,
        _headers = headers,
-       _onError = onError;
+       _onError = onError,
+       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+       _timeout = timeout;
 
   ${rpcParts.join('\n\n')}
 
@@ -215,6 +223,8 @@ export function dartServiceFromSchema(
           headers: _headers,
           httpClient: _httpClient,
           onError: _onError,
+          heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+          timeout: _timeout,
         );`,
       )
       .join('\n\n')}

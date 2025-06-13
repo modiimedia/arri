@@ -11,15 +11,21 @@ class TestClientPrefixed {
   final String _clientVersion = "10";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   TestClientPrefixed({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
         _headers = headers,
-        _onError = onError;
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   Future<FooDefaultPayload> emptyParamsGetRequest() async {
     return parsedArriRequest(
@@ -30,6 +36,7 @@ class TestClientPrefixed {
       clientVersion: _clientVersion,
       parser: (body) => FooDefaultPayload.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -42,6 +49,7 @@ class TestClientPrefixed {
       clientVersion: _clientVersion,
       parser: (body) => FooDefaultPayload.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -55,6 +63,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -68,6 +77,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -83,6 +93,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -97,6 +108,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooDiscriminatorWithEmptyObject.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -110,6 +122,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) {},
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -124,6 +137,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooObjectWithEveryType.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -138,6 +152,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooObjectWithEveryNullableType.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -152,6 +167,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooObjectWithPascalCaseKeys.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -166,6 +182,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooObjectWithSnakeCaseKeys.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -180,6 +197,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooObjectWithEveryOptionalType.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -194,6 +212,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooRecursiveObject.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -207,6 +226,7 @@ class TestClientPrefixed {
       params: params.toJson(),
       parser: (body) => FooRecursiveUnion.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -236,7 +256,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => FooAutoReconnectResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -283,7 +305,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) =>
           FooStreamConnectionErrorTestResponse.fromJsonString(body),
@@ -335,7 +359,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) =>
           FooStreamHeartbeatDetectionTestResponse.fromJsonString(body),
@@ -382,7 +408,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       parser: (body) => FooStreamLargeObjectsResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -424,7 +452,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => FooChatMessage.fromJsonString(body),
       onMessage: onMessage,
@@ -478,7 +508,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       parser: (body) =>
           FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -521,7 +553,9 @@ class TestClientPrefixed {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       parser: (body) => FooChatMessage.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,

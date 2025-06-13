@@ -19,7 +19,7 @@ type SseController[T any] interface {
 	Push(T) RpcError
 	Close(notifyClient bool)
 	Done() <-chan struct{}
-	SetHeartbeatInterval(time.Duration) // How often to send a "ping" event. Default is 20 seconds.
+	SetHeartbeatInterval(time.Duration) // How often to send a "heartbeat" event. Default is 20 seconds.
 	SetHeartbeatEnabled(bool)           // enable or disable the auto heartbeat message. Default is true.
 }
 
@@ -32,13 +32,17 @@ type defaultSseController[T any] struct {
 	cancelFunc         context.CancelFunc
 	context            context.Context
 	heartbeatTicker    *time.Ticker
-	heartbeatDuration  time.Duration
+	heartbeatInterval  time.Duration
 	heartbeatEnabled   bool
 }
 
-func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *defaultSseController[T] {
+func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing, heartbeatInterval time.Duration) *defaultSseController[T] {
 	rc := http.NewResponseController(w)
 	ctx, cancelFunc := context.WithCancel(r.Context())
+	interval := heartbeatInterval
+	if interval == 0 {
+		interval = time.Second * 20
+	}
 	controller := defaultSseController[T]{
 		responseController: rc,
 		writer:             w,
@@ -46,7 +50,7 @@ func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyC
 		keyCasing:          keyCasing,
 		cancelFunc:         cancelFunc,
 		context:            ctx,
-		heartbeatDuration:  time.Second * 20,
+		heartbeatInterval:  interval,
 		heartbeatEnabled:   true,
 	}
 	return &controller
@@ -60,7 +64,7 @@ func (controller *defaultSseController[T]) startStream() {
 	controller.writer.Header().Set("Content-Type", "text/event-stream")
 	controller.writer.Header().Set("Cache-Control", "private, no-cache, no-store, no-transform, must-revalidate, max-age=0")
 	// send heartbeat-interval header
-	controller.writer.Header().Set("heartbeat-interval", strconv.FormatInt(controller.heartbeatDuration.Milliseconds(), 10))
+	controller.writer.Header().Set("heartbeat-interval", strconv.FormatInt(controller.heartbeatInterval.Milliseconds(), 10))
 	// prevent nginx from buffering the response
 	controller.writer.Header().Set("x-accel-buffering", "no")
 
@@ -74,7 +78,7 @@ func (controller *defaultSseController[T]) startStream() {
 	controller.responseController.Flush()
 	controller.headersSent = true
 	if controller.heartbeatEnabled {
-		controller.heartbeatTicker = time.NewTicker(controller.heartbeatDuration)
+		controller.heartbeatTicker = time.NewTicker(controller.heartbeatInterval)
 	}
 	go func() {
 		if controller.heartbeatTicker != nil {
@@ -132,7 +136,7 @@ func (controller *defaultSseController[T]) Done() <-chan struct{} {
 }
 
 func (controller *defaultSseController[T]) SetHeartbeatInterval(duration time.Duration) {
-	controller.heartbeatDuration = duration
+	controller.heartbeatInterval = duration
 }
 
 func (controller *defaultSseController[T]) SetHeartbeatEnabled(val bool) {
@@ -271,7 +275,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 			}
 		}
 
-		sseController := newDefaultSseController[TResponse](w, r, app.options.KeyCasing)
+		sseController := newDefaultSseController[TResponse](w, r, app.options.KeyCasing, app.options.HeartbeatInterval)
 		err = handler(params, sseController, *event)
 		if err != nil {
 			handleError(false, w, event, err, onError)
