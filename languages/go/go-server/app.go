@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 type App[TEvent Event] struct {
@@ -144,6 +145,8 @@ type AppOptions[TEvent Event] struct {
 	OnBeforeResponse  func(*TEvent, any) RpcError
 	OnAfterResponse   func(*TEvent, any) RpcError
 	OnError           func(*TEvent, error)
+	// how often to send a heartbeat message over open connections default is 20 seconds
+	HeartbeatInterval time.Duration
 }
 
 func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], createEvent func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)) App[TEvent] {
