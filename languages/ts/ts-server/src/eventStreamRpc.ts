@@ -247,7 +247,7 @@ export function registerEventStreamRpc(
                 );
             }
             const stream = new EventStreamConnection(event, {
-                heartbeatMs: procedure.heartbeatMs,
+                heartbeatMs: procedure.heartbeatMs ?? opts.heartbeatMs,
                 heartbeatEnabled: procedure.heartbeatEnabled,
                 validator: responseValidator,
             });

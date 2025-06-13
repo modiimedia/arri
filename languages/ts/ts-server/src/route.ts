@@ -74,7 +74,12 @@ export function defineRoute<
 
 export type RouteOptions = Pick<
     ArriOptions,
-    'onAfterResponse' | 'onBeforeResponse' | 'onError' | 'onRequest' | 'debug'
+    | 'onAfterResponse'
+    | 'onBeforeResponse'
+    | 'onError'
+    | 'onRequest'
+    | 'debug'
+    | 'heartbeatMs'
 > & { middleware: Middleware[] };
 
 export function registerRoute(
