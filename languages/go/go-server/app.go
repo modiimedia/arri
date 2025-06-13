@@ -3,6 +3,7 @@ package arri
 import (
 	"flag"
 	"os"
+	"time"
 )
 
 type App[T any] struct {
@@ -113,6 +114,8 @@ type AppOptions[T any] struct {
 	OnBeforeResponse func(req *Request[T], params any, response any) RpcError
 	OnAfterResponse  func(req *Request[T], params any, response any) RpcError
 	OnError          func(req *Request[T], err error)
+	// how often to send a heartbeat message over open connections default is 20 seconds
+	HeartbeatInterval time.Duration
 }
 
 type AppHooks[TMeta any] struct {

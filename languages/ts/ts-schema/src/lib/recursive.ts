@@ -79,6 +79,7 @@ export function recursive<T = any>(
 
     if (!options.id) {
         recursiveTypeCount++;
+        // eslint-disable-next-line no-console
         console.warn(
             `[@arrirpc/schema] WARNING: It is highly recommended to specify an ID for recursive types.`,
         );

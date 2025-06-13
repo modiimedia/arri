@@ -72,7 +72,8 @@ export interface HttpRpc<
     response: TResponse;
     isDeprecated?: boolean;
     isEventStream?: TIsEventStream;
-    pingInterval?: TIsEventStream extends true ? number : undefined;
+    heartbeatMs?: TIsEventStream extends true ? number : never;
+    heartbeatEnabled?: TIsEventStream extends true ? boolean : never;
     handler: TIsEventStream extends true
         ? EventStreamRpcHandler<
               TParams extends RpcParamSchema<any>
@@ -393,6 +394,7 @@ export function getSchemaValidator<T extends Record<string, any> = any>(
                 errors: (input) => a.errors(schema, input),
             };
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(
                 `Error compiling ${type} validator for ${rpcName}. Error: ${err}`,
             );

@@ -57,6 +57,6 @@ test('create rpc definition', () => {
         '/hello/world',
         eventStreamRpc,
     );
-    expect(eventStreamDef.method).toBe('get');
+    expect(eventStreamDef.method).toBe('post');
     expect(eventStreamDef.isEventStream).toBe(true);
 });

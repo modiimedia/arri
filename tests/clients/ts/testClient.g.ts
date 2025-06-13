@@ -624,226 +624,167 @@ export class TestClientTestsService {
     }
     streamAutoReconnect(
         params: AutoReconnectParams,
-        options?: EventStreamHooks<AutoReconnectResponse>,
-    ): EventStreamController {
-        const req: RpcRequest<AutoReconnectParams> = {
-            procedure: 'tests.streamAutoReconnect',
-            path: '/rpcs/tests/stream-auto-reconnect',
-            method: undefined,
-            clientVersion: '10',
-            data: params,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<
-            AutoReconnectParams,
-            AutoReconnectResponse
-        > = {
-            params: $$AutoReconnectParams,
-            response: $$AutoReconnectResponse,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
+        options: SseOptions<AutoReconnectResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$AutoReconnectResponse.fromJson,
+                responseFromString: $$AutoReconnectResponse.fromJsonString,
+                serializer: $$AutoReconnectParams.toJsonString,
+                clientVersion: '10',
+            },
+            options,
         );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<
-            AutoReconnectParams,
-            AutoReconnectResponse
-        >(req, validator, options ?? {});
     }
     /**
      * This route will always return an error. The client should automatically retry with exponential backoff.
      */
     streamConnectionErrorTest(
         params: StreamConnectionErrorTestParams,
-        options?: EventStreamHooks<StreamConnectionErrorTestResponse>,
-    ): EventStreamController {
-        const req: RpcRequest<StreamConnectionErrorTestParams> = {
-            procedure: 'tests.streamConnectionErrorTest',
-            path: '/rpcs/tests/stream-connection-error-test',
-            method: undefined,
-            clientVersion: '10',
-            data: params,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<
-            StreamConnectionErrorTestParams,
-            StreamConnectionErrorTestResponse
-        > = {
-            params: $$StreamConnectionErrorTestParams,
-            response: $$StreamConnectionErrorTestResponse,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
+        options: SseOptions<StreamConnectionErrorTestResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<
+            StreamConnectionErrorTestResponse,
+            StreamConnectionErrorTestParams
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$StreamConnectionErrorTestResponse.fromJson,
+                responseFromString:
+                    $$StreamConnectionErrorTestResponse.fromJsonString,
+                serializer: $$StreamConnectionErrorTestParams.toJsonString,
+                clientVersion: '10',
+            },
+            options,
         );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<
-            StreamConnectionErrorTestParams,
-            StreamConnectionErrorTestResponse
-        >(req, validator, options ?? {});
+    }
+    /**
+     * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+     * When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+     * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+     */
+    streamHeartbeatDetectionTest(
+        params: StreamHeartbeatDetectionTestParams,
+        options: SseOptions<StreamHeartbeatDetectionTestResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<
+            StreamHeartbeatDetectionTestResponse,
+            StreamHeartbeatDetectionTestParams
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson:
+                    $$StreamHeartbeatDetectionTestResponse.fromJson,
+                responseFromString:
+                    $$StreamHeartbeatDetectionTestResponse.fromJsonString,
+                serializer: $$StreamHeartbeatDetectionTestParams.toJsonString,
+                clientVersion: '10',
+            },
+            options,
+        );
     }
     /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
-        options?: EventStreamHooks<StreamLargeObjectsResponse>,
-    ): EventStreamController {
-        const req: RpcRequest<undefined> = {
-            procedure: 'tests.streamLargeObjects',
-            path: '/rpcs/tests/stream-large-objects',
-            method: undefined,
-            clientVersion: '10',
-            data: undefined,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<
-            undefined,
-            StreamLargeObjectsResponse
-        > = {
-            params: UndefinedModelValidator,
-            response: $$StreamLargeObjectsResponse,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
+        options: SseOptions<StreamLargeObjectsResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<StreamLargeObjectsResponse, undefined>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+
+                responseFromJson: $$StreamLargeObjectsResponse.fromJson,
+                responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
+                serializer: () => {},
+                clientVersion: '10',
+            },
+            options,
         );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<
-            undefined,
-            StreamLargeObjectsResponse
-        >(req, validator, options ?? {});
     }
     streamMessages(
         params: ChatMessageParams,
-        options?: EventStreamHooks<ChatMessage>,
-    ): EventStreamController {
-        const req: RpcRequest<ChatMessageParams> = {
-            procedure: 'tests.streamMessages',
-            path: '/rpcs/tests/stream-messages',
-            method: undefined,
-            clientVersion: '10',
-            data: params,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<ChatMessageParams, ChatMessage> = {
-            params: $$ChatMessageParams,
-            response: $$ChatMessage,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<ChatMessageParams, ChatMessage>(
-            req,
-            validator,
-            options ?? {},
+        options: SseOptions<ChatMessage> = {},
+    ): EventSourceController {
+        return arriSseRequest<ChatMessage, ChatMessageParams>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-messages`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$ChatMessage.fromJson,
+                responseFromString: $$ChatMessage.fromJsonString,
+                serializer: $$ChatMessageParams.toJsonString,
+                clientVersion: '10',
+            },
+            options,
         );
     }
     streamRetryWithNewCredentials(
-        options?: EventStreamHooks<TestsStreamRetryWithNewCredentialsResponse>,
-    ): EventStreamController {
-        const req: RpcRequest<undefined> = {
-            procedure: 'tests.streamRetryWithNewCredentials',
-            path: '/rpcs/tests/stream-retry-with-new-credentials',
-            method: undefined,
-            clientVersion: '10',
-            data: undefined,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<
-            undefined,
-            TestsStreamRetryWithNewCredentialsResponse
-        > = {
-            params: UndefinedModelValidator,
-            response: $$TestsStreamRetryWithNewCredentialsResponse,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
+        options: SseOptions<TestsStreamRetryWithNewCredentialsResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<
+            TestsStreamRetryWithNewCredentialsResponse,
+            undefined
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+
+                responseFromJson:
+                    $$TestsStreamRetryWithNewCredentialsResponse.fromJson,
+                responseFromString:
+                    $$TestsStreamRetryWithNewCredentialsResponse.fromJsonString,
+                serializer: () => {},
+                clientVersion: '10',
+            },
+            options,
         );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<
-            undefined,
-            TestsStreamRetryWithNewCredentialsResponse
-        >(req, validator, options ?? {});
     }
     /**
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
      */
     streamTenEventsThenEnd(
-        options?: EventStreamHooks<ChatMessage>,
-    ): EventStreamController {
-        const req: RpcRequest<undefined> = {
-            procedure: 'tests.streamTenEventsThenEnd',
-            path: '/rpcs/tests/stream-ten-events-then-end',
-            method: undefined,
-            clientVersion: '10',
-            data: undefined,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<undefined, ChatMessage> = {
-            params: UndefinedModelValidator,
-            response: $$ChatMessage,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<undefined, ChatMessage>(
-            req,
-            validator,
-            options ?? {},
+        options: SseOptions<ChatMessage> = {},
+    ): EventSourceController {
+        return arriSseRequest<ChatMessage, undefined>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+
+                responseFromJson: $$ChatMessage.fromJson,
+                responseFromString: $$ChatMessage.fromJsonString,
+                serializer: () => {},
+                clientVersion: '10',
+            },
+            options,
         );
     }
 }
@@ -874,40 +815,23 @@ export class TestClientUsersService {
     }
     watchUser(
         params: UsersWatchUserParams,
-        options?: EventStreamHooks<UsersWatchUserResponse>,
-    ): EventStreamController {
-        const req: RpcRequest<UsersWatchUserParams> = {
-            procedure: 'users.watchUser',
-            path: '/rpcs/users/watch-user',
-            method: 'get',
-            clientVersion: '10',
-            data: params,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<
-            UsersWatchUserParams,
-            UsersWatchUserResponse
-        > = {
-            params: $$UsersWatchUserParams,
-            response: $$UsersWatchUserResponse,
-        };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
+        options: SseOptions<UsersWatchUserResponse> = {},
+    ): EventSourceController {
+        return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
+            {
+                url: `${this._baseUrl}/rpcs/users/watch-user`,
+                method: 'post',
+                ofetch: this._fetch,
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$UsersWatchUserResponse.fromJson,
+                responseFromString: $$UsersWatchUserResponse.fromJsonString,
+                serializer: $$UsersWatchUserParams.toJsonString,
+                clientVersion: '10',
+            },
+            options,
         );
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<
-            UsersWatchUserParams,
-            UsersWatchUserResponse
-        >(req, validator, options ?? {});
     }
 }
 
@@ -5785,6 +5709,94 @@ export const $$StreamConnectionErrorTestResponse: ArriModelValidator<StreamConne
         },
         fromJsonString(input): StreamConnectionErrorTestResponse {
             return $$StreamConnectionErrorTestResponse.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"message":';
+            json += serializeString(input.message);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`message=${input.message}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface StreamHeartbeatDetectionTestParams {
+    heartbeatEnabled: boolean;
+}
+export const $$StreamHeartbeatDetectionTestParams: ArriModelValidator<StreamHeartbeatDetectionTestParams> =
+    {
+        new(): StreamHeartbeatDetectionTestParams {
+            return {
+                heartbeatEnabled: false,
+            };
+        },
+        validate(input): input is StreamHeartbeatDetectionTestParams {
+            return (
+                isObject(input) && typeof input.heartbeatEnabled === 'boolean'
+            );
+        },
+        fromJson(input): StreamHeartbeatDetectionTestParams {
+            let _heartbeatEnabled: boolean;
+            if (typeof input.heartbeatEnabled === 'boolean') {
+                _heartbeatEnabled = input.heartbeatEnabled;
+            } else {
+                _heartbeatEnabled = false;
+            }
+            return {
+                heartbeatEnabled: _heartbeatEnabled,
+            };
+        },
+        fromJsonString(input): StreamHeartbeatDetectionTestParams {
+            return $$StreamHeartbeatDetectionTestParams.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"heartbeatEnabled":';
+            json += `${input.heartbeatEnabled}`;
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`heartbeatEnabled=${input.heartbeatEnabled}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface StreamHeartbeatDetectionTestResponse {
+    message: string;
+}
+export const $$StreamHeartbeatDetectionTestResponse: ArriModelValidator<StreamHeartbeatDetectionTestResponse> =
+    {
+        new(): StreamHeartbeatDetectionTestResponse {
+            return {
+                message: '',
+            };
+        },
+        validate(input): input is StreamHeartbeatDetectionTestResponse {
+            return isObject(input) && typeof input.message === 'string';
+        },
+        fromJson(input): StreamHeartbeatDetectionTestResponse {
+            let _message: string;
+            if (typeof input.message === 'string') {
+                _message = input.message;
+            } else {
+                _message = '';
+            }
+            return {
+                message: _message,
+            };
+        },
+        fromJsonString(input): StreamHeartbeatDetectionTestResponse {
+            return $$StreamHeartbeatDetectionTestResponse.fromJson(
                 JSON.parse(input),
             );
         },

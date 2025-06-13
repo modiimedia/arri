@@ -14,13 +14,13 @@ import {
     TestClient,
 } from './testClient.g';
 
-function wait(ms: number) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, ms);
-    });
-}
+// function wait(ms: number) {
+//     return new Promise((resolve) => {
+//         setTimeout(() => {
+//             resolve(true);
+//         }, ms);
+//     });
+// }
 
 const baseUrl = 'http://127.0.0.1:2020';
 const wsConnectionUrl = baseUrl + '/ws';
@@ -358,86 +358,102 @@ test('onError hook fires properly', async () => {
 test('[SSE] supports server sent events', async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
-    const controller = await client.tests.streamMessages(
-        { channelId: '1' },
-        {
-            onMessage(msg) {
-                receivedMessageCount++;
-                expect(msg.channelId).toBe('1');
-                switch (msg.messageType) {
-                    case 'IMAGE':
-                        expect(msg.date instanceof Date).toBe(true);
-                        expect(typeof msg.image).toBe('string');
-                        break;
-                    case 'TEXT':
-                        expect(msg.date instanceof Date).toBe(true);
-                        expect(typeof msg.text).toBe('string');
-                        break;
-                    case 'URL':
-                        expect(msg.date instanceof Date).toBe(true);
-                        expect(typeof msg.url).toBe('string');
-                        break;
-                }
+    await new Promise((res, rej) => {
+        setTimeout(() => rej(), 2000);
+        const controller = client.tests.streamMessages(
+            { channelId: '1' },
+            {
+                onMessage(msg) {
+                    receivedMessageCount++;
+                    expect(msg.channelId).toBe('1');
+                    switch (msg.messageType) {
+                        case 'IMAGE':
+                            expect(msg.date instanceof Date).toBe(true);
+                            expect(typeof msg.image).toBe('string');
+                            break;
+                        case 'TEXT':
+                            expect(msg.date instanceof Date).toBe(true);
+                            expect(typeof msg.text).toBe('string');
+                            break;
+                        case 'URL':
+                            expect(msg.date instanceof Date).toBe(true);
+                            expect(typeof msg.url).toBe('string');
+                            break;
+                    }
+                    if (receivedMessageCount >= 12) controller.abort();
+                },
+                onResponse({ response }) {
+                    wasConnected = response.status === 200;
+                },
             },
-            onOpen() {
-                wasConnected = true;
-            },
-        },
-    );
-    await wait(500);
-    controller.abort();
+        );
+        controller.onAbort(() => res(undefined));
+    });
     expect(receivedMessageCount > 0).toBe(true);
     expect(wasConnected).toBe(true);
-}, 2000);
+});
 
 test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: unknown | undefined;
-    const controller = client.tests.streamTenEventsThenEnd({
-        onOpen() {
-            timesConnected++;
-        },
-        onMessage(_) {
-            messageCount++;
-        },
-        onError(error) {
-            errorReceived = error;
-        },
+    let errorReceived: ArriErrorInstance | undefined;
+    await new Promise((res, rej) => {
+        setTimeout(() => rej(), 2000);
+        const controller = client.tests.streamTenEventsThenEnd({
+            onMessage(_) {
+                messageCount++;
+            },
+            onRequestError({ error }) {
+                errorReceived = error;
+            },
+            onResponseError({ error }) {
+                errorReceived = error;
+            },
+            onRequest() {
+                timesConnected++;
+            },
+        });
+        controller.onAbort(() => res(undefined));
     });
-    await wait(1000);
     expect(errorReceived).toBe(undefined);
-    expect((controller as any).signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
 });
 
 test('[SSE] auto-reconnects when connection is closed by server', async () => {
-    let connectionCount = 0;
+    let reqCount = 0;
+    let resCount = 0;
     let errorCount = 0;
     let messageCount = 0;
-    const controller = client.tests.streamAutoReconnect(
-        {
-            messageCount: 10,
-        },
-        {
-            onOpen() {
-                connectionCount++;
+    await new Promise((res, rej) => {
+        setTimeout(() => rej(), 2000);
+        const controller = client.tests.streamAutoReconnect(
+            {
+                messageCount: 10,
             },
-            onMessage(data) {
-                messageCount++;
-                expect(data.count > 0).toBe(true);
+            {
+                onRequest() {
+                    reqCount++;
+                },
+                onResponse() {
+                    resCount++;
+                },
+                onMessage(data) {
+                    messageCount++;
+                    expect(data.count > 0).toBe(true);
+                    if (messageCount >= 30) controller.abort();
+                },
+                onResponseError(_) {
+                    errorCount++;
+                },
             },
-            onError(_) {
-                errorCount++;
-            },
-        },
-    );
-    await wait(2000);
-    expect(messageCount > 10).toBe(true);
-    expect(connectionCount > 0).toBe(true);
+        );
+        controller.onAbort(() => res(undefined));
+    });
+    expect(messageCount).toBe(30);
+    expect(reqCount).toBe(3);
+    expect(resCount).toBe(3);
     expect(errorCount).toBe(0);
-    controller.abort();
 });
 
 test('[SSE] reconnect with new credentials', async () => {
@@ -452,23 +468,99 @@ test('[SSE] reconnect with new credentials', async () => {
     });
     let msgCount = 0;
     let openCount = 0;
-    let errorCount = 0;
-    const controller = dynamicClient.tests.streamRetryWithNewCredentials({
-        onMessage(_) {
-            msgCount++;
-        },
-        onError(_) {
-            errorCount++;
-        },
-        onOpen() {
-            openCount++;
-        },
+    await new Promise((res, rej) => {
+        setTimeout(() => rej(), 2000);
+        const controller = dynamicClient.tests.streamRetryWithNewCredentials({
+            onMessage(_) {
+                msgCount++;
+                if (msgCount >= 40) controller.abort();
+            },
+            onRequestError({ error }) {
+                rej(error);
+            },
+            onResponse(_) {
+                openCount++;
+            },
+            onResponseError({ error }) {
+                rej(error);
+            },
+        });
+        controller.onAbort(() => res(undefined));
     });
-    await wait(2000);
-    controller.abort();
-    expect(msgCount > 1).toBe(true);
-    expect(openCount > 1).toBe(true);
-    expect(errorCount).toBe(0);
+    expect(msgCount >= 40).toBe(true);
+    expect(openCount).toBe(4);
+});
+
+describe('[SSE] respects heartbeat header', async () => {
+    test(
+        'reconnects when no heartbeat is received',
+        { timeout: 30000 },
+        async () => {
+            let msgCount = 0;
+            let resCount = 0;
+            await new Promise((res, rej) => {
+                setTimeout(() => {
+                    rej();
+                }, 30000);
+                const controller = client.tests.streamHeartbeatDetectionTest(
+                    { heartbeatEnabled: false },
+                    {
+                        onMessage(_) {
+                            msgCount++;
+                            if (msgCount >= 15) controller.abort();
+                        },
+                        onResponse() {
+                            resCount++;
+                        },
+                        onRequestError({ error }) {
+                            rej(error);
+                        },
+                        onResponseError({ error }) {
+                            rej(error);
+                        },
+                    },
+                );
+                controller.onAbort(() => res(undefined));
+            });
+            expect(resCount).toBe(3);
+            expect(msgCount).toBe(15);
+        },
+    );
+
+    test(
+        'keeps connection alive when heartbeat is received',
+        { timeout: 30000 },
+        async () => {
+            let msgCount = 0;
+            let resCount = 0;
+            await new Promise((res, rej) => {
+                setTimeout(() => {
+                    rej();
+                }, 30000);
+                const controller = client.tests.streamHeartbeatDetectionTest(
+                    { heartbeatEnabled: true },
+                    {
+                        onMessage(_) {
+                            msgCount++;
+                            if (msgCount >= 8) controller.abort();
+                        },
+                        onResponse() {
+                            resCount++;
+                        },
+                        onRequestError({ error }) {
+                            rej(error);
+                        },
+                        onResponseError({ error }) {
+                            rej(error);
+                        },
+                    },
+                );
+                controller.onAbort(() => res(undefined));
+            });
+            expect(resCount).toBe(1);
+            expect(msgCount).toBe(8);
+        },
+    );
 });
 
 describe('request options', () => {

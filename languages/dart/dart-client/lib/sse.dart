@@ -5,7 +5,8 @@ import 'package:arri_client/errors.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
-typedef SseHookOnMessage<T> = void Function(T data, EventSource<T> connection);
+typedef SseHookOnMessage<T> = void Function(
+    T message, EventSource<T> connection);
 typedef SseHookOnError<T> = void Function(
     ArriError error, EventSource<T> connection);
 typedef SseHookOnOpen<T> = void Function(
@@ -27,6 +28,8 @@ EventSource<T> parsedArriSseRequest<T>(
   SseHookOnError<T>? onError,
   String? lastEventId,
   String? clientVersion,
+  int? heartbeatTimeoutMultiplier,
+  Duration? timeout,
 }) {
   return EventSource(
     httpClient: httpClient,
@@ -41,6 +44,7 @@ EventSource<T> parsedArriSseRequest<T>(
       }
       return result;
     },
+    heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
     retryDelay: retryDelay ?? Duration.zero,
     maxRetryCount: maxRetryCount,
     lastEventId: lastEventId,
@@ -48,6 +52,7 @@ EventSource<T> parsedArriSseRequest<T>(
     onOpen: onOpen,
     onClose: onClose,
     onError: onError,
+    timeout: timeout,
   );
 }
 
@@ -66,6 +71,10 @@ class EventSource<T> {
   int _retryCount = 0;
   T Function(String data) parser;
   bool _closedByClient = false;
+  Timer? _heartbeatTimer;
+  int? _heartbeatTimerMs;
+  final int _heartbeatTimerMultiplier;
+  final Duration _timeout;
 
   // hooks
   late final void Function(T data) _onMessage;
@@ -87,11 +96,16 @@ class EventSource<T> {
     SseHookOnOpen<T>? onOpen,
     SseHookOnClose<T>? onClose,
     SseHookOnError<T>? onError,
+    int? heartbeatTimeoutMultiplier,
     this.lastEventId,
+    Duration? timeout,
   })  : _headers = headers,
         _params = params,
         _retryDelay = retryDelay,
-        _maxRetryCount = maxRetryCount {
+        _maxRetryCount = maxRetryCount,
+        _heartbeatTimerMultiplier = heartbeatTimeoutMultiplier ?? 2,
+        _timeout = timeout ?? timeoutDefault {
+    assert(_heartbeatTimerMultiplier >= 1);
     this._httpClient = httpClient ?? http.Client();
 
     // set hooks
@@ -110,6 +124,16 @@ class EventSource<T> {
       onClose?.call(this);
     };
     _connect();
+  }
+
+  _resetHeartbeatCheck() {
+    _heartbeatTimer?.cancel();
+    if (_heartbeatTimerMs == null || _heartbeatTimerMs! <= 0) return;
+    _heartbeatTimer = Timer(
+        Duration(
+          milliseconds: _heartbeatTimerMs! * _heartbeatTimerMultiplier,
+        ),
+        () => _connect());
   }
 
   Future<void> _connect({bool isRetry = false}) async {
@@ -150,7 +174,7 @@ class EventSource<T> {
     }
     try {
       await _requestStream?.cancel();
-      final response = await _httpClient.send(request);
+      final response = await _httpClient.send(request).timeout(_timeout);
       _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
         final body = await utf8.decodeStream(response.stream);
@@ -171,6 +195,12 @@ class EventSource<T> {
           "Server must return statusCode 200. Instead got ${response.statusCode}",
         );
       }
+      final heartbeatIntervalHeader =
+          int.tryParse(response.headers["heartbeat-interval"] ?? "0");
+      if (heartbeatIntervalHeader != null && heartbeatIntervalHeader > 0) {
+        _heartbeatTimerMs = heartbeatIntervalHeader;
+      }
+      _resetHeartbeatCheck();
       String pendingData = "";
 
       // reset retry count when connection is successful
@@ -196,6 +226,7 @@ class EventSource<T> {
           final eventResult = parseSseEvents(pendingData + input, parser);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
+            _resetHeartbeatCheck();
             if (event.id != null) {
               lastEventId = event.id;
             }
@@ -218,6 +249,7 @@ class EventSource<T> {
             _onClose();
             return;
           }
+          if (_closedByClient) return;
           Timer(_retryDelay, () => _connect(isRetry: true));
         },
       );
@@ -270,6 +302,7 @@ class EventSource<T> {
 
   void close() {
     _closedByClient = true;
+    _heartbeatTimer?.cancel();
     try {
       _requestStream?.cancel();
     } catch (_) {}
@@ -279,6 +312,11 @@ class EventSource<T> {
 
   bool get isClosed {
     return _closedByClient;
+  }
+
+  void reconnect() {
+    _closedByClient = false;
+    _connect(isRetry: true);
   }
 
   Stream<T> toStream() {

@@ -1,0 +1,9 @@
+root=true
+
+[*]
+end_of_line=lf
+insert_final_newline=true
+
+[*.{ts}]
+index_style=space
+index_size=4

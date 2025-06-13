@@ -18,7 +18,12 @@
         "command": "./node_modules/.bin/arri build",
         "cwd": "tests/servers/ts"
       },
-      "cache": false
+      "cache": false,
+      "configurations": {
+        "windows-ci": {
+          "command": ".\\node_modules\\.bin\\arri build"
+        }
+      }
     },
     "start": {
       "executor": "nx:run-commands",

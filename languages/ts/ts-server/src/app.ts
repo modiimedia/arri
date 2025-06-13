@@ -61,6 +61,8 @@ export class ArriApp {
     private readonly _debug: boolean;
     readonly definitionPath: string;
 
+    private readonly _heartbeatMs: number;
+
     constructor(opts: ArriOptions = {}) {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
@@ -71,6 +73,7 @@ export class ArriApp {
         this._onError = opts.onError;
         this._onAfterResponse = opts.onAfterResponse;
         this._onBeforeResponse = opts.onBeforeResponse;
+        this._heartbeatMs = opts.heartbeatMs ?? 20000;
         this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? '';
         this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? '__definition';
         this.h3App.use(this.h3Router);
@@ -202,6 +205,7 @@ export class ArriApp {
                     onAfterResponse: this._onAfterResponse,
                     onBeforeResponse: this._onBeforeResponse,
                     debug: this._debug,
+                    heartbeatMs: this._heartbeatMs,
                 });
                 return;
             }
@@ -268,6 +272,7 @@ export interface ArriOptions {
     rpcDefinitionPath?: string;
     disableDefaultRoute?: boolean;
     disableDefinitionRoute?: boolean;
+    heartbeatMs?: number;
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
     onAfterResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;

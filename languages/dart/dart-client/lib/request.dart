@@ -20,6 +20,8 @@ enum HttpMethod implements Comparable<HttpMethod> {
   compareTo(HttpMethod other) => value.compareTo(other.value);
 }
 
+final timeoutDefault = Duration(seconds: 30);
+
 /// Perform a raw http request
 Future<http.Response> arriRequest(
   String url, {
@@ -34,6 +36,7 @@ Future<http.Response> arriRequest(
   /// manually specify a specific encoding
   Encoding? encoding,
   String? clientVersion,
+  Duration? timeout,
 }) async {
   String defaultErrorMsg =
       "Placeholder request. If you see this that means a request was never sent to the server.";
@@ -68,31 +71,39 @@ Future<http.Response> arriRequest(
         break;
       }
       final uri = Uri.parse(url);
-      result = await client.get(uri, headers: finalHeaders);
+      result = await client
+          .get(uri, headers: finalHeaders)
+          .timeout(timeout ?? timeoutDefault);
       break;
     case HttpMethod.patch:
-      result = await client.patch(
-        Uri.parse(url),
-        headers: finalHeaders,
-        body: bodyInput,
-        encoding: encoding,
-      );
+      result = await client
+          .patch(
+            Uri.parse(url),
+            headers: finalHeaders,
+            body: bodyInput,
+            encoding: encoding,
+          )
+          .timeout(timeout ?? timeoutDefault);
       break;
     case HttpMethod.put:
-      result = await client.put(
-        Uri.parse(url),
-        headers: finalHeaders,
-        body: bodyInput,
-        encoding: encoding,
-      );
+      result = await client
+          .put(
+            Uri.parse(url),
+            headers: finalHeaders,
+            body: bodyInput,
+            encoding: encoding,
+          )
+          .timeout(timeout ?? timeoutDefault);
       break;
     case HttpMethod.post:
-      result = await client.post(
-        Uri.parse(url),
-        headers: finalHeaders,
-        body: bodyInput,
-        encoding: encoding,
-      );
+      result = await client
+          .post(
+            Uri.parse(url),
+            headers: finalHeaders,
+            body: bodyInput,
+            encoding: encoding,
+          )
+          .timeout(timeout ?? timeoutDefault);
       break;
     case HttpMethod.head:
       final paramsInput = query ?? params;
@@ -102,15 +113,23 @@ Future<http.Response> arriRequest(
           queryParts.add("${entry.key}=${entry.value.toString()}");
         }
         final uri = Uri.parse("$url?${queryParts.join("&")}");
-        result = await client.head(
-          uri,
-          headers: finalHeaders,
-        );
+        result = await client
+            .head(
+              uri,
+              headers: finalHeaders,
+            )
+            .timeout(timeout ?? timeoutDefault);
       }
       break;
     case HttpMethod.delete:
-      result = await client.delete(Uri.parse(url),
-          headers: finalHeaders, encoding: encoding, body: bodyInput);
+      result = await client
+          .delete(
+            Uri.parse(url),
+            headers: finalHeaders,
+            encoding: encoding,
+            body: bodyInput,
+          )
+          .timeout(timeout ?? timeoutDefault);
       break;
     // ignore: unreachable_switch_default
     default:
@@ -127,6 +146,7 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
   FutureOr<Map<String, String>> Function()? headers,
+  Duration? timeout,
   Function(Object)? onError,
   String? clientVersion,
   required T Function(String) parser,
@@ -141,6 +161,7 @@ Future<T> parsedArriRequest<T, E extends Exception>(
       params: params,
       headers: headers,
       clientVersion: clientVersion,
+      timeout: timeout,
     );
     if (result.statusCode >= 200 && result.statusCode <= 299) {
       return parser(utf8.decode(result.bodyBytes));

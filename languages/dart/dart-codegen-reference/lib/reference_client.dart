@@ -11,15 +11,21 @@ class ExampleClient {
   final String _clientVersion = "20";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   ExampleClient({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   }) : _httpClient = httpClient,
        _baseUrl = baseUrl,
        _headers = headers,
-       _onError = onError;
+       _onError = onError,
+       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+       _timeout = timeout;
 
   Future<NestedObject> sendObject(NestedObject params) async {
     return parsedArriRequest(
@@ -31,6 +37,7 @@ class ExampleClient {
       params: params.toJson(),
       parser: (body) => NestedObject.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -39,6 +46,8 @@ class ExampleClient {
     headers: _headers,
     httpClient: _httpClient,
     onError: _onError,
+    heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    timeout: _timeout,
   );
 }
 
@@ -48,15 +57,21 @@ class ExampleClientBooksService {
   final String _clientVersion = "20";
   final FutureOr<Map<String, String>> Function()? _headers;
   final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
   ExampleClientBooksService({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
     Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
   }) : _httpClient = httpClient,
        _baseUrl = baseUrl,
        _headers = headers,
-       _onError = onError;
+       _onError = onError,
+       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+       _timeout = timeout;
 
   /// Get a book
   Future<Book> getBook(BookParams params) async {
@@ -69,6 +84,7 @@ class ExampleClientBooksService {
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -84,6 +100,7 @@ class ExampleClientBooksService {
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
       onError: _onError,
+      timeout: _timeout,
     );
   }
 
@@ -98,6 +115,7 @@ class ExampleClientBooksService {
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
+    int? heartbeatTimeoutMultiplier,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/books/watch-book",
@@ -108,6 +126,9 @@ class ExampleClientBooksService {
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
+      heartbeatTimeoutMultiplier:
+          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
+      timeout: _timeout,
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
       onMessage: onMessage,

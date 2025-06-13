@@ -65,6 +65,10 @@ func main() {
 	arri.ScopedRpc(&app, "tests", SendRecursiveUnion, arri.RpcOptions{})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamAutoReconnect, arri.RpcOptions{})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamConnectionErrorTest, arri.RpcOptions{Description: "This route will always return an error. The client should automatically retry with exponential backoff."})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamHeartbeatDetectionTest, arri.RpcOptions{Description: `Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.`,
+	})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamLargeObjects, arri.RpcOptions{Description: "Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message"})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamMessages, arri.RpcOptions{})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamRetryWithNewCredentials, arri.RpcOptions{})
@@ -381,6 +385,32 @@ func StreamAutoReconnect(params AutoReconnectParams, stream arri.EventStream[Aut
 	}
 }
 
+type StreamHeartbeatDetectionTestParams struct {
+	HeartbeatEnabled bool
+}
+
+type StreamHeartbeatDetectionTestResponse struct {
+	Message string
+}
+
+func StreamHeartbeatDetectionTest(params StreamHeartbeatDetectionTestParams, stream arri.EventStream[StreamHeartbeatDetectionTestResponse], _ arri.Request[CustomProps]) arri.RpcError {
+	stream.SetHeartbeatInterval(time.Millisecond * 300)
+	stream.SetHeartbeatEnabled(params.HeartbeatEnabled)
+	stream.Start()
+	for i := 0; i < 5; i++ {
+		stream.Send(StreamHeartbeatDetectionTestResponse{Message: "hello world"})
+	}
+	t := time.NewTicker(time.Second * 2)
+	for {
+		select {
+		case <-t.C:
+			stream.Send(StreamHeartbeatDetectionTestResponse{Message: "Hello world"})
+		case <-stream.Done():
+			return nil
+		}
+	}
+}
+
 type StreamConnectionErrorTestParams struct {
 	StatusCode    int32
 	StatusMessage string
@@ -523,7 +553,7 @@ func StreamRetryWithNewCredentials(
 		case <-t.C:
 			msgCount++
 			stream.Send(TestsStreamRetryWithNewCredentialsResponse{Message: "ok"})
-			if msgCount >= 0 {
+			if msgCount >= 10 {
 				stream.Close(false)
 				return nil
 			}

@@ -20,7 +20,7 @@ main() {
         parser: (input) => input,
         onError: (err, event) {
           errCount++;
-          if (errCount == 5) {
+          if (errCount >= 5) {
             event.close();
           }
         },

@@ -8,13 +8,13 @@
     "prettier": "^3.5.3",
     "typia": "^9.3.1",
     "valibot": "1.1.0",
-    "zod": "^3.25.30"
+    "zod": "^3.25.63"
   },
   "devDependencies": {
-    "@ryoppippi/unplugin-typia": "^2.6.4",
+    "@ryoppippi/unplugin-typia": "^2.6.5",
     "@samchon/openapi": "^4.3.3",
     "autocannon": "^8.0.0",
     "citty": "^0.1.6"
   },
-  "version": "0.79.1"
+  "version": "0.80.3"
 }

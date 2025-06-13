@@ -7,6 +7,11 @@
       "options": {
         "command": "./gradlew test --console=plain",
         "cwd": "languages/kotlin/kotlin-codegen-reference"
+      },
+      "configurations": {
+        "windows-ci": {
+          "command": ".\\gradlew test"
+        }
       }
     }
   }

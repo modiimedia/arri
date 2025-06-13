@@ -1,11 +1,13 @@
 import { ChildProcess, execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
+import { cwd } from 'node:process';
 
 import { isAppDefinition } from '@arrirpc/codegen-utils';
 import chokidar from 'chokidar';
 import path from 'pathe';
 
 import { logger } from '../common';
+import { isOnWindows } from './_common';
 import { defineServerConfig } from './_config';
 
 export interface GoServerOptions {
@@ -42,14 +44,18 @@ export function goServer(options: GoServerOptions = {}) {
                 cwd: options.cwd,
             });
             let childProcess: ChildProcess | undefined;
+            logger.info(`Starting server`);
+            const buildCmd = goBuildCommand(outDir);
+            const startCmd = goStartServerCommand(outDir);
             async function spawnProcess() {
                 try {
-                    execSync(`go build -o ${outDir}/server`, {
+                    execSync(buildCmd, {
                         stdio: 'inherit',
                         cwd: options.cwd,
                     });
+
                     childProcess = spawn(
-                        `${outDir}/server`,
+                        startCmd,
                         [`--def-out=${outDir}/__definition.json`],
                         {
                             stdio: 'inherit',
@@ -158,15 +164,16 @@ export function goServer(options: GoServerOptions = {}) {
             if (!fs.existsSync(outDir)) {
                 fs.mkdirSync(outDir);
             }
-            execSync(`go build -o ${outDir}/server`, {
+            const buildCmd = goBuildCommand(outDir);
+            const startCmd = goStartServerCommand(outDir);
+            execSync(buildCmd, {
                 stdio: 'inherit',
+                cwd: options.cwd,
             });
-            execSync(
-                `${outDir}/server def -output ${outDir}/__definition.json`,
-                {
-                    stdio: 'inherit',
-                },
-            );
+            execSync(`${startCmd} def -output ${outDir}/__definition.json`, {
+                stdio: 'inherit',
+                cwd: options.cwd ?? cwd(),
+            });
             if (generators.length === 0) {
                 logger.warn(
                     'No generators specified in arri config. Skipping codegen.',
@@ -186,4 +193,18 @@ export function goServer(options: GoServerOptions = {}) {
             );
         },
     });
+}
+
+function goBuildCommand(outDir: string): string {
+    if (isOnWindows()) {
+        return `go build -o ${outDir}/server.exe`;
+    }
+    return `go build -o ${outDir}/server`;
+}
+
+function goStartServerCommand(outDir: string): string {
+    if (isOnWindows()) {
+        return `.\\${outDir}\\server.exe`;
+    }
+    return `./${outDir}/server`;
 }

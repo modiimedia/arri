@@ -59,7 +59,604 @@ class TestClientTestsService(
     private val headers: __TestClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    
+    suspend fun emptyParamsGetRequest(): DefaultPayload {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-params-get-request",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return DefaultPayload.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun emptyParamsPostRequest(): DefaultPayload {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-params-post-request",
+                method = HttpMethod.Post,
+                params = null,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return DefaultPayload.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun emptyResponseGetRequest(params: DefaultPayload): Unit {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-response-get-request",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun emptyResponsePostRequest(params: DefaultPayload): Unit {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-response-post-request",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    /**
+* If the target language supports it. Generated code should mark this procedure as deprecated.
+*/
+@Deprecated(message = "This method was marked as deprecated by the server")
+suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/deprecated-rpc",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendDiscriminatorWithEmptyObject(params: DiscriminatorWithEmptyObject): DiscriminatorWithEmptyObject {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-discriminator-with-empty-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return DiscriminatorWithEmptyObject.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendError(params: SendErrorParams): Unit {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-error",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendObject(params: ObjectWithEveryType): ObjectWithEveryType {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return ObjectWithEveryType.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendObjectWithNullableFields(params: ObjectWithEveryNullableType): ObjectWithEveryNullableType {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-nullable-fields",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return ObjectWithEveryNullableType.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendObjectWithPascalCaseKeys(params: ObjectWithPascalCaseKeys): ObjectWithPascalCaseKeys {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return ObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendObjectWithSnakeCaseKeys(params: ObjectWithSnakeCaseKeys): ObjectWithSnakeCaseKeys {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-snake-case-keys",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return ObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendPartialObject(params: ObjectWithEveryOptionalType): ObjectWithEveryOptionalType {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-partial-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return ObjectWithEveryOptionalType.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendRecursiveObject(params: RecursiveObject): RecursiveObject {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-recursive-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return RecursiveObject.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendRecursiveUnion(params: RecursiveUnion): RecursiveUnion {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-recursive-union",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return RecursiveUnion.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun streamAutoReconnect(
+            params: AutoReconnectParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: AutoReconnectResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = AutoReconnectResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    /**
+* This route will always return an error. The client should automatically retry with exponential backoff.
+*/
+suspend fun streamConnectionErrorTest(
+            params: StreamConnectionErrorTestParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-connection-error-test",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = StreamConnectionErrorTestResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    /**
+* Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+* When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+* When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+*/
+suspend fun streamHeartbeatDetectionTest(
+            params: StreamHeartbeatDetectionTestParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: StreamHeartbeatDetectionTestResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-heartbeat-detection-test",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = StreamHeartbeatDetectionTestResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    /**
+* Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+*/
+suspend fun streamLargeObjects(
+            
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-large-objects",
+                method = HttpMethod.Post,
+                params = null,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = StreamLargeObjectsResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    suspend fun streamMessages(
+            params: ChatMessageParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: ChatMessage) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-messages",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = ChatMessage.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    suspend fun streamRetryWithNewCredentials(
+            
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
+                method = HttpMethod.Post,
+                params = null,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = TestsStreamRetryWithNewCredentialsResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+
+    /**
+* When the client receives the 'done' event, it should close the connection and NOT reconnect
+*/
+suspend fun streamTenEventsThenEnd(
+            
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: ChatMessage) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
+                method = HttpMethod.Post,
+                params = null,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = ChatMessage.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
 }
 
 
@@ -70,7 +667,38 @@ class TestClientUsersService(
     private val headers: __TestClientHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    
+    suspend fun watchUser(
+            params: UsersWatchUserParams,
+            lastEventId: String? = null,
+            bufferCapacity: Int = 1024 * 1024,
+            onOpen: ((response: HttpResponse) -> Unit) = {},
+            onClose: (() -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
+            onData: ((data: UsersWatchUserResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/users/watch-user",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = UsersWatchUserResponse.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
 }
 
 
@@ -4318,6 +4946,104 @@ val message: String = when (__input.jsonObject["message"]) {
                 else -> ""
             }
             return StreamConnectionErrorTestResponse(
+                message,
+            )
+        }
+    }
+}
+
+
+
+data class StreamHeartbeatDetectionTestParams(
+    val heartbeatEnabled: Boolean,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"heartbeatEnabled\":"
+output += heartbeatEnabled
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("heartbeatEnabled=$heartbeatEnabled")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<StreamHeartbeatDetectionTestParams> {
+        @JvmStatic
+        override fun new(): StreamHeartbeatDetectionTestParams {
+            return StreamHeartbeatDetectionTestParams(
+                heartbeatEnabled = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): StreamHeartbeatDetectionTestParams {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamHeartbeatDetectionTestParams {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] StreamHeartbeatDetectionTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamHeartbeatDetectionTestParams.")
+                return new()
+            }
+val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
+                is JsonPrimitive -> __input.jsonObject["heartbeatEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return StreamHeartbeatDetectionTestParams(
+                heartbeatEnabled,
+            )
+        }
+    }
+}
+
+
+
+data class StreamHeartbeatDetectionTestResponse(
+    val message: String,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"message\":"
+output += buildString { printQuoted(message) }
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("message=$message")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<StreamHeartbeatDetectionTestResponse> {
+        @JvmStatic
+        override fun new(): StreamHeartbeatDetectionTestResponse {
+            return StreamHeartbeatDetectionTestResponse(
+                message = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): StreamHeartbeatDetectionTestResponse {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): StreamHeartbeatDetectionTestResponse {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] StreamHeartbeatDetectionTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamHeartbeatDetectionTestResponse.")
+                return new()
+            }
+val message: String = when (__input.jsonObject["message"]) {
+                is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return StreamHeartbeatDetectionTestResponse(
                 message,
             )
         }

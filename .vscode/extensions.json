@@ -4,10 +4,10 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "mathiasfrohlich.kotlin",
-    "dart-code.flutter",
     "tamasfe.even-better-toml",
     "vadimcn.vscode-lldb",
     "rust-lang.rust-analyzer",
-    "swiftlang.swift-vscode"
+    "swiftlang.swift-vscode",
+    "dart-code.dart-code"
   ]
 }
