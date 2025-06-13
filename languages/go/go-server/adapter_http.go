@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -282,8 +283,9 @@ type HttpEventStream[T any] struct {
 	keyCasing          KeyCasing
 	cancelFunc         context.CancelFunc
 	context            context.Context
-	pingTicker         *time.Ticker
-	pingDuration       time.Duration
+	heartbeatTicker    *time.Ticker
+	heartbeatInterval  time.Duration
+	heartbeatEnabled   bool
 }
 
 func NewHttpEventStream[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *HttpEventStream[T] {
@@ -296,7 +298,8 @@ func NewHttpEventStream[T any](w http.ResponseWriter, r *http.Request, keyCasing
 		keyCasing:          keyCasing,
 		cancelFunc:         cancelFunc,
 		context:            ctx,
-		pingDuration:       time.Second * 10,
+		heartbeatInterval:  time.Second * 20,
+		heartbeatEnabled:   true,
 	}
 	return &controller
 }
@@ -308,6 +311,9 @@ func isHttp2(r *http.Request) bool {
 func (controller *HttpEventStream[T]) startStream() {
 	controller.writer.Header().Set("Content-Type", "text/event-stream")
 	controller.writer.Header().Set("Cache-Control", "private, no-cache, no-store, no-transform, must-revalidate, max-age=0")
+	if controller.heartbeatEnabled {
+		controller.writer.Header().Set("heartbeat-interval", strconv.FormatInt(controller.heartbeatInterval.Milliseconds(), 10))
+	}
 
 	// prevent nginx from buffering the response
 	controller.writer.Header().Set("x-accel-buffering", "no")
@@ -321,12 +327,12 @@ func (controller *HttpEventStream[T]) startStream() {
 	controller.responseController.EnableFullDuplex()
 	controller.responseController.Flush()
 	controller.headersSent = true
-	controller.pingTicker = time.NewTicker(controller.pingDuration)
+	controller.heartbeatTicker = time.NewTicker(controller.heartbeatInterval)
 	go func() {
-		defer controller.pingTicker.Stop()
+		defer controller.heartbeatTicker.Stop()
 		for {
 			select {
-			case <-controller.pingTicker.C:
+			case <-controller.heartbeatTicker.C:
 				fmt.Fprintf(controller.writer, "event: ping\ndata:")
 				controller.responseController.Flush()
 			case <-controller.Done():
@@ -372,6 +378,10 @@ func (controller *HttpEventStream[T]) Done() <-chan struct{} {
 	return controller.context.Done()
 }
 
-func (controller *HttpEventStream[T]) SetPingInterval(val time.Duration) {
-	controller.pingDuration = val
+func (controller *HttpEventStream[T]) SetHeartbeatInterval(val time.Duration) {
+	controller.heartbeatInterval = val
+}
+
+func (es *HttpEventStream[T]) SetHeartbeatEnabled(val bool) {
+	es.heartbeatEnabled = val
 }

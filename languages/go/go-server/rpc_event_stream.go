@@ -5,9 +5,10 @@ import "time"
 type EventStream[T any] interface {
 	Start() // Send stream to client
 	Send(T) RpcError
-	SetPingInterval(time.Duration)
 	Close(notifyClient bool)
 	Done() <-chan struct{}
+	SetHeartbeatInterval(time.Duration)
+	SetHeartbeatEnabled(bool)
 }
 
 func IsEventStream[T any](input EventStream[T]) bool {
