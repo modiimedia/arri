@@ -39,6 +39,10 @@ type defaultSseController[T any] struct {
 func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing, heartbeatInterval time.Duration) *defaultSseController[T] {
 	rc := http.NewResponseController(w)
 	ctx, cancelFunc := context.WithCancel(r.Context())
+	interval := heartbeatInterval
+	if interval == 0 {
+		interval = time.Second * 20
+	}
 	controller := defaultSseController[T]{
 		responseController: rc,
 		writer:             w,
@@ -46,7 +50,7 @@ func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyC
 		keyCasing:          keyCasing,
 		cancelFunc:         cancelFunc,
 		context:            ctx,
-		heartbeatInterval:  heartbeatInterval,
+		heartbeatInterval:  interval,
 		heartbeatEnabled:   true,
 	}
 	return &controller
