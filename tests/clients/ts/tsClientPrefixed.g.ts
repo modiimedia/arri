@@ -74,7 +74,7 @@ export class TestClientPrefixed {
         this._dispatchers = config.dispatchers!;
     }
     async emptyParamsGetRequest(
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooDefaultPayload> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<undefined> = {
@@ -89,11 +89,7 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooDefaultPayload,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -109,7 +105,7 @@ export class TestClientPrefixed {
         );
     }
     async emptyParamsPostRequest(
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooDefaultPayload> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<undefined> = {
@@ -124,11 +120,7 @@ export class TestClientPrefixed {
             params: UndefinedModelValidator,
             response: $$FooDefaultPayload,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -145,7 +137,7 @@ export class TestClientPrefixed {
     }
     async emptyResponseGetRequest(
         params: FooDefaultPayload,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDefaultPayload> = {
@@ -160,11 +152,7 @@ export class TestClientPrefixed {
             params: $$FooDefaultPayload,
             response: UndefinedModelValidator,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -181,7 +169,7 @@ export class TestClientPrefixed {
     }
     async emptyResponsePostRequest(
         params: FooDefaultPayload,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDefaultPayload> = {
@@ -196,11 +184,7 @@ export class TestClientPrefixed {
             params: $$FooDefaultPayload,
             response: UndefinedModelValidator,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -221,7 +205,7 @@ export class TestClientPrefixed {
      */
     async deprecatedRpc(
         params: FooDeprecatedRpcParams,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDeprecatedRpcParams> = {
@@ -239,11 +223,7 @@ export class TestClientPrefixed {
             params: $$FooDeprecatedRpcParams,
             response: UndefinedModelValidator,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -260,7 +240,7 @@ export class TestClientPrefixed {
     }
     async sendDiscriminatorWithEmptyObject(
         params: FooDiscriminatorWithEmptyObject,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooDiscriminatorWithEmptyObject> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooDiscriminatorWithEmptyObject> = {
@@ -278,11 +258,7 @@ export class TestClientPrefixed {
             params: $$FooDiscriminatorWithEmptyObject,
             response: $$FooDiscriminatorWithEmptyObject,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -298,7 +274,7 @@ export class TestClientPrefixed {
     }
     async sendError(
         params: FooSendErrorParams,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooSendErrorParams> = {
@@ -313,11 +289,7 @@ export class TestClientPrefixed {
             params: $$FooSendErrorParams,
             response: UndefinedModelValidator,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -334,7 +306,7 @@ export class TestClientPrefixed {
     }
     async sendObject(
         params: FooObjectWithEveryType,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooObjectWithEveryType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithEveryType> = {
@@ -352,11 +324,7 @@ export class TestClientPrefixed {
             params: $$FooObjectWithEveryType,
             response: $$FooObjectWithEveryType,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -372,7 +340,7 @@ export class TestClientPrefixed {
     }
     async sendObjectWithNullableFields(
         params: FooObjectWithEveryNullableType,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooObjectWithEveryNullableType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithEveryNullableType> = {
@@ -390,11 +358,7 @@ export class TestClientPrefixed {
             params: $$FooObjectWithEveryNullableType,
             response: $$FooObjectWithEveryNullableType,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -410,7 +374,7 @@ export class TestClientPrefixed {
     }
     async sendObjectWithPascalCaseKeys(
         params: FooObjectWithPascalCaseKeys,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooObjectWithPascalCaseKeys> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithPascalCaseKeys> = {
@@ -428,11 +392,7 @@ export class TestClientPrefixed {
             params: $$FooObjectWithPascalCaseKeys,
             response: $$FooObjectWithPascalCaseKeys,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -448,7 +408,7 @@ export class TestClientPrefixed {
     }
     async sendObjectWithSnakeCaseKeys(
         params: FooObjectWithSnakeCaseKeys,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooObjectWithSnakeCaseKeys> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithSnakeCaseKeys> = {
@@ -466,11 +426,7 @@ export class TestClientPrefixed {
             params: $$FooObjectWithSnakeCaseKeys,
             response: $$FooObjectWithSnakeCaseKeys,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -486,7 +442,7 @@ export class TestClientPrefixed {
     }
     async sendPartialObject(
         params: FooObjectWithEveryOptionalType,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooObjectWithEveryOptionalType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooObjectWithEveryOptionalType> = {
@@ -504,11 +460,7 @@ export class TestClientPrefixed {
             params: $$FooObjectWithEveryOptionalType,
             response: $$FooObjectWithEveryOptionalType,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -524,7 +476,7 @@ export class TestClientPrefixed {
     }
     async sendRecursiveObject(
         params: FooRecursiveObject,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooRecursiveObject> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooRecursiveObject> = {
@@ -542,11 +494,7 @@ export class TestClientPrefixed {
             params: $$FooRecursiveObject,
             response: $$FooRecursiveObject,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -563,7 +511,7 @@ export class TestClientPrefixed {
     }
     async sendRecursiveUnion(
         params: FooRecursiveUnion,
-        options?: RpcOptions<'http' | 'ws'>,
+        options?: RpcOptions<'http'>,
     ): Promise<FooRecursiveUnion> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<FooRecursiveUnion> = {
@@ -581,11 +529,7 @@ export class TestClientPrefixed {
             params: $$FooRecursiveUnion,
             response: $$FooRecursiveUnion,
         };
-        const transport = resolveTransport(
-            ['http', 'ws'],
-            options?.transport,
-            this._defaultTransport,
-        );
+        const transport = 'http';
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -602,51 +546,72 @@ export class TestClientPrefixed {
     }
     streamAutoReconnect(
         params: FooAutoReconnectParams,
-        options: SseOptions<FooAutoReconnectResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<FooAutoReconnectResponse, FooAutoReconnectParams>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$FooAutoReconnectResponse.fromJson,
-                responseFromString: $$FooAutoReconnectResponse.fromJsonString,
-                serializer: $$FooAutoReconnectParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
-        );
+        options?: EventStreamHooks<FooAutoReconnectResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<FooAutoReconnectParams> = {
+            procedure: 'streamAutoReconnect',
+            path: '/rpcs/tests/stream-auto-reconnect',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooAutoReconnectParams,
+            FooAutoReconnectResponse
+        > = {
+            params: $$FooAutoReconnectParams,
+            response: $$FooAutoReconnectResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooAutoReconnectParams,
+            FooAutoReconnectResponse
+        >(req, validator, options ?? {});
     }
     /**
      * This route will always return an error. The client should automatically retry with exponential backoff.
      */
     streamConnectionErrorTest(
         params: FooStreamConnectionErrorTestParams,
-        options: SseOptions<FooStreamConnectionErrorTestResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            FooStreamConnectionErrorTestResponse,
-            FooStreamConnectionErrorTestParams
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson:
-                    $$FooStreamConnectionErrorTestResponse.fromJson,
-                responseFromString:
-                    $$FooStreamConnectionErrorTestResponse.fromJsonString,
-                serializer: $$FooStreamConnectionErrorTestParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
-        );
+        options?: EventStreamHooks<FooStreamConnectionErrorTestResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<FooStreamConnectionErrorTestParams> = {
+            procedure: 'streamConnectionErrorTest',
+            path: '/rpcs/tests/stream-connection-error-test',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooStreamConnectionErrorTestParams,
+            FooStreamConnectionErrorTestResponse
+        > = {
+            params: $$FooStreamConnectionErrorTestParams,
+            response: $$FooStreamConnectionErrorTestResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooStreamConnectionErrorTestParams,
+            FooStreamConnectionErrorTestResponse
+        >(req, validator, options ?? {});
     }
     /**
      * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
@@ -655,125 +620,173 @@ export class TestClientPrefixed {
      */
     streamHeartbeatDetectionTest(
         params: FooStreamHeartbeatDetectionTestParams,
-        options: SseOptions<FooStreamHeartbeatDetectionTestResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            FooStreamHeartbeatDetectionTestResponse,
-            FooStreamHeartbeatDetectionTestParams
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson:
-                    $$FooStreamHeartbeatDetectionTestResponse.fromJson,
-                responseFromString:
-                    $$FooStreamHeartbeatDetectionTestResponse.fromJsonString,
-                serializer:
-                    $$FooStreamHeartbeatDetectionTestParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
-        );
+        options?: EventStreamHooks<FooStreamHeartbeatDetectionTestResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<FooStreamHeartbeatDetectionTestParams> = {
+            procedure: 'streamHeartbeatDetectionTest',
+            path: '/rpcs/tests/stream-heartbeat-detection-test',
+            method: 'post',
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooStreamHeartbeatDetectionTestParams,
+            FooStreamHeartbeatDetectionTestResponse
+        > = {
+            params: $$FooStreamHeartbeatDetectionTestParams,
+            response: $$FooStreamHeartbeatDetectionTestResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooStreamHeartbeatDetectionTestParams,
+            FooStreamHeartbeatDetectionTestResponse
+        >(req, validator, options ?? {});
     }
     /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
-        options: SseOptions<FooStreamLargeObjectsResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<FooStreamLargeObjectsResponse, undefined>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson: $$FooStreamLargeObjectsResponse.fromJson,
-                responseFromString:
-                    $$FooStreamLargeObjectsResponse.fromJsonString,
-                serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
-        );
+        options?: EventStreamHooks<FooStreamLargeObjectsResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<undefined> = {
+            procedure: 'streamLargeObjects',
+            path: '/rpcs/tests/stream-large-objects',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            undefined,
+            FooStreamLargeObjectsResponse
+        > = {
+            params: UndefinedModelValidator,
+            response: $$FooStreamLargeObjectsResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            undefined,
+            FooStreamLargeObjectsResponse
+        >(req, validator, options ?? {});
     }
     streamMessages(
         params: FooChatMessageParams,
-        options: SseOptions<FooChatMessage> = {},
-    ): EventSourceController {
-        return arriSseRequest<FooChatMessage, FooChatMessageParams>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$FooChatMessage.fromJson,
-                responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: $$FooChatMessageParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
-        );
+        options?: EventStreamHooks<FooChatMessage>,
+    ): EventStreamController {
+        const req: RpcRequest<FooChatMessageParams> = {
+            procedure: 'streamMessages',
+            path: '/rpcs/tests/stream-messages',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooChatMessageParams,
+            FooChatMessage
+        > = {
+            params: $$FooChatMessageParams,
+            response: $$FooChatMessage,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooChatMessageParams,
+            FooChatMessage
+        >(req, validator, options ?? {});
     }
     streamRetryWithNewCredentials(
-        options: SseOptions<FooTestsStreamRetryWithNewCredentialsResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            FooTestsStreamRetryWithNewCredentialsResponse,
-            undefined
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse.fromJson,
-                responseFromString:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString,
-                serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
-        );
+        options?: EventStreamHooks<FooTestsStreamRetryWithNewCredentialsResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<undefined> = {
+            procedure: 'streamRetryWithNewCredentials',
+            path: '/rpcs/tests/stream-retry-with-new-credentials',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            undefined,
+            FooTestsStreamRetryWithNewCredentialsResponse
+        > = {
+            params: UndefinedModelValidator,
+            response: $$FooTestsStreamRetryWithNewCredentialsResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            undefined,
+            FooTestsStreamRetryWithNewCredentialsResponse
+        >(req, validator, options ?? {});
     }
     /**
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
      */
     streamTenEventsThenEnd(
-        options: SseOptions<FooChatMessage> = {},
-    ): EventSourceController {
-        return arriSseRequest<FooChatMessage, undefined>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson: $$FooChatMessage.fromJson,
-                responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
+        options?: EventStreamHooks<FooChatMessage>,
+    ): EventStreamController {
+        const req: RpcRequest<undefined> = {
+            procedure: 'streamTenEventsThenEnd',
+            path: '/rpcs/tests/stream-ten-events-then-end',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<undefined, FooChatMessage> = {
+            params: UndefinedModelValidator,
+            response: $$FooChatMessage,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<undefined, FooChatMessage>(
+            req,
+            validator,
+            options ?? {},
         );
     }
 }
 
 export interface FooManuallyAddedModel {
-    /**
-     * FOO
-     */
     hello: string;
 }
 export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> =

@@ -32,6 +32,8 @@ export interface EventStreamRpc<
     path?: string;
     params?: TParams;
     response?: TResponse;
+    heartbeatEnabled?: boolean;
+    heartbeatMs?: number;
     handler: EventStreamRpcHandler<
         TParams extends ASchema ? InferType<TParams> : undefined,
         TResponse extends ASchema ? InferType<TResponse> : undefined
@@ -103,10 +105,7 @@ export class RpcEventStreamConnection<TData> {
             data: 'connection successful',
         });
         this._pingInterval = setInterval(async () => {
-            await this.dispatcher.push({
-                event: 'ping',
-                data: '',
-            });
+            await this.heartbeat();
         }, this._pingIntervalMs);
     }
 
@@ -163,6 +162,13 @@ export class RpcEventStreamConnection<TData> {
         };
     }
 
+    /**
+     * This is called automatically using the heartbeatMs option, unless you have manually disabled the heartbeat messages
+     */
+    async heartbeat() {
+        await this.dispatcher.push({ event: 'heartbeat', data: '' });
+    }
+
     private cleanup() {
         if (this._pingInterval) {
             clearInterval(this._pingInterval);
@@ -181,6 +187,7 @@ export class RpcEventStreamConnection<TData> {
             }
         }
         this.dispatcher.close();
+        this.cleanup();
     }
 
     onClosed(cb: () => any): void {

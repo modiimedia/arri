@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineError, defineEventStreamRpc, getHeader } from '@arrirpc/server';
+import { defineError, defineEventStreamRpc } from '@arrirpc/server-next';
 
 const heartbeatDuration = 300;
 
@@ -15,8 +15,8 @@ When heartbeat is disabled the client should open a new connection sometime afte
     response: a.object('StreamHeartbeatDetectionTestResponse', {
         message: a.string(),
     }),
-    async handler({ params, stream }, event) {
-        const xTestHeader = getHeader(event, 'x-test-header');
+    async handler({ params, stream, headers }) {
+        const xTestHeader = headers['x-test-header'];
         if (!xTestHeader) throw defineError(401);
         const lastEventId = a.coerce(
             a.uint32(),
@@ -29,7 +29,7 @@ When heartbeat is disabled the client should open a new connection sometime afte
         let interval1: NodeJS.Timeout | undefined;
         if (params.heartbeatEnabled) {
             interval1 = setInterval(async () => {
-                await stream.eventStream.push({ event: 'heartbeat', data: '' });
+                await stream.heartbeat();
             }, heartbeatDuration);
         }
         for (let i = 0; i < 5; i++) {

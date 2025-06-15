@@ -119,7 +119,6 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         headers: h3.getHeaders(event),
                         error: err,
                     };
-                    console.log('H3 ON ERROR HOOK');
                     return this._handleError(event, context);
                 },
             });
@@ -667,6 +666,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     qr: false,
                 },
             );
+            // eslint-disable-next-line no-console
             console.info(
                 `Serving unencrypted traffic from port ${this._secondaryListener.address.port}`,
             );
