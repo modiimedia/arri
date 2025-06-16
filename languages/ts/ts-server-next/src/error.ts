@@ -193,6 +193,7 @@ export function serializeArriErrorResponse(
         try {
             output += `,"data":${JSON.stringify(input.data)}`;
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(
                 `WARNING: Error serializing data in error response. ${err}.`,
             );

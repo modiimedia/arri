@@ -81,17 +81,20 @@ export class RpcEventStreamConnection<TData> {
     readonly dispatcher: EventStreamDispatcher;
 
     private readonly _validator: CompiledValidator<ASchema<TData>>;
-    private _pingInterval: any | undefined = undefined;
-    private readonly _pingIntervalMs: number;
+    private _heartbeatInterval: any | undefined = undefined;
+    private readonly _heartbeatIntervalMs: number;
+    private readonly _heartbeatEnabled: boolean;
 
     constructor(
         dispatcher: EventStreamDispatcher,
         validator: CompiledValidator<ASchema<TData>> | undefined,
-        pingInterval: number,
+        heartbeatInterval: number,
+        heartbeatEnabled: boolean,
     ) {
         this.dispatcher = dispatcher;
         this._validator = validator ?? a.compile(a.any());
-        this._pingIntervalMs = pingInterval;
+        this._heartbeatIntervalMs = heartbeatInterval;
+        this._heartbeatEnabled = heartbeatEnabled;
     }
 
     get lastEventId(): string | undefined {
@@ -104,9 +107,11 @@ export class RpcEventStreamConnection<TData> {
             event: 'start',
             data: 'connection successful',
         });
-        this._pingInterval = setInterval(async () => {
-            await this.heartbeat();
-        }, this._pingIntervalMs);
+        if (this._heartbeatEnabled) {
+            this._heartbeatInterval = setInterval(async () => {
+                await this.heartbeat();
+            }, this._heartbeatIntervalMs);
+        }
     }
 
     async push(data: TData, eventId?: string): Promise<EventStreamPushResult>;
@@ -170,8 +175,8 @@ export class RpcEventStreamConnection<TData> {
     }
 
     private cleanup() {
-        if (this._pingInterval) {
-            clearInterval(this._pingInterval);
+        if (this._heartbeatInterval) {
+            clearInterval(this._heartbeatInterval);
         }
     }
 

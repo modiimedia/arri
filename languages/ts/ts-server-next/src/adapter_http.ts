@@ -11,7 +11,7 @@ import * as listhen from '@joshmossas/listhen';
 import * as ws from 'crossws';
 import * as h3 from 'h3';
 
-import { TransportAdapter } from './adapter';
+import { TransportAdapter, TransportAdapterOptions } from './adapter';
 import {
     defineError,
     getValidationErrorMessage,
@@ -84,6 +84,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
     private readonly _onAfterResponse: HttpOptions['onAfterResponse'];
     private readonly _onError: HttpOptions['onError'];
     private _middlewares: RpcMiddleware[] = [];
+    private _options: TransportAdapterOptions | undefined;
 
     private _cores: HttpOptions['cors'];
     private _https: HttpOptions['https'];
@@ -168,6 +169,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 return this._handleError(event, context as any);
             }),
         );
+    }
+
+    setOptions(options: TransportAdapterOptions): void {
+        this._options = options;
     }
 
     use(middleware: RpcMiddleware): void {
@@ -384,7 +389,8 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 const stream = new RpcEventStreamConnection(
                     h3.createEventStream(event),
                     validators.response,
-                    30000,
+                    this._options?.heartbeatInterval ?? 20000,
+                    true,
                 );
                 (context as any).stream = stream;
                 await handler(context as any);

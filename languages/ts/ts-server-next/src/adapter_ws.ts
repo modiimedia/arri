@@ -11,7 +11,7 @@ import { CompiledValidator, errorMessageFromErrors } from '@arrirpc/schema';
 import { defineHooks, Hooks, Message, Peer, WSError } from 'crossws';
 import { HTTPMethod } from 'h3';
 
-import { TransportAdapter } from './adapter';
+import { TransportAdapter, TransportAdapterOptions } from './adapter';
 import { WsHttpRegister } from './adapter_http';
 import { RpcMiddleware, RpcMiddlewareContext } from './middleware';
 import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
@@ -65,6 +65,7 @@ export class WsAdapter implements TransportAdapter {
     private readonly _register: WsHttpRegister;
     private readonly _connectionPath: string;
     private readonly _options: WsOptions;
+    private _transportOptions: TransportAdapterOptions | undefined;
     private readonly _hooks: Hooks;
 
     private _handlers: Map<string, HandlerItem> = new Map();
@@ -100,6 +101,10 @@ export class WsAdapter implements TransportAdapter {
             this._options.connectionMethod ?? 'GET',
             this._hooks,
         );
+    }
+
+    setOptions(options: TransportAdapterOptions): void {
+        this._transportOptions = options;
     }
 
     use(middleware: RpcMiddleware) {
@@ -172,7 +177,6 @@ export class WsAdapter implements TransportAdapter {
     }
 
     private async _handleError(peer: Peer, error: WSError) {
-        console.log('ONERROR', peer, error);
         if (!this._options.onError) return;
         await this._options.onError(peer, error);
     }

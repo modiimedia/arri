@@ -10,6 +10,10 @@ export type RpcValidators = {
     response?: CompiledValidator<any>;
 };
 
+export interface TransportAdapterOptions {
+    heartbeatInterval: number;
+}
+
 export interface TransportAdapter {
     /**
      * The name of the transport, such as "http", "ws", "tcp", etc
@@ -51,4 +55,6 @@ export interface TransportAdapter {
     start(): Promise<void> | void;
 
     stop(): Promise<void> | void;
+
+    setOptions(options: TransportAdapterOptions): void;
 }

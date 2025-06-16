@@ -30,6 +30,7 @@ export class ArriApp implements ArriServiceBase {
     private readonly _adapters: Record<string, TransportAdapter> = {};
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: Record<string, Schema> = {};
+    private readonly _heartbeatInterval: number;
 
     constructor(
         options: {
@@ -43,6 +44,7 @@ export class ArriApp implements ArriServiceBase {
             disableDefinitionRoute?: boolean;
             defaultTransport?: string | string[];
             transports?: TransportAdapter[];
+            heartbeatInterval?: number;
         } = {},
     ) {
         this.name = options.name;
@@ -53,6 +55,7 @@ export class ArriApp implements ArriServiceBase {
         this.rpcDefinitionPath = options.rpcDefinitionPath;
         this.disableDefaultRoute = options.disableDefaultRoute ?? false;
         this.disableDefinitionRoute = options.disableDefinitionRoute ?? false;
+        this._heartbeatInterval = options.heartbeatInterval ?? 20000;
         if (typeof options.defaultTransport === 'string') {
             this._defaultTransports = [options.defaultTransport];
         } else if (Array.isArray(options.defaultTransport)) {
@@ -89,6 +92,7 @@ export class ArriApp implements ArriServiceBase {
 
         // register adapters
         if (typeof input === 'object') {
+            input.setOptions({ heartbeatInterval: this._heartbeatInterval });
             if (typeof input.registerHomeRoute === 'function') {
                 input.registerHomeRoute('/', () => ({
                     name: this.name,
@@ -303,6 +307,7 @@ export class ArriApp implements ArriServiceBase {
         for (const result of results.filter(
             (item) => item.status === 'rejected',
         )) {
+            // eslint-disable-next-line no-console
             console.error(result.reason);
         }
     }
@@ -317,6 +322,7 @@ export class ArriApp implements ArriServiceBase {
         for (const result of results.filter(
             (item) => item.status === 'rejected',
         )) {
+            // eslint-disable-next-line no-console
             console.error(result.reason);
         }
     }
