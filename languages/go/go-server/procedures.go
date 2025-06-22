@@ -18,7 +18,7 @@ type RpcOptions struct {
 	IsDeprecated bool
 }
 
-func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, options RpcOptions, handler func(TParams, TEvent) (TResponse, RpcError)) {
+func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, options RpcOptions, handler func(TParams, Request[TMeta]) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
@@ -92,25 +92,25 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	app.procedures.Set(rpcName, *rpcSchema)
 	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(t *TEvent) RpcError {
+		onRequest = func(t *Request[TMeta]) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(t *TEvent, a any) RpcError {
+		onBeforeResponse = func(t *Request[TMeta], a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(t *TEvent, a any) RpcError {
+		onAfterResponse = func(t *Request[TMeta], a any) RpcError {
 			return nil
 		}
 	}
 	onError := app.options.OnError
 	if onError == nil {
-		onError = func(t *TEvent, err error) {}
+		onError = func(t *Request[TMeta], err error) {}
 	}
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
@@ -118,29 +118,27 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 			handlePreflightRequest(w)
 			return
 		}
+		setResponseHeader := func(key string, val string) {
+			w.Header().Set(key, val)
+		}
 		w.Header().Add("Content-Type", "application/json")
-		event, err := app.createEvent(w, r)
-		if err != nil {
-			handleError(false, w, nil, err, onError)
-			return
-		}
+		req := NewRequest[TMeta](r.Context(), rpcName, "http", r.RemoteAddr, r.Header.Get("client-version"), headersFromHttpHeaders(r.Header), setResponseHeader)
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, event, Error(404, "Not found"), onError)
+			handleError(false, w, req, Error(404, "Not found"), onError)
 			return
 		}
-
-		err = onRequest(event)
+		err := onRequest(req)
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 			return
 		}
 
 		if len(app.middleware) > 0 {
 			for i := 0; i < len(app.middleware); i++ {
 				fn := app.middleware[i]
-				err := fn(r, *event, rpcName)
+				err := fn(req)
 				if err != nil {
-					handleError(false, w, event, err, onError)
+					handleError(false, w, req, err, onError)
 					return
 				}
 			}
@@ -148,7 +146,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, event, Error(500, "Error initializing empty params"), onError)
+			handleError(false, w, req, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
@@ -157,33 +155,33 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, event, fromUrlQueryErr, onError)
+					handleError(false, w, req, fromUrlQueryErr, onError)
 					return
 				}
 			default:
 				b, err := io.ReadAll(r.Body)
 				if err != nil {
-					handleError(false, w, event, Error(400, err.Error()), onError)
+					handleError(false, w, req, Error(400, err.Error()), onError)
 					return
 				}
 				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
 				if fromJSONErr != nil {
-					handleError(false, w, event, fromJSONErr, onError)
+					handleError(false, w, req, fromJSONErr, onError)
 					return
 				}
 			}
 		}
 
-		response, err := handler(params, *event)
+		response, err := handler(params, *req)
 		if err != nil {
 			payload := err
-			handleError(false, w, event, payload, onError)
+			handleError(false, w, req, payload, onError)
 			return
 		}
 
-		err = onBeforeResponse(event, "")
+		err = onBeforeResponse(req, "")
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 			return
 		}
 
@@ -192,7 +190,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		if hasResponse {
 			json, err := EncodeJSON(response, encodingOpts)
 			if err != nil {
-				handleError(false, w, event, ErrorWithData(500, err.Error(), Some[any](err)), onError)
+				handleError(false, w, req, ErrorWithData(500, err.Error(), Some[any](err)), onError)
 				return
 			}
 			body = json
@@ -201,9 +199,9 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		}
 		w.Write([]byte(body))
 
-		err = onAfterResponse(event, "")
+		err = onAfterResponse(req, "")
 		if err != nil {
-			handleError(true, w, event, err, onError)
+			handleError(true, w, req, err, onError)
 		}
 	})
 }
@@ -215,11 +213,11 @@ func getModelName(rpcName string, modelName string, fallbackSuffix string) strin
 	return modelName
 }
 
-func Rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], handler func(TParams, TEvent) (TResponse, RpcError), options RpcOptions) {
+func Rpc[TParams, TResponse any, TProps any](app *App[TProps], handler func(TParams, Request[TProps]) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, "", options, handler)
 }
 
-func ScopedRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, handler func(TParams, TEvent) (TResponse, RpcError), options RpcOptions) {
+func ScopedRpc[TParams, TResponse any, TProps any](app *App[TProps], serviceName string, handler func(TParams, Request[TProps]) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
 }
 

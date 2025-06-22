@@ -7,13 +7,15 @@ import (
 	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
+type Props struct{}
+
 func main() {
-	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultEvent]{
-		OnRequest: func(event *arri.DefaultEvent) arri.RpcError {
-			event.Writer().Header().Add("Access-Control-Allow-Origin", "*")
+	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[Props]{
+		OnRequest: func(req *arri.Request[Props]) arri.RpcError {
+			req.SetResponseHeader("Access-Control-Allow-Origin", "*")
 			return nil
 		},
-	}, arri.CreateDefaultEvent)
+	})
 	arri.Rpc(&app, SayHello, arri.RpcOptions{})
 	app.Run(arri.RunOptions{})
 }
@@ -26,6 +28,6 @@ type SayHelloResponse struct {
 	Message string
 }
 
-func SayHello(params SayHelloParams, event arri.DefaultEvent) (SayHelloResponse, arri.RpcError) {
+func SayHello(params SayHelloParams, req arri.Request[Props]) (SayHelloResponse, arri.RpcError) {
 	return SayHelloResponse{Message: fmt.Sprintf("Hello %s", params.Name)}, nil
 }

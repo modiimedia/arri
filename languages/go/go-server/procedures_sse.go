@@ -143,7 +143,7 @@ func (controller *defaultSseController[T]) SetHeartbeatEnabled(val bool) {
 	controller.heartbeatEnabled = val
 }
 
-func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, options RpcOptions, handler func(TParams, SseController[TResponse], TEvent) RpcError) {
+func eventStreamRpc[TParams, TResponse any, TProps any](app *App[TProps], serviceName string, options RpcOptions, handler func(TParams, SseController[TResponse], Request[TProps]) RpcError) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(
 		handler,
@@ -216,32 +216,34 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	app.procedures.Set(rpcName, *rpcSchema)
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
+
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
 			handlePreflightRequest(w)
 			return
 		}
-		event, err := app.createEvent(w, r)
-		if err != nil {
-			handleError(false, w, nil, err, onError)
-			return
+		setResponseHeader := func(key string, val string) {
+			w.Header().Set(key, val)
 		}
+		clientVersion := r.Header.Get("client-version")
+		headers := headersFromHttpHeaders(r.Header)
+		req := NewRequest[TProps](r.Context(), rpcName, "http", r.RemoteAddr, clientVersion, headers, setResponseHeader)
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, event, Error(404, "Not found"), onError)
+			handleError(false, w, req, Error(404, "Not found"), onError)
 			return
 		}
-		err = onRequest(event)
+		err := onRequest(req)
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 			return
 		}
 
 		if len(app.middleware) > 0 {
 			for i := 0; i < len(app.middleware); i++ {
 				fn := app.middleware[i]
-				err := fn(r, *event, rpcName)
+				err := fn(req)
 				if err != nil {
-					handleError(false, w, event, err, onError)
+					handleError(false, w, req, err, onError)
 					return
 				}
 			}
@@ -249,7 +251,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, event, Error(500, "Error initializing empty params"), onError)
+			handleError(false, w, req, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
@@ -258,66 +260,66 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, event, fromUrlQueryErr, onError)
+					handleError(false, w, req, fromUrlQueryErr, onError)
 					return
 				}
 			default:
 				b, bErr := io.ReadAll(r.Body)
 				if bErr != nil {
-					handleError(false, w, event, Error(400, bErr.Error()), onError)
+					handleError(false, w, req, Error(400, bErr.Error()), onError)
 					return
 				}
 				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
 				if fromJSONErr != nil {
-					handleError(false, w, event, fromJSONErr, onError)
+					handleError(false, w, req, fromJSONErr, onError)
 					return
 				}
 			}
 		}
 
 		sseController := newDefaultSseController[TResponse](w, r, app.options.KeyCasing, app.options.HeartbeatInterval)
-		err = handler(params, sseController, *event)
+		err = handler(params, sseController, *req)
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 			return
 		}
-		err = onAfterResponse(event, "")
+		err = onAfterResponse(req, "")
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 		}
 	})
 }
 
-func EventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], handler func(TParams, SseController[TResponse], TEvent) RpcError, options RpcOptions) {
+func EventStreamRpc[TParams, TResponse any, TProps any](app *App[TProps], handler func(TParams, SseController[TResponse], Request[TProps]) RpcError, options RpcOptions) {
 	eventStreamRpc(app, "", options, handler)
 }
 
-func ScopedEventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], scope string, handler func(TParams, SseController[TResponse], TEvent) RpcError, options RpcOptions) {
+func ScopedEventStreamRpc[TParams, TResponse any, TProps any](app *App[TProps], scope string, handler func(TParams, SseController[TResponse], Request[TProps]) RpcError, options RpcOptions) {
 	eventStreamRpc(app, scope, options, handler)
 }
 
-func getHooks[TEvent Event](app *App[TEvent]) (func(*TEvent) RpcError, func(*TEvent, any) RpcError, func(*TEvent, any) RpcError, func(*TEvent, error)) {
+func getHooks[TProps any](app *App[TProps]) (func(*Request[TProps]) RpcError, func(*Request[TProps], any) RpcError, func(*Request[TProps], any) RpcError, func(*Request[TProps], error)) {
 	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(e *TEvent) RpcError {
+		onRequest = func(e *Request[TProps]) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(e *TEvent, a any) RpcError {
+		onBeforeResponse = func(e *Request[TProps], a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(e *TEvent, a any) RpcError {
+		onAfterResponse = func(e *Request[TProps], a any) RpcError {
 			return nil
 		}
 	}
 	onError := app.options.OnError
 	if onError == nil {
-		onError = func(e *TEvent, err error) {}
+		onError = func(e *Request[TProps], err error) {}
 	}
 	return onRequest, onBeforeResponse, onAfterResponse, onError
 }

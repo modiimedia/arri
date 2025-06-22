@@ -1,9 +1,7 @@
 package arri
 
-import "net/http"
+type Middleware[TProps any] func(req *Request[TProps]) RpcError
 
-type Middleware[TEvent Event] func(r *http.Request, event TEvent, rpcName string) RpcError
-
-func Use[TEvent Event](app *App[TEvent], middleware Middleware[TEvent]) {
+func Use[TProps any](app *App[TProps], middleware Middleware[TProps]) {
 	app.middleware = append(app.middleware, middleware)
 }

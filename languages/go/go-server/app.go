@@ -8,17 +8,16 @@ import (
 	"time"
 )
 
-type App[TEvent Event] struct {
+type App[TProps any] struct {
 	Mux                  *http.ServeMux
-	createEvent          func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)
 	initializationErrors []error
-	options              AppOptions[TEvent]
-	middleware           []Middleware[TEvent]
+	options              AppOptions[TProps]
+	middleware           []Middleware[TProps]
 	procedures           *OrderedMap[RpcDef]
 	definitions          *OrderedMap[TypeDef]
 }
 
-func (app *App[TEvent]) GetAppDefinition() AppDef {
+func (app *App[T]) GetAppDefinition() AppDef {
 	info := None[AppDefInfo]()
 	name := None[string]()
 	description := None[string]()
@@ -50,7 +49,7 @@ func (app *App[TEvent]) GetAppDefinition() AppDef {
 	}
 }
 
-func (app *App[TEvent]) Run(options RunOptions) error {
+func (app *App[T]) Run(options RunOptions) error {
 	defOutput := flag.String("def-out", "", "definition-out")
 	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
 	appDefOutput := appDefCmd.String("output", "__definition.json", "output")
@@ -89,7 +88,7 @@ func appDefToFile(appDef AppDef, output string, options EncodingOptions) error {
 	return nil
 }
 
-func printServerStartMessages[TEvent Event](app *App[TEvent], port uint32, isHttps bool) {
+func printServerStartMessages[TProps any](app *App[TProps], port uint32, isHttps bool) {
 	protocol := "http"
 	if isHttps {
 		protocol = "https"
@@ -106,7 +105,7 @@ func printServerStartMessages[TEvent Event](app *App[TEvent], port uint32, isHtt
 	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.options.RpcRoutePrefix+defPath)
 }
 
-func startServer[TEvent Event](app *App[TEvent], options RunOptions) error {
+func startServer[TProps any](app *App[TProps], options RunOptions) error {
 	port := options.Port
 	if port == 0 {
 		port = 3000
@@ -127,7 +126,7 @@ type RunOptions struct {
 	KeyFile  string
 }
 
-type AppOptions[TEvent Event] struct {
+type AppOptions[TProps any] struct {
 	AppName string
 	// The current app version. Generated clients will send this in the "client-version" header
 	AppVersion string
@@ -141,21 +140,20 @@ type AppOptions[TEvent Event] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         func(*TEvent) RpcError
-	OnBeforeResponse  func(*TEvent, any) RpcError
-	OnAfterResponse   func(*TEvent, any) RpcError
-	OnError           func(*TEvent, error)
+	OnRequest         func(*Request[TProps]) RpcError
+	OnBeforeResponse  func(*Request[TProps], any) RpcError
+	OnAfterResponse   func(*Request[TProps], any) RpcError
+	OnError           func(*Request[TProps], error)
 	// how often to send a heartbeat message over open connections default is 20 seconds
 	HeartbeatInterval time.Duration
 }
 
-func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], createEvent func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)) App[TEvent] {
-	app := App[TEvent]{
+func NewApp[TProps any](mux *http.ServeMux, options AppOptions[TProps]) App[TProps] {
+	app := App[TProps]{
 		Mux:                  mux,
-		createEvent:          createEvent,
 		options:              options,
 		initializationErrors: []error{},
-		middleware:           []Middleware[TEvent]{},
+		middleware:           []Middleware[TProps]{},
 		procedures:           &OrderedMap[RpcDef]{},
 		definitions:          &OrderedMap[TypeDef]{},
 	}
@@ -169,44 +167,43 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 	}
 	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(t *TEvent) RpcError {
+		onRequest = func(t *Request[TProps]) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(t *TEvent, a any) RpcError {
+		onBeforeResponse = func(t *Request[TProps], a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(t *TEvent, a any) RpcError {
+		onAfterResponse = func(t *Request[TProps], a any) RpcError {
 			return nil
 		}
 	}
 	onError := app.options.OnError
 	if onError == nil {
-		onError = func(t *TEvent, err error) {}
+		onError = func(t *Request[TProps], err error) {}
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
 			handlePreflightRequest(w)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
-		event, err := app.createEvent(w, r)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-			return
+		setResponseHeader := func(key string, val string) {
+			w.Header().Set(key, val)
 		}
-		err = onRequest(event)
+		w.Header().Add("Content-Type", "application/json")
+		req := NewRequest[TProps](r.Context(), "", "http", r.RemoteAddr, "", map[string]string{}, setResponseHeader)
+		err := onRequest(req)
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 			return
 		}
 		if r.URL.Path != "/" {
-			handleError(false, w, event, Error(404, ""), onError)
+			handleError(false, w, req, Error(404, ""), onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -230,16 +227,16 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		if len(options.AppVersion) > 0 {
 			response.Version = Some(options.AppVersion)
 		}
-		err = onBeforeResponse(event, response)
+		err = onBeforeResponse(req, response)
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 			return
 		}
 		jsonResult, _ := EncodeJSON(response, encodingOptions)
 		w.Write(jsonResult)
-		onAfterResponseErr := onAfterResponse(event, response)
+		onAfterResponseErr := onAfterResponse(req, response)
 		if onAfterResponseErr != nil {
-			handleError(true, w, event, onAfterResponseErr, onError)
+			handleError(true, w, req, onAfterResponseErr, onError)
 			return
 		}
 	})
@@ -250,40 +247,39 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
-		event, err := app.createEvent(w, r)
-		if err != nil {
-			handleError(false, w, event, err, onError)
-			return
+		setResponseHeader := func(key string, val string) {
+			w.Header().Set(key, val)
 		}
-		err = onRequest(event)
+		req := NewRequest[TProps](r.Context(), "", "http", r.RemoteAddr, "", map[string]string{}, setResponseHeader)
+		err := onRequest(req)
 		if err != nil {
-			handleError(false, w, event, err, onError)
+			handleError(false, w, req, err, onError)
 		}
 		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), encodingOptions)
-		beforeResponseErr := onBeforeResponse(event, jsonResult)
+		beforeResponseErr := onBeforeResponse(req, jsonResult)
 		if beforeResponseErr != nil {
-			handleError(false, w, event, beforeResponseErr, onError)
+			handleError(false, w, req, beforeResponseErr, onError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
-		err = onAfterResponse(event, jsonResult)
+		err = onAfterResponse(req, jsonResult)
 		if err != nil {
-			handleError(true, w, event, err, onError)
+			handleError(true, w, req, err, onError)
 			return
 		}
 	})
 	return app
 }
 
-func handleError[TEvent Event](
+func handleError[TProps any](
 	responseSent bool,
 	w http.ResponseWriter,
-	event *TEvent,
+	req *Request[TProps],
 	err RpcError,
-	onError func(*TEvent, error),
+	onError func(*Request[TProps], error),
 ) {
-	onError(event, err)
+	onError(req, err)
 	if responseSent {
 		return
 	}
@@ -297,7 +293,7 @@ type DefOptions struct {
 	Description  string
 }
 
-func RegisterDef[TEvent Event](app *App[TEvent], input any, options DefOptions) {
+func RegisterDef[TProps any](app *App[TProps], input any, options DefOptions) {
 	encodingOpts := EncodingOptions{
 		KeyCasing: app.options.KeyCasing,
 		MaxDepth:  app.options.MaxDepth,
