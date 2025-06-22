@@ -3,12 +3,12 @@
   "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.34.33",
+    "@sinclair/typebox": "^0.34.35",
     "arktype": "^2.1.20",
     "prettier": "^3.5.3",
     "typia": "^9.3.1",
     "valibot": "1.1.0",
-    "zod": "^3.25.63"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@ryoppippi/unplugin-typia": "^2.6.5",

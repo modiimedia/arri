@@ -30,12 +30,12 @@
   "devDependencies": {
     "@ryoppippi/unplugin-typia": "^2.6.5",
     "@samchon/openapi": "^4.3.3",
-    "@sinclair/typebox": "^0.34.33",
+    "@sinclair/typebox": "^0.34.35",
     "ajv": "^8.17.1",
     "arktype": "^2.1.20",
     "benny": "^3.7.1",
     "typia": "^9.3.1",
     "valibot": "1.1.0",
-    "zod": "^3.25.63"
+    "zod": "^3.25.67"
   }
 }
