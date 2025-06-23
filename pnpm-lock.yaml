@@ -138,9 +138,9 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../ts-schema
-      '@arrirpc/server-next':
+      '@arrirpc/server':
         specifier: workspace:*
-        version: link:../ts-server-next
+        version: link:../ts-server
       '@arrirpc/type-defs':
         specifier: workspace:*
         version: link:../../../tooling/type-defs
@@ -312,40 +312,6 @@ importers:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../../../tooling/codegen-utils
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../ts-schema
-      '@types/source-map-support':
-        specifier: ^0.5.10
-        version: 0.5.10
-      arri:
-        specifier: workspace:*
-        version: link:../../../tooling/cli
-      crossws:
-        specifier: ^0.4.1
-        version: 0.4.1
-      h3:
-        specifier: ^1.15.3
-        version: 1.15.3
-      scule:
-        specifier: ^1.3.0
-        version: 1.3.0
-      source-map-support:
-        specifier: ^0.5.21
-        version: 0.5.21
-      uncrypto:
-        specifier: ^0.1.3
-        version: 0.1.3
-    devDependencies:
-      bun-types:
-        specifier: ^1.2.17
-        version: 1.2.17
-
-  languages/ts/ts-server-next:
-    dependencies:
-      '@arrirpc/codegen-utils':
-        specifier: workspace:*
-        version: link:../../../tooling/codegen-utils
       '@arrirpc/core':
         specifier: workspace:*
         version: link:../ts-core
@@ -370,7 +336,7 @@ importers:
     devDependencies:
       bun-types:
         specifier: ^1.2.9
-        version: 1.2.16
+        version: 1.2.17
 
   playground/go:
     devDependencies:
@@ -440,9 +406,6 @@ importers:
       '@arrirpc/server':
         specifier: workspace:*
         version: link:../../../languages/ts/ts-server
-      '@arrirpc/server-next':
-        specifier: workspace:*
-        version: link:../../../languages/ts/ts-server-next
       '@arrirpc/typebox-adapter':
         specifier: workspace:*
         version: link:../../../languages/ts/ts-schema-typebox-adapter
@@ -1316,9 +1279,6 @@ packages:
   '@types/serve-static@1.15.8':
     resolution: {integrity: sha512-roei0UY3LhpOJvjbIP6ZZFngyLKl5dskOtDhxY5THRSpO+ZI+nzJ+m5yUMzGrp89YRa7lvknKkMYjqQFGwA7Sg==}
 
-  '@types/source-map-support@0.5.10':
-    resolution: {integrity: sha512-tgVP2H469x9zq34Z0m/fgPewGhg/MLClalNOiPIzQlXrSS2YrKu/xCdSCKnEDwkFha51VKEKB6A9wW26/ZNwzA==}
-
   '@types/websocket@1.0.10':
     resolution: {integrity: sha512-svjGZvPB7EzuYS94cI7a+qhwgGU1y89wUgjT6E2wVUfmAGIvRfT7obBvRtnhXCSsoMdlG4gBFGE7MfkIXZLoww==}
 
@@ -1634,9 +1594,6 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  buffer-from@1.1.2:
-    resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
-
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
@@ -1646,9 +1603,6 @@ packages:
 
   bun-only@0.0.1:
     resolution: {integrity: sha512-eQdy3eKF3MPcrwhvDq/7BykQ9kpl9Lu/zJ9IcL1AsjZ4vct68Du8reZisptp7YL8b65iImMf9j06xmGUNsc2rQ==}
-
-  bun-types@1.2.16:
-    resolution: {integrity: sha512-ciXLrHV4PXax9vHvUrkvun9VPVGOVwbbbBF/Ev1cXz12lyEZMoJpIJABOfPcN9gDJRaiKF9MVbSygLg4NXu3/A==}
 
   bun-types@1.2.17:
     resolution: {integrity: sha512-ElC7ItwT3SCQwYZDYoAH+q6KT4Fxjl8DtZ6qDulUFBmXA8YB4xo+l54J9ZJN+k2pphfn9vk7kfubeSd5QfTVJQ==}
@@ -1850,14 +1804,6 @@ packages:
 
   crossws@0.3.5:
     resolution: {integrity: sha512-ojKiDvcmByhwa8YYqbQI/hg7MEU0NC03+pSdEq4ZUnZR9xXpwk7E43SMNGkn+JxJGPFtNvQ48+vV2p+P1ml5PA==}
-
-  crossws@0.4.1:
-    resolution: {integrity: sha512-E7WKBcHVhAVrY6JYD5kteNqVq1GSZxqGrdSiwXR9at+XHi43HJoCQKXcCczR5LBnBquFZPsB3o7HklulKoBU5w==}
-    peerDependencies:
-      srvx: '>=0.7.1'
-    peerDependenciesMeta:
-      srvx:
-        optional: true
 
   css-declaration-sorter@7.2.0:
     resolution: {integrity: sha512-h70rUM+3PNFuaBDTLe8wF/cdWu+dOZmb7pJt8Z2sedYbAcQVQV/tEchueg3GWxwqS0cxtbxmaHEdkNACqcvsow==}
@@ -3622,13 +3568,6 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  source-map-support@0.5.21:
-    resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
-
-  source-map@0.6.1:
-    resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
-    engines: {node: '>=0.10.0'}
-
   sourcemap-codec@1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
     deprecated: Please use @jridgewell/sourcemap-codec instead
@@ -4759,10 +4698,6 @@ snapshots:
       '@types/node': 22.15.30
       '@types/send': 0.17.5
 
-  '@types/source-map-support@0.5.10':
-    dependencies:
-      source-map: 0.6.1
-
   '@types/websocket@1.0.10':
     dependencies:
       '@types/node': 22.15.30
@@ -5215,8 +5150,6 @@ snapshots:
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.0)
 
-  buffer-from@1.1.2: {}
-
   buffer@5.7.1:
     dependencies:
       base64-js: 1.5.1
@@ -5227,10 +5160,6 @@ snapshots:
       node-gyp-build: 4.8.4
 
   bun-only@0.0.1: {}
-
-  bun-types@1.2.16:
-    dependencies:
-      '@types/node': 24.0.1
 
   bun-types@1.2.17:
     dependencies:
@@ -5422,8 +5351,6 @@ snapshots:
   crossws@0.3.5:
     dependencies:
       uncrypto: 0.1.3
-
-  crossws@0.4.1: {}
 
   css-declaration-sorter@7.2.0(postcss@8.5.5):
     dependencies:
@@ -7327,13 +7254,6 @@ snapshots:
       is-fullwidth-code-point: 3.0.0
 
   source-map-js@1.2.1: {}
-
-  source-map-support@0.5.21:
-    dependencies:
-      buffer-from: 1.1.2
-      source-map: 0.6.1
-
-  source-map@0.6.1: {}
 
   sourcemap-codec@1.4.8: {}
 

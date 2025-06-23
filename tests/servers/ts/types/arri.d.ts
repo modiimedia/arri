@@ -1,6 +1,6 @@
-import '@arrirpc/server-next';
+import '@arrirpc/server';
 
-declare module '@arrirpc/server-next' {
+declare module '@arrirpc/server' {
     interface RpcContext {
         foo?: string;
     }

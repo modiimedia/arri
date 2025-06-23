@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineEventStreamRpc } from '@arrirpc/server-next';
+import { defineEventStreamRpc } from '@arrirpc/server';
 
 export default defineEventStreamRpc({
     params: a.object('AutoReconnectParams', {

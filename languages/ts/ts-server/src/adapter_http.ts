@@ -118,6 +118,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                         transport: this.transportId,
                         clientVersion: h3.getHeader(event, 'client-version'),
                         headers: h3.getHeaders(event),
+                        setResponseHeader: (key, val) =>
+                            h3.setResponseHeader(event, key, val),
+                        setResponseHeaders: (headers) =>
+                            h3.setResponseHeaders(event, headers),
                         error: err,
                     };
                     return this._handleError(event, context);
@@ -152,6 +156,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     reqStart: event.context.reqStart ?? new Date(),
                     transport: this.transportId,
                     clientVersion: h3.getHeader(event, 'client-version'),
+                    setResponseHeader: (key, val) =>
+                        h3.setResponseHeader(event, key, val),
+                    setResponseHeaders: (headers) =>
+                        h3.setResponseHeaders(event, headers),
                     headers: h3.getHeaders(event),
                 };
                 try {
@@ -281,6 +289,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 transport: this.transportId,
                 clientVersion: headers['client-version'],
                 headers: headers,
+                setResponseHeader: (key, val) =>
+                    h3.setResponseHeader(event, key, val),
+                setResponseHeaders: (headers) =>
+                    h3.setResponseHeaders(event, headers),
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);
@@ -374,6 +386,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 transport: this.transportId,
                 clientVersion: h3.getHeader(event, 'client-version'),
                 headers: h3.getHeaders(event),
+                setResponseHeader: (key, val) =>
+                    h3.setResponseHeader(event, key, val),
+                setResponseHeaders: (headers) =>
+                    h3.setResponseHeaders(event, headers),
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);
@@ -453,6 +469,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 rpcName: '',
                 clientVersion: h3.getHeader(event, 'client-version'),
                 headers: h3.getHeaders(event),
+                setResponseHeader: (key, val) =>
+                    h3.setResponseHeader(event, key, val),
+                setResponseHeaders: (headers) =>
+                    h3.setResponseHeaders(event, headers),
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);
@@ -497,6 +517,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 transport: this.transportId,
                 clientVersion: h3.getHeader(event, 'client-version'),
                 headers: h3.getHeaders(event),
+                setResponseHeader: (key, val) =>
+                    h3.setResponseHeader(event, key, val),
+                setResponseHeaders: (headers) =>
+                    h3.setResponseHeaders(event, headers),
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);

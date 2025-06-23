@@ -5,7 +5,7 @@ import {
     defineEventHandler,
     HttpAdapter,
     WsAdapter,
-} from '@arrirpc/server-next';
+} from '@arrirpc/server';
 
 import { registerHeartbeatTestRoute } from './heartbeat-tests';
 import { manualTestService } from './routes/other';

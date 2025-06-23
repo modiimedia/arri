@@ -212,6 +212,7 @@ export class WsAdapter implements TransportAdapter {
         }
         const msg = result.value;
         try {
+            const responseHeaders: Record<string, string> = {};
             const context: RpcMiddlewareContext = {
                 rpcName: msg.rpcName,
                 reqStart: reqStart,
@@ -219,6 +220,14 @@ export class WsAdapter implements TransportAdapter {
                 transport: this.transportId,
                 clientVersion: msg.clientVersion,
                 headers: result.value.customHeaders,
+                setResponseHeader: (key, val) => {
+                    responseHeaders[key] = val;
+                },
+                setResponseHeaders: (headers) => {
+                    for (const [key, val] of Object.entries(headers)) {
+                        responseHeaders[key] = val;
+                    }
+                },
             };
             if (this._options.onRequest) {
                 await this._options.onRequest(peer, context);
@@ -274,7 +283,7 @@ export class WsAdapter implements TransportAdapter {
                     reqId: msg.reqId,
                     contentType: 'application/json',
                     success: true,
-                    customHeaders: {},
+                    customHeaders: responseHeaders,
                     body: payload.value,
                 };
                 this._sendMessage(peer, serverMsg, context as any);
@@ -283,7 +292,7 @@ export class WsAdapter implements TransportAdapter {
                     reqId: msg.reqId,
                     contentType: 'application/json',
                     success: true,
-                    customHeaders: {},
+                    customHeaders: responseHeaders,
                     body: undefined,
                 };
                 this._sendMessage(peer, serverMsg, context as any);

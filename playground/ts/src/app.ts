@@ -1,9 +1,4 @@
-import {
-    ArriApp,
-    handleCors,
-    HttpAdapter,
-    WsAdapter,
-} from '@arrirpc/server-next';
+import { ArriApp, handleCors, HttpAdapter, WsAdapter } from '@arrirpc/server';
 
 const app = new ArriApp({
     defaultTransport: ['http', 'ws'],

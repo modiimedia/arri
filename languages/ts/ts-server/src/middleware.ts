@@ -1,19 +1,17 @@
-import { type H3Event } from 'h3';
+import { RpcContext } from './rpc';
 
-import { type MiddlewareEventContext } from './context';
-
-export interface MiddlewareEvent extends H3Event {
-    context: MiddlewareEventContext;
+export interface RpcMiddlewareContext extends Omit<RpcContext<any>, 'params'> {
+    params?: any;
 }
 
-export type Middleware = (event: MiddlewareEvent) => void | Promise<void>;
-export const defineMiddleware = (middleware: Middleware) => middleware;
+export type RpcMiddleware = (
+    context: RpcMiddlewareContext,
+) => Promise<void> | void;
 
-export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
-    ? Record<Param, string> & NextPart
-    : NextPart;
+export interface RpcOnErrorContext extends RpcMiddlewareContext {
+    error: unknown;
+}
 
-export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
-    ? ExtractParam<Segment, ExtractParams<Rest>>
-    : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      ExtractParam<Path, {}>;
+export function defineMiddleware(middleware: RpcMiddleware) {
+    return middleware;
+}

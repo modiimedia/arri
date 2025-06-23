@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineRpc, defineService } from '@arrirpc/server-next';
+import { defineRpc, defineService } from '@arrirpc/server';
 
 const DefaultPayload = a.object('DefaultPayload', {
     message: a.string(),

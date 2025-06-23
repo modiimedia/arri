@@ -15,7 +15,8 @@ import {
     RpcPostHandlerContext,
     RpcValidators,
     TransportAdapter,
-} from '@arrirpc/server-next';
+    TransportAdapterOptions,
+} from '@arrirpc/server';
 import { AppDefinition, RpcDefinition } from '@arrirpc/type-defs';
 import { Express, Request, Response } from 'express';
 import express from 'express';
@@ -46,10 +47,15 @@ export interface ExpressAdapterOptions {
 export class ExpressAdapter implements TransportAdapter {
     transportId: string = 'http';
 
+    private globalOptions: TransportAdapterOptions | undefined;
+
     constructor(options?: ExpressAdapterOptions) {
         this._app = options?.app ?? express();
         this._port = options?.port ?? 3000;
         this._debug = options?.debug ?? false;
+    }
+    setOptions(options: TransportAdapterOptions): void {
+        this.globalOptions = options;
     }
 
     private _middlewares: RpcMiddleware[] = [];
@@ -92,7 +98,7 @@ export class ExpressAdapter implements TransportAdapter {
         name: string,
         procedure: RpcDefinition,
         validators: RpcValidators,
-        handler: RpcHandler,
+        handler: RpcHandler<any, any>,
         postHandler?: RpcPostHandler,
     ) {
         let getParams: ((req: Request) => Result<any>) | undefined;
@@ -118,6 +124,7 @@ export class ExpressAdapter implements TransportAdapter {
                     reqStart: reqStart,
                     transport: this.transportId,
                     headers: this._getHeaders(req),
+                    ipAddress: req.ip,
                     clientVersion:
                         typeof clientVersion === 'string'
                             ? clientVersion
@@ -217,6 +224,7 @@ export class ExpressAdapter implements TransportAdapter {
                     rpcName: name,
                     reqStart: reqStart,
                     transport: this.transportId,
+                    ipAddress: req.ip,
                     clientVersion:
                         typeof clientVersion === 'string'
                             ? clientVersion
@@ -243,7 +251,8 @@ export class ExpressAdapter implements TransportAdapter {
                 const eventStream = new RpcEventStreamConnection(
                     new ExpressEventStreamDispatcher({ req, res }),
                     validators.params,
-                    30000,
+                    this.globalOptions?.heartbeatInterval ?? 20000,
+                    this.globalOptions?.heartbeatEnabled ?? true,
                 );
                 (context as any).stream = eventStream;
                 await handler(context as any);
@@ -309,6 +318,7 @@ export class ExpressAdapter implements TransportAdapter {
                     rpcName: '',
                     reqStart: reqStart,
                     transport: this.transportId,
+                    ipAddress: req.ip,
                     clientVersion:
                         typeof clientVersion === 'string'
                             ? clientVersion
@@ -357,9 +367,11 @@ export class ExpressAdapter implements TransportAdapter {
     start(): Promise<void> | void {
         this._listener = this._app.listen(this._port, (err) => {
             if (err) {
+                // eslint-disable-next-line no-console
                 console.error(err);
                 return;
             }
+            // eslint-disable-next-line no-console
             console.info(`Server running at http://localhost:${this._port}`);
         });
     }

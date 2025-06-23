@@ -1,4 +1,4 @@
-import { defineEventStreamRpc } from '@arrirpc/server-next';
+import { defineEventStreamRpc } from '@arrirpc/server';
 import { randomUUID } from 'crypto';
 
 import { ChatMessage } from './streamMessages.rpc';

@@ -24,7 +24,7 @@
   "dependencies": {
     "@arrirpc/type-defs": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "@arrirpc/server-next": "workspace:*",
+    "@arrirpc/server": "workspace:*",
     "@arrirpc/core": "workspace:*",
     "express": "^5.1.0"
   },

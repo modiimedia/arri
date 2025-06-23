@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineRpc } from '@arrirpc/server-next';
+import { defineRpc } from '@arrirpc/server';
 
 const ObjectWithPascalCaseKeys = a.object('ObjectWithPascalCaseKeys', {
     CreatedAt: a.timestamp(),

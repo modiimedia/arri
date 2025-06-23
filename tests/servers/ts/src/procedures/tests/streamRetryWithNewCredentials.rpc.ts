@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineError, defineEventStreamRpc } from '@arrirpc/server-next';
+import { defineError, defineEventStreamRpc } from '@arrirpc/server';
 
 const usedTokens: Record<string, boolean> = {};
 

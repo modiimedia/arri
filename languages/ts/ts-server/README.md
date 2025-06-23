@@ -225,7 +225,7 @@ Arri Event streams sent the following event types:
 - `message` - A standard message with the response data serialized as JSON
 - `start` - A starting message to start the stream
 - `done` - A message to tell clients that there will be no more events
-- `heartbeat` - A message periodically sent by the server to keep the connection alive.
+- `ping` - A message periodically sent by the server to keep the connection alive.
 
 ```ts
 /// message event ///
@@ -237,8 +237,8 @@ data: Response; // whatever you have specified as the response serialized to jso
 event: 'done';
 data: 'this stream has ended';
 
-/// heartbeat event ///
-event: 'heartbeat';
+/// ping event ///
+event: 'ping';
 data: '';
 ```
 

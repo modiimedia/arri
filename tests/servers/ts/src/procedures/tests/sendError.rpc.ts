@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineError, defineRpc } from '@arrirpc/server-next';
+import { defineError, defineRpc } from '@arrirpc/server';
 
 export default defineRpc({
     params: a.object('SendErrorParams', {

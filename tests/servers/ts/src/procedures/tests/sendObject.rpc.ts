@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineRpc } from '@arrirpc/server-next';
+import { defineRpc } from '@arrirpc/server';
 
 export const ObjectWithEveryType = a.object('ObjectWithEveryType', {
     any: a.any(),
