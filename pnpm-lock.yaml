@@ -1200,6 +1200,7 @@ packages:
 
   '@ryoppippi/unplugin-typia@2.6.5':
     resolution: {integrity: sha512-Lg7Rho00E6Jn00Gle/Rn6ZWhUJj9U0J0iahfBUqqiXWrLWZdjXbeMCW1+82/7qnVQaqhlgz69hbd3JWYCtYivQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       svelte: ^5.28.2
       typescript: '>=4.8.0 <5.9.0'

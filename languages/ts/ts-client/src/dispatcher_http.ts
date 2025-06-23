@@ -1,3 +1,4 @@
+import { EventSourcePlus } from 'event-source-plus';
 import { $Fetch, createFetch, Fetch, FetchError, ofetch } from 'ofetch';
 
 import {
@@ -6,7 +7,6 @@ import {
     RpcDispatcherOptions,
     waitFor,
 } from './dispatcher';
-import { arriSseRequest } from './dispatcher_http_sse';
 import { ArriErrorInstance, isArriError } from './errors';
 import { getHeaders, RpcRequest, RpcRequestValidator } from './requests';
 
@@ -153,15 +153,96 @@ export class HttpDispatcher implements RpcDispatcher {
     handleEventStreamRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        options?: EventStreamHooks<TResponse>,
+        hooks: EventStreamHooks<TResponse>,
     ) {
-        return arriSseRequest(
-            this.options.baseUrl,
-            req,
-            validator,
-            options ?? {},
-            this.options,
-            this.ofetch,
-        );
+        let url = this.options.baseUrl + req.path;
+        let body: string | undefined;
+        if (req.method === 'get' || req.method === 'GET') {
+            const queryParts = validator.params.toUrlQueryString(req.data);
+            url += `?${queryParts}`;
+        } else {
+            body = validator.params.toJsonString(req.data);
+        }
+        let timeout: any | undefined;
+        let timeoutDurationMs: number | undefined;
+        const timeoutMultiplier = this.options.heartbeatTimeoutMultiplier ?? 2;
+        if (timeoutMultiplier < 1) {
+            throw new Error('heartbeatTimeoutMultiplier cannot be less than 1');
+        }
+        const eventSource = new EventSourcePlus(url, {
+            method: (req.method as any) ?? 'post',
+            fetch: this.options.fetch,
+            headers: async () => {
+                const headers: Record<string, string> =
+                    (await getHeaders(req.customHeaders)) ?? {};
+                if (req.clientVersion) {
+                    headers['client-version'] = req.clientVersion;
+                }
+                return headers;
+            },
+            body: body,
+            maxRetryCount: hooks.maxRetryCount,
+            maxRetryInterval: hooks.maxRetryInterval,
+        });
+        function resetTimeout() {
+            if (timeout) clearTimeout(timeout);
+            if (!timeoutDurationMs) return;
+            timeout = setTimeout(() => {
+                if (controller.signal.aborted) return;
+                controller.reconnect();
+            }, timeoutDurationMs);
+        }
+        const controller = eventSource.listen({
+            onMessage: (message) => {
+                resetTimeout();
+                if (
+                    message.event === 'message' ||
+                    message.event === undefined ||
+                    message.event === ''
+                ) {
+                    hooks.onMessage?.(
+                        validator.response.fromJsonString(message.data),
+                    );
+                    return;
+                }
+                if (message.event === 'done') {
+                    clearTimeout(timeout);
+                    controller.abort();
+                }
+            },
+            onRequestError: (context) => {
+                clearTimeout(timeout);
+                this.options.onError?.(req, context.error);
+                hooks.onError?.(context.error);
+            },
+            onResponse: ({ response }) => {
+                const heartbeatMsHeader = Number(
+                    response.headers.get('heartbeat-interval') ?? '0',
+                );
+                if (
+                    response.ok &&
+                    !Number.isNaN(heartbeatMsHeader) &&
+                    heartbeatMsHeader > 0
+                ) {
+                    timeoutDurationMs = heartbeatMsHeader * timeoutMultiplier;
+                    resetTimeout();
+                }
+                hooks.onOpen?.();
+            },
+            onResponseError: async (context) => {
+                clearTimeout(timeout);
+                this.options.onError?.(req, context.error);
+                if (!hooks.onError) return;
+                try {
+                    const arriError = ArriErrorInstance.fromJson(
+                        await context.response.json(),
+                    );
+                    hooks.onError(arriError);
+                } catch (err) {
+                    hooks.onError(err);
+                }
+            },
+        });
+        return controller;
     }
 }

@@ -14,14 +14,6 @@ import {
     TestClient,
 } from './testClient.g';
 
-// function wait(ms: number) {
-//     return new Promise((resolve) => {
-//         setTimeout(() => {
-//             resolve(true);
-//         }, ms);
-//     });
-// }
-
 const baseUrl = 'http://127.0.0.1:2020';
 const wsConnectionUrl = baseUrl + '/ws';
 const headers = {
@@ -355,7 +347,7 @@ test('onError hook fires properly', async () => {
     expect(onErrorFired).toBe(true);
 });
 
-test('[SSE] supports server sent events', async () => {
+test('[EVENT_STREAM_RPC] supports event streams', async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
     await new Promise((res, rej) => {
@@ -382,8 +374,8 @@ test('[SSE] supports server sent events', async () => {
                     }
                     if (receivedMessageCount >= 12) controller.abort();
                 },
-                onResponse({ response }) {
-                    wasConnected = response.status === 200;
+                onOpen() {
+                    wasConnected = true;
                 },
             },
         );
@@ -393,23 +385,20 @@ test('[SSE] supports server sent events', async () => {
     expect(wasConnected).toBe(true);
 });
 
-test("[SSE] closes connection when receiving 'done' event", async () => {
+test("[EVENT_STREAM_RPC] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriErrorInstance | undefined;
+    let errorReceived: unknown | undefined;
     await new Promise((res, rej) => {
         setTimeout(() => rej(), 2000);
         const controller = client.tests.streamTenEventsThenEnd({
             onMessage(_) {
                 messageCount++;
             },
-            onRequestError({ error }) {
+            onError(error) {
                 errorReceived = error;
             },
-            onResponseError({ error }) {
-                errorReceived = error;
-            },
-            onRequest() {
+            onOpen() {
                 timesConnected++;
             },
         });
@@ -420,8 +409,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
     expect(messageCount).toBe(10);
 });
 
-test('[SSE] auto-reconnects when connection is closed by server', async () => {
-    let reqCount = 0;
+test('[EVENT_STREAM_RPC] auto-reconnects when connection is closed by server', async () => {
     let resCount = 0;
     let errorCount = 0;
     let messageCount = 0;
@@ -432,10 +420,7 @@ test('[SSE] auto-reconnects when connection is closed by server', async () => {
                 messageCount: 10,
             },
             {
-                onRequest() {
-                    reqCount++;
-                },
-                onResponse() {
+                onOpen() {
                     resCount++;
                 },
                 onMessage(data) {
@@ -443,7 +428,7 @@ test('[SSE] auto-reconnects when connection is closed by server', async () => {
                     expect(data.count > 0).toBe(true);
                     if (messageCount >= 30) controller.abort();
                 },
-                onResponseError(_) {
+                onError(_) {
                     errorCount++;
                 },
             },
@@ -451,12 +436,11 @@ test('[SSE] auto-reconnects when connection is closed by server', async () => {
         controller.onAbort(() => res(undefined));
     });
     expect(messageCount).toBe(30);
-    expect(reqCount).toBe(3);
     expect(resCount).toBe(3);
     expect(errorCount).toBe(0);
 });
 
-test('[SSE] reconnect with new credentials', async () => {
+test('[EVENT_STREAM_RPC] reconnect with new credentials', async () => {
     const dynamicClient = new TestClient({
         baseUrl,
         wsConnectionUrl,
@@ -475,13 +459,10 @@ test('[SSE] reconnect with new credentials', async () => {
                 msgCount++;
                 if (msgCount >= 40) controller.abort();
             },
-            onRequestError({ error }) {
-                rej(error);
-            },
-            onResponse(_) {
+            onOpen() {
                 openCount++;
             },
-            onResponseError({ error }) {
+            onError(error) {
                 rej(error);
             },
         });
@@ -489,78 +470,6 @@ test('[SSE] reconnect with new credentials', async () => {
     });
     expect(msgCount >= 40).toBe(true);
     expect(openCount).toBe(4);
-});
-
-describe('[SSE] respects heartbeat header', async () => {
-    test(
-        'reconnects when no heartbeat is received',
-        { timeout: 30000 },
-        async () => {
-            let msgCount = 0;
-            let resCount = 0;
-            await new Promise((res, rej) => {
-                setTimeout(() => {
-                    rej();
-                }, 30000);
-                const controller = client.tests.streamHeartbeatDetectionTest(
-                    { heartbeatEnabled: false },
-                    {
-                        onMessage(_) {
-                            msgCount++;
-                            if (msgCount >= 15) controller.abort();
-                        },
-                        onResponse() {
-                            resCount++;
-                        },
-                        onRequestError({ error }) {
-                            rej(error);
-                        },
-                        onResponseError({ error }) {
-                            rej(error);
-                        },
-                    },
-                );
-                controller.onAbort(() => res(undefined));
-            });
-            expect(resCount).toBe(3);
-            expect(msgCount).toBe(15);
-        },
-    );
-
-    test(
-        'keeps connection alive when heartbeat is received',
-        { timeout: 30000 },
-        async () => {
-            let msgCount = 0;
-            let resCount = 0;
-            await new Promise((res, rej) => {
-                setTimeout(() => {
-                    rej();
-                }, 30000);
-                const controller = client.tests.streamHeartbeatDetectionTest(
-                    { heartbeatEnabled: true },
-                    {
-                        onMessage(_) {
-                            msgCount++;
-                            if (msgCount >= 8) controller.abort();
-                        },
-                        onResponse() {
-                            resCount++;
-                        },
-                        onRequestError({ error }) {
-                            rej(error);
-                        },
-                        onResponseError({ error }) {
-                            rej(error);
-                        },
-                    },
-                );
-                controller.onAbort(() => res(undefined));
-            });
-            expect(resCount).toBe(1);
-            expect(msgCount).toBe(8);
-        },
-    );
 });
 
 describe('request options', () => {
@@ -622,114 +531,3 @@ describe('request options', () => {
         expect(numErr).toBe(11);
     });
 });
-
-// test("[ws] support websockets", async () => {
-//     let connectionCount = 0;
-//     let messageCount = 0;
-//     const errorCount = 0;
-//     const msgMap: Record<string, WsMessageResponse> = {};
-//     const controller = await client.tests.websocketRpc({
-//         onMessage(msg) {
-//             messageCount++;
-//             msgMap[msg.entityId] = msg;
-//         },
-//         onConnectionError(err) {
-//             throw new ArriErrorInstance({
-//                 code: err.code,
-//                 message: err.message,
-//                 data: err.data,
-//                 stack: err.stack,
-//             });
-//         },
-//     });
-//     controller.onOpen = () => {
-//         connectionCount++;
-//         controller.send({
-//             type: "CREATE_ENTITY",
-//             entityId: "1",
-//             x: 100,
-//             y: 200,
-//         });
-//         controller.send({
-//             type: "UPDATE_ENTITY",
-//             entityId: "2",
-//             x: 1,
-//             y: 2,
-//         });
-//         controller.send({
-//             type: "UPDATE_ENTITY",
-//             entityId: "3",
-//             x: 5,
-//             y: -5,
-//         });
-//     };
-//     controller.connect();
-//     await wait(1000);
-//     controller.close();
-//     expect(connectionCount).toBe(1);
-//     expect(messageCount).toBe(3);
-//     expect(errorCount).toBe(0);
-//     expect(msgMap["1"]!.x).toBe(100);
-//     expect(msgMap["1"]!.y).toBe(200);
-//     expect(msgMap["2"]!.x).toBe(1);
-//     expect(msgMap["2"]!.y).toBe(2);
-//     expect(msgMap["3"]!.x).toBe(5);
-//     expect(msgMap["3"]!.y).toBe(-5);
-// });
-
-// test("[ws] receive large messages", async () => {
-//     let messageCount = 0;
-//     const controller = await client.tests.websocketRpcSendTenLargeMessages({
-//         onMessage(_) {
-//             messageCount++;
-//         },
-//     });
-//     controller.connect();
-//     await wait(2000);
-//     controller.close();
-//     expect(messageCount).toBe(10);
-// });
-
-// test("[ws] connection errors", async () => {
-//     let connectionCount = 0;
-//     let messageCount = 0;
-//     let errorCount = 0;
-//     const controller = await new TestClient({
-//         baseUrl: "http://127.0.0.1:2021",
-//     }).tests.websocketRpc({
-//         onOpen() {
-//             connectionCount++;
-//         },
-//         onMessage() {
-//             messageCount++;
-//         },
-//         onConnectionError() {
-//             errorCount++;
-//         },
-//         onClose() {},
-//     });
-//     controller.connect();
-//     await wait(500);
-//     expect(connectionCount).toBe(0);
-//     expect(errorCount).toBe(1);
-//     expect(messageCount).toBe(0);
-// });
-
-// describe("arri adapters", () => {
-//     test("typebox adapter", async () => {
-//         const input: TypeBoxObject = {
-//             string: "hello world",
-//             optionalString: undefined,
-//             boolean: false,
-//             integer: 100,
-//             number: 10.5,
-//             enumField: "B",
-//             object: {
-//                 string: "hello world",
-//             },
-//             array: [true, false],
-//         };
-//         const result = await client.adapters.typebox(input);
-//         expect(result).toStrictEqual(input);
-//     });
-// });

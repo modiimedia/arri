@@ -30,7 +30,15 @@
       "executor": "nx:run-commands",
       "inputs": ["{projectRoot}/src"],
       "options": {
-        "command": "vitest run . --passWithNoTests --globals",
+        "command": "vitest run ./src --passWithNoTests --globals",
+        "cwd": "languages/ts/ts-client"
+      }
+    },
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/integration-tests", "{projectRoot}/src"],
+      "options": {
+        "command": "vitest run ./integration-tests --passWithNoTests --globals",
         "cwd": "languages/ts/ts-client"
       }
     },

@@ -11,6 +11,7 @@ export interface RpcDispatcherOptions {
     retryErrorCodes?: number[];
     signal?: AbortController['signal'];
     onError?: (req: RpcRequest<any>, error: unknown) => Promise<void> | void;
+    heartbeatTimeoutMultiplier?: number;
 }
 
 export function resolveDispatcherOptions(
@@ -25,6 +26,9 @@ export function resolveDispatcherOptions(
         retryErrorCodes: local?.retryErrorCodes ?? global?.retryErrorCodes,
         signal: local?.signal ?? global?.signal,
         onError: local?.onError ?? global?.onError,
+        heartbeatTimeoutMultiplier:
+            local?.heartbeatTimeoutMultiplier ??
+            global?.heartbeatTimeoutMultiplier,
     };
     return result;
 }
@@ -57,6 +61,7 @@ export interface RpcDispatcher {
 
 export interface EventStreamController {
     abort(): void;
+    onAbort(cb: () => void | Promise<void>): void;
 }
 
 export type TransportMap = Record<string, RpcDispatcher>;

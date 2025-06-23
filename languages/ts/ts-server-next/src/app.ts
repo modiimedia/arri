@@ -31,6 +31,7 @@ export class ArriApp implements ArriServiceBase {
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: Record<string, Schema> = {};
     private readonly _heartbeatInterval: number;
+    private readonly _heartbeatEnabled: boolean;
 
     constructor(
         options: {
@@ -45,6 +46,7 @@ export class ArriApp implements ArriServiceBase {
             defaultTransport?: string | string[];
             transports?: TransportAdapter[];
             heartbeatInterval?: number;
+            heartbeatEnabled?: boolean;
         } = {},
     ) {
         this.name = options.name;
@@ -56,6 +58,7 @@ export class ArriApp implements ArriServiceBase {
         this.disableDefaultRoute = options.disableDefaultRoute ?? false;
         this.disableDefinitionRoute = options.disableDefinitionRoute ?? false;
         this._heartbeatInterval = options.heartbeatInterval ?? 20000;
+        this._heartbeatEnabled = options.heartbeatEnabled ?? true;
         if (typeof options.defaultTransport === 'string') {
             this._defaultTransports = [options.defaultTransport];
         } else if (Array.isArray(options.defaultTransport)) {
@@ -92,7 +95,10 @@ export class ArriApp implements ArriServiceBase {
 
         // register adapters
         if (typeof input === 'object') {
-            input.setOptions({ heartbeatInterval: this._heartbeatInterval });
+            input.setOptions({
+                heartbeatInterval: this._heartbeatInterval,
+                heartbeatEnabled: this._heartbeatEnabled,
+            });
             if (typeof input.registerHomeRoute === 'function') {
                 input.registerHomeRoute('/', () => ({
                     name: this.name,

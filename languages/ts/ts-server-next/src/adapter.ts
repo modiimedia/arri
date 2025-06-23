@@ -12,6 +12,7 @@ export type RpcValidators = {
 
 export interface TransportAdapterOptions {
     heartbeatInterval: number;
+    heartbeatEnabled: boolean;
 }
 
 export interface TransportAdapter {

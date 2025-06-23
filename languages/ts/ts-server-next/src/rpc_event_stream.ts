@@ -32,8 +32,6 @@ export interface EventStreamRpc<
     path?: string;
     params?: TParams;
     response?: TResponse;
-    heartbeatEnabled?: boolean;
-    heartbeatMs?: number;
     handler: EventStreamRpcHandler<
         TParams extends ASchema ? InferType<TParams> : undefined,
         TResponse extends ASchema ? InferType<TResponse> : undefined

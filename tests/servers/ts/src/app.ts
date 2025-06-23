@@ -7,6 +7,7 @@ import {
     WsAdapter,
 } from '@arrirpc/server-next';
 
+import { registerHeartbeatTestRoute } from './heartbeat-tests';
 import { manualTestService } from './routes/other';
 
 const app = new ArriApp({
@@ -55,7 +56,6 @@ http.h3Router.use(
     ['get', 'post'],
 );
 
-// http.h3App.use(manualRouter);
-// app.use(manualTestService);
+registerHeartbeatTestRoute(http.h3Router);
 
 export default app;

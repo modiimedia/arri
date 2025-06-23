@@ -386,11 +386,16 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 for (const m of this._middlewares) {
                     await m(context);
                 }
+                h3.setResponseHeader(
+                    event,
+                    'heartbeat-interval',
+                    this._options?.heartbeatInterval ?? 20000,
+                );
                 const stream = new RpcEventStreamConnection(
                     h3.createEventStream(event),
                     validators.response,
                     this._options?.heartbeatInterval ?? 20000,
-                    true,
+                    this._options?.heartbeatEnabled ?? true,
                 );
                 (context as any).stream = stream;
                 await handler(context as any);

@@ -614,44 +614,6 @@ export class TestClientPrefixed {
         >(req, validator, options ?? {});
     }
     /**
-     * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
-     * When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
-     * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-     */
-    streamHeartbeatDetectionTest(
-        params: FooStreamHeartbeatDetectionTestParams,
-        options?: EventStreamHooks<FooStreamHeartbeatDetectionTestResponse>,
-    ): EventStreamController {
-        const req: RpcRequest<FooStreamHeartbeatDetectionTestParams> = {
-            procedure: 'streamHeartbeatDetectionTest',
-            path: '/rpcs/tests/stream-heartbeat-detection-test',
-            method: 'post',
-            clientVersion: '10',
-            data: params,
-            customHeaders: this._options.headers,
-        };
-        const validator: RpcRequestValidator<
-            FooStreamHeartbeatDetectionTestParams,
-            FooStreamHeartbeatDetectionTestResponse
-        > = {
-            params: $$FooStreamHeartbeatDetectionTestParams,
-            response: $$FooStreamHeartbeatDetectionTestResponse,
-        };
-        const transport = 'http';
-        const dispatcher = this._dispatchers[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            this._options.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleEventStreamRpc<
-            FooStreamHeartbeatDetectionTestParams,
-            FooStreamHeartbeatDetectionTestResponse
-        >(req, validator, options ?? {});
-    }
-    /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
@@ -5736,94 +5698,6 @@ export const $$FooStreamConnectionErrorTestResponse: ArriModelValidator<FooStrea
         },
         fromJsonString(input): FooStreamConnectionErrorTestResponse {
             return $$FooStreamConnectionErrorTestResponse.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"message":';
-            json += serializeString(input.message);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`message=${input.message}`);
-            return queryParts.join('&');
-        },
-    };
-
-export interface FooStreamHeartbeatDetectionTestParams {
-    heartbeatEnabled: boolean;
-}
-export const $$FooStreamHeartbeatDetectionTestParams: ArriModelValidator<FooStreamHeartbeatDetectionTestParams> =
-    {
-        new(): FooStreamHeartbeatDetectionTestParams {
-            return {
-                heartbeatEnabled: false,
-            };
-        },
-        validate(input): input is FooStreamHeartbeatDetectionTestParams {
-            return (
-                isObject(input) && typeof input.heartbeatEnabled === 'boolean'
-            );
-        },
-        fromJson(input): FooStreamHeartbeatDetectionTestParams {
-            let _heartbeatEnabled: boolean;
-            if (typeof input.heartbeatEnabled === 'boolean') {
-                _heartbeatEnabled = input.heartbeatEnabled;
-            } else {
-                _heartbeatEnabled = false;
-            }
-            return {
-                heartbeatEnabled: _heartbeatEnabled,
-            };
-        },
-        fromJsonString(input): FooStreamHeartbeatDetectionTestParams {
-            return $$FooStreamHeartbeatDetectionTestParams.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"heartbeatEnabled":';
-            json += `${input.heartbeatEnabled}`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`heartbeatEnabled=${input.heartbeatEnabled}`);
-            return queryParts.join('&');
-        },
-    };
-
-export interface FooStreamHeartbeatDetectionTestResponse {
-    message: string;
-}
-export const $$FooStreamHeartbeatDetectionTestResponse: ArriModelValidator<FooStreamHeartbeatDetectionTestResponse> =
-    {
-        new(): FooStreamHeartbeatDetectionTestResponse {
-            return {
-                message: '',
-            };
-        },
-        validate(input): input is FooStreamHeartbeatDetectionTestResponse {
-            return isObject(input) && typeof input.message === 'string';
-        },
-        fromJson(input): FooStreamHeartbeatDetectionTestResponse {
-            let _message: string;
-            if (typeof input.message === 'string') {
-                _message = input.message;
-            } else {
-                _message = '';
-            }
-            return {
-                message: _message,
-            };
-        },
-        fromJsonString(input): FooStreamHeartbeatDetectionTestResponse {
-            return $$FooStreamHeartbeatDetectionTestResponse.fromJson(
                 JSON.parse(input),
             );
         },
