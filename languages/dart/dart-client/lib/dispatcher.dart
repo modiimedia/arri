@@ -5,33 +5,33 @@ import 'package:arri_client/request.dart';
 
 abstract class Dispatcher {
   String get transport;
+
   FutureOr<TOutput> handleRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     required DispatcherOptions options,
-    int? retryCount,
   });
   EventStream handleEventStreamRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
     required EventStreamHooks<TOutput> hooks,
+    required TOutput Function(String input) responseDecoder,
+    required DispatcherOptions options,
+    String? lastEventId,
   });
 }
 
 class DispatcherOptions {
   final Map<String, String>? headers;
   final Duration? timeout;
-  final int? retry;
-  final int? retryDelay;
-  final List<int>? retryErrorCodes;
+  final int? maxRetryCount;
+  final int? maxRetryInterval;
   final FutureOr<void> Function(RpcRequest<dynamic> req, Object err)? onError;
   final double? heartbeatTimeoutMultiplier;
   const DispatcherOptions({
     this.headers,
     this.timeout,
-    this.retry,
-    this.retryDelay,
-    this.retryErrorCodes,
+    this.maxRetryCount,
+    this.maxRetryInterval,
     this.onError,
     this.heartbeatTimeoutMultiplier,
   });
@@ -47,11 +47,16 @@ abstract class EventStream<T> {
   Stream<T> toStream();
 }
 
+typedef EventStreamHookOnMessage<T> = Function(T msg, EventStream stream);
+typedef EventStreamHookOnOpen = Function(EventStream stream);
+typedef EventStreamHookOnClose = Function(EventStream stream);
+typedef EventStreamHookOnError = Function(Object err, EventStream stream);
+
 class EventStreamHooks<T> {
-  final void Function(T msg, EventStream stream)? onMessage;
-  final void Function(EventStream stream)? onOpen;
-  final void Function(EventStream stream)? onClose;
-  final void Function(Object err, EventStream stream)? onError;
+  final EventStreamHookOnMessage<T>? onMessage;
+  final EventStreamHookOnOpen? onOpen;
+  final EventStreamHookOnClose? onClose;
+  final EventStreamHookOnError? onError;
   const EventStreamHooks({
     this.onMessage,
     this.onOpen,
@@ -59,3 +64,5 @@ class EventStreamHooks<T> {
     this.onError,
   });
 }
+
+final timeoutDefault = Duration(seconds: 30);

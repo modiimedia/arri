@@ -1,66 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:arri_client/errors.dart';
-import 'package:arri_client/request.dart';
+import 'package:arri_client/arri_client.dart';
+import 'package:arri_client/dispatcher.dart';
 import 'package:http/http.dart' as http;
 
-typedef SseHookOnMessage<T> = void Function(
-    T message, EventSource<T> connection);
-typedef SseHookOnError<T> = void Function(
-    ArriError error, EventSource<T> connection);
-typedef SseHookOnOpen<T> = void Function(
-    http.StreamedResponse response, EventSource<T> connection);
-typedef SseHookOnClose<T> = void Function(EventSource<T> connection);
-
-EventSource<T> parsedArriSseRequest<T>(
-  String url, {
-  http.Client? httpClient,
-  required HttpMethod method,
-  required T Function(String data) parser,
-  Map<String, dynamic>? params,
-  FutureOr<Map<String, String>> Function()? headers,
-  Duration? retryDelay,
-  int? maxRetryCount,
-  SseHookOnMessage<T>? onMessage,
-  SseHookOnOpen<T>? onOpen,
-  SseHookOnClose<T>? onClose,
-  SseHookOnError<T>? onError,
-  String? lastEventId,
-  String? clientVersion,
-  int? heartbeatTimeoutMultiplier,
-  Duration? timeout,
-}) {
-  return EventSource(
-    httpClient: httpClient,
-    url: url,
-    method: method,
-    parser: parser,
-    params: params,
-    headers: () async {
-      final result = await headers?.call() ?? {};
-      if (clientVersion != null && clientVersion.isNotEmpty) {
-        result["client-version"] = clientVersion;
-      }
-      return result;
-    },
-    heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
-    retryDelay: retryDelay ?? Duration.zero,
-    maxRetryCount: maxRetryCount,
-    lastEventId: lastEventId,
-    onMessage: onMessage,
-    onOpen: onOpen,
-    onClose: onClose,
-    onError: onError,
-    timeout: timeout,
-  );
-}
-
-class EventSource<T> {
+class EventSource<T> implements EventStream<T> {
   late final http.Client _httpClient;
   final String url;
   final HttpMethod method;
-  final Map<String, dynamic>? _params;
+  final ArriModel? _params;
   final FutureOr<Map<String, String>> Function()? _headers;
   String? lastEventId;
   StreamController<T>? _streamController;
@@ -69,12 +18,15 @@ class EventSource<T> {
   int _internalRetryDelay = 100;
   final int? _maxRetryCount;
   int _retryCount = 0;
-  T Function(String data) parser;
+
   bool _closedByClient = false;
   Timer? _heartbeatTimer;
   int? _heartbeatTimerMs;
-  final int _heartbeatTimerMultiplier;
+  final double _heartbeatTimerMultiplier;
   final Duration _timeout;
+
+  @override
+  T Function(String data) decoder;
 
   // hooks
   late final void Function(T data) _onMessage;
@@ -84,19 +36,19 @@ class EventSource<T> {
 
   EventSource({
     required this.url,
-    required this.parser,
+    required this.decoder,
     http.Client? httpClient,
     this.method = HttpMethod.get,
-    Map<String, dynamic>? params,
+    ArriModel? params,
     FutureOr<Map<String, String>> Function()? headers,
     Duration retryDelay = Duration.zero,
     int? maxRetryCount,
     // hooks
-    SseHookOnMessage<T>? onMessage,
-    SseHookOnOpen<T>? onOpen,
-    SseHookOnClose<T>? onClose,
-    SseHookOnError<T>? onError,
-    int? heartbeatTimeoutMultiplier,
+    EventStreamHookOnMessage<T>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    double? heartbeatTimeoutMultiplier,
     this.lastEventId,
     Duration? timeout,
   })  : _headers = headers,
@@ -118,7 +70,7 @@ class EventSource<T> {
       _streamController?.addError(err);
     };
     _onOpen = (response) {
-      onOpen?.call(response, this);
+      onOpen?.call(this);
     };
     _onClose = () {
       onClose?.call(this);
@@ -131,7 +83,8 @@ class EventSource<T> {
     if (_heartbeatTimerMs == null || _heartbeatTimerMs! <= 0) return;
     _heartbeatTimer = Timer(
         Duration(
-          milliseconds: _heartbeatTimerMs! * _heartbeatTimerMultiplier,
+          milliseconds:
+              (_heartbeatTimerMs! * _heartbeatTimerMultiplier).round(),
         ),
         () => _connect());
   }
@@ -146,14 +99,10 @@ class EventSource<T> {
       switch (method) {
         case HttpMethod.get:
         case HttpMethod.head:
-          final queryParts = <String>[];
-          _params.forEach((key, value) {
-            queryParts.add("$key=$value");
-          });
-          parsedUrl += "?${queryParts.join("&")}";
+          parsedUrl += "?${_params.toUrlQueryParams()}";
           break;
         default:
-          body = json.encode(_params);
+          body = _params.toJsonString();
           break;
       }
     }
@@ -223,7 +172,7 @@ class EventSource<T> {
             pendingBytes = value;
             return;
           }
-          final eventResult = parseSseEvents(pendingData + input, parser);
+          final eventResult = parseSseEvents(pendingData + input, decoder);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
             _resetHeartbeatCheck();
@@ -300,6 +249,7 @@ class EventSource<T> {
     Timer(_retryDelay, () => _connect(isRetry: true));
   }
 
+  @override
   void close() {
     _closedByClient = true;
     _heartbeatTimer?.cancel();
@@ -314,11 +264,13 @@ class EventSource<T> {
     return _closedByClient;
   }
 
+  @override
   void reconnect() {
     _closedByClient = false;
     _connect(isRetry: true);
   }
 
+  @override
   Stream<T> toStream() {
     _streamController ??= StreamController<T>(onCancel: () {
       close();
