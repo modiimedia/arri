@@ -2,7 +2,28 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:arri_client/errors.dart';
+import 'package:arri_client/model.dart';
 import 'package:http/http.dart' as http;
+
+class RpcRequest<T extends ArriModel> {
+  final String procedure;
+  final String? reqId;
+  final String path;
+  final HttpMethod? method;
+  final String? clientVersion;
+  final FutureOr<Map<String, String>> Function()? customHeaders;
+  final T data;
+
+  const RpcRequest({
+    required this.procedure,
+    required this.reqId,
+    required this.path,
+    required this.method,
+    required this.clientVersion,
+    required this.customHeaders,
+    required this.data,
+  });
+}
 
 /// Enum of available HTTP methods
 enum HttpMethod implements Comparable<HttpMethod> {

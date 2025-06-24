@@ -1,18 +1,11 @@
 library;
 
 export "errors.dart";
+export "model.dart";
 export 'parsing.dart';
 export 'request.dart';
 export 'sse.dart';
 export 'ws.dart';
-
-abstract class ArriModel {
-  Map<String, dynamic> toJson();
-  String toJsonString();
-  String toUrlQueryParams();
-  ArriModel copyWith();
-  List<Object?> get props;
-}
 
 bool listsAreEqual(List? list1, List? list2, {bool log = false}) {
   if (list1 == null || list2 == null) {
