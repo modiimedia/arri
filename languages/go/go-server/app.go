@@ -2,7 +2,6 @@ package arri
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 )
@@ -77,9 +76,8 @@ func (app *App[TMeta]) Start() error {
 			return err
 		}
 	}
-	fmt.Println("ADAPTERS", app.adapters)
-	for _, adapater := range app.adapters {
-		adapater.Start()
+	for _, adapter := range app.adapters {
+		adapter.Start()
 	}
 	return nil
 	// TODO: start all adapters
@@ -182,7 +180,6 @@ func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAda
 		}
 		app.transports = append(app.transports, transportId)
 	}
-	println("transports", app.transports)
 }
 
 func RegisterDef[T any](app *App[T], input any, options TypeDefOptions) {

@@ -13,25 +13,42 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type DecoderError struct {
-	Errors []ValidationError
+type DecoderError interface {
+	error
+	Code() uint32
+	Data() Option[any]
+	Errors() []ValidationError
 }
 
-func (e DecoderError) Code() uint32 {
+type decoderError struct {
+	errors []ValidationError
+}
+
+func (e decoderError) Code() uint32 {
 	return 400
 }
 
-func (e DecoderError) Error() string {
-	if len(e.Errors) == 0 {
+func (e decoderError) Errors() []ValidationError {
+	if e.errors == nil {
+		return []ValidationError{}
+	}
+	return e.errors
+}
+
+func (e decoderError) Error() string {
+	if e.errors == nil {
+		return ""
+	}
+	if len(e.errors) == 0 {
 		return "Invalid input."
 	}
 	msg := "Invalid input. Affected properties ["
 
-	for i := 0; i < len(e.Errors); i++ {
+	for i := 0; i < len(e.errors); i++ {
 		if i > 0 {
 			msg += ", "
 		}
-		err := e.Errors[i]
+		err := e.errors[i]
 		msg += err.InstancePath
 		if err.InstancePath == "" && err.SchemaPath == "" {
 			return err.Message
@@ -41,16 +58,16 @@ func (e DecoderError) Error() string {
 	return msg
 }
 
-func (e DecoderError) Data() Option[any] {
+func (e decoderError) Data() Option[any] {
 	return Some[any](e)
 }
 
-func (e DecoderError) EncodeJSON(options EncodingOptions) ([]byte, error) {
-	return EncodeJSON(e.Errors, options)
+func (e decoderError) EncodeJSON(options EncodingOptions) ([]byte, error) {
+	return EncodeJSON(e.errors, options)
 }
 
 func NewDecoderError(errors []ValidationError) DecoderError {
-	return DecoderError{Errors: errors}
+	return decoderError{errors: errors}
 }
 
 type ValidationError struct {
@@ -98,7 +115,7 @@ func NewSerializationOptions(keyCasing KeyCasing, maxDepth uint32) EncodingOptio
 	return EncodingOptions{KeyCasing: keyCasing, MaxDepth: maxDepth}
 }
 
-func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError {
+func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) DecoderError {
 	parsedResult := gjson.ParseBytes(data)
 	value := reflect.ValueOf(&v)
 	if !parsedResult.Exists() {
@@ -107,7 +124,7 @@ func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError
 			return nil
 		}
 		err := NewDecoderError([]ValidationError{NewValidationError("expected JSON input but received nothing", "", "")})
-		return &err
+		return err
 	}
 	errors := []ValidationError{}
 	keyCasing := options.KeyCasing
@@ -126,11 +143,11 @@ func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError
 	ok := typeFromJSON(&parsedResult, value, &dc)
 	if len(dc.Errors) > 0 {
 		err := NewDecoderError(dc.Errors)
-		return &err
+		return err
 	}
 	if !ok {
 		err := NewDecoderError([]ValidationError{})
-		return &err
+		return err
 	}
 
 	return nil
