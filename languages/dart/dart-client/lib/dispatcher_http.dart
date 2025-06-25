@@ -21,17 +21,20 @@ class HttpDispatcher implements Dispatcher {
   FutureOr<TOutput> handleRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
-    required DispatcherOptions options,
+    required Duration? timeout,
+    required int? retry,
+    required Duration? retryDelay,
+    required OnErrorHook? onError,
   }) async {
     final response = await _handleHttpRequest(
       httpClient: _httpClient,
       req: req,
       baseUrl: _baseUrl,
-      timeout: options.timeout ?? timeoutDefault,
+      timeout: timeout ?? timeoutDefault,
       retryCount: 0,
-      retryInterval: 100,
-      maxRetryCount: options.maxRetryCount ?? 0,
-      maxRetryInterval: options.maxRetryInterval ?? 30000,
+      retry: retry ?? 0,
+      retryDelay: retryDelay,
+      onError: onError,
     );
     final parsedResponse = responseDecoder(response.body);
     return parsedResponse;
@@ -57,6 +60,9 @@ class HttpDispatcher implements Dispatcher {
         if (req.clientVersion != null && req.clientVersion!.isNotEmpty) {
           result["client-version"] = req.clientVersion!;
         }
+        if (req.reqId != null && req.reqId!.isNotEmpty) {
+          result["req-id"] = req.reqId!;
+        }
         return result;
       },
       heartbeatTimeoutMultiplier: options.heartbeatTimeoutMultiplier,
@@ -81,13 +87,11 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel>({
   required String baseUrl,
   required Duration timeout,
   required int? retryCount,
-  required int retryInterval,
-  required int maxRetryCount,
-  required int maxRetryInterval,
+  required int retry,
+  required Duration? retryDelay,
+  required OnErrorHook? onError,
 }) async {
   final currentRetryCount = retryCount ?? 0;
-  final currentRetryInterval =
-      retryInterval < maxRetryInterval ? retryInterval : maxRetryInterval;
   final url = baseUrl + req.path;
   String defaultErrorMsg =
       "Placeholder request. If you see this that means a request was never sent to the server.";
@@ -98,6 +102,9 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel>({
   final finalHeaders = await req.customHeaders?.call() ?? {};
   if (req.clientVersion != null && req.clientVersion!.isNotEmpty) {
     finalHeaders["client-version"] = req.clientVersion!;
+  }
+  if (req.reqId != null && req.reqId!.isNotEmpty) {
+    finalHeaders["req-id"] = req.reqId!;
   }
   String? bodyInput;
   if (req.method != HttpMethod.get &&
@@ -165,26 +172,30 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel>({
       break;
     // ignore: unreachable_switch_default
     default:
-      throw ArriError(
+      final err = ArriError(
         code: 0,
         message: "Unsupported HTTP Method ${req.method}",
       );
+      onError?.call(req, err);
+      throw err;
   }
   if (response.statusCode < 200 || response.statusCode >= 300) {
-    if (currentRetryCount < maxRetryCount) {
-      await Future.delayed(Duration(milliseconds: currentRetryInterval));
+    if (currentRetryCount < retry) {
+      if (retryDelay != null) await Future.delayed(retryDelay);
       return _handleHttpRequest(
         httpClient: httpClient,
         req: req,
         baseUrl: baseUrl,
         timeout: timeout,
         retryCount: currentRetryCount + 1,
-        retryInterval: currentRetryInterval * 2,
-        maxRetryCount: maxRetryCount,
-        maxRetryInterval: maxRetryInterval,
+        retry: retry,
+        retryDelay: retryDelay,
+        onError: onError,
       );
     }
-    throw ArriError.fromResponse(response);
+    final err = ArriError.fromResponse(response);
+    onError?.call(req, err);
+    throw err;
   }
   return response;
 }

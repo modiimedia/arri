@@ -91,3 +91,12 @@ class ArriError implements Exception {
 abstract class ArriErrorBuilder<T extends Exception> {
   T fromJson(Map<String, dynamic> json);
 }
+
+class MissingDispatcherError extends ArriError {
+  MissingDispatcherError(String transport)
+      : super(
+          code: 0,
+          message:
+              "Missing dispatcher for the following transport: \"$transport\"",
+        );
+}

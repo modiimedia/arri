@@ -8,7 +8,7 @@ import {
 } from '@arrirpc/codegen-utils';
 import { a, ASchema, CompiledValidator } from '@arrirpc/schema';
 
-import { TransportAdapter } from './adapter';
+import { ServerTransportAdapter } from './adapter';
 import { RpcMiddleware } from './middleware';
 import { Rpc } from './rpc';
 import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
@@ -27,7 +27,7 @@ export class ArriApp implements ArriServiceBase {
     private _defaultTransports: string[] = ['http'];
     private _registeredTransports: string[] = [];
     private _hasAdapter: boolean = false;
-    private readonly _adapters: Record<string, TransportAdapter> = {};
+    private readonly _adapters: Record<string, ServerTransportAdapter> = {};
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: Record<string, Schema> = {};
     private readonly _heartbeatInterval: number;
@@ -44,7 +44,7 @@ export class ArriApp implements ArriServiceBase {
             disableDefaultRoute?: boolean;
             disableDefinitionRoute?: boolean;
             defaultTransport?: string | string[];
-            transports?: TransportAdapter[];
+            transports?: ServerTransportAdapter[];
             heartbeatInterval?: number;
             heartbeatEnabled?: boolean;
         } = {},
@@ -79,9 +79,9 @@ export class ArriApp implements ArriServiceBase {
     }
 
     use(service: ArriService): void;
-    use(adapter: TransportAdapter): void;
+    use(adapter: ServerTransportAdapter): void;
     use(middleware: RpcMiddleware): void;
-    use(input: ArriService | TransportAdapter | RpcMiddleware) {
+    use(input: ArriService | ServerTransportAdapter | RpcMiddleware) {
         // register service
         if (input instanceof ArriService) {
             for (const [key, value] of Object.entries(input.definitions)) {

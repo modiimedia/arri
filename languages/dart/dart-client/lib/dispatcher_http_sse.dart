@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:arri_client/arri_client.dart';
-import 'package:arri_client/dispatcher.dart';
 import 'package:http/http.dart' as http;
 
 class EventSource<T> implements EventStream<T> {

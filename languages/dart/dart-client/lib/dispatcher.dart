@@ -3,32 +3,45 @@ import 'dart:async';
 import 'package:arri_client/model.dart';
 import 'package:arri_client/request.dart';
 
+typedef OnErrorHook = FutureOr<void> Function(
+    RpcRequest<dynamic> req, Object err);
+
 abstract class Dispatcher {
   String get transport;
 
   FutureOr<TOutput> handleRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
-    required DispatcherOptions options,
+    required Duration? timeout,
+    required int? retry,
+    required Duration? retryDelay,
+    required OnErrorHook? onError,
   });
   EventStream handleEventStreamRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
+    required EventStreamHookOnMessage<TOutput>? onMessage,
+    required EventStreamHookOnOpen? onOpen,
+    required EventStreamHookOnClose? onClose,
+    required EventStreamHookOnError? onError,
     required EventStreamHooks<TOutput> hooks,
     required TOutput Function(String input) responseDecoder,
-    required DispatcherOptions options,
-    String? lastEventId,
+    required Duration? timeout,
+    required int? maxRetryCount,
+    required Duration? maxRetryDelay,
+    required double? heartbeatTimeoutMultiplier,
+    required String? lastEventId,
   });
 }
 
 class DispatcherOptions {
-  final Map<String, String>? headers;
+  final String? transport;
   final Duration? timeout;
   final int? maxRetryCount;
-  final int? maxRetryInterval;
+  final Duration? maxRetryInterval;
   final FutureOr<void> Function(RpcRequest<dynamic> req, Object err)? onError;
   final double? heartbeatTimeoutMultiplier;
   const DispatcherOptions({
-    this.headers,
+    this.transport,
     this.timeout,
     this.maxRetryCount,
     this.maxRetryInterval,
