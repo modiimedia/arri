@@ -13,6 +13,19 @@ class WsDispatcher implements Dispatcher {
         _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier ?? 2;
 
   @override
+  FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
+    required RpcRequest<TInput> req,
+    required TOutput Function(String input) responseDecoder,
+    required Duration? timeout,
+    required int? retry,
+    required Duration? retryDelay,
+    required OnErrorHook? onError,
+  }) {
+    // TODO: implement handleRpc
+    throw UnimplementedError();
+  }
+
+  @override
   EventStream<TOutput>
       handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
@@ -32,18 +45,5 @@ class WsDispatcher implements Dispatcher {
   }
 
   @override
-  FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>(
-      {required RpcRequest<TInput> req,
-      required TOutput Function(String input) responseDecoder,
-      required Duration? timeout,
-      required int? retry,
-      required Duration? retryDelay,
-      required OnErrorHook? onError}) {
-    // TODO: implement handleRpc
-    throw UnimplementedError();
-  }
-
-  @override
-  // TODO: implement transport
-  String get transport => throw UnimplementedError();
+  String get transport => "ws";
 }

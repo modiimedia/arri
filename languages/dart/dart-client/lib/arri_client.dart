@@ -6,9 +6,7 @@ export 'parsing.dart';
 export 'request.dart';
 export "dispatcher.dart";
 export "dispatcher_http.dart";
-export 'dispatcher_http_sse.dart';
 export 'dispatcher_ws.dart';
-export 'ws.dart';
 
 bool listsAreEqual(List? list1, List? list2, {bool log = false}) {
   if (list1 == null || list2 == null) {
