@@ -29,9 +29,10 @@ func main() {
 		arri.AppOptions[CustomProps]{
 			AppVersion:        "10",
 			RpcRoutePrefix:    "/rpcs",
-			DefaultTransports: []string{"http", "ws"},
+			DefaultTransports: []string{"http"},
 		},
 	)
+	registerHeartbeatTestRoute(mux)
 	arri.RegisterTransport(&app, arri.NewHttpAdapter(mux, arri.HttpAdapterOptions[CustomProps]{Port: 2020, AllowedOrigins: []string{"*"}}))
 	arri.RegisterMiddleware(&app, func(req *arri.Request[CustomProps]) arri.RpcError {
 		if len(req.Headers["x-test-header"]) == 0 {

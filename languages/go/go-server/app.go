@@ -2,6 +2,7 @@ package arri
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 )
@@ -76,7 +77,11 @@ func (app *App[TMeta]) Start() error {
 			return err
 		}
 	}
-	panic("NOT IMPLEMENTED")
+	fmt.Println("ADAPTERS", app.adapters)
+	for _, adapater := range app.adapters {
+		adapater.Start()
+	}
+	return nil
 	// TODO: start all adapters
 }
 

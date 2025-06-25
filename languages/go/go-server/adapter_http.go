@@ -304,7 +304,7 @@ func NewHttpEventStream[T any](w http.ResponseWriter, r *http.Request, keyCasing
 	return &controller
 }
 
-func isHttp2(r *http.Request) bool {
+func IsHttp2(r *http.Request) bool {
 	return len(r.Header.Get(":path")) > 0 || len(r.Header.Get(":method")) > 0
 }
 
@@ -318,7 +318,7 @@ func (controller *HttpEventStream[T]) startStream() {
 	// prevent nginx from buffering the response
 	controller.writer.Header().Set("x-accel-buffering", "no")
 
-	if !isHttp2(controller.request) {
+	if !IsHttp2(controller.request) {
 		controller.writer.Header().Set("Connection", "keep-alive")
 		controller.writer.Header().Set("Transfer-Encoding", "chunked")
 	}
@@ -333,7 +333,7 @@ func (controller *HttpEventStream[T]) startStream() {
 		for {
 			select {
 			case <-controller.heartbeatTicker.C:
-				fmt.Fprintf(controller.writer, "event: ping\ndata:")
+				fmt.Fprintf(controller.writer, "event: ping\ndata:\n\n")
 				controller.responseController.Flush()
 			case <-controller.Done():
 				return
