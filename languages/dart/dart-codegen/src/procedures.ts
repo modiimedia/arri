@@ -17,23 +17,6 @@ export function dartRpcFromSchema(
     schema: RpcDefinition,
     context: CodegenContext,
 ): string {
-    switch (schema.transport) {
-        case 'http':
-            return dartHttpRpcFromSchema(schema, context);
-        case 'ws':
-            return dartWsRpcFromSchema(schema, context);
-        default:
-            console.warn(
-                `[WARNING] unsupported transport "${schema.transport}". Skipping ${context.instancePath}.`,
-            );
-            return '';
-    }
-}
-
-export function dartHttpRpcFromSchema(
-    schema: RpcDefinition,
-    context: CodegenContext,
-): string {
     const functionName = getFunctionName(context.instancePath);
     const metadata: Schema['metadata'] = {
         description: schema.description,
@@ -48,57 +31,69 @@ export function dartHttpRpcFromSchema(
         paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
     }
     if (schema.isEventStream) {
-        return `${getCodeComments(metadata)}EventSource<${responseType}> ${functionName}(
+        return `${getCodeComments(metadata)}EventStream<${responseType}> ${functionName}(
             ${paramsType ? `${paramsType} params, ` : ''} {
-            void Function(${responseType} data, EventSource<${responseType}> connection)? onMessage,
-            void Function(http.StreamedResponse response, EventSource<${responseType}> connection)? onOpen,
-            void Function(EventSource<${responseType}> connection)? onClose,
-            void Function(ArriError error, EventSource<${responseType}> connection)? onError,
-            Duration? retryDelay,
+            EventStreamHookOnMessage<${responseType}>? onMessage,
+            EventStreamHookOnOpen? onOpen,
+            EventStreamHookOnClose? onClose,
+            EventStreamHookOnError? onError,
+            Duration? timeout,
+            String? transport,
             int? maxRetryCount,
+            Duration? maxRetryInterval,
             String? lastEventId,
-            int? heartbeatTimeoutMultiplier,
         }) {
-            return parsedArriSseRequest(
-                "$_baseUrl${schema.path}",
-                method: HttpMethod.${schema.method?.toLowerCase() ?? 'post'},
-                httpClient: _httpClient,
-                headers: _headers,
-                clientVersion: _clientVersion,
-                retryDelay: retryDelay,
-                maxRetryCount: maxRetryCount,
+            final selectedTransport = resolveTransport([${schema.transports.map((transport) => `"${transport}"`).join(', ')}], transport ?? _defaultTransport);
+            final dispatcher = _dispatchers[selectedTransport];
+            if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+            return dispatcher.handleEventStreamRpc<${paramsType}, ${responseType}>(
+                req: RpcRequest(
+                    procedure: "${context.instancePath}",
+                    path: "${schema.path}",
+                    reqId: getRequestId(),
+                    method: ${schema.method ? `HttpMethod.${schema.method.toLowerCase()}` : 'null'},
+                    clientVersion: _clientVersion,
+                    customHeaders: _headers,
+                    data: ${paramsType ? `params` : 'null'},
+                ),
+                responseDecoder: ${responseType ? `(input) => ${responseType}.fromJsonString(input)` : `(_) => {}`},
                 lastEventId: lastEventId,
-                heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-                timeout: _timeout,
-                ${paramsType ? 'params: params.toJson(),' : ''}
-                parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : `{}`},
                 onMessage: onMessage,
                 onOpen: onOpen,
                 onClose: onClose,
-                onError: onError != null && _onError != null
-                    ? (err, es) {
-                        _onError.call(onError);
-                        return onError(err, es);
-                    }
-                    : onError != null
-                        ? onError
-                        : _onError != null
-                            ? (err, _) => _onError.call(err)
-                            : null,
+                onError: onError,
+                timeout: timeout ?? _timeout,
+                maxRetryCount: maxRetryCount,
+                maxRetryInterval: maxRetryInterval,
+                heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
             );
         }`;
     }
-    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ''}) async {
-        return parsedArriRequest(
-            "$_baseUrl${schema.path}",
-            method: HttpMethod.${schema.method?.toLowerCase() ?? 'post'},
-            httpClient: _httpClient,
-            headers: _headers,
-            clientVersion: _clientVersion,
-            ${paramsType ? 'params: params.toJson(),' : ''}
-            parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : '{}'},
-            onError: _onError,
-            timeout: _timeout,
+    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ''}, {
+        String? transport,
+        Duration? timeout,
+        int? retry,
+        Duration? retryDelay,
+        OnErrorHook? onError,    
+    }) async {
+        final selectedTransport = resolveTransport([${schema.transports.map((transport) => `"${transport}"`).join(', ')}], transport ?? _defaultTransport);
+        final dispatcher = _dispatchers[selectedTransport];
+        if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+        return dispatcher.handleRpc(
+            req: RpcRequest(
+                procedure: "${context.instancePath}",
+                path: "${schema.path}",
+                reqId: getRequestId(),
+                method: ${schema.method ? `HttpMethod.${schema.method.toLowerCase()}` : 'null'},
+                clientVersion: _clientVersion,
+                customHeaders: _headers,
+                data: ${paramsType ? 'params' : 'null'},
+            ),
+            responseDecoder: ${responseType ? `(input) => ${responseType}.fromJsonString(input)` : '(_) => {}'},
+            timeout: timeout ?? _timeout,
+            retry: retry ?? _retry,
+            retryDelay: retryDelay ?? _retryDelay,
+            onError: onError ?? _onError,
         );
     }`;
 }
@@ -153,6 +148,7 @@ export function dartServiceFromSchema(
         const subSchema = schema[key];
         if (isServiceDefinition(subSchema)) {
             const subSchemaResult = dartServiceFromSchema(subSchema, {
+                transports: context.transports,
                 clientName: context.clientName,
                 modelPrefix: context.modelPrefix,
                 generatedTypes: context.generatedTypes,
@@ -174,6 +170,7 @@ export function dartServiceFromSchema(
         }
         if (isRpcDefinition(subSchema)) {
             const subSchemaResult = dartRpcFromSchema(subSchema, {
+                transports: context.transports,
                 clientName: context.clientName,
                 modelPrefix: context.modelPrefix,
                 generatedTypes: context.generatedTypes,
@@ -191,26 +188,66 @@ export function dartServiceFromSchema(
         );
     }
     return `class ${serviceName}{
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "${context.clientVersion}";
+  final String _wsConnectionUrl;
+
+  final http.Client? _httpClient;
+  final String? _clientVersion = ${context.clientVersion ? `"${context.clientVersion}"` : 'null'};
   final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  final int? _heartbeatTimeoutMultiplier;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
   final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
   ${serviceName}({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+
+    http.Client? httpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-    int? heartbeatTimeoutMultiplier,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  }) : 
        _baseUrl = baseUrl,
+       _wsConnectionUrl = wsConnectionUrl,
+       _httpClient = httpClient,
        _headers = headers,
        _onError = onError,
+       _retry = retry,
+       _retryDelay = retryDelay,
        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+       _timeout = timeout,
+       _defaultTransport = defaultTransport ?? "${context.transports[0]}" {
+        _dispatchers = dispatchers ?? {};
+        ${
+            context.transports.includes('http')
+                ? `if (_dispatchers["http"] == null) {
+            _dispatchers["http"] = HttpDispatcher(
+                httpClient: httpClient,
+                baseUrl: baseUrl,
+            );
+        }`
+                : ''
+        }
+        ${
+            context.transports.includes('ws')
+                ? `if (_dispatchers["ws"] == null) {
+            _dispatchers["ws"] = WsDispatcher(
+                connectionUrl: _wsConnectionUrl,
+                heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+            );
+        }`
+                : ''
+        }
+    }
 
   ${rpcParts.join('\n\n')}
 
@@ -218,11 +255,13 @@ export function dartServiceFromSchema(
       .map(
           (service) => `  ${service.name} get ${service.key} => ${service.name}(
           baseUrl: _baseUrl,
+          wsConnectionUrl: _wsConnectionUrl,
           headers: _headers,
           httpClient: _httpClient,
           onError: _onError,
           heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
           timeout: _timeout,
+          dispatchers: _dispatchers,
         );`,
       )
       .join('\n\n')}

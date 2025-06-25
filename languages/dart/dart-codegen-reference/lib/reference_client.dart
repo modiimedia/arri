@@ -10,7 +10,7 @@ class ExampleClient {
   final String _wsConnectionUrl;
 
   final http.Client? _httpClient;
-  final String _clientVersion = "20";
+  final String? _clientVersion = "20";
   final FutureOr<Map<String, String>> Function()? _headers;
   final OnErrorHook? _onError;
   final int? _retry;
@@ -27,8 +27,8 @@ class ExampleClient {
     http.Client? httpClient,
     FutureOr<Map<String, String>> Function()? headers,
     OnErrorHook? onError,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
+    int? retry,
+    Duration? retryDelay,
     double? heartbeatTimeoutMultiplier,
     Duration? timeout,
     String? defaultTransport,
@@ -38,20 +38,23 @@ class ExampleClient {
        _httpClient = httpClient,
        _headers = headers,
        _onError = onError,
-       _retry = maxRetryCount,
-       _retryDelay = maxRetryInterval,
+       _retry = retry,
+       _retryDelay = retryDelay,
        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
        _timeout = timeout,
        _defaultTransport = defaultTransport ?? "http" {
     _dispatchers = dispatchers ?? {};
-    if (_dispatchers['http'] == null) {
+    if (_dispatchers["http"] == null) {
       _dispatchers["http"] = HttpDispatcher(
         httpClient: httpClient,
         baseUrl: baseUrl,
       );
     }
     if (_dispatchers["ws"] == null) {
-      _dispatchers["ws"] = WsDispatcher(connectionUrl: _wsConnectionUrl);
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
     }
   }
 
@@ -67,22 +70,18 @@ class ExampleClient {
       "http",
     ], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
-    if (dispatcher == null) {
-      throw Exception(
-        "Missing dispatcher for the following transport: \"$selectedTransport\"",
-      );
-    }
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "sendObject",
-        reqId: getRequestId(),
         path: "/send-object",
+        reqId: getRequestId(),
         method: HttpMethod.post,
         clientVersion: _clientVersion,
         customHeaders: _headers,
         data: params,
       ),
-      responseDecoder: (data) => NestedObject.fromJsonString(data),
+      responseDecoder: (input) => NestedObject.fromJsonString(input),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -92,6 +91,7 @@ class ExampleClient {
 
   ExampleClientBooksService get books => ExampleClientBooksService(
     baseUrl: _baseUrl,
+    wsConnectionUrl: _wsConnectionUrl,
     headers: _headers,
     httpClient: _httpClient,
     onError: _onError,
@@ -102,9 +102,11 @@ class ExampleClient {
 }
 
 class ExampleClientBooksService {
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "20";
+  final String _wsConnectionUrl;
+
+  final http.Client? _httpClient;
+  final String? _clientVersion = "20";
   final FutureOr<Map<String, String>> Function()? _headers;
   final OnErrorHook? _onError;
   final int? _retry;
@@ -115,18 +117,20 @@ class ExampleClientBooksService {
 
   late final Map<String, Dispatcher> _dispatchers;
   ExampleClientBooksService({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client? httpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    FutureOr<void> Function(RpcRequest<dynamic> req, Object err)? onError,
+    OnErrorHook? onError,
     int? retry,
     Duration? retryDelay,
     double? heartbeatTimeoutMultiplier,
     Duration? timeout,
     String? defaultTransport,
     Map<String, Dispatcher>? dispatchers,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
+  }) : _baseUrl = baseUrl,
+       _wsConnectionUrl = wsConnectionUrl,
+       _httpClient = httpClient,
        _headers = headers,
        _onError = onError,
        _retry = retry,
@@ -139,6 +143,12 @@ class ExampleClientBooksService {
       _dispatchers["http"] = HttpDispatcher(
         httpClient: httpClient,
         baseUrl: baseUrl,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
       );
     }
   }
@@ -161,10 +171,10 @@ class ExampleClientBooksService {
     return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "books.getBook",
-        reqId: getRequestId(),
         path: "/books/get-book",
+        reqId: getRequestId(),
         method: HttpMethod.get,
-        clientVersion: "20",
+        clientVersion: _clientVersion,
         customHeaders: _headers,
         data: params,
       ),
@@ -195,10 +205,10 @@ class ExampleClientBooksService {
     return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "books.createBook",
-        reqId: getRequestId(),
         path: "/books/create-book",
+        reqId: getRequestId(),
         method: HttpMethod.post,
-        clientVersion: "20",
+        clientVersion: _clientVersion,
         customHeaders: _headers,
         data: params,
       ),
@@ -217,59 +227,37 @@ class ExampleClientBooksService {
     EventStreamHookOnOpen? onOpen,
     EventStreamHookOnClose? onClose,
     EventStreamHookOnError? onError,
+    Duration? timeout,
     String? transport,
     int? maxRetryCount,
-    Duration? maxRetryDelay,
+    Duration? maxRetryInterval,
     String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
   }) {
     final selectedTransport = resolveTransport([
       "http",
-      "ws",
     ], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleEventStreamRpc(
+    return dispatcher.handleEventStreamRpc<BookParams, Book>(
       req: RpcRequest(
         procedure: "books.watchBook",
-        reqId: getRequestId(),
         path: "/books/watch-book",
-        method: HttpMethod.patch,
-        clientVersion: "20",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
         customHeaders: _headers,
         data: params,
       ),
-      hooks: EventStreamHooks(),
       responseDecoder: (input) => Book.fromJsonString(input),
-    );
-    return parsedArriSseRequest(
-      "$_baseUrl/books/watch-book",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      params: params.toJson(),
-      parser: (body) => Book.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError:
-          onError != null && _onError != null
-              ? (err, es) {
-                _onError.call(onError);
-                return onError(err, es);
-              }
-              : onError != null
-              ? onError
-              : _onError != null
-              ? (err, _) => _onError.call(err)
-              : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 }
@@ -306,7 +294,6 @@ class EmptyObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   EmptyObject copyWith() {
     return EmptyObject();
   }
@@ -395,7 +382,6 @@ class Book implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   Book copyWith({
     String? id,
     String? name,
@@ -521,7 +507,6 @@ class NestedObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   NestedObject copyWith({String? id, String? content}) {
     return NestedObject(id: id ?? this.id, content: content ?? this.content);
   }
@@ -739,7 +724,6 @@ class ObjectWithEveryType implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   ObjectWithEveryType copyWith({
     String? string,
     bool? boolean,
@@ -908,7 +892,6 @@ class DiscriminatorA implements Discriminator {
     return _queryParts_.join("&");
   }
 
-  @override
   DiscriminatorA copyWith({String? id}) {
     return DiscriminatorA(id: id ?? this.id);
   }
@@ -976,7 +959,6 @@ class DiscriminatorB implements Discriminator {
     return _queryParts_.join("&");
   }
 
-  @override
   DiscriminatorB copyWith({String? id, String? name}) {
     return DiscriminatorB(id: id ?? this.id, name: name ?? this.name);
   }
@@ -1052,7 +1034,6 @@ class DiscriminatorC implements Discriminator {
     return _queryParts_.join("&");
   }
 
-  @override
   DiscriminatorC copyWith({String? id, String? name, DateTime? date}) {
     return DiscriminatorC(
       id: id ?? this.id,
@@ -1261,7 +1242,6 @@ class ObjectWithOptionalFields implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   ObjectWithOptionalFields copyWith({
     String? Function()? string,
     bool? Function()? boolean,
@@ -1544,7 +1524,6 @@ class ObjectWithNullableFields implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   ObjectWithNullableFields copyWith({
     String? Function()? string,
     bool? Function()? boolean,
@@ -1676,7 +1655,6 @@ class RecursiveObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   RecursiveObject copyWith({
     RecursiveObject? Function()? left,
     RecursiveObject? Function()? right,

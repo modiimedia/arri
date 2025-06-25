@@ -44,9 +44,15 @@ class HttpDispatcher implements Dispatcher {
   EventStream<TOutput> handleEventStreamRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
-    required EventStreamHooks<TOutput> hooks,
-    required DispatcherOptions options,
     String? lastEventId,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnMessage<TOutput>? onMessage,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    double? heartbeatTimeoutMultiplier,
   }) {
     final url = _baseUrl + req.path;
     return EventSource<TOutput>(
@@ -65,15 +71,15 @@ class HttpDispatcher implements Dispatcher {
         }
         return result;
       },
-      heartbeatTimeoutMultiplier: options.heartbeatTimeoutMultiplier,
-      retryDelay: Duration.zero,
-      maxRetryCount: options.maxRetryCount,
+      heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
+      maxRetryInterval: maxRetryInterval ?? Duration(seconds: 30),
+      maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
-      onOpen: hooks.onOpen,
-      onMessage: hooks.onMessage,
-      onClose: hooks.onClose,
-      onError: hooks.onError,
-      timeout: options.timeout,
+      onOpen: onOpen,
+      onMessage: onMessage,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout,
     );
   }
 

@@ -71,6 +71,7 @@ export function dartClassFromSchema(
     for (const key of Object.keys(schema.properties)) {
         const innerSchema = schema.properties[key]!;
         const typeResult = dartTypeFromSchema(innerSchema, {
+            transports: context.transports,
             clientName: context.clientName,
             modelPrefix: context.modelPrefix,
             generatedTypes: context.generatedTypes,
@@ -120,6 +121,7 @@ export function dartClassFromSchema(
     for (const key of Object.keys(schema.optionalProperties ?? {})) {
         const innerSchema = schema.optionalProperties![key]!;
         const typeResult = dartTypeFromSchema(innerSchema, {
+            transports: context.transports,
             clientName: context.clientName,
             modelPrefix: context.modelPrefix,
             generatedTypes: context.generatedTypes,
@@ -208,7 +210,6 @@ ${toUrlQueryParts.join('\n')}
     return _queryParts_.join("&");
   }
 
-  @override
   ${finalClassName} copyWith(${hasProperties ? '{' : ''}
 ${copyWithParamParts.join('\n')}
   ${hasProperties ? '}' : ''}) {

@@ -114,10 +114,7 @@ String getRequestId() {
   return _reqCount.toString();
 }
 
-String resolveTransport(
-  List<String> availableTransports,
-  String selected,
-) {
+String resolveTransport(List<String> availableTransports, String selected) {
   assert(
     availableTransports.isEmpty,
     "No transports available for this procedure",

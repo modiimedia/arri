@@ -17,19 +17,18 @@ abstract class Dispatcher {
     required Duration? retryDelay,
     required OnErrorHook? onError,
   });
-  EventStream handleEventStreamRpc<TInput extends ArriModel, TOutput>({
+  EventStream<TOutput> handleEventStreamRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
+    required TOutput Function(String input) responseDecoder,
+    required String? lastEventId,
     required EventStreamHookOnMessage<TOutput>? onMessage,
     required EventStreamHookOnOpen? onOpen,
     required EventStreamHookOnClose? onClose,
     required EventStreamHookOnError? onError,
-    required EventStreamHooks<TOutput> hooks,
-    required TOutput Function(String input) responseDecoder,
     required Duration? timeout,
     required int? maxRetryCount,
-    required Duration? maxRetryDelay,
+    required Duration? maxRetryInterval,
     required double? heartbeatTimeoutMultiplier,
-    required String? lastEventId,
   });
 }
 

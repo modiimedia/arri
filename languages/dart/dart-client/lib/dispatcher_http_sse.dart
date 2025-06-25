@@ -13,10 +13,10 @@ class EventSource<T> implements EventStream<T> {
   String? lastEventId;
   StreamController<T>? _streamController;
   StreamSubscription<List<int>>? _requestStream;
-  final Duration _retryDelay;
-  int _internalRetryDelay = 100;
+  int _retryDelay = 0;
+  int _retryInterval = 0;
   final int? _maxRetryCount;
-  int _retryCount = 0;
+  final int _maxRetryInterval;
 
   bool _closedByClient = false;
   Timer? _heartbeatTimer;
@@ -40,7 +40,7 @@ class EventSource<T> implements EventStream<T> {
     this.method = HttpMethod.get,
     ArriModel? params,
     FutureOr<Map<String, String>> Function()? headers,
-    Duration retryDelay = Duration.zero,
+    Duration maxRetryInterval = const Duration(milliseconds: 30000),
     int? maxRetryCount,
     // hooks
     EventStreamHookOnMessage<T>? onMessage,
@@ -52,7 +52,7 @@ class EventSource<T> implements EventStream<T> {
     Duration? timeout,
   })  : _headers = headers,
         _params = params,
-        _retryDelay = retryDelay,
+        _maxRetryInterval = maxRetryInterval.inMilliseconds,
         _maxRetryCount = maxRetryCount,
         _heartbeatTimerMultiplier = heartbeatTimeoutMultiplier ?? 2,
         _timeout = timeout ?? timeoutDefault {
@@ -90,7 +90,7 @@ class EventSource<T> implements EventStream<T> {
 
   Future<void> _connect({bool isRetry = false}) async {
     if (isRetry) {
-      _retryCount++;
+      _retryInterval++;
     }
     String parsedUrl = url;
     String body = "";
@@ -152,8 +152,8 @@ class EventSource<T> implements EventStream<T> {
       String pendingData = "";
 
       // reset retry count when connection is successful
-      _retryCount = 0;
-      _internalRetryDelay = 100;
+      _retryInterval = 0;
+      _retryDelay = 100;
 
       List<int>? pendingBytes;
 
@@ -192,13 +192,13 @@ class EventSource<T> implements EventStream<T> {
         },
         onError: _handleError,
         onDone: () async {
-          if (_maxRetryCount != null && _maxRetryCount <= _retryCount) {
+          if (_maxRetryCount != null && _maxRetryCount <= _retryInterval) {
             _httpClient.close();
             _onClose();
             return;
           }
           if (_closedByClient) return;
-          Timer(_retryDelay, () => _connect(isRetry: true));
+          await Future.delayed(Duration(milliseconds: _retryDelay));
         },
       );
     } catch (err) {
@@ -228,24 +228,20 @@ class EventSource<T> implements EventStream<T> {
         ),
       );
     }
-    if (_maxRetryCount != null && _maxRetryCount <= _retryCount) {
+    if (_maxRetryCount != null && _maxRetryCount <= _retryInterval) {
       close();
       return;
     }
     // exponential backoff maxing out at 60 seconds
-    if (_retryCount > 10 &&
-        _retryDelay.inMilliseconds == Duration.zero.inMilliseconds) {
-      _internalRetryDelay = _internalRetryDelay * 2;
-      if (_internalRetryDelay > 60000) {
-        _internalRetryDelay = 60000;
-      }
-      Timer(
-        Duration(milliseconds: _internalRetryDelay),
-        () => _connect(isRetry: true),
-      );
-      return;
+    if (_retryInterval > 10 && _retryDelay == 0) {
+      _retryDelay = 100;
+    } else {
+      _retryDelay = _retryDelay * 2;
     }
-    Timer(_retryDelay, () => _connect(isRetry: true));
+    if (_retryDelay > _maxRetryInterval) {
+      _retryDelay = _maxRetryInterval;
+    }
+    Timer(Duration(milliseconds: _retryDelay), () => _connect(isRetry: true));
   }
 
   @override

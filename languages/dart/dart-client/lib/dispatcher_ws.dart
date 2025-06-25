@@ -3,24 +3,28 @@ import 'dart:async';
 import 'package:arri_client/arri_client.dart';
 
 class WsDispatcher implements Dispatcher {
-  final String connectionUrl;
+  final String _connectionUrl;
+  final double _heartbeatTimeoutMultiplier;
 
-  WsDispatcher({required this.connectionUrl});
+  const WsDispatcher({
+    required String connectionUrl,
+    double? heartbeatTimeoutMultiplier,
+  })  : _connectionUrl = connectionUrl,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier ?? 2;
 
   @override
-  EventStream handleEventStreamRpc<TInput extends ArriModel, TOutput>({
+  EventStream<TOutput> handleEventStreamRpc<TInput extends ArriModel, TOutput>({
     required RpcRequest<TInput> req,
+    required TOutput Function(String input) responseDecoder,
+    required String? lastEventId,
     required EventStreamHookOnMessage<TOutput>? onMessage,
     required EventStreamHookOnOpen? onOpen,
     required EventStreamHookOnClose? onClose,
     required EventStreamHookOnError? onError,
-    required EventStreamHooks<TOutput> hooks,
-    required TOutput Function(String input) responseDecoder,
     required Duration? timeout,
     required int? maxRetryCount,
-    required Duration? maxRetryDelay,
+    required Duration? maxRetryInterval,
     required double? heartbeatTimeoutMultiplier,
-    required String? lastEventId,
   }) {
     // TODO: implement handleEventStreamRpc
     throw UnimplementedError();
