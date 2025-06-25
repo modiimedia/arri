@@ -2,14 +2,14 @@ import 'dart:async';
 import 'package:arri_client/errors.dart';
 import 'package:arri_client/model.dart';
 
-class RpcRequest<T extends ArriModel> {
+class RpcRequest<T extends ArriModel?> {
   final String procedure;
   final String? reqId;
   final String path;
   final HttpMethod? method;
   final String? clientVersion;
   final FutureOr<Map<String, String>> Function()? customHeaders;
-  final T? data;
+  final T data;
 
   const RpcRequest({
     required this.procedure,

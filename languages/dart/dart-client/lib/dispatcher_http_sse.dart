@@ -199,6 +199,7 @@ class EventSource<T> implements EventStream<T> {
           }
           if (_closedByClient) return;
           await Future.delayed(Duration(milliseconds: _retryDelay));
+          _connect();
         },
       );
     } catch (err) {
@@ -255,6 +256,7 @@ class EventSource<T> implements EventStream<T> {
     _onClose();
   }
 
+  @override
   bool get isClosed {
     return _closedByClient;
   }

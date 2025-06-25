@@ -46,7 +46,7 @@ export function dartRpcFromSchema(
             final selectedTransport = resolveTransport([${schema.transports.map((transport) => `"${transport}"`).join(', ')}], transport ?? _defaultTransport);
             final dispatcher = _dispatchers[selectedTransport];
             if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-            return dispatcher.handleEventStreamRpc<${paramsType}, ${responseType}>(
+            return dispatcher.handleEventStreamRpc<${schema.params ? paramsType : `Null`}, ${responseType}>(
                 req: RpcRequest(
                     procedure: "${context.instancePath}",
                     path: "${schema.path}",
@@ -54,9 +54,9 @@ export function dartRpcFromSchema(
                     method: ${schema.method ? `HttpMethod.${schema.method.toLowerCase()}` : 'null'},
                     clientVersion: _clientVersion,
                     customHeaders: _headers,
-                    data: ${paramsType ? `params` : 'null'},
+                    data: ${schema.params ? `params` : 'null'},
                 ),
-                responseDecoder: ${responseType ? `(input) => ${responseType}.fromJsonString(input)` : `(_) => {}`},
+                responseDecoder: ${schema.response ? `(input) => ${responseType}.fromJsonString(input)` : `(_) => {}`},
                 lastEventId: lastEventId,
                 onMessage: onMessage,
                 onOpen: onOpen,
@@ -69,7 +69,7 @@ export function dartRpcFromSchema(
             );
         }`;
     }
-    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ''}, {
+    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params, ` : ''}{
         String? transport,
         Duration? timeout,
         int? retry,
@@ -87,9 +87,9 @@ export function dartRpcFromSchema(
                 method: ${schema.method ? `HttpMethod.${schema.method.toLowerCase()}` : 'null'},
                 clientVersion: _clientVersion,
                 customHeaders: _headers,
-                data: ${paramsType ? 'params' : 'null'},
+                data: ${schema.params ? 'params' : 'null'},
             ),
-            responseDecoder: ${responseType ? `(input) => ${responseType}.fromJsonString(input)` : '(_) => {}'},
+            responseDecoder: ${schema.response ? `(input) => ${responseType}.fromJsonString(input)` : '(_) => {}'},
             timeout: timeout ?? _timeout,
             retry: retry ?? _retry,
             retryDelay: retryDelay ?? _retryDelay,
@@ -101,36 +101,6 @@ export function dartRpcFromSchema(
 function getFunctionName(instancePath: string) {
     const parts = instancePath.split('.');
     return parts.pop() ?? '';
-}
-
-export function dartWsRpcFromSchema(
-    _: RpcDefinition,
-    __: CodegenContext,
-): string {
-    return '';
-    // const metadata: Schema['metadata'] = {
-    //     description: schema.description,
-    //     isDeprecated: schema.isDeprecated,
-    // };
-    // const functionName = getFunctionName(context.instancePath);
-    // let responseType: string | undefined;
-    // let paramsType: string | undefined;
-    // if (schema.response) {
-    //     responseType = `${context.modelPrefix}${validDartClassName(schema.response, context.modelPrefix)}`;
-    // }
-    // if (schema.params) {
-    //     paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
-    // }
-    // return `${getCodeComments(metadata)}Future<ArriWebsocketController<${responseType ?? 'void'}, ${paramsType ?? 'void'}>> ${functionName}() {
-    //     return arriWebsocketRequest(
-    //         "$_baseUrl${schema.path}",
-    //         headers: _headers,
-    //         clientVersion: _clientVersion,
-    //         parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : '{}'},
-    //         serializer: (msg) ${paramsType ? '=> msg.toJsonString()' : '=> ""'},
-    //         onError: _onError,
-    //     );
-    // }`;
 }
 
 export function dartServiceFromSchema(
@@ -191,7 +161,7 @@ export function dartServiceFromSchema(
   final String _baseUrl;
   final String _wsConnectionUrl;
 
-  final http.Client? _httpClient;
+  final http.Client Function()? _createHttpClient;
   final String? _clientVersion = ${context.clientVersion ? `"${context.clientVersion}"` : 'null'};
   final FutureOr<Map<String, String>> Function()? _headers;
   final OnErrorHook? _onError;
@@ -206,7 +176,7 @@ export function dartServiceFromSchema(
     required String baseUrl,
     required String wsConnectionUrl,
 
-    http.Client? httpClient,
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
     OnErrorHook? onError,
     int? retry,
@@ -218,7 +188,7 @@ export function dartServiceFromSchema(
   }) : 
        _baseUrl = baseUrl,
        _wsConnectionUrl = wsConnectionUrl,
-       _httpClient = httpClient,
+       _createHttpClient = createHttpClient,
        _headers = headers,
        _onError = onError,
        _retry = retry,
@@ -231,8 +201,8 @@ export function dartServiceFromSchema(
             context.transports.includes('http')
                 ? `if (_dispatchers["http"] == null) {
             _dispatchers["http"] = HttpDispatcher(
-                httpClient: httpClient,
                 baseUrl: baseUrl,
+                createHttpClient: _createHttpClient,
             );
         }`
                 : ''
@@ -257,7 +227,7 @@ export function dartServiceFromSchema(
           baseUrl: _baseUrl,
           wsConnectionUrl: _wsConnectionUrl,
           headers: _headers,
-          httpClient: _httpClient,
+          createHttpClient: _createHttpClient,
           onError: _onError,
           heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
           timeout: _timeout,

@@ -29,22 +29,22 @@ export default defineConfig({
             prettierOptions: prettierConfig,
             rootService: 'tests',
         }),
-        // generators.dartClient({
-        //     clientName: 'TestClient',
-        //     outputFile: path.resolve(
-        //         __dirname,
-        //         '../../clients/dart/lib/test_client.g.dart',
-        //     ),
-        // }),
-        // generators.dartClient({
-        //     clientName: 'TestClientPrefixed',
-        //     outputFile: path.resolve(
-        //         __dirname,
-        //         '../../clients/dart/lib/test_client_prefixed.g.dart',
-        //     ),
-        //     typePrefix: 'Foo',
-        //     rootService: 'tests',
-        // }),
+        generators.dartClient({
+            clientName: 'TestClient',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/dart/lib/test_client.g.dart',
+            ),
+        }),
+        generators.dartClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/dart/lib/test_client_prefixed.g.dart',
+            ),
+            typePrefix: 'Foo',
+            rootService: 'tests',
+        }),
         // generators.kotlinClient({
         //     clientName: 'TestClient',
         //     outputFile: path.resolve(

@@ -9,16 +9,17 @@ import 'package:http/http.dart' as http;
 
 class HttpDispatcher implements Dispatcher {
   final String _baseUrl;
-  late final http.Client _httpClient;
+  final http.Client _defaultHttpClient;
+  http.Client Function()? createHttpClient;
 
   HttpDispatcher({
-    http.Client? httpClient,
+    http.Client Function()? createHttpClient,
     required String baseUrl,
-  })  : _httpClient = httpClient ?? http.Client(),
-        _baseUrl = baseUrl;
+  })  : _baseUrl = baseUrl,
+        _defaultHttpClient = createHttpClient?.call() ?? http.Client();
 
   @override
-  FutureOr<TOutput> handleRpc<TInput extends ArriModel, TOutput>({
+  FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     required Duration? timeout,
@@ -27,7 +28,7 @@ class HttpDispatcher implements Dispatcher {
     required OnErrorHook? onError,
   }) async {
     final response = await _handleHttpRequest(
-      httpClient: _httpClient,
+      httpClient: _defaultHttpClient,
       req: req,
       baseUrl: _baseUrl,
       timeout: timeout ?? timeoutDefault,
@@ -41,7 +42,8 @@ class HttpDispatcher implements Dispatcher {
   }
 
   @override
-  EventStream<TOutput> handleEventStreamRpc<TInput extends ArriModel, TOutput>({
+  EventStream<TOutput>
+      handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     String? lastEventId,
@@ -56,7 +58,7 @@ class HttpDispatcher implements Dispatcher {
   }) {
     final url = _baseUrl + req.path;
     return EventSource<TOutput>(
-      httpClient: _httpClient,
+      httpClient: createHttpClient?.call(),
       url: url,
       method: req.method ?? HttpMethod.post,
       decoder: responseDecoder,
@@ -87,7 +89,7 @@ class HttpDispatcher implements Dispatcher {
   String get transport => 'http';
 }
 
-Future<http.Response> _handleHttpRequest<T extends ArriModel>({
+Future<http.Response> _handleHttpRequest<T extends ArriModel?>({
   required http.Client httpClient,
   required RpcRequest<T> req,
   required String baseUrl,
@@ -113,9 +115,7 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel>({
     finalHeaders["req-id"] = req.reqId!;
   }
   String? bodyInput;
-  if (req.method != HttpMethod.get &&
-      req.method != HttpMethod.head &&
-      req.data != null) {
+  if (req.method != HttpMethod.get && req.method != HttpMethod.head) {
     finalHeaders["Content-Type"] = "application/json";
     bodyInput = req.data?.toJsonString();
   }
@@ -149,6 +149,7 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel>({
           .timeout(timeout);
       break;
     case HttpMethod.post:
+    case null:
       response = await httpClient
           .post(
             Uri.parse(url),
@@ -176,14 +177,6 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel>({
           )
           .timeout(timeout);
       break;
-    // ignore: unreachable_switch_default
-    default:
-      final err = ArriError(
-        code: 0,
-        message: "Unsupported HTTP Method ${req.method}",
-      );
-      onError?.call(req, err);
-      throw err;
   }
   if (response.statusCode < 200 || response.statusCode >= 300) {
     if (currentRetryCount < retry) {

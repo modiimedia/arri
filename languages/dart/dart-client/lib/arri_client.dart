@@ -116,7 +116,7 @@ String getRequestId() {
 
 String resolveTransport(List<String> availableTransports, String selected) {
   assert(
-    availableTransports.isEmpty,
+    availableTransports.isNotEmpty,
     "No transports available for this procedure",
   );
   if (availableTransports.contains(selected)) {

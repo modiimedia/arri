@@ -175,7 +175,7 @@ class ${clientName} {
   final String _baseUrl;
   final String _wsConnectionUrl;
 
-  final http.Client? _httpClient;
+  final http.Client Function()? _createHttpClient;
   final String? _clientVersion = ${context.clientVersion ? `"${context.clientVersion}"` : 'null'};
   final FutureOr<Map<String, String>> Function()? _headers;
   final OnErrorHook? _onError;
@@ -189,7 +189,7 @@ class ${clientName} {
   ${clientName}({
     required String baseUrl,
     required String wsConnectionUrl,
-    http.Client? httpClient,
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
     OnErrorHook? onError,
     int? retry,
@@ -201,7 +201,7 @@ class ${clientName} {
   }) : 
        _baseUrl = baseUrl,
        _wsConnectionUrl = wsConnectionUrl,
-       _httpClient = httpClient,
+       _createHttpClient = createHttpClient,
        _headers = headers,
        _onError = onError,
        _retry = retry,
@@ -212,8 +212,8 @@ class ${clientName} {
         _dispatchers = dispatchers ?? {};
         if (_dispatchers["http"] == null) {
             _dispatchers["http"] = HttpDispatcher(
-                httpClient: httpClient,
                 baseUrl: baseUrl,
+                createHttpClient: _createHttpClient,
             );
         }
         if (_dispatchers["ws"] == null) {
@@ -233,7 +233,7 @@ ${subServices
           baseUrl: _baseUrl,
           wsConnectionUrl: _wsConnectionUrl,
           headers: _headers,
-          httpClient: _httpClient,
+          createHttpClient: _createHttpClient,
           onError: _onError,
           heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
           timeout: _timeout,

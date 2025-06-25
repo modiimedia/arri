@@ -13,7 +13,8 @@ class WsDispatcher implements Dispatcher {
         _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier ?? 2;
 
   @override
-  EventStream<TOutput> handleEventStreamRpc<TInput extends ArriModel, TOutput>({
+  EventStream<TOutput>
+      handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     required String? lastEventId,
@@ -31,7 +32,7 @@ class WsDispatcher implements Dispatcher {
   }
 
   @override
-  FutureOr<TOutput> handleRpc<TInput extends ArriModel, TOutput>(
+  FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>(
       {required RpcRequest<TInput> req,
       required TOutput Function(String input) responseDecoder,
       required Duration? timeout,

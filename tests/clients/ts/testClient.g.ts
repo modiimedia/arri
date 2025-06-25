@@ -799,7 +799,7 @@ export class TestClientUsersService {
         const req: RpcRequest<UsersWatchUserParams> = {
             procedure: 'users.watchUser',
             path: '/rpcs/users/watch-user',
-            method: 'post',
+            method: undefined,
             clientVersion: '10',
             data: params,
             customHeaders: this._options.headers,
