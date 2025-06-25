@@ -28,17 +28,21 @@ import {
     type RpcRequestValidator,
     HttpDispatcher,
     WsDispatcher,
+    type EventStreamController,
+    type EventStreamHooks,
     resolveDispatcherOptions,
     resolveTransport,
 } from '@arrirpc/client';
 
 export interface TestClientPrefixedOptions
     extends Omit<RpcDispatcherOptions, 'signal'> {
-    transport?: 'http';
+    transport?: 'http' | 'ws';
     dispatchers?: Record<string, RpcDispatcher>;
     // HTTP options
     baseUrl: string;
     fetch?: Fetch;
+    // WS options
+    wsConnectionUrl: string;
 }
 
 export interface RpcOptions<T extends string> extends RpcDispatcherOptions {
@@ -540,12 +544,211 @@ export class TestClientPrefixed {
             finalOptions,
         );
     }
+    streamAutoReconnect(
+        params: FooAutoReconnectParams,
+        options?: EventStreamHooks<FooAutoReconnectResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<FooAutoReconnectParams> = {
+            procedure: 'streamAutoReconnect',
+            path: '/rpcs/tests/stream-auto-reconnect',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooAutoReconnectParams,
+            FooAutoReconnectResponse
+        > = {
+            params: $$FooAutoReconnectParams,
+            response: $$FooAutoReconnectResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooAutoReconnectParams,
+            FooAutoReconnectResponse
+        >(req, validator, options ?? {});
+    }
+    /**
+     * This route will always return an error. The client should automatically retry with exponential backoff.
+     */
+    streamConnectionErrorTest(
+        params: FooStreamConnectionErrorTestParams,
+        options?: EventStreamHooks<FooStreamConnectionErrorTestResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<FooStreamConnectionErrorTestParams> = {
+            procedure: 'streamConnectionErrorTest',
+            path: '/rpcs/tests/stream-connection-error-test',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooStreamConnectionErrorTestParams,
+            FooStreamConnectionErrorTestResponse
+        > = {
+            params: $$FooStreamConnectionErrorTestParams,
+            response: $$FooStreamConnectionErrorTestResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooStreamConnectionErrorTestParams,
+            FooStreamConnectionErrorTestResponse
+        >(req, validator, options ?? {});
+    }
+    /**
+     * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+     */
+    streamLargeObjects(
+        options?: EventStreamHooks<FooStreamLargeObjectsResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<undefined> = {
+            procedure: 'streamLargeObjects',
+            path: '/rpcs/tests/stream-large-objects',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            undefined,
+            FooStreamLargeObjectsResponse
+        > = {
+            params: UndefinedModelValidator,
+            response: $$FooStreamLargeObjectsResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            undefined,
+            FooStreamLargeObjectsResponse
+        >(req, validator, options ?? {});
+    }
+    streamMessages(
+        params: FooChatMessageParams,
+        options?: EventStreamHooks<FooChatMessage>,
+    ): EventStreamController {
+        const req: RpcRequest<FooChatMessageParams> = {
+            procedure: 'streamMessages',
+            path: '/rpcs/tests/stream-messages',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            FooChatMessageParams,
+            FooChatMessage
+        > = {
+            params: $$FooChatMessageParams,
+            response: $$FooChatMessage,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            FooChatMessageParams,
+            FooChatMessage
+        >(req, validator, options ?? {});
+    }
+    streamRetryWithNewCredentials(
+        options?: EventStreamHooks<FooTestsStreamRetryWithNewCredentialsResponse>,
+    ): EventStreamController {
+        const req: RpcRequest<undefined> = {
+            procedure: 'streamRetryWithNewCredentials',
+            path: '/rpcs/tests/stream-retry-with-new-credentials',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<
+            undefined,
+            FooTestsStreamRetryWithNewCredentialsResponse
+        > = {
+            params: UndefinedModelValidator,
+            response: $$FooTestsStreamRetryWithNewCredentialsResponse,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<
+            undefined,
+            FooTestsStreamRetryWithNewCredentialsResponse
+        >(req, validator, options ?? {});
+    }
+    /**
+     * When the client receives the 'done' event, it should close the connection and NOT reconnect
+     */
+    streamTenEventsThenEnd(
+        options?: EventStreamHooks<FooChatMessage>,
+    ): EventStreamController {
+        const req: RpcRequest<undefined> = {
+            procedure: 'streamTenEventsThenEnd',
+            path: '/rpcs/tests/stream-ten-events-then-end',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<undefined, FooChatMessage> = {
+            params: UndefinedModelValidator,
+            response: $$FooChatMessage,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<undefined, FooChatMessage>(
+            req,
+            validator,
+            options ?? {},
+        );
+    }
 }
 
 export interface FooManuallyAddedModel {
-    /**
-     * FOO
-     */
     hello: string;
 }
 export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> =
@@ -5281,6 +5484,1769 @@ export const $$FooRecursiveUnionShapeData: ArriModelValidator<FooRecursiveUnionS
             queryParts.push(`width=${input.width}`);
             queryParts.push(`height=${input.height}`);
             queryParts.push(`color=${input.color}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooAutoReconnectParams {
+    messageCount: number;
+}
+export const $$FooAutoReconnectParams: ArriModelValidator<FooAutoReconnectParams> =
+    {
+        new(): FooAutoReconnectParams {
+            return {
+                messageCount: 0,
+            };
+        },
+        validate(input): input is FooAutoReconnectParams {
+            return (
+                isObject(input) &&
+                typeof input.messageCount === 'number' &&
+                Number.isInteger(input.messageCount) &&
+                input.messageCount >= 0 &&
+                input.messageCount <= UINT8_MAX
+            );
+        },
+        fromJson(input): FooAutoReconnectParams {
+            let _messageCount: number;
+            if (
+                typeof input.messageCount === 'number' &&
+                Number.isInteger(input.messageCount) &&
+                input.messageCount >= 0 &&
+                input.messageCount <= UINT8_MAX
+            ) {
+                _messageCount = input.messageCount;
+            } else {
+                _messageCount = 0;
+            }
+            return {
+                messageCount: _messageCount,
+            };
+        },
+        fromJsonString(input): FooAutoReconnectParams {
+            return $$FooAutoReconnectParams.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"messageCount":';
+            json += `${input.messageCount}`;
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`messageCount=${input.messageCount}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooAutoReconnectResponse {
+    count: number;
+    message: string;
+}
+export const $$FooAutoReconnectResponse: ArriModelValidator<FooAutoReconnectResponse> =
+    {
+        new(): FooAutoReconnectResponse {
+            return {
+                count: 0,
+                message: '',
+            };
+        },
+        validate(input): input is FooAutoReconnectResponse {
+            return (
+                isObject(input) &&
+                typeof input.count === 'number' &&
+                Number.isInteger(input.count) &&
+                input.count >= 0 &&
+                input.count <= UINT8_MAX &&
+                typeof input.message === 'string'
+            );
+        },
+        fromJson(input): FooAutoReconnectResponse {
+            let _count: number;
+            if (
+                typeof input.count === 'number' &&
+                Number.isInteger(input.count) &&
+                input.count >= 0 &&
+                input.count <= UINT8_MAX
+            ) {
+                _count = input.count;
+            } else {
+                _count = 0;
+            }
+            let _message: string;
+            if (typeof input.message === 'string') {
+                _message = input.message;
+            } else {
+                _message = '';
+            }
+            return {
+                count: _count,
+                message: _message,
+            };
+        },
+        fromJsonString(input): FooAutoReconnectResponse {
+            return $$FooAutoReconnectResponse.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"count":';
+            json += `${input.count}`;
+            json += ',"message":';
+            json += serializeString(input.message);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`count=${input.count}`);
+            queryParts.push(`message=${input.message}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooStreamConnectionErrorTestParams {
+    statusCode: number;
+    statusMessage: string;
+}
+export const $$FooStreamConnectionErrorTestParams: ArriModelValidator<FooStreamConnectionErrorTestParams> =
+    {
+        new(): FooStreamConnectionErrorTestParams {
+            return {
+                statusCode: 0,
+                statusMessage: '',
+            };
+        },
+        validate(input): input is FooStreamConnectionErrorTestParams {
+            return (
+                isObject(input) &&
+                typeof input.statusCode === 'number' &&
+                Number.isInteger(input.statusCode) &&
+                input.statusCode >= INT32_MIN &&
+                input.statusCode <= INT32_MAX &&
+                typeof input.statusMessage === 'string'
+            );
+        },
+        fromJson(input): FooStreamConnectionErrorTestParams {
+            let _statusCode: number;
+            if (
+                typeof input.statusCode === 'number' &&
+                Number.isInteger(input.statusCode) &&
+                input.statusCode >= INT32_MIN &&
+                input.statusCode <= INT32_MAX
+            ) {
+                _statusCode = input.statusCode;
+            } else {
+                _statusCode = 0;
+            }
+            let _statusMessage: string;
+            if (typeof input.statusMessage === 'string') {
+                _statusMessage = input.statusMessage;
+            } else {
+                _statusMessage = '';
+            }
+            return {
+                statusCode: _statusCode,
+                statusMessage: _statusMessage,
+            };
+        },
+        fromJsonString(input): FooStreamConnectionErrorTestParams {
+            return $$FooStreamConnectionErrorTestParams.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"statusCode":';
+            json += `${input.statusCode}`;
+            json += ',"statusMessage":';
+            json += serializeString(input.statusMessage);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`statusCode=${input.statusCode}`);
+            queryParts.push(`statusMessage=${input.statusMessage}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooStreamConnectionErrorTestResponse {
+    message: string;
+}
+export const $$FooStreamConnectionErrorTestResponse: ArriModelValidator<FooStreamConnectionErrorTestResponse> =
+    {
+        new(): FooStreamConnectionErrorTestResponse {
+            return {
+                message: '',
+            };
+        },
+        validate(input): input is FooStreamConnectionErrorTestResponse {
+            return isObject(input) && typeof input.message === 'string';
+        },
+        fromJson(input): FooStreamConnectionErrorTestResponse {
+            let _message: string;
+            if (typeof input.message === 'string') {
+                _message = input.message;
+            } else {
+                _message = '';
+            }
+            return {
+                message: _message,
+            };
+        },
+        fromJsonString(input): FooStreamConnectionErrorTestResponse {
+            return $$FooStreamConnectionErrorTestResponse.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"message":';
+            json += serializeString(input.message);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`message=${input.message}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooStreamLargeObjectsResponse {
+    numbers: number[];
+    objects: FooStreamLargeObjectsResponseObjectsElement[];
+}
+export const $$FooStreamLargeObjectsResponse: ArriModelValidator<FooStreamLargeObjectsResponse> =
+    {
+        new(): FooStreamLargeObjectsResponse {
+            return {
+                numbers: [],
+                objects: [],
+            };
+        },
+        validate(input): input is FooStreamLargeObjectsResponse {
+            return (
+                isObject(input) &&
+                Array.isArray(input.numbers) &&
+                input.numbers.every(
+                    (_element) => typeof _element === 'number',
+                ) &&
+                Array.isArray(input.objects) &&
+                input.objects.every((_element) =>
+                    $$FooStreamLargeObjectsResponseObjectsElement.validate(
+                        _element,
+                    ),
+                )
+            );
+        },
+        fromJson(input): FooStreamLargeObjectsResponse {
+            let _numbers: number[];
+            if (Array.isArray(input.numbers)) {
+                _numbers = [];
+                for (const _numbersEl of input.numbers) {
+                    let _numbersElValue: number;
+                    if (typeof _numbersEl === 'number') {
+                        _numbersElValue = _numbersEl;
+                    } else {
+                        _numbersElValue = 0;
+                    }
+                    _numbers.push(_numbersElValue);
+                }
+            } else {
+                _numbers = [];
+            }
+            let _objects: FooStreamLargeObjectsResponseObjectsElement[];
+            if (Array.isArray(input.objects)) {
+                _objects = [];
+                for (const _objectsEl of input.objects) {
+                    let _objectsElValue: FooStreamLargeObjectsResponseObjectsElement;
+                    if (isObject(_objectsEl)) {
+                        _objectsElValue =
+                            $$FooStreamLargeObjectsResponseObjectsElement.fromJson(
+                                _objectsEl,
+                            );
+                    } else {
+                        _objectsElValue =
+                            $$FooStreamLargeObjectsResponseObjectsElement.new();
+                    }
+                    _objects.push(_objectsElValue);
+                }
+            } else {
+                _objects = [];
+            }
+            return {
+                numbers: _numbers,
+                objects: _objects,
+            };
+        },
+        fromJsonString(input): FooStreamLargeObjectsResponse {
+            return $$FooStreamLargeObjectsResponse.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"numbers":';
+            json += '[';
+            for (let i = 0; i < input.numbers.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputNumbersEl = input.numbers[i];
+                json += `${_inputNumbersEl}`;
+            }
+            json += ']';
+            json += ',"objects":';
+            json += '[';
+            for (let i = 0; i < input.objects.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputObjectsEl = input.objects[i];
+                json +=
+                    $$FooStreamLargeObjectsResponseObjectsElement.toJsonString(
+                        _inputObjectsEl,
+                    );
+            }
+            json += ']';
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            console.warn(
+                '[WARNING] Cannot serialize arrays to query string. Skipping property at /StreamLargeObjectsResponse/numbers.',
+            );
+            console.warn(
+                '[WARNING] Cannot serialize arrays to query string. Skipping property at /StreamLargeObjectsResponse/objects.',
+            );
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooStreamLargeObjectsResponseObjectsElement {
+    id: string;
+    name: string;
+    email: string;
+}
+export const $$FooStreamLargeObjectsResponseObjectsElement: ArriModelValidator<FooStreamLargeObjectsResponseObjectsElement> =
+    {
+        new(): FooStreamLargeObjectsResponseObjectsElement {
+            return {
+                id: '',
+                name: '',
+                email: '',
+            };
+        },
+        validate(input): input is FooStreamLargeObjectsResponseObjectsElement {
+            return (
+                isObject(input) &&
+                typeof input.id === 'string' &&
+                typeof input.name === 'string' &&
+                typeof input.email === 'string'
+            );
+        },
+        fromJson(input): FooStreamLargeObjectsResponseObjectsElement {
+            let _id: string;
+            if (typeof input.id === 'string') {
+                _id = input.id;
+            } else {
+                _id = '';
+            }
+            let _name: string;
+            if (typeof input.name === 'string') {
+                _name = input.name;
+            } else {
+                _name = '';
+            }
+            let _email: string;
+            if (typeof input.email === 'string') {
+                _email = input.email;
+            } else {
+                _email = '';
+            }
+            return {
+                id: _id,
+                name: _name,
+                email: _email,
+            };
+        },
+        fromJsonString(input): FooStreamLargeObjectsResponseObjectsElement {
+            return $$FooStreamLargeObjectsResponseObjectsElement.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"id":';
+            json += serializeString(input.id);
+            json += ',"name":';
+            json += serializeString(input.name);
+            json += ',"email":';
+            json += serializeString(input.email);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`id=${input.id}`);
+            queryParts.push(`name=${input.name}`);
+            queryParts.push(`email=${input.email}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooChatMessageParams {
+    channelId: string;
+}
+export const $$FooChatMessageParams: ArriModelValidator<FooChatMessageParams> =
+    {
+        new(): FooChatMessageParams {
+            return {
+                channelId: '',
+            };
+        },
+        validate(input): input is FooChatMessageParams {
+            return isObject(input) && typeof input.channelId === 'string';
+        },
+        fromJson(input): FooChatMessageParams {
+            let _channelId: string;
+            if (typeof input.channelId === 'string') {
+                _channelId = input.channelId;
+            } else {
+                _channelId = '';
+            }
+            return {
+                channelId: _channelId,
+            };
+        },
+        fromJsonString(input): FooChatMessageParams {
+            return $$FooChatMessageParams.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"channelId":';
+            json += serializeString(input.channelId);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`channelId=${input.channelId}`);
+            return queryParts.join('&');
+        },
+    };
+
+export type FooChatMessage =
+    | FooChatMessageText
+    | FooChatMessageImage
+    | FooChatMessageUrl;
+export const $$FooChatMessage: ArriModelValidator<FooChatMessage> = {
+    new(): FooChatMessage {
+        return $$FooChatMessageText.new();
+    },
+    validate(input): input is FooChatMessage {
+        if (!isObject(input)) {
+            return false;
+        }
+        if (typeof input.messageType !== 'string') {
+            return false;
+        }
+        switch (input.messageType) {
+            case 'TEXT':
+                return $$FooChatMessageText.validate(input);
+            case 'IMAGE':
+                return $$FooChatMessageImage.validate(input);
+            case 'URL':
+                return $$FooChatMessageUrl.validate(input);
+            default:
+                return false;
+        }
+    },
+    fromJson(input): FooChatMessage {
+        switch (input.messageType) {
+            case 'TEXT':
+                return $$FooChatMessageText.fromJson(input);
+            case 'IMAGE':
+                return $$FooChatMessageImage.fromJson(input);
+            case 'URL':
+                return $$FooChatMessageUrl.fromJson(input);
+            default:
+                return $$FooChatMessageText.new();
+        }
+    },
+    fromJsonString(input): FooChatMessage {
+        return $$FooChatMessage.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        switch (input.messageType) {
+            case 'TEXT':
+                return $$FooChatMessageText.toJsonString(input);
+            case 'IMAGE':
+                return $$FooChatMessageImage.toJsonString(input);
+            case 'URL':
+                return $$FooChatMessageUrl.toJsonString(input);
+            default:
+                throw new Error(
+                    `Unhandled case "${(input as any).messageType}"`,
+                );
+        }
+    },
+    toUrlQueryString(input): string {
+        switch (input.messageType) {
+            case 'TEXT':
+                return $$FooChatMessageText.toUrlQueryString(input);
+            case 'IMAGE':
+                return $$FooChatMessageImage.toUrlQueryString(input);
+            case 'URL':
+                return $$FooChatMessageUrl.toUrlQueryString(input);
+            default:
+                throw new Error('Unhandled case');
+        }
+    },
+};
+export interface FooChatMessageText {
+    messageType: 'TEXT';
+    id: string;
+    channelId: string;
+    userId: string;
+    date: Date;
+    text: string;
+}
+const $$FooChatMessageText: ArriModelValidator<FooChatMessageText> = {
+    new(): FooChatMessageText {
+        return {
+            messageType: 'TEXT',
+            id: '',
+            channelId: '',
+            userId: '',
+            date: new Date(),
+            text: '',
+        };
+    },
+    validate(input): input is FooChatMessageText {
+        return (
+            isObject(input) &&
+            input.messageType === 'TEXT' &&
+            typeof input.id === 'string' &&
+            typeof input.channelId === 'string' &&
+            typeof input.userId === 'string' &&
+            input.date instanceof Date &&
+            typeof input.text === 'string'
+        );
+    },
+    fromJson(input): FooChatMessageText {
+        const _messageType = 'TEXT';
+        let _id: string;
+        if (typeof input.id === 'string') {
+            _id = input.id;
+        } else {
+            _id = '';
+        }
+        let _channelId: string;
+        if (typeof input.channelId === 'string') {
+            _channelId = input.channelId;
+        } else {
+            _channelId = '';
+        }
+        let _userId: string;
+        if (typeof input.userId === 'string') {
+            _userId = input.userId;
+        } else {
+            _userId = '';
+        }
+        let _date: Date;
+        if (typeof input.date === 'string') {
+            _date = new Date(input.date);
+        } else if (input.date instanceof Date) {
+            _date = input.date;
+        } else {
+            _date = new Date();
+        }
+        let _text: string;
+        if (typeof input.text === 'string') {
+            _text = input.text;
+        } else {
+            _text = '';
+        }
+        return {
+            messageType: _messageType,
+            id: _id,
+            channelId: _channelId,
+            userId: _userId,
+            date: _date,
+            text: _text,
+        };
+    },
+    fromJsonString(input): FooChatMessageText {
+        return $$FooChatMessageText.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"messageType":"TEXT"';
+        json += ',"id":';
+        json += serializeString(input.id);
+        json += ',"channelId":';
+        json += serializeString(input.channelId);
+        json += ',"userId":';
+        json += serializeString(input.userId);
+        json += ',"date":';
+        json += `"${input.date.toISOString()}"`;
+        json += ',"text":';
+        json += serializeString(input.text);
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push('messageType=TEXT');
+        queryParts.push(`id=${input.id}`);
+        queryParts.push(`channelId=${input.channelId}`);
+        queryParts.push(`userId=${input.userId}`);
+        queryParts.push(`date=${input.date.toISOString()}`);
+        queryParts.push(`text=${input.text}`);
+        return queryParts.join('&');
+    },
+};
+
+export interface FooChatMessageImage {
+    messageType: 'IMAGE';
+    id: string;
+    channelId: string;
+    userId: string;
+    date: Date;
+    image: string;
+}
+const $$FooChatMessageImage: ArriModelValidator<FooChatMessageImage> = {
+    new(): FooChatMessageImage {
+        return {
+            messageType: 'IMAGE',
+            id: '',
+            channelId: '',
+            userId: '',
+            date: new Date(),
+            image: '',
+        };
+    },
+    validate(input): input is FooChatMessageImage {
+        return (
+            isObject(input) &&
+            input.messageType === 'IMAGE' &&
+            typeof input.id === 'string' &&
+            typeof input.channelId === 'string' &&
+            typeof input.userId === 'string' &&
+            input.date instanceof Date &&
+            typeof input.image === 'string'
+        );
+    },
+    fromJson(input): FooChatMessageImage {
+        const _messageType = 'IMAGE';
+        let _id: string;
+        if (typeof input.id === 'string') {
+            _id = input.id;
+        } else {
+            _id = '';
+        }
+        let _channelId: string;
+        if (typeof input.channelId === 'string') {
+            _channelId = input.channelId;
+        } else {
+            _channelId = '';
+        }
+        let _userId: string;
+        if (typeof input.userId === 'string') {
+            _userId = input.userId;
+        } else {
+            _userId = '';
+        }
+        let _date: Date;
+        if (typeof input.date === 'string') {
+            _date = new Date(input.date);
+        } else if (input.date instanceof Date) {
+            _date = input.date;
+        } else {
+            _date = new Date();
+        }
+        let _image: string;
+        if (typeof input.image === 'string') {
+            _image = input.image;
+        } else {
+            _image = '';
+        }
+        return {
+            messageType: _messageType,
+            id: _id,
+            channelId: _channelId,
+            userId: _userId,
+            date: _date,
+            image: _image,
+        };
+    },
+    fromJsonString(input): FooChatMessageImage {
+        return $$FooChatMessageImage.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"messageType":"IMAGE"';
+        json += ',"id":';
+        json += serializeString(input.id);
+        json += ',"channelId":';
+        json += serializeString(input.channelId);
+        json += ',"userId":';
+        json += serializeString(input.userId);
+        json += ',"date":';
+        json += `"${input.date.toISOString()}"`;
+        json += ',"image":';
+        json += serializeString(input.image);
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push('messageType=IMAGE');
+        queryParts.push(`id=${input.id}`);
+        queryParts.push(`channelId=${input.channelId}`);
+        queryParts.push(`userId=${input.userId}`);
+        queryParts.push(`date=${input.date.toISOString()}`);
+        queryParts.push(`image=${input.image}`);
+        return queryParts.join('&');
+    },
+};
+
+export interface FooChatMessageUrl {
+    messageType: 'URL';
+    id: string;
+    channelId: string;
+    userId: string;
+    date: Date;
+    url: string;
+}
+const $$FooChatMessageUrl: ArriModelValidator<FooChatMessageUrl> = {
+    new(): FooChatMessageUrl {
+        return {
+            messageType: 'URL',
+            id: '',
+            channelId: '',
+            userId: '',
+            date: new Date(),
+            url: '',
+        };
+    },
+    validate(input): input is FooChatMessageUrl {
+        return (
+            isObject(input) &&
+            input.messageType === 'URL' &&
+            typeof input.id === 'string' &&
+            typeof input.channelId === 'string' &&
+            typeof input.userId === 'string' &&
+            input.date instanceof Date &&
+            typeof input.url === 'string'
+        );
+    },
+    fromJson(input): FooChatMessageUrl {
+        const _messageType = 'URL';
+        let _id: string;
+        if (typeof input.id === 'string') {
+            _id = input.id;
+        } else {
+            _id = '';
+        }
+        let _channelId: string;
+        if (typeof input.channelId === 'string') {
+            _channelId = input.channelId;
+        } else {
+            _channelId = '';
+        }
+        let _userId: string;
+        if (typeof input.userId === 'string') {
+            _userId = input.userId;
+        } else {
+            _userId = '';
+        }
+        let _date: Date;
+        if (typeof input.date === 'string') {
+            _date = new Date(input.date);
+        } else if (input.date instanceof Date) {
+            _date = input.date;
+        } else {
+            _date = new Date();
+        }
+        let _url: string;
+        if (typeof input.url === 'string') {
+            _url = input.url;
+        } else {
+            _url = '';
+        }
+        return {
+            messageType: _messageType,
+            id: _id,
+            channelId: _channelId,
+            userId: _userId,
+            date: _date,
+            url: _url,
+        };
+    },
+    fromJsonString(input): FooChatMessageUrl {
+        return $$FooChatMessageUrl.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"messageType":"URL"';
+        json += ',"id":';
+        json += serializeString(input.id);
+        json += ',"channelId":';
+        json += serializeString(input.channelId);
+        json += ',"userId":';
+        json += serializeString(input.userId);
+        json += ',"date":';
+        json += `"${input.date.toISOString()}"`;
+        json += ',"url":';
+        json += serializeString(input.url);
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push('messageType=URL');
+        queryParts.push(`id=${input.id}`);
+        queryParts.push(`channelId=${input.channelId}`);
+        queryParts.push(`userId=${input.userId}`);
+        queryParts.push(`date=${input.date.toISOString()}`);
+        queryParts.push(`url=${input.url}`);
+        return queryParts.join('&');
+    },
+};
+
+export interface FooTestsStreamRetryWithNewCredentialsResponse {
+    message: string;
+}
+export const $$FooTestsStreamRetryWithNewCredentialsResponse: ArriModelValidator<FooTestsStreamRetryWithNewCredentialsResponse> =
+    {
+        new(): FooTestsStreamRetryWithNewCredentialsResponse {
+            return {
+                message: '',
+            };
+        },
+        validate(
+            input,
+        ): input is FooTestsStreamRetryWithNewCredentialsResponse {
+            return isObject(input) && typeof input.message === 'string';
+        },
+        fromJson(input): FooTestsStreamRetryWithNewCredentialsResponse {
+            let _message: string;
+            if (typeof input.message === 'string') {
+                _message = input.message;
+            } else {
+                _message = '';
+            }
+            return {
+                message: _message,
+            };
+        },
+        fromJsonString(input): FooTestsStreamRetryWithNewCredentialsResponse {
+            return $$FooTestsStreamRetryWithNewCredentialsResponse.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"message":';
+            json += serializeString(input.message);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`message=${input.message}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooUsersWatchUserParams {
+    userId: string;
+}
+export const $$FooUsersWatchUserParams: ArriModelValidator<FooUsersWatchUserParams> =
+    {
+        new(): FooUsersWatchUserParams {
+            return {
+                userId: '',
+            };
+        },
+        validate(input): input is FooUsersWatchUserParams {
+            return isObject(input) && typeof input.userId === 'string';
+        },
+        fromJson(input): FooUsersWatchUserParams {
+            let _userId: string;
+            if (typeof input.userId === 'string') {
+                _userId = input.userId;
+            } else {
+                _userId = '';
+            }
+            return {
+                userId: _userId,
+            };
+        },
+        fromJsonString(input): FooUsersWatchUserParams {
+            return $$FooUsersWatchUserParams.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"userId":';
+            json += serializeString(input.userId);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`userId=${input.userId}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooUsersWatchUserResponse {
+    id: string;
+    role: FooUsersWatchUserResponseRole;
+    /**
+     * A profile picture
+     */
+    photo: FooUserPhoto | null;
+    createdAt: Date;
+    numFollowers: number;
+    settings: FooUserSettings;
+    recentNotifications: FooUsersWatchUserResponseRecentNotificationsElement[];
+    bookmarks: Record<string, FooUsersWatchUserResponseBookmarksValue>;
+    metadata: Record<string, any>;
+    randomList: any[];
+    bio?: string;
+}
+export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserResponse> =
+    {
+        new(): FooUsersWatchUserResponse {
+            return {
+                id: '',
+                role: $$FooUsersWatchUserResponseRole.new(),
+                photo: null,
+                createdAt: new Date(),
+                numFollowers: 0,
+                settings: $$FooUserSettings.new(),
+                recentNotifications: [],
+                bookmarks: {},
+                metadata: {},
+                randomList: [],
+            };
+        },
+        validate(input): input is FooUsersWatchUserResponse {
+            return (
+                isObject(input) &&
+                typeof input.id === 'string' &&
+                $$FooUsersWatchUserResponseRole.validate(input.role) &&
+                ($$FooUserPhoto.validate(input.photo) ||
+                    input.photo === null) &&
+                input.createdAt instanceof Date &&
+                typeof input.numFollowers === 'number' &&
+                Number.isInteger(input.numFollowers) &&
+                input.numFollowers >= INT32_MIN &&
+                input.numFollowers <= INT32_MAX &&
+                $$FooUserSettings.validate(input.settings) &&
+                Array.isArray(input.recentNotifications) &&
+                input.recentNotifications.every((_element) =>
+                    $$FooUsersWatchUserResponseRecentNotificationsElement.validate(
+                        _element,
+                    ),
+                ) &&
+                isObject(input.bookmarks) &&
+                Object.values(input.bookmarks).every((_value) =>
+                    $$FooUsersWatchUserResponseBookmarksValue.validate(_value),
+                ) &&
+                isObject(input.metadata) &&
+                Object.values(input.metadata).every((_value) => true) &&
+                Array.isArray(input.randomList) &&
+                input.randomList.every((_element) => true) &&
+                (typeof input.bio === 'string' ||
+                    typeof input.bio === 'undefined')
+            );
+        },
+        fromJson(input): FooUsersWatchUserResponse {
+            let _id: string;
+            if (typeof input.id === 'string') {
+                _id = input.id;
+            } else {
+                _id = '';
+            }
+            let _role: FooUsersWatchUserResponseRole;
+            if (typeof input.role === 'string') {
+                _role = $$FooUsersWatchUserResponseRole.fromSerialValue(
+                    input.role,
+                );
+            } else {
+                _role = $$FooUsersWatchUserResponseRole.new();
+            }
+            let _photo: FooUserPhoto | null;
+            if (isObject(input.photo)) {
+                _photo = $$FooUserPhoto.fromJson(input.photo);
+            } else {
+                _photo = null;
+            }
+            let _createdAt: Date;
+            if (typeof input.createdAt === 'string') {
+                _createdAt = new Date(input.createdAt);
+            } else if (input.createdAt instanceof Date) {
+                _createdAt = input.createdAt;
+            } else {
+                _createdAt = new Date();
+            }
+            let _numFollowers: number;
+            if (
+                typeof input.numFollowers === 'number' &&
+                Number.isInteger(input.numFollowers) &&
+                input.numFollowers >= INT32_MIN &&
+                input.numFollowers <= INT32_MAX
+            ) {
+                _numFollowers = input.numFollowers;
+            } else {
+                _numFollowers = 0;
+            }
+            let _settings: FooUserSettings;
+            if (isObject(input.settings)) {
+                _settings = $$FooUserSettings.fromJson(input.settings);
+            } else {
+                _settings = $$FooUserSettings.new();
+            }
+            let _recentNotifications: FooUsersWatchUserResponseRecentNotificationsElement[];
+            if (Array.isArray(input.recentNotifications)) {
+                _recentNotifications = [];
+                for (const _recentNotificationsEl of input.recentNotifications) {
+                    let _recentNotificationsElValue: FooUsersWatchUserResponseRecentNotificationsElement;
+                    if (isObject(_recentNotificationsEl)) {
+                        _recentNotificationsElValue =
+                            $$FooUsersWatchUserResponseRecentNotificationsElement.fromJson(
+                                _recentNotificationsEl,
+                            );
+                    } else {
+                        _recentNotificationsElValue =
+                            $$FooUsersWatchUserResponseRecentNotificationsElement.new();
+                    }
+                    _recentNotifications.push(_recentNotificationsElValue);
+                }
+            } else {
+                _recentNotifications = [];
+            }
+            let _bookmarks: Record<
+                string,
+                FooUsersWatchUserResponseBookmarksValue
+            >;
+            if (isObject(input.bookmarks)) {
+                _bookmarks = {};
+                for (const [_key, _value] of Object.entries(input.bookmarks)) {
+                    let _bookmarksValue: FooUsersWatchUserResponseBookmarksValue;
+                    if (isObject(_value)) {
+                        _bookmarksValue =
+                            $$FooUsersWatchUserResponseBookmarksValue.fromJson(
+                                _value,
+                            );
+                    } else {
+                        _bookmarksValue =
+                            $$FooUsersWatchUserResponseBookmarksValue.new();
+                    }
+                    _bookmarks[_key] = _bookmarksValue;
+                }
+            } else {
+                _bookmarks = {};
+            }
+            let _metadata: Record<string, any>;
+            if (isObject(input.metadata)) {
+                _metadata = {};
+                for (const [_key, _value] of Object.entries(input.metadata)) {
+                    let _metadataValue: any;
+                    _metadataValue = _value;
+                    _metadata[_key] = _metadataValue;
+                }
+            } else {
+                _metadata = {};
+            }
+            let _randomList: any[];
+            if (Array.isArray(input.randomList)) {
+                _randomList = [];
+                for (const _randomListEl of input.randomList) {
+                    let _randomListElValue: any;
+                    _randomListElValue = _randomListEl;
+                    _randomList.push(_randomListElValue);
+                }
+            } else {
+                _randomList = [];
+            }
+            let _bio: string | undefined;
+            if (typeof input.bio !== 'undefined') {
+                if (typeof input.bio === 'string') {
+                    _bio = input.bio;
+                } else {
+                    _bio = '';
+                }
+            }
+            return {
+                id: _id,
+                role: _role,
+                photo: _photo,
+                createdAt: _createdAt,
+                numFollowers: _numFollowers,
+                settings: _settings,
+                recentNotifications: _recentNotifications,
+                bookmarks: _bookmarks,
+                metadata: _metadata,
+                randomList: _randomList,
+                bio: _bio,
+            };
+        },
+        fromJsonString(input): FooUsersWatchUserResponse {
+            return $$FooUsersWatchUserResponse.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"id":';
+            json += serializeString(input.id);
+            json += ',"role":';
+            json += `"${input.role}"`;
+            json += ',"photo":';
+            if (input.photo !== null) {
+                json += $$FooUserPhoto.toJsonString(input.photo);
+            } else {
+                json += 'null';
+            }
+            json += ',"createdAt":';
+            json += `"${input.createdAt.toISOString()}"`;
+            json += ',"numFollowers":';
+            json += `${input.numFollowers}`;
+            json += ',"settings":';
+            json += $$FooUserSettings.toJsonString(input.settings);
+            json += ',"recentNotifications":';
+            json += '[';
+            for (let i = 0; i < input.recentNotifications.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputRecentNotificationsEl =
+                    input.recentNotifications[i];
+                json +=
+                    $$FooUsersWatchUserResponseRecentNotificationsElement.toJsonString(
+                        _inputRecentNotificationsEl,
+                    );
+            }
+            json += ']';
+            json += ',"bookmarks":';
+            json += '{';
+            let _bookmarksPropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.bookmarks)) {
+                if (_bookmarksPropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json +=
+                    $$FooUsersWatchUserResponseBookmarksValue.toJsonString(
+                        _value,
+                    );
+                _bookmarksPropertyCount++;
+            }
+            json += '}';
+
+            json += ',"metadata":';
+            json += '{';
+            let _metadataPropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.metadata)) {
+                if (_metadataPropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += JSON.stringify(_value);
+                _metadataPropertyCount++;
+            }
+            json += '}';
+
+            json += ',"randomList":';
+            json += '[';
+            for (let i = 0; i < input.randomList.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputRandomListEl = input.randomList[i];
+                json += JSON.stringify(_inputRandomListEl);
+            }
+            json += ']';
+            if (typeof input.bio !== 'undefined') {
+                json += `,"bio":`;
+                json += serializeString(input.bio);
+            }
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`id=${input.id}`);
+            queryParts.push(`role=${input.role}`);
+            console.warn(
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/photo.',
+            );
+            queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
+            queryParts.push(`numFollowers=${input.numFollowers}`);
+            console.warn(
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/settings.',
+            );
+            console.warn(
+                '[WARNING] Cannot serialize arrays to query string. Skipping property at /UsersWatchUserResponse/recentNotifications.',
+            );
+            console.warn(
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/bookmarks.',
+            );
+            console.warn(
+                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/metadata.',
+            );
+            console.warn(
+                '[WARNING] Cannot serialize arrays to query string. Skipping property at /UsersWatchUserResponse/randomList.',
+            );
+            if (typeof input.bio !== 'undefined') {
+                queryParts.push(`bio=${input.bio}`);
+            }
+            return queryParts.join('&');
+        },
+    };
+
+export type FooUsersWatchUserResponseRole =
+    (typeof $$FooUsersWatchUserResponseRoleValues)[number];
+const $$FooUsersWatchUserResponseRoleValues = ['standard', 'admin'] as const;
+export const $$FooUsersWatchUserResponseRole: ArriEnumValidator<FooUsersWatchUserResponseRole> =
+    {
+        new(): FooUsersWatchUserResponseRole {
+            return $$FooUsersWatchUserResponseRoleValues[0];
+        },
+        validate(input): input is UsersWatchUserResponseRole {
+            return (
+                typeof input === 'string' &&
+                $$FooUsersWatchUserResponseRoleValues.includes(input as any)
+            );
+        },
+        values: $$FooUsersWatchUserResponseRoleValues,
+        fromSerialValue(input): FooUsersWatchUserResponseRole {
+            if ($$FooUsersWatchUserResponseRoleValues.includes(input as any)) {
+                return input as FooUsersWatchUserResponseRole;
+            }
+            if (
+                $$FooUsersWatchUserResponseRoleValues.includes(
+                    input.toLowerCase() as any,
+                )
+            ) {
+                return input.toLowerCase() as FooUsersWatchUserResponseRole;
+            }
+            if (
+                $$FooUsersWatchUserResponseRoleValues.includes(
+                    input.toUpperCase() as any,
+                )
+            ) {
+                return input.toUpperCase() as FooUsersWatchUserResponseRole;
+            }
+            return 'standard';
+        },
+    };
+
+/**
+ * A profile picture
+ */
+export interface FooUserPhoto {
+    url: string;
+    width: number;
+    height: number;
+    bytes: bigint;
+    /**
+     * When the photo was last updated in nanoseconds
+     */
+    nanoseconds: bigint;
+}
+export const $$FooUserPhoto: ArriModelValidator<FooUserPhoto> = {
+    new(): FooUserPhoto {
+        return {
+            url: '',
+            width: 0,
+            height: 0,
+            bytes: BigInt(0),
+            nanoseconds: BigInt(0),
+        };
+    },
+    validate(input): input is FooUserPhoto {
+        return (
+            isObject(input) &&
+            typeof input.url === 'string' &&
+            typeof input.width === 'number' &&
+            typeof input.height === 'number' &&
+            typeof input.bytes === 'bigint' &&
+            input.bytes >= INT64_MIN &&
+            input.bytes <= INT64_MAX &&
+            typeof input.nanoseconds === 'bigint' &&
+            input.nanoseconds >= BigInt(0) &&
+            input.nanoseconds <= UINT64_MAX
+        );
+    },
+    fromJson(input): FooUserPhoto {
+        let _url: string;
+        if (typeof input.url === 'string') {
+            _url = input.url;
+        } else {
+            _url = '';
+        }
+        let _width: number;
+        if (typeof input.width === 'number') {
+            _width = input.width;
+        } else {
+            _width = 0;
+        }
+        let _height: number;
+        if (typeof input.height === 'number') {
+            _height = input.height;
+        } else {
+            _height = 0;
+        }
+        let _bytes: bigint;
+        if (typeof input.bytes === 'string') {
+            _bytes = BigInt(input.bytes);
+        } else if (typeof input.bytes === 'bigint') {
+            _bytes = input.bytes;
+        } else {
+            _bytes = BigInt(0);
+        }
+        let _nanoseconds: bigint;
+        if (
+            typeof input.nanoseconds === 'string' &&
+            BigInt(input.nanoseconds) >= BigInt(0)
+        ) {
+            _nanoseconds = BigInt(input.nanoseconds);
+        } else if (
+            typeof input.nanoseconds === 'bigint' &&
+            input.nanoseconds >= BigInt(0)
+        ) {
+            _nanoseconds = input.nanoseconds;
+        } else {
+            _nanoseconds = BigInt(0);
+        }
+        return {
+            url: _url,
+            width: _width,
+            height: _height,
+            bytes: _bytes,
+            nanoseconds: _nanoseconds,
+        };
+    },
+    fromJsonString(input): FooUserPhoto {
+        return $$FooUserPhoto.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"url":';
+        json += serializeString(input.url);
+        json += ',"width":';
+        json += `${input.width}`;
+        json += ',"height":';
+        json += `${input.height}`;
+        json += ',"bytes":';
+        json += `"${input.bytes}"`;
+        json += ',"nanoseconds":';
+        json += `"${input.nanoseconds}"`;
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push(`url=${input.url}`);
+        queryParts.push(`width=${input.width}`);
+        queryParts.push(`height=${input.height}`);
+        queryParts.push(`bytes=${input.bytes}`);
+        queryParts.push(`nanoseconds=${input.nanoseconds}`);
+        return queryParts.join('&');
+    },
+};
+
+export interface FooUserSettings {
+    notificationsEnabled: boolean;
+    preferredTheme: FooUserSettingsPreferredTheme;
+}
+export const $$FooUserSettings: ArriModelValidator<FooUserSettings> = {
+    new(): FooUserSettings {
+        return {
+            notificationsEnabled: false,
+            preferredTheme: $$FooUserSettingsPreferredTheme.new(),
+        };
+    },
+    validate(input): input is FooUserSettings {
+        return (
+            isObject(input) &&
+            typeof input.notificationsEnabled === 'boolean' &&
+            $$FooUserSettingsPreferredTheme.validate(input.preferredTheme)
+        );
+    },
+    fromJson(input): FooUserSettings {
+        let _notificationsEnabled: boolean;
+        if (typeof input.notificationsEnabled === 'boolean') {
+            _notificationsEnabled = input.notificationsEnabled;
+        } else {
+            _notificationsEnabled = false;
+        }
+        let _preferredTheme: FooUserSettingsPreferredTheme;
+        if (typeof input.preferredTheme === 'string') {
+            _preferredTheme = $$FooUserSettingsPreferredTheme.fromSerialValue(
+                input.preferredTheme,
+            );
+        } else {
+            _preferredTheme = $$FooUserSettingsPreferredTheme.new();
+        }
+        return {
+            notificationsEnabled: _notificationsEnabled,
+            preferredTheme: _preferredTheme,
+        };
+    },
+    fromJsonString(input): FooUserSettings {
+        return $$FooUserSettings.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = '{';
+        json += '"notificationsEnabled":';
+        json += `${input.notificationsEnabled}`;
+        json += ',"preferredTheme":';
+        json += `"${input.preferredTheme}"`;
+        json += '}';
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        queryParts.push(`notificationsEnabled=${input.notificationsEnabled}`);
+        queryParts.push(`preferredTheme=${input.preferredTheme}`);
+        return queryParts.join('&');
+    },
+};
+
+export type FooUserSettingsPreferredTheme =
+    (typeof $$FooUserSettingsPreferredThemeValues)[number];
+const $$FooUserSettingsPreferredThemeValues = [
+    'dark-mode',
+    'light-mode',
+    'system',
+] as const;
+export const $$FooUserSettingsPreferredTheme: ArriEnumValidator<FooUserSettingsPreferredTheme> =
+    {
+        new(): FooUserSettingsPreferredTheme {
+            return $$FooUserSettingsPreferredThemeValues[0];
+        },
+        validate(input): input is UserSettingsPreferredTheme {
+            return (
+                typeof input === 'string' &&
+                $$FooUserSettingsPreferredThemeValues.includes(input as any)
+            );
+        },
+        values: $$FooUserSettingsPreferredThemeValues,
+        fromSerialValue(input): FooUserSettingsPreferredTheme {
+            if ($$FooUserSettingsPreferredThemeValues.includes(input as any)) {
+                return input as FooUserSettingsPreferredTheme;
+            }
+            if (
+                $$FooUserSettingsPreferredThemeValues.includes(
+                    input.toLowerCase() as any,
+                )
+            ) {
+                return input.toLowerCase() as FooUserSettingsPreferredTheme;
+            }
+            if (
+                $$FooUserSettingsPreferredThemeValues.includes(
+                    input.toUpperCase() as any,
+                )
+            ) {
+                return input.toUpperCase() as FooUserSettingsPreferredTheme;
+            }
+            return 'dark-mode';
+        },
+    };
+
+export type FooUsersWatchUserResponseRecentNotificationsElement =
+    | FooUsersWatchUserResponseRecentNotificationsElementPostLike
+    | FooUsersWatchUserResponseRecentNotificationsElementPostComment;
+export const $$FooUsersWatchUserResponseRecentNotificationsElement: ArriModelValidator<FooUsersWatchUserResponseRecentNotificationsElement> =
+    {
+        new(): FooUsersWatchUserResponseRecentNotificationsElement {
+            return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.new();
+        },
+        validate(
+            input,
+        ): input is FooUsersWatchUserResponseRecentNotificationsElement {
+            if (!isObject(input)) {
+                return false;
+            }
+            if (typeof input.notificationType !== 'string') {
+                return false;
+            }
+            switch (input.notificationType) {
+                case 'POST_LIKE':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.validate(
+                        input,
+                    );
+                case 'POST_COMMENT':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.validate(
+                        input,
+                    );
+                default:
+                    return false;
+            }
+        },
+        fromJson(input): FooUsersWatchUserResponseRecentNotificationsElement {
+            switch (input.notificationType) {
+                case 'POST_LIKE':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
+                        input,
+                    );
+                case 'POST_COMMENT':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
+                        input,
+                    );
+                default:
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.new();
+            }
+        },
+        fromJsonString(
+            input,
+        ): FooUsersWatchUserResponseRecentNotificationsElement {
+            return $$FooUsersWatchUserResponseRecentNotificationsElement.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            switch (input.notificationType) {
+                case 'POST_LIKE':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.toJsonString(
+                        input,
+                    );
+                case 'POST_COMMENT':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.toJsonString(
+                        input,
+                    );
+                default:
+                    throw new Error(
+                        `Unhandled case "${(input as any).notificationType}"`,
+                    );
+            }
+        },
+        toUrlQueryString(input): string {
+            switch (input.notificationType) {
+                case 'POST_LIKE':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.toUrlQueryString(
+                        input,
+                    );
+                case 'POST_COMMENT':
+                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.toUrlQueryString(
+                        input,
+                    );
+                default:
+                    throw new Error('Unhandled case');
+            }
+        },
+    };
+export interface FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+    notificationType: 'POST_LIKE';
+    postId: string;
+    userId: string;
+}
+const $$FooUsersWatchUserResponseRecentNotificationsElementPostLike: ArriModelValidator<FooUsersWatchUserResponseRecentNotificationsElementPostLike> =
+    {
+        new(): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+            return {
+                notificationType: 'POST_LIKE',
+                postId: '',
+                userId: '',
+            };
+        },
+        validate(
+            input,
+        ): input is FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+            return (
+                isObject(input) &&
+                input.notificationType === 'POST_LIKE' &&
+                typeof input.postId === 'string' &&
+                typeof input.userId === 'string'
+            );
+        },
+        fromJson(
+            input,
+        ): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+            const _notificationType = 'POST_LIKE';
+            let _postId: string;
+            if (typeof input.postId === 'string') {
+                _postId = input.postId;
+            } else {
+                _postId = '';
+            }
+            let _userId: string;
+            if (typeof input.userId === 'string') {
+                _userId = input.userId;
+            } else {
+                _userId = '';
+            }
+            return {
+                notificationType: _notificationType,
+                postId: _postId,
+                userId: _userId,
+            };
+        },
+        fromJsonString(
+            input,
+        ): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+            return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"notificationType":"POST_LIKE"';
+            json += ',"postId":';
+            json += serializeString(input.postId);
+            json += ',"userId":';
+            json += serializeString(input.userId);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push('notificationType=POST_LIKE');
+            queryParts.push(`postId=${input.postId}`);
+            queryParts.push(`userId=${input.userId}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+    notificationType: 'POST_COMMENT';
+    postId: string;
+    userId: string;
+    commentText: string;
+}
+const $$FooUsersWatchUserResponseRecentNotificationsElementPostComment: ArriModelValidator<FooUsersWatchUserResponseRecentNotificationsElementPostComment> =
+    {
+        new(): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+            return {
+                notificationType: 'POST_COMMENT',
+                postId: '',
+                userId: '',
+                commentText: '',
+            };
+        },
+        validate(
+            input,
+        ): input is FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+            return (
+                isObject(input) &&
+                input.notificationType === 'POST_COMMENT' &&
+                typeof input.postId === 'string' &&
+                typeof input.userId === 'string' &&
+                typeof input.commentText === 'string'
+            );
+        },
+        fromJson(
+            input,
+        ): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+            const _notificationType = 'POST_COMMENT';
+            let _postId: string;
+            if (typeof input.postId === 'string') {
+                _postId = input.postId;
+            } else {
+                _postId = '';
+            }
+            let _userId: string;
+            if (typeof input.userId === 'string') {
+                _userId = input.userId;
+            } else {
+                _userId = '';
+            }
+            let _commentText: string;
+            if (typeof input.commentText === 'string') {
+                _commentText = input.commentText;
+            } else {
+                _commentText = '';
+            }
+            return {
+                notificationType: _notificationType,
+                postId: _postId,
+                userId: _userId,
+                commentText: _commentText,
+            };
+        },
+        fromJsonString(
+            input,
+        ): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+            return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"notificationType":"POST_COMMENT"';
+            json += ',"postId":';
+            json += serializeString(input.postId);
+            json += ',"userId":';
+            json += serializeString(input.userId);
+            json += ',"commentText":';
+            json += serializeString(input.commentText);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push('notificationType=POST_COMMENT');
+            queryParts.push(`postId=${input.postId}`);
+            queryParts.push(`userId=${input.userId}`);
+            queryParts.push(`commentText=${input.commentText}`);
+            return queryParts.join('&');
+        },
+    };
+
+export interface FooUsersWatchUserResponseBookmarksValue {
+    postId: string;
+    userId: string;
+}
+export const $$FooUsersWatchUserResponseBookmarksValue: ArriModelValidator<FooUsersWatchUserResponseBookmarksValue> =
+    {
+        new(): FooUsersWatchUserResponseBookmarksValue {
+            return {
+                postId: '',
+                userId: '',
+            };
+        },
+        validate(input): input is FooUsersWatchUserResponseBookmarksValue {
+            return (
+                isObject(input) &&
+                typeof input.postId === 'string' &&
+                typeof input.userId === 'string'
+            );
+        },
+        fromJson(input): FooUsersWatchUserResponseBookmarksValue {
+            let _postId: string;
+            if (typeof input.postId === 'string') {
+                _postId = input.postId;
+            } else {
+                _postId = '';
+            }
+            let _userId: string;
+            if (typeof input.userId === 'string') {
+                _userId = input.userId;
+            } else {
+                _userId = '';
+            }
+            return {
+                postId: _postId,
+                userId: _userId,
+            };
+        },
+        fromJsonString(input): FooUsersWatchUserResponseBookmarksValue {
+            return $$FooUsersWatchUserResponseBookmarksValue.fromJson(
+                JSON.parse(input),
+            );
+        },
+        toJsonString(input): string {
+            let json = '{';
+            json += '"postId":';
+            json += serializeString(input.postId);
+            json += ',"userId":';
+            json += serializeString(input.userId);
+            json += '}';
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`postId=${input.postId}`);
+            queryParts.push(`userId=${input.userId}`);
             return queryParts.join('&');
         },
     };

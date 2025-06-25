@@ -67,6 +67,17 @@ class TestClient {
         timeout: _timeout,
         dispatchers: _dispatchers,
       );
+
+  TestClientUsersService get users => TestClientUsersService(
+        baseUrl: _baseUrl,
+        wsConnectionUrl: _wsConnectionUrl,
+        headers: _headers,
+        createHttpClient: _createHttpClient,
+        onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
+        dispatchers: _dispatchers,
+      );
 }
 
 class TestClientTestsService {
@@ -111,6 +122,12 @@ class TestClientTestsService {
       _dispatchers["http"] = HttpDispatcher(
         baseUrl: baseUrl,
         createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
       );
     }
   }
@@ -538,10 +555,344 @@ class TestClientTestsService {
       onError: onError ?? _onError,
     );
   }
+
+  EventStream<AutoReconnectResponse> streamAutoReconnect(
+    AutoReconnectParams params, {
+    EventStreamHookOnMessage<AutoReconnectResponse>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher
+        .handleEventStreamRpc<AutoReconnectParams, AutoReconnectResponse>(
+      req: RpcRequest(
+        procedure: "tests.streamAutoReconnect",
+        path: "/rpcs/tests/stream-auto-reconnect",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: params,
+      ),
+      responseDecoder: (input) => AutoReconnectResponse.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+
+  /// This route will always return an error. The client should automatically retry with exponential backoff.
+  EventStream<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
+    StreamConnectionErrorTestParams params, {
+    EventStreamHookOnMessage<StreamConnectionErrorTestResponse>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleEventStreamRpc<StreamConnectionErrorTestParams,
+        StreamConnectionErrorTestResponse>(
+      req: RpcRequest(
+        procedure: "tests.streamConnectionErrorTest",
+        path: "/rpcs/tests/stream-connection-error-test",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: params,
+      ),
+      responseDecoder: (input) =>
+          StreamConnectionErrorTestResponse.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+
+  /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+  EventStream<StreamLargeObjectsResponse> streamLargeObjects({
+    EventStreamHookOnMessage<StreamLargeObjectsResponse>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleEventStreamRpc<Null, StreamLargeObjectsResponse>(
+      req: RpcRequest(
+        procedure: "tests.streamLargeObjects",
+        path: "/rpcs/tests/stream-large-objects",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      responseDecoder: (input) =>
+          StreamLargeObjectsResponse.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+
+  EventStream<ChatMessage> streamMessages(
+    ChatMessageParams params, {
+    EventStreamHookOnMessage<ChatMessage>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleEventStreamRpc<ChatMessageParams, ChatMessage>(
+      req: RpcRequest(
+        procedure: "tests.streamMessages",
+        path: "/rpcs/tests/stream-messages",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: params,
+      ),
+      responseDecoder: (input) => ChatMessage.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+
+  EventStream<TestsStreamRetryWithNewCredentialsResponse>
+      streamRetryWithNewCredentials({
+    EventStreamHookOnMessage<TestsStreamRetryWithNewCredentialsResponse>?
+        onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher
+        .handleEventStreamRpc<Null, TestsStreamRetryWithNewCredentialsResponse>(
+      req: RpcRequest(
+        procedure: "tests.streamRetryWithNewCredentials",
+        path: "/rpcs/tests/stream-retry-with-new-credentials",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      responseDecoder: (input) =>
+          TestsStreamRetryWithNewCredentialsResponse.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+
+  /// When the client receives the 'done' event, it should close the connection and NOT reconnect
+  EventStream<ChatMessage> streamTenEventsThenEnd({
+    EventStreamHookOnMessage<ChatMessage>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleEventStreamRpc<Null, ChatMessage>(
+      req: RpcRequest(
+        procedure: "tests.streamTenEventsThenEnd",
+        path: "/rpcs/tests/stream-ten-events-then-end",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      responseDecoder: (input) => ChatMessage.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+}
+
+class TestClientUsersService {
+  final String _baseUrl;
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = "10";
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
+  TestClientUsersService({
+    required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client Function()? createHttpClient,
+    FutureOr<Map<String, String>> Function()? headers,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
+    Duration? timeout,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  })  : _baseUrl = baseUrl,
+        _wsConnectionUrl = wsConnectionUrl,
+        _createHttpClient = createHttpClient,
+        _headers = headers,
+        _onError = onError,
+        _retry = retry,
+        _retryDelay = retryDelay,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout,
+        _defaultTransport = defaultTransport ?? "http" {
+    _dispatchers = dispatchers ?? {};
+    if (_dispatchers["http"] == null) {
+      _dispatchers["http"] = HttpDispatcher(
+        baseUrl: baseUrl,
+        createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
+    }
+  }
+
+  EventStream<UsersWatchUserResponse> watchUser(
+    UsersWatchUserParams params, {
+    EventStreamHookOnMessage<UsersWatchUserResponse>? onMessage,
+    EventStreamHookOnOpen? onOpen,
+    EventStreamHookOnClose? onClose,
+    EventStreamHookOnError? onError,
+    Duration? timeout,
+    String? transport,
+    int? maxRetryCount,
+    Duration? maxRetryInterval,
+    String? lastEventId,
+  }) {
+    final selectedTransport =
+        resolveTransport(["http"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher
+        .handleEventStreamRpc<UsersWatchUserParams, UsersWatchUserResponse>(
+      req: RpcRequest(
+        procedure: "users.watchUser",
+        path: "/rpcs/users/watch-user",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: params,
+      ),
+      responseDecoder: (input) => UsersWatchUserResponse.fromJsonString(input),
+      lastEventId: lastEventId,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: onClose,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
 }
 
 class ManuallyAddedModel implements ArriModel {
-  /// FOO
   final String hello;
   const ManuallyAddedModel({
     required this.hello,
@@ -4759,5 +5110,1861 @@ class RecursiveUnionShapeData implements ArriModel {
   @override
   String toString() {
     return "RecursiveUnionShapeData ${toJsonString()}";
+  }
+}
+
+class AutoReconnectParams implements ArriModel {
+  final int messageCount;
+  const AutoReconnectParams({
+    required this.messageCount,
+  });
+
+  factory AutoReconnectParams.empty() {
+    return AutoReconnectParams(
+      messageCount: 0,
+    );
+  }
+
+  factory AutoReconnectParams.fromJson(Map<String, dynamic> _input_) {
+    final messageCount = intFromDynamic(_input_["messageCount"], 0);
+    return AutoReconnectParams(
+      messageCount: messageCount,
+    );
+  }
+
+  factory AutoReconnectParams.fromJsonString(String input) {
+    return AutoReconnectParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "messageCount": messageCount,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("messageCount=$messageCount");
+    return _queryParts_.join("&");
+  }
+
+  AutoReconnectParams copyWith({
+    int? messageCount,
+  }) {
+    return AutoReconnectParams(
+      messageCount: messageCount ?? this.messageCount,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        messageCount,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is AutoReconnectParams && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "AutoReconnectParams ${toJsonString()}";
+  }
+}
+
+class AutoReconnectResponse implements ArriModel {
+  final int count;
+  final String message;
+  const AutoReconnectResponse({
+    required this.count,
+    required this.message,
+  });
+
+  factory AutoReconnectResponse.empty() {
+    return AutoReconnectResponse(
+      count: 0,
+      message: "",
+    );
+  }
+
+  factory AutoReconnectResponse.fromJson(Map<String, dynamic> _input_) {
+    final count = intFromDynamic(_input_["count"], 0);
+    final message = typeFromDynamic<String>(_input_["message"], "");
+    return AutoReconnectResponse(
+      count: count,
+      message: message,
+    );
+  }
+
+  factory AutoReconnectResponse.fromJsonString(String input) {
+    return AutoReconnectResponse.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "count": count,
+      "message": message,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("count=$count");
+    _queryParts_.add("message=$message");
+    return _queryParts_.join("&");
+  }
+
+  AutoReconnectResponse copyWith({
+    int? count,
+    String? message,
+  }) {
+    return AutoReconnectResponse(
+      count: count ?? this.count,
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        count,
+        message,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is AutoReconnectResponse && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "AutoReconnectResponse ${toJsonString()}";
+  }
+}
+
+class StreamConnectionErrorTestParams implements ArriModel {
+  final int statusCode;
+  final String statusMessage;
+  const StreamConnectionErrorTestParams({
+    required this.statusCode,
+    required this.statusMessage,
+  });
+
+  factory StreamConnectionErrorTestParams.empty() {
+    return StreamConnectionErrorTestParams(
+      statusCode: 0,
+      statusMessage: "",
+    );
+  }
+
+  factory StreamConnectionErrorTestParams.fromJson(
+      Map<String, dynamic> _input_) {
+    final statusCode = intFromDynamic(_input_["statusCode"], 0);
+    final statusMessage = typeFromDynamic<String>(_input_["statusMessage"], "");
+    return StreamConnectionErrorTestParams(
+      statusCode: statusCode,
+      statusMessage: statusMessage,
+    );
+  }
+
+  factory StreamConnectionErrorTestParams.fromJsonString(String input) {
+    return StreamConnectionErrorTestParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "statusCode": statusCode,
+      "statusMessage": statusMessage,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("statusCode=$statusCode");
+    _queryParts_.add("statusMessage=$statusMessage");
+    return _queryParts_.join("&");
+  }
+
+  StreamConnectionErrorTestParams copyWith({
+    int? statusCode,
+    String? statusMessage,
+  }) {
+    return StreamConnectionErrorTestParams(
+      statusCode: statusCode ?? this.statusCode,
+      statusMessage: statusMessage ?? this.statusMessage,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        statusCode,
+        statusMessage,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is StreamConnectionErrorTestParams &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "StreamConnectionErrorTestParams ${toJsonString()}";
+  }
+}
+
+class StreamConnectionErrorTestResponse implements ArriModel {
+  final String message;
+  const StreamConnectionErrorTestResponse({
+    required this.message,
+  });
+
+  factory StreamConnectionErrorTestResponse.empty() {
+    return StreamConnectionErrorTestResponse(
+      message: "",
+    );
+  }
+
+  factory StreamConnectionErrorTestResponse.fromJson(
+      Map<String, dynamic> _input_) {
+    final message = typeFromDynamic<String>(_input_["message"], "");
+    return StreamConnectionErrorTestResponse(
+      message: message,
+    );
+  }
+
+  factory StreamConnectionErrorTestResponse.fromJsonString(String input) {
+    return StreamConnectionErrorTestResponse.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("message=$message");
+    return _queryParts_.join("&");
+  }
+
+  StreamConnectionErrorTestResponse copyWith({
+    String? message,
+  }) {
+    return StreamConnectionErrorTestResponse(
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        message,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is StreamConnectionErrorTestResponse &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "StreamConnectionErrorTestResponse ${toJsonString()}";
+  }
+}
+
+class StreamLargeObjectsResponse implements ArriModel {
+  final List<double> numbers;
+  final List<StreamLargeObjectsResponseObjectsElement> objects;
+  const StreamLargeObjectsResponse({
+    required this.numbers,
+    required this.objects,
+  });
+
+  factory StreamLargeObjectsResponse.empty() {
+    return StreamLargeObjectsResponse(
+      numbers: [],
+      objects: [],
+    );
+  }
+
+  factory StreamLargeObjectsResponse.fromJson(Map<String, dynamic> _input_) {
+    final numbers = _input_["numbers"] is List
+        ? (_input_["numbers"] as List)
+            .map((_el_) => doubleFromDynamic(_el_, 0.0))
+            .toList()
+        : <double>[];
+    final objects = _input_["objects"] is List
+        ? (_input_["objects"] as List)
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? StreamLargeObjectsResponseObjectsElement.fromJson(_el_)
+                : StreamLargeObjectsResponseObjectsElement.empty())
+            .toList()
+        : <StreamLargeObjectsResponseObjectsElement>[];
+    return StreamLargeObjectsResponse(
+      numbers: numbers,
+      objects: objects,
+    );
+  }
+
+  factory StreamLargeObjectsResponse.fromJsonString(String input) {
+    return StreamLargeObjectsResponse.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "numbers": numbers.map((_el_) => _el_).toList(),
+      "objects": objects.map((_el_) => _el_.toJson()).toList(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/numbers.");
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/objects.");
+    return _queryParts_.join("&");
+  }
+
+  StreamLargeObjectsResponse copyWith({
+    List<double>? numbers,
+    List<StreamLargeObjectsResponseObjectsElement>? objects,
+  }) {
+    return StreamLargeObjectsResponse(
+      numbers: numbers ?? this.numbers,
+      objects: objects ?? this.objects,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        numbers,
+        objects,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is StreamLargeObjectsResponse &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "StreamLargeObjectsResponse ${toJsonString()}";
+  }
+}
+
+class StreamLargeObjectsResponseObjectsElement implements ArriModel {
+  final String id;
+  final String name;
+  final String email;
+  const StreamLargeObjectsResponseObjectsElement({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
+
+  factory StreamLargeObjectsResponseObjectsElement.empty() {
+    return StreamLargeObjectsResponseObjectsElement(
+      id: "",
+      name: "",
+      email: "",
+    );
+  }
+
+  factory StreamLargeObjectsResponseObjectsElement.fromJson(
+      Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final name = typeFromDynamic<String>(_input_["name"], "");
+    final email = typeFromDynamic<String>(_input_["email"], "");
+    return StreamLargeObjectsResponseObjectsElement(
+      id: id,
+      name: name,
+      email: email,
+    );
+  }
+
+  factory StreamLargeObjectsResponseObjectsElement.fromJsonString(
+      String input) {
+    return StreamLargeObjectsResponseObjectsElement.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "name": name,
+      "email": email,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("id=$id");
+    _queryParts_.add("name=$name");
+    _queryParts_.add("email=$email");
+    return _queryParts_.join("&");
+  }
+
+  StreamLargeObjectsResponseObjectsElement copyWith({
+    String? id,
+    String? name,
+    String? email,
+  }) {
+    return StreamLargeObjectsResponseObjectsElement(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        email,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is StreamLargeObjectsResponseObjectsElement &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "StreamLargeObjectsResponseObjectsElement ${toJsonString()}";
+  }
+}
+
+class ChatMessageParams implements ArriModel {
+  final String channelId;
+  const ChatMessageParams({
+    required this.channelId,
+  });
+
+  factory ChatMessageParams.empty() {
+    return ChatMessageParams(
+      channelId: "",
+    );
+  }
+
+  factory ChatMessageParams.fromJson(Map<String, dynamic> _input_) {
+    final channelId = typeFromDynamic<String>(_input_["channelId"], "");
+    return ChatMessageParams(
+      channelId: channelId,
+    );
+  }
+
+  factory ChatMessageParams.fromJsonString(String input) {
+    return ChatMessageParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "channelId": channelId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("channelId=$channelId");
+    return _queryParts_.join("&");
+  }
+
+  ChatMessageParams copyWith({
+    String? channelId,
+  }) {
+    return ChatMessageParams(
+      channelId: channelId ?? this.channelId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        channelId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChatMessageParams && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ChatMessageParams ${toJsonString()}";
+  }
+}
+
+sealed class ChatMessage implements ArriModel {
+  String get messageType;
+  const ChatMessage();
+
+  factory ChatMessage.empty() {
+    return ChatMessageText.empty();
+  }
+
+  factory ChatMessage.fromJson(Map<String, dynamic> _input_) {
+    final messageType = typeFromDynamic<String>(_input_["messageType"], "");
+    switch (messageType) {
+      case "TEXT":
+        return ChatMessageText.fromJson(_input_);
+      case "IMAGE":
+        return ChatMessageImage.fromJson(_input_);
+      case "URL":
+        return ChatMessageUrl.fromJson(_input_);
+      default:
+        return ChatMessage.empty();
+    }
+  }
+
+  factory ChatMessage.fromJsonString(String input) {
+    return ChatMessage.fromJson(json.decode(input));
+  }
+}
+
+class ChatMessageText implements ChatMessage {
+  final String id;
+  final String channelId;
+  final String userId;
+  final DateTime date;
+  final String text;
+  const ChatMessageText({
+    required this.id,
+    required this.channelId,
+    required this.userId,
+    required this.date,
+    required this.text,
+  });
+
+  @override
+  String get messageType => "TEXT";
+
+  factory ChatMessageText.empty() {
+    return ChatMessageText(
+      id: "",
+      channelId: "",
+      userId: "",
+      date: DateTime.now(),
+      text: "",
+    );
+  }
+
+  factory ChatMessageText.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final channelId = typeFromDynamic<String>(_input_["channelId"], "");
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final text = typeFromDynamic<String>(_input_["text"], "");
+    return ChatMessageText(
+      id: id,
+      channelId: channelId,
+      userId: userId,
+      date: date,
+      text: text,
+    );
+  }
+
+  factory ChatMessageText.fromJsonString(String input) {
+    return ChatMessageText.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "messageType": messageType,
+      "id": id,
+      "channelId": channelId,
+      "userId": userId,
+      "date": date.toUtc().toIso8601String(),
+      "text": text,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("messageType=$messageType");
+    _queryParts_.add("id=$id");
+    _queryParts_.add("channelId=$channelId");
+    _queryParts_.add("userId=$userId");
+    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
+    _queryParts_.add("text=$text");
+    return _queryParts_.join("&");
+  }
+
+  ChatMessageText copyWith({
+    String? id,
+    String? channelId,
+    String? userId,
+    DateTime? date,
+    String? text,
+  }) {
+    return ChatMessageText(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      text: text ?? this.text,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        channelId,
+        userId,
+        date,
+        text,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChatMessageText && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ChatMessageText ${toJsonString()}";
+  }
+}
+
+class ChatMessageImage implements ChatMessage {
+  final String id;
+  final String channelId;
+  final String userId;
+  final DateTime date;
+  final String image;
+  const ChatMessageImage({
+    required this.id,
+    required this.channelId,
+    required this.userId,
+    required this.date,
+    required this.image,
+  });
+
+  @override
+  String get messageType => "IMAGE";
+
+  factory ChatMessageImage.empty() {
+    return ChatMessageImage(
+      id: "",
+      channelId: "",
+      userId: "",
+      date: DateTime.now(),
+      image: "",
+    );
+  }
+
+  factory ChatMessageImage.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final channelId = typeFromDynamic<String>(_input_["channelId"], "");
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final image = typeFromDynamic<String>(_input_["image"], "");
+    return ChatMessageImage(
+      id: id,
+      channelId: channelId,
+      userId: userId,
+      date: date,
+      image: image,
+    );
+  }
+
+  factory ChatMessageImage.fromJsonString(String input) {
+    return ChatMessageImage.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "messageType": messageType,
+      "id": id,
+      "channelId": channelId,
+      "userId": userId,
+      "date": date.toUtc().toIso8601String(),
+      "image": image,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("messageType=$messageType");
+    _queryParts_.add("id=$id");
+    _queryParts_.add("channelId=$channelId");
+    _queryParts_.add("userId=$userId");
+    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
+    _queryParts_.add("image=$image");
+    return _queryParts_.join("&");
+  }
+
+  ChatMessageImage copyWith({
+    String? id,
+    String? channelId,
+    String? userId,
+    DateTime? date,
+    String? image,
+  }) {
+    return ChatMessageImage(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      image: image ?? this.image,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        channelId,
+        userId,
+        date,
+        image,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChatMessageImage && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ChatMessageImage ${toJsonString()}";
+  }
+}
+
+class ChatMessageUrl implements ChatMessage {
+  final String id;
+  final String channelId;
+  final String userId;
+  final DateTime date;
+  final String url;
+  const ChatMessageUrl({
+    required this.id,
+    required this.channelId,
+    required this.userId,
+    required this.date,
+    required this.url,
+  });
+
+  @override
+  String get messageType => "URL";
+
+  factory ChatMessageUrl.empty() {
+    return ChatMessageUrl(
+      id: "",
+      channelId: "",
+      userId: "",
+      date: DateTime.now(),
+      url: "",
+    );
+  }
+
+  factory ChatMessageUrl.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final channelId = typeFromDynamic<String>(_input_["channelId"], "");
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final url = typeFromDynamic<String>(_input_["url"], "");
+    return ChatMessageUrl(
+      id: id,
+      channelId: channelId,
+      userId: userId,
+      date: date,
+      url: url,
+    );
+  }
+
+  factory ChatMessageUrl.fromJsonString(String input) {
+    return ChatMessageUrl.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "messageType": messageType,
+      "id": id,
+      "channelId": channelId,
+      "userId": userId,
+      "date": date.toUtc().toIso8601String(),
+      "url": url,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("messageType=$messageType");
+    _queryParts_.add("id=$id");
+    _queryParts_.add("channelId=$channelId");
+    _queryParts_.add("userId=$userId");
+    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
+    _queryParts_.add("url=$url");
+    return _queryParts_.join("&");
+  }
+
+  ChatMessageUrl copyWith({
+    String? id,
+    String? channelId,
+    String? userId,
+    DateTime? date,
+    String? url,
+  }) {
+    return ChatMessageUrl(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      url: url ?? this.url,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        channelId,
+        userId,
+        date,
+        url,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChatMessageUrl && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ChatMessageUrl ${toJsonString()}";
+  }
+}
+
+class TestsStreamRetryWithNewCredentialsResponse implements ArriModel {
+  final String message;
+  const TestsStreamRetryWithNewCredentialsResponse({
+    required this.message,
+  });
+
+  factory TestsStreamRetryWithNewCredentialsResponse.empty() {
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: "",
+    );
+  }
+
+  factory TestsStreamRetryWithNewCredentialsResponse.fromJson(
+      Map<String, dynamic> _input_) {
+    final message = typeFromDynamic<String>(_input_["message"], "");
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: message,
+    );
+  }
+
+  factory TestsStreamRetryWithNewCredentialsResponse.fromJsonString(
+      String input) {
+    return TestsStreamRetryWithNewCredentialsResponse.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("message=$message");
+    return _queryParts_.join("&");
+  }
+
+  TestsStreamRetryWithNewCredentialsResponse copyWith({
+    String? message,
+  }) {
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        message,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is TestsStreamRetryWithNewCredentialsResponse &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "TestsStreamRetryWithNewCredentialsResponse ${toJsonString()}";
+  }
+}
+
+class UsersWatchUserParams implements ArriModel {
+  final String userId;
+  const UsersWatchUserParams({
+    required this.userId,
+  });
+
+  factory UsersWatchUserParams.empty() {
+    return UsersWatchUserParams(
+      userId: "",
+    );
+  }
+
+  factory UsersWatchUserParams.fromJson(Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    return UsersWatchUserParams(
+      userId: userId,
+    );
+  }
+
+  factory UsersWatchUserParams.fromJsonString(String input) {
+    return UsersWatchUserParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "userId": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("userId=$userId");
+    return _queryParts_.join("&");
+  }
+
+  UsersWatchUserParams copyWith({
+    String? userId,
+  }) {
+    return UsersWatchUserParams(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UsersWatchUserParams && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UsersWatchUserParams ${toJsonString()}";
+  }
+}
+
+class UsersWatchUserResponse implements ArriModel {
+  final String id;
+  final UsersWatchUserResponseRole role;
+
+  /// A profile picture
+  final UserPhoto? photo;
+  final DateTime createdAt;
+  final int numFollowers;
+  final UserSettings settings;
+  final List<UsersWatchUserResponseRecentNotificationsElement>
+      recentNotifications;
+  final Map<String, UsersWatchUserResponseBookmarksentry> bookmarks;
+  final Map<String, dynamic> metadata;
+  final List<dynamic> randomList;
+  final String? bio;
+  const UsersWatchUserResponse({
+    required this.id,
+    required this.role,
+    required this.photo,
+    required this.createdAt,
+    required this.numFollowers,
+    required this.settings,
+    required this.recentNotifications,
+    required this.bookmarks,
+    required this.metadata,
+    required this.randomList,
+    this.bio,
+  });
+
+  factory UsersWatchUserResponse.empty() {
+    return UsersWatchUserResponse(
+      id: "",
+      role: UsersWatchUserResponseRole.standard,
+      photo: null,
+      createdAt: DateTime.now(),
+      numFollowers: 0,
+      settings: UserSettings.empty(),
+      recentNotifications: [],
+      bookmarks: {},
+      metadata: {},
+      randomList: [],
+    );
+  }
+
+  factory UsersWatchUserResponse.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final role = UsersWatchUserResponseRole.fromString(
+        typeFromDynamic<String>(_input_["role"], ""));
+    final photo = _input_["photo"] is Map<String, dynamic>
+        ? UserPhoto.fromJson(_input_["photo"])
+        : null;
+    final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime.now());
+    final numFollowers = intFromDynamic(_input_["numFollowers"], 0);
+    final settings = _input_["settings"] is Map<String, dynamic>
+        ? UserSettings.fromJson(_input_["settings"])
+        : UserSettings.empty();
+    final recentNotifications = _input_["recentNotifications"] is List
+        ? (_input_["recentNotifications"] as List)
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? UsersWatchUserResponseRecentNotificationsElement.fromJson(
+                    _el_)
+                : UsersWatchUserResponseRecentNotificationsElement.empty())
+            .toList()
+        : <UsersWatchUserResponseRecentNotificationsElement>[];
+    final bookmarks = _input_["bookmarks"] is Map<String, dynamic>
+        ? (_input_["bookmarks"] as Map<String, dynamic>).map(
+            (_key_, _val_) => MapEntry(
+              _key_,
+              _val_ is Map<String, dynamic>
+                  ? UsersWatchUserResponseBookmarksentry.fromJson(_val_)
+                  : UsersWatchUserResponseBookmarksentry.empty(),
+            ),
+          )
+        : <String, UsersWatchUserResponseBookmarksentry>{};
+    final metadata = _input_["metadata"] is Map<String, dynamic>
+        ? (_input_["metadata"] as Map<String, dynamic>).map(
+            (_key_, _val_) => MapEntry(
+              _key_,
+              _val_,
+            ),
+          )
+        : <String, dynamic>{};
+    final randomList = _input_["randomList"] is List
+        ? (_input_["randomList"] as List).map((_el_) => _el_).toList()
+        : <dynamic>[];
+    final bio = nullableTypeFromDynamic<String>(_input_["bio"]);
+    return UsersWatchUserResponse(
+      id: id,
+      role: role,
+      photo: photo,
+      createdAt: createdAt,
+      numFollowers: numFollowers,
+      settings: settings,
+      recentNotifications: recentNotifications,
+      bookmarks: bookmarks,
+      metadata: metadata,
+      randomList: randomList,
+      bio: bio,
+    );
+  }
+
+  factory UsersWatchUserResponse.fromJsonString(String input) {
+    return UsersWatchUserResponse.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "role": role.serialValue,
+      "photo": photo?.toJson(),
+      "createdAt": createdAt.toUtc().toIso8601String(),
+      "numFollowers": numFollowers,
+      "settings": settings.toJson(),
+      "recentNotifications":
+          recentNotifications.map((_el_) => _el_.toJson()).toList(),
+      "bookmarks": bookmarks.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_.toJson(),
+        ),
+      ),
+      "metadata": metadata.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_,
+        ),
+      ),
+      "randomList": randomList.map((_el_) => _el_).toList(),
+    };
+    if (bio != null) _output_["bio"] = bio;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("id=$id");
+    _queryParts_.add("role=${role.serialValue}");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/photo.");
+    _queryParts_.add("createdAt=${createdAt.toUtc().toIso8601String()}");
+    _queryParts_.add("numFollowers=$numFollowers");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/settings.");
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/recentNotifications.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/bookmarks.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/metadata.");
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/randomList.");
+    if (bio != null) _queryParts_.add("bio=$bio");
+    return _queryParts_.join("&");
+  }
+
+  UsersWatchUserResponse copyWith({
+    String? id,
+    UsersWatchUserResponseRole? role,
+    UserPhoto? Function()? photo,
+    DateTime? createdAt,
+    int? numFollowers,
+    UserSettings? settings,
+    List<UsersWatchUserResponseRecentNotificationsElement>? recentNotifications,
+    Map<String, UsersWatchUserResponseBookmarksentry>? bookmarks,
+    Map<String, dynamic>? metadata,
+    List<dynamic>? randomList,
+    String? Function()? bio,
+  }) {
+    return UsersWatchUserResponse(
+      id: id ?? this.id,
+      role: role ?? this.role,
+      photo: photo != null ? photo() : this.photo,
+      createdAt: createdAt ?? this.createdAt,
+      numFollowers: numFollowers ?? this.numFollowers,
+      settings: settings ?? this.settings,
+      recentNotifications: recentNotifications ?? this.recentNotifications,
+      bookmarks: bookmarks ?? this.bookmarks,
+      metadata: metadata ?? this.metadata,
+      randomList: randomList ?? this.randomList,
+      bio: bio != null ? bio() : this.bio,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        role,
+        photo,
+        createdAt,
+        numFollowers,
+        settings,
+        recentNotifications,
+        bookmarks,
+        metadata,
+        randomList,
+        bio,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UsersWatchUserResponse && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UsersWatchUserResponse ${toJsonString()}";
+  }
+}
+
+enum UsersWatchUserResponseRole
+    implements Comparable<UsersWatchUserResponseRole> {
+  standard("standard"),
+  admin("admin");
+
+  const UsersWatchUserResponseRole(this.serialValue);
+  final String serialValue;
+
+  factory UsersWatchUserResponseRole.fromString(String input) {
+    for (final val in values) {
+      if (val.serialValue == input) {
+        return val;
+      }
+    }
+    return standard;
+  }
+
+  @override
+  int compareTo(UsersWatchUserResponseRole other) => name.compareTo(other.name);
+}
+
+/// A profile picture
+class UserPhoto implements ArriModel {
+  final String url;
+  final double width;
+  final double height;
+  final BigInt bytes;
+
+  /// When the photo was last updated in nanoseconds
+  final BigInt nanoseconds;
+  const UserPhoto({
+    required this.url,
+    required this.width,
+    required this.height,
+    required this.bytes,
+    required this.nanoseconds,
+  });
+
+  factory UserPhoto.empty() {
+    return UserPhoto(
+      url: "",
+      width: 0.0,
+      height: 0.0,
+      bytes: BigInt.zero,
+      nanoseconds: BigInt.zero,
+    );
+  }
+
+  factory UserPhoto.fromJson(Map<String, dynamic> _input_) {
+    final url = typeFromDynamic<String>(_input_["url"], "");
+    final width = doubleFromDynamic(_input_["width"], 0.0);
+    final height = doubleFromDynamic(_input_["height"], 0.0);
+    final bytes = bigIntFromDynamic(_input_["bytes"], BigInt.zero);
+    final nanoseconds = bigIntFromDynamic(_input_["nanoseconds"], BigInt.zero);
+    return UserPhoto(
+      url: url,
+      width: width,
+      height: height,
+      bytes: bytes,
+      nanoseconds: nanoseconds,
+    );
+  }
+
+  factory UserPhoto.fromJsonString(String input) {
+    return UserPhoto.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "url": url,
+      "width": width,
+      "height": height,
+      "bytes": bytes.toString(),
+      "nanoseconds": nanoseconds.toString(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("url=$url");
+    _queryParts_.add("width=$width");
+    _queryParts_.add("height=$height");
+    _queryParts_.add("bytes=$bytes");
+    _queryParts_.add("nanoseconds=$nanoseconds");
+    return _queryParts_.join("&");
+  }
+
+  UserPhoto copyWith({
+    String? url,
+    double? width,
+    double? height,
+    BigInt? bytes,
+    BigInt? nanoseconds,
+  }) {
+    return UserPhoto(
+      url: url ?? this.url,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      bytes: bytes ?? this.bytes,
+      nanoseconds: nanoseconds ?? this.nanoseconds,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        url,
+        width,
+        height,
+        bytes,
+        nanoseconds,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UserPhoto && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UserPhoto ${toJsonString()}";
+  }
+}
+
+class UserSettings implements ArriModel {
+  final bool notificationsEnabled;
+  final UserSettingsPreferredTheme preferredTheme;
+  const UserSettings({
+    required this.notificationsEnabled,
+    required this.preferredTheme,
+  });
+
+  factory UserSettings.empty() {
+    return UserSettings(
+      notificationsEnabled: false,
+      preferredTheme: UserSettingsPreferredTheme.darkMode,
+    );
+  }
+
+  factory UserSettings.fromJson(Map<String, dynamic> _input_) {
+    final notificationsEnabled =
+        typeFromDynamic<bool>(_input_["notificationsEnabled"], false);
+    final preferredTheme = UserSettingsPreferredTheme.fromString(
+        typeFromDynamic<String>(_input_["preferredTheme"], ""));
+    return UserSettings(
+      notificationsEnabled: notificationsEnabled,
+      preferredTheme: preferredTheme,
+    );
+  }
+
+  factory UserSettings.fromJsonString(String input) {
+    return UserSettings.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "notificationsEnabled": notificationsEnabled,
+      "preferredTheme": preferredTheme.serialValue,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("notificationsEnabled=$notificationsEnabled");
+    _queryParts_.add("preferredTheme=${preferredTheme.serialValue}");
+    return _queryParts_.join("&");
+  }
+
+  UserSettings copyWith({
+    bool? notificationsEnabled,
+    UserSettingsPreferredTheme? preferredTheme,
+  }) {
+    return UserSettings(
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      preferredTheme: preferredTheme ?? this.preferredTheme,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        notificationsEnabled,
+        preferredTheme,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UserSettings && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UserSettings ${toJsonString()}";
+  }
+}
+
+enum UserSettingsPreferredTheme
+    implements Comparable<UserSettingsPreferredTheme> {
+  darkMode("dark-mode"),
+  lightMode("light-mode"),
+  system("system");
+
+  const UserSettingsPreferredTheme(this.serialValue);
+  final String serialValue;
+
+  factory UserSettingsPreferredTheme.fromString(String input) {
+    for (final val in values) {
+      if (val.serialValue == input) {
+        return val;
+      }
+    }
+    return darkMode;
+  }
+
+  @override
+  int compareTo(UserSettingsPreferredTheme other) => name.compareTo(other.name);
+}
+
+sealed class UsersWatchUserResponseRecentNotificationsElement
+    implements ArriModel {
+  String get notificationType;
+  const UsersWatchUserResponseRecentNotificationsElement();
+
+  factory UsersWatchUserResponseRecentNotificationsElement.empty() {
+    return UsersWatchUserResponseRecentNotificationsElementPostLike.empty();
+  }
+
+  factory UsersWatchUserResponseRecentNotificationsElement.fromJson(
+      Map<String, dynamic> _input_) {
+    final notificationType =
+        typeFromDynamic<String>(_input_["notificationType"], "");
+    switch (notificationType) {
+      case "POST_LIKE":
+        return UsersWatchUserResponseRecentNotificationsElementPostLike
+            .fromJson(_input_);
+      case "POST_COMMENT":
+        return UsersWatchUserResponseRecentNotificationsElementPostComment
+            .fromJson(_input_);
+      default:
+        return UsersWatchUserResponseRecentNotificationsElement.empty();
+    }
+  }
+
+  factory UsersWatchUserResponseRecentNotificationsElement.fromJsonString(
+      String input) {
+    return UsersWatchUserResponseRecentNotificationsElement.fromJson(
+        json.decode(input));
+  }
+}
+
+class UsersWatchUserResponseRecentNotificationsElementPostLike
+    implements UsersWatchUserResponseRecentNotificationsElement {
+  final String postId;
+  final String userId;
+  const UsersWatchUserResponseRecentNotificationsElementPostLike({
+    required this.postId,
+    required this.userId,
+  });
+
+  @override
+  String get notificationType => "POST_LIKE";
+
+  factory UsersWatchUserResponseRecentNotificationsElementPostLike.empty() {
+    return UsersWatchUserResponseRecentNotificationsElementPostLike(
+      postId: "",
+      userId: "",
+    );
+  }
+
+  factory UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
+      Map<String, dynamic> _input_) {
+    final postId = typeFromDynamic<String>(_input_["postId"], "");
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    return UsersWatchUserResponseRecentNotificationsElementPostLike(
+      postId: postId,
+      userId: userId,
+    );
+  }
+
+  factory UsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonString(
+      String input) {
+    return UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "notificationType": notificationType,
+      "postId": postId,
+      "userId": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("notificationType=$notificationType");
+    _queryParts_.add("postId=$postId");
+    _queryParts_.add("userId=$userId");
+    return _queryParts_.join("&");
+  }
+
+  UsersWatchUserResponseRecentNotificationsElementPostLike copyWith({
+    String? postId,
+    String? userId,
+  }) {
+    return UsersWatchUserResponseRecentNotificationsElementPostLike(
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        postId,
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UsersWatchUserResponseRecentNotificationsElementPostLike &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UsersWatchUserResponseRecentNotificationsElementPostLike ${toJsonString()}";
+  }
+}
+
+class UsersWatchUserResponseRecentNotificationsElementPostComment
+    implements UsersWatchUserResponseRecentNotificationsElement {
+  final String postId;
+  final String userId;
+  final String commentText;
+  const UsersWatchUserResponseRecentNotificationsElementPostComment({
+    required this.postId,
+    required this.userId,
+    required this.commentText,
+  });
+
+  @override
+  String get notificationType => "POST_COMMENT";
+
+  factory UsersWatchUserResponseRecentNotificationsElementPostComment.empty() {
+    return UsersWatchUserResponseRecentNotificationsElementPostComment(
+      postId: "",
+      userId: "",
+      commentText: "",
+    );
+  }
+
+  factory UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
+      Map<String, dynamic> _input_) {
+    final postId = typeFromDynamic<String>(_input_["postId"], "");
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    final commentText = typeFromDynamic<String>(_input_["commentText"], "");
+    return UsersWatchUserResponseRecentNotificationsElementPostComment(
+      postId: postId,
+      userId: userId,
+      commentText: commentText,
+    );
+  }
+
+  factory UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonString(
+      String input) {
+    return UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "notificationType": notificationType,
+      "postId": postId,
+      "userId": userId,
+      "commentText": commentText,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("notificationType=$notificationType");
+    _queryParts_.add("postId=$postId");
+    _queryParts_.add("userId=$userId");
+    _queryParts_.add("commentText=$commentText");
+    return _queryParts_.join("&");
+  }
+
+  UsersWatchUserResponseRecentNotificationsElementPostComment copyWith({
+    String? postId,
+    String? userId,
+    String? commentText,
+  }) {
+    return UsersWatchUserResponseRecentNotificationsElementPostComment(
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+      commentText: commentText ?? this.commentText,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        postId,
+        userId,
+        commentText,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other
+            is UsersWatchUserResponseRecentNotificationsElementPostComment &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UsersWatchUserResponseRecentNotificationsElementPostComment ${toJsonString()}";
+  }
+}
+
+class UsersWatchUserResponseBookmarksentry implements ArriModel {
+  final String postId;
+  final String userId;
+  const UsersWatchUserResponseBookmarksentry({
+    required this.postId,
+    required this.userId,
+  });
+
+  factory UsersWatchUserResponseBookmarksentry.empty() {
+    return UsersWatchUserResponseBookmarksentry(
+      postId: "",
+      userId: "",
+    );
+  }
+
+  factory UsersWatchUserResponseBookmarksentry.fromJson(
+      Map<String, dynamic> _input_) {
+    final postId = typeFromDynamic<String>(_input_["postId"], "");
+    final userId = typeFromDynamic<String>(_input_["userId"], "");
+    return UsersWatchUserResponseBookmarksentry(
+      postId: postId,
+      userId: userId,
+    );
+  }
+
+  factory UsersWatchUserResponseBookmarksentry.fromJsonString(String input) {
+    return UsersWatchUserResponseBookmarksentry.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "postId": postId,
+      "userId": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("postId=$postId");
+    _queryParts_.add("userId=$userId");
+    return _queryParts_.join("&");
+  }
+
+  UsersWatchUserResponseBookmarksentry copyWith({
+    String? postId,
+    String? userId,
+  }) {
+    return UsersWatchUserResponseBookmarksentry(
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        postId,
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UsersWatchUserResponseBookmarksentry &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UsersWatchUserResponseBookmarksentry ${toJsonString()}";
   }
 }
