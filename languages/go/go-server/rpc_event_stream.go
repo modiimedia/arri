@@ -91,9 +91,9 @@ func ScopedEventStreamRpc[TParams, TResponse any, TMeta any](
 		rpcName = scope + "." + rpcName
 	}
 	if len(scope) > 0 {
-		rpcSchema.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(scope) + rpcSchema.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + "/" + strcase.ToKebab(scope) + rpcSchema.Path
 	} else {
-		rpcSchema.Path = app.options.RpcRoutePrefix + rpcSchema.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + rpcSchema.Path
 	}
 	if err != nil {
 		panic(err)
@@ -102,7 +102,7 @@ func ScopedEventStreamRpc[TParams, TResponse any, TMeta any](
 		rpcSchema.Method.Set(strings.ToLower(options.Method))
 	}
 	if len(options.Path) > 0 {
-		rpcSchema.Path = app.options.RpcRoutePrefix + options.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + options.Path
 	}
 	if len(options.Description) > 0 {
 		rpcSchema.Description.Set(options.Description)

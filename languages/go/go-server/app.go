@@ -3,6 +3,7 @@ package arri
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 )
@@ -106,10 +107,14 @@ type AppOptions[T any] struct {
 	KeyCasing KeyCasing
 	// max depth that a json input or output can be
 	MaxDepth uint32
-	// if not set it will default to "/procedures"
-	RpcRoutePrefix string
+	// automatically prefix the path of all procedures. Must start with a "/".
+	RpcPathPrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
+	// do not make the app definition publicly available
+	DisableRpcDefinitionPath bool
+	// do not setup a default http handler for the "/" route
+	DisableHomeRoute  bool
 	DefaultTransports []string
 	// how long to send a "ping" message during persistent connections in ms
 	// default is 20000ms
@@ -134,6 +139,11 @@ func NewApp[T any](options AppOptions[T]) App[T] {
 	if len(transports) == 0 {
 		transports = []string{}
 	}
+	if len(options.RpcPathPrefix) > 0 {
+		if options.RpcPathPrefix[0] != '/' {
+			panic("RpcPathPrefix must begin with a \"/\"")
+		}
+	}
 	app := App[T]{
 		options:           options,
 		middleware:        []Middleware[T]{},
@@ -143,8 +153,18 @@ func NewApp[T any](options AppOptions[T]) App[T] {
 		defaultTransports: options.DefaultTransports,
 		adapters:          map[string]TransportAdapter[T]{},
 	}
+	if len(app.options.AppName) == 0 {
+		app.options.AppName = "Arri-RPC Server"
+	}
+	if len(app.options.AppDescription) == 0 {
+		if app.options.DisableRpcDefinitionPath {
+			app.options.AppDescription = "This server utilizes Arri-RPC"
+		} else {
+			app.options.AppDescription = "This server utilizes Arri-RPC. Visit the definition path to see all of the available procedures."
+		}
+	}
 	if len(app.options.RpcDefinitionPath) == 0 {
-		app.options.RpcDefinitionPath = app.options.RpcRoutePrefix + "/app-definition"
+		app.options.RpcDefinitionPath = app.options.RpcPathPrefix + "/app-definition"
 	}
 	if app.options.OnRequest == nil {
 		app.options.OnRequest = func(t *Request[T]) RpcError {
@@ -170,6 +190,13 @@ func NewApp[T any](options AppOptions[T]) App[T] {
 	return app
 }
 
+type homePageInfo struct {
+	Name           Option[string] `key:"name" json:"name"`
+	Description    Option[string] `key:"description" json:"description"`
+	Version        Option[string] `key:"version" json:"version"`
+	DefinitionPath Option[string] `key:"definitionPath" json:"definitionPath"`
+}
+
 func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAdapter[TMeta]) {
 	transportId := transportAdapter.TransportId()
 	transportAdapter.SetGlobalOptions(app.options)
@@ -178,6 +205,60 @@ func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAda
 		fmt.Printf("WARNING a transport adapter has already been registered for \"%s\"\n", transportId)
 	}
 	app.adapters[transportId] = transportAdapter
+
+	httpAdapter, isHttpAdapter := transportAdapter.(HttpTransportAdapter[TMeta])
+	if isHttpAdapter {
+		encodingOptions := EncodingOptions{
+			KeyCasing: app.options.KeyCasing,
+			MaxDepth:  app.options.MaxDepth,
+		}
+		if !app.options.DisableHomeRoute {
+			httpAdapter.RegisterEndpoint("/", func(w http.ResponseWriter, r *http.Request) {
+				name := None[string]()
+				description := None[string]()
+				version := None[string]()
+				definitionPath := None[string]()
+				if len(app.options.AppName) > 0 {
+					name.Set(app.options.AppName)
+				}
+				if len(app.options.AppDescription) > 0 {
+					description.Set(app.options.AppDescription)
+				}
+				if len(app.options.AppVersion) > 0 {
+					version.Set(app.options.AppVersion)
+				}
+				if !app.options.DisableRpcDefinitionPath {
+					definitionPath.Set(app.options.RpcDefinitionPath)
+				}
+				info := homePageInfo{
+					Name:           name,
+					Description:    description,
+					Version:        version,
+					DefinitionPath: definitionPath,
+				}
+				payload, err := EncodeJSON(info, encodingOptions)
+				if err != nil {
+					w.WriteHeader(500)
+					payload, _ := EncodeJSON(Error(500, err.Error()), encodingOptions)
+					w.Write(payload)
+					return
+				}
+				w.Write(payload)
+			})
+		}
+		if !app.options.DisableRpcDefinitionPath {
+			httpAdapter.RegisterEndpoint(app.options.RpcDefinitionPath, func(w http.ResponseWriter, r *http.Request) {
+				payload, err := EncodeJSON(app.GetAppDefinition(), encodingOptions)
+				if err != nil {
+					w.WriteHeader(500)
+					payload, _ := EncodeJSON(Error(500, err.Error()), encodingOptions)
+					w.Write(payload)
+					return
+				}
+				w.Write(payload)
+			})
+		}
+	}
 	for _, val := range app.transports {
 		if val == transportId {
 			// no need to append to transport list

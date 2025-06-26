@@ -37,9 +37,9 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 		rpcName = serviceName + "." + rpcName
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Path
 	} else {
-		rpcSchema.Path = app.options.RpcRoutePrefix + rpcSchema.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + rpcSchema.Path
 	}
 	if rpcError != nil {
 		panic(rpcError)
@@ -48,7 +48,7 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 		rpcSchema.Method.Set(strings.ToLower(options.Method))
 	}
 	if len(options.Path) > 0 {
-		rpcSchema.Path = app.options.RpcRoutePrefix + options.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + options.Path
 	}
 	if len(options.Description) > 0 {
 		rpcSchema.Description.Set(options.Description)

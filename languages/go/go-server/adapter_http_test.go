@@ -7,9 +7,10 @@ import (
 	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
-func TestHttpAdapterImplementsTransportAdapter(t *testing.T) {
+func TestHttpAdapterImplementsDesiredInterfaces(t *testing.T) {
 	adapter := arri.NewHttpAdapter(http.DefaultServeMux, arri.HttpAdapterOptions[any]{})
 	arri.IsTransportAdapter(adapter)
+	arri.IsHttpTransportAdapter(adapter)
 }
 
 func TestHttpSseControllerImplementsEventStreamController(t *testing.T) {

@@ -54,6 +54,7 @@
     "reqwest",
     "scule",
     "serde",
+    "strcase",
     "struct",
     "structs",
     "typebox",

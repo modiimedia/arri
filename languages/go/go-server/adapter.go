@@ -1,6 +1,7 @@
 package arri
 
 import (
+	"net/http"
 	"net/url"
 	"reflect"
 )
@@ -24,9 +25,19 @@ type TransportAdapter[T any] interface {
 	SetGlobalOptions(options AppOptions[T])
 	Use(middleware func(req *Request[T]) RpcError)
 	Start()
+	HasStarted() bool
 }
 
 func IsTransportAdapter[T any](input TransportAdapter[T]) bool {
+	return true
+}
+
+type HttpTransportAdapter[T any] interface {
+	TransportAdapter[T]
+	RegisterEndpoint(pattern string, handler func(w http.ResponseWriter, r *http.Request))
+}
+
+func IsHttpTransportAdapter[T any](input HttpTransportAdapter[T]) bool {
 	return true
 }
 

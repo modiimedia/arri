@@ -1,20 +1,15 @@
 package arri
 
-import (
-	"fmt"
-	"net/http"
-)
-
 type WsAdapter[T any] struct {
-	Mux           *http.ServeMux
 	middlewares   [](func(req *Request[T]) RpcError)
 	globalOptions AppOptions[T]
+	httpRegister  HttpTransportAdapter[T]
 }
 
-func NewWsAdapter[T any](mux *http.ServeMux) *WsAdapter[T] {
+func NewWsAdapter[T any](httpAdapter HttpTransportAdapter[T]) *WsAdapter[T] {
 	return &WsAdapter[T]{
-		Mux:         mux,
-		middlewares: [](func(req *Request[T]) RpcError){},
+		httpRegister: httpAdapter,
+		middlewares:  [](func(req *Request[T]) RpcError){},
 	}
 }
 
@@ -40,10 +35,16 @@ func (ws *WsAdapter[T]) SetGlobalOptions(options AppOptions[T]) {
 	ws.globalOptions = options
 }
 
-func (ws *WsAdapter[T]) Use(middlware func(req *Request[T]) RpcError) {
-	// TODO
+func (ws *WsAdapter[T]) Use(middleware func(req *Request[T]) RpcError) {
+	ws.middlewares = append(ws.middlewares, middleware)
 }
 
 func (ws WsAdapter[T]) Start() {
-	fmt.Println("Start() not yet implemented for WsAdapter")
+	if !ws.httpRegister.HasStarted() {
+		ws.httpRegister.Start()
+	}
+}
+
+func (ws WsAdapter[T]) HasStarted() bool {
+	return ws.httpRegister.HasStarted()
 }

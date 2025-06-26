@@ -17,6 +17,7 @@ type HttpAdapter[T any] struct {
 	middlewares   [](func(req *Request[T]) RpcError)
 	options       HttpAdapterOptions[T]
 	globalOptions AppOptions[T]
+	hasStarted    bool
 }
 
 type HttpAdapterOptions[T any] struct {
@@ -35,6 +36,7 @@ func NewHttpAdapter[T any](mux *http.ServeMux, options HttpAdapterOptions[T]) *H
 		Mux:         mux,
 		options:     options,
 		middlewares: [](func(req *Request[T]) RpcError){},
+		hasStarted:  false,
 	}
 }
 
@@ -202,7 +204,10 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 
 }
 
-func (a HttpAdapter[T]) Start() {
+func (a *HttpAdapter[T]) Start() {
+	if a.hasStarted {
+		return
+	}
 	port := a.options.Port
 	if a.options.Port == 0 {
 		port = 3000
@@ -218,12 +223,17 @@ func (a HttpAdapter[T]) Start() {
 	}
 	httpHandler := cors.New(c).Handler(a.Mux)
 	if len(a.options.KeyFile) > 0 && len(a.options.CertFile) > 0 {
-		printStartHttpMessage(port, true)
+		printStartHttpMessage(port, true, a.globalOptions)
 		http.ListenAndServeTLS(fmt.Sprintf(":%v", port), a.options.CertFile, a.options.KeyFile, httpHandler)
 		return
 	}
-	printStartHttpMessage(port, false)
+	printStartHttpMessage(port, false, a.globalOptions)
+	a.hasStarted = true
 	http.ListenAndServe(fmt.Sprintf(":%v", port), httpHandler)
+}
+
+func (a *HttpAdapter[T]) HasStarted() bool {
+	return a.hasStarted
 }
 
 func (a *HttpAdapter[T]) Use(middleware func(req *Request[T]) RpcError) {
@@ -234,13 +244,18 @@ func (a *HttpAdapter[T]) SetGlobalOptions(options AppOptions[T]) {
 	a.globalOptions = options
 }
 
-func printStartHttpMessage(port uint32, isHttps bool) {
+func (a HttpAdapter[T]) RegisterEndpoint(pattern string, handler func(w http.ResponseWriter, r *http.Request)) {
+	a.Mux.HandleFunc(pattern, handler)
+}
+
+func printStartHttpMessage[T any](port uint32, isHttps bool, options AppOptions[T]) {
 	protocol := "http"
 	if isHttps {
 		protocol = "https"
 	}
 	baseUrl := fmt.Sprintf("%v://localhost:%v", protocol, port)
 	fmt.Printf("Starting server at %v\n", baseUrl)
+	fmt.Printf("Definition path at %v\n", baseUrl+options.RpcDefinitionPath)
 	// if len(app.options.RpcRoutePrefix) > 0 {
 	// 	fmt.Printf("Procedures path: %v%v\n", baseUrl, app.options.RpcRoutePrefix)
 	// }

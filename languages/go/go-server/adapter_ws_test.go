@@ -8,6 +8,6 @@ import (
 )
 
 func TestWsAdapterFulfillsInterface(t *testing.T) {
-	adapter := arri.NewWsAdapter[any](http.DefaultServeMux)
+	adapter := arri.NewWsAdapter[any](arri.NewHttpAdapter(http.DefaultServeMux, arri.HttpAdapterOptions[any]{}))
 	arri.IsTransportAdapter[any](adapter)
 }

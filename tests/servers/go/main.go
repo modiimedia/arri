@@ -28,13 +28,14 @@ func main() {
 	app := arri.NewApp(
 		arri.AppOptions[CustomProps]{
 			AppVersion:        "10",
-			RpcRoutePrefix:    "/rpcs",
+			RpcPathPrefix:     "/rpcs",
 			DefaultTransports: []string{"http"},
 		},
 	)
 	registerHeartbeatTestRoute(mux)
-	arri.RegisterTransport(&app, arri.NewHttpAdapter(mux, arri.HttpAdapterOptions[CustomProps]{Port: 2020, AllowedOrigins: []string{"*"}}))
-	arri.RegisterTransport(&app, arri.NewWsAdapter[CustomProps](mux))
+	httpAdapter := arri.NewHttpAdapter(mux, arri.HttpAdapterOptions[CustomProps]{Port: 2020, AllowedOrigins: []string{"*"}})
+	arri.RegisterTransport(&app, httpAdapter)
+	arri.RegisterTransport(&app, arri.NewWsAdapter(httpAdapter))
 	arri.RegisterMiddleware(&app, func(req *arri.Request[CustomProps]) arri.RpcError {
 		if len(req.Headers.Get("x-test-header")) == 0 {
 			return arri.Error(401, "Missing test auth header 'x-test-header'")
@@ -42,7 +43,6 @@ func main() {
 		req.Props.HasXTestHeader = true
 		return nil
 	})
-
 	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.TypeDefOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
 	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})
