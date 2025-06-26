@@ -12,7 +12,7 @@ type Request[T any] struct {
 	Transport     string
 	IpAddress     string
 	ClientVersion string
-	Headers       map[string]string
+	Headers       Headers // header keys are always lowercase
 	Context       context.Context
 	Props         T
 }

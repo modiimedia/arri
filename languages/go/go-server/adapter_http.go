@@ -54,10 +54,7 @@ func (a *HttpAdapter[T]) RegisterRpc(
 			handlePreflightRequest(w)
 			return
 		}
-		headers := map[string]string{}
-		for key, val := range r.Header {
-			headers[strings.ToLower(key)] = strings.Join(val, ",")
-		}
+		headers := convertHttpHeaders(r.Header)
 		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
@@ -132,6 +129,14 @@ func (a *HttpAdapter[T]) RegisterRpc(
 	})
 }
 
+func convertHttpHeaders(input http.Header) Headers {
+	headers := map[string]string{}
+	for key, val := range input {
+		headers[strings.ToLower(key)] = strings.Join(val, ",")
+	}
+	return headers
+}
+
 func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 	name string,
 	def RpcDef,
@@ -144,10 +149,7 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 			handlePreflightRequest(w)
 			return
 		}
-		headers := map[string]string{}
-		for key, val := range r.Header {
-			headers[strings.ToLower(key)] = strings.Join(val, ",")
-		}
+		headers := convertHttpHeaders(r.Header)
 		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
