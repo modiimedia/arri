@@ -13,6 +13,6 @@ func TestHttpAdapterImplementsTransportAdapter(t *testing.T) {
 }
 
 func TestHttpSseControllerImplementsEventStreamController(t *testing.T) {
-	stream := arri.HttpEventStream[any]{}
-	arri.IsEventStream[any](&stream)
+	stream := arri.HttpEventStream{}
+	arri.IsRawEventStream(&stream)
 }

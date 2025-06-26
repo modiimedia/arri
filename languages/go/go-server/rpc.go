@@ -88,9 +88,6 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
 		}
-		if responseSchema.Metadata.IsNone() {
-			panic("Procedures cannot return anonymous structs")
-		}
 		rpcSchema.Response.Set(responseName)
 		app.definitions.Set(responseName, *responseSchema)
 	} else {
@@ -98,9 +95,9 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 	}
 	app.procedures.Set(rpcName, *rpcSchema)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
-	paramsValidator := CreateValidatorFor[TParams](paramsZero, encodingOpts)
+	paramsValidator := CreateValidatorFor[TParams](paramsZero, encodingOpts, !hasParams)
 	responseZero := reflect.Zero(reflect.TypeFor[TResponse]())
-	responseValidator := CreateValidatorFor[TResponse](responseZero, encodingOpts)
+	responseValidator := CreateValidatorFor[TResponse](responseZero, encodingOpts, !hasResponse)
 	for _, transport := range rpcSchema.Transports {
 		adapter, ok := app.adapters[transport]
 		if !ok {
@@ -113,7 +110,8 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 			responseValidator,
 			func(a any, e Request[TMeta]) (any, RpcError) {
 				return handler(a.(TParams), e)
-			})
+			},
+		)
 	}
 }
 

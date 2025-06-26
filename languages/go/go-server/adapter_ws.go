@@ -31,7 +31,7 @@ func (wa *WsAdapter[T]) RegisterEventStreamRpc(
 	def RpcDef,
 	paramValidator Validator,
 	responseValidator Validator,
-	handler func(any, EventStream[any], Request[T]) RpcError,
+	handler func(any, UntypedEventStream, Request[T]) RpcError,
 ) {
 	// TODO
 }

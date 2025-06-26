@@ -56,7 +56,7 @@ func (a *HttpAdapter[T]) RegisterRpc(
 		}
 		headers := map[string]string{}
 		for key, val := range r.Header {
-			headers[key] = strings.Join(val, ",")
+			headers[strings.ToLower(key)] = strings.Join(val, ",")
 		}
 		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
@@ -137,7 +137,7 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 	def RpcDef,
 	paramValidator Validator,
 	responseValidator Validator,
-	handler func(any, EventStream[any], Request[T]) RpcError,
+	handler func(any, UntypedEventStream, Request[T]) RpcError,
 ) {
 	a.Mux.HandleFunc(def.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
@@ -146,7 +146,7 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 		}
 		headers := map[string]string{}
 		for key, val := range r.Header {
-			headers[key] = strings.Join(val, ",")
+			headers[strings.ToLower(key)] = strings.Join(val, ",")
 		}
 		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
@@ -170,7 +170,6 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 				return
 			}
 			params = result
-			break
 		default:
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -183,7 +182,6 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 				return
 			}
 			params = result
-			break
 		}
 		for _, middleware := range a.middlewares {
 			err := middleware(req)
@@ -275,7 +273,7 @@ func handleError[TMeta any](
 	w.Write(body)
 }
 
-type HttpEventStream[T any] struct {
+type HttpEventStream struct {
 	responseController *http.ResponseController
 	writer             http.ResponseWriter
 	request            *http.Request
@@ -288,10 +286,10 @@ type HttpEventStream[T any] struct {
 	heartbeatEnabled   bool
 }
 
-func NewHttpEventStream[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *HttpEventStream[T] {
+func NewHttpEventStream[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *HttpEventStream {
 	rc := http.NewResponseController(w)
 	ctx, cancelFunc := context.WithCancel(r.Context())
-	controller := HttpEventStream[T]{
+	controller := HttpEventStream{
 		responseController: rc,
 		writer:             w,
 		request:            r,
@@ -308,7 +306,7 @@ func IsHttp2(r *http.Request) bool {
 	return len(r.Header.Get(":path")) > 0 || len(r.Header.Get(":method")) > 0
 }
 
-func (controller *HttpEventStream[T]) startStream() {
+func (controller *HttpEventStream) startStream() {
 	controller.writer.Header().Set("Content-Type", "text/event-stream")
 	controller.writer.Header().Set("Cache-Control", "private, no-cache, no-store, no-transform, must-revalidate, max-age=0")
 	if controller.heartbeatEnabled {
@@ -342,7 +340,7 @@ func (controller *HttpEventStream[T]) startStream() {
 	}()
 }
 
-func (controller *HttpEventStream[T]) Start() {
+func (controller *HttpEventStream) Start() {
 	if !controller.headersSent {
 		controller.startStream()
 	}
@@ -350,7 +348,7 @@ func (controller *HttpEventStream[T]) Start() {
 	controller.responseController.Flush()
 }
 
-func (controller *HttpEventStream[T]) Send(message T) RpcError {
+func (controller *HttpEventStream) Send(message any) RpcError {
 	if !controller.headersSent {
 		controller.startStream()
 	}
@@ -363,7 +361,7 @@ func (controller *HttpEventStream[T]) Send(message T) RpcError {
 	return nil
 }
 
-func (controller *HttpEventStream[T]) Close(notifyClient bool) {
+func (controller *HttpEventStream) Close(notifyClient bool) {
 	if !controller.headersSent {
 		controller.startStream()
 	}
@@ -374,14 +372,6 @@ func (controller *HttpEventStream[T]) Close(notifyClient bool) {
 	controller.cancelFunc()
 }
 
-func (controller *HttpEventStream[T]) Done() <-chan struct{} {
+func (controller *HttpEventStream) Done() <-chan struct{} {
 	return controller.context.Done()
-}
-
-func (controller *HttpEventStream[T]) SetHeartbeatInterval(val time.Duration) {
-	controller.heartbeatInterval = val
-}
-
-func (es *HttpEventStream[T]) SetHeartbeatEnabled(val bool) {
-	es.heartbeatEnabled = val
 }

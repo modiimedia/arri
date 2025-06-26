@@ -19,7 +19,7 @@ type TransportAdapter[T any] interface {
 		def RpcDef,
 		paramValidator Validator,
 		responseValidator Validator,
-		handler func(any, EventStream[any], Request[T]) RpcError,
+		handler func(any, UntypedEventStream, Request[T]) RpcError,
 	)
 	SetGlobalOptions(options AppOptions[T])
 	Use(middleware func(req *Request[T]) RpcError)
@@ -36,7 +36,20 @@ type Validator struct {
 	DecodeURLQueryParams func(values url.Values) (any, RpcError)
 }
 
-func CreateValidatorFor[TParams any](paramsZero reflect.Value, encodingOpts EncodingOptions) Validator {
+func CreateValidatorFor[TParams any](paramsZero reflect.Value, encodingOpts EncodingOptions, isEmptyMessage bool) Validator {
+	if isEmptyMessage {
+		return Validator{
+			DecodeJSON: func(body []byte) (any, RpcError) {
+				return EmptyMessage{}, nil
+			},
+			DecodeURLQueryParams: func(values url.Values) (any, RpcError) {
+				return EmptyMessage{}, nil
+			},
+			EncodeJSON: func(input any) ([]byte, error) {
+				return []byte{}, nil
+			},
+		}
+	}
 	return Validator{
 		DecodeJSON: func(body []byte) (any, RpcError) {
 			params, paramsOk := paramsZero.Interface().(TParams)
