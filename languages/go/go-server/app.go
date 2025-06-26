@@ -2,6 +2,7 @@ package arri
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 )
@@ -172,6 +173,10 @@ func NewApp[T any](options AppOptions[T]) App[T] {
 func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAdapter[TMeta]) {
 	transportId := transportAdapter.TransportId()
 	transportAdapter.SetGlobalOptions(app.options)
+	_, alreadySet := app.adapters[transportId]
+	if alreadySet {
+		fmt.Printf("WARNING a transport adapter has already been registered for \"%s\"\n", transportId)
+	}
 	app.adapters[transportId] = transportAdapter
 	for _, val := range app.transports {
 		if val == transportId {

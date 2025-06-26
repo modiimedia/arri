@@ -27,6 +27,6 @@ type SayHelloResponse struct {
 	Message string
 }
 
-func SayHello(params SayHelloParams, req arri.Request[ReqData]) (SayHelloResponse, arri.RpcError) {
+func SayHello(params SayHelloParams, _ arri.Request[ReqData]) (SayHelloResponse, arri.RpcError) {
 	return SayHelloResponse{Message: fmt.Sprintf("Hello %s", params.Name)}, nil
 }
