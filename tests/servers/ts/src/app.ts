@@ -2,7 +2,7 @@ import { a } from '@arrirpc/schema';
 import { ArriApp, defineError, HttpAdapter, WsAdapter } from '@arrirpc/server';
 import * as h3 from '@arrirpc/server/http';
 
-import { registerHeartbeatTestRoute } from './heartbeat-tests';
+import { registerHeartbeatTestRouteH3 } from './heartbeat-tests';
 import { manualTestService } from './routes/other';
 
 const app = new ArriApp({
@@ -15,7 +15,6 @@ const http = new HttpAdapter({
         origin: '*',
     },
 });
-
 app.use(http);
 app.use(new WsAdapter(http, { connectionPath: '/establish-connection' }));
 
@@ -50,6 +49,6 @@ http.h3Router.use(
     ['get', 'post'],
 );
 
-registerHeartbeatTestRoute(http.h3Router);
+registerHeartbeatTestRouteH3(http.h3Router);
 
 export default app;

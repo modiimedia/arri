@@ -5,9 +5,11 @@ import {
     Router,
     setResponseHeader,
 } from '@arrirpc/server/http';
+import * as express from 'express';
 
-export function registerHeartbeatTestRoute(router: Router) {
-    const heartbeatMs = 300;
+const heartbeatMs = 300;
+
+export function registerHeartbeatTestRouteH3(router: Router) {
     router.get(
         '/heartbeat-test',
         defineEventHandler(async (event) => {
@@ -44,4 +46,41 @@ export function registerHeartbeatTestRoute(router: Router) {
             });
         }),
     );
+}
+
+export function registerHeartbeatTestRouteExpress(
+    express: express.Application,
+) {
+    express.get('/heartbeat-test', (req, res) => {
+        res.setHeader('heartbeat-interval', heartbeatMs.toString());
+
+        const heartbeatEnabled =
+            req.query.heartbeatEnabled === 'TRUE' ||
+            req.query.heartbeatEnabled === 'true';
+
+        res.status(200);
+        res.setHeader('Content-Type', 'text/event-stream');
+
+        for (let i = 0; i < 5; i++) {
+            res.send(`event: message\ndata: {"message":"hello world"}\n\n`);
+        }
+        let interval1: NodeJS.Timeout | undefined;
+        if (heartbeatEnabled) {
+            interval1 = setInterval(() => {
+                res.send(`event: heartbeat\ndata:\n\n`);
+            }, heartbeatMs);
+        }
+
+        const interval2 = setInterval(async () => {
+            res.send(`event: message\ndata: {"message":"hello world"}\n\n`);
+        }, 1000);
+        req.on('close', () => {
+            clearInterval(interval1);
+            clearInterval(interval2);
+        });
+        res.on('close', () => {
+            clearInterval(interval1);
+            clearInterval(interval2);
+        });
+    });
 }

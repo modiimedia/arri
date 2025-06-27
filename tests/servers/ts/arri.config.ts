@@ -1,3 +1,4 @@
+import { a } from '@arrirpc/schema';
 import { defineConfig, generators, servers } from 'arri';
 import { readFileSync } from 'fs';
 import path from 'pathe';
@@ -8,8 +9,15 @@ const prettierConfig = JSON.parse(
     }),
 );
 
+const serverLib = a.parseUnsafe(
+    a.undefinable(a.enumerator(['h3', 'express'])),
+    process.env.TS_SERVER_LIB,
+);
+
 export default defineConfig({
-    server: servers.tsServerNext(),
+    server: servers.tsServerNext({
+        entry: serverLib === 'express' ? 'app-express.ts' : 'app.ts',
+    }),
     generators: [
         generators.typescriptClient({
             clientName: 'TestClient',

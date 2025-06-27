@@ -6,6 +6,7 @@ import { a } from '../../languages/ts/ts-schema/dist';
 
 const CliArgs = a.object({
     server: a.optional(a.enumerator(['ts', 'go'])),
+    tsServerLib: a.optional(a.enumerator(['h3', 'express'])),
     affected: a.optional(a.boolean()),
 });
 type CliArgs = a.infer<typeof CliArgs>;
@@ -16,6 +17,11 @@ const run = defineCommand({
             type: 'string',
             description:
                 'which test server should integration tests be run against. [ts or go]',
+        },
+        tsServerLib: {
+            type: 'string',
+            description: 'Which TS server library to use. (h3 or express)',
+            required: false,
         },
         affected: {
             type: 'boolean',

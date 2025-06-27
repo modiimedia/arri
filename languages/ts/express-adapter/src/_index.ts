@@ -75,20 +75,16 @@ export class ExpressAdapter
     }
 
     private _getHeaders(req: ExpressRequest): Record<string, string> {
-        let currentKey: string | undefined;
         const result: Record<string, string> = {};
-        for (const item of req.rawHeaders) {
-            if (!currentKey) {
-                currentKey = item;
+        for (const [key, val] of Object.entries(req.headers)) {
+            if (Array.isArray(val)) {
+                result[key] = val.join(',');
                 continue;
             }
-            if (result[currentKey]) {
-                result[currentKey] += `,${item}`;
-                currentKey = undefined;
+            if (typeof val === 'string') {
+                result[key] = val;
                 continue;
             }
-            result[currentKey] = item;
-            continue;
         }
         return result;
     }
@@ -105,7 +101,7 @@ export class ExpressAdapter
             switch (procedure.method) {
                 case 'get':
                     getParams = (req: ExpressRequest) => {
-                        return validators.params!.coerce(req.params);
+                        return validators.params!.coerce(req.query);
                     };
                     break;
                 default:
@@ -224,7 +220,7 @@ export class ExpressAdapter
             switch (definition.method) {
                 case 'get':
                     getParams = (req: ExpressRequest) => {
-                        return validators.params!.coerce(req.params);
+                        return validators.params!.coerce(req.query);
                     };
                     break;
                 default:
@@ -261,6 +257,8 @@ export class ExpressAdapter
                 },
             };
             try {
+                await this._onRequest?.(req, context);
+                await this.globalOptions?.onRequest?.(context);
                 if (typeof getParams !== 'undefined') {
                     const result = getParams(req);
                     if (!result.success) {
@@ -276,7 +274,7 @@ export class ExpressAdapter
                     context.params = result.value;
                 }
                 for (const m of this._middlewares) {
-                    await m(req as any);
+                    await m(context);
                 }
                 const eventStream = new RpcEventStreamConnection(
                     new ExpressEventStreamDispatcher({ req, res }),
@@ -536,9 +534,10 @@ class ExpressEventStreamDispatcher implements EventStreamDispatcher {
         this.res = config.res;
     }
     send(): void {
-        this.res.setHeader('Content-Type', 'text/event-stream');
+        this.res.status(200);
+        this.res.setHeader('content-type', 'text/event-stream');
         this.res.setHeader(
-            'Cache-Control',
+            'cache-control',
             'private, no-cache, no-store, no-transform, must-revalidate, max-age=0',
         );
         this.res.setHeader('x-accel-buffering', 'no');
