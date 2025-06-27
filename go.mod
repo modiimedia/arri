@@ -3,8 +3,9 @@ module github.com/modiimedia/arri
 go 1.23.3
 
 require (
-	github.com/iancoleman/strcase v0.3.0
 	github.com/tidwall/gjson v1.18.0
+	github.com/coder/websocket v1.8.13
+	github.com/iancoleman/strcase v0.3.0
 )
 
 require (
