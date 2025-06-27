@@ -1,11 +1,6 @@
 import { a } from '@arrirpc/schema';
-import {
-    ArriApp,
-    defineError,
-    defineEventHandler,
-    HttpAdapter,
-    WsAdapter,
-} from '@arrirpc/server';
+import { ArriApp, defineError, HttpAdapter, WsAdapter } from '@arrirpc/server';
+import * as h3 from '@arrirpc/server/http';
 
 import { registerHeartbeatTestRoute } from './heartbeat-tests';
 import { manualTestService } from './routes/other';
@@ -21,9 +16,8 @@ const http = new HttpAdapter({
     },
 });
 
-const ws = new WsAdapter(http, '/establish-connection');
 app.use(http);
-app.use(ws);
+app.use(new WsAdapter(http, { connectionPath: '/establish-connection' }));
 
 app.registerDefinitions({
     ManuallyAddedModel: a.object({
@@ -45,12 +39,12 @@ app.use(async (context) => {
 
 http.h3Router.get(
     '/status',
-    defineEventHandler((_) => 'ok'),
+    h3.defineEventHandler((_) => 'ok'),
 );
 
 http.h3Router.use(
     '/routes/hello-world',
-    defineEventHandler((_) => {
+    h3.defineEventHandler((_) => {
         return 'hello world';
     }),
     ['get', 'post'],

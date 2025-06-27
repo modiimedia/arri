@@ -1,8 +1,12 @@
-import { AppDefinition, RpcDefinition } from '@arrirpc/codegen-utils';
+import { RpcDefinition } from '@arrirpc/codegen-utils';
 import { CompiledValidator } from '@arrirpc/schema';
 
-import { RpcMiddleware } from './middleware';
-import { RpcHandler, RpcPostHandler } from './rpc';
+import {
+    RpcMiddleware,
+    RpcMiddlewareContext,
+    RpcOnErrorContext,
+} from './middleware';
+import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
 export type RpcValidators = {
@@ -13,6 +17,20 @@ export type RpcValidators = {
 export interface TransportAdapterOptions {
     heartbeatInterval: number;
     heartbeatEnabled: boolean;
+    onRequest:
+        | ((context: RpcMiddlewareContext) => Promise<void> | void)
+        | undefined;
+    onBeforeResponse:
+        | ((
+              context: RpcPostHandlerContext<unknown, unknown>,
+          ) => Promise<void> | void)
+        | undefined;
+    onAfterResponse:
+        | ((
+              context: RpcPostHandlerContext<unknown, unknown>,
+          ) => Promise<void> | void)
+        | undefined;
+    onError: ((context: RpcOnErrorContext) => Promise<void> | void) | undefined;
 }
 
 export interface TransportAdapter {
@@ -36,21 +54,6 @@ export interface TransportAdapter {
         definition: RpcDefinition,
         validators: RpcValidators,
         handler: EventStreamRpcHandler<any, any>,
-    ): void;
-
-    registerHomeRoute?(
-        path: string,
-        getAppInfo: () => {
-            name?: string;
-            description?: string;
-            version?: string;
-            definitionPath?: string;
-        },
-    ): void;
-
-    registerDefinitionRoute?(
-        path: string,
-        getDefinition: () => AppDefinition,
     ): void;
 
     start(): Promise<void> | void;

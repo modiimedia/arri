@@ -47,6 +47,7 @@ func setupWsConnectionHandler[T any](ws *WsAdapter[T]) {
 			return
 		}
 		defer c.CloseNow()
+		// TODO: actually implement WS stuff
 	})
 }
 

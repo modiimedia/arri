@@ -4,7 +4,7 @@ import {
     getQuery,
     Router,
     setResponseHeader,
-} from '@arrirpc/server';
+} from '@arrirpc/server/http';
 
 export function registerHeartbeatTestRoute(router: Router) {
     const heartbeatMs = 300;

@@ -15,7 +15,14 @@ const deps = Object.keys(
 
 export default defineBuildConfig({
     rootDir: __dirname,
-    entries: [{ input: './src/_index.ts', name: 'index' }],
+    entries: [
+        { input: './src/_index.ts', name: 'index' },
+        { input: './src/reexports/http.ts', name: 'http' },
+        {
+            input: './src/reexports/ws.ts',
+            name: 'ws',
+        },
+    ],
     rollup: {
         emitCJS: true,
         dts: {

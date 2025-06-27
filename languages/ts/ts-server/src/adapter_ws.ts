@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { RpcDefinition } from '@arrirpc/codegen-utils';
+import { HttpMethod, RpcDefinition } from '@arrirpc/codegen-utils';
 import {
     ArriError,
     encodeServerMessage,
@@ -9,16 +9,16 @@ import {
 } from '@arrirpc/core';
 import { CompiledValidator, errorMessageFromErrors } from '@arrirpc/schema';
 import { defineHooks, Hooks, Message, Peer, WSError } from 'crossws';
-import { HTTPMethod } from 'h3';
 
 import { TransportAdapter, TransportAdapterOptions } from './adapter';
-import { WsHttpRegister } from './adapter_http';
+import { WsEndpointRegister } from './adapter_http';
 import { RpcMiddleware, RpcMiddlewareContext } from './middleware';
 import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
 export interface WsOptions {
-    connectionMethod?: HTTPMethod;
+    connectionPath: string;
+    connectionMethod?: HttpMethod;
     debug?: boolean;
     onOpen?: (peer: Peer) => Promise<void> | void;
     onUpgrade?: Hooks['upgrade'];
@@ -62,8 +62,7 @@ interface EventStreamRpcHandlerObj {
 export class WsAdapter implements TransportAdapter {
     transportId: string = 'ws';
 
-    private readonly _register: WsHttpRegister;
-    private readonly _connectionPath: string;
+    private readonly _register: WsEndpointRegister;
     private readonly _options: WsOptions;
     private _transportOptions: TransportAdapterOptions | undefined;
     private readonly _hooks: Hooks;
@@ -72,18 +71,13 @@ export class WsAdapter implements TransportAdapter {
     private _middlewares: RpcMiddleware[] = [];
     private _peers: Map<string, Peer> = new Map();
 
-    constructor(
-        dispatcher: WsHttpRegister,
-        connectionPath: string,
-        options?: WsOptions,
-    ) {
+    constructor(register: WsEndpointRegister, options: WsOptions) {
         assert(
-            connectionPath.startsWith('/'),
+            options.connectionPath.startsWith('/'),
             'connection path must start with "/"',
         );
-        this._connectionPath = connectionPath;
-        this._register = dispatcher;
-        this._options = options ?? {};
+        this._register = register;
+        this._options = options;
         this._hooks = defineHooks({
             upgrade: (_) => {
                 return {
@@ -97,8 +91,8 @@ export class WsAdapter implements TransportAdapter {
         });
 
         this._register.registerWsEndpoint(
-            this._connectionPath,
-            this._options.connectionMethod ?? 'GET',
+            this._options.connectionPath,
+            this._options.connectionMethod ?? 'get',
             this._hooks,
         );
     }

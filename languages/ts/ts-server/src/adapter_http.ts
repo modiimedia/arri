@@ -22,7 +22,7 @@ import {
     RpcMiddlewareContext,
     RpcOnErrorContext,
 } from './middleware';
-import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
+import { RpcHandler, RpcPostHandler } from './rpc';
 import {
     EventStreamRpcHandler,
     RpcEventStreamConnection,
@@ -36,18 +36,6 @@ export interface HttpOptions {
         event: h3.H3Event,
         context: RpcMiddlewareContext,
     ) => void | Promise<void>;
-    onBeforeResponse?: (
-        event: h3.H3Event,
-        context: RpcPostHandlerContext<any, any>,
-    ) => void | Promise<void>;
-    onAfterResponse?: (
-        event: h3.H3Event,
-        context: RpcPostHandlerContext<any, any>,
-    ) => void | Promise<void>;
-    onError?: (
-        event: h3.H3Event,
-        context: RpcOnErrorContext,
-    ) => void | Promise<void>;
     cors?: h3.H3CorsOptions;
     https?: boolean | listhen.HTTPSOptions;
     http2?: boolean;
@@ -59,12 +47,42 @@ export interface HttpOptions {
     trustXForwardedFor?: boolean;
 }
 
-export interface WsHttpRegister {
+export interface HttpEndpointRegister {
+    registerEndpoint(
+        path: string,
+        method: h3.RouterMethod | h3.RouterMethod[],
+        handler: h3.WebHandler,
+    ): void;
+}
+
+export function isHttpEndpointRegister(
+    input: unknown,
+): input is HttpEndpointRegister {
+    return (
+        typeof input === 'object' &&
+        input !== null &&
+        'registerEndpoint' in input &&
+        typeof input.registerEndpoint === 'function'
+    );
+}
+
+export interface WsEndpointRegister {
     registerWsEndpoint(
         path: string,
-        method: h3.HTTPMethod,
+        method: h3.RouterMethod | h3.RouterMethod[],
         hooks: ws.Hooks,
     ): void;
+}
+
+export function isWsEndpointRegister(
+    input: unknown,
+): input is WsEndpointRegister {
+    return (
+        typeof input === 'object' &&
+        input !== null &&
+        'registerWsEndpoint' in input &&
+        typeof input.registerWsEndpoint === 'function'
+    );
 }
 
 /**
@@ -72,7 +90,9 @@ export interface WsHttpRegister {
  * H3 is designed to be used in any JS runtime.
  * Meaning it can work in NodeJs, Cloudflare Workers, Bun, and Deno.
  */
-export class HttpAdapter implements TransportAdapter, WsHttpRegister {
+export class HttpAdapter
+    implements TransportAdapter, HttpEndpointRegister, WsEndpointRegister
+{
     readonly h3App: h3.App;
     readonly h3Router: h3.Router;
 
@@ -80,9 +100,10 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
 
     private readonly _debug: boolean;
     private readonly _onRequest: HttpOptions['onRequest'];
-    private readonly _onBeforeResponse: HttpOptions['onBeforeResponse'];
-    private readonly _onAfterResponse: HttpOptions['onAfterResponse'];
-    private readonly _onError: HttpOptions['onError'];
+    private _globalOnRequest: TransportAdapterOptions['onRequest'];
+    private _globalOnBeforeResponse: TransportAdapterOptions['onBeforeResponse'];
+    private _globalOnAfterResponse: TransportAdapterOptions['onAfterResponse'];
+    private _globalOnError: TransportAdapterOptions['onError'];
     private _middlewares: RpcMiddleware[] = [];
     private _options: TransportAdapterOptions | undefined;
 
@@ -131,9 +152,6 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
         this.h3App.use(this.h3Router);
         this._debug = options.debug ?? false;
         this._onRequest = options.onRequest;
-        this._onBeforeResponse = options.onBeforeResponse;
-        this._onAfterResponse = options.onAfterResponse;
-        this._onError = options.onError;
         this._cores = options.cors;
         this._https = options.https;
         this._http2 = options.http2;
@@ -163,16 +181,13 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     headers: h3.getHeaders(event),
                 };
                 try {
-                    if (this._onRequest) {
-                        await this._onRequest(event, context);
-                    }
+                    await this._onRequest?.(event, context);
+                    await this._globalOnRequest?.(context);
                 } catch (err) {
                     (context as any).error = err;
                     return this._handleError(event, context as any);
                 }
-                if (event.handled) {
-                    return;
-                }
+                if (event.handled) return;
                 (context as any).error = error;
                 return this._handleError(event, context as any);
             }),
@@ -186,36 +201,26 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
     use(middleware: RpcMiddleware): void {
         this._middlewares.push(middleware);
     }
+    registerEndpoint(
+        path: string,
+        method: h3.RouterMethod | h3.RouterMethod[],
+        handler: h3.WebHandler,
+    ) {
+        this.h3Router.use(
+            path,
+            h3.defineEventHandler((event) => {
+                const request = h3.toWebRequest(event);
+                return handler(request, event.context);
+            }),
+        );
+    }
 
     registerWsEndpoint(
         path: string,
-        method: h3.HTTPMethod,
+        method: h3.RouterMethod | h3.RouterMethod[],
         hooks: ws.Hooks,
     ): void {
-        switch (method) {
-            case 'GET':
-                this.h3Router.get(path, h3.defineWebSocketHandler(hooks));
-                break;
-            case 'DELETE':
-                this.h3Router.delete(path, h3.defineWebSocketHandler(hooks));
-                break;
-            case 'POST':
-                this.h3Router.post(path, h3.defineWebSocketHandler(hooks));
-                break;
-            case 'PATCH':
-                this.h3Router.patch(path, h3.defineWebSocketHandler(hooks));
-                break;
-            case 'PUT':
-                this.h3Router.put(path, h3.defineWebSocketHandler(hooks));
-                break;
-            case 'CONNECT':
-            case 'HEAD':
-            case 'OPTIONS':
-            case 'TRACE':
-                throw new Error(
-                    `Unsupported method for websocket endpoint ${method}`,
-                );
-        }
+        this.h3Router.use(path, h3.defineWebSocketHandler(hooks), method);
     }
 
     private async _getParams(
@@ -307,8 +312,8 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 }
                 const response = await handler(context as any);
                 (context as any).response = response;
-                if (this._onBeforeResponse) {
-                    await this._onBeforeResponse(event, context as any);
+                if (this._globalOnBeforeResponse) {
+                    await this._globalOnBeforeResponse(context as any);
                 }
                 if (validators.response) {
                     const serialResult =
@@ -328,8 +333,8 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 } else {
                     await h3.send(event, '', 'text/plain');
                 }
-                if (this._onAfterResponse) {
-                    await this._onAfterResponse(event, context as any);
+                if (this._globalOnAfterResponse) {
+                    await this._globalOnAfterResponse(context as any);
                 }
                 if (postHandler) await postHandler(context as any);
             } catch (err) {
@@ -481,14 +486,14 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 }
                 const response = getAppInfo();
                 (context as any).response = response;
-                if (this._onBeforeResponse) {
-                    await this._onBeforeResponse(event, context as any);
+                if (this._globalOnBeforeResponse) {
+                    await this._globalOnBeforeResponse(context as any);
                 }
                 h3.setResponseStatus(event, 200);
                 h3.setResponseHeader(event, 'Content-Type', 'application/json');
                 await h3.send(event, JSON.stringify(response));
-                if (this._onAfterResponse) {
-                    await this._onAfterResponse(event, context as any);
+                if (this._globalOnAfterResponse) {
+                    await this._globalOnAfterResponse(context as any);
                 }
                 return '';
             } catch (err) {
@@ -529,8 +534,8 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                 }
                 const response = getDefinition();
                 (context as any).response = response;
-                if (this._onBeforeResponse) {
-                    await this._onBeforeResponse(event, context as any);
+                if (this._globalOnBeforeResponse) {
+                    await this._globalOnBeforeResponse(context as any);
                 }
                 h3.setResponseStatus(event, 200);
                 h3.setResponseHeader(event, 'Content-Type', 'application/json');
@@ -539,8 +544,8 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
                     JSON.stringify(response),
                     'application/json',
                 );
-                if (this._onAfterResponse) {
-                    await this._onAfterResponse(event, context as any);
+                if (this._globalOnAfterResponse) {
+                    await this._globalOnAfterResponse(context as any);
                 }
                 return '';
             } catch (err) {
@@ -553,7 +558,7 @@ export class HttpAdapter implements TransportAdapter, WsHttpRegister {
 
     private async _handleError(event: h3.H3Event, context: RpcOnErrorContext) {
         try {
-            if (this._onError) await this._onError(event, context);
+            if (this._globalOnError) await this._globalOnError(context);
             h3.setResponseHeader(event, 'Content-Type', 'application/json');
             if (context.error instanceof ArriError) {
                 h3.setResponseStatus(event, context.error.code);

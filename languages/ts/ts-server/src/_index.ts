@@ -6,5 +6,3 @@ export * from './error';
 export * from './middleware';
 export * from './rpc';
 export * from './rpc_event_stream';
-export * from 'crossws';
-export * from 'h3';

@@ -8,9 +8,14 @@ import {
 } from '@arrirpc/codegen-utils';
 import { a, ASchema, CompiledValidator } from '@arrirpc/schema';
 
-import { TransportAdapter } from './adapter';
-import { RpcMiddleware } from './middleware';
-import { Rpc } from './rpc';
+import { TransportAdapter, TransportAdapterOptions } from './adapter';
+import { isHttpEndpointRegister } from './adapter_http';
+import {
+    RpcMiddleware,
+    RpcMiddlewareContext,
+    RpcOnErrorContext,
+} from './middleware';
+import { Rpc, RpcPostHandlerContext } from './rpc';
 import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
 
 export class ArriApp implements ArriServiceBase {
@@ -28,10 +33,22 @@ export class ArriApp implements ArriServiceBase {
     private _registeredTransports: string[] = [];
     private _hasAdapter: boolean = false;
     private readonly _adapters: Record<string, TransportAdapter> = {};
+    private readonly _adapterOptions: TransportAdapterOptions;
     private _procedures: Record<string, RpcDefinition> = {};
     private _definitions: Record<string, Schema> = {};
-    private readonly _heartbeatInterval: number;
-    private readonly _heartbeatEnabled: boolean;
+
+    private readonly _onRequest?: (
+        context: RpcMiddlewareContext,
+    ) => Promise<void> | void;
+    private readonly _onBeforeResponse?: (
+        context: RpcPostHandlerContext<unknown, unknown>,
+    ) => Promise<void> | void;
+    private readonly _onAfterResponse?: (
+        context: RpcPostHandlerContext<unknown, unknown>,
+    ) => Promise<void> | void;
+    private readonly _onError?: (
+        context: RpcOnErrorContext,
+    ) => Promise<void> | void;
 
     constructor(
         options: {
@@ -47,6 +64,14 @@ export class ArriApp implements ArriServiceBase {
             transports?: TransportAdapter[];
             heartbeatInterval?: number;
             heartbeatEnabled?: boolean;
+            onRequest?: (context: RpcMiddlewareContext) => Promise<void> | void;
+            onBeforeResponse?: (
+                context: RpcPostHandlerContext<unknown, unknown>,
+            ) => Promise<void> | void;
+            onAfterResponse?: (
+                context: RpcPostHandlerContext<unknown, unknown>,
+            ) => Promise<void> | void;
+            onError?: (context: RpcOnErrorContext) => Promise<void> | void;
         } = {},
     ) {
         this.name = options.name;
@@ -57,8 +82,18 @@ export class ArriApp implements ArriServiceBase {
         this.rpcDefinitionPath = options.rpcDefinitionPath;
         this.disableDefaultRoute = options.disableDefaultRoute ?? false;
         this.disableDefinitionRoute = options.disableDefinitionRoute ?? false;
-        this._heartbeatInterval = options.heartbeatInterval ?? 20000;
-        this._heartbeatEnabled = options.heartbeatEnabled ?? true;
+        this._adapterOptions = {
+            heartbeatEnabled: options.heartbeatEnabled ?? true,
+            heartbeatInterval: options.heartbeatInterval ?? 20000,
+            onRequest: options.onRequest,
+            onBeforeResponse: options.onBeforeResponse,
+            onAfterResponse: options.onAfterResponse,
+            onError: options.onError,
+        };
+        this._onRequest = options.onRequest;
+        this._onBeforeResponse = options.onBeforeResponse;
+        this._onAfterResponse = options.onAfterResponse;
+        this._onError = options.onError;
         if (typeof options.defaultTransport === 'string') {
             this._defaultTransports = [options.defaultTransport];
         } else if (Array.isArray(options.defaultTransport)) {
@@ -95,21 +130,42 @@ export class ArriApp implements ArriServiceBase {
 
         // register adapters
         if (typeof input === 'object') {
-            input.setOptions({
-                heartbeatInterval: this._heartbeatInterval,
-                heartbeatEnabled: this._heartbeatEnabled,
-            });
-            if (typeof input.registerHomeRoute === 'function') {
-                input.registerHomeRoute('/', () => ({
-                    name: this.name,
-                    description: this.description,
-                    version: this.version,
-                    definitionPath: this.definitionPath,
-                }));
-            }
-            if (typeof input.registerDefinitionRoute === 'function') {
-                input.registerDefinitionRoute(this.definitionPath, () =>
-                    this.getAppDefinition(),
+            input.setOptions(this._adapterOptions);
+            if (isHttpEndpointRegister(input)) {
+                input.registerEndpoint('/', 'get', async (request) => {
+                    const isPreflight = internalIsPreflightRequest(request);
+                    if (isPreflight) {
+                        return new Response('ok', { status: 200 });
+                    }
+                    const result = {
+                        name: this.name,
+                        description: this.description,
+                        version: this.version,
+                        definitionPath: this.definitionPath,
+                    };
+                    const headers = new Headers();
+                    headers.set('Content-Type', 'application/json');
+                    return new Response(JSON.stringify(result), {
+                        status: 200,
+                        headers: headers,
+                    });
+                });
+                input.registerEndpoint(
+                    this.definitionPath,
+                    'get',
+                    async (request) => {
+                        const isPreflight = internalIsPreflightRequest(request);
+                        if (isPreflight) {
+                            return new Response('ok', { status: 200 });
+                        }
+                        const result = this.getAppDefinition();
+                        const headers = new Headers();
+                        headers.set('Content-Type', 'application/json');
+                        return new Response(JSON.stringify(result), {
+                            status: 200,
+                            headers: headers,
+                        });
+                    },
                 );
             }
             this._adapters[input.transportId] = input;
@@ -332,6 +388,16 @@ export class ArriApp implements ArriServiceBase {
             console.error(result.reason);
         }
     }
+}
+
+function internalIsPreflightRequest(request: Request): boolean {
+    const origin = request.headers.get('origin');
+    const accessControlRequestMethod = request.headers.get(
+        'access-control-request-method',
+    );
+    return (
+        request.method === 'OPTIONS' && !!origin && !!accessControlRequestMethod
+    );
 }
 
 export interface ArriServiceBase {

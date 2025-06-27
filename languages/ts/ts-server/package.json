@@ -13,6 +13,11 @@
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./http": "./dist/http.mjs",
+    "./ws": "./dist/ws.mjs"
+  },
   "bugs": {
     "url": "https://github.com/modiimedia/arri/issues"
   },
