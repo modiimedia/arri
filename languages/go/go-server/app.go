@@ -1,10 +1,15 @@
 package arri
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -78,9 +83,42 @@ func (app *App[TMeta]) Start() error {
 			return err
 		}
 	}
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(context.Background())
+
 	for _, adapter := range app.adapters {
-		adapter.Start()
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			adapter.Start()
+		}()
 	}
+
+	// Handle OS signals for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case <-sigChan:
+		fmt.Println("Initiating graceful shutdown...")
+	case <-ctx.Done():
+		fmt.Println("Context cancelled. Initiating graceful shutdown...")
+	}
+
+	// Create a context with a timeout for graceful shutdown
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	// Shut down servers gracefully
+	for key, adapter := range app.adapters {
+		if err := adapter.Close(shutdownCtx); err != nil {
+			log.Printf("[%v] Error closing: %v", key, err)
+		}
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+	fmt.Println("All servers closed.")
+	cancel() // Cancel the main context
 	return nil
 	// TODO: start all adapters
 }

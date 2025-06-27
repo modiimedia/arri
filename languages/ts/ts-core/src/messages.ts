@@ -40,22 +40,22 @@ export interface ServerConnectionMessage {
     event: 'RESPONSE';
 }
 
-const msg = `
-ARRIRPC/1.0 users.getUsers
-event: response
-success: true
-req-id: 135
-content-type: application/json
+// const msg = `
+// ARRIRPC/1.0 users.getUsers
+// event: response
+// success: true
+// req-id: 135
+// content-type: application/json
 
-{"message":"hello world"}
+// {"message":"hello world"}
 
-ARRIRPC/1.0
-event: ping
+// ARRIRPC/1.0
+// event: ping
 
-ARRIRPC/1.0
-event: connection
-ping-interval: 15
-`;
+// ARRIRPC/1.0
+// event: connection
+// ping-interval: 15
+// `;
 
 export function parseClientMessage(
     input: string,

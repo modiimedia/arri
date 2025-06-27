@@ -1,6 +1,7 @@
 package arri
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -24,7 +25,8 @@ type TransportAdapter[T any] interface {
 	)
 	SetGlobalOptions(options AppOptions[T])
 	Use(middleware func(req *Request[T]) RpcError)
-	Start()
+	Start() error
+	Close(context.Context) error
 	HasStarted() bool
 }
 

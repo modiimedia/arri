@@ -17,7 +17,7 @@ type HttpAdapter[T any] struct {
 	middlewares   [](func(req *Request[T]) RpcError)
 	options       HttpAdapterOptions[T]
 	globalOptions AppOptions[T]
-	hasStarted    bool
+	server        *http.Server
 }
 
 type HttpAdapterOptions[T any] struct {
@@ -36,7 +36,6 @@ func NewHttpAdapter[T any](mux *http.ServeMux, options HttpAdapterOptions[T]) *H
 		Mux:         mux,
 		options:     options,
 		middlewares: [](func(req *Request[T]) RpcError){},
-		hasStarted:  false,
 	}
 }
 
@@ -204,9 +203,9 @@ func (a *HttpAdapter[T]) RegisterEventStreamRpc(
 
 }
 
-func (a *HttpAdapter[T]) Start() {
-	if a.hasStarted {
-		return
+func (a *HttpAdapter[T]) Start() error {
+	if a.HasStarted() {
+		return nil
 	}
 	port := a.options.Port
 	if a.options.Port == 0 {
@@ -222,18 +221,31 @@ func (a *HttpAdapter[T]) Start() {
 		AllowCredentials: a.options.AllowCredentials,
 	}
 	httpHandler := cors.New(c).Handler(a.Mux)
+	server := &http.Server{Addr: fmt.Sprintf(":%v", port), Handler: httpHandler}
 	if len(a.options.KeyFile) > 0 && len(a.options.CertFile) > 0 {
 		printStartHttpMessage(port, true, a.globalOptions)
-		http.ListenAndServeTLS(fmt.Sprintf(":%v", port), a.options.CertFile, a.options.KeyFile, httpHandler)
-		return
+		a.server = server
+		return server.ListenAndServeTLS(a.options.CertFile, a.options.KeyFile)
 	}
 	printStartHttpMessage(port, false, a.globalOptions)
-	a.hasStarted = true
-	http.ListenAndServe(fmt.Sprintf(":%v", port), httpHandler)
+	a.server = server
+	return server.ListenAndServe()
+}
+
+func (a *HttpAdapter[T]) Close(ctx context.Context) error {
+	if a.server == nil {
+		return nil
+	}
+	err := a.server.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+	a.server = nil
+	return nil
 }
 
 func (a *HttpAdapter[T]) HasStarted() bool {
-	return a.hasStarted
+	return a.server != nil
 }
 
 func (a *HttpAdapter[T]) Use(middleware func(req *Request[T]) RpcError) {
@@ -255,15 +267,9 @@ func printStartHttpMessage[T any](port uint32, isHttps bool, options AppOptions[
 	}
 	baseUrl := fmt.Sprintf("%v://localhost:%v", protocol, port)
 	fmt.Printf("Starting server at %v\n", baseUrl)
-	fmt.Printf("Definition path at %v\n", baseUrl+options.RpcDefinitionPath)
-	// if len(app.options.RpcRoutePrefix) > 0 {
-	// 	fmt.Printf("Procedures path: %v%v\n", baseUrl, app.options.RpcRoutePrefix)
-	// }
-	// defPath := app.options.RpcDefinitionPath
-	// if len(defPath) == 0 {
-	// 	defPath = "/__definition"
-	// }
-	// fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.options.RpcRoutePrefix+defPath)
+	if !options.DisableRpcDefinitionPath {
+		fmt.Printf("Definition path: %v\n", baseUrl+options.RpcDefinitionPath)
+	}
 }
 
 func handlePreflightRequest(w http.ResponseWriter) {
