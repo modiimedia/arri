@@ -9,7 +9,7 @@ const prettierConfig = JSON.parse(
 );
 
 export default defineConfig({
-    server: servers.tsServerNext({}),
+    server: servers.tsServerNext(),
     generators: [
         generators.typescriptClient({
             clientName: 'TestClient',

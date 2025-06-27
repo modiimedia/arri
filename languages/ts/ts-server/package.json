@@ -16,7 +16,11 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./http": "./dist/http.mjs",
-    "./ws": "./dist/ws.mjs"
+    "./ws": "./dist/ws.mjs",
+    "./ws/adapters/bun": "./dist/ws_adapters_bun.mjs",
+    "./ws/adapters/cloudflare": "./dist/ws_adapters_cloudflare.mjs",
+    "./ws/adapters/deno": "./dist/ws_adapters_deno.mjs",
+    "./ws/adapters/node": "./dist/ws_adapters_node.mjs"
   },
   "bugs": {
     "url": "https://github.com/modiimedia/arri/issues"

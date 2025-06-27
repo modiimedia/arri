@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-    cacheDir: '../../../node_modules/.vite/languages/ts/express-dispatcher',
+    cacheDir: '../../../node_modules/.vite/languages/ts/express-adapter',
 
     // plugins: [
     //     viteTsConfigPaths({

@@ -4,47 +4,47 @@ import { ArriError, serializeArriError } from '@arrirpc/core';
 import { errorMessageFromErrors, Result } from '@arrirpc/schema';
 import {
     EventStreamDispatcher,
-    EventStreamMessage,
     EventStreamRpcHandler,
+    HttpEndpointRegister,
     RpcEventStreamConnection,
     RpcHandler,
     RpcMiddleware,
     RpcMiddlewareContext,
     RpcOnErrorContext,
     RpcPostHandler,
-    RpcPostHandlerContext,
     RpcValidators,
     TransportAdapter,
     TransportAdapterOptions,
+    WsEndpointRegister,
 } from '@arrirpc/server';
-import { AppDefinition, RpcDefinition } from '@arrirpc/type-defs';
-import { Express, Request, Response } from 'express';
+import {
+    EventStreamMessage,
+    RouterMethod,
+    WebHandler,
+} from '@arrirpc/server/http';
+import { Hooks } from '@arrirpc/server/ws';
+import crossws, { NodeAdapter } from '@arrirpc/server/ws/adapters/node';
+import { RpcDefinition } from '@arrirpc/type-defs';
+import {
+    Express,
+    Request as ExpressRequest,
+    Response as ExpressResponse,
+} from 'express';
 import express from 'express';
 
 export interface ExpressAdapterOptions {
     app?: Express;
     port?: number;
     debug?: boolean;
-    extendContext?: (
-        req: Request,
+    onRequest?: (
+        req: ExpressRequest,
         context: RpcMiddlewareContext,
     ) => Promise<void> | void;
-    onRequest?(
-        req: Request,
-        context: RpcMiddlewareContext,
-    ): Promise<void> | void;
-    onBeforeResponse?(
-        req: Request,
-        context: RpcPostHandlerContext<any, any>,
-    ): Promise<void> | void;
-    onAfterResponse?(
-        req: Request,
-        context: RpcPostHandlerContext<any, any>,
-    ): Promise<void> | void;
-    onError?(req: Request, context: RpcOnErrorContext): Promise<void> | void;
 }
 
-export class ExpressAdapter implements TransportAdapter {
+export class ExpressAdapter
+    implements TransportAdapter, HttpEndpointRegister, WsEndpointRegister
+{
     transportId: string = 'http';
 
     private globalOptions: TransportAdapterOptions | undefined;
@@ -53,7 +53,9 @@ export class ExpressAdapter implements TransportAdapter {
         this._app = options?.app ?? express();
         this._port = options?.port ?? 3000;
         this._debug = options?.debug ?? false;
+        this._onRequest = options?.onRequest;
     }
+
     setOptions(options: TransportAdapterOptions): void {
         this.globalOptions = options;
     }
@@ -65,9 +67,6 @@ export class ExpressAdapter implements TransportAdapter {
     private readonly _debug: boolean;
 
     private readonly _onRequest: ExpressAdapterOptions['onRequest'];
-    private readonly _onBeforeResponse: ExpressAdapterOptions['onBeforeResponse'];
-    private readonly _onAfterResponse: ExpressAdapterOptions['onAfterResponse'];
-    private readonly _onError: ExpressAdapterOptions['onError'];
 
     private _listener: Server | undefined;
 
@@ -75,7 +74,7 @@ export class ExpressAdapter implements TransportAdapter {
         this._middlewares.push(middleware);
     }
 
-    private _getHeaders(req: Request): Record<string, string> {
+    private _getHeaders(req: ExpressRequest): Record<string, string> {
         let currentKey: string | undefined;
         const result: Record<string, string> = {};
         for (const item of req.rawHeaders) {
@@ -101,35 +100,50 @@ export class ExpressAdapter implements TransportAdapter {
         handler: RpcHandler<any, any>,
         postHandler?: RpcPostHandler,
     ) {
-        let getParams: ((req: Request) => Result<any>) | undefined;
+        let getParams: ((req: ExpressRequest) => Result<any>) | undefined;
         if (validators.params) {
             switch (procedure.method) {
                 case 'get':
-                    getParams = (req: Request) => {
+                    getParams = (req: ExpressRequest) => {
                         return validators.params!.coerce(req.params);
                     };
                     break;
                 default:
-                    getParams = (req: Request) => {
+                    getParams = (req: ExpressRequest) => {
                         return validators.params!.parse(req.body);
                     };
             }
         }
-        const routeHandler = async (req: Request, res: Response) => {
+        const routeHandler = async (
+            req: ExpressRequest,
+            res: ExpressResponse,
+        ) => {
             const reqStart = new Date();
+            const clientVersion = req.headers['client-version'];
+            const context: RpcMiddlewareContext = {
+                rpcName: name,
+                reqStart: reqStart,
+                transport: this.transportId,
+                headers: this._getHeaders(req),
+                ipAddress: req.ip,
+                clientVersion:
+                    typeof clientVersion === 'string'
+                        ? clientVersion
+                        : undefined,
+                setResponseHeader: function (key: string, val: string): void {
+                    res.setHeader(key, val);
+                },
+                setResponseHeaders: function (
+                    headers: Record<string, string>,
+                ): void {
+                    for (const [key, val] of Object.entries(headers)) {
+                        res.setHeader(key, val);
+                    }
+                },
+            };
             try {
-                const clientVersion = req.headers['client-version'];
-                const context: RpcMiddlewareContext = {
-                    rpcName: name,
-                    reqStart: reqStart,
-                    transport: this.transportId,
-                    headers: this._getHeaders(req),
-                    ipAddress: req.ip,
-                    clientVersion:
-                        typeof clientVersion === 'string'
-                            ? clientVersion
-                            : undefined,
-                };
+                await this._onRequest?.(req, context);
+                await this.globalOptions?.onRequest?.(context);
                 if (typeof getParams !== 'undefined') {
                     const result = getParams(req);
                     if (!result.success) {
@@ -148,6 +162,8 @@ export class ExpressAdapter implements TransportAdapter {
                     await m(context);
                 }
                 const response = await handler(context as any);
+                (context as any).response = response;
+                await this.globalOptions?.onBeforeResponse?.(context as any);
                 if (validators.response) {
                     const payload = validators.response.serialize(response);
                     if (!payload.success) {
@@ -161,16 +177,17 @@ export class ExpressAdapter implements TransportAdapter {
                         );
                     }
                     res.setHeader('Content-Type', 'application/json');
-                    res.status(200).send(payload.value);
-                    (context as any).response = response;
+                    res.status(200).end(payload.value);
                 } else {
-                    res.status(200).send('');
+                    res.status(200).end('');
                 }
+                await this.globalOptions?.onAfterResponse?.(context as any);
                 if (postHandler) {
                     await postHandler(context as any);
                 }
             } catch (err) {
-                return this._handleError(res, err);
+                (context as any).error = err;
+                return this._handleError(res, context as any);
             }
         };
         switch (procedure.method) {
@@ -202,35 +219,48 @@ export class ExpressAdapter implements TransportAdapter {
         validators: RpcValidators,
         handler: EventStreamRpcHandler<any, any>,
     ): void {
-        let getParams: (req: Request) => Result<any>;
+        let getParams: (req: ExpressRequest) => Result<any>;
         if (validators.params) {
             switch (definition.method) {
                 case 'get':
-                    getParams = (req: Request) => {
+                    getParams = (req: ExpressRequest) => {
                         return validators.params!.coerce(req.params);
                     };
                     break;
                 default:
-                    getParams = (req: Request) => {
+                    getParams = (req: ExpressRequest) => {
                         return validators.params!.parse(req.body);
                     };
             }
         }
-        const reqHandler = async (req: Request, res: Response) => {
+        const reqHandler = async (
+            req: ExpressRequest,
+            res: ExpressResponse,
+        ) => {
             const reqStart = new Date();
+            const clientVersion = req.headers['client-version'];
+            const context: RpcMiddlewareContext = {
+                rpcName: name,
+                reqStart: reqStart,
+                transport: this.transportId,
+                ipAddress: req.ip,
+                clientVersion:
+                    typeof clientVersion === 'string'
+                        ? clientVersion
+                        : undefined,
+                headers: this._getHeaders(req),
+                setResponseHeader: function (key: string, val: string): void {
+                    res.setHeader(key, val);
+                },
+                setResponseHeaders: function (
+                    headers: Record<string, string>,
+                ): void {
+                    for (const [key, val] of Object.entries(headers)) {
+                        res.setHeader(key, val);
+                    }
+                },
+            };
             try {
-                const clientVersion = req.headers['client-version'];
-                const context: RpcMiddlewareContext = {
-                    rpcName: name,
-                    reqStart: reqStart,
-                    transport: this.transportId,
-                    ipAddress: req.ip,
-                    clientVersion:
-                        typeof clientVersion === 'string'
-                            ? clientVersion
-                            : undefined,
-                    headers: this._getHeaders(req),
-                };
                 if (typeof getParams !== 'undefined') {
                     const result = getParams(req);
                     if (!result.success) {
@@ -260,7 +290,8 @@ export class ExpressAdapter implements TransportAdapter {
                     eventStream.send();
                 }
             } catch (err) {
-                return this._handleError(res, err);
+                (context as any).error = err;
+                return this._handleError(res, context as any);
             }
         };
         switch (definition.method) {
@@ -286,79 +317,193 @@ export class ExpressAdapter implements TransportAdapter {
         }
     }
 
-    registerHomeRoute(
+    registerEndpoint(
         path: string,
-        getAppInfo: () => {
-            name?: string;
-            description?: string;
-            version?: string;
-            definitionPath?: string;
-        },
+        method: RouterMethod | RouterMethod[],
+        handler: WebHandler,
     ): void {
-        this._app.get(path, async (req, res) => {
-            try {
-                for (const m of this._middlewares) {
-                    await m(req as any);
+        const register = (method: RouterMethod) => {
+            const internalHandler = async (
+                req: ExpressRequest,
+                res: ExpressResponse,
+            ) => {
+                try {
+                    const body = req.body;
+                    const headers = new Headers();
+                    for (const [key, val] of Object.keys(req.headers)) {
+                        if (!key) continue;
+                        if (!val) continue;
+                        headers.set(key, val);
+                    }
+                    const controller = new AbortController();
+                    const webRequest = new Request(
+                        req.protocol + '://' + req.host + req.path,
+                        {
+                            method: method.toUpperCase(),
+                            headers: headers,
+                            body: body,
+                            referrerPolicy:
+                                (headers.get('Referrer-Policy') as any) ??
+                                'strict-origin-when-cross-origin',
+                            keepalive: headers.get('Connect') == 'keep-alive',
+                            signal: controller.signal,
+                        },
+                    );
+                    const response = await handler(webRequest);
+                    res.setHeaders(response.headers);
+                    res.status(response.status);
+                    if (response.body instanceof ReadableStream) {
+                        for await (const chunk of response.body) {
+                            res.send(chunk);
+                        }
+                        res.end();
+                        return;
+                    }
+                    res.end(response.body);
+                    return;
+                } catch (err) {
+                    res.status(500).end(
+                        err instanceof Error ? err.message : `${err}`,
+                    );
                 }
-                res.status(200).send(JSON.stringify(getAppInfo()));
-            } catch (err) {
-                return this._handleError(res, err);
+            };
+            this.registerRawHandler(path, method, internalHandler);
+        };
+        if (Array.isArray(method)) {
+            for (const m of method) {
+                register(m);
             }
-        });
-    }
-    registerDefinitionRoute(
-        path: string,
-        getDefinition: () => AppDefinition,
-    ): void {
-        this._app.get(path, async (req, res) => {
-            const reqStart = new Date();
-            try {
-                const clientVersion = req.headers['client-version'];
-                const context: RpcMiddlewareContext = {
-                    rpcName: '',
-                    reqStart: reqStart,
-                    transport: this.transportId,
-                    ipAddress: req.ip,
-                    clientVersion:
-                        typeof clientVersion === 'string'
-                            ? clientVersion
-                            : undefined,
-                    headers: this._getHeaders(req),
-                };
-                for (const m of this._middlewares) {
-                    await m(context);
-                }
-                res.status(200);
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify(getDefinition()));
-            } catch (err) {
-                return this._handleError(res, err);
-            }
-        });
+            return;
+        }
+        register(method);
     }
 
-    private _handleError(res: Response, err: unknown) {
-        if (err instanceof ArriError) {
-            return this._sendError(res, err);
+    private registerRawHandler(
+        path: string,
+        method: RouterMethod,
+        handler: (r: ExpressRequest, res: ExpressResponse) => any,
+    ) {
+        switch (method) {
+            case 'get':
+                this._app.get(path, handler);
+                break;
+            case 'connect':
+                this._app.connect(path, handler);
+                break;
+            case 'delete':
+                this._app.delete(path, handler);
+                break;
+            case 'head':
+                this._app.head(path, handler);
+                break;
+            case 'options':
+                this._app.options(path, handler);
+                break;
+            case 'patch':
+                this._app.patch(path, handler);
+                break;
+            case 'post':
+                this._app.post(path, handler);
+                break;
+            case 'put':
+                this._app.put(path, handler);
+                break;
+            case 'trace':
+                this._app.trace(path, handler);
+                break;
+            default:
+                method satisfies never;
+                break;
         }
-        if (err instanceof Error) {
+    }
+
+    private wsAdapter: NodeAdapter | undefined;
+
+    registerWsEndpoint(
+        path: string,
+        method: RouterMethod | RouterMethod[],
+        hooks: Hooks,
+    ): void {
+        this.wsAdapter = crossws({ hooks: hooks });
+        const handler = async (req: ExpressRequest, res: ExpressResponse) => {
+            if (!this.wsAdapter) {
+                res.status(500);
+                res.end('ws adapter not initialized');
+                return;
+            }
+            if (req.headers.upgrade === 'websocket') {
+                this.wsAdapter.handleUpgrade(req, req.socket, Buffer.from([]));
+            }
+        };
+
+        if (Array.isArray(method)) {
+            for (const m of method) {
+                this.registerRawHandler(path, m, handler);
+            }
+            return;
+        }
+        this.registerRawHandler(path, method, handler);
+    }
+
+    private async _handleError(
+        res: ExpressResponse,
+        context: RpcOnErrorContext,
+    ) {
+        try {
+            await this.globalOptions?.onError?.(context);
+        } catch (err) {
+            if (err instanceof ArriError) {
+                return this._sendError(res, err);
+            }
+            if (err instanceof Error) {
+                return this._sendError(
+                    res,
+                    new ArriError({
+                        code: 500,
+                        message: err.message,
+                        data: context.error,
+                        stackList: this._debug
+                            ? err.stack?.split('\n')
+                            : undefined,
+                    }),
+                );
+            }
             return this._sendError(
                 res,
                 new ArriError({
                     code: 500,
-                    message: err.message,
+                    message: `${err}`,
                     data: err,
-                    stackList: err.stack?.split('\n'),
+                }),
+            );
+        }
+        if (context.error instanceof ArriError) {
+            return this._sendError(res, context.error);
+        }
+        if (context.error instanceof Error) {
+            return this._sendError(
+                res,
+                new ArriError({
+                    code: 500,
+                    message: context.error.message,
+                    data: context.error,
+                    stackList: this._debug
+                        ? context.error.stack?.split('\n')
+                        : undefined,
                 }),
             );
         }
         return this._sendError(
             res,
-            new ArriError({ code: 500, message: `${err}`, data: err }),
+            new ArriError({
+                code: 500,
+                message: `${context.error}`,
+                data: context.error,
+            }),
         );
     }
 
-    private _sendError(res: Response, error: ArriError) {
+    private _sendError(res: ExpressResponse, error: ArriError) {
         res.setHeader('Content-Type', 'application/json');
         res.status(error.code);
         res.send(serializeArriError(error, this._debug));
@@ -378,14 +523,15 @@ export class ExpressAdapter implements TransportAdapter {
     stop(): Promise<void> | void {
         this._listener?.closeAllConnections();
         this._listener?.close();
+        this.wsAdapter?.closeAll();
     }
 }
 
 class ExpressEventStreamDispatcher implements EventStreamDispatcher {
-    req: Request;
-    res: Response;
+    req: ExpressRequest;
+    res: ExpressResponse;
     lastEventId?: string | undefined;
-    constructor(config: { req: Request; res: Response }) {
+    constructor(config: { req: ExpressRequest; res: ExpressResponse }) {
         this.req = config.req;
         this.res = config.res;
     }

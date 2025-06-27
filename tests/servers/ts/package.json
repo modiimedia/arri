@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
+    "@arrirpc/express-adapter": "workspace:*",
     "@sinclair/typebox": "^0.34.35",
     "arri": "workspace:*"
   },

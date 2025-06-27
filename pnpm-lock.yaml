@@ -130,7 +130,7 @@ importers:
         specifier: ^9.6.1
         version: 9.6.1
 
-  languages/ts/express-dispatcher:
+  languages/ts/express-adapter:
     dependencies:
       '@arrirpc/core':
         specifier: workspace:*
@@ -387,6 +387,9 @@ importers:
 
   tests/servers/ts:
     dependencies:
+      '@arrirpc/express-adapter':
+        specifier: workspace:*
+        version: link:../../../languages/ts/express-adapter
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../../../languages/ts/ts-schema

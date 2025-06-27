@@ -1,14 +1,14 @@
 {
-  "name": "express-dispatcher",
+  "name": "express-adapter",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "languages/ts/express-dispatcher/src",
+  "sourceRoot": "languages/ts/express-adapter/src",
   "projectType": "library",
   "targets": {
     "benchmark": {
       "executor": "nx:run-commands",
       "options": {
         "command": "jiti buildBenchmarks.ts && node benchmark/dist/main.cjs",
-        "cwd": "languages/ts/express-dispatcher"
+        "cwd": "languages/ts/express-adapter"
       }
     },
     "build": {
@@ -16,7 +16,7 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "languages/ts/express-dispatcher"
+        "cwd": "languages/ts/express-adapter"
       }
     },
     "publish": {
@@ -24,13 +24,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "languages/ts/express-dispatcher"
+        "cwd": "languages/ts/express-adapter"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint languages/ts/express-dispatcher"
+        "command": "pnpm eslint languages/ts/express-adapter"
       }
     },
     "test": {
@@ -38,14 +38,14 @@
       "inputs": ["{projectRoot}/src"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "languages/ts/express-dispatcher"
+        "cwd": "languages/ts/express-adapter"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "languages/ts/express-dispatcher"
+        "cwd": "languages/ts/express-adapter"
       }
     }
   },
