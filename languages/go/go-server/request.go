@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Request interface that is available in every RPC call
+// Request interface that is available in every RPC call. It gives additional context about the RPC call
 type Request[T any] struct {
 	RpcName       string
 	Time          time.Time

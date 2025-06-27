@@ -16,7 +16,8 @@ type WsAdapter[T any] struct {
 }
 
 type WsAdapterOptions[T any] struct {
-	ConnectionPath string // defaults to "/ws"
+	OnUpgrade      func(req *Request[T], connection any) // TODO: type the ws connection
+	ConnectionPath string                                // defaults to "/ws"
 }
 
 func NewWsAdapter[T any](httpAdapter HttpTransportAdapter[T], options WsAdapterOptions[T]) *WsAdapter[T] {

@@ -165,11 +165,11 @@ type AppOptions[T any] struct {
 	HeartbeatInterval time.Duration
 }
 
-type AppHooks[TMeta any] struct {
-	OnRequest        func(*Request[TMeta]) RpcError
-	OnBeforeResponse func(req *Request[TMeta], params any, response any) RpcError
-	OnAfterResponse  func(req *Request[TMeta], params any, response any) RpcError
-	OnError          func(req *Request[TMeta], err error)
+type AppHooks[T any] struct {
+	OnRequest        func(*Request[T]) RpcError
+	OnBeforeResponse func(req *Request[T], params any, response any) RpcError
+	OnAfterResponse  func(req *Request[T], params any, response any) RpcError
+	OnError          func(req *Request[T], err error)
 }
 
 func NewApp[T any](options AppOptions[T]) App[T] {

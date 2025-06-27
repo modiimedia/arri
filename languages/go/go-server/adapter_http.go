@@ -28,7 +28,7 @@ type HttpAdapterOptions[T any] struct {
 	AllowedMethods   []HttpMethod
 	AllowCredentials bool
 	AllowedHeaders   []string
-	OnRequest        func(arriReq *Request[T], httpReq *http.Request) RpcError
+	OnRequest        func(req *Request[T], httpReq *http.Request) RpcError
 }
 
 func NewHttpAdapter[T any](mux *http.ServeMux, options HttpAdapterOptions[T]) *HttpAdapter[T] {
