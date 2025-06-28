@@ -12,7 +12,11 @@ import { defineHooks, Hooks, Message, Peer, WSError } from 'crossws';
 
 import { TransportAdapter, TransportAdapterOptions } from './adapter';
 import { WsEndpointRegister } from './adapter_http';
-import { RpcMiddleware, RpcMiddlewareContext } from './middleware';
+import {
+    RpcMiddleware,
+    RpcMiddlewareContext,
+    RpcOnErrorContext,
+} from './middleware';
 import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
 import { EventStreamRpcHandler } from './rpc_event_stream';
 
@@ -22,19 +26,11 @@ export interface WsOptions {
     debug?: boolean;
     onOpen?: (peer: Peer) => Promise<void> | void;
     onUpgrade?: Hooks['upgrade'];
+    onError?: (peer: Peer, error: unknown) => Promise<void> | void;
     onRequest?: (
         peer: Peer,
         context: RpcMiddlewareContext,
     ) => Promise<void> | void;
-    onBeforeResponse?: (
-        peer: Peer,
-        context: RpcPostHandlerContext<any, any>,
-    ) => Promise<void> | void;
-    onAfterResponse?: (
-        peer: Peer,
-        context: RpcPostHandlerContext<any, any>,
-    ) => Promise<void> | void;
-    onError?: (peer: Peer, error: unknown) => Promise<void> | void;
     onClose?: Hooks['close'];
 }
 
@@ -79,7 +75,10 @@ export class WsAdapter implements TransportAdapter {
         this._register = register;
         this._options = options;
         this._hooks = defineHooks({
-            upgrade: (_) => {
+            upgrade: (req) => {
+                if (this._options.onUpgrade) {
+                    return this._options.onUpgrade(req);
+                }
                 return {
                     headers: {},
                 };
@@ -157,16 +156,14 @@ export class WsAdapter implements TransportAdapter {
         this._peers.clear();
     }
 
-    private _handleOpen(peer: Peer) {
+    private async _handleOpen(peer: Peer) {
         const existing = this._peers.get(peer.id);
         if (existing) existing.close();
         this._peers.set(peer.id, peer);
-        if (!this._options.onOpen) return;
         try {
-            this._options.onOpen(peer);
+            await this._options.onOpen?.(peer);
         } catch (err) {
-            if (!this._options.onError) return;
-            this._options.onError(peer, err);
+            await this._options.onError?.(peer, err);
         }
     }
 
@@ -193,62 +190,70 @@ export class WsAdapter implements TransportAdapter {
         const reqStart = new Date();
         const result = parseClientMessage(message.text());
         if (!result.success) {
-            await this._handleArriError(
-                peer,
-                undefined,
-                new ArriError({
+            await this._handleArriError(peer, {
+                reqId: undefined,
+                error: new ArriError({
                     code: 400,
-                    message: result.error,
+                    message: `Invalid message: ${result.error}`,
                 }),
-            );
+                rpcName: '',
+                reqStart: reqStart,
+                transport: 'ws',
+                ipAddress: peer.remoteAddress,
+                clientVersion: undefined,
+                headers: {},
+                setResponseHeader: function (
+                    _key: string,
+                    _val: string,
+                ): void {},
+                setResponseHeaders: function (
+                    _headers: Record<string, string>,
+                ): void {},
+            });
             peer.close(1003, result.error);
             return;
         }
         const msg = result.value;
-        try {
-            const responseHeaders: Record<string, string> = {};
-            const context: RpcMiddlewareContext = {
-                rpcName: msg.rpcName,
-                reqStart: reqStart,
-                ipAddress: peer.remoteAddress,
-                transport: this.transportId,
-                clientVersion: msg.clientVersion,
-                headers: result.value.customHeaders,
-                setResponseHeader: (key, val) => {
+        const responseHeaders: Record<string, string> = {};
+        const context: RpcMiddlewareContext = {
+            reqId: msg.reqId,
+            rpcName: msg.rpcName,
+            reqStart: reqStart,
+            ipAddress: peer.remoteAddress,
+            transport: this.transportId,
+            clientVersion: msg.clientVersion,
+            headers: result.value.customHeaders,
+            setResponseHeader: (key, val) => {
+                responseHeaders[key] = val;
+            },
+            setResponseHeaders: (headers) => {
+                for (const [key, val] of Object.entries(headers)) {
                     responseHeaders[key] = val;
-                },
-                setResponseHeaders: (headers) => {
-                    for (const [key, val] of Object.entries(headers)) {
-                        responseHeaders[key] = val;
-                    }
-                },
-            };
-            if (this._options.onRequest) {
-                await this._options.onRequest(peer, context);
-            }
+                }
+            },
+        };
+        try {
+            await this._options.onRequest?.(peer, context);
+            await this._transportOptions?.onRequest?.(context);
             const handler = this._handlers.get(msg.rpcName);
             if (!handler) {
-                return this._handleArriError(
-                    peer,
-                    msg.reqId,
-                    new ArriError({
-                        code: 404,
-                        message: 'Procedure not found',
-                    }),
-                );
+                const err = new ArriError({
+                    code: 404,
+                    message: 'Procedure not found',
+                });
+                (context as any).error = err;
+                return this._handleArriError(peer, context as any);
             }
             if (handler.validators.params) {
                 const result = handler.validators.params.parse(msg.body);
                 if (!result.success) {
-                    return this._handleArriError(
-                        peer,
-                        msg.reqId,
-                        new ArriError({
-                            code: 400,
-                            message: errorMessageFromErrors(result.errors),
-                            data: result.errors,
-                        }),
-                    );
+                    const err = new ArriError({
+                        code: 400,
+                        message: errorMessageFromErrors(result.errors),
+                        data: result.errors,
+                    });
+                    (context as any).error = err;
+                    return this._handleArriError(peer, context as any);
                 }
                 (context as any).params = result.value;
             }
@@ -262,15 +267,13 @@ export class WsAdapter implements TransportAdapter {
             if (handler.validators.response) {
                 const payload = handler.validators.response.serialize(response);
                 if (!payload.success) {
-                    return this._handleArriError(
-                        peer,
-                        msg.reqId,
-                        new ArriError({
-                            code: 500,
-                            message: 'Error serializing response',
-                            data: payload.errors,
-                        }),
-                    );
+                    const err = new ArriError({
+                        code: 500,
+                        message: 'Error serializing response',
+                        data: payload.errors,
+                    });
+                    (context as any).error = err;
+                    return this._handleArriError(peer, context as any);
                 }
                 (context as any).response = response;
                 const serverMsg: ServerMessage = {
@@ -280,45 +283,19 @@ export class WsAdapter implements TransportAdapter {
                     customHeaders: responseHeaders,
                     body: payload.value,
                 };
-                this._sendMessage(peer, serverMsg, context as any);
-            } else {
-                const serverMsg: ServerMessage = {
-                    reqId: msg.reqId,
-                    contentType: 'application/json',
-                    success: true,
-                    customHeaders: responseHeaders,
-                    body: undefined,
-                };
-                this._sendMessage(peer, serverMsg, context as any);
+                return this._sendMessage(peer, serverMsg, context as any);
             }
-            if (handler.postHandler) {
-                await handler.postHandler(context as any);
-            }
+            const serverMsg: ServerMessage = {
+                reqId: msg.reqId,
+                contentType: 'application/json',
+                success: true,
+                customHeaders: responseHeaders,
+                body: undefined,
+            };
+            return this._sendMessage(peer, serverMsg, context as any);
         } catch (err) {
-            if (err instanceof ArriError) {
-                return this._handleArriError(peer, msg.reqId, err);
-            }
-            if (err instanceof Error) {
-                return this._handleArriError(
-                    peer,
-                    msg.reqId,
-                    new ArriError({
-                        code: 500,
-                        message: err.message,
-                        data: err,
-                        stackList: err.stack?.split('\n'),
-                    }),
-                );
-            }
-            return this._handleArriError(
-                peer,
-                msg.reqId,
-                new ArriError({
-                    code: 500,
-                    message: `${err}`,
-                    data: err,
-                }),
-            );
+            (context as any).error = err;
+            return this._handleArriError(peer, context as any);
         }
     }
 
@@ -327,58 +304,49 @@ export class WsAdapter implements TransportAdapter {
         message: ServerMessage,
         context: RpcPostHandlerContext<any, any>,
     ) {
-        if (this._options.onBeforeResponse) {
-            try {
-                await this._options.onBeforeResponse(peer, context);
-            } catch (err) {
-                if (err instanceof ArriError) {
-                    return this._handleArriError(peer, message.reqId, err);
-                }
-                if (this._options.onError) {
-                    try {
-                        this._options.onError(peer, err);
-                    } catch (_) {
-                        // do nothing
-                    }
-                }
-            }
-        }
-        const payload = encodeServerMessage(message, {
-            includeErrorStackTrack: this._options.debug,
-        });
-        peer.send(payload);
-        if (this._options.onAfterResponse) {
-            try {
-                await this._options.onAfterResponse(peer, context);
-            } catch (err) {
-                if (!this._options.onError) return;
-                try {
-                    await this._options.onError(peer, err);
-                } catch (_) {
-                    // do nothing
-                }
-            }
+        try {
+            await this._transportOptions?.onBeforeResponse?.(context);
+            const payload = encodeServerMessage(message, {
+                includeErrorStackTrack: this._options.debug,
+            });
+            peer.send(payload);
+            await this._transportOptions?.onAfterResponse?.(context);
+        } catch (err) {
+            (context as any).error = err;
+            await this._handleArriError(peer, context as any);
         }
     }
 
-    private async _handleArriError(
-        peer: Peer,
-        reqId: string | undefined,
-        error: ArriError,
-    ) {
+    private async _handleArriError(peer: Peer, context: RpcOnErrorContext) {
+        let err: ArriError;
+        if (context.error instanceof ArriError) {
+            err = context.error;
+        } else if (context.error instanceof Error) {
+            err = new ArriError({
+                code: 500,
+                message: context.error.message,
+                data: context.error,
+                stackList: context.error.stack?.split('\n'),
+            });
+        } else {
+            err = new ArriError({
+                code: 500,
+                message: `${context.error}`,
+                data: context.error,
+            });
+        }
         const response: ServerMessage = {
             success: false,
-            reqId: reqId,
+            reqId: context.reqId,
             contentType: 'application/json',
-            customHeaders: {},
-            error: error,
+            customHeaders: context.headers as any,
+            error: err,
         };
-        if (this._options.onError) {
-            try {
-                await this._options.onError(peer, error);
-            } catch (_) {
-                // do nothing
-            }
+        try {
+            await this._options.onError?.(peer, err);
+            await this._transportOptions?.onError?.(context);
+        } catch (_) {
+            // do nothing
         }
         peer.send(
             encodeServerMessage(response, {

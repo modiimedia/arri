@@ -7,6 +7,7 @@ import {
 } from '@arrirpc/schema';
 
 export interface RpcContext<TParams> {
+    reqId: string | undefined;
     rpcName: string;
     reqStart: Date;
     transport: string;

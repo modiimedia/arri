@@ -17,7 +17,14 @@ const http = new HttpAdapter({
     },
 });
 app.use(http);
-app.use(new WsAdapter(http, { connectionPath: '/establish-connection' }));
+app.use(
+    new WsAdapter(http, {
+        connectionPath: '/establish-connection',
+        onRequest(peer, context) {
+            console.log('PEER', peer.id, 'RPC', context.rpcName);
+        },
+    }),
+);
 
 app.registerDefinitions({
     ManuallyAddedModel: a.object({

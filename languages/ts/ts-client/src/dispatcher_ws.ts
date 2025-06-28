@@ -1,5 +1,11 @@
+import {
+    encodeClientMessage,
+    parseServerMessage,
+    ServerMessage,
+} from '@arrirpc/core';
 import { EventSourceController } from 'event-source-plus';
 import { IncomingMessage } from 'http';
+import { randomUUID } from 'uncrypto';
 import ws from 'websocket';
 
 import {
@@ -7,15 +13,7 @@ import {
     RpcDispatcher,
     RpcDispatcherOptions,
 } from './dispatcher';
-import { ArriErrorInstance } from './errors';
-import {
-    decodeRequest,
-    encodeRequest,
-    getHeaders,
-    RpcRawResponse,
-    RpcRequest,
-    RpcRequestValidator,
-} from './requests';
+import { getHeaders, RpcRequest, RpcRequestValidator } from './requests';
 
 export interface WsDispatcherOptions extends RpcDispatcherOptions {
     wsConnectionUrl: string;
@@ -28,12 +26,17 @@ export class WsDispatcher implements RpcDispatcher {
 
     private options: WsDispatcherOptions;
 
-    private responseHandlers: Map<string, (msg: RpcRawResponse) => any> =
+    private responseHandlers: Map<string, (msg: ServerMessage) => any> =
         new Map();
 
     constructor(options: WsDispatcherOptions) {
         this.client = new ws.client();
         this.options = options;
+    }
+
+    terminateConnections(): void {
+        if (!this.connection?.connected) return;
+        this.connection?.close();
     }
 
     async setupConnection() {
@@ -51,15 +54,26 @@ export class WsDispatcher implements RpcDispatcher {
                 connection.on('error', (_err) => {});
                 connection.on('close', (_code, _desc) => {});
                 connection.on('message', (msg) => {
-                    let parsedMsg: RpcRawResponse | undefined;
+                    let parsedMsg: ServerMessage | undefined;
                     switch (msg.type) {
-                        case 'utf8':
-                            parsedMsg = decodeRequest(msg.utf8Data);
+                        case 'utf8': {
+                            const result = parseServerMessage(msg.utf8Data);
+                            if (!result.success) {
+                                // eslint-disable-next-line no-console
+                                console.warn(
+                                    `Error parsing response from server: ${result.error}`,
+                                );
+                                return;
+                            }
+                            parsedMsg = result.value;
                             break;
+                        }
                         case 'binary':
-                            throw new Error(
-                                "unsupported encoding format 'binary'",
+                            // eslint-disable-next-line no-console
+                            console.warn(
+                                'Error parsing response from server: Expected string got binary.',
                             );
+                            return;
                     }
                     if (!parsedMsg) return;
                     if (!parsedMsg.reqId) return;
@@ -79,11 +93,9 @@ export class WsDispatcher implements RpcDispatcher {
                 rej(err);
             };
             const onHttpResponse = (
-                res: IncomingMessage,
-                client: ws.client,
-            ) => {
-                console.log(res, client);
-            };
+                _res: IncomingMessage,
+                _client: ws.client,
+            ) => {};
             this.client
                 .on('connect', onConnection)
                 .on('connectFailed', onConnectionFailed)
@@ -100,12 +112,19 @@ export class WsDispatcher implements RpcDispatcher {
     ): Promise<TResponse> {
         const errHandler =
             options?.onError ?? this.options.onError ?? ((_, __) => {});
-        const timeout = options?.timeout ?? this.options.timeout;
+        // default timeout of 60sec
+        const timeout = options?.timeout ?? this.options.timeout ?? 60000;
         this.reqCount++;
-        const reqId = req.reqId ?? this.reqCount.toString();
+        const reqId = req.reqId ?? randomUUID();
         if (!req.reqId) req.reqId = reqId;
         await this.setupConnection();
-        const msgPayload = encodeRequest(req, validator.params.toJsonString);
+        const msgPayload = encodeClientMessage({
+            rpcName: req.procedure,
+            reqId: reqId,
+            contentType: 'application/json',
+            customHeaders: await getHeaders(req.customHeaders),
+            body: validator.params.toJsonString(req.data),
+        });
         if (!this.connection) {
             const err = new Error("Connection hasn't been established");
             errHandler(req, err);
@@ -129,26 +148,25 @@ export class WsDispatcher implements RpcDispatcher {
                     rej(err);
                 }, timeout);
             }
-
             this.responseHandlers.set(reqId, (msg) => {
                 responseReceived = true;
                 this.responseHandlers.delete(reqId);
                 if (!msg.success) {
-                    const err = ArriErrorInstance.fromJson(msg.data);
+                    const err = msg.error;
                     errHandler(req, err);
                     rej(err);
                     return;
                 }
-                if (!msg.data) {
+                if (!msg.body) {
                     res(undefined as any);
                     return;
                 }
-                if (typeof msg.data === 'string') {
-                    res(validator.response.fromJsonString(msg.data));
+                if (typeof msg.body === 'string') {
+                    res(validator.response.fromJsonString(msg.body));
                     return;
                 }
                 const parsedData = validator.response.fromJsonString(
-                    new TextDecoder().decode(msg.data),
+                    new TextDecoder().decode(msg.body),
                 );
                 res(parsedData);
             });

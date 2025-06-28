@@ -1,5 +1,6 @@
-import { EventSourcePlus } from 'event-source-plus';
+import { EventSourceController, EventSourcePlus } from 'event-source-plus';
 import { $Fetch, createFetch, Fetch, FetchError, ofetch } from 'ofetch';
+import { randomUUID } from 'uncrypto';
 
 import {
     EventStreamHooks,
@@ -192,6 +193,7 @@ export class HttpDispatcher implements RpcDispatcher {
                 controller.reconnect();
             }, timeoutDurationMs);
         }
+        const connectionId = randomUUID();
         const controller = eventSource.listen({
             onMessage: (message) => {
                 resetTimeout();
@@ -243,6 +245,20 @@ export class HttpDispatcher implements RpcDispatcher {
                 }
             },
         });
+        controller.onAbort(() => {
+            hooks.onClose?.();
+            this._eventStreamConnections.delete(connectionId);
+        });
+        this._eventStreamConnections.set(connectionId, controller);
         return controller;
+    }
+
+    private _eventStreamConnections = new Map<string, EventSourceController>();
+
+    terminateConnections(): void {
+        for (const [_, val] of this._eventStreamConnections.entries()) {
+            val.abort();
+        }
+        this._eventStreamConnections.clear();
     }
 }

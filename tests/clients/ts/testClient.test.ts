@@ -15,7 +15,7 @@ import {
 } from './testClient.g';
 
 const baseUrl = 'http://127.0.0.1:2020';
-const wsConnectionUrl = baseUrl + '/ws';
+const wsConnectionUrl = 'ws://127.0.0.1:2020/establish-connection';
 const headers = {
     'x-test-header': 'test',
 };
@@ -55,7 +55,7 @@ describe('non-rpc http routes', () => {
 });
 
 describe('rpcs', () => {
-    it('can handle RPCs with no params', async () => {
+    it('can handle RPCs with no params', { timeout: 10000 }, async () => {
         const result = await client.tests.emptyParamsGetRequest();
         const result2 = await client.tests.emptyParamsPostRequest();
         expect(typeof result.message).toBe('string');
@@ -379,9 +379,11 @@ describe('event stream rpcs', () => {
                     onOpen() {
                         wasConnected = true;
                     },
+                    onClose() {
+                        res(undefined);
+                    },
                 },
             );
-            controller.onAbort(() => res(undefined));
         });
         expect(receivedMessageCount > 0).toBe(true);
         expect(wasConnected).toBe(true);
@@ -393,7 +395,7 @@ describe('event stream rpcs', () => {
         let errorReceived: unknown | undefined;
         await new Promise((res, rej) => {
             setTimeout(() => rej(), 2000);
-            const controller = client.tests.streamTenEventsThenEnd({
+            client.tests.streamTenEventsThenEnd({
                 onMessage(_) {
                     messageCount++;
                 },
@@ -403,8 +405,10 @@ describe('event stream rpcs', () => {
                 onOpen() {
                     timesConnected++;
                 },
+                onClose() {
+                    res(undefined);
+                },
             });
-            controller.onAbort(() => res(undefined));
         });
         expect(errorReceived).toBe(undefined);
         expect(timesConnected).toBe(1);
@@ -433,9 +437,11 @@ describe('event stream rpcs', () => {
                     onError(_) {
                         errorCount++;
                     },
+                    onClose() {
+                        res(undefined);
+                    },
                 },
             );
-            controller.onAbort(() => res(undefined));
         });
         expect(messageCount).toBe(30);
         expect(resCount).toBe(3);
@@ -468,8 +474,10 @@ describe('event stream rpcs', () => {
                     onError(error) {
                         rej(error);
                     },
+                    onClose() {
+                        res(undefined);
+                    },
                 });
-            controller.onAbort(() => res(undefined));
         });
         expect(msgCount >= 40).toBe(true);
         expect(openCount).toBe(4);

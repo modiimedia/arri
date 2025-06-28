@@ -36,7 +36,7 @@ export function resolveDispatcherOptions(
 export interface EventStreamHooks<TData> {
     onMessage?: (data: TData) => any;
     onOpen?: () => any;
-    onClose?: (reason: string) => any;
+    onClose?: () => any;
     onError?: (error: unknown) => any;
     timeout?: number;
     retryDelay?: number;
@@ -57,11 +57,11 @@ export interface RpcDispatcher {
         validator: RpcRequestValidator<TParams, TOutput>,
         hooks: EventStreamHooks<TOutput>,
     ): EventStreamController;
+    terminateConnections(): void;
 }
 
 export interface EventStreamController {
     abort(): void;
-    onAbort(cb: () => void | Promise<void>): void;
 }
 
 export type TransportMap = Record<string, RpcDispatcher>;
