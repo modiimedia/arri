@@ -67,6 +67,7 @@ export function isHttpEndpointRegister(
 }
 
 export interface WsEndpointRegister {
+    get isStarted(): boolean;
     registerWsEndpoint(
         path: string,
         method: h3.RouterMethod | h3.RouterMethod[],
@@ -132,6 +133,7 @@ export class HttpAdapter
                 onError: (err, event) => {
                     const context: RpcOnErrorContext = {
                         rpcName: '',
+                        reqId: undefined,
                         reqStart: event.context.reqStart,
                         ipAddress: h3.getRequestIP(event, {
                             xForwardedFor: this._trustXForwardedFor,
@@ -168,6 +170,7 @@ export class HttpAdapter
                 const error = defineError(404);
                 const context: RpcMiddlewareContext = {
                     rpcName: '',
+                    reqId: undefined,
                     ipAddress: h3.getRequestIP(event, {
                         xForwardedFor: this._trustXForwardedFor,
                     }),
@@ -287,6 +290,7 @@ export class HttpAdapter
             const headers = h3.getHeaders(event);
             const context: RpcMiddlewareContext = {
                 rpcName: name,
+                reqId: undefined,
                 ipAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
                 }),
@@ -384,6 +388,7 @@ export class HttpAdapter
             }
             const context: RpcMiddlewareContext = {
                 rpcName: name,
+                reqId: undefined,
                 reqStart: event.context.reqStart ?? new Date(),
                 ipAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
@@ -467,6 +472,7 @@ export class HttpAdapter
             }
             const context: RpcMiddlewareContext = {
                 transport: this.transportId,
+                reqId: undefined,
                 reqStart: event.context.reqStart ?? new Date(),
                 ipAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
@@ -515,6 +521,7 @@ export class HttpAdapter
             }
             const context: RpcMiddlewareContext = {
                 rpcName: '',
+                reqId: undefined,
                 reqStart: event.context.reqStart ?? new Date(),
                 ipAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,

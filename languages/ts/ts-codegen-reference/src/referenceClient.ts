@@ -75,6 +75,15 @@ export class ExampleClient {
         this.books = new ExampleClientBooksService(config);
     }
 
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
     async sendObject(
         params: NestedObject,
         options?: RpcOptions<'http'>,
@@ -133,6 +142,16 @@ export class ExampleClientBooksService {
         }
         this._dispatchers = config.dispatchers!;
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
     /**
      * Get a book
      */

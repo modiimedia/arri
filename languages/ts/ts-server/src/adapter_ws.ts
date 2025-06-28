@@ -58,26 +58,33 @@ interface EventStreamRpcHandlerObj {
 export class WsAdapter implements TransportAdapter {
     transportId: string = 'ws';
 
-    private readonly _register: WsEndpointRegister;
-    private readonly _options: WsOptions;
-    private _transportOptions: TransportAdapterOptions | undefined;
+    private readonly _register: TransportAdapter & WsEndpointRegister;
+
+    // options specific to this websocket
+    private readonly _config: WsOptions;
+
+    // options passed to every adapter by the ArriApp
+    private _globalOptions: TransportAdapterOptions | undefined;
     private readonly _hooks: Hooks;
 
     private _handlers: Map<string, HandlerItem> = new Map();
     private _middlewares: RpcMiddleware[] = [];
     private _peers: Map<string, Peer> = new Map();
 
-    constructor(register: WsEndpointRegister, options: WsOptions) {
+    constructor(
+        register: TransportAdapter & WsEndpointRegister,
+        config: WsOptions,
+    ) {
         assert(
-            options.connectionPath.startsWith('/'),
+            config.connectionPath.startsWith('/'),
             'connection path must start with "/"',
         );
         this._register = register;
-        this._options = options;
+        this._config = config;
         this._hooks = defineHooks({
             upgrade: (req) => {
-                if (this._options.onUpgrade) {
-                    return this._options.onUpgrade(req);
+                if (this._config.onUpgrade) {
+                    return this._config.onUpgrade(req);
                 }
                 return {
                     headers: {},
@@ -90,14 +97,14 @@ export class WsAdapter implements TransportAdapter {
         });
 
         this._register.registerWsEndpoint(
-            this._options.connectionPath,
-            this._options.connectionMethod ?? 'get',
+            this._config.connectionPath,
+            this._config.connectionMethod ?? 'get',
             this._hooks,
         );
     }
 
     setOptions(options: TransportAdapterOptions): void {
-        this._transportOptions = options;
+        this._globalOptions = options;
     }
 
     use(middleware: RpcMiddleware) {
@@ -148,7 +155,11 @@ export class WsAdapter implements TransportAdapter {
         });
     }
 
-    start(): void {}
+    async start(): Promise<void> {
+        if (!this._register.isStarted) {
+            await this._register.start();
+        }
+    }
     stop(): void {
         for (const peer of this._peers.values()) {
             peer.close();
@@ -156,20 +167,42 @@ export class WsAdapter implements TransportAdapter {
         this._peers.clear();
     }
 
+    private _heartbeatTimers = new Map<string, NodeJS.Timeout>();
+    get heartbeatInterval() {
+        return this._globalOptions?.heartbeatInterval ?? 20000;
+    }
+
     private async _handleOpen(peer: Peer) {
         const existing = this._peers.get(peer.id);
+        const existingTimer = this._heartbeatTimers.get(peer.id);
         if (existing) existing.close();
+        if (existingTimer) clearInterval(existingTimer);
+        const connectedMsg = encodeServerMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: this.heartbeatInterval,
+        });
+        peer.send(connectedMsg);
         this._peers.set(peer.id, peer);
+        this._heartbeatTimers.set(
+            peer.id,
+            setInterval(() => {
+                const msg = encodeServerMessage({
+                    type: 'HEARTBEAT',
+                    heartbeatInterval: this.heartbeatInterval,
+                });
+                peer.send(msg);
+            }, this.heartbeatInterval),
+        );
         try {
-            await this._options.onOpen?.(peer);
+            await this._config.onOpen?.(peer);
         } catch (err) {
-            await this._options.onError?.(peer, err);
+            await this._config.onError?.(peer, err);
         }
     }
 
     private async _handleError(peer: Peer, error: WSError) {
-        if (!this._options.onError) return;
-        await this._options.onError(peer, error);
+        if (!this._config.onError) return;
+        await this._config.onError(peer, error);
     }
 
     private async _handleClose(
@@ -177,12 +210,12 @@ export class WsAdapter implements TransportAdapter {
         details: { code?: number; reason?: string },
     ) {
         this._peers.delete(peer.id);
-        if (!this._options.onClose) return;
+        clearInterval(this._heartbeatTimers.get(peer.id));
+        this._heartbeatTimers.delete(peer.id);
         try {
-            await this._options.onClose(peer, details);
+            await this._config.onClose?.(peer, details);
         } catch (err) {
-            if (!this._options.onError) return;
-            await this._options.onError(peer, err);
+            await this._config.onError?.(peer, err);
         }
     }
 
@@ -233,8 +266,8 @@ export class WsAdapter implements TransportAdapter {
             },
         };
         try {
-            await this._options.onRequest?.(peer, context);
-            await this._transportOptions?.onRequest?.(context);
+            await this._config.onRequest?.(peer, context);
+            await this._globalOptions?.onRequest?.(context);
             const handler = this._handlers.get(msg.rpcName);
             if (!handler) {
                 const err = new ArriError({
@@ -277,18 +310,18 @@ export class WsAdapter implements TransportAdapter {
                 }
                 (context as any).response = response;
                 const serverMsg: ServerMessage = {
+                    type: 'SUCCESS',
                     reqId: msg.reqId,
                     contentType: 'application/json',
-                    success: true,
                     customHeaders: responseHeaders,
                     body: payload.value,
                 };
                 return this._sendMessage(peer, serverMsg, context as any);
             }
             const serverMsg: ServerMessage = {
+                type: 'SUCCESS',
                 reqId: msg.reqId,
                 contentType: 'application/json',
-                success: true,
                 customHeaders: responseHeaders,
                 body: undefined,
             };
@@ -305,12 +338,12 @@ export class WsAdapter implements TransportAdapter {
         context: RpcPostHandlerContext<any, any>,
     ) {
         try {
-            await this._transportOptions?.onBeforeResponse?.(context);
+            await this._globalOptions?.onBeforeResponse?.(context);
             const payload = encodeServerMessage(message, {
-                includeErrorStackTrack: this._options.debug,
+                includeErrorStackTrack: this._config.debug,
             });
             peer.send(payload);
-            await this._transportOptions?.onAfterResponse?.(context);
+            await this._globalOptions?.onAfterResponse?.(context);
         } catch (err) {
             (context as any).error = err;
             await this._handleArriError(peer, context as any);
@@ -336,21 +369,21 @@ export class WsAdapter implements TransportAdapter {
             });
         }
         const response: ServerMessage = {
-            success: false,
+            type: 'FAILURE',
             reqId: context.reqId,
             contentType: 'application/json',
             customHeaders: context.headers as any,
             error: err,
         };
         try {
-            await this._options.onError?.(peer, err);
-            await this._transportOptions?.onError?.(context);
+            await this._config.onError?.(peer, err);
+            await this._globalOptions?.onError?.(context);
         } catch (_) {
             // do nothing
         }
         peer.send(
             encodeServerMessage(response, {
-                includeErrorStackTrack: this._options.debug,
+                includeErrorStackTrack: this._config.debug,
             }),
         );
     }

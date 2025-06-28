@@ -103,6 +103,16 @@ ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n'
         this._dispatchers = config.dispatchers!
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
 ${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}
 }
 
