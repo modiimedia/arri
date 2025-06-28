@@ -24,6 +24,7 @@ const client = new TestClient({
     baseUrl,
     wsConnectionUrl,
     headers,
+    transport: 'ws',
 });
 
 describe('non-rpc http routes', () => {

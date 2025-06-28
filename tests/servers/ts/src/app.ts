@@ -8,6 +8,7 @@ import { manualTestService } from './routes/other';
 const app = new ArriApp({
     rpcRoutePrefix: '/rpcs',
     version: '10',
+    defaultTransport: ['http', 'ws'],
 });
 const http = new HttpAdapter({
     port: 2020,

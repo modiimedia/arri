@@ -65,7 +65,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -94,7 +94,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -124,7 +124,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -154,7 +154,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -186,7 +186,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -216,7 +216,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -247,7 +247,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -277,7 +277,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -307,7 +307,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -338,7 +338,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -369,7 +369,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -400,7 +400,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -431,7 +431,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -461,7 +461,7 @@ class TestClientPrefixed {
     OnErrorHook? onError,
   }) async {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleRpc(
@@ -495,7 +495,7 @@ class TestClientPrefixed {
     String? lastEventId,
   }) {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher
@@ -537,7 +537,7 @@ class TestClientPrefixed {
     String? lastEventId,
   }) {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleEventStreamRpc<FooStreamConnectionErrorTestParams,
@@ -578,7 +578,7 @@ class TestClientPrefixed {
     String? lastEventId,
   }) {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleEventStreamRpc<Null, FooStreamLargeObjectsResponse>(
@@ -618,7 +618,7 @@ class TestClientPrefixed {
     String? lastEventId,
   }) {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher
@@ -659,7 +659,7 @@ class TestClientPrefixed {
     String? lastEventId,
   }) {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleEventStreamRpc<Null,
@@ -700,7 +700,7 @@ class TestClientPrefixed {
     String? lastEventId,
   }) {
     final selectedTransport =
-        resolveTransport(["http"], transport ?? _defaultTransport);
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
     return dispatcher.handleEventStreamRpc<Null, FooChatMessage>(

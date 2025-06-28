@@ -103,7 +103,7 @@ export class TestClientTestsService {
         this._dispatchers = config.dispatchers!;
     }
     async emptyParamsGetRequest(
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<DefaultPayload> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<undefined> = {
@@ -118,7 +118,11 @@ export class TestClientTestsService {
             params: UndefinedModelValidator,
             response: $$DefaultPayload,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -134,7 +138,7 @@ export class TestClientTestsService {
         );
     }
     async emptyParamsPostRequest(
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<DefaultPayload> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<undefined> = {
@@ -149,7 +153,11 @@ export class TestClientTestsService {
             params: UndefinedModelValidator,
             response: $$DefaultPayload,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -166,7 +174,7 @@ export class TestClientTestsService {
     }
     async emptyResponseGetRequest(
         params: DefaultPayload,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<DefaultPayload> = {
@@ -181,7 +189,11 @@ export class TestClientTestsService {
             params: $$DefaultPayload,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -198,7 +210,7 @@ export class TestClientTestsService {
     }
     async emptyResponsePostRequest(
         params: DefaultPayload,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<DefaultPayload> = {
@@ -213,7 +225,11 @@ export class TestClientTestsService {
             params: $$DefaultPayload,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -234,7 +250,7 @@ export class TestClientTestsService {
      */
     async deprecatedRpc(
         params: DeprecatedRpcParams,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<DeprecatedRpcParams> = {
@@ -249,7 +265,11 @@ export class TestClientTestsService {
             params: $$DeprecatedRpcParams,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -266,7 +286,7 @@ export class TestClientTestsService {
     }
     async sendDiscriminatorWithEmptyObject(
         params: DiscriminatorWithEmptyObject,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<DiscriminatorWithEmptyObject> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<DiscriminatorWithEmptyObject> = {
@@ -284,7 +304,11 @@ export class TestClientTestsService {
             params: $$DiscriminatorWithEmptyObject,
             response: $$DiscriminatorWithEmptyObject,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -300,7 +324,7 @@ export class TestClientTestsService {
     }
     async sendError(
         params: SendErrorParams,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<SendErrorParams> = {
@@ -315,7 +339,11 @@ export class TestClientTestsService {
             params: $$SendErrorParams,
             response: UndefinedModelValidator,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -332,7 +360,7 @@ export class TestClientTestsService {
     }
     async sendObject(
         params: ObjectWithEveryType,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithEveryType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<ObjectWithEveryType> = {
@@ -350,7 +378,11 @@ export class TestClientTestsService {
             params: $$ObjectWithEveryType,
             response: $$ObjectWithEveryType,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -367,7 +399,7 @@ export class TestClientTestsService {
     }
     async sendObjectWithNullableFields(
         params: ObjectWithEveryNullableType,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithEveryNullableType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<ObjectWithEveryNullableType> = {
@@ -385,7 +417,11 @@ export class TestClientTestsService {
             params: $$ObjectWithEveryNullableType,
             response: $$ObjectWithEveryNullableType,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -401,7 +437,7 @@ export class TestClientTestsService {
     }
     async sendObjectWithPascalCaseKeys(
         params: ObjectWithPascalCaseKeys,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithPascalCaseKeys> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<ObjectWithPascalCaseKeys> = {
@@ -419,7 +455,11 @@ export class TestClientTestsService {
             params: $$ObjectWithPascalCaseKeys,
             response: $$ObjectWithPascalCaseKeys,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -435,7 +475,7 @@ export class TestClientTestsService {
     }
     async sendObjectWithSnakeCaseKeys(
         params: ObjectWithSnakeCaseKeys,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithSnakeCaseKeys> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<ObjectWithSnakeCaseKeys> = {
@@ -453,7 +493,11 @@ export class TestClientTestsService {
             params: $$ObjectWithSnakeCaseKeys,
             response: $$ObjectWithSnakeCaseKeys,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -469,7 +513,7 @@ export class TestClientTestsService {
     }
     async sendPartialObject(
         params: ObjectWithEveryOptionalType,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithEveryOptionalType> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<ObjectWithEveryOptionalType> = {
@@ -487,7 +531,11 @@ export class TestClientTestsService {
             params: $$ObjectWithEveryOptionalType,
             response: $$ObjectWithEveryOptionalType,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -503,7 +551,7 @@ export class TestClientTestsService {
     }
     async sendRecursiveObject(
         params: RecursiveObject,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<RecursiveObject> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<RecursiveObject> = {
@@ -519,7 +567,11 @@ export class TestClientTestsService {
                 params: $$RecursiveObject,
                 response: $$RecursiveObject,
             };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -536,7 +588,7 @@ export class TestClientTestsService {
     }
     async sendRecursiveUnion(
         params: RecursiveUnion,
-        options?: RpcOptions<'http'>,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<RecursiveUnion> {
         const finalOptions = resolveDispatcherOptions(options, this._options);
         const req: RpcRequest<RecursiveUnion> = {
@@ -551,7 +603,11 @@ export class TestClientTestsService {
             params: $$RecursiveUnion,
             response: $$RecursiveUnion,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -585,7 +641,11 @@ export class TestClientTestsService {
             params: $$AutoReconnectParams,
             response: $$AutoReconnectResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -621,7 +681,11 @@ export class TestClientTestsService {
             params: $$StreamConnectionErrorTestParams,
             response: $$StreamConnectionErrorTestResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -656,7 +720,11 @@ export class TestClientTestsService {
             params: UndefinedModelValidator,
             response: $$StreamLargeObjectsResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -686,7 +754,11 @@ export class TestClientTestsService {
             params: $$ChatMessageParams,
             response: $$ChatMessage,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -719,7 +791,11 @@ export class TestClientTestsService {
             params: UndefinedModelValidator,
             response: $$TestsStreamRetryWithNewCredentialsResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -751,7 +827,11 @@ export class TestClientTestsService {
             params: UndefinedModelValidator,
             response: $$ChatMessage,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(
@@ -811,7 +891,11 @@ export class TestClientUsersService {
             params: $$UsersWatchUserParams,
             response: $$UsersWatchUserResponse,
         };
-        const transport = 'http';
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
         const dispatcher = this._dispatchers[transport];
         if (!dispatcher) {
             const err = new Error(

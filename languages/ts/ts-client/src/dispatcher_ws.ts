@@ -102,7 +102,8 @@ export class WsDispatcher implements RpcDispatcher {
             options?.onError ?? this.options.onError ?? ((_, __) => {});
         const timeout = options?.timeout ?? this.options.timeout;
         this.reqCount++;
-        const reqId = `${this.reqCount}`;
+        const reqId = req.reqId ?? this.reqCount.toString();
+        if (!req.reqId) req.reqId = reqId;
         await this.setupConnection();
         const msgPayload = encodeRequest(req, validator.params.toJsonString);
         if (!this.connection) {
