@@ -16,15 +16,9 @@ const http = new HttpAdapter({
         origin: '*',
     },
 });
+const ws = new WsAdapter(http, { connectionPath: '/establish-connection' });
 app.use(http);
-app.use(
-    new WsAdapter(http, {
-        connectionPath: '/establish-connection',
-        onRequest(peer, context) {
-            console.log('PEER', peer.id, 'RPC', context.rpcName);
-        },
-    }),
-);
+app.use(ws);
 
 app.registerDefinitions({
     ManuallyAddedModel: a.object({

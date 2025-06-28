@@ -1,0 +1,59 @@
+{
+  "name": "mock-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/servers/mock-server",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./node_modules/.bin/arri dev",
+        "cwd": "tests/servers/mock-server"
+      }
+    },
+    "build-server": {
+      "dependsOn": ["^build"],
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/.arri", "{projectRoot}/.output"],
+      "options": {
+        "command": "./node_modules/.bin/arri build",
+        "cwd": "tests/servers/mock-server"
+      },
+      "cache": false,
+      "configurations": {
+        "windows-ci": {
+          "command": ".\\node_modules\\.bin\\arri build"
+        }
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tests/servers/mock-server/.output/server.mjs --host"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "command": "pnpm eslint .",
+        "cwd": "tests/servers/mock-server"
+      }
+    },
+
+    "serve": {
+      "dependsOn": ["build-server"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node .output/server.mjs --host",
+        "cwd": "tests/servers/mock-server"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "tests/servers/mock-server"
+      }
+    }
+  }
+}

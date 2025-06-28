@@ -1,0 +1,26 @@
+{
+  "name": "test-server-ts",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@arrirpc/express-adapter": "workspace:*",
+    "@arrirpc/schema": "workspace:*",
+    "@sinclair/typebox": "^0.34.35",
+    "@types/express": "^5.0.1",
+    "arri": "workspace:*",
+    "express": "^5.1.0"
+  },
+  "scripts": {
+    "start-server": "nx serve test-server",
+    "integration-tests": "nx run-many -t integration-test"
+  },
+  "devDependencies": {
+    "@arrirpc/codegen-utils": "workspace:*",
+    "@arrirpc/eslint-plugin": "workspace:*",
+    "@arrirpc/schema": "workspace:*",
+    "@arrirpc/server": "workspace:*",
+    "@arrirpc/typebox-adapter": "workspace:*",
+    "@faker-js/faker": "^9.8.0",
+    "arri": "workspace:*"
+  }
+}

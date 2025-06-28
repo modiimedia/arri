@@ -27,6 +27,14 @@ export class ArriError extends Error {
         output += '}';
         return output;
     }
+
+    static fromJSON(input: Map<string, unknown>) {
+        return parseArriError(input);
+    }
+
+    static fromJSONString(input: string) {
+        return parseArriError(JSON.parse(input));
+    }
 }
 
 export function serializeArriError(

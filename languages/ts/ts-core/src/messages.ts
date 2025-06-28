@@ -14,9 +14,11 @@ export interface ClientMessage<T = string> {
 // TODO: make it so body can also be binary
 export type ServerMessage<T = string> =
     | ServerSuccessMessage<T>
-    | ServerFailureMessage;
+    | ServerFailureMessage
+    | ServerHeartbeatMessage
+    | ServerConnectionStartMessage;
 export interface ServerSuccessMessage<T = string> {
-    success: true;
+    type: 'SUCCESS';
     reqId?: string;
     path?: string;
     method?: string;
@@ -25,7 +27,7 @@ export interface ServerSuccessMessage<T = string> {
     body?: T;
 }
 export interface ServerFailureMessage {
-    success: false;
+    type: 'FAILURE';
     reqId?: string;
     path?: string;
     method?: string;
@@ -33,11 +35,13 @@ export interface ServerFailureMessage {
     contentType: 'application/json';
     error: ArriError;
 }
-export interface ServerActionMessage {
-    event: 'PING';
+export interface ServerHeartbeatMessage {
+    type: 'HEARTBEAT';
+    heartbeatInterval: number | undefined;
 }
-export interface ServerConnectionMessage {
-    event: 'RESPONSE';
+export interface ServerConnectionStartMessage {
+    type: 'CONNECTION_START';
+    heartbeatInterval: number | undefined;
 }
 
 // const msg = `
@@ -171,19 +175,41 @@ export function parseServerMessage(
     input: string,
 ): Result<ServerMessage, string> {
     let reqId: string | undefined;
-    let success: boolean | undefined;
-    let contentType: string | undefined;
+    let msgType:
+        | 'SUCCESS'
+        | 'FAILURE'
+        | 'HEARTBEAT'
+        | 'CONNECTION_START'
+        | 'UNKNOWN'
+        | undefined;
+    let contentType: 'application/json' | undefined;
     const customHeaders: Record<string, string> = {};
     let currentLine = '';
     let bodyStartIndex: number | undefined;
+    let heartbeatInterval: number | undefined;
     function processLine() {
-        if (typeof success === 'undefined') {
+        if (typeof msgType === 'undefined') {
             if (currentLine === 'ARRIRPC/0.0.8 SUCCESS') {
-                success = true;
+                msgType = 'SUCCESS';
                 currentLine = '';
                 return;
             }
-            success = false;
+            if (currentLine === 'ARRIRPC/0.0.8 FAILURE') {
+                msgType = 'FAILURE';
+                currentLine = '';
+                return;
+            }
+            if (currentLine === 'ARRIRPC/0.0.8 CONNECTION_START') {
+                msgType = 'CONNECTION_START';
+                currentLine = '';
+                return;
+            }
+            if (currentLine === 'ARRIRPC/0.0.8 HEARTBEAT') {
+                msgType = 'HEARTBEAT';
+                currentLine = '';
+                return;
+            }
+            msgType = 'UNKNOWN';
             currentLine = '';
             return;
         }
@@ -193,8 +219,17 @@ export function parseServerMessage(
                 reqId = value;
                 break;
             case 'content-type':
-                contentType = value;
+                if (value == 'application/json') {
+                    contentType = value;
+                }
                 break;
+            case 'heartbeat-interval': {
+                const val = Number(value);
+                if (!Number.isNaN(val)) {
+                    heartbeatInterval = val;
+                }
+                break;
+            }
             default:
                 customHeaders[key] = value;
                 break;
@@ -216,19 +251,13 @@ export function parseServerMessage(
         currentLine += char;
     }
 
-    if (typeof success == 'undefined') {
+    if (msgType === 'UNKNOWN') {
         return {
             success: false,
-            error: 'Invalid message. Must begin with success header.',
+            error: 'Invalid message. Must begin with a message type header. Ex: "ARRIRPC/{version} {msgType}"',
         };
     }
-    if (typeof contentType == 'undefined') {
-        return {
-            success: false,
-            error: 'Invalid message. Must include content-type error.',
-        };
-    }
-    if (contentType !== 'application/json') {
+    if (contentType && contentType !== 'application/json') {
         return {
             success: false,
             error: 'Invalid message. Only "application/json" is supported as a content type.',
@@ -241,73 +270,98 @@ export function parseServerMessage(
         };
     }
     const bodyStr = input.slice(bodyStartIndex);
-    if (success && bodyStr.length === 0) {
-        return {
-            success: true,
-            value: {
-                reqId: reqId,
-                success: success,
-                customHeaders: customHeaders,
-                contentType: contentType,
-                body: undefined,
-            },
-        };
+    switch (msgType) {
+        case 'SUCCESS': {
+            return {
+                success: true,
+                value: {
+                    type: 'SUCCESS',
+                    reqId: reqId,
+                    customHeaders: customHeaders,
+                    contentType: contentType ?? 'application/json',
+                    body: bodyStr.length ? bodyStr : undefined,
+                },
+            };
+        }
+        case 'FAILURE': {
+            const err = parseArriError(JSON.parse(bodyStr));
+            if (!err.success) {
+                return {
+                    success: false,
+                    error: err.error,
+                };
+            }
+            return {
+                success: true,
+                value: {
+                    type: 'FAILURE',
+                    reqId: reqId,
+                    customHeaders: customHeaders,
+                    contentType: contentType ?? 'application/json',
+                    error: err.value,
+                },
+            };
+        }
+        case 'CONNECTION_START':
+            return {
+                success: true,
+                value: {
+                    type: 'CONNECTION_START',
+                    heartbeatInterval: heartbeatInterval,
+                },
+            };
+        case 'HEARTBEAT':
+            return {
+                success: true,
+                value: {
+                    type: 'HEARTBEAT',
+                    heartbeatInterval: heartbeatInterval,
+                },
+            };
+        default:
+            return {
+                success: false,
+                error: 'Unknown message type',
+            };
     }
-    if (success) {
-        return {
-            success: true,
-            value: {
-                reqId: reqId,
-                success: success,
-                customHeaders: customHeaders,
-                contentType: contentType,
-                body: bodyStr,
-            },
-        };
-    }
-    const err = parseArriError(JSON.parse(bodyStr));
-    if (!err.success) {
-        return {
-            success: false,
-            error: err.error,
-        };
-    }
-    return {
-        success: true,
-        value: {
-            reqId: reqId,
-            success: success,
-            customHeaders: customHeaders,
-            contentType: contentType,
-            error: err.value,
-        },
-    };
 }
 export function encodeServerMessage(
     input: ServerMessage,
     options?: { includeErrorStackTrack?: boolean },
 ): string {
-    let output = `ARRIRPC/0.0.8`;
-    if (input.success) {
-        output += ` SUCCESS`;
-    } else {
-        output += ` FAILURE`;
+    let output = `ARRIRPC/0.0.8 ${input.type}\n`;
+    switch (input.type) {
+        case 'SUCCESS': {
+            output += `content-type: ${input.contentType}\n`;
+            if (input.reqId) output += `req-id: ${input.reqId}\n`;
+            for (const [key, value] of Object.entries(input.customHeaders)) {
+                output += `${key.toLowerCase()}: ${value}\n`;
+            }
+            output += '\n';
+            if (input.body) output += input.body;
+            return output;
+        }
+        case 'FAILURE':
+            output += `content-type: ${input.contentType}\n`;
+            if (input.reqId) output += `req-id: ${input.reqId}\n`;
+            for (const [key, value] of Object.entries(input.customHeaders)) {
+                output += `${key.toLowerCase()}: ${value}\n`;
+            }
+            output += '\n';
+            output += serializeArriError(
+                input.error,
+                options?.includeErrorStackTrack ?? false,
+            );
+            return output;
+        case 'CONNECTION_START':
+        case 'HEARTBEAT': {
+            if (input.heartbeatInterval) {
+                output += `heartbeat-interval: ${input.heartbeatInterval}\n`;
+            }
+            output += '\n';
+            return output;
+        }
     }
-    output += `\ncontent-type: ${input.contentType}`;
-    if (input.reqId) output += `\nreq-id: ${input.reqId}`;
-    for (const [key, value] of Object.entries(input.customHeaders)) {
-        output += `\n${key}: ${value}`;
-    }
-    output += `\n\n`;
-    if (input.success) {
-        if (input.body) output += input.body;
-        return output;
-    }
-    output += serializeArriError(
-        input.error,
-        options?.includeErrorStackTrack ?? false,
-    );
-    return output;
 }
 
 export function parseHeaderLine(input: string): [string, string] {

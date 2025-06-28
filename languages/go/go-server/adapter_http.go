@@ -348,13 +348,14 @@ func (controller *HttpEventStream) startStream() {
 	controller.responseController.EnableFullDuplex()
 	controller.responseController.Flush()
 	controller.headersSent = true
+	fmt.Fprintf(controller.writer, "event: start\ndata: connection successful\n\n")
 	controller.heartbeatTicker = time.NewTicker(controller.heartbeatInterval)
 	go func() {
 		defer controller.heartbeatTicker.Stop()
 		for {
 			select {
 			case <-controller.heartbeatTicker.C:
-				fmt.Fprintf(controller.writer, "event: ping\ndata:\n\n")
+				fmt.Fprintf(controller.writer, "event: heartbeat\ndata:\n\n")
 				controller.responseController.Flush()
 			case <-controller.Done():
 				return

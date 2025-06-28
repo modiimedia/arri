@@ -17,3 +17,13 @@ test('encode arri errors', () => {
         ),
     ).toBe(true);
 });
+
+test('decode arri errors', () => {
+    const input = `{"code":54321,"message":"foo","data":{"foo":"foo"}}`;
+    const result = ArriError.fromJSONString(input);
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.value.code).toBe(54321);
+    expect(result.value.message).toBe('foo');
+    expect(result.value.data).toStrictEqual({ foo: 'foo' });
+});
