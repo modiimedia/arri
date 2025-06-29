@@ -1,0 +1,6 @@
+ARRIRPC/0.0.8 FAILURE
+content-type: application/json
+req-id: 12345
+foo: foo
+
+{"code":54321,"message":"This is an error"}

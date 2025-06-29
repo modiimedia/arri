@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import { defineCommand, runMain } from 'citty';
 import enquirer from 'enquirer';
 
-import { a } from '../../languages/ts/ts-schema/dist';
+import { a } from '../../languages/ts/ts-schema/src/_index';
 
 const CliArgs = a.object({
     server: a.optional(a.enumerator(['ts', 'go'])),

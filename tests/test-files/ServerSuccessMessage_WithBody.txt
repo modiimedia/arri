@@ -1,0 +1,5 @@
+ARRIRPC/0.0.8 SUCCESS
+content-type: application/json
+req-id: 12345
+
+{"message":"hello world"}

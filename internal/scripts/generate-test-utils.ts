@@ -2,6 +2,11 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import path from 'pathe';
 import prettier from 'prettier';
 
+import {
+    ArriError,
+    encodeClientMessage,
+    encodeServerMessage,
+} from '../../languages/ts/ts-core/src/_index';
 import { a } from '../../languages/ts/ts-schema/src/_index';
 import { createAppDefinition } from '../../tooling/codegen-utils/src';
 
@@ -432,6 +437,72 @@ async function main() {
     files.push({
         filename: 'RecursiveObject.json',
         content: a.serializeUnsafe(RecursiveObject, recursiveObject),
+    });
+
+    files.push({
+        filename: 'ClientMessage_WithBody.txt',
+        content: encodeClientMessage({
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'foo',
+            },
+            reqId: '12345',
+            clientVersion: '1.2.5',
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'ClientMessage_WithoutBody.txt',
+        content: encodeClientMessage({
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'foo',
+                bar: 'bar',
+            },
+            reqId: '54321',
+            body: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerSuccessMessage_WithBody.txt',
+        content: encodeServerMessage({
+            type: 'SUCCESS',
+            reqId: '12345',
+            contentType: 'application/json',
+            customHeaders: {},
+            path: '/12345/12345',
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerSuccessMessage_WithoutBody.txt',
+        content: encodeServerMessage({
+            type: 'SUCCESS',
+            reqId: undefined,
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'foo',
+            },
+            body: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerFailureMessage.txt',
+        content: encodeServerMessage({
+            type: 'FAILURE',
+            contentType: 'application/json',
+            reqId: '12345',
+            customHeaders: {
+                foo: 'foo',
+            },
+            error: new ArriError({ code: 54321, message: 'This is an error' }),
+        }),
     });
 
     const mdParts: string[] = [

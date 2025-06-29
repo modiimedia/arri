@@ -267,3 +267,58 @@ Below are all of the contents of the test JSON files in an easier to read format
   "right": { "left": null, "right": null }
 }
 ```
+
+## ClientMessage_WithBody.txt
+
+```json
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 12345
+client-version: 1.2.5
+foo: foo
+
+{"message":"hello world"}
+```
+
+## ClientMessage_WithoutBody.txt
+
+```json
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 54321
+foo: foo
+bar: bar
+
+
+```
+
+## ServerSuccessMessage_WithBody.txt
+
+```json
+ARRIRPC/0.0.8 SUCCESS
+content-type: application/json
+req-id: 12345
+
+{"message":"hello world"}
+```
+
+## ServerSuccessMessage_WithoutBody.txt
+
+```json
+ARRIRPC/0.0.8 SUCCESS
+content-type: application/json
+foo: foo
+
+
+```
+
+## ServerFailureMessage.txt
+
+```json
+ARRIRPC/0.0.8 FAILURE
+content-type: application/json
+req-id: 12345
+foo: foo
+
+{"code":54321,"message":"This is an error"}
+```
