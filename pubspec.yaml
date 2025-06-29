@@ -1,0 +1,8 @@
+name: _
+publish_to: none
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+workspace:
+  - languages/dart/dart-client
+  - languages/dart/dart-codegen-reference
+  - tests/clients/dart
