@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/dispatcher.dart';
-import 'package:arri_client/errors.dart';
-import 'package:arri_client/model.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 

@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'package:arri_client/errors.dart';
-import 'package:arri_client/model.dart';
+import 'package:arri_core/arri_core.dart';
 
 class RpcRequest<T extends ArriModel?> {
   final String procedure;

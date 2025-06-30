@@ -5,4 +5,5 @@ environment:
 workspace:
   - languages/dart/dart-client
   - languages/dart/dart-codegen-reference
+  - languages/dart/dart-core
   - tests/clients/dart

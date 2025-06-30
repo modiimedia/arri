@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:arri_client/model.dart';
+import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/request.dart';
 
 typedef OnErrorHook = FutureOr<void> Function(

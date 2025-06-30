@@ -1,12 +1,12 @@
 library;
 
-export "errors.dart";
-export "model.dart";
-export 'parsing.dart';
-export 'request.dart';
+export 'package:arri_core/arri_core.dart';
+
 export "dispatcher.dart";
 export "dispatcher_http.dart";
 export 'dispatcher_ws.dart';
+export 'parsing.dart';
+export 'request.dart';
 
 bool listsAreEqual(List? list1, List? list2, {bool log = false}) {
   if (list1 == null || list2 == null) {

@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:arri_client/arri_client.dart';
+import 'package:arri_core/arri_core.dart';
+import 'package:arri_client/dispatcher.dart';
+import 'package:arri_client/request.dart';
 
 class WsDispatcher implements Dispatcher {
   final String _connectionUrl;

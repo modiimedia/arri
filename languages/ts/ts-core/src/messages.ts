@@ -365,6 +365,23 @@ export function encodeServerMessage(
 }
 
 export function parseHeaderLine(input: string): [string, string] {
-    const [key, value] = input.split(':');
-    return [key?.trim() ?? '', value?.trim() ?? ''];
+    let keyFinished = false;
+    let keyIndexEnd = -1;
+    let valueIndexStart = -1;
+    for (let i = 0; i < input.length; i++) {
+        if (!keyFinished) {
+            if (input[i] === ':') {
+                keyIndexEnd = i;
+                keyFinished = true;
+                continue;
+            }
+            continue;
+        }
+        if (input[i] === ' ') continue;
+        valueIndexStart = i;
+        break;
+    }
+    if (keyIndexEnd < 0) return [input, ''];
+    if (valueIndexStart < 0) return [input.substring(0, keyIndexEnd), ''];
+    return [input.slice(0, keyIndexEnd), input.slice(valueIndexStart)];
 }

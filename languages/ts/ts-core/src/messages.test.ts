@@ -4,9 +4,34 @@ import {
     encodeClientMessage,
     encodeServerMessage,
     parseClientMessage,
+    parseHeaderLine,
     parseServerMessage,
     ServerMessage,
 } from './messages';
+
+test('parseHeaderLine', () => {
+    const testCases = [
+        {
+            input: 'foo: foo',
+            expectedResult: ['foo', 'foo'] as const,
+        },
+        {
+            input: 'url:  https://www.google.com',
+            expectedResult: ['url', 'https://www.google.com'] as const,
+        },
+        {
+            input: 'message:My name is: "Jeff".\\nI like ice cream!',
+            expectedResult: [
+                'message',
+                'My name is: "Jeff".\\nI like ice cream!',
+            ] as const,
+        },
+    ];
+    for (const testCase of testCases) {
+        const result = parseHeaderLine(testCase.input);
+        expect(result).toStrictEqual(testCase.expectedResult);
+    }
+});
 
 describe('client messages', () => {
     const decodedMsg: ClientMessage = {
@@ -16,6 +41,7 @@ describe('client messages', () => {
         contentType: 'application/json',
         customHeaders: {
             foo: 'foo',
+            bar: 'hello\\nworld',
         },
         body: `{"message":"hello world"}`,
     };
@@ -24,6 +50,7 @@ content-type: application/json
 req-id: 15
 client-version: 1
 foo: foo
+bar: hello\\nworld
 
 {"message":"hello world"}`;
 
