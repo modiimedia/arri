@@ -48,7 +48,7 @@ class ArriError implements Exception {
     return ArriError(code: 400, message: "Unknown error");
   }
   @override
-  String encodeString() {
+  String toString() {
     if (stack == null) {
       return "{ code: $code, message: $message, data: ${data.encodeString()} }";
     }
@@ -86,6 +86,10 @@ class ArriError implements Exception {
       result["stack"] = stack;
     }
     return result;
+  }
+
+  String toJsonString() {
+    return json.encode(toJson());
   }
 }
 
