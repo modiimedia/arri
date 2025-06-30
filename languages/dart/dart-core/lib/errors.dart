@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:arri_core/helpers.dart';
 import 'package:http/http.dart' as http;
 
 /// Serializable request error that can parse the error responses from an Arri RPC server.
@@ -14,6 +15,13 @@ class ArriError implements Exception {
     this.data,
     this.stack,
   });
+
+  List<Object?> get props => [code, message, stack];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ArriError && listsAreEqual(props, other.props);
+  }
 
   /// Create an ArriRequestError from an HTTP response
   factory ArriError.fromResponse(http.Response response) {
@@ -37,17 +45,14 @@ class ArriError implements Exception {
   }
 
   factory ArriError.unknown() {
-    return ArriError(
-      code: 400,
-      message: "Unknown error",
-    );
+    return ArriError(code: 400, message: "Unknown error");
   }
   @override
-  String toString() {
+  String encodeString() {
     if (stack == null) {
-      return "{ code: $code, message: $message, data: ${data.toString()} }";
+      return "{ code: $code, message: $message, data: ${data.encodeString()} }";
     }
-    return "{ code: $code, message: $message, data: ${data.toString()}, stack: [${stack!.map((e) => "\"$e\"").join(",")}] }";
+    return "{ code: $code, message: $message, data: ${data.encodeString()}, stack: [${stack!.map((e) => "\"$e\"").join(",")}] }";
   }
 
   factory ArriError.fromJson(Map<String, dynamic> json) {
@@ -73,10 +78,7 @@ class ArriError implements Exception {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
-      "code": code,
-      "message": message,
-    };
+    final result = <String, dynamic>{"code": code, "message": message};
     if (data != null) {
       result["data"] = data;
     }

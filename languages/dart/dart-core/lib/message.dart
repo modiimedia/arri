@@ -50,11 +50,14 @@ class ClientMessage<TBody extends ArriModel?> {
     String currentLine = "";
     final processLine = () {
       if (rpcName == null) {
+        if (!currentLine.startsWith("ARRIRPC/$arriVersion")) {
+          return "Message must begin with \"ARRIRPC/{version}\"";
+        }
         final parts = currentLine.split(" ");
-        if (parts.length < 2) return;
+        if (parts.length != 2) return null;
         rpcName = parts[1];
         currentLine = "";
-        return;
+        return null;
       }
       final (key, value) = parseHeaderLine(currentLine);
       switch (key) {
@@ -72,16 +75,19 @@ class ClientMessage<TBody extends ArriModel?> {
           break;
       }
       currentLine = "";
+      return null;
     };
     for (var i = 0; i < input.length; i++) {
       final char = input[i];
       if (char == '\n' && input[i + 1] == '\n') {
-        processLine();
+        var err = processLine();
+        if (err != null) return Err(err);
         bodyStartIndex = i + 2;
         break;
       }
       if (char == '\n') {
-        processLine();
+        var err = processLine();
+        if (err != null) return Err(err);
         continue;
       }
       currentLine += char;
@@ -128,7 +134,7 @@ class ClientMessage<TBody extends ArriModel?> {
     );
   }
 
-  String toString() {
+  String encodeString() {
     var output = "ARRIRPC/$arriVersion $rpcName\n";
     output += "content-type: ${contentType.serialValue}\n";
     if (reqId != null) output += "req-id: $reqId\n";
@@ -141,6 +147,27 @@ class ClientMessage<TBody extends ArriModel?> {
       output += body!.toJsonString();
     }
     return output;
+  }
+
+  String toString() {
+    return "ClientMessage { reqId: $reqId, rpcName: $rpcName, contentType: $contentType, clientVersion: $clientVersion, customHeaders: $customHeaders, body: ${body?.toString()} }";
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ClientMessage<TBody> &&
+        rpcName == other.rpcName &&
+        reqId == other.reqId &&
+        path == other.path &&
+        contentType == other.contentType &&
+        clientVersion == other.clientVersion &&
+        customHeaders.length == other.customHeaders.length &&
+        customHeaders.entries.every(
+          (entry) =>
+              other.customHeaders.containsKey(entry.key) &&
+              other.customHeaders[entry.key] == entry.value,
+        ) &&
+        body == other.body;
   }
 }
 
@@ -164,7 +191,9 @@ enum _ServerMessageType {
 
 sealed class ServerMessage {
   const ServerMessage();
-  String toString();
+  String encodeString();
+
+  List<Object?> get props;
 
   static Result<ServerMessage, String> fromString<TBody>(String input) {
     _ServerMessageType? type;
@@ -270,8 +299,8 @@ sealed class ServerMessage {
 }
 
 class ServerSuccessMessage implements ServerMessage {
-  final ContentType contentType;
   final String? reqId;
+  final ContentType contentType;
   final Map<String, String> customHeaders;
   final String? body;
   const ServerSuccessMessage({
@@ -282,7 +311,7 @@ class ServerSuccessMessage implements ServerMessage {
   });
 
   @override
-  String toString() {
+  String encodeString() {
     String output = "ARRIRPC/$arriVersion SUCCESS\n";
     output += "content-type: ${contentType.serialValue}\n";
     if (reqId != null) output += "req-id: $reqId\n";
@@ -293,11 +322,18 @@ class ServerSuccessMessage implements ServerMessage {
     if (body != null) output += body!;
     return output;
   }
+
+  List<Object?> get props => [reqId, contentType, customHeaders, body];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ServerSuccessMessage && listsAreEqual(props, other.props);
+  }
 }
 
 class ServerFailureMessage implements ServerMessage {
-  final ContentType contentType;
   final String? reqId;
+  final ContentType contentType;
   final Map<String, String> customHeaders;
   final ArriError? error;
   const ServerFailureMessage({
@@ -308,12 +344,25 @@ class ServerFailureMessage implements ServerMessage {
   });
 
   @override
+  List<Object?> get props => [reqId, contentType, customHeaders, error];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ServerFailureMessage && listsAreEqual(props, other.props);
+  }
+
+  @override
   String toString() {
+    return "ServerFailureMessage { reqId: $reqId, contentType: $contentType, customHeaders: $customHeaders, error: $error }";
+  }
+
+  @override
+  String encodeString() {
     String output = "ARRIRPC/$arriVersion FAILURE\n";
     output += "content-type: ${contentType.serialValue}\n";
     if (reqId != null) output += "req-id: $reqId\n";
     for (final entry in customHeaders.entries) {
-      output += "${entry.key.toLowerCase()}: ${entry.value}";
+      output += "${entry.key.toLowerCase()}: ${entry.value}\n";
     }
     output += "\n";
     if (error != null) {
@@ -332,7 +381,15 @@ class ServerHeartbeatMessage implements ServerMessage {
   });
 
   @override
-  String toString() {
+  List<Object?> get props => [heartbeatInterval];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ServerHeartbeatMessage && listsAreEqual(props, other.props);
+  }
+
+  @override
+  String encodeString() {
     String output = "ARRIRPC/$arriVersion HEARTBEAT\n";
     if (heartbeatInterval != null) {
       output += "heartbeat-interval: $heartbeatInterval\n";
@@ -349,7 +406,16 @@ class ServerConnectionStartMessage implements ServerMessage {
   });
 
   @override
-  String toString() {
+  List<Object?> get props => [heartbeatInterval];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ServerConnectionStartMessage &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  String encodeString() {
     String output = "ARRIRPC/$arriVersion CONNECTION_START\n";
     if (heartbeatInterval != null) {
       output += "heartbeat-interval: $heartbeatInterval\n";
@@ -369,7 +435,7 @@ enum ContentType {
 
   factory ContentType.fromSerialValue(String input) {
     for (final val in values) {
-      if (val == input) return val;
+      if (val.serialValue == input) return val;
     }
     return unknown;
   }
