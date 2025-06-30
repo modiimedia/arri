@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:arri_client/parsing.dart';
 import 'package:http/http.dart' as http;
 
 /// Serializable request error that can parse the error responses from an Arri RPC server.
@@ -53,8 +52,8 @@ class ArriError implements Exception {
 
   factory ArriError.fromJson(Map<String, dynamic> json) {
     return ArriError(
-      code: intFromDynamic(json["code"], 0),
-      message: typeFromDynamic<String>(json["message"], "Unknown Error"),
+      code: json["code"] is int ? json["code"] : 0,
+      message: json["message"] is String ? json["message"] : "Unknown Error",
       data: json["data"],
       stack: json["stack"] is List
           ? (json["stack"] as List)
@@ -62,6 +61,15 @@ class ArriError implements Exception {
               .toList()
           : null,
     );
+  }
+
+  factory ArriError.fromJsonString(String input) {
+    try {
+      final val = json.decode(input);
+      return ArriError.fromJson(val);
+    } catch (err) {
+      return ArriError.unknown();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -76,15 +84,6 @@ class ArriError implements Exception {
       result["stack"] = stack;
     }
     return result;
-  }
-
-  factory ArriError.fromString(String input) {
-    try {
-      final val = json.decode(input);
-      return ArriError.fromJson(val);
-    } catch (err) {
-      return ArriError.unknown();
-    }
   }
 }
 

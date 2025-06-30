@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:arri_core/message.dart';
-
 sealed class Result<T, E> {
   T? unwrap();
   T unwrapOr(T fallback);

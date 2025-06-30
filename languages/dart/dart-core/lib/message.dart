@@ -1,6 +1,8 @@
-import 'package:arri_core/helpers.dart';
+import 'dart:convert';
 
+import './helpers.dart';
 import './model.dart';
+import './errors.dart';
 
 const arriVersion = "0.0.8";
 
@@ -142,15 +144,220 @@ class ClientMessage<TBody extends ArriModel?> {
   }
 }
 
-sealed class ServerMessage {}
+enum _ServerMessageType {
+  unknown(""),
+  success("SUCCESS"),
+  failure("FAILURE"),
+  heartbeat("HEARTBEAT"),
+  connectionStart("CONNECTION_START");
 
-class ServerSuccessMessage {}
+  const _ServerMessageType(this.serialValue);
+  final String serialValue;
 
-class ServerFailureMessage {}
+  factory _ServerMessageType.fromSerialValue(String input) {
+    for (final val in values) {
+      if (val == input) return val;
+    }
+    return unknown;
+  }
+}
 
-class ServerHeartbeatMessage {}
+sealed class ServerMessage {
+  const ServerMessage();
+  String toString();
 
-class ServerConnectionStartMessage {}
+  static Result<ServerMessage, String> fromString<TBody>(String input) {
+    _ServerMessageType? type;
+    String? reqId;
+    ContentType? contentType;
+    final Map<String, String> customHeaders = {};
+    int? heartbeatInterval;
+    int? bodyStartIndex;
+    String currentLine = "";
+
+    final processLine = () {
+      if (type == null) {
+        switch (currentLine) {
+          case "ARRIRPC/$arriVersion SUCCESS":
+            type = _ServerMessageType.success;
+            break;
+          case "ARRIRPC/$arriVersion FAILURE":
+            type = _ServerMessageType.failure;
+            break;
+          case "ARRIRPC/$arriVersion HEARTBEAT":
+            type = _ServerMessageType.heartbeat;
+            break;
+          case "ARRIRPC/$arriVersion CONNECTION_START":
+            type = _ServerMessageType.connectionStart;
+            break;
+        }
+        currentLine = "";
+        return;
+      }
+      final (key, value) = parseHeaderLine(currentLine);
+      switch (key) {
+        case "content-type":
+          contentType = ContentType.fromSerialValue(value);
+          break;
+        case 'req-id':
+          reqId = value;
+          break;
+        case 'heartbeat-interval':
+          heartbeatInterval = int.tryParse(value);
+          break;
+        default:
+          customHeaders[key] = value;
+          break;
+      }
+      currentLine = "";
+    };
+
+    for (var i = 0; i < input.length; i++) {
+      final char = input[i];
+      if (char == '\n' && input[i + 1] == '\n') {
+        processLine();
+        bodyStartIndex = i + 2;
+        break;
+      }
+      if (char == '\n') {
+        processLine();
+        continue;
+      }
+      currentLine += char;
+    }
+    if (type == null) return Err("Invalid message");
+    if (bodyStartIndex == null) {
+      return Err(
+          "Invalid message. Missing \\n\\n delimiter indicating end of headers");
+    }
+    switch (type!) {
+      case _ServerMessageType.unknown:
+        return Err(
+          "Invalid message. Invalid message type or outdated ARRIRPC/{version}",
+        );
+      case _ServerMessageType.success:
+        final bodyStr = input.substring(bodyStartIndex);
+        final body = bodyStr.isEmpty ? null : bodyStr;
+        return Ok(
+          ServerSuccessMessage(
+            reqId: reqId,
+            contentType: contentType ?? ContentType.unknown,
+            customHeaders: customHeaders,
+            body: body,
+          ),
+        );
+      case _ServerMessageType.failure:
+        final errStr = input.substring(bodyStartIndex);
+        final err = errStr.isEmpty ? null : ArriError.fromJsonString(errStr);
+        return Ok(
+          ServerFailureMessage(
+            reqId: reqId,
+            contentType: contentType ?? ContentType.unknown,
+            customHeaders: customHeaders,
+            error: err,
+          ),
+        );
+      case _ServerMessageType.heartbeat:
+        return Ok(ServerHeartbeatMessage(heartbeatInterval: heartbeatInterval));
+      case _ServerMessageType.connectionStart:
+        return Ok(
+          ServerConnectionStartMessage(
+            heartbeatInterval: heartbeatInterval,
+          ),
+        );
+    }
+  }
+}
+
+class ServerSuccessMessage implements ServerMessage {
+  final ContentType contentType;
+  final String? reqId;
+  final Map<String, String> customHeaders;
+  final String? body;
+  const ServerSuccessMessage({
+    required this.reqId,
+    required this.contentType,
+    required this.customHeaders,
+    required this.body,
+  });
+
+  @override
+  String toString() {
+    String output = "ARRIRPC/$arriVersion SUCCESS\n";
+    output += "content-type: ${contentType.serialValue}\n";
+    if (reqId != null) output += "req-id: $reqId\n";
+    for (final entry in customHeaders.entries) {
+      output += "${entry.key.toLowerCase()}: ${entry.value}\n";
+    }
+    output += "\n";
+    if (body != null) output += body!;
+    return output;
+  }
+}
+
+class ServerFailureMessage implements ServerMessage {
+  final ContentType contentType;
+  final String? reqId;
+  final Map<String, String> customHeaders;
+  final ArriError? error;
+  const ServerFailureMessage({
+    required this.reqId,
+    required this.contentType,
+    required this.customHeaders,
+    required this.error,
+  });
+
+  @override
+  String toString() {
+    String output = "ARRIRPC/$arriVersion FAILURE\n";
+    output += "content-type: ${contentType.serialValue}\n";
+    if (reqId != null) output += "req-id: $reqId\n";
+    for (final entry in customHeaders.entries) {
+      output += "${entry.key.toLowerCase()}: ${entry.value}";
+    }
+    output += "\n";
+    if (error != null) {
+      output += json.encode(error!.toJson());
+    } else {
+      output += json.encode(ArriError.unknown().toJson());
+    }
+    return output;
+  }
+}
+
+class ServerHeartbeatMessage implements ServerMessage {
+  final int? heartbeatInterval;
+  const ServerHeartbeatMessage({
+    required this.heartbeatInterval,
+  });
+
+  @override
+  String toString() {
+    String output = "ARRIRPC/$arriVersion HEARTBEAT\n";
+    if (heartbeatInterval != null) {
+      output += "heartbeat-interval: $heartbeatInterval\n";
+    }
+    output += "\n";
+    return output;
+  }
+}
+
+class ServerConnectionStartMessage implements ServerMessage {
+  final int? heartbeatInterval;
+  const ServerConnectionStartMessage({
+    required this.heartbeatInterval,
+  });
+
+  @override
+  String toString() {
+    String output = "ARRIRPC/$arriVersion CONNECTION_START\n";
+    if (heartbeatInterval != null) {
+      output += "heartbeat-interval: $heartbeatInterval\n";
+    }
+    output += "\n";
+    return output;
+  }
+}
 
 enum ContentType {
   unknown(""),
