@@ -1,15 +1,27 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import './helpers.dart';
 import './model.dart';
 import './errors.dart';
 
 const arriVersion = "0.0.8";
 
+enum HttpMethods {
+  get("GET"),
+  post("POST"),
+  put("PUT"),
+  patch("PATCH"),
+  delete("DELETE");
+
+  const HttpMethods(this.serialValue);
+  final String serialValue;
+}
+
 class ClientMessage<TBody extends ArriModel?> {
   final String rpcName;
   final String? reqId;
   final String? path;
+  final HttpMethods? method;
   final ContentType contentType;
   final String? clientVersion;
   final Map<String, String> customHeaders;
@@ -17,6 +29,7 @@ class ClientMessage<TBody extends ArriModel?> {
   const ClientMessage({
     required this.rpcName,
     required this.reqId,
+    required this.method,
     required this.path,
     required this.contentType,
     required this.clientVersion,
@@ -29,6 +42,7 @@ class ClientMessage<TBody extends ArriModel?> {
       rpcName: "",
       reqId: null,
       path: null,
+      method: null,
       contentType: ContentType.unknown,
       clientVersion: null,
       customHeaders: {},
@@ -113,6 +127,7 @@ class ClientMessage<TBody extends ArriModel?> {
         ClientMessage<TBody>(
           rpcName: rpcName!,
           reqId: reqId,
+          method: null,
           clientVersion: clientVersion,
           customHeaders: customHeaders,
           contentType: contentType!,
@@ -126,6 +141,7 @@ class ClientMessage<TBody extends ArriModel?> {
         rpcName: rpcName!,
         reqId: reqId,
         path: null,
+        method: null,
         contentType: contentType!,
         clientVersion: clientVersion,
         customHeaders: customHeaders,
@@ -151,6 +167,21 @@ class ClientMessage<TBody extends ArriModel?> {
 
   String toString() {
     return "ClientMessage { reqId: $reqId, rpcName: $rpcName, contentType: $contentType, clientVersion: $clientVersion, customHeaders: $customHeaders, body: ${body?.toString()} }";
+  }
+
+  http.Request toHttpRequest(String baseUrl) {
+    final req = http.Request(
+      method?.serialValue ?? "POST",
+      Uri.parse(baseUrl + (path ?? "")),
+    );
+    req.headers['content-type'] = contentType.serialValue;
+    if (reqId != null) req.headers["req-id"] = reqId!;
+    if (clientVersion != null) req.headers["client-version"] = clientVersion!;
+    for (final entry in customHeaders.entries) {
+      req.headers[entry.key.toLowerCase()] = entry.value;
+    }
+    if (body != null) req.body = body!.toJsonString();
+    return req;
   }
 
   @override
