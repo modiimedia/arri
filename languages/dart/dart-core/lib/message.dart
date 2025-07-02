@@ -184,21 +184,20 @@ class ClientMessage<TBody extends ArriModel?> {
     return req;
   }
 
+  List<Object?> get props => [
+        rpcName,
+        reqId,
+        path,
+        method,
+        contentType,
+        clientVersion,
+        customHeaders,
+        body
+      ];
+
   @override
   bool operator ==(Object other) {
-    return other is ClientMessage<TBody> &&
-        rpcName == other.rpcName &&
-        reqId == other.reqId &&
-        path == other.path &&
-        contentType == other.contentType &&
-        clientVersion == other.clientVersion &&
-        customHeaders.length == other.customHeaders.length &&
-        customHeaders.entries.every(
-          (entry) =>
-              other.customHeaders.containsKey(entry.key) &&
-              other.customHeaders[entry.key] == entry.value,
-        ) &&
-        body == other.body;
+    return other is ClientMessage<TBody> && listsAreEqual(props, other.props);
   }
 }
 
