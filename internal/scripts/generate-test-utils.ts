@@ -3,7 +3,6 @@ import path from 'pathe';
 import prettier from 'prettier';
 
 import {
-    ARRI_VERSION,
     ArriError,
     encodeClientMessage,
     encodeServerMessage,
@@ -443,7 +442,6 @@ async function main() {
     files.push({
         filename: 'ClientMessage_WithBody.txt',
         content: encodeClientMessage({
-            arriVersion: ARRI_VERSION,
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
@@ -458,7 +456,6 @@ async function main() {
     files.push({
         filename: 'ClientMessage_WithoutBody.txt',
         content: encodeClientMessage({
-            arriVersion: ARRI_VERSION,
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
