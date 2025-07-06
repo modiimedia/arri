@@ -1,0 +1,5 @@
+ARRIRPC/0.0.8 ES_EVENT
+req-id: 1515
+event-id: 1
+
+{"message":"hello world"}

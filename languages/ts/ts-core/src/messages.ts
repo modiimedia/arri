@@ -1,15 +1,37 @@
 import { ArriError, parseArriError, serializeArriError } from './errors';
 import { Result } from './helpers';
 
+export const ARRI_VERSION = '0.0.8' as const;
+export function isCurrentArriVersion(
+    input: unknown,
+): input is typeof ARRI_VERSION {
+    return input === ARRI_VERSION;
+}
+export function isCurrentArriVersionPrefix(input: string): boolean {
+    return input === `ARRIRPC/${ARRI_VERSION}`;
+}
+
 // TODO: make it so body can also be binary
 export interface ClientMessage<T = string> {
     rpcName: string;
     reqId?: string;
+    action?: ClientMessageAction;
     contentType: 'application/json';
     clientVersion?: string;
     lastEventId?: string;
     customHeaders: Record<string, string>;
     body?: T;
+}
+
+export const ClientMessageActionValues = ['CLOSE'] as const;
+export type ClientMessageAction = (typeof ClientMessageActionValues)[number];
+export function isClientMessageAction(
+    input: unknown,
+): input is ClientMessageAction {
+    return (
+        typeof input === 'string' &&
+        ClientMessageActionValues.includes(input as any)
+    );
 }
 
 // TODO: make it so body can also be binary
@@ -93,6 +115,7 @@ export function parseClientMessage(
 ): Result<ClientMessage, string> {
     let procedure: string | undefined;
     let reqId: string | undefined;
+    let action: ClientMessage['action'];
     let clientVersion: string | undefined;
     let contentType: string | undefined;
     let lastEventId: string | undefined;
@@ -100,13 +123,20 @@ export function parseClientMessage(
     let currentLine = '';
     let bodyStartIndex: number | undefined;
 
-    function processLine() {
+    function processLine(): string | null {
         if (!procedure) {
-            const [arriVersion, rpcName] = currentLine.split(' ');
-            if (!arriVersion || !rpcName) return;
-            procedure = rpcName.trim();
+            const [arriVersion, rpcName, rpcAction] = currentLine.split(' ');
+            if (!arriVersion || !rpcName) return 'Invalid';
+            if (!isCurrentArriVersionPrefix(arriVersion)) {
+                return `Unsupported Arrirpc version. Expected "ARRIRPC/${ARRI_VERSION}". Got "${arriVersion}".`;
+            }
+            if (rpcAction) {
+                if (!isClientMessageAction(rpcAction)) return 'Invalid action';
+                action = rpcAction;
+            }
+            procedure = rpcName;
             currentLine = '';
-            return;
+            return null;
         }
         const [key, value] = parseHeaderLine(currentLine);
         switch (key) {
@@ -127,17 +157,30 @@ export function parseClientMessage(
                 break;
         }
         currentLine = '';
+        return null;
     }
 
     for (let i = 0; i < input.length; i++) {
         const char = input[i]!;
         if (char === '\n' && input[i + 1] === '\n') {
-            processLine();
+            const err = processLine();
+            if (err) {
+                return {
+                    success: false,
+                    error: err,
+                };
+            }
             bodyStartIndex = i + 2;
             break;
         }
         if (char === '\n') {
-            processLine();
+            const err = processLine();
+            if (err) {
+                return {
+                    success: false,
+                    error: err,
+                };
+            }
             continue;
         }
         currentLine += char;
@@ -172,6 +215,7 @@ export function parseClientMessage(
                 clientVersion: clientVersion,
                 customHeaders: customHeaders,
                 contentType: contentType,
+                action: action,
                 body: undefined,
             },
         };
@@ -185,6 +229,7 @@ export function parseClientMessage(
             clientVersion: clientVersion,
             contentType: contentType,
             customHeaders: customHeaders,
+            action: action,
             body: bodyStr.trim(),
         },
     };
@@ -192,6 +237,7 @@ export function parseClientMessage(
 
 export function encodeClientMessage(input: ClientMessage<string>): string {
     let output = `ARRIRPC/0.0.8 ${input.rpcName}`;
+    if (input.action) output += ` ${input.action}`;
     output += `\ncontent-type: ${input.contentType}`;
     if (input.reqId) output += `\nreq-id: ${input.reqId}`;
     if (input.clientVersion)
@@ -218,29 +264,48 @@ export function parseServerMessage(
     let heartbeatInterval: number | undefined;
     function processLine() {
         if (typeof msgType === 'undefined') {
-            if (currentLine === 'ARRIRPC/0.0.8 SUCCESS') {
-                msgType = 'SUCCESS';
-                currentLine = '';
-                return;
+            switch (currentLine) {
+                case `ARRIRPC/${ARRI_VERSION} SUCCESS`: {
+                    msgType = 'SUCCESS';
+                    currentLine = '';
+                    return;
+                }
+                case `ARRIRPC/${ARRI_VERSION} FAILURE`: {
+                    msgType = 'FAILURE';
+                    currentLine = '';
+                    return;
+                }
+                case `ARRIRPC/${ARRI_VERSION} CONNECTION_START`: {
+                    msgType = 'CONNECTION_START';
+                    currentLine = '';
+                    return;
+                }
+                case `ARRIRPC/${ARRI_VERSION} HEARTBEAT`: {
+                    msgType = 'HEARTBEAT';
+                    currentLine = '';
+                    return;
+                }
+                case `ARRIRPC/${ARRI_VERSION} ES_START`: {
+                    msgType = 'ES_START';
+                    currentLine = '';
+                    return;
+                }
+                case `ARRIRPC/${ARRI_VERSION} ES_EVENT`: {
+                    msgType = 'ES_EVENT';
+                    currentLine = '';
+                    return;
+                }
+                case `ARRIRPC/${ARRI_VERSION} ES_END`: {
+                    msgType = 'ES_END';
+                    currentLine = '';
+                    return;
+                }
+                default: {
+                    msgType = 'UNKNOWN';
+                    currentLine = '';
+                    return;
+                }
             }
-            if (currentLine === 'ARRIRPC/0.0.8 FAILURE') {
-                msgType = 'FAILURE';
-                currentLine = '';
-                return;
-            }
-            if (currentLine === 'ARRIRPC/0.0.8 CONNECTION_START') {
-                msgType = 'CONNECTION_START';
-                currentLine = '';
-                return;
-            }
-            if (currentLine === 'ARRIRPC/0.0.8 HEARTBEAT') {
-                msgType = 'HEARTBEAT';
-                currentLine = '';
-                return;
-            }
-            msgType = 'UNKNOWN';
-            currentLine = '';
-            return;
         }
         const [key, value] = parseHeaderLine(currentLine);
         switch (key) {
@@ -396,7 +461,7 @@ export function encodeServerMessage(
     input: ServerMessage,
     options?: { includeErrorStackTrack?: boolean },
 ): string {
-    let output = `ARRIRPC/0.0.8 ${input.type}\n`;
+    let output = `ARRIRPC/${ARRI_VERSION} ${input.type}\n`;
     switch (input.type) {
         case 'SUCCESS': {
             output += `content-type: ${input.contentType}\n`;
@@ -421,18 +486,28 @@ export function encodeServerMessage(
             );
             return output;
         case 'CONNECTION_START':
-        case 'HEARTBEAT':
-        case 'ES_START': {
+        case 'HEARTBEAT': {
             if (input.heartbeatInterval) {
                 output += `heartbeat-interval: ${input.heartbeatInterval}\n`;
             }
             output += '\n';
             return output;
         }
-        case 'ES_EVENT': {
-            if (input.eventId) {
-                output += `event-id: ${input.eventId}\n`;
+        case 'ES_START': {
+            output += `content-type: ${input.contentType}\n`;
+            if (input.reqId) output += `req-id: ${input.reqId}\n`;
+            if (input.heartbeatInterval) {
+                output += `heartbeat-interval: ${input.heartbeatInterval}\n`;
             }
+            for (const [key, value] of Object.entries(input.customHeaders)) {
+                output += `${key.toLowerCase()}: ${value}\n`;
+            }
+            output += '\n';
+            return output;
+        }
+        case 'ES_EVENT': {
+            if (input.reqId) output += `req-id: ${input.reqId}\n`;
+            if (input.eventId) output += `event-id: ${input.eventId}\n`;
             output += '\n';
             if (input.body) {
                 output += input.body;
@@ -440,11 +515,13 @@ export function encodeServerMessage(
             return output;
         }
         case 'ES_END':
+            if (input.reqId) output += `req-id: ${input.reqId}\n`;
+            if (input.reason) output += `reason: ${input.reason}\n`;
             output += '\n';
             return output;
         default:
             input satisfies never;
-            throw new Error(`Unsupport message type: ${(input as any).type}`);
+            throw new Error(`Unsupported message type: ${(input as any).type}`);
     }
 }
 

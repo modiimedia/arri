@@ -3,6 +3,7 @@ import path from 'pathe';
 import prettier from 'prettier';
 
 import {
+    ARRI_VERSION,
     ArriError,
     encodeClientMessage,
     encodeServerMessage,
@@ -442,6 +443,7 @@ async function main() {
     files.push({
         filename: 'ClientMessage_WithBody.txt',
         content: encodeClientMessage({
+            arriVersion: ARRI_VERSION,
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
@@ -456,6 +458,7 @@ async function main() {
     files.push({
         filename: 'ClientMessage_WithoutBody.txt',
         content: encodeClientMessage({
+            arriVersion: ARRI_VERSION,
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
@@ -464,6 +467,17 @@ async function main() {
             },
             reqId: '54321',
             body: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ClientActionMessage.txt',
+        content: encodeClientMessage({
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            action: 'CLOSE',
+            customHeaders: {},
+            reqId: '54321',
         }),
     });
 
@@ -505,6 +519,70 @@ async function main() {
         }),
     });
 
+    files.push({
+        filename: 'ServerHeartbeatMessage_WithInterval.txt',
+        content: encodeServerMessage({
+            type: 'HEARTBEAT',
+            heartbeatInterval: 155,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerHeartbeatMessage_WithoutInterval.txt',
+        content: encodeServerMessage({
+            type: 'HEARTBEAT',
+            heartbeatInterval: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerConnectionStartMessage_WithInterval.txt',
+        content: encodeServerMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: 255,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerConnectionStartMessage_WithoutInterval.txt',
+        content: encodeServerMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerEsStartMessage.txt',
+        content: encodeServerMessage({
+            type: 'ES_START',
+            reqId: '1515',
+            heartbeatInterval: 255,
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'foo',
+            },
+        }),
+    });
+
+    files.push({
+        filename: 'ServerEsEventMessage.txt',
+        content: encodeServerMessage({
+            type: 'ES_EVENT',
+            reqId: '1515',
+            eventId: '1',
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerEsEndMessage.txt',
+        content: encodeServerMessage({
+            type: 'ES_END',
+            reqId: '1515',
+            reason: 'no more events',
+        }),
+    });
+
     const mdParts: string[] = [
         'Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.',
         '',
@@ -512,7 +590,7 @@ async function main() {
     for (const file of files) {
         writeFileSync(path.resolve(outDir, file.filename), file.content);
         mdParts.push(`## ${file.filename}
-\`\`\`json
+\`\`\`${file.filename.endsWith('txt') ? 'txt' : 'json'}
 ${file.content}
 \`\`\`
 `);
