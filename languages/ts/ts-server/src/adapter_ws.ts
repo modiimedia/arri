@@ -5,6 +5,7 @@ import {
     ArriError,
     encodeServerMessage,
     parseClientMessage,
+    ServerEventStreamMessage,
     ServerMessage,
 } from '@arrirpc/core';
 import { CompiledValidator, errorMessageFromErrors } from '@arrirpc/schema';
@@ -18,7 +19,10 @@ import {
     RpcOnErrorContext,
 } from './middleware';
 import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
-import { EventStreamRpcHandler } from './rpc_event_stream';
+import {
+    EventStreamDispatcher,
+    EventStreamRpcHandler,
+} from './rpc_event_stream';
 
 export interface WsOptions {
     connectionPath: string;
@@ -386,5 +390,42 @@ export class WsAdapter implements TransportAdapter {
                 includeErrorStackTrack: this._config.debug,
             }),
         );
+    }
+}
+
+export class WsEventStream implements EventStreamDispatcher<string> {
+    peer: Peer;
+
+    constructor(peer: Peer) {
+        this.peer = peer;
+    }
+
+    send(): void {
+        // do nothing already connected
+    }
+    push(msg: ServerEventStreamMessage): Promise<void> | void;
+    push(msgs: ServerEventStreamMessage[]): Promise<void> | void;
+    push(
+        msg: ServerEventStreamMessage | ServerEventStreamMessage[],
+    ): Promise<void> | void {
+        if (Array.isArray(msg)) {
+            for (const m of msg) {
+                const encoded = encodeServerMessage(m);
+                this.peer.send(encoded);
+            }
+            return;
+        }
+        const encoded = encodeServerMessage(msg);
+        this.peer.send(encoded);
+    }
+
+    close(): void {
+        this._closedCb?.();
+    }
+
+    private _closedCb: (() => void) | undefined;
+
+    onClosed(cb: () => void): void {
+        this._closedCb = cb;
     }
 }

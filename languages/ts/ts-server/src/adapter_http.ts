@@ -5,7 +5,7 @@ import {
     RpcDefinition,
     RpcHttpMethod,
 } from '@arrirpc/codegen-utils';
-import { ArriError } from '@arrirpc/core';
+import { ArriError, ServerEventStreamMessage } from '@arrirpc/core';
 import { CompiledValidator } from '@arrirpc/schema';
 import * as listhen from '@joshmossas/listhen';
 import * as ws from 'crossws';
@@ -24,6 +24,7 @@ import {
 } from './middleware';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import {
+    EventStreamDispatcher,
     EventStreamRpcHandler,
     RpcEventStreamConnection,
 } from './rpc_event_stream';
@@ -418,10 +419,11 @@ export class HttpAdapter
                     this._options?.heartbeatInterval ?? 20000,
                 );
                 const stream = new RpcEventStreamConnection(
-                    h3.createEventStream(event),
+                    new HttpEventStreamDispatcher(h3.createEventStream(event)),
                     validators.response,
                     this._options?.heartbeatInterval ?? 20000,
                     this._options?.heartbeatEnabled ?? true,
+                    undefined,
                 );
                 (context as any).stream = stream;
                 await handler(context as any);
@@ -725,5 +727,78 @@ export class HttpAdapter
         this._listener = undefined;
         await this._secondaryListener?.close();
         this._secondaryListener = undefined;
+    }
+}
+
+class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
+    eventStream: h3.EventStream;
+
+    constructor(eventStream: h3.EventStream) {
+        this.eventStream = eventStream;
+    }
+
+    lastEventId?: string | undefined;
+    send(): void {
+        this.eventStream.send();
+    }
+    push(msg: ServerEventStreamMessage<string>): Promise<void> | void;
+    push(msgs: ServerEventStreamMessage<string>[]): Promise<void> | void;
+    push(
+        msg:
+            | ServerEventStreamMessage<string>
+            | ServerEventStreamMessage<string>[],
+    ): Promise<void> | void {
+        if (Array.isArray(msg)) {
+            this.eventStream.push(
+                msg.map((m) => {
+                    switch (m.type) {
+                        case 'ES_END':
+                            return {
+                                event: 'start',
+                                data: m.reason ?? '',
+                            } as const;
+                        case 'ES_EVENT':
+                            return {
+                                event: 'message',
+                                data: m.body ?? '',
+                            } as const;
+                        case 'ES_START':
+                            return { event: 'start', data: '' } as const;
+                        case 'HEARTBEAT':
+                            return { event: 'heartbeat', data: '' } as const;
+                        default:
+                            m satisfies never;
+                            throw new Error('Invalid msg');
+                    }
+                }),
+            );
+            return;
+        }
+        switch (msg.type) {
+            case 'ES_END':
+                return this.eventStream.push({
+                    event: 'start',
+                    data: msg.reason ?? '',
+                } as const);
+            case 'ES_EVENT':
+                return this.eventStream.push({
+                    event: 'message',
+                    data: msg.body ?? '',
+                });
+            case 'ES_START':
+                return this.eventStream.push({ event: 'start', data: '' });
+            case 'HEARTBEAT':
+                return this.eventStream.push({ event: 'heartbeat', data: '' });
+            default:
+                msg satisfies never;
+                throw new Error('Invalid msg');
+        }
+    }
+
+    close(): void {
+        this.eventStream.close();
+    }
+    onClosed(cb: () => void): void {
+        this.eventStream.onClosed(cb);
     }
 }

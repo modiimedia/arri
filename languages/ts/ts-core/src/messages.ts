@@ -7,6 +7,7 @@ export interface ClientMessage<T = string> {
     reqId?: string;
     contentType: 'application/json';
     clientVersion?: string;
+    lastEventId?: string;
     customHeaders: Record<string, string>;
     body?: T;
 }
@@ -16,7 +17,10 @@ export type ServerMessage<T = string> =
     | ServerSuccessMessage<T>
     | ServerFailureMessage
     | ServerHeartbeatMessage
-    | ServerConnectionStartMessage;
+    | ServerConnectionStartMessage
+    | ServerEventStreamStartMessage
+    | ServerEventStreamEventMessage<T>
+    | ServerEventStreamEndMessage;
 export interface ServerSuccessMessage<T = string> {
     type: 'SUCCESS';
     reqId?: string;
@@ -43,6 +47,29 @@ export interface ServerConnectionStartMessage {
     type: 'CONNECTION_START';
     heartbeatInterval: number | undefined;
 }
+export type ServerEventStreamMessage<T = string> =
+    | ServerHeartbeatMessage
+    | ServerEventStreamStartMessage
+    | ServerEventStreamEventMessage<T>
+    | ServerEventStreamEndMessage;
+export interface ServerEventStreamStartMessage {
+    type: 'ES_START';
+    reqId: string | undefined;
+    heartbeatInterval: number | undefined;
+    customHeaders: Record<string, string>;
+    contentType: 'application/json';
+}
+export interface ServerEventStreamEventMessage<T> {
+    type: 'ES_EVENT';
+    reqId: string | undefined;
+    eventId: string | undefined;
+    body?: T;
+}
+export interface ServerEventStreamEndMessage {
+    type: 'ES_END';
+    reqId: string | undefined;
+    reason: string | undefined;
+}
 
 // const msg = `
 // ARRIRPC/1.0 users.getUsers
@@ -68,6 +95,7 @@ export function parseClientMessage(
     let reqId: string | undefined;
     let clientVersion: string | undefined;
     let contentType: string | undefined;
+    let lastEventId: string | undefined;
     const customHeaders: Record<string, string> = {};
     let currentLine = '';
     let bodyStartIndex: number | undefined;
@@ -90,6 +118,9 @@ export function parseClientMessage(
                 break;
             case 'content-type':
                 contentType = value;
+                break;
+            case 'last-event-id':
+                lastEventId = value;
                 break;
             default:
                 customHeaders[key] = value;
@@ -137,6 +168,7 @@ export function parseClientMessage(
             value: {
                 rpcName: procedure,
                 reqId: reqId,
+                lastEventId: lastEventId,
                 clientVersion: clientVersion,
                 customHeaders: customHeaders,
                 contentType: contentType,
@@ -149,6 +181,7 @@ export function parseClientMessage(
         value: {
             rpcName: procedure,
             reqId: reqId,
+            lastEventId: lastEventId,
             clientVersion: clientVersion,
             contentType: contentType,
             customHeaders: customHeaders,
@@ -175,14 +208,10 @@ export function parseServerMessage(
     input: string,
 ): Result<ServerMessage, string> {
     let reqId: string | undefined;
-    let msgType:
-        | 'SUCCESS'
-        | 'FAILURE'
-        | 'HEARTBEAT'
-        | 'CONNECTION_START'
-        | 'UNKNOWN'
-        | undefined;
+    let msgType: ServerMessage<any>['type'] | 'UNKNOWN' | undefined;
     let contentType: 'application/json' | undefined;
+    let eventId: string | undefined;
+    let reason: string | undefined;
     const customHeaders: Record<string, string> = {};
     let currentLine = '';
     let bodyStartIndex: number | undefined;
@@ -230,6 +259,10 @@ export function parseServerMessage(
                 }
                 break;
             }
+            case 'event-id': {
+                eventId = value;
+                break;
+            }
             default:
                 customHeaders[key] = value;
                 break;
@@ -251,7 +284,7 @@ export function parseServerMessage(
         currentLine += char;
     }
 
-    if (msgType === 'UNKNOWN') {
+    if (msgType === 'UNKNOWN' || typeof msgType === 'undefined') {
         return {
             success: false,
             error: 'Invalid message. Must begin with a message type header. Ex: "ARRIRPC/{version} {msgType}"',
@@ -318,7 +351,41 @@ export function parseServerMessage(
                     heartbeatInterval: heartbeatInterval,
                 },
             };
+        case 'ES_START': {
+            return {
+                success: true,
+                value: {
+                    type: 'ES_START',
+                    reqId: reqId,
+                    heartbeatInterval: heartbeatInterval,
+                    contentType: contentType ?? 'application/json',
+                    customHeaders: customHeaders,
+                },
+            };
+        }
+        case 'ES_EVENT': {
+            return {
+                success: true,
+                value: {
+                    type: 'ES_EVENT',
+                    reqId: reqId,
+                    eventId: eventId,
+                    body: bodyStr,
+                },
+            };
+        }
+        case 'ES_END': {
+            return {
+                success: true,
+                value: {
+                    type: 'ES_END',
+                    reqId: reqId,
+                    reason: reason,
+                },
+            };
+        }
         default:
+            msgType satisfies never;
             return {
                 success: false,
                 error: 'Unknown message type',
@@ -354,13 +421,30 @@ export function encodeServerMessage(
             );
             return output;
         case 'CONNECTION_START':
-        case 'HEARTBEAT': {
+        case 'HEARTBEAT':
+        case 'ES_START': {
             if (input.heartbeatInterval) {
                 output += `heartbeat-interval: ${input.heartbeatInterval}\n`;
             }
             output += '\n';
             return output;
         }
+        case 'ES_EVENT': {
+            if (input.eventId) {
+                output += `event-id: ${input.eventId}\n`;
+            }
+            output += '\n';
+            if (input.body) {
+                output += input.body;
+            }
+            return output;
+        }
+        case 'ES_END':
+            output += '\n';
+            return output;
+        default:
+            input satisfies never;
+            throw new Error(`Unsupport message type: ${(input as any).type}`);
     }
 }
 

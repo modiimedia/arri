@@ -391,6 +391,43 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/cli
 
+  tests/servers/mock-server:
+    dependencies:
+      '@arrirpc/express-adapter':
+        specifier: workspace:*
+        version: link:../../../languages/ts/express-adapter
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-schema
+      '@sinclair/typebox':
+        specifier: ^0.34.35
+        version: 0.34.36
+      '@types/express':
+        specifier: ^5.0.1
+        version: 5.0.3
+      arri:
+        specifier: workspace:*
+        version: link:../../../tooling/cli
+      express:
+        specifier: ^5.1.0
+        version: 5.1.0
+    devDependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../../languages/ts/eslint-plugin
+      '@arrirpc/server':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-server
+      '@arrirpc/typebox-adapter':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-schema-typebox-adapter
+      '@faker-js/faker':
+        specifier: ^9.8.0
+        version: 9.8.0
+
   tests/servers/ts:
     dependencies:
       '@arrirpc/express-adapter':

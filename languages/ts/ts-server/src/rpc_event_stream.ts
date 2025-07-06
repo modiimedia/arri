@@ -1,4 +1,5 @@
 import { RpcHttpMethod } from '@arrirpc/codegen-utils';
+import { ServerEventStreamMessage } from '@arrirpc/core';
 import {
     a,
     ADiscriminatorSchema,
@@ -8,7 +9,6 @@ import {
     InferType,
     ValueError,
 } from '@arrirpc/schema';
-import * as h3 from 'h3';
 
 import { RpcContext } from './rpc';
 
@@ -54,15 +54,15 @@ export function isEventStreamRpc(
     );
 }
 
-export interface EventStreamDispatcher {
+export interface EventStreamDispatcher<T> {
     lastEventId?: string;
 
     send(): void;
 
-    push(msg: h3.EventStreamMessage): Promise<void> | void;
-    push(msgs: h3.EventStreamMessage[]): Promise<void> | void;
+    push(msg: ServerEventStreamMessage<T>): Promise<void> | void;
+    push(msgs: ServerEventStreamMessage<T>[]): Promise<void> | void;
     push(
-        msg: h3.EventStreamMessage | h3.EventStreamMessage[],
+        msg: ServerEventStreamMessage<T> | ServerEventStreamMessage<T>[],
     ): Promise<void> | void;
 
     close(): void;
@@ -76,34 +76,52 @@ export type EventStreamPushResult =
     | { success: false; errors: ValueError[] };
 
 export class RpcEventStreamConnection<TData> {
-    readonly dispatcher: EventStreamDispatcher;
+    readonly dispatcher: EventStreamDispatcher<string>;
 
+    private readonly _reqId: string | undefined;
     private readonly _validator: CompiledValidator<ASchema<TData>>;
     private _heartbeatInterval: any | undefined = undefined;
     private readonly _heartbeatIntervalMs: number;
     private readonly _heartbeatEnabled: boolean;
 
     constructor(
-        dispatcher: EventStreamDispatcher,
+        dispatcher: EventStreamDispatcher<string>,
         validator: CompiledValidator<ASchema<TData>> | undefined,
         heartbeatInterval: number,
         heartbeatEnabled: boolean,
+        reqId: string | undefined,
     ) {
         this.dispatcher = dispatcher;
         this._validator = validator ?? a.compile(a.any());
         this._heartbeatIntervalMs = heartbeatInterval;
         this._heartbeatEnabled = heartbeatEnabled;
+        this._reqId = reqId;
     }
 
     get lastEventId(): string | undefined {
         return this.dispatcher.lastEventId;
     }
 
+    private _customHeaders: Record<string, string> = {};
+
+    setResponseHeader(key: string, val: string) {
+        this._customHeaders[key] = val;
+    }
+
+    setResponseHeaders(headers: Record<string, string>) {
+        for (const [key, val] of Object.entries(headers)) {
+            this._customHeaders[key] = val;
+        }
+    }
+
     send() {
         void this.dispatcher.send();
         this.dispatcher.push({
-            event: 'start',
-            data: 'connection successful',
+            type: 'ES_START',
+            reqId: this._reqId,
+            heartbeatInterval: this._heartbeatIntervalMs,
+            contentType: 'application/json',
+            customHeaders: this._customHeaders,
         });
         if (this._heartbeatEnabled) {
             this._heartbeatInterval = setInterval(async () => {
@@ -120,7 +138,7 @@ export class RpcEventStreamConnection<TData> {
     async push(data: TData | TData[], eventId?: string) {
         if (Array.isArray(data)) {
             const results: EventStreamPushResult[] = [];
-            const events: h3.EventStreamMessage[] = [];
+            const events: ServerEventStreamMessage<string>[] = [];
             for (const item of data) {
                 if (!this._validator.validate(item)) {
                     const errors = this._validator.errors(item);
@@ -136,9 +154,10 @@ export class RpcEventStreamConnection<TData> {
                     continue;
                 }
                 events.push({
-                    id: eventId,
-                    event: 'message',
-                    data: serialResult.value,
+                    type: 'ES_EVENT',
+                    reqId: this._reqId,
+                    eventId: eventId,
+                    body: serialResult.value,
                 });
             }
             await this.dispatcher.push(events);
@@ -156,9 +175,10 @@ export class RpcEventStreamConnection<TData> {
             return serialResult;
         }
         await this.dispatcher.push({
-            id: eventId,
-            event: 'message',
-            data: serialResult.value,
+            type: 'ES_EVENT',
+            reqId: this._reqId,
+            eventId: eventId,
+            body: serialResult.value,
         });
         return {
             success: true,
@@ -169,7 +189,10 @@ export class RpcEventStreamConnection<TData> {
      * This is called automatically using the heartbeatMs option, unless you have manually disabled the heartbeat messages
      */
     async heartbeat() {
-        await this.dispatcher.push({ event: 'heartbeat', data: '' });
+        await this.dispatcher.push({
+            type: 'HEARTBEAT',
+            heartbeatInterval: this._heartbeatInterval,
+        });
     }
 
     private cleanup() {
@@ -178,12 +201,13 @@ export class RpcEventStreamConnection<TData> {
         }
     }
 
-    async close(notifyClients = true) {
-        if (notifyClients) {
+    async close(options?: { reason?: string; notifyClients?: boolean }) {
+        if (options?.notifyClients ?? true) {
             try {
                 await this.dispatcher.push({
-                    event: 'done',
-                    data: 'this stream has ended',
+                    type: 'ES_END',
+                    reqId: this._reqId,
+                    reason: options?.reason,
                 });
             } catch (_) {
                 // do nothing
