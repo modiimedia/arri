@@ -136,7 +136,7 @@ export class HttpAdapter
                         rpcName: '',
                         reqId: undefined,
                         reqStart: event.context.reqStart,
-                        ipAddress: h3.getRequestIP(event, {
+                        remoteAddress: h3.getRequestIP(event, {
                             xForwardedFor: this._trustXForwardedFor,
                         }),
                         transport: this.transportId,
@@ -172,7 +172,7 @@ export class HttpAdapter
                 const context: RpcMiddlewareContext = {
                     rpcName: '',
                     reqId: undefined,
-                    ipAddress: h3.getRequestIP(event, {
+                    remoteAddress: h3.getRequestIP(event, {
                         xForwardedFor: this._trustXForwardedFor,
                     }),
                     reqStart: event.context.reqStart ?? new Date(),
@@ -292,7 +292,7 @@ export class HttpAdapter
             const context: RpcMiddlewareContext = {
                 rpcName: name,
                 reqId: undefined,
-                ipAddress: h3.getRequestIP(event, {
+                remoteAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
                 }),
                 reqStart: event.context.reqStart ?? new Date(),
@@ -391,7 +391,7 @@ export class HttpAdapter
                 rpcName: name,
                 reqId: h3.getHeader(event, 'req-id'),
                 reqStart: event.context.reqStart ?? new Date(),
-                ipAddress: h3.getRequestIP(event, {
+                remoteAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
                 }),
                 transport: this.transportId,
@@ -476,7 +476,7 @@ export class HttpAdapter
                 transport: this.transportId,
                 reqId: undefined,
                 reqStart: event.context.reqStart ?? new Date(),
-                ipAddress: h3.getRequestIP(event, {
+                remoteAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
                 }),
                 rpcName: '',
@@ -525,7 +525,7 @@ export class HttpAdapter
                 rpcName: '',
                 reqId: undefined,
                 reqStart: event.context.reqStart ?? new Date(),
-                ipAddress: h3.getRequestIP(event, {
+                remoteAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
                 }),
                 transport: this.transportId,
@@ -798,6 +798,7 @@ class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
     close(): void {
         this.eventStream.close();
     }
+
     onClosed(cb: () => void): void {
         this.eventStream.onClosed(cb);
     }

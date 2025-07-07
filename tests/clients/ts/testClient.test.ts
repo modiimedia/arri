@@ -19,12 +19,13 @@ const wsConnectionUrl = 'ws://127.0.0.1:2020/establish-connection';
 const headers = {
     'x-test-header': 'test',
 };
+const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
 
 const client = new TestClient({
     baseUrl,
     wsConnectionUrl,
     headers,
-    transport: 'http',
+    transport: transport,
 });
 
 describe('non-rpc http routes', () => {
@@ -170,7 +171,8 @@ describe('rpcs', () => {
         let firedOnErr = false;
         const unauthenticatedClient = new TestClient({
             baseUrl,
-            wsConnectionUrl: baseUrl + '/create-connection',
+            wsConnectionUrl: wsConnectionUrl,
+            transport: transport,
             onError(_) {
                 firedOnErr = true;
             },
@@ -190,6 +192,7 @@ describe('rpcs', () => {
         const _client = new TestClient({
             baseUrl: baseUrl,
             wsConnectionUrl,
+            transport: transport,
             async headers() {
                 await new Promise((res) => {
                     setTimeout(() => {
@@ -334,6 +337,7 @@ describe('rpcs', () => {
         const customClient = new TestClient({
             baseUrl,
             wsConnectionUrl,
+            transport,
             onError(err) {
                 onErrorFired = true;
                 expect(err instanceof ArriErrorInstance).toBe(true);
@@ -452,6 +456,7 @@ describe('event stream rpcs', () => {
         const dynamicClient = new TestClient({
             baseUrl,
             wsConnectionUrl,
+            transport,
             headers() {
                 return {
                     'x-test-header': randomUUID(),
@@ -493,6 +498,7 @@ describe('request options', () => {
             headers,
             retry: 2,
             retryErrorCodes: [409],
+            transport,
             onError: () => {
                 numErr++;
             },
@@ -513,6 +519,7 @@ describe('request options', () => {
             baseUrl,
             wsConnectionUrl,
             headers,
+            transport,
             retry: false,
             onError: () => {
                 numErr += 1000;

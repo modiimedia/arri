@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { HttpMethod, RpcDefinition } from '@arrirpc/codegen-utils';
 import {
     ArriError,
+    ClientMessage,
     encodeServerMessage,
     parseClientMessage,
     ServerEventStreamMessage,
@@ -22,6 +23,7 @@ import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
 import {
     EventStreamDispatcher,
     EventStreamRpcHandler,
+    RpcEventStreamConnection,
 } from './rpc_event_stream';
 
 export interface WsOptions {
@@ -72,6 +74,8 @@ export class WsAdapter implements TransportAdapter {
     private readonly _hooks: Hooks;
 
     private _handlers: Map<string, HandlerItem> = new Map();
+    private _eventStreams: Map<string, RpcEventStreamConnection<any>> =
+        new Map();
     private _middlewares: RpcMiddleware[] = [];
     private _peers: Map<string, Peer> = new Map();
 
@@ -236,7 +240,7 @@ export class WsAdapter implements TransportAdapter {
                 rpcName: '',
                 reqStart: reqStart,
                 transport: 'ws',
-                ipAddress: peer.remoteAddress,
+                remoteAddress: peer.remoteAddress,
                 clientVersion: undefined,
                 headers: {},
                 setResponseHeader: function (
@@ -256,7 +260,7 @@ export class WsAdapter implements TransportAdapter {
             reqId: msg.reqId,
             rpcName: msg.rpcName,
             reqStart: reqStart,
-            ipAddress: peer.remoteAddress,
+            remoteAddress: peer.remoteAddress,
             transport: this.transportId,
             clientVersion: msg.clientVersion,
             headers: result.value.customHeaders,
@@ -269,6 +273,9 @@ export class WsAdapter implements TransportAdapter {
                 }
             },
         };
+        if (msg.action) {
+            return this._handleActionMessage(peer, context, msg);
+        }
         try {
             await this._config.onRequest?.(peer, context);
             await this._globalOptions?.onRequest?.(context);
@@ -298,7 +305,18 @@ export class WsAdapter implements TransportAdapter {
                 await m(context);
             }
             if (handler.isEventStream) {
-                throw new Error('Not implemented');
+                const eventStream = new RpcEventStreamConnection(
+                    new WsEventStream(peer),
+                    handler.validators?.response,
+                    this._globalOptions?.heartbeatInterval ?? 20000,
+                    this._globalOptions?.heartbeatEnabled ?? true,
+                    context.reqId,
+                );
+                const esId = `${peer.id}_${context.reqId}`;
+                this._eventStreams.set(esId, eventStream);
+                (context as any).stream = eventStream;
+                await handler.handler(context as any);
+                return;
             }
             const response = await handler.handler(context as any);
             if (handler.validators.response) {
@@ -333,6 +351,42 @@ export class WsAdapter implements TransportAdapter {
         } catch (err) {
             (context as any).error = err;
             return this._handleArriError(peer, context as any);
+        }
+    }
+
+    private async _handleActionMessage(
+        peer: Peer,
+        context: RpcMiddlewareContext,
+        message: ClientMessage,
+    ) {
+        try {
+            switch (message.action) {
+                case 'CLOSE': {
+                    const esConnection = this._eventStreams.get(
+                        `${peer.id}_${context.reqId}`,
+                    );
+                    if (!esConnection) return;
+                    await esConnection.close({
+                        reason: 'closed by client',
+                        notifyClients: true,
+                    });
+                    return;
+                }
+                case undefined:
+                    throw new ArriError({
+                        code: 500,
+                        message: `Invalid state. Action should not be undefined when invoking _handleActionMessage()`,
+                    });
+                default:
+                    message.action satisfies never;
+                    throw new ArriError({
+                        code: 400,
+                        message: `Unsupported action ${message.action}`,
+                    });
+            }
+        } catch (err) {
+            (context as any).error = err;
+            this._handleArriError(peer, context as any);
         }
     }
 
@@ -421,11 +475,25 @@ export class WsEventStream implements EventStreamDispatcher<string> {
 
     close(): void {
         this._closedCb?.();
+        for (const fn of this._onClosedListeners) {
+            fn();
+        }
     }
 
     private _closedCb: (() => void) | undefined;
+    private _onClosedListeners: (() => void)[] = [];
 
     onClosed(cb: () => void): void {
         this._closedCb = cb;
+    }
+
+    addOnClosedListener(cb: () => void): void {
+        this._onClosedListeners.push(cb);
+    }
+
+    removeOnClosedListener(cb: () => void): void {
+        const index = this._onClosedListeners.findIndex((val) => val === cb);
+        if (index < 0) return;
+        this._onClosedListeners.splice(index, 1);
     }
 }

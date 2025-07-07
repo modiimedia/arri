@@ -7,15 +7,38 @@ import {
 } from '@arrirpc/schema';
 
 export interface RpcContext<TParams> {
+    /**
+     * ID sent by the client using the `req-id` header
+     *
+     * [NOTE] This ID is NOT universally unique it is only unique to the client.
+     */
     reqId: string | undefined;
+    /**
+     * The name of the procedure being invoked
+     */
     rpcName: string;
+    /**
+     * When the request began
+     */
     reqStart: Date;
+    /**
+     * Which transport the request was sent over. Example: "http", "ws", etc
+     */
     transport: string;
-    ipAddress: string | undefined;
+    remoteAddress: string | undefined;
+    /**
+     * Value of the `client-version` header sent by the client.
+     *
+     * For Arri generated clients the `client-version` header will match the `version` option
+     * if set when initializing the ArriApp
+     */
     clientVersion: string | undefined;
     headers: Record<string, string | undefined>;
     setResponseHeader(key: string, val: string): void;
     setResponseHeaders(headers: Record<string, string>): void;
+    /**
+     * The RPC request parameters
+     */
     params: TParams;
 }
 

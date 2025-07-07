@@ -1,16 +1,20 @@
 import {
+    ArriError,
+    ClientMessage,
     encodeClientMessage,
     parseServerMessage,
+    ServerEventStreamMessage,
     ServerFailureMessage,
     ServerMessage,
     ServerSuccessMessage,
 } from '@arrirpc/core';
-import { EventSourceController, HttpMethod } from 'event-source-plus';
+import { HttpMethod } from 'event-source-plus';
 import { IncomingMessage } from 'http';
 import { randomUUID } from 'uncrypto';
 import ws from 'websocket';
 
 import {
+    EventStreamController,
     EventStreamHooks,
     RpcDispatcher,
     RpcDispatcherOptions,
@@ -29,7 +33,12 @@ export class WsDispatcher implements RpcDispatcher {
     private options: WsDispatcherOptions;
     private responseHandlers: Map<
         string,
-        (msg: ServerSuccessMessage | ServerFailureMessage) => any
+        (
+            msg:
+                | ServerSuccessMessage
+                | ServerFailureMessage
+                | ServerEventStreamMessage,
+        ) => any
     > = new Map();
 
     private heartbeatTimeout: any | undefined;
@@ -107,7 +116,10 @@ export class WsDispatcher implements RpcDispatcher {
                     }
                     switch (parsedMsg.type) {
                         case 'SUCCESS':
-                        case 'FAILURE': {
+                        case 'FAILURE':
+                        case 'ES_START':
+                        case 'ES_END':
+                        case 'ES_EVENT': {
                             this.resetHeartbeatTimeout();
                             if (!parsedMsg.reqId) return;
                             const handler = this.responseHandlers.get(
@@ -167,8 +179,6 @@ export class WsDispatcher implements RpcDispatcher {
             this.heartbeatTimeoutMultiplier =
                 options.heartbeatTimeoutMultiplier;
         }
-        const errHandler =
-            options?.onError ?? this.options.onError ?? ((_, __) => {});
         // default timeout of 60sec
         const timeout = options?.timeout ?? this.options.timeout ?? 60000;
         this.reqCount++;
@@ -187,7 +197,8 @@ export class WsDispatcher implements RpcDispatcher {
         });
         if (!this.connection) {
             const err = new Error("Connection hasn't been established");
-            errHandler(req, err);
+            options?.onError?.(req, err);
+            this.options.onError?.(req, err);
             throw new Error("Connection hasn't been established");
         }
         return new Promise((res, rej) => {
@@ -196,7 +207,8 @@ export class WsDispatcher implements RpcDispatcher {
                 options.signal.onabort = (_) => {
                     if (responseReceived) return;
                     const err = new Error('Request was aborted');
-                    errHandler(req, err);
+                    options.onError?.(req, err);
+                    this.options.onError?.(req, err);
                     rej(err);
                 };
             }
@@ -204,7 +216,8 @@ export class WsDispatcher implements RpcDispatcher {
                 setTimeout(() => {
                     if (responseReceived) return;
                     const err = new Error('Request timeout reached');
-                    errHandler(req, err);
+                    options?.onError?.(req, err);
+                    this.options?.onError?.(req, err);
                     rej(err);
                 }, timeout);
             }
@@ -212,8 +225,19 @@ export class WsDispatcher implements RpcDispatcher {
                 responseReceived = true;
                 this.responseHandlers.delete(reqId);
                 if (msg.type !== 'SUCCESS') {
+                    if (msg.type !== 'FAILURE') {
+                        const err = new ArriError({
+                            code: 0,
+                            message: `Unexpected message type received from server. Expected either "SUCCESS" or "FAILURE". Got "${msg.type}".`,
+                        });
+                        options?.onError?.(req, err);
+                        this.options.onError?.(req, err);
+                        rej(err);
+                        return;
+                    }
                     const err = msg.error;
-                    errHandler(req, err);
+                    options?.onError?.(req, err);
+                    this.options.onError?.(req, err);
                     rej(err);
                     return;
                 }
@@ -235,10 +259,136 @@ export class WsDispatcher implements RpcDispatcher {
     }
 
     handleEventStreamRpc<TParams, TOutput>(
-        _req: RpcRequest<TParams>,
-        _validator: RpcRequestValidator<TParams, TOutput>,
-        _hooks?: EventStreamHooks<TOutput> | undefined,
-    ): EventSourceController {
-        throw new Error('Method not implemented.');
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TOutput>,
+        hooks?: EventStreamHooks<TOutput> | undefined,
+    ): EventStreamController {
+        if (!req.reqId) req.reqId = randomUUID();
+        const controller = new WsEventSource(
+            req,
+            validator,
+            hooks ?? {},
+            async () => {
+                await this.setupConnection();
+                if (!this.connection) {
+                    throw new Error(`Error establishing connection`);
+                }
+                return this.connection;
+            },
+            this.options.onError,
+        );
+        this.responseHandlers.set(req.reqId!, (msg) =>
+            controller.handleMessage(msg),
+        );
+        controller.onClosed(() => {
+            this.responseHandlers.delete(req.reqId!);
+        });
+        void controller.init();
+        return controller;
+    }
+}
+
+class WsEventSource<TParams, TOutput> implements EventStreamController {
+    lastEventId: string | undefined;
+
+    req: RpcRequest<TParams>;
+    validator: RpcRequestValidator<TParams, TOutput>;
+    hooks: EventStreamHooks<TOutput>;
+    getConnection: () => ws.connection | Promise<ws.connection>;
+    globalOnError: RpcDispatcherOptions['onError'];
+
+    constructor(
+        req: RpcRequest<TParams>,
+        validator: RpcRequestValidator<TParams, TOutput>,
+        hooks: EventStreamHooks<TOutput>,
+        getConnection: () => ws.connection | Promise<ws.connection>,
+        onError: RpcDispatcherOptions['onError'],
+    ) {
+        this.req = req;
+        this.validator = validator;
+        this.hooks = hooks;
+        this.getConnection = getConnection;
+        this.globalOnError = onError;
+    }
+
+    async init() {
+        try {
+            const connection = await this.getConnection();
+            const serialValue = this.validator.params.toJsonString(
+                this.req.data,
+            );
+            const msg: ClientMessage = {
+                rpcName: this.req.procedure,
+                reqId: this.req.reqId,
+                action: undefined,
+                contentType: 'application/json',
+                clientVersion: this.req.clientVersion,
+                lastEventId: this.lastEventId,
+                customHeaders: await getHeaders(this.req.customHeaders),
+                body: serialValue,
+            };
+            connection.send(encodeClientMessage(msg));
+        } catch (err) {
+            this.hooks.onError?.(err);
+            this.globalOnError?.(this.req, err);
+        }
+    }
+
+    async handleMessage(msg: ServerMessage) {
+        switch (msg.type) {
+            case 'ES_START':
+                this.hooks.onOpen?.();
+                return;
+            case 'ES_EVENT': {
+                if (msg.eventId) this.lastEventId = msg.eventId;
+                const parsedMsg = this.validator.response.fromJsonString(
+                    msg.body ?? '',
+                );
+                this.hooks.onMessage?.(parsedMsg);
+                return;
+            }
+
+            case 'ES_END':
+                this.handleClose(false);
+                return;
+            case 'FAILURE':
+                this.hooks.onError?.(msg.error);
+                this.globalOnError?.(this.req, msg.error);
+                return;
+            case 'CONNECTION_START':
+            case 'HEARTBEAT':
+            case 'SUCCESS':
+                return;
+        }
+    }
+
+    private async handleClose(clientInitiated: boolean) {
+        if (clientInitiated) return this.abort();
+        this.hooks.onClose?.();
+        this.cb?.();
+    }
+
+    async abort(): Promise<void> {
+        const connection = await this.getConnection();
+        const msg: ClientMessage = {
+            rpcName: this.req.procedure,
+            reqId: this.req.reqId,
+            action: 'CLOSE',
+            contentType: 'application/json',
+            clientVersion: this.req.clientVersion,
+            lastEventId: undefined,
+            customHeaders: {},
+            body: undefined,
+        };
+        const encodedMsg = encodeClientMessage(msg);
+        connection.send(encodedMsg);
+        this.hooks.onClose?.();
+        this.cb?.();
+    }
+
+    private cb: (() => void) | undefined;
+
+    onClosed(cb: () => void) {
+        this.cb = cb;
     }
 }
