@@ -35,7 +35,10 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "inputs": ["{projectRoot}/src"],
+      "inputs": [
+        "{projectRoot}/src/**/*",
+        "{workspaceRoot}/tests/test-files/**/*"
+      ],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/ts/ts-core"

@@ -1,5 +1,6 @@
 import { ArriError } from './errors';
 import {
+    ARRI_VERSION,
     ClientMessage,
     encodeClientMessage,
     encodeServerMessage,
@@ -33,7 +34,7 @@ test('parseHeaderLine', () => {
     }
 });
 
-describe('client messages', () => {
+describe('client messages', async () => {
     const decodedMsg: ClientMessage = {
         rpcName: 'example.foo.bar',
         reqId: '15',
@@ -44,8 +45,10 @@ describe('client messages', () => {
             bar: 'hello\\nworld',
         },
         body: `{"message":"hello world"}`,
+        lastEventId: undefined,
+        action: undefined,
     };
-    const encodedMsg = `ARRIRPC/0.0.8 example.foo.bar
+    const encodedMsg = `ARRIRPC/${ARRI_VERSION} example.foo.bar
 content-type: application/json
 req-id: 15
 client-version: 1
@@ -54,9 +57,27 @@ bar: hello\\nworld
 
 {"message":"hello world"}`;
 
+    const decodedActionMsg: ClientMessage = {
+        rpcName: 'example.foo.bar',
+        contentType: 'application/json',
+        reqId: '15',
+        customHeaders: {},
+        action: 'CLOSE',
+        clientVersion: undefined,
+        lastEventId: undefined,
+        body: undefined,
+    };
+    const encodedActionMsg = `ARRIRPC/${ARRI_VERSION} example.foo.bar CLOSE
+content-type: application/json
+req-id: 15
+
+`;
+
     test('encoding', () => {
         const result = encodeClientMessage(decodedMsg);
         expect(result).toStrictEqual(encodedMsg);
+        const actionResult = encodeClientMessage(decodedActionMsg);
+        expect(actionResult).toStrictEqual(encodedActionMsg);
     });
     test('decoding', () => {
         const result = parseClientMessage(encodedMsg);
@@ -64,12 +85,44 @@ bar: hello\\nworld
         expect(result.success).toBe(true);
         if (!result.success) return;
         expect(result.value).toStrictEqual(decodedMsg);
+
+        const actionResult = parseClientMessage(encodedActionMsg);
+        if (!actionResult.success) console.error(actionResult.error);
+        expect(actionResult.success).toBe(true);
+        if (!actionResult.success) return;
+        expect(actionResult.value).toStrictEqual(decodedActionMsg);
+    });
+    test('decoding failures', () => {
+        const testCases = [
+            `ARRIRPC/0.0.7 example.foo.bar
+content-type: application/json
+req-id: 15
+
+{"message":"hello world"}`,
+            `HTTP/1.1 example.foo.bar
+content-type: application/json
+req-id: 15
+
+{"message":"hello world"}`,
+            `ARRIRPC/${ARRI_VERSION} example.foo.bar
+content-type: application/json
+req-id: 15
+client-version: 1
+foo: foo
+bar: hello world`,
+        ];
+        for (const testCase of testCases) {
+            const result = parseClientMessage(testCase);
+            if (result.success)
+                console.log('UNEXPECTED SUCCESS:', result.value);
+            expect(result.success).toBe(false);
+        }
     });
 });
 
 describe('server messages', () => {
     describe('success message', () => {
-        const encodedMsg = `ARRIRPC/0.0.8 SUCCESS
+        const encodedMsg = `ARRIRPC/${ARRI_VERSION} SUCCESS
 content-type: application/json
 req-id: 15
 foo: foo
@@ -97,7 +150,7 @@ foo: foo
     });
     describe('failure message', () => {
         test('encoding', () => {
-            const expectedResult = `ARRIRPC/0.0.8 FAILURE
+            const expectedResult = `ARRIRPC/${ARRI_VERSION} FAILURE
 content-type: application/json
 req-id: 15
 foo: foo
@@ -124,13 +177,13 @@ foo: foo
             type: 'HEARTBEAT',
             heartbeatInterval: 150,
         };
-        const withIntervalEncoded = `ARRIRPC/0.0.8 HEARTBEAT
+        const withIntervalEncoded = `ARRIRPC/${ARRI_VERSION} HEARTBEAT
 heartbeat-interval: 150\n\n`;
         const withoutInterval: ServerMessage = {
             type: 'HEARTBEAT',
             heartbeatInterval: undefined,
         };
-        const withoutIntervalEncoded = `ARRIRPC/0.0.8 HEARTBEAT\n\n`;
+        const withoutIntervalEncoded = `ARRIRPC/${ARRI_VERSION} HEARTBEAT\n\n`;
         test('encoding', () => {
             const result1 = encodeServerMessage(withInterval);
             expect(result1).toBe(withIntervalEncoded);
@@ -153,14 +206,14 @@ heartbeat-interval: 150\n\n`;
             type: 'CONNECTION_START',
             heartbeatInterval: 150,
         };
-        const encodedMessageWithInterval = `ARRIRPC/0.0.8 CONNECTION_START
+        const encodedMessageWithInterval = `ARRIRPC/${ARRI_VERSION} CONNECTION_START
 heartbeat-interval: 150\n\n`;
 
         const decodedMessageWithoutInterval: ServerMessage = {
             type: 'CONNECTION_START',
             heartbeatInterval: undefined,
         };
-        const encodedMessageWithoutInterval = `ARRIRPC/0.0.8 CONNECTION_START\n\n`;
+        const encodedMessageWithoutInterval = `ARRIRPC/${ARRI_VERSION} CONNECTION_START\n\n`;
         test('encoding', () => {
             const result1 = encodeServerMessage(decodedMessageWithInterval);
             expect(result1).toStrictEqual(encodedMessageWithInterval);
@@ -180,9 +233,9 @@ heartbeat-interval: 150\n\n`;
     });
     test('invalid messages', () => {
         const messageInputs = [
-            `ARRIRPC/0.0.8 FOO\n\n`,
+            `ARRIRPC/${ARRI_VERSION} FOO\n\n`,
             `HTTP/1 GET /hello-world`,
-            `ARRIRPC/0.0.8 SUCCESS\ncontent-type: application/json\nreq-id: 1\n`,
+            `ARRIRPC/${ARRI_VERSION} SUCCESS\ncontent-type: application/json\nreq-id: 1\n`,
         ];
         for (const input of messageInputs) {
             const result = parseServerMessage(input);

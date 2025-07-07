@@ -14,13 +14,13 @@ export function isCurrentArriVersionPrefix(input: string): boolean {
 // TODO: make it so body can also be binary
 export interface ClientMessage<T = string> {
     rpcName: string;
-    reqId?: string;
-    action?: ClientMessageAction;
+    reqId: string | undefined;
+    action: ClientMessageAction | undefined;
     contentType: 'application/json';
-    clientVersion?: string;
-    lastEventId?: string;
+    clientVersion: string | undefined;
+    lastEventId: string | undefined;
     customHeaders: Record<string, string>;
-    body?: T;
+    body: T | undefined;
 }
 
 export const ClientMessageActionValues = ['CLOSE'] as const;
