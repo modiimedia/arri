@@ -21,6 +21,8 @@ const headers = {
 };
 const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
 
+console.info(`running tests over "${transport}"`);
+
 const client = new TestClient({
     baseUrl,
     wsConnectionUrl,

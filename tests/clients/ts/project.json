@@ -5,6 +5,7 @@
   "targets": {
     "integration-test": {
       "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/**/*.ts", { "env": "CLIENT_TRANSPORT" }],
       "outputs": ["{workspaceRoot}/coverage/tests/clients/ts"],
       "cache": false,
       "options": {
