@@ -275,7 +275,7 @@ ARRIRPC/0.0.8 foo.fooFoo
 content-type: application/json
 req-id: 12345
 client-version: 1.2.5
-foo: foo
+foo: hello foo
 
 {"message":"hello world"}
 ```
@@ -286,8 +286,8 @@ foo: foo
 ARRIRPC/0.0.8 foo.fooFoo
 content-type: application/json
 req-id: 54321
-foo: foo
-bar: bar
+foo: hello foo
+bar: hello bar
 
 
 ```

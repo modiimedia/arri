@@ -445,11 +445,13 @@ async function main() {
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
-                foo: 'foo',
+                foo: 'hello foo',
             },
             reqId: '12345',
             clientVersion: '1.2.5',
             body: `{"message":"hello world"}`,
+            action: undefined,
+            lastEventId: undefined,
         }),
     });
 
@@ -459,11 +461,14 @@ async function main() {
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
-                foo: 'foo',
-                bar: 'bar',
+                foo: 'hello foo',
+                bar: 'hello bar',
             },
             reqId: '54321',
             body: undefined,
+            action: undefined,
+            clientVersion: undefined,
+            lastEventId: undefined,
         }),
     });
 
@@ -475,6 +480,9 @@ async function main() {
             action: 'CLOSE',
             customHeaders: {},
             reqId: '54321',
+            clientVersion: undefined,
+            lastEventId: undefined,
+            body: undefined,
         }),
     });
 
