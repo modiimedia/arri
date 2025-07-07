@@ -23,7 +23,7 @@ export default defineEventStreamRpc({
         const interval = setInterval(async () => {
             await stream.push({ message: 'ok' });
             msgCount++;
-            if (msgCount >= 10) stream.close(false);
+            if (msgCount >= 10) stream.close({ notifyClients: false });
         });
         stream.onClosed(() => {
             clearInterval(interval);

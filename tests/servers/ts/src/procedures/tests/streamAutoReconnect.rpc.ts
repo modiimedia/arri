@@ -19,7 +19,7 @@ export default defineEventStreamRpc({
             });
             if (messageCount === params.messageCount) {
                 // manually close the connection without sending a "done" message
-                stream.close(false);
+                stream.close({ notifyClients: false });
                 return;
             }
             if (messageCount > params.messageCount) {

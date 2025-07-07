@@ -73,6 +73,16 @@ export class TestClientPrefixed {
         }
         this._dispatchers = config.dispatchers!;
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
     async emptyParamsGetRequest(
         options?: RpcOptions<'http' | 'ws'>,
     ): Promise<FooDefaultPayload> {

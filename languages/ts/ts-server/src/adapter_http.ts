@@ -389,7 +389,7 @@ export class HttpAdapter
             }
             const context: RpcMiddlewareContext = {
                 rpcName: name,
-                reqId: undefined,
+                reqId: h3.getHeader(event, 'req-id'),
                 reqStart: event.context.reqStart ?? new Date(),
                 ipAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
@@ -754,7 +754,7 @@ class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
                     switch (m.type) {
                         case 'ES_END':
                             return {
-                                event: 'start',
+                                event: 'end',
                                 data: m.reason ?? '',
                             } as const;
                         case 'ES_EVENT':
@@ -777,9 +777,9 @@ class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
         switch (msg.type) {
             case 'ES_END':
                 return this.eventStream.push({
-                    event: 'start',
+                    event: 'end',
                     data: msg.reason ?? '',
-                } as const);
+                });
             case 'ES_EVENT':
                 return this.eventStream.push({
                     event: 'message',

@@ -24,7 +24,7 @@ const client = new TestClient({
     baseUrl,
     wsConnectionUrl,
     headers,
-    transport: 'ws',
+    transport: 'http',
 });
 
 describe('non-rpc http routes', () => {
@@ -353,7 +353,7 @@ describe('event stream rpcs', () => {
         let wasConnected = false;
         let receivedMessageCount = 0;
         await new Promise((res, rej) => {
-            setTimeout(() => rej(), 2000);
+            setTimeout(() => rej('timeout exceeded'), 2000);
             const controller = client.tests.streamMessages(
                 { channelId: '1' },
                 {
@@ -394,7 +394,7 @@ describe('event stream rpcs', () => {
         let messageCount = 0;
         let errorReceived: unknown | undefined;
         await new Promise((res, rej) => {
-            setTimeout(() => rej(), 2000);
+            setTimeout(() => rej('timeout exceeded'), 2000);
             client.tests.streamTenEventsThenEnd({
                 onMessage(_) {
                     messageCount++;
@@ -420,7 +420,7 @@ describe('event stream rpcs', () => {
         let errorCount = 0;
         let messageCount = 0;
         await new Promise((res, rej) => {
-            setTimeout(() => rej(), 2000);
+            setTimeout(() => rej('timeout exceeded'), 2000);
             const controller = client.tests.streamAutoReconnect(
                 {
                     messageCount: 10,
@@ -461,7 +461,7 @@ describe('event stream rpcs', () => {
         let msgCount = 0;
         let openCount = 0;
         await new Promise((res, rej) => {
-            setTimeout(() => rej(), 2000);
+            setTimeout(() => rej('timeout exceeded'), 2000);
             const controller =
                 dynamicClient.tests.streamRetryWithNewCredentials({
                     onMessage(_) {

@@ -196,18 +196,20 @@ export class HttpDispatcher implements RpcDispatcher {
         const connectionId = randomUUID();
         const controller = eventSource.listen({
             onMessage: (message) => {
+                console.log(message);
                 resetTimeout();
                 if (
                     message.event === 'message' ||
                     message.event === undefined ||
-                    message.event === ''
+                    message.event === '' ||
+                    message.event === 'ES_EVENT'
                 ) {
                     hooks.onMessage?.(
                         validator.response.fromJsonString(message.data),
                     );
                     return;
                 }
-                if (message.event === 'done') {
+                if (message.event === 'end' || message.event === 'ES_END') {
                     clearTimeout(timeout);
                     controller.abort();
                 }

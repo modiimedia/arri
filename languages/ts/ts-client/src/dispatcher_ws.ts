@@ -181,6 +181,9 @@ export class WsDispatcher implements RpcDispatcher {
             contentType: 'application/json',
             customHeaders: await getHeaders(req.customHeaders),
             body: validator.params.toJsonString(req.data),
+            action: undefined,
+            clientVersion: req.clientVersion,
+            lastEventId: undefined,
         });
         if (!this.connection) {
             const err = new Error("Connection hasn't been established");

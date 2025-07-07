@@ -76,6 +76,15 @@ export class TestClient {
         this.tests = new TestClientTestsService(config);
         this.users = new TestClientUsersService(config);
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
 }
 
 export class TestClientTestsService {
@@ -102,6 +111,16 @@ export class TestClientTestsService {
         }
         this._dispatchers = config.dispatchers!;
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
     async emptyParamsGetRequest(
         options?: RpcOptions<'http' | 'ws'>,
     ): Promise<DefaultPayload> {
@@ -872,6 +891,16 @@ export class TestClientUsersService {
         }
         this._dispatchers = config.dispatchers!;
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
     watchUser(
         params: UsersWatchUserParams,
         options?: EventStreamHooks<UsersWatchUserResponse>,
