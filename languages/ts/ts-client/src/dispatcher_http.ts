@@ -196,7 +196,6 @@ export class HttpDispatcher implements RpcDispatcher {
         const connectionId = randomUUID();
         const controller = eventSource.listen({
             onMessage: (message) => {
-                console.log(message);
                 resetTimeout();
                 if (
                     message.event === 'message' ||
