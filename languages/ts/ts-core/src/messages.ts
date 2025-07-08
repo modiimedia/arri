@@ -525,6 +525,31 @@ export function encodeServerMessage(
     }
 }
 
+export function encodeServerEventStreamMessageToSseMessage(
+    message: ServerEventStreamMessage,
+): string {
+    switch (message.type) {
+        case 'HEARTBEAT':
+            return `event: heartbeat\ndata:\n\n`;
+        case 'ES_START':
+            return `event: start\ndata:\n\n`;
+        case 'ES_END':
+            return `event: end\ndata:\n\n`;
+        case 'ES_EVENT': {
+            let output = `event: message\n`;
+            if (message.eventId) {
+                output += `id: ${message.eventId}\n`;
+            }
+            if (message.body) {
+                output += `data: ${message.body}\n\n`;
+            } else {
+                output += `data:\n\n`;
+            }
+            return output;
+        }
+    }
+}
+
 export function parseHeaderLine(input: string): [string, string] {
     let keyFinished = false;
     let keyIndexEnd = -1;

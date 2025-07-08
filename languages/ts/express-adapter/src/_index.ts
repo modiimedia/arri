@@ -1,6 +1,11 @@
 import { Server } from 'node:http';
 
-import { ArriError, serializeArriError } from '@arrirpc/core';
+import {
+    ArriError,
+    serializeArriError,
+    ServerEventStreamMessage,
+} from '@arrirpc/core';
+import { encodeServerEventStreamMessageToSseMessage } from '@arrirpc/core';
 import { errorMessageFromErrors, Result } from '@arrirpc/schema';
 import {
     EventStreamDispatcher,
@@ -17,11 +22,7 @@ import {
     TransportAdapterOptions,
     WsEndpointRegister,
 } from '@arrirpc/server';
-import {
-    EventStreamMessage,
-    RouterMethod,
-    WebHandler,
-} from '@arrirpc/server/http';
+import { RouterMethod, WebHandler } from '@arrirpc/server/http';
 import { Hooks } from '@arrirpc/server/ws';
 import crossws, { NodeAdapter } from '@arrirpc/server/ws/adapters/node';
 import { RpcDefinition } from '@arrirpc/type-defs';
@@ -54,6 +55,9 @@ export class ExpressAdapter
         this._port = options?.port ?? 3000;
         this._debug = options?.debug ?? false;
         this._onRequest = options?.onRequest;
+    }
+    get isStarted(): boolean {
+        throw new Error('Method not implemented.');
     }
 
     setOptions(options: TransportAdapterOptions): void {
@@ -116,12 +120,17 @@ export class ExpressAdapter
         ) => {
             const reqStart = new Date();
             const clientVersion = req.headers['client-version'];
+            let reqId = req.headers['req-id'];
+            if (Array.isArray(reqId)) {
+                reqId = reqId.join(',');
+            }
             const context: RpcMiddlewareContext = {
+                reqId: reqId,
                 rpcName: name,
                 reqStart: reqStart,
                 transport: this.transportId,
                 headers: this._getHeaders(req),
-                ipAddress: req.ip,
+                remoteAddress: req.ip,
                 clientVersion:
                     typeof clientVersion === 'string'
                         ? clientVersion
@@ -236,10 +245,11 @@ export class ExpressAdapter
             const reqStart = new Date();
             const clientVersion = req.headers['client-version'];
             const context: RpcMiddlewareContext = {
+                reqId: req.header('req-id'),
                 rpcName: name,
                 reqStart: reqStart,
                 transport: this.transportId,
-                ipAddress: req.ip,
+                remoteAddress: req.ip,
                 clientVersion:
                     typeof clientVersion === 'string'
                         ? clientVersion
@@ -281,6 +291,7 @@ export class ExpressAdapter
                     validators.params,
                     this.globalOptions?.heartbeatInterval ?? 20000,
                     this.globalOptions?.heartbeatEnabled ?? true,
+                    context.reqId,
                 );
                 (context as any).stream = eventStream;
                 await handler(context as any);
@@ -317,8 +328,8 @@ export class ExpressAdapter
 
     registerEndpoint(
         path: string,
-        method: RouterMethod | RouterMethod[],
         handler: WebHandler,
+        method?: RouterMethod | RouterMethod[],
     ): void {
         const register = (method: RouterMethod) => {
             const internalHandler = async (
@@ -373,7 +384,7 @@ export class ExpressAdapter
             }
             return;
         }
-        register(method);
+        register(method ?? 'get');
     }
 
     private registerRawHandler(
@@ -525,7 +536,7 @@ export class ExpressAdapter
     }
 }
 
-class ExpressEventStreamDispatcher implements EventStreamDispatcher {
+class ExpressEventStreamDispatcher implements EventStreamDispatcher<string> {
     req: ExpressRequest;
     res: ExpressResponse;
     lastEventId?: string | undefined;
@@ -546,31 +557,16 @@ class ExpressEventStreamDispatcher implements EventStreamDispatcher {
         }
         this.res.flushHeaders();
     }
-    push(msg: EventStreamMessage | EventStreamMessage[]): void | Promise<void> {
+    push(
+        msg: ServerEventStreamMessage | ServerEventStreamMessage[],
+    ): void | Promise<void> {
         if (Array.isArray(msg)) {
             for (const m of msg) {
-                this.res.write(this.formatEventStreamMessage(m));
+                this.res.write(encodeServerEventStreamMessageToSseMessage(m));
             }
             return;
         }
-        this.res.write(this.formatEventStreamMessage(msg));
-    }
-    private formatEventStreamMessage(message: EventStreamMessage) {
-        let result = '';
-        if (message.id) {
-            result += `id: ${message.id}\n`;
-        }
-        if (message.event) {
-            result += `event: ${message.event}\n`;
-        }
-        if (
-            typeof message.retry === 'number' &&
-            Number.isInteger(message.retry)
-        ) {
-            result += `retry: ${message.retry}\n`;
-        }
-        result += `data: ${message.data}\n\n`;
-        return result;
+        this.res.write(encodeServerEventStreamMessageToSseMessage(msg));
     }
     close(): void {
         this.res.end();
