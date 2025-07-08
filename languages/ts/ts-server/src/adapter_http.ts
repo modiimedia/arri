@@ -51,11 +51,11 @@ export interface HttpOptions {
 export interface HttpEndpointRegister {
     registerEndpoint(
         path: string,
-        method: h3.RouterMethod | h3.RouterMethod[],
         handler: (
             request: Request,
             context?: Record<string, unknown>,
         ) => Promise<Response> | Response,
+        method?: h3.RouterMethod | h3.RouterMethod[],
     ): void;
 }
 
@@ -210,8 +210,8 @@ export class HttpAdapter
     }
     registerEndpoint(
         path: string,
-        method: h3.RouterMethod | h3.RouterMethod[],
         handler: h3.WebHandler,
+        method?: h3.RouterMethod | h3.RouterMethod[],
     ) {
         this.h3Router.use(
             path,
@@ -219,6 +219,7 @@ export class HttpAdapter
                 const request = h3.toWebRequest(event);
                 return handler(request, event.context);
             }),
+            method,
         );
     }
 

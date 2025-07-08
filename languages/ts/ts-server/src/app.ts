@@ -132,27 +132,30 @@ export class ArriApp implements ArriServiceBase {
         if (typeof input === 'object') {
             input.setOptions(this._adapterOptions);
             if (isHttpEndpointRegister(input)) {
-                input.registerEndpoint('/', 'get', async (request) => {
-                    const isPreflight = internalIsPreflightRequest(request);
-                    if (isPreflight) {
-                        return new Response('ok', { status: 200 });
-                    }
-                    const result = {
-                        name: this.name,
-                        description: this.description,
-                        version: this.version,
-                        definitionPath: this.definitionPath,
-                    };
-                    const headers = new Headers();
-                    headers.set('Content-Type', 'application/json');
-                    return new Response(JSON.stringify(result), {
-                        status: 200,
-                        headers: headers,
-                    });
-                });
+                input.registerEndpoint(
+                    '/',
+                    async (request) => {
+                        const isPreflight = internalIsPreflightRequest(request);
+                        if (isPreflight) {
+                            return new Response('ok', { status: 200 });
+                        }
+                        const result = {
+                            name: this.name,
+                            description: this.description,
+                            version: this.version,
+                            definitionPath: this.definitionPath,
+                        };
+                        const headers = new Headers();
+                        headers.set('Content-Type', 'application/json');
+                        return new Response(JSON.stringify(result), {
+                            status: 200,
+                            headers: headers,
+                        });
+                    },
+                    'get',
+                );
                 input.registerEndpoint(
                     this.definitionPath,
-                    'get',
                     async (request) => {
                         const isPreflight = internalIsPreflightRequest(request);
                         if (isPreflight) {
@@ -166,6 +169,7 @@ export class ArriApp implements ArriServiceBase {
                             headers: headers,
                         });
                     },
+                    'get',
                 );
             }
             this._adapters[input.transportId] = input;
