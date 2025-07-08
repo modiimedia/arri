@@ -9,11 +9,12 @@ import 'package:test_client_dart/test_client.g.dart';
 import 'package:http/io_client.dart';
 
 const baseUrl = "http://127.0.0.1:2020";
+const wsConnectionUrl = "http://127.0.0.1:2020/establish-connection";
 
 Future<void> main() async {
   final client = TestClient(
     baseUrl: baseUrl,
-    wsConnectionUrl: "",
+    wsConnectionUrl: wsConnectionUrl,
     headers: () => {"x-test-header": 'test'},
   );
   final httpClient =
