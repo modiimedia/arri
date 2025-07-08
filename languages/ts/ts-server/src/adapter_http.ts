@@ -52,7 +52,10 @@ export interface HttpEndpointRegister {
     registerEndpoint(
         path: string,
         method: h3.RouterMethod | h3.RouterMethod[],
-        handler: h3.WebHandler,
+        handler: (
+            request: Request,
+            context?: Record<string, unknown>,
+        ) => Promise<Response> | Response,
     ): void;
 }
 

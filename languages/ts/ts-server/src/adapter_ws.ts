@@ -82,6 +82,10 @@ export class WsAdapter implements TransportAdapter {
         Record<string, RpcEventStreamConnection<any>>
     > = {};
 
+    get peers() {
+        return this._peers;
+    }
+
     constructor(
         register: TransportAdapter & WsEndpointRegister,
         config: WsOptions,
