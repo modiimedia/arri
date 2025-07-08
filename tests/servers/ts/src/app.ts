@@ -16,7 +16,12 @@ const http = new HttpAdapter({
         origin: '*',
     },
 });
-const ws = new WsAdapter(http, { connectionPath: '/establish-connection' });
+const ws = new WsAdapter(http, {
+    connectionPath: '/establish-connection',
+    onRequest(peer, context) {
+        context.peer = peer;
+    },
+});
 app.use(http);
 app.use(ws);
 

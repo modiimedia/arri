@@ -18,6 +18,7 @@ import {
     EventStreamHooks,
     RpcDispatcher,
     RpcDispatcherOptions,
+    waitFor,
 } from './dispatcher';
 import { getHeaders, RpcRequest, RpcRequestValidator } from './requests';
 
@@ -40,10 +41,15 @@ export class WsDispatcher implements RpcDispatcher {
                 | ServerEventStreamMessage,
         ) => any
     > = new Map();
+    private eventSources: Map<string, WsEventSource<any, any>> = new Map();
 
     private heartbeatTimeout: any | undefined;
     private serverHeartbeatInterval: number | undefined;
     private heartbeatTimeoutMultiplier = 2;
+    private connectionMaxRetryCount = 10;
+    private connectionRetryInterval = 0;
+    private connectionMaxRetryInterval = 30000;
+    private closedByClient = false;
 
     constructor(options: WsDispatcherOptions) {
         this.client = new ws.client();
@@ -52,6 +58,7 @@ export class WsDispatcher implements RpcDispatcher {
 
     terminateConnections(): void {
         if (!this.connection?.connected) return;
+        this.closedByClient = true;
         this.connection?.close();
     }
 
@@ -63,16 +70,23 @@ export class WsDispatcher implements RpcDispatcher {
         this.cleanupTimeout();
         if (!this.serverHeartbeatInterval) return;
         this.heartbeatTimeout = setTimeout(() => {
-            this.setupConnection(true);
+            this.setupConnection({ forceReconnection: true });
         }, this.serverHeartbeatInterval * this.heartbeatTimeoutMultiplier);
     }
 
-    async setupConnection(forceReconnection = false) {
+    async setupConnection(options: {
+        forceReconnection?: boolean;
+        prefetchedHeaders?: Record<string, string> | undefined;
+        retryCount?: number;
+    }): Promise<void> {
+        const retryCount = options.retryCount ?? 0;
         if (this.connection?.connected) {
-            if (!forceReconnection) return;
+            if (!options?.forceReconnection) return;
             this.connection.close();
         }
-        const headers = await getHeaders(this.options.headers);
+        const headers =
+            options?.prefetchedHeaders ??
+            (await getHeaders(this.options.headers));
         this.client.connect(
             this.options.wsConnectionUrl,
             undefined,
@@ -82,12 +96,15 @@ export class WsDispatcher implements RpcDispatcher {
                 method: this.options.wsConnectionMethod?.toUpperCase(),
             },
         );
-        return new Promise((res, rej) => {
+        const promise = new Promise<void>((res, rej) => {
             const onConnection = (connection: ws.connection) => {
                 this.connection = connection;
                 this.resetHeartbeatTimeout();
                 connection.on('error', (_err) => {});
-                connection.on('close', (_code, _desc) => {});
+                connection.on('close', (_code, _desc) => {
+                    if (this.closedByClient) return;
+                    this.setupConnection({});
+                });
                 connection.on('message', (msg) => {
                     let parsedMsg: ServerMessage | undefined;
                     switch (msg.type) {
@@ -142,11 +159,15 @@ export class WsDispatcher implements RpcDispatcher {
                             return;
                     }
                 });
+                for (const [_, es] of this.eventSources.entries()) {
+                    es.init();
+                }
                 this.client.removeListener('connect', onConnection);
                 this.client.removeListener('connectFailed', onConnectionFailed);
                 this.client.removeListener('httpResponse', onHttpResponse);
-                res(undefined);
+                res();
             };
+
             const onConnectionFailed = (err: Error) => {
                 this.client.removeListener('connect', onConnection);
                 this.client.removeListener('connectFailed', onConnectionFailed);
@@ -162,6 +183,27 @@ export class WsDispatcher implements RpcDispatcher {
                 .on('connectFailed', onConnectionFailed)
                 .on('httpResponse', onHttpResponse);
         });
+        try {
+            await promise;
+            this.connectionRetryInterval = 0;
+        } catch (err) {
+            if (retryCount > this.connectionMaxRetryCount) throw err;
+            if (retryCount > 3 && this.connectionRetryInterval === 0) {
+                this.connectionRetryInterval = 10;
+            } else if (this.connectionRetryInterval > 0) {
+                this.connectionRetryInterval = this.connectionRetryInterval * 2;
+            }
+            if (
+                this.connectionRetryInterval > this.connectionMaxRetryInterval
+            ) {
+                this.connectionRetryInterval = this.connectionMaxRetryInterval;
+            }
+            await waitFor(this.connectionMaxRetryInterval);
+            return this.setupConnection({
+                ...options,
+                retryCount: retryCount + 1,
+            });
+        }
     }
 
     transport: string = 'ws';
@@ -170,7 +212,9 @@ export class WsDispatcher implements RpcDispatcher {
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
         options?: RpcDispatcherOptions,
+        numRetries?: number,
     ): Promise<TResponse> {
+        const retryCount = numRetries ?? 0;
         if (
             options?.heartbeatTimeoutMultiplier &&
             options?.heartbeatTimeoutMultiplier !=
@@ -181,34 +225,41 @@ export class WsDispatcher implements RpcDispatcher {
         }
         // default timeout of 60sec
         const timeout = options?.timeout ?? this.options.timeout ?? 60000;
+        const onErr = options?.onError ?? this.options.onError;
         this.reqCount++;
         const reqId = req.reqId ?? randomUUID();
         if (!req.reqId) req.reqId = reqId;
-        await this.setupConnection();
+        const headers = await getHeaders(req.customHeaders);
+        await this.setupConnection({
+            prefetchedHeaders: headers,
+        });
         const msgPayload = encodeClientMessage({
             rpcName: req.procedure,
             reqId: reqId,
             contentType: 'application/json',
-            customHeaders: await getHeaders(req.customHeaders),
+            customHeaders: headers,
             body: validator.params.toJsonString(req.data),
             action: undefined,
             clientVersion: req.clientVersion,
             lastEventId: undefined,
         });
-        if (!this.connection) {
-            const err = new Error("Connection hasn't been established");
-            options?.onError?.(req, err);
-            this.options.onError?.(req, err);
-            throw new Error("Connection hasn't been established");
-        }
-        return new Promise((res, rej) => {
+
+        const promiseHandler = (
+            res: (val: TResponse) => void,
+            rej: (val: unknown) => void,
+        ) => {
+            if (!this.connection) {
+                const err = new Error("Connection hasn't been established");
+                onErr?.(req, err);
+                rej(err);
+                return;
+            }
             let responseReceived = false;
             if (options?.signal) {
                 options.signal.onabort = (_) => {
                     if (responseReceived) return;
                     const err = new Error('Request was aborted');
-                    options.onError?.(req, err);
-                    this.options.onError?.(req, err);
+                    onErr?.(req, err);
                     rej(err);
                 };
             }
@@ -216,8 +267,7 @@ export class WsDispatcher implements RpcDispatcher {
                 setTimeout(() => {
                     if (responseReceived) return;
                     const err = new Error('Request timeout reached');
-                    options?.onError?.(req, err);
-                    this.options?.onError?.(req, err);
+                    onErr?.(req, err);
                     rej(err);
                 }, timeout);
             }
@@ -230,14 +280,12 @@ export class WsDispatcher implements RpcDispatcher {
                             code: 0,
                             message: `Unexpected message type received from server. Expected either "SUCCESS" or "FAILURE". Got "${msg.type}".`,
                         });
-                        options?.onError?.(req, err);
-                        this.options.onError?.(req, err);
+                        onErr?.(req, err);
                         rej(err);
                         return;
                     }
                     const err = msg.error;
-                    options?.onError?.(req, err);
-                    this.options.onError?.(req, err);
+                    onErr?.(req, err);
                     rej(err);
                     return;
                 }
@@ -255,7 +303,35 @@ export class WsDispatcher implements RpcDispatcher {
                 res(parsedData);
             });
             this.connection!.send(msgPayload);
-        });
+        };
+        const retry = options?.retry ?? this.options.retry;
+        const retryDelay = options?.retryDelay ?? this.options.retryDelay;
+        const retryErrorCodes =
+            options?.retryErrorCodes ?? this.options.retryErrorCodes;
+
+        if (!retry) return new Promise(promiseHandler);
+        try {
+            return await new Promise(promiseHandler);
+        } catch (err) {
+            if (options?.signal && options.signal.aborted) throw err;
+            if (retryCount === retry) throw err;
+            if (retryErrorCodes) {
+                if (err instanceof ArriError) {
+                    if (retryErrorCodes.includes(err.code)) {
+                        if (retryDelay) await waitFor(retryDelay);
+                        return this.handleRpc(
+                            req,
+                            validator,
+                            options,
+                            retryCount + 1,
+                        );
+                    }
+                }
+                throw err;
+            }
+            if (retryDelay) await waitFor(retryDelay);
+            return this.handleRpc(req, validator, options, retryCount + 1);
+        }
     }
 
     handleEventStreamRpc<TParams, TOutput>(
@@ -269,7 +345,10 @@ export class WsDispatcher implements RpcDispatcher {
             validator,
             hooks ?? {},
             async () => {
-                await this.setupConnection();
+                await this.setupConnection({
+                    forceReconnection: false,
+                    prefetchedHeaders: undefined,
+                });
                 if (!this.connection) {
                     throw new Error(`Error establishing connection`);
                 }
@@ -277,10 +356,12 @@ export class WsDispatcher implements RpcDispatcher {
             },
             this.options.onError,
         );
+        this.eventSources.set(req.reqId!, controller);
         this.responseHandlers.set(req.reqId!, (msg) =>
             controller.handleMessage(msg),
         );
         controller.onClosed(() => {
+            this.eventSources.delete(req.reqId!);
             this.responseHandlers.delete(req.reqId!);
         });
         void controller.init();

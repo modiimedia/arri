@@ -1,7 +1,7 @@
-import { ArriErrorInstance } from '@arrirpc/client';
+import { ArriError } from '@arrirpc/client';
 import { randomUUID } from 'crypto';
 import { FetchError, ofetch } from 'ofetch';
-import { describe, expect, it, test } from 'vitest';
+import { afterAll, describe, expect, it, test } from 'vitest';
 
 import {
     type ObjectWithEveryNullableType,
@@ -30,6 +30,10 @@ const client = new TestClient({
     transport: transport,
 });
 
+afterAll(() => {
+    client.terminateConnections();
+});
+
 describe('non-rpc http routes', () => {
     test('authenticated request', async () => {
         const result = await ofetch('/routes/hello-world', {
@@ -49,8 +53,8 @@ describe('non-rpc http routes', () => {
                 baseURL: baseUrl,
             });
         } catch (err) {
-            expect(err instanceof ArriErrorInstance);
-            if (err instanceof ArriErrorInstance) {
+            expect(err instanceof ArriError);
+            if (err instanceof ArriError) {
                 expect(err.code).toBe(401);
             }
         }
@@ -183,12 +187,13 @@ describe('rpcs', () => {
             await unauthenticatedClient.tests.sendObject(input);
             expect(true).toBe(false);
         } catch (err) {
-            expect(err instanceof ArriErrorInstance);
-            if (err instanceof ArriErrorInstance) {
+            expect(err instanceof ArriError);
+            if (err instanceof ArriError) {
                 expect(err.code).toBe(401);
             }
         }
         expect(firedOnErr).toBe(true);
+        unauthenticatedClient.terminateConnections();
     });
     it('can use async functions for headers', async () => {
         const _client = new TestClient({
@@ -206,6 +211,7 @@ describe('rpcs', () => {
         });
         const result = await _client.tests.emptyParamsGetRequest();
         expect(typeof result.message).toBe('string');
+        _client.terminateConnections();
     });
     it('can send/receive partial objects', async () => {
         const fullObjectResult = await client.tests.sendPartialObject(input);
@@ -340,9 +346,9 @@ describe('rpcs', () => {
             baseUrl,
             wsConnectionUrl,
             transport,
-            onError(err) {
+            onError(_, err) {
                 onErrorFired = true;
-                expect(err instanceof ArriErrorInstance).toBe(true);
+                expect(err instanceof ArriError).toBe(true);
             },
         });
         try {
@@ -351,6 +357,7 @@ describe('rpcs', () => {
             // do nothing
         }
         expect(onErrorFired).toBe(true);
+        customClient.terminateConnections();
     });
 });
 
@@ -425,9 +432,14 @@ describe('event stream rpcs', () => {
         let resCount = 0;
         let errorCount = 0;
         let messageCount = 0;
+        const customClient = new TestClient({
+            baseUrl,
+            wsConnectionUrl,
+            headers,
+        });
         await new Promise((res, rej) => {
             setTimeout(() => rej('timeout exceeded'), 2000);
-            const controller = client.tests.streamAutoReconnect(
+            const controller = customClient.tests.streamAutoReconnect(
                 {
                     messageCount: 10,
                 },
@@ -452,6 +464,7 @@ describe('event stream rpcs', () => {
         expect(messageCount).toBe(30);
         expect(resCount).toBe(3);
         expect(errorCount).toBe(0);
+        customClient.terminateConnections();
     });
 
     it('reconnect with new credentials', async () => {
@@ -468,7 +481,7 @@ describe('event stream rpcs', () => {
         let msgCount = 0;
         let openCount = 0;
         await new Promise((res, rej) => {
-            setTimeout(() => rej('timeout exceeded'), 2000);
+            setTimeout(() => rej('timeout exceeded'), 5000);
             const controller =
                 dynamicClient.tests.streamRetryWithNewCredentials({
                     onMessage(_) {
@@ -488,13 +501,14 @@ describe('event stream rpcs', () => {
         });
         expect(msgCount >= 40).toBe(true);
         expect(openCount).toBe(4);
+        dynamicClient.terminateConnections();
     });
 });
 
 describe('request options', () => {
     test('global options', async () => {
         let numErr = 0;
-        const client = new TestClient({
+        const customClient = new TestClient({
             baseUrl,
             wsConnectionUrl,
             headers,
@@ -505,15 +519,16 @@ describe('request options', () => {
                 numErr++;
             },
         });
-        await client.tests.emptyParamsGetRequest();
+        await customClient.tests.emptyParamsGetRequest();
         expect(numErr).toBe(0);
         numErr = 0;
         try {
-            await client.tests.sendError({ message: '', code: 409 });
+            await customClient.tests.sendError({ message: '', code: 409 });
         } catch (_) {
             // do nothing
         }
         expect(numErr).toBe(3);
+        customClient.terminateConnections();
     });
     test('local function options', async () => {
         let numErr = 0;
@@ -541,7 +556,7 @@ describe('request options', () => {
                 {
                     retry: 10,
                     retryErrorCodes: [409],
-                    onError: () => {
+                    onError: (_req, _err) => {
                         numErr++;
                     },
                 },
@@ -550,5 +565,6 @@ describe('request options', () => {
             // do nothing
         }
         expect(numErr).toBe(11);
+        client.terminateConnections();
     });
 });

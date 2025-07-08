@@ -2,6 +2,33 @@ import { serializeString } from '@arrirpc/schema';
 
 import { Result } from './helpers';
 
+export interface ArriErrorBase {
+    code: number;
+    message: string;
+    data?: any;
+    stack?: string[];
+}
+
+export function isArriErrorBase(input: unknown): input is ArriErrorBase {
+    if (typeof input !== 'object' || input === null) {
+        return false;
+    }
+    if (
+        'stack' in input &&
+        typeof input.stack !== 'undefined' &&
+        (!Array.isArray(input.stack) ||
+            !input.stack.every((val) => typeof val === 'string'))
+    ) {
+        return false;
+    }
+    return (
+        'code' in input &&
+        typeof input.code === 'number' &&
+        'message' in input &&
+        typeof input.message === 'string'
+    );
+}
+
 export class ArriError extends Error {
     code: number;
     data?: any;
@@ -34,6 +61,33 @@ export class ArriError extends Error {
 
     static fromJSONString(input: string) {
         return parseArriError(JSON.parse(input));
+    }
+
+    static async fromHTTPResponse(input: Response): Promise<ArriError> {
+        try {
+            const body = await input.json();
+            const result = ArriError.fromJSON(body);
+            if (!result.success) {
+                return new ArriError({
+                    code: input.status,
+                    message: input.statusText,
+                    data: body,
+                });
+            }
+            return result.value;
+        } catch (_) {
+            let data: string | undefined;
+            try {
+                data = await input.text();
+            } catch (_) {
+                // do nothing
+            }
+            return new ArriError({
+                code: input.status,
+                message: input.statusText,
+                data: data,
+            });
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 export { type $Fetch, createFetch, type Fetch, ofetch } from 'ofetch';
 
-import { ArriErrorInstance } from './errors';
+import { ArriError } from '@arrirpc/core';
+
 import { HeaderInput, RpcRequest, RpcRequestValidator } from './requests';
 
 export interface RpcDispatcherOptions {
@@ -71,7 +72,7 @@ export type SafeResponse<T> =
           success: true;
           value: T;
       }
-    | { success: false; error: ArriErrorInstance };
+    | { success: false; error: ArriError };
 
 export function resolveTransport(
     availableTransports: string[],

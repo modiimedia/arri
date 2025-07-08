@@ -1,3 +1,4 @@
+import { ArriError, isArriErrorBase } from '@arrirpc/core';
 import { EventSourceController, EventSourcePlus } from 'event-source-plus';
 import { $Fetch, createFetch, Fetch, FetchError, ofetch } from 'ofetch';
 import { randomUUID } from 'uncrypto';
@@ -8,7 +9,6 @@ import {
     RpcDispatcherOptions,
     waitFor,
 } from './dispatcher';
-import { ArriErrorInstance, isArriError } from './errors';
 import { getHeaders, RpcRequest, RpcRequestValidator } from './requests';
 
 export interface HttpDispatcherOptions extends RpcDispatcherOptions {
@@ -71,7 +71,7 @@ export class HttpDispatcher implements RpcDispatcher {
                 onResponseError: errorHandler
                     ? async (context) => {
                           try {
-                              const err = await ArriErrorInstance.fromResponse(
+                              const err = await ArriError.fromHTTPResponse(
                                   context.response,
                               );
                               errorHandler(req, err);
@@ -89,29 +89,29 @@ export class HttpDispatcher implements RpcDispatcher {
                 timeout: options?.timeout ?? this.options?.timeout,
             });
             if (!response.ok) {
-                throw await ArriErrorInstance.fromResponse(response);
+                throw await ArriError.fromHTTPResponse(response);
             }
             return validator.response.fromJsonString(
                 response._data ?? (await response.text()),
             );
         } catch (err) {
-            let arriError: ArriErrorInstance;
-            if (err instanceof ArriErrorInstance) {
+            let arriError: ArriError;
+            if (err instanceof ArriError) {
                 arriError = err;
-            } else if (err instanceof FetchError && isArriError(err.data)) {
-                arriError = new ArriErrorInstance(err.data);
+            } else if (err instanceof FetchError && isArriErrorBase(err.data)) {
+                arriError = new ArriError(err.data);
             } else if (err instanceof FetchError) {
-                arriError = new ArriErrorInstance({
+                arriError = new ArriError({
                     code: err.statusCode ?? 500,
                     message:
                         err.statusMessage ??
                         err.message ??
                         `Error connecting to ${url}`,
                     data: err.data,
-                    stack: err.stack,
+                    stackList: err.stack?.split('\n'),
                 });
             } else {
-                arriError = new ArriErrorInstance({
+                arriError = new ArriError({
                     code: 0,
                     message: err instanceof Error ? err.message : `${err}`,
                     data: err,
@@ -237,7 +237,7 @@ export class HttpDispatcher implements RpcDispatcher {
                 this.options.onError?.(req, context.error);
                 if (!hooks.onError) return;
                 try {
-                    const arriError = ArriErrorInstance.fromJson(
+                    const arriError = ArriError.fromJSON(
                         await context.response.json(),
                     );
                     hooks.onError(arriError);

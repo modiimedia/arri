@@ -74,10 +74,13 @@ export class WsAdapter implements TransportAdapter {
     private readonly _hooks: Hooks;
 
     private _handlers: Map<string, HandlerItem> = new Map();
-    private _eventStreams: Map<string, RpcEventStreamConnection<any>> =
-        new Map();
+
     private _middlewares: RpcMiddleware[] = [];
     private _peers: Map<string, Peer> = new Map();
+    private _peerEventStreams: Record<
+        string,
+        Record<string, RpcEventStreamConnection<any>>
+    > = {};
 
     constructor(
         register: TransportAdapter & WsEndpointRegister,
@@ -169,8 +172,17 @@ export class WsAdapter implements TransportAdapter {
         }
     }
     stop(): void {
+        // cleanup timers
+        for (const timer of this._heartbeatTimers.values()) {
+            clearInterval(timer);
+        }
+        this._heartbeatTimers.clear();
+
+        // disconnect peers
         for (const peer of this._peers.values()) {
-            peer.close();
+            peer.close(1001);
+            const es = this._peerEventStreams[peer.id];
+            if (es) delete this._peerEventStreams[peer.id];
         }
         this._peers.clear();
     }
@@ -183,7 +195,7 @@ export class WsAdapter implements TransportAdapter {
     private async _handleOpen(peer: Peer) {
         const existing = this._peers.get(peer.id);
         const existingTimer = this._heartbeatTimers.get(peer.id);
-        if (existing) existing.close();
+        if (existing) existing.close(1012);
         if (existingTimer) clearInterval(existingTimer);
         const connectedMsg = encodeServerMessage({
             type: 'CONNECTION_START',
@@ -312,8 +324,9 @@ export class WsAdapter implements TransportAdapter {
                     this._globalOptions?.heartbeatEnabled ?? true,
                     context.reqId,
                 );
-                const esId = `${peer.id}_${context.reqId}`;
-                this._eventStreams.set(esId, eventStream);
+                if (!this._peerEventStreams[peer.id])
+                    this._peerEventStreams[peer.id] = {};
+                this._peerEventStreams[peer.id]![context.reqId!] = eventStream;
                 (context as any).stream = eventStream;
                 await handler.handler(context as any);
                 return;
@@ -362,9 +375,8 @@ export class WsAdapter implements TransportAdapter {
         try {
             switch (message.action) {
                 case 'CLOSE': {
-                    const esConnection = this._eventStreams.get(
-                        `${peer.id}_${context.reqId}`,
-                    );
+                    const esConnection =
+                        this._peerEventStreams[peer.id]?.[context.reqId ?? ''];
                     if (!esConnection) return;
                     await esConnection.close({
                         reason: 'closed by client',

@@ -8,7 +8,7 @@ export default defineEventStreamRpc({
     response: a.object({
         message: a.string(),
     }),
-    async handler({ stream, headers }) {
+    async handler({ stream, headers, peer }) {
         const authToken = headers['x-test-header'];
         if (!authToken) throw defineError(400);
         if (usedTokens[authToken]) {
@@ -23,7 +23,10 @@ export default defineEventStreamRpc({
         const interval = setInterval(async () => {
             await stream.push({ message: 'ok' });
             msgCount++;
-            if (msgCount >= 10) stream.close({ notifyClients: false });
+            if (msgCount >= 10) {
+                stream.close({ notifyClients: false });
+                peer?.close();
+            }
         });
         stream.onClosed(() => {
             clearInterval(interval);
