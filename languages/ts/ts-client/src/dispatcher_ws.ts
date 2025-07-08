@@ -58,6 +58,7 @@ export class WsDispatcher implements RpcDispatcher {
 
     terminateConnections(): void {
         if (!this.connection?.connected) return;
+        this.cleanupTimeout();
         this.closedByClient = true;
         this.connection?.close();
     }
@@ -102,7 +103,10 @@ export class WsDispatcher implements RpcDispatcher {
                 this.resetHeartbeatTimeout();
                 connection.on('error', (_err) => {});
                 connection.on('close', (_code, _desc) => {
-                    if (this.closedByClient) return;
+                    if (this.closedByClient) {
+                        this.cleanupTimeout();
+                        return;
+                    }
                     this.setupConnection({});
                 });
                 connection.on('message', (msg) => {
