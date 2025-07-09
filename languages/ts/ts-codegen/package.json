@@ -23,6 +23,6 @@
   ],
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
-    "prettier": "^3.5.3"
+    "prettier": "^3.6.2"
   }
 }

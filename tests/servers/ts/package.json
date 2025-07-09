@@ -5,9 +5,8 @@
   "dependencies": {
     "@arrirpc/express-adapter": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.34.35",
     "@types/express": "^5.0.1",
-    "arri": "workspace:*",
+    "@sinclair/typebox": "^0.34.37",
     "express": "^5.1.0"
   },
   "scripts": {
@@ -20,7 +19,7 @@
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
-    "@faker-js/faker": "^9.8.0",
+    "@faker-js/faker": "^9.9.0",
     "arri": "workspace:*"
   }
 }
