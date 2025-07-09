@@ -238,6 +238,7 @@ ${subServices
           heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
           timeout: _timeout,
           dispatchers: _dispatchers,
+          defaultTransport: _defaultTransport,
         );`,
     )
     .join('\n\n')}

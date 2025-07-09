@@ -16,6 +16,7 @@ abstract class Dispatcher {
     required int? retry,
     required Duration? retryDelay,
     required OnErrorHook? onError,
+    int? retryCount,
   });
   EventStream<TOutput>
       handleEventStreamRpc<TInput extends ArriModel?, TOutput>({

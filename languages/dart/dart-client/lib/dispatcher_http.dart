@@ -25,6 +25,7 @@ class HttpDispatcher implements Dispatcher {
     required int? retry,
     required Duration? retryDelay,
     required OnErrorHook? onError,
+    int? retryCount,
   }) async {
     final response = await _handleHttpRequest(
       httpClient: _defaultHttpClient,

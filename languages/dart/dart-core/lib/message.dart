@@ -225,6 +225,8 @@ sealed class ServerMessage {
 
   List<Object?> get props;
 
+  String? get reqId;
+
   static Result<ServerMessage, String> fromString<TBody>(String input) {
     _ServerMessageType? type;
     String? reqId;
@@ -374,6 +376,11 @@ class ServerFailureMessage implements ServerMessage {
   });
 
   @override
+  String? unwrapReqId() {
+    return reqId;
+  }
+
+  @override
   List<Object?> get props => [reqId, contentType, customHeaders, error];
 
   @override
@@ -411,6 +418,9 @@ class ServerHeartbeatMessage implements ServerMessage {
   });
 
   @override
+  String? get reqId => null;
+
+  @override
   List<Object?> get props => [heartbeatInterval];
 
   @override
@@ -434,6 +444,9 @@ class ServerConnectionStartMessage implements ServerMessage {
   const ServerConnectionStartMessage({
     required this.heartbeatInterval,
   });
+
+  @override
+  String? get reqId => null;
 
   @override
   List<Object?> get props => [heartbeatInterval];

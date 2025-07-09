@@ -66,6 +66,7 @@ class TestClient {
         heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
         timeout: _timeout,
         dispatchers: _dispatchers,
+        defaultTransport: _defaultTransport,
       );
 
   TestClientUsersService get users => TestClientUsersService(
@@ -77,6 +78,7 @@ class TestClient {
         heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
         timeout: _timeout,
         dispatchers: _dispatchers,
+        defaultTransport: _defaultTransport,
       );
 }
 

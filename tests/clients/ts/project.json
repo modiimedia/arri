@@ -11,6 +11,11 @@
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "tests/clients/ts"
+      },
+      "configurations": {
+        "websockets": {
+          "command": "CLIENT_TRANSPORT=ws vitest run . --passWithNoTests --globals"
+        }
       }
     },
     "lint": {
