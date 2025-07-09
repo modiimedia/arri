@@ -10,19 +10,22 @@ import 'package:http/io_client.dart';
 
 const baseUrl = "http://127.0.0.1:2020";
 const wsConnectionUrl = "http://127.0.0.1:2020/establish-connection";
+final defaultTransport = "ws";
 
 Future<void> main() async {
   final client = TestClient(
     baseUrl: baseUrl,
     wsConnectionUrl: wsConnectionUrl,
+    defaultTransport: defaultTransport,
     headers: () => {"x-test-header": 'test'},
   );
   final httpClient =
       HttpClient(context: SecurityContext(withTrustedRoots: true));
   final clientWCustomHttpClient = TestClient(
     baseUrl: baseUrl,
-    wsConnectionUrl: "",
+    wsConnectionUrl: wsConnectionUrl,
     createHttpClient: () => IOClient(httpClient),
+    defaultTransport: defaultTransport,
     headers: () => {"x-test-header": 'test'},
   );
 

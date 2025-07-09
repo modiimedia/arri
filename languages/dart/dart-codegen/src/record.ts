@@ -15,6 +15,7 @@ export function dartMapFromSchema(
         instancePath: `${context.instancePath}/[entry]`,
         schemaPath: `${context.schemaPath}/values`,
         clientVersion: context.clientVersion,
+        transports: context.transports,
     });
     const typeName = isNullable
         ? `Map<String, ${innerType.typeName}>?`

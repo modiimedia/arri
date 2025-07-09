@@ -3,14 +3,14 @@ import 'package:arri_core/arri_core.dart';
 
 class RpcRequest<T extends ArriModel?> {
   final String procedure;
-  final String? reqId;
+  String? reqId;
   final String path;
   final HttpMethod? method;
   final String? clientVersion;
   final FutureOr<Map<String, String>> Function()? customHeaders;
   final T data;
 
-  const RpcRequest({
+  RpcRequest({
     required this.procedure,
     required this.reqId,
     required this.path,

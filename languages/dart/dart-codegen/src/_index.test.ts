@@ -50,6 +50,9 @@ environment:
 dependencies:
   arri_client:
     path: '../../dart-client'
+dependency_overrides:
+  arri_core:
+    path: '../../dart-core'
 dev_dependencies:
   lints: ^5.1.1
   test: ^1.25.14`;
