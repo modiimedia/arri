@@ -7,6 +7,7 @@ import { a } from '../../languages/ts/ts-schema/src/_index';
 const CliArgs = a.object({
     server: a.optional(a.enumerator(['ts', 'go'])),
     tsServerLib: a.optional(a.enumerator(['h3', 'express'])),
+    transport: a.optional(a.enumerator(['http', 'ws'])),
     affected: a.optional(a.boolean()),
 });
 type CliArgs = a.infer<typeof CliArgs>;
@@ -29,6 +30,11 @@ const run = defineCommand({
                 'Only test clients that have been affected by the changes',
             default: false,
         },
+        transport: {
+            type: 'string',
+            alias: 't',
+            default: 'http',
+        },
     },
     async run({ args }) {
         const parsedArgs = a.parseUnsafe(CliArgs, args);
@@ -42,6 +48,19 @@ const run = defineCommand({
                 },
             ]);
             parsedArgs.server = type;
+        }
+        if (!parsedArgs.transport) {
+            const { transport } = await enquirer.prompt<{
+                transport: 'http' | 'ws';
+            }>([
+                {
+                    name: 'transport',
+                    type: 'select',
+                    message: 'What transport do you want to use?',
+                    choices: ['http', 'ws'],
+                },
+            ]);
+            parsedArgs.transport = transport;
         }
         let cmd = 'pnpm integration-tests-';
         switch (parsedArgs.server) {
