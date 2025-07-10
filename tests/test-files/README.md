@@ -267,3 +267,134 @@ Below are all of the contents of the test JSON files in an easier to read format
   "right": { "left": null, "right": null }
 }
 ```
+
+## ClientMessage_WithBody.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 12345
+client-version: 1.2.5
+foo: hello foo
+
+{"message":"hello world"}
+```
+
+## ClientMessage_WithoutBody.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 54321
+foo: hello foo
+bar: hello bar
+
+
+```
+
+## ClientActionMessage.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo CLOSE
+content-type: application/json
+req-id: 54321
+
+
+```
+
+## ServerSuccessMessage_WithBody.txt
+
+```txt
+ARRIRPC/0.0.8 SUCCESS
+content-type: application/json
+req-id: 12345
+
+{"message":"hello world"}
+```
+
+## ServerSuccessMessage_WithoutBody.txt
+
+```txt
+ARRIRPC/0.0.8 SUCCESS
+content-type: application/json
+foo: foo
+
+
+```
+
+## ServerFailureMessage.txt
+
+```txt
+ARRIRPC/0.0.8 FAILURE
+content-type: application/json
+req-id: 12345
+foo: foo
+
+{"code":54321,"message":"This is an error"}
+```
+
+## ServerHeartbeatMessage_WithInterval.txt
+
+```txt
+ARRIRPC/0.0.8 HEARTBEAT
+heartbeat-interval: 155
+
+
+```
+
+## ServerHeartbeatMessage_WithoutInterval.txt
+
+```txt
+ARRIRPC/0.0.8 HEARTBEAT
+
+
+```
+
+## ServerConnectionStartMessage_WithInterval.txt
+
+```txt
+ARRIRPC/0.0.8 CONNECTION_START
+heartbeat-interval: 255
+
+
+```
+
+## ServerConnectionStartMessage_WithoutInterval.txt
+
+```txt
+ARRIRPC/0.0.8 CONNECTION_START
+
+
+```
+
+## ServerEsStartMessage.txt
+
+```txt
+ARRIRPC/0.0.8 ES_START
+content-type: application/json
+req-id: 1515
+heartbeat-interval: 255
+foo: foo
+
+
+```
+
+## ServerEsEventMessage.txt
+
+```txt
+ARRIRPC/0.0.8 ES_EVENT
+req-id: 1515
+event-id: 1
+
+{"message":"hello world"}
+```
+
+## ServerEsEndMessage.txt
+
+```txt
+ARRIRPC/0.0.8 ES_END
+req-id: 1515
+reason: no more events
+
+
+```

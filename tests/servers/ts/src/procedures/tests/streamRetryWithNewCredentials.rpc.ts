@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineError, defineEventStreamRpc, getHeader } from '@arrirpc/server';
+import { defineError, defineEventStreamRpc } from '@arrirpc/server';
 
 const usedTokens: Record<string, boolean> = {};
 
@@ -8,11 +8,9 @@ export default defineEventStreamRpc({
     response: a.object({
         message: a.string(),
     }),
-    async handler({ stream }, event) {
-        const authToken = getHeader(event, 'x-test-header');
-        if (!authToken) {
-            throw defineError(400);
-        }
+    async handler({ stream, headers, peer }) {
+        const authToken = headers['x-test-header'];
+        if (!authToken) throw defineError(400);
         if (usedTokens[authToken]) {
             throw defineError(403, {
                 message: 'Token has expired',
@@ -26,7 +24,8 @@ export default defineEventStreamRpc({
             await stream.push({ message: 'ok' });
             msgCount++;
             if (msgCount >= 10) {
-                event.node.res.end();
+                stream.close({ notifyClients: false });
+                peer?.close();
             }
         });
         stream.onClosed(() => {

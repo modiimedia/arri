@@ -9,7 +9,7 @@ export default defineEventStreamRpc({
         count: a.uint8(),
         message: a.string(),
     }),
-    handler({ params, stream }, event) {
+    handler({ params, stream, peer }) {
         let messageCount = 0;
         const interval = setInterval(async () => {
             messageCount++;
@@ -19,7 +19,8 @@ export default defineEventStreamRpc({
             });
             if (messageCount === params.messageCount) {
                 // manually close the connection without sending a "done" message
-                event.node.res.end();
+                stream.close({ notifyClients: false });
+                peer?.close();
                 return;
             }
             if (messageCount > params.messageCount) {
