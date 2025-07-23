@@ -3,9 +3,11 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@arrirpc/express-adapter": "workspace:*",
     "@arrirpc/schema": "workspace:*",
+    "@types/express": "^5.0.1",
     "@sinclair/typebox": "^0.34.37",
-    "arri": "workspace:*"
+    "express": "^5.1.0"
   },
   "scripts": {
     "start-server": "nx serve test-server",

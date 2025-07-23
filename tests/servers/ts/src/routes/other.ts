@@ -1,17 +1,8 @@
 import { a } from '@arrirpc/schema';
-import { ArriRouter, defineRpc, defineService } from '@arrirpc/server';
+import { defineRpc, defineService } from '@arrirpc/server';
 
-export const manualRouter = new ArriRouter();
 const DefaultPayload = a.object('DefaultPayload', {
     message: a.string(),
-});
-
-manualRouter.route({
-    path: '/routes/hello-world',
-    method: ['get', 'post'],
-    handler(_) {
-        return `hello world`;
-    },
 });
 
 export const manualTestService = defineService('tests', {

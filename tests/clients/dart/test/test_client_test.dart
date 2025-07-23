@@ -9,16 +9,25 @@ import 'package:test_client_dart/test_client.g.dart';
 import 'package:http/io_client.dart';
 
 const baseUrl = "http://127.0.0.1:2020";
-
+const wsConnectionUrl = "ws://127.0.0.1:2020/establish-connection";
 Future<void> main() async {
-  final client =
-      TestClient(baseUrl: baseUrl, headers: () => {"x-test-header": 'test'});
+  // final defaultTransport = String.fromEnvironment("CLIENT_TRANSPORT");
+  final defaultTransport = "ws";
+
+  print("running tests over \"$defaultTransport\"");
+  final client = TestClient(
+    baseUrl: baseUrl,
+    wsConnectionUrl: wsConnectionUrl,
+    defaultTransport: defaultTransport,
+    headers: () => {"x-test-header": 'test'},
+  );
   final httpClient =
       HttpClient(context: SecurityContext(withTrustedRoots: true));
-  final ioClient = IOClient(httpClient);
   final clientWCustomHttpClient = TestClient(
     baseUrl: baseUrl,
-    httpClient: ioClient,
+    wsConnectionUrl: wsConnectionUrl,
+    createHttpClient: () => IOClient(httpClient),
+    defaultTransport: defaultTransport,
     headers: () => {"x-test-header": 'test'},
   );
 
@@ -135,6 +144,7 @@ Future<void> main() async {
   test("supports async header functions", () async {
     final asyncHeaderClient = TestClient(
       baseUrl: baseUrl,
+      wsConnectionUrl: "",
       headers: () async {
         await Future.delayed(Duration(milliseconds: 100));
         return {"x-test-header": "async-test"};
@@ -149,7 +159,8 @@ Future<void> main() async {
     bool firedOnErr = false;
     final unauthenticatedClient = TestClient(
       baseUrl: baseUrl,
-      onError: (_) {
+      wsConnectionUrl: "",
+      onError: (_, __) {
         firedOnErr = true;
       },
     );
@@ -317,7 +328,8 @@ Future<void> main() async {
     bool onErrFired = false;
     final customClient = TestClient(
       baseUrl: baseUrl,
-      onError: (err) {
+      wsConnectionUrl: "",
+      onError: (req, err) {
         onErrFired = true;
         expect(err is ArriError, equals(true));
       },
@@ -328,111 +340,131 @@ Future<void> main() async {
     expect(onErrFired, equals(true));
   });
 
-  test("[SSE] supports server sent events", () async {
-    int messageCount = 0;
-    final completer = Completer();
-    final eventSource = client.tests.streamMessages(
-      ChatMessageParams(channelId: "12345"),
-      onMessage: (data, es) {
+  test(
+    "[SSE] supports server sent events",
+    () async {
+      int messageCount = 0;
+      final completer = Completer();
+      final eventSource = client.tests.streamMessages(
+        ChatMessageParams(channelId: "12345"),
+        onMessage: (data, es) {
+          messageCount++;
+          switch (data) {
+            case ChatMessageText():
+              expect(data.channelId, equals('12345'));
+              expect(data.messageType, equals("TEXT"));
+              break;
+            case ChatMessageImage():
+              expect(data.channelId, equals("12345"));
+              expect(data.messageType, equals("IMAGE"));
+              break;
+            case ChatMessageUrl():
+              expect(data.channelId, equals("12345"));
+              expect(data.messageType, equals("URL"));
+              break;
+          }
+          if (messageCount >= 15) es.close();
+        },
+        onClose: (_) {
+          completer.complete();
+        },
+        onError: (err, _) {
+          completer.completeError(err);
+        },
+      );
+      await completer.future;
+      expect(messageCount, equals(15));
+      expect(eventSource.isClosed, equals(true));
+    },
+    timeout: Timeout(Duration(seconds: 5)),
+  );
+  test(
+    "[SSE] supports converting server sent events to a Dart 'Stream'",
+    () async {
+      int messageCount = 0;
+      final eventSource =
+          client.tests.streamMessages(ChatMessageParams(channelId: "12345"));
+      final listener = eventSource.toStream().listen((message) {
         messageCount++;
-        switch (data) {
+        switch (message) {
           case ChatMessageText():
-            expect(data.channelId, equals('12345'));
-            expect(data.messageType, equals("TEXT"));
+            expect(message.channelId, equals('12345'));
+            expect(message.messageType, equals("TEXT"));
             break;
           case ChatMessageImage():
-            expect(data.channelId, equals("12345"));
-            expect(data.messageType, equals("IMAGE"));
+            expect(message.channelId, equals("12345"));
+            expect(message.messageType, equals("IMAGE"));
             break;
           case ChatMessageUrl():
-            expect(data.channelId, equals("12345"));
-            expect(data.messageType, equals("URL"));
+            expect(message.channelId, equals("12345"));
+            expect(message.messageType, equals("URL"));
             break;
         }
-        if (messageCount >= 15) es.close();
-      },
-      onClose: (_) {
-        completer.complete();
-      },
-      onError: (err, _) {
-        completer.completeError(err);
-      },
-    );
-    await completer.future;
-    expect(messageCount, equals(15));
-    expect(eventSource.isClosed, equals(true));
-  });
-  test("[SSE] supports converting server sent events to a Dart 'Stream'",
-      () async {
-    int messageCount = 0;
-    final eventSource =
-        client.tests.streamMessages(ChatMessageParams(channelId: "12345"));
-    final listener = eventSource.toStream().listen((message) {
-      messageCount++;
-      switch (message) {
-        case ChatMessageText():
-          expect(message.channelId, equals('12345'));
-          expect(message.messageType, equals("TEXT"));
-          break;
-        case ChatMessageImage():
-          expect(message.channelId, equals("12345"));
-          expect(message.messageType, equals("IMAGE"));
-          break;
-        case ChatMessageUrl():
-          expect(message.channelId, equals("12345"));
-          expect(message.messageType, equals("URL"));
-          break;
-      }
-    });
-    await Future.delayed(Duration(milliseconds: 500));
-    await listener.cancel();
-    expect(messageCount >= 1, equals(true));
-    expect(eventSource.isClosed, equals(true));
-  });
-  test("[SSE] closes connection when receiving 'done' event", () async {
-    int messageCount = 0;
-    int errorCount = 0;
-    final completer = Completer();
-    final eventSource = client.tests.streamTenEventsThenEnd(
-      onMessage: (data, connection) {
-        messageCount++;
-      },
-      onError: (_, __) {
-        errorCount++;
-      },
-      onClose: (_) {
-        completer.complete();
-      },
-    );
-    await completer.future;
-    expect(messageCount, equals(10));
-    expect(errorCount, equals(0));
-    expect(eventSource.isClosed, equals(true));
-  });
-  test("[SSE] auto-reconnects when connection is closed by server", () async {
-    int connectionCount = 0;
-    int messageCount = 0;
-    int errorCount = 0;
-    final completer = Completer();
+      });
+      await Future.delayed(Duration(milliseconds: 500));
+      await listener.cancel();
+      expect(messageCount >= 1, equals(true));
+      expect(eventSource.isClosed, equals(true));
+    },
+    timeout: Timeout(Duration(seconds: 5)),
+  );
+  test(
+    "[SSE] closes connection when receiving 'done' event",
+    () async {
+      int messageCount = 0;
+      int errorCount = 0;
+      final completer = Completer();
+      final eventSource = client.tests.streamTenEventsThenEnd(
+        onMessage: (data, connection) {
+          messageCount++;
+        },
+        onError: (_, __) {
+          errorCount++;
+        },
+        onClose: (_) {
+          completer.complete();
+        },
+      );
+      await completer.future;
+      expect(messageCount, equals(10));
+      expect(errorCount, equals(0));
+      expect(eventSource.isClosed, equals(true));
+    },
+    timeout: Timeout(Duration(seconds: 5)),
+  );
+  test(
+    "[SSE] auto-reconnects when connection is closed by server",
+    () async {
+      int connectionCount = 0;
+      int messageCount = 0;
+      int errorCount = 0;
+      final completer = Completer();
 
-    final eventSource = client.tests.streamAutoReconnect(
-        AutoReconnectParams(messageCount: 10), onOpen: (_, __) {
-      connectionCount++;
-    }, onMessage: (data, es) {
-      messageCount++;
-      expect(data.count > 0, equals(true));
-      if (messageCount >= 30) es.close();
-    }, onError: (_, __) {
-      errorCount++;
-    }, onClose: (_) {
-      completer.complete();
-    });
-    await completer.future;
-    expect(connectionCount > 0, equals(true));
-    expect(messageCount > 10, equals(true));
-    expect(errorCount, equals(0));
-    expect(eventSource.isClosed, equals(true));
-  });
+      final eventSource = client.tests.streamAutoReconnect(
+        AutoReconnectParams(messageCount: 10),
+        onOpen: (_) {
+          connectionCount++;
+        },
+        onMessage: (data, es) {
+          messageCount++;
+          expect(data.count > 0, equals(true));
+          if (messageCount >= 30) es.close();
+        },
+        onError: (_, __) {
+          errorCount++;
+        },
+        onClose: (_) {
+          completer.complete();
+        },
+      );
+      await completer.future;
+      expect(connectionCount > 0, equals(true));
+      expect(messageCount > 10, equals(true));
+      expect(errorCount, equals(0));
+      expect(eventSource.isClosed, equals(true));
+    },
+    timeout: Timeout(Duration(seconds: 10)),
+  );
   test(
     "[SSE] can handle receiving large messages",
     () async {
@@ -440,17 +472,27 @@ Future<void> main() async {
       var msgCount = 0;
       var errorCount = 0;
       final completer = Completer();
-      client.tests.streamLargeObjects(onOpen: (_, __) {
-        openCount++;
-      }, onMessage: (data, controller) {
-        msgCount++;
-        if (msgCount > 2) controller.close();
-      }, onError: (_, __) {
-        errorCount++;
-      }, onClose: (_) {
-        completer.complete();
-      });
+      client.tests.streamLargeObjects(
+        onOpen: (_) {
+          openCount++;
+          print("ON_OPEN $openCount");
+        },
+        onMessage: (data, controller) {
+          msgCount++;
+          print("ON_MSG $msgCount");
+          if (msgCount > 2) controller.close();
+        },
+        onError: (_, __) {
+          errorCount++;
+          print("ON_ERROR $errorCount");
+        },
+        onClose: (_) {
+          print("ON_CLOSE");
+          completer.complete();
+        },
+      );
       await completer.future;
+      print("MSG_COUNT $msgCount");
       expect(openCount, equals(1));
       expect(msgCount > 2, equals(true));
       expect(errorCount, equals(0));
@@ -462,7 +504,7 @@ Future<void> main() async {
     var openCount = 0;
     var errorCount = 0;
     var msgCount = 0;
-    final List<ArriError> errors = [];
+    final List<Object> errors = [];
     final statusCode = 555;
     final statusMessage = "test_message";
     final eventSource = client.tests.streamConnectionErrorTest(
@@ -470,18 +512,20 @@ Future<void> main() async {
         statusCode: statusCode,
         statusMessage: statusMessage,
       ),
-      onOpen: (_, __) {
+      onOpen: (_) {
         openCount++;
       },
       onMessage: (data, _) {
         msgCount++;
       },
       onError: (err, _) {
+        print("ERROR $err");
         errorCount++;
+        expect(err is ArriError, equals(true));
         errors.add(err);
       },
     );
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1000));
     eventSource.close();
     expect(openCount > 0, equals(true));
     expect(msgCount, equals(0));
@@ -489,7 +533,9 @@ Future<void> main() async {
     expect(
       errors.every(
         (element) =>
-            element.code == statusCode && element.message == statusMessage,
+            element is ArriError &&
+            element.code == statusCode &&
+            element.message == statusMessage,
       ),
       equals(true),
     );
@@ -498,6 +544,7 @@ Future<void> main() async {
     final tokensUsed = <String>[];
     final dynamicClient = TestClient(
       baseUrl: baseUrl,
+      wsConnectionUrl: "",
       headers: () {
         final token = Random.secure().nextInt(4294967296).toString();
         tokensUsed.add(token);
@@ -508,83 +555,27 @@ Future<void> main() async {
     var openCount = 0;
     final completer = Completer();
 
-    final eventSource = dynamicClient.tests.streamRetryWithNewCredentials(
-      onMessage: (data, connection) {
+    final eventStream = dynamicClient.tests.streamRetryWithNewCredentials(
+      onMessage: (data, stream) {
         msgCount++;
-        if (msgCount >= 40) connection.close();
+        if (msgCount >= 40) stream.close();
       },
-      onOpen: (response, connection) {
+      onOpen: (_) {
         openCount++;
       },
-      onError: (err, connection) {
-        expect(err.code, equals(403));
+      onError: (err, _) {
+        expect(err is ArriError, equals(true));
+        if (err is ArriError) expect(err.code, equals(403));
       },
       onClose: (_) {
         completer.complete();
       },
     );
     await completer.future;
-    expect(eventSource.isClosed, equals(true));
+    expect(eventStream.isClosed, equals(true));
     expect(tokensUsed.isNotEmpty, equals(true));
     expect(tokensUsed.length, equals(4));
     expect(msgCount, equals(40));
     expect(openCount, equals(4));
-  });
-
-  group("[SSE] heartbeat headers", () {
-    test(
-      'reconnects when no heartbeat is received',
-      () async {
-        var msgCount = 0;
-        var openCount = 0;
-        final completer = Completer();
-        final eventSource = client.tests.streamHeartbeatDetectionTest(
-          StreamHeartbeatDetectionTestParams(heartbeatEnabled: false),
-          onMessage: (msg, connection) {
-            msgCount++;
-            if (msgCount >= 15) connection.close();
-          },
-          onOpen: (_, __) {
-            openCount++;
-          },
-          onClose: (_) {
-            completer.complete();
-          },
-          onError: (err, _) {
-            completer.completeError(err);
-          },
-        );
-        await completer.future;
-        expect(eventSource.isClosed, equals(true));
-        expect(openCount, equals(3));
-        expect(msgCount, equals(15));
-      },
-      timeout: Timeout(Duration(seconds: 30)),
-    );
-    test('keeps connection alive when heartbeat is received', () async {
-      var msgCount = 0;
-      var openCount = 0;
-      final completer = Completer();
-      final eventSource = client.tests.streamHeartbeatDetectionTest(
-        StreamHeartbeatDetectionTestParams(heartbeatEnabled: true),
-        onMessage: (msg, connection) {
-          msgCount++;
-          if (msgCount >= 8) connection.close();
-        },
-        onOpen: (v, __) {
-          openCount++;
-        },
-        onClose: (_) {
-          completer.complete();
-        },
-        onError: (err, _) {
-          completer.completeError(err);
-        },
-      );
-      await completer.future;
-      expect(eventSource.isClosed, equals(true));
-      expect(openCount, equals(1));
-      expect(msgCount, equals(8));
-    }, timeout: Timeout(Duration(seconds: 30)));
   });
 }

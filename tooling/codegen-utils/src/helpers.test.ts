@@ -31,28 +31,28 @@ describe('unflattenObject()', () => {
     test('Complex Unflatten', () => {
         const input: Record<string, RpcDefinition> = {
             'posts.getPost': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/posts/get-post',
                 params: 'PostsGetPostParams',
                 response: 'PostsGetPostResponse',
             },
             'posts.updatePost': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/posts/update-post',
                 params: 'PostsUpdatePostParams',
                 response: 'PostsUpdatePostResponse',
             },
             'posts.comments.getComment': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/posts/comments/get-comment',
                 params: 'GetCommentParams',
                 response: 'GetCommentResponse',
             },
             'users.getUser': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/users/getUser',
                 params: 'UserParams',
@@ -63,14 +63,14 @@ describe('unflattenObject()', () => {
             JSON.stringify({
                 posts: {
                     getPost: {
-                        transport: 'http',
+                        transports: ['http'],
                         method: 'get',
                         path: '/posts/get-post',
                         params: 'PostsGetPostParams',
                         response: 'PostsGetPostResponse',
                     },
                     updatePost: {
-                        transport: 'http',
+                        transports: ['http'],
                         method: 'post',
                         path: '/posts/update-post',
                         params: 'PostsUpdatePostParams',
@@ -78,7 +78,7 @@ describe('unflattenObject()', () => {
                     },
                     comments: {
                         getComment: {
-                            transport: 'http',
+                            transports: ['http'],
                             method: 'get',
                             path: '/posts/comments/get-comment',
                             params: 'GetCommentParams',
@@ -88,7 +88,7 @@ describe('unflattenObject()', () => {
                 },
                 users: {
                     getUser: {
-                        transport: 'http',
+                        transports: ['http'],
                         method: 'get',
                         path: '/users/getUser',
                         params: 'UserParams',
@@ -103,21 +103,21 @@ describe('unflattenObject()', () => {
 describe('unflatten procedures', () => {
     const procedures: AppDefinition['procedures'] = {
         'users.getUser': {
-            transport: 'http',
+            transports: ['http'],
             path: '/users/get-user',
             method: 'get',
             params: 'GetUserParams',
             response: 'User',
         },
         'users.updateUser': {
-            transport: 'http',
+            transports: ['http'],
             path: '/users/update-user',
             method: 'post',
             params: 'UpdateUserParams',
             response: 'User',
         },
         'posts.getPost': {
-            transport: 'http',
+            transports: ['http'],
             path: '/posts/get-posts',
             method: 'get',
             params: 'GetPostParams',
@@ -129,14 +129,14 @@ describe('unflatten procedures', () => {
         expect(result).toStrictEqual({
             users: {
                 getUser: {
-                    transport: 'http',
+                    transports: ['http'],
                     path: '/users/get-user',
                     method: 'get',
                     params: 'GetUserParams',
                     response: 'User',
                 },
                 updateUser: {
-                    transport: 'http',
+                    transports: ['http'],
                     path: '/users/update-user',
                     method: 'post',
                     params: 'UpdateUserParams',
@@ -145,7 +145,7 @@ describe('unflatten procedures', () => {
             },
             posts: {
                 getPost: {
-                    transport: 'http',
+                    transports: ['http'],
                     path: '/posts/get-posts',
                     method: 'get',
                     params: 'GetPostParams',
@@ -158,7 +158,7 @@ describe('unflatten procedures', () => {
         const result = unflattenProcedures(procedures, 'posts');
         expect(result).toStrictEqual({
             getPost: {
-                transport: 'http',
+                transports: ['http'],
                 path: '/posts/get-posts',
                 method: 'get',
                 params: 'GetPostParams',
