@@ -439,6 +439,7 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
             case 'FAILURE':
                 this.hooks.onError?.(msg.error);
                 this.globalOnError?.(this.req, msg.error);
+                this.init();
                 return;
             case 'CONNECTION_START':
             case 'HEARTBEAT':

@@ -168,6 +168,9 @@ void main() {
               case ServerFailureMessage():
               case ServerHeartbeatMessage():
               case ServerConnectionStartMessage():
+              case ServerEventStreamStartMessage():
+              case ServerEventStreamEventMessage():
+              case ServerEventStreamEndMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerSuccessMessage()",
                 );
@@ -185,6 +188,9 @@ void main() {
               case ServerFailureMessage():
               case ServerHeartbeatMessage():
               case ServerConnectionStartMessage():
+              case ServerEventStreamStartMessage():
+              case ServerEventStreamEventMessage():
+              case ServerEventStreamEndMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerSuccessMessage()",
                 );
@@ -219,6 +225,9 @@ void main() {
               case ServerSuccessMessage():
               case ServerHeartbeatMessage():
               case ServerConnectionStartMessage():
+              case ServerEventStreamStartMessage():
+              case ServerEventStreamEventMessage():
+              case ServerEventStreamEndMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerFailureMessage().",
                 );
@@ -246,6 +255,9 @@ void main() {
               case ServerSuccessMessage():
               case ServerFailureMessage():
               case ServerConnectionStartMessage():
+              case ServerEventStreamStartMessage():
+              case ServerEventStreamEventMessage():
+              case ServerEventStreamEndMessage():
                 fail(
                     "Parsed to wrong message. Should be ServerHeartbeatMessage().");
             }
@@ -274,6 +286,9 @@ void main() {
               case ServerHeartbeatMessage():
               case ServerSuccessMessage():
               case ServerFailureMessage():
+              case ServerEventStreamStartMessage():
+              case ServerEventStreamEventMessage():
+              case ServerEventStreamEndMessage():
                 fail(
                     "Parsed to wrong message. Should be ServerConnectionStartMessage().");
             }

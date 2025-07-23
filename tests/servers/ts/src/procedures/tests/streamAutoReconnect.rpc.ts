@@ -11,6 +11,7 @@ export default defineEventStreamRpc({
     }),
     handler({ params, stream, peer }) {
         let messageCount = 0;
+        stream.send();
         const interval = setInterval(async () => {
             messageCount++;
             await stream.push({

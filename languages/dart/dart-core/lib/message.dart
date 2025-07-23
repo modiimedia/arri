@@ -206,7 +206,10 @@ enum _ServerMessageType {
   success("SUCCESS"),
   failure("FAILURE"),
   heartbeat("HEARTBEAT"),
-  connectionStart("CONNECTION_START");
+  connectionStart("CONNECTION_START"),
+  esStart("ES_START"),
+  esEvent("ES_EVENT"),
+  esEnd("ES_END");
 
   const _ServerMessageType(this.serialValue);
   final String serialValue;
@@ -230,6 +233,8 @@ sealed class ServerMessage {
   static Result<ServerMessage, String> fromString<TBody>(String input) {
     _ServerMessageType? type;
     String? reqId;
+    String? eventId;
+    String? reason;
     ContentType? contentType;
     final Map<String, String> customHeaders = {};
     int? heartbeatInterval;
@@ -251,6 +256,15 @@ sealed class ServerMessage {
           case "ARRIRPC/$arriVersion CONNECTION_START":
             type = _ServerMessageType.connectionStart;
             break;
+          case "ARRIRPC/$arriVersion ES_START":
+            type = _ServerMessageType.esStart;
+            break;
+          case "ARRIRPC/$arriVersion ES_EVENT":
+            type = _ServerMessageType.esEvent;
+            break;
+          case "ARRIRPC/$arriVersion ES_END":
+            type = _ServerMessageType.esEnd;
+            break;
         }
         currentLine = "";
         return;
@@ -263,9 +277,16 @@ sealed class ServerMessage {
         case 'req-id':
           reqId = value;
           break;
+        case "event-id":
+          eventId = value;
+          break;
+        case "reason":
+          reason = reason;
+          break;
         case 'heartbeat-interval':
           heartbeatInterval = int.tryParse(value);
           break;
+
         default:
           customHeaders[key] = value;
           break;
@@ -326,6 +347,26 @@ sealed class ServerMessage {
             heartbeatInterval: heartbeatInterval,
           ),
         );
+      case _ServerMessageType.esStart:
+        return Ok(ServerEventStreamStartMessage(
+          reqId: reqId,
+          contentType: contentType ?? ContentType.unknown,
+          heartbeatInterval: heartbeatInterval,
+          customHeaders: customHeaders,
+        ));
+      case _ServerMessageType.esEvent:
+        final bodyStr = input.substring(bodyStartIndex);
+        final body = bodyStr.isEmpty ? null : bodyStr;
+        return Ok(ServerEventStreamEventMessage(
+          reqId: reqId,
+          eventId: eventId,
+          body: body,
+        ));
+      case _ServerMessageType.esEnd:
+        return Ok(ServerEventStreamEndMessage(
+          reqId: reqId,
+          reason: reason ?? "",
+        ));
     }
   }
 }
@@ -374,11 +415,6 @@ class ServerFailureMessage implements ServerMessage {
     required this.customHeaders,
     required this.error,
   });
-
-  @override
-  String? unwrapReqId() {
-    return reqId;
-  }
 
   @override
   List<Object?> get props => [reqId, contentType, customHeaders, error];
@@ -463,6 +499,80 @@ class ServerConnectionStartMessage implements ServerMessage {
     if (heartbeatInterval != null) {
       output += "heartbeat-interval: $heartbeatInterval\n";
     }
+    output += "\n";
+    return output;
+  }
+}
+
+class ServerEventStreamStartMessage implements ServerMessage {
+  final String? reqId;
+  final int? heartbeatInterval;
+  final ContentType contentType;
+  final Map<String, String> customHeaders;
+  const ServerEventStreamStartMessage({
+    required this.reqId,
+    required this.heartbeatInterval,
+    required this.customHeaders,
+    required this.contentType,
+  });
+
+  @override
+  List<Object?> get props =>
+      [reqId, heartbeatInterval, customHeaders, contentType];
+
+  @override
+  String encodeString() {
+    String output = "ARRIRPC/$arriVersion ES_START\n";
+    output += "content-type: ${contentType.serialValue}\n";
+    if (reqId != null) output += "req-id: ${reqId}\n";
+    if (heartbeatInterval != null) {
+      output += "heartbeat-interval: $heartbeatInterval\n";
+    }
+    for (final entry in customHeaders.entries) {
+      output += "${entry.key.toLowerCase()}: ${entry.value}\n";
+    }
+    output += "\n";
+    return output;
+  }
+}
+
+class ServerEventStreamEventMessage implements ServerMessage {
+  final String? reqId;
+  final String? eventId;
+  final String? body;
+  ServerEventStreamEventMessage({
+    required this.reqId,
+    required this.eventId,
+    required this.body,
+  });
+
+  @override
+  List<Object?> get props => [reqId, eventId, body];
+
+  @override
+  String encodeString() {
+    String output = "ARRIRPC/$arriVersion ES_EVENT\n";
+    if (reqId != null) output += "req-id: ${reqId}\n";
+    if (eventId != null) output += "event-id: ${eventId}\n";
+    output += "\n";
+    if (body != null) output += body!;
+    return output;
+  }
+}
+
+class ServerEventStreamEndMessage implements ServerMessage {
+  final String? reqId;
+  final String reason;
+  ServerEventStreamEndMessage({required this.reqId, required this.reason});
+
+  @override
+  List<Object?> get props => [reqId, reason];
+
+  @override
+  String encodeString() {
+    String output = "ARRIRPC/$arriVersion ES_END\n";
+    if (reqId != null) output += "req-id: $reqId\n";
+    output += "reason: $reason\n";
     output += "\n";
     return output;
   }

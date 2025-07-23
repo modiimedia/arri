@@ -35,6 +35,7 @@ app.use(manualTestService);
 
 // auth middleware
 app.use(async (context) => {
+    console.log(context.rpcName, context.params);
     const authHeader = context.headers['x-test-header'];
     if (!authHeader?.length && context.rpcName.length) {
         throw defineError(401, {

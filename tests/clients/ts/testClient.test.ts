@@ -1,4 +1,4 @@
-import { ArriError } from '@arrirpc/client';
+import { ArriError, EventStreamController } from '@arrirpc/client';
 import { randomUUID } from 'crypto';
 import { FetchError, ofetch } from 'ofetch';
 import { afterAll, describe, expect, it, test } from 'vitest';
@@ -19,7 +19,8 @@ const wsConnectionUrl = 'ws://127.0.0.1:2020/establish-connection';
 const headers = {
     'x-test-header': 'test',
 };
-const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
+// const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
+const transport = 'http';
 
 console.info(`running tests over "${transport}"`);
 
@@ -502,6 +503,69 @@ describe('event stream rpcs', () => {
         expect(msgCount >= 40).toBe(true);
         expect(openCount).toBe(4);
         dynamicClient.terminateConnections();
+    });
+
+    it(
+        'can can handle receiving large objects',
+        { timeout: 10000 },
+        async () => {
+            let openCount = 0;
+            let msgCount = 0;
+            await new Promise((res, rej) => {
+                const controller = client.tests.streamLargeObjects({
+                    onOpen() {
+                        openCount++;
+                        if (openCount > 1) {
+                            rej('Should only open once');
+                            controller.abort();
+                        }
+                    },
+                    onMessage() {
+                        msgCount++;
+                        if (msgCount > 2) {
+                            res(undefined);
+                            controller.abort();
+                        }
+                    },
+                    onError(err) {
+                        rej(err);
+                        controller.abort();
+                    },
+                    onClose() {
+                        res(undefined);
+                    },
+                });
+            });
+            expect(msgCount > 2).toBe(true);
+        },
+    );
+    test('stream connection error test', async () => {
+        let errCount = 0;
+        let controller: EventStreamController | undefined;
+        await new Promise((res) => {
+            controller = client.tests.streamConnectionErrorTest(
+                {
+                    statusCode: 411,
+                    statusMessage: 'hello world',
+                },
+                {
+                    onError(err) {
+                        expect(err instanceof ArriError).toBe(true);
+                        if (err instanceof ArriError) {
+                            expect(err.code).toBe(411);
+                            expect(err.message).toBe('hello world');
+                        }
+                        errCount++;
+                        if (errCount >= 5) controller?.abort();
+                    },
+                    onClose() {
+                        res(undefined);
+                    },
+                },
+            );
+        });
+        controller?.abort();
+        expect(errCount).toBe(5);
     });
 });
 

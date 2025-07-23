@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/dispatcher.dart';
 import 'package:arri_client/request.dart';
 import 'package:ulid/ulid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+final File logFile = File("log.txt");
 
 class WsDispatcher implements Dispatcher {
   final String _connectionUrl;
@@ -14,14 +17,25 @@ class WsDispatcher implements Dispatcher {
   StreamSubscription<dynamic>? _streamSubscription;
 
   final Map<String, Function(ServerMessage)> _messageHandlers = {};
+  late Timer? _connectionCheckerTimer;
 
   WsDispatcher({
     required String connectionUrl,
     double? heartbeatTimeoutMultiplier,
   })  : _connectionUrl = connectionUrl,
-        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier ?? 2;
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier ?? 2 {
+    _connectionCheckerTimer = Timer.periodic(Duration(seconds: 1), (_) {
+      print("CLOSE_CODE, ${_channel?.closeCode}");
+      if (_channel?.closeCode != null) {
+        setupConnection(forceReconnect: true, isReconnect: true);
+      }
+    });
+  }
 
-  Future<void> setupConnection({bool? forceReconnect}) async {
+  Future<void> setupConnection({
+    bool? forceReconnect,
+    bool isReconnect = false,
+  }) async {
     if (_streamSubscription != null && forceReconnect != true) return;
     if (forceReconnect == true) {
       _streamSubscription?.cancel();
@@ -31,17 +45,28 @@ class WsDispatcher implements Dispatcher {
     _streamSubscription = _channel?.stream.listen(
       _handleMessage,
       onError: (err) {
-        print("ERROR $err");
+        print("CHANNEL:ERROR $err");
       },
       onDone: () {
-        print("DONE");
+        print("CHANNEL:DONE");
+        if (_channel?.closeCode != null) {
+          setupConnection(forceReconnect: true, isReconnect: true);
+        }
       },
     );
     await _channel!.ready;
+    print("CHANNEL READY");
+    if (isReconnect) {
+      for (final es in _eventStreams.values) {
+        es.reconnect();
+      }
+    }
+    logFile.writeAsString("", mode: FileMode.write);
   }
 
   _handleMessage(dynamic data) {
     if (data is! String) return;
+    logFile.writeAsStringSync("$data\n-----\n", mode: FileMode.append);
     final msg = ServerMessage.fromString(data).unwrap();
     if (msg == null || msg.reqId == null) return;
     _messageHandlers[msg.reqId]?.call(msg);
@@ -67,6 +92,9 @@ class WsDispatcher implements Dispatcher {
       final timerDuration = timeout ?? Duration(seconds: 30);
       final timer = Timer(timerDuration, () {
         if (completer.isCompleted) return;
+        if (_messageHandlers.containsKey(req.reqId)) {
+          _messageHandlers.remove(req.reqId);
+        }
         completer.completeError(
           TimeoutException("Timeout exceeded", timerDuration),
         );
@@ -90,6 +118,9 @@ class WsDispatcher implements Dispatcher {
             return;
           case ServerHeartbeatMessage():
           case ServerConnectionStartMessage():
+          case ServerEventStreamStartMessage():
+          case ServerEventStreamEventMessage():
+          case ServerEventStreamEndMessage():
             return;
         }
       };
@@ -129,6 +160,12 @@ class WsDispatcher implements Dispatcher {
     }
   }
 
+  Future<WebSocketChannel?> _getWebsocketChannel() async {
+    if (_channel != null) return _channel!;
+    await setupConnection();
+    return _channel!;
+  }
+
   @override
   EventStream<TOutput>
       handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
@@ -144,10 +181,133 @@ class WsDispatcher implements Dispatcher {
     required Duration? maxRetryInterval,
     required double? heartbeatTimeoutMultiplier,
   }) {
-    // TODO: implement handleEventStreamRpc
-    throw UnimplementedError();
+    if (req.reqId == null) req.reqId = Ulid().toString();
+    final eventStream = WsEventStream(
+      decoder: responseDecoder,
+      onMessage: onMessage,
+      onOpen: onOpen,
+      onClose: (es) {
+        if (_messageHandlers.containsKey(req.reqId)) {
+          _messageHandlers.remove(req.reqId);
+        }
+        if (_eventStreams.containsKey(req.reqId)) {
+          _eventStreams.remove(req.reqId);
+        }
+        onClose?.call(es);
+      },
+      onError: onError,
+      getWebsocketChannel: () async {
+        final channel = await _getWebsocketChannel();
+        if (channel == null) throw Exception("Error creating connection");
+        return channel;
+      },
+      req: req,
+    );
+    _messageHandlers[req.reqId!] = (msg) => eventStream.handleMessage(msg);
+    _eventStreams[req.reqId!] = eventStream;
+    Timer.run(() => eventStream.start());
+    return eventStream;
   }
+
+  final Map<String, EventStream<dynamic>> _eventStreams = {};
 
   @override
   String get transport => "ws";
+}
+
+class WsEventStream<T> implements EventStream<T> {
+  @override
+  final T Function(String) decoder;
+  final EventStreamHookOnMessage<T>? onMessage;
+  final EventStreamHookOnOpen? onOpen;
+  final EventStreamHookOnClose? onClose;
+  final EventStreamHookOnError? onError;
+
+  final RpcRequest req;
+  String? lastEventId;
+  Future<WebSocketChannel?> Function() getWebsocketChannel;
+  WsEventStream({
+    required this.decoder,
+    required this.onMessage,
+    required this.onOpen,
+    required this.onClose,
+    required this.onError,
+    required this.getWebsocketChannel,
+    required this.req,
+  }) : assert(req.reqId != null);
+
+  void handleMessage(ServerMessage msg) {
+    switch (msg) {
+      case ServerSuccessMessage():
+        break;
+      case ServerFailureMessage():
+        onError?.call(msg.error ?? ArriError.unknown(), this);
+        reconnect();
+        break;
+      case ServerHeartbeatMessage():
+      case ServerConnectionStartMessage():
+        break;
+      case ServerEventStreamStartMessage():
+        break;
+      case ServerEventStreamEventMessage():
+        final data = decoder(msg.body ?? "");
+        onMessage?.call(data, this);
+        _streamController?.sink.add(data);
+        break;
+      case ServerEventStreamEndMessage():
+        _streamController?.close();
+        close();
+        break;
+    }
+  }
+
+  start() {
+    getWebsocketChannel().then((c) async {
+      final msg = ClientMessage(
+        rpcName: req.procedure,
+        reqId: req.reqId,
+        method: null,
+        path: req.path,
+        contentType: ContentType.json,
+        clientVersion: req.clientVersion,
+        customHeaders: await req.customHeaders?.call() ?? {},
+        body: req.data,
+      );
+      c?.sink.add(msg.encodeString());
+      onOpen?.call(this);
+    }).catchError((err) {
+      onOpen?.call(this);
+      onError?.call(err, this);
+    });
+  }
+
+  bool _isClosed = false;
+
+  @override
+  void close() {
+    if (_isClosed) return;
+    onClose?.call(this);
+    _streamController?.close();
+    _streamController = null;
+    _isClosed = true;
+  }
+
+  @override
+  bool get isClosed => _isClosed;
+
+  @override
+  void reconnect() {
+    start();
+  }
+
+  StreamController<T>? _streamController;
+
+  @override
+  Stream<T> toStream() {
+    _streamController ??= StreamController<T>(onCancel: () {
+      close();
+      _streamController = null;
+    });
+    return _streamController!.stream;
+  }
 }

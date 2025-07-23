@@ -114,7 +114,10 @@ export class RpcEventStreamConnection<TData> {
         }
     }
 
+    private _isSent = false;
+
     send() {
+        if (this._isSent) return;
         void this.dispatcher.send();
         this.dispatcher.push({
             type: 'ES_START',
@@ -128,6 +131,7 @@ export class RpcEventStreamConnection<TData> {
                 await this.heartbeat();
             }, this._heartbeatIntervalMs);
         }
+        this._isSent = true;
     }
 
     async push(data: TData, eventId?: string): Promise<EventStreamPushResult>;
