@@ -16,7 +16,7 @@ import {
     RpcOnErrorContext,
 } from './middleware';
 import { Rpc, RpcPostHandlerContext } from './rpc';
-import { EventStreamRpc, isEventStreamRpc } from './rpc_event_stream';
+import { isEventStreamRpc, OutputStreamRpc } from './rpc_output_stream';
 
 export class ArriApp implements ArriServiceBase {
     name?: string;
@@ -186,7 +186,7 @@ export class ArriApp implements ArriServiceBase {
         }
     }
 
-    rpc(name: string, procedure: Rpc<any, any> | EventStreamRpc<any, any>) {
+    rpc(name: string, procedure: Rpc<any, any> | OutputStreamRpc<any, any>) {
         const transports = this._resolveTransports(procedure.transport);
         let path =
             procedure.path ??
@@ -197,11 +197,11 @@ export class ArriApp implements ArriServiceBase {
         if (!path.startsWith('/')) {
             path = `/${path}`;
         }
-        const paramsId = procedure.params
-            ? resolveTypeDefId(name, procedure.params, 'PARAMS')
+        const inputId = procedure.input
+            ? resolveTypeDefId(name, procedure.input, 'PARAMS')
             : undefined;
-        const responseId = procedure.response
-            ? resolveTypeDefId(name, procedure.response, 'RESPONSE')
+        const outputId = procedure.output
+            ? resolveTypeDefId(name, procedure.output, 'RESPONSE')
             : undefined;
         const isDeprecated =
             typeof procedure.isDeprecated === 'boolean'
@@ -215,30 +215,30 @@ export class ArriApp implements ArriServiceBase {
                 ? procedure.isDeprecated
                 : undefined;
         const validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
+            input?: CompiledValidator<any>;
+            output?: CompiledValidator<any>;
         } = {
-            params: this._resolveValidator(procedure.params),
-            response: this._resolveValidator(procedure.response),
+            input: this._resolveValidator(procedure.input),
+            output: this._resolveValidator(procedure.output),
         };
         this._registerRpcType(
             procedure.name ?? name,
             'params',
-            procedure.params,
+            procedure.input,
         );
         this._registerRpcType(
             procedure.name ?? name,
             'response',
-            procedure.response,
+            procedure.output,
         );
         if (isEventStreamRpc(procedure)) {
             const def: RpcDefinition<string> = {
                 transports: transports,
                 path: (this.rpcRoutePrefix ?? '') + path,
                 method: procedure.method,
-                params: paramsId,
-                response: responseId,
-                isEventStream: true,
+                input: inputId,
+                output: outputId,
+                outputIsStream: true,
                 description: procedure.description,
                 isDeprecated: isDeprecated,
                 deprecationNote: deprecatedNote,
@@ -264,8 +264,8 @@ export class ArriApp implements ArriServiceBase {
             transports: transports,
             path: (this.rpcRoutePrefix ?? '') + path,
             method: procedure.method,
-            params: paramsId,
-            response: responseId,
+            input: inputId,
+            output: outputId,
             description: procedure.description,
             isDeprecated: isDeprecated,
             deprecationNote: deprecatedNote,
@@ -407,7 +407,7 @@ function internalIsPreflightRequest(request: Request): boolean {
 export interface ArriServiceBase {
     rpc(
         name: string,
-        procedure: Rpc<any, any> | EventStreamRpc<any, any>,
+        procedure: Rpc<any, any> | OutputStreamRpc<any, any>,
     ): void;
 
     registerDefinitions(definitions: Record<string, Schema>): void;
@@ -416,7 +416,7 @@ export interface ArriServiceBase {
 export class ArriService implements ArriServiceBase {
     name: string;
 
-    procedures: Record<string, Rpc<any, any> | EventStreamRpc<any, any>> = {};
+    procedures: Record<string, Rpc<any, any> | OutputStreamRpc<any, any>> = {};
     definitions: Record<string, Schema> = {};
 
     private get formattedName() {
@@ -425,7 +425,7 @@ export class ArriService implements ArriServiceBase {
 
     constructor(
         name: string,
-        procedures?: Record<string, Rpc<any, any> | EventStreamRpc<any, any>>,
+        procedures?: Record<string, Rpc<any, any> | OutputStreamRpc<any, any>>,
     ) {
         this.name = name;
 
@@ -438,7 +438,7 @@ export class ArriService implements ArriServiceBase {
 
     rpc(
         name: string,
-        procedure: Rpc<any, any> | EventStreamRpc<any, any>,
+        procedure: Rpc<any, any> | OutputStreamRpc<any, any>,
     ): void {
         const key = `${this.formattedName}.${camelCase(name, { normalize: true })}`;
         this.procedures[key] = procedure;
@@ -453,7 +453,7 @@ export class ArriService implements ArriServiceBase {
 
 export function defineService(
     name: string,
-    procedures?: Record<string, Rpc<any, any> | EventStreamRpc<any, any>>,
+    procedures?: Record<string, Rpc<any, any> | OutputStreamRpc<any, any>>,
 ) {
     return new ArriService(name, procedures);
 }

@@ -8,8 +8,8 @@ const DefaultPayload = a.object('DefaultPayload', {
 export const manualTestService = defineService('tests', {
     emptyParamsGetRequest: defineRpc({
         method: 'get',
-        params: undefined,
-        response: DefaultPayload,
+        input: undefined,
+        output: DefaultPayload,
         handler() {
             return {
                 message: 'ok',
@@ -17,8 +17,8 @@ export const manualTestService = defineService('tests', {
         },
     }),
     emptyParamsPostRequest: defineRpc({
-        params: undefined,
-        response: DefaultPayload,
+        input: undefined,
+        output: DefaultPayload,
         handler() {
             return {
                 message: 'ok',
@@ -27,13 +27,13 @@ export const manualTestService = defineService('tests', {
     }),
     emptyResponseGetRequest: defineRpc({
         method: 'get',
-        params: DefaultPayload,
-        response: undefined,
+        input: DefaultPayload,
+        output: undefined,
         handler() {},
     }),
     emptyResponsePostRequest: defineRpc({
-        params: DefaultPayload,
-        response: undefined,
+        input: DefaultPayload,
+        output: undefined,
         handler() {},
     }),
 });

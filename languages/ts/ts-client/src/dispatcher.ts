@@ -40,6 +40,7 @@ export interface EventStreamHooks<TData> {
     onClose?: () => any;
     onError?: (error: unknown) => any;
     timeout?: number;
+    retry?: number | boolean;
     retryDelay?: number;
     maxRetryCount?: number;
     maxRetryInterval?: number;

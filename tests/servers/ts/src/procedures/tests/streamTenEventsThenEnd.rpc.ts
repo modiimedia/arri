@@ -1,13 +1,13 @@
-import { defineEventStreamRpc } from '@arrirpc/server';
+import { defineOutputStreamRpc } from '@arrirpc/server';
 import { randomUUID } from 'crypto';
 
 import { ChatMessage } from './streamMessages.rpc';
 
-export default defineEventStreamRpc({
+export default defineOutputStreamRpc({
     description:
         "When the client receives the 'done' event, it should close the connection and NOT reconnect",
-    params: undefined,
-    response: ChatMessage,
+    input: undefined,
+    output: ChatMessage,
     handler({ stream }) {
         let messageCount = 0;
         const interval = setInterval(async () => {

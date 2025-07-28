@@ -56,9 +56,9 @@ export const ObjectWithEveryType = a.object('ObjectWithEveryType', {
 });
 
 export default defineRpc({
-    params: ObjectWithEveryType,
-    response: ObjectWithEveryType,
-    handler({ params }) {
-        return params;
+    input: ObjectWithEveryType,
+    output: ObjectWithEveryType,
+    handler({ input }) {
+        return input;
     },
 });

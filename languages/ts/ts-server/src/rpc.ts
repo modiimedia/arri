@@ -6,7 +6,7 @@ import {
     InferType,
 } from '@arrirpc/schema';
 
-export interface RpcContext<TParams> {
+export interface RpcContext<TInput> {
     /**
      * ID sent by the client using the `req-id` header
      *
@@ -39,56 +39,56 @@ export interface RpcContext<TParams> {
     /**
      * The RPC request parameters
      */
-    params: TParams;
+    input: TInput;
 }
 
-export interface RpcPostHandlerContext<TParams, TResponse>
-    extends Omit<RpcContext<TParams>, 'params'> {
-    params: TParams;
-    response: TResponse;
+export interface RpcPostHandlerContext<TInput, TOutput>
+    extends Omit<RpcContext<TInput>, 'input'> {
+    input: TInput;
+    output: TOutput;
 }
 
 export interface Rpc<
-    TParams extends ASchema | undefined = undefined,
-    TResponse extends ASchema | undefined = undefined,
+    TInput extends ASchema | undefined = undefined,
+    TOutput extends ASchema | undefined = undefined,
 > {
     transport?: string | string[];
     name?: string;
     method?: RpcHttpMethod;
     path?: string;
-    params?: TParams;
-    response?: TResponse;
+    input?: TInput;
+    output?: TOutput;
     handler: RpcHandler<
-        TParams extends ASchema ? InferType<TParams> : undefined,
-        TResponse extends ASchema ? InferType<TResponse> : void | undefined
+        TInput extends ASchema ? InferType<TInput> : undefined,
+        TOutput extends ASchema ? InferType<TOutput> : void | undefined
     >;
     postHandler?: RpcPostHandler<
-        TParams extends ASchema ? InferType<TParams> : undefined,
-        TResponse extends ASchema ? InferType<TResponse> : undefined
+        TInput extends ASchema ? InferType<TInput> : undefined,
+        TOutput extends ASchema ? InferType<TOutput> : undefined
     >;
     isDeprecated?: boolean | string;
     description?: string;
 }
 
-export type RpcHandler<TParams, TResponse> = (
-    context: RpcContext<TParams>,
-) => TResponse | Promise<TResponse>;
+export type RpcHandler<TInput, TOutput> = (
+    context: RpcContext<TInput>,
+) => TOutput | Promise<TOutput>;
 
-export type RpcPostHandler<TParams = undefined, TResponse = undefined> = (
-    context: RpcPostHandlerContext<TParams, TResponse>,
+export type RpcPostHandler<TInput = undefined, TOutput = undefined> = (
+    context: RpcPostHandlerContext<TInput, TOutput>,
 ) => Promise<void> | void;
 
 export function defineRpc<
-    TParams extends
+    TInput extends
         | AObjectSchema<any>
         | ADiscriminatorSchema<any>
         | undefined = undefined,
-    TResponse extends
+    TOutput extends
         | AObjectSchema<any>
         | ADiscriminatorSchema<any>
         | undefined = undefined,
->(config: Rpc<TParams, TResponse>) {
-    if (config.params?.isNullable || config.response?.isNullable) {
+>(config: Rpc<TInput, TOutput>) {
+    if (config.input?.isNullable || config.output?.isNullable) {
         throw new Error(`Root schemas for procedures cannot be nullable`);
     }
     return config;

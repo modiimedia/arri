@@ -5,12 +5,12 @@ export default defineRpc({
     description:
         'If the target language supports it. Generated code should mark this procedure as deprecated.',
     isDeprecated: true,
-    params: a.object(
+    input: a.object(
         {
             deprecatedField: a.string({ isDeprecated: true }),
         },
         { id: 'DeprecatedRpcParams', isDeprecated: true },
     ),
-    response: undefined,
+    output: undefined,
     handler() {},
 });

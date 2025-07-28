@@ -13,22 +13,29 @@ import {
 
 const MessageData = a.object('MessageData', {
     message: a.string(),
+    uint32: a.uint32(),
+    boolean: a.boolean(),
 });
 const $$MessageData = a.compile(MessageData);
 type MessageData = a.infer<typeof MessageData>;
+const msgDataInstance: MessageData = {
+    boolean: true,
+    message: 'hello world',
+    uint32: 15,
+};
 
 const successServerMessage: ServerMessage = {
-    success: true,
+    type: 'SUCCESS',
     reqId: '15',
     contentType: 'application/json',
     customHeaders: {
         foo: 'foo',
     },
-    body: '{"message":"hello world"}',
+    body: $$MessageData.serializeUnsafe(msgDataInstance),
 };
 const successServerMessageString = encodeServerMessage(successServerMessage);
 const failureServerMessage: ServerMessage = {
-    success: false,
+    type: 'FAILURE',
     reqId: '15',
     contentType: 'application/json',
     customHeaders: {
@@ -45,7 +52,10 @@ const clientMessage: ClientMessage = {
     customHeaders: {
         foo: 'foo',
     },
-    body: '{"message":"hello world"}',
+    lastMsgId: undefined,
+    action: undefined,
+    clientVersion: undefined,
+    body: $$MessageData.serializeUnsafe(msgDataInstance),
 };
 const clientMessageString = encodeClientMessage(clientMessage);
 
@@ -72,7 +82,7 @@ b.suite(
         $$MessageData.parse(result.value.body);
     }),
     b.cycle(),
-    b.save(),
+    b.save({ file: 'parsing-messages', format: 'chart.html' }),
 );
 
 b.suite(
@@ -87,5 +97,5 @@ b.suite(
         encodeClientMessage(clientMessage);
     }),
     b.cycle(),
-    b.save(),
+    b.save({ file: 'encoding-messages', format: 'chart.html' }),
 );

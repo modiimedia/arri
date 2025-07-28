@@ -6,13 +6,17 @@ import {
     ClientMessage,
     encodeServerMessage,
     parseClientMessage,
-    ServerEventStreamMessage,
     ServerMessage,
+    StreamMessage,
 } from '@arrirpc/core';
 import { CompiledValidator, errorMessageFromErrors } from '@arrirpc/schema';
 import { defineHooks, Hooks, Message, Peer, WSError } from 'crossws';
 
-import { TransportAdapter, TransportAdapterOptions } from './adapter';
+import {
+    RpcValidators,
+    TransportAdapter,
+    TransportAdapterOptions,
+} from './adapter';
 import { WsEndpointRegister } from './adapter_http';
 import {
     RpcMiddleware,
@@ -21,10 +25,10 @@ import {
 } from './middleware';
 import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
 import {
-    EventStreamDispatcher,
-    EventStreamRpcHandler,
-    RpcEventStreamConnection,
-} from './rpc_event_stream';
+    OutputStreamRpcHandler,
+    RpcOutputStreamConnection,
+    StreamDispatcher,
+} from './rpc_output_stream';
 
 export interface WsOptions {
     connectionPath: string;
@@ -44,21 +48,15 @@ type HandlerItem = RpcHandlerObj | EventStreamRpcHandlerObj;
 
 interface RpcHandlerObj {
     isEventStream: false;
-    validators: {
-        params?: CompiledValidator<any>;
-        response?: CompiledValidator<any>;
-    };
+    validators: RpcValidators;
     handler: RpcHandler<any, any>;
     postHandler?: RpcPostHandler<any, any>;
 }
 
 interface EventStreamRpcHandlerObj {
     isEventStream: true;
-    validators: {
-        params?: CompiledValidator<any>;
-        response?: CompiledValidator<any>;
-    };
-    handler: EventStreamRpcHandler<any, any>;
+    validators: RpcValidators;
+    handler: OutputStreamRpcHandler<any, any>;
 }
 
 export class WsAdapter implements TransportAdapter {
@@ -79,7 +77,7 @@ export class WsAdapter implements TransportAdapter {
     private _peers: Map<string, Peer> = new Map();
     private _peerEventStreams: Record<
         string,
-        Record<string, RpcEventStreamConnection<any>>
+        Record<string, RpcOutputStreamConnection<any>>
     > = {};
 
     get peers() {
@@ -130,8 +128,8 @@ export class WsAdapter implements TransportAdapter {
         name: string,
         definition: RpcDefinition,
         validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
+            input?: CompiledValidator<any>;
+            output?: CompiledValidator<any>;
         },
         handler: RpcHandler<any, any>,
         postHandler?: RpcPostHandler<any, any>,
@@ -152,11 +150,8 @@ export class WsAdapter implements TransportAdapter {
     registerEventStreamRpc(
         name: string,
         definition: RpcDefinition,
-        validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
-        },
-        handler: EventStreamRpcHandler<any, any>,
+        validators: RpcValidators,
+        handler: OutputStreamRpcHandler<any, any>,
     ): void {
         if (!definition.transports.includes(this.transportId)) {
             throw new Error(
@@ -304,8 +299,8 @@ export class WsAdapter implements TransportAdapter {
                 (context as any).error = err;
                 return this._handleArriError(peer, context as any);
             }
-            if (handler.validators.params) {
-                const result = handler.validators.params.parse(msg.body);
+            if (handler.validators.input) {
+                const result = handler.validators.input.parse(msg.body);
                 if (!result.success) {
                     const err = new ArriError({
                         code: 400,
@@ -315,15 +310,15 @@ export class WsAdapter implements TransportAdapter {
                     (context as any).error = err;
                     return this._handleArriError(peer, context as any);
                 }
-                (context as any).params = result.value;
+                (context as any).input = result.value;
             }
             for (const m of this._middlewares) {
                 await m(context);
             }
             if (handler.isEventStream) {
-                const eventStream = new RpcEventStreamConnection(
-                    new WsEventStream(peer),
-                    handler.validators?.response,
+                const eventStream = new RpcOutputStreamConnection(
+                    new WsStream(peer),
+                    handler.validators?.output,
                     this._globalOptions?.heartbeatInterval ?? 20000,
                     this._globalOptions?.heartbeatEnabled ?? true,
                     context.reqId,
@@ -335,9 +330,9 @@ export class WsAdapter implements TransportAdapter {
                 await handler.handler(context as any);
                 return;
             }
-            const response = await handler.handler(context as any);
-            if (handler.validators.response) {
-                const payload = handler.validators.response.serialize(response);
+            const output = await handler.handler(context as any);
+            if (handler.validators.output) {
+                const payload = handler.validators.output.serialize(output);
                 if (!payload.success) {
                     const err = new ArriError({
                         code: 500,
@@ -347,7 +342,7 @@ export class WsAdapter implements TransportAdapter {
                     (context as any).error = err;
                     return this._handleArriError(peer, context as any);
                 }
-                (context as any).response = response;
+                (context as any).output = output;
                 const serverMsg: ServerMessage = {
                     type: 'SUCCESS',
                     reqId: msg.reqId,
@@ -442,7 +437,7 @@ export class WsAdapter implements TransportAdapter {
                 data: context.error,
             });
         }
-        const response: ServerMessage = {
+        const output: ServerMessage = {
             type: 'FAILURE',
             reqId: context.reqId,
             contentType: 'application/json',
@@ -456,14 +451,14 @@ export class WsAdapter implements TransportAdapter {
             // do nothing
         }
         peer.send(
-            encodeServerMessage(response, {
+            encodeServerMessage(output, {
                 includeErrorStackTrack: this._config.debug,
             }),
         );
     }
 }
 
-export class WsEventStream implements EventStreamDispatcher<string> {
+export class WsStream implements StreamDispatcher<string> {
     peer: Peer;
 
     constructor(peer: Peer) {
@@ -473,11 +468,9 @@ export class WsEventStream implements EventStreamDispatcher<string> {
     send(): void {
         // do nothing already connected
     }
-    push(msg: ServerEventStreamMessage): Promise<void> | void;
-    push(msgs: ServerEventStreamMessage[]): Promise<void> | void;
-    push(
-        msg: ServerEventStreamMessage | ServerEventStreamMessage[],
-    ): Promise<void> | void {
+    push(msg: StreamMessage): Promise<void> | void;
+    push(msgs: StreamMessage[]): Promise<void> | void;
+    push(msg: StreamMessage | StreamMessage[]): Promise<void> | void {
         if (Array.isArray(msg)) {
             for (const m of msg) {
                 const encoded = encodeServerMessage(m);

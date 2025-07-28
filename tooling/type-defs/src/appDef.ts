@@ -75,47 +75,45 @@ export interface RpcDefinition<T = string> {
     transports: string[];
     path: string;
     method?: RpcHttpMethod;
-    params?: T;
-    response?: T;
+    input?: T;
+    inputIsStream?: boolean;
+    output?: T;
+    outputIsStream?: boolean;
     description?: string;
-    isEventStream?: boolean;
     isDeprecated?: boolean;
     deprecationNote?: string;
     // deprecatedSince?: string;
 }
-
-// export interface HttpRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-//     transport: 'http';
-//     method: RpcHttpMethod;
-//     isEventStream?: boolean;
-// }
-// export interface WsRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-//     transport: 'ws';
-// }
-// export interface CustomRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-//     transport: `custom:${string}`;
-//     [key: string]: unknown;
-// }
-// export type RpcDefinition<T = string> =
-//     | HttpRpcDefinition<T>
-//     | WsRpcDefinition<T>
-//     | CustomRpcDefinition<T>;
 
 export function isRpcDefinition(input: unknown): input is RpcDefinition {
     if (typeof input !== 'object' || input === null) {
         return false;
     }
     if (
-        'params' in input &&
-        typeof input.params !== 'undefined' &&
-        typeof input.params !== 'string'
+        'input' in input &&
+        typeof input.input !== 'undefined' &&
+        typeof input.input !== 'string'
     ) {
         return false;
     }
     if (
-        'response' in input &&
-        typeof input.response !== 'undefined' &&
-        typeof input.response !== 'string'
+        'inputIsStream' in input &&
+        typeof input.inputIsStream !== 'undefined' &&
+        typeof input.inputIsStream !== 'boolean'
+    ) {
+        return false;
+    }
+    if (
+        'output' in input &&
+        typeof input.output !== 'undefined' &&
+        typeof input.output !== 'string'
+    ) {
+        return false;
+    }
+    if (
+        'outputIsStream' in input &&
+        typeof input.outputIsStream !== 'undefined' &&
+        typeof input.outputIsStream !== 'boolean'
     ) {
         return false;
     }
@@ -123,12 +121,6 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
         'method' in input &&
         typeof input.method !== 'undefined' &&
         (typeof input.method !== 'string' || !isRpcHttpMethod(input.method))
-    ) {
-        return false;
-    }
-    if (
-        'isEventStreamRpc' in input &&
-        typeof input.isEventStreamRpc !== 'boolean'
     ) {
         return false;
     }
@@ -196,25 +188,25 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
             if (!transports.includes(t)) transports.push(t);
         }
         let paramName: string | undefined;
-        if (def.params) {
+        if (def.input) {
             paramName =
-                def.params.metadata?.id ??
+                def.input.metadata?.id ??
                 pascalCase(`${key.split('.').join('_')}Params`);
-            definitions[paramName] = def.params;
+            definitions[paramName] = def.input;
         }
         let responseName: string | undefined;
-        if (def.response) {
+        if (def.output) {
             responseName =
-                def.response.metadata?.id ??
+                def.output.metadata?.id ??
                 pascalCase(`${key.split('.').join('_')}Response`);
-            definitions[responseName] = def.response;
+            definitions[responseName] = def.output;
         }
-        delete def.params;
-        delete def.response;
+        delete def.input;
+        delete def.output;
         procedures[key] = {
             ...def,
-            params: paramName,
-            response: responseName,
+            input: paramName,
+            output: responseName,
         };
     }
     const result: AppDefinition = {

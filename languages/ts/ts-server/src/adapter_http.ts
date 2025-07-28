@@ -5,7 +5,7 @@ import {
     RpcDefinition,
     RpcHttpMethod,
 } from '@arrirpc/codegen-utils';
-import { ArriError, ServerEventStreamMessage } from '@arrirpc/core';
+import { ArriError, StreamMessage } from '@arrirpc/core';
 import { CompiledValidator } from '@arrirpc/schema';
 import * as listhen from '@joshmossas/listhen';
 import * as ws from 'crossws';
@@ -24,10 +24,10 @@ import {
 } from './middleware';
 import { RpcHandler, RpcPostHandler } from './rpc';
 import {
-    EventStreamDispatcher,
-    EventStreamRpcHandler,
-    RpcEventStreamConnection,
-} from './rpc_event_stream';
+    OutputStreamRpcHandler,
+    RpcOutputStreamConnection,
+    StreamDispatcher,
+} from './rpc_output_stream';
 
 export interface HttpOptions {
     debug?: boolean;
@@ -281,8 +281,8 @@ export class HttpAdapter
         name: string,
         definition: RpcDefinition,
         validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
+            input?: CompiledValidator<any>;
+            output?: CompiledValidator<any>;
         },
         handler: RpcHandler<any, any>,
         postHandler?: RpcPostHandler<any, any>,
@@ -310,23 +310,22 @@ export class HttpAdapter
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);
-                const params: any | undefined = await this._getParams(
+                const input: any | undefined = await this._getParams(
                     event,
                     definition.method,
-                    validators.params,
+                    validators.input,
                 );
-                (context as any).params = params;
+                (context as any).input = input;
                 for (const m of this._middlewares) {
                     await m(context);
                 }
-                const response = await handler(context as any);
-                (context as any).response = response;
+                const output = await handler(context as any);
+                (context as any).output = output;
                 if (this._globalOnBeforeResponse) {
                     await this._globalOnBeforeResponse(context as any);
                 }
-                if (validators.response) {
-                    const serialResult =
-                        validators.response.serialize(response);
+                if (validators.output) {
+                    const serialResult = validators.output.serialize(output);
                     if (!serialResult.success) {
                         throw new ArriError({
                             code: 500,
@@ -381,10 +380,10 @@ export class HttpAdapter
         name: string,
         definition: RpcDefinition,
         validators: {
-            params?: CompiledValidator<any>;
-            response?: CompiledValidator<any>;
+            input?: CompiledValidator<any>;
+            output?: CompiledValidator<any>;
         },
-        handler: EventStreamRpcHandler<any, any>,
+        handler: OutputStreamRpcHandler<any, any>,
     ): void {
         const requestHandler = h3.defineEventHandler(async (event) => {
             if (h3.isPreflightRequest(event)) {
@@ -408,12 +407,12 @@ export class HttpAdapter
             };
             try {
                 if (this._onRequest) await this._onRequest(event, context);
-                const params = await this._getParams(
+                const input = await this._getParams(
                     event,
                     definition.method,
-                    validators.params,
+                    validators.input,
                 );
-                (context as any).params = params;
+                (context as any).input = input;
                 for (const m of this._middlewares) {
                     await m(context);
                 }
@@ -422,9 +421,9 @@ export class HttpAdapter
                     'heartbeat-interval',
                     this._options?.heartbeatInterval ?? 20000,
                 );
-                const stream = new RpcEventStreamConnection(
+                const stream = new RpcOutputStreamConnection(
                     new HttpEventStreamDispatcher(h3.createEventStream(event)),
-                    validators.response,
+                    validators.output,
                     this._options?.heartbeatInterval ?? 20000,
                     this._options?.heartbeatEnabled ?? true,
                     undefined,
@@ -496,14 +495,14 @@ export class HttpAdapter
                 for (const m of this._middlewares) {
                     await m(context);
                 }
-                const response = getAppInfo();
-                (context as any).response = response;
+                const output = getAppInfo();
+                (context as any).output = output;
                 if (this._globalOnBeforeResponse) {
                     await this._globalOnBeforeResponse(context as any);
                 }
                 h3.setResponseStatus(event, 200);
                 h3.setResponseHeader(event, 'Content-Type', 'application/json');
-                await h3.send(event, JSON.stringify(response));
+                await h3.send(event, JSON.stringify(output));
                 if (this._globalOnAfterResponse) {
                     await this._globalOnAfterResponse(context as any);
                 }
@@ -545,8 +544,8 @@ export class HttpAdapter
                 for (const m of this._middlewares) {
                     await m(context);
                 }
-                const response = getDefinition();
-                (context as any).response = response;
+                const output = getDefinition();
+                (context as any).output = output;
                 if (this._globalOnBeforeResponse) {
                     await this._globalOnBeforeResponse(context as any);
                 }
@@ -554,7 +553,7 @@ export class HttpAdapter
                 h3.setResponseHeader(event, 'Content-Type', 'application/json');
                 await h3.send(
                     event,
-                    JSON.stringify(response),
+                    JSON.stringify(output),
                     'application/json',
                 );
                 if (this._globalOnAfterResponse) {
@@ -734,7 +733,7 @@ export class HttpAdapter
     }
 }
 
-class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
+class HttpEventStreamDispatcher implements StreamDispatcher<string> {
     eventStream: h3.EventStream;
 
     constructor(eventStream: h3.EventStream) {
@@ -745,28 +744,26 @@ class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
     send(): void {
         this.eventStream.send();
     }
-    push(msg: ServerEventStreamMessage<string>): Promise<void> | void;
-    push(msgs: ServerEventStreamMessage<string>[]): Promise<void> | void;
+    push(msg: StreamMessage<string>): Promise<void> | void;
+    push(msgs: StreamMessage<string>[]): Promise<void> | void;
     push(
-        msg:
-            | ServerEventStreamMessage<string>
-            | ServerEventStreamMessage<string>[],
+        msg: StreamMessage<string> | StreamMessage<string>[],
     ): Promise<void> | void {
         if (Array.isArray(msg)) {
             this.eventStream.push(
                 msg.map((m) => {
                     switch (m.type) {
-                        case 'ES_END':
+                        case 'STREAM_END':
                             return {
                                 event: 'end',
                                 data: m.reason ?? '',
                             } as const;
-                        case 'ES_EVENT':
+                        case 'STREAM_DATA':
                             return {
                                 event: 'message',
                                 data: m.body ?? '',
                             } as const;
-                        case 'ES_START':
+                        case 'STREAM_START':
                             return { event: 'start', data: '' } as const;
                         case 'HEARTBEAT':
                             return { event: 'heartbeat', data: '' } as const;
@@ -779,18 +776,18 @@ class HttpEventStreamDispatcher implements EventStreamDispatcher<string> {
             return;
         }
         switch (msg.type) {
-            case 'ES_END':
+            case 'STREAM_START':
+                return this.eventStream.push({ event: 'start', data: '' });
+            case 'STREAM_END':
                 return this.eventStream.push({
                     event: 'end',
                     data: msg.reason ?? '',
                 });
-            case 'ES_EVENT':
+            case 'STREAM_DATA':
                 return this.eventStream.push({
                     event: 'message',
                     data: msg.body ?? '',
                 });
-            case 'ES_START':
-                return this.eventStream.push({ event: 'start', data: '' });
             case 'HEARTBEAT':
                 return this.eventStream.push({ event: 'heartbeat', data: '' });
             default:

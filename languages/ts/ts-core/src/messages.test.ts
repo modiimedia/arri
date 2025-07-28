@@ -45,7 +45,7 @@ describe('client messages', async () => {
             bar: 'hello\\nworld',
         },
         body: `{"message":"hello world"}`,
-        lastEventId: undefined,
+        lastMsgId: undefined,
         action: undefined,
     };
     const encodedMsg = `ARRIRPC/${ARRI_VERSION} example.foo.bar
@@ -64,7 +64,7 @@ bar: hello\\nworld
         customHeaders: {},
         action: 'CLOSE',
         clientVersion: undefined,
-        lastEventId: undefined,
+        lastMsgId: undefined,
         body: undefined,
     };
     const encodedActionMsg = `ARRIRPC/${ARRI_VERSION} example.foo.bar CLOSE

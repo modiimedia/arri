@@ -1,7 +1,7 @@
 import { RpcContext } from './rpc';
 
-export interface RpcMiddlewareContext extends Omit<RpcContext<any>, 'params'> {
-    params?: any;
+export interface RpcMiddlewareContext extends Omit<RpcContext<any>, 'input'> {
+    input?: any;
 }
 
 export type RpcMiddleware = (

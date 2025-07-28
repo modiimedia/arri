@@ -75,9 +75,9 @@ export const ObjectWithEveryNullableType = a.object(
 );
 
 export default defineRpc({
-    params: ObjectWithEveryNullableType,
-    response: ObjectWithEveryNullableType,
-    handler({ params }) {
-        return params;
+    input: ObjectWithEveryNullableType,
+    output: ObjectWithEveryNullableType,
+    handler({ input }) {
+        return input;
     },
 });

@@ -3,10 +3,10 @@ import {
     ClientMessage,
     encodeClientMessage,
     parseServerMessage,
-    ServerEventStreamMessage,
     ServerFailureMessage,
     ServerMessage,
     ServerSuccessMessage,
+    StreamMessage,
 } from '@arrirpc/core';
 import { HttpMethod } from 'event-source-plus';
 import { IncomingMessage } from 'http';
@@ -35,10 +35,7 @@ export class WsDispatcher implements RpcDispatcher {
     private responseHandlers: Map<
         string,
         (
-            msg:
-                | ServerSuccessMessage
-                | ServerFailureMessage
-                | ServerEventStreamMessage,
+            msg: ServerSuccessMessage | ServerFailureMessage | StreamMessage,
         ) => any
     > = new Map();
     private eventSources: Map<string, WsEventSource<any, any>> = new Map();
@@ -138,9 +135,9 @@ export class WsDispatcher implements RpcDispatcher {
                     switch (parsedMsg.type) {
                         case 'SUCCESS':
                         case 'FAILURE':
-                        case 'ES_START':
-                        case 'ES_END':
-                        case 'ES_EVENT': {
+                        case 'STREAM_START':
+                        case 'STREAM_END':
+                        case 'STREAM_DATA': {
                             this.resetHeartbeatTimeout();
                             if (!parsedMsg.reqId) return;
                             const handler = this.responseHandlers.get(
@@ -245,7 +242,7 @@ export class WsDispatcher implements RpcDispatcher {
             body: validator.params.toJsonString(req.data),
             action: undefined,
             clientVersion: req.clientVersion,
-            lastEventId: undefined,
+            lastMsgId: undefined,
         });
 
         const promiseHandler = (
@@ -374,7 +371,7 @@ export class WsDispatcher implements RpcDispatcher {
 }
 
 class WsEventSource<TParams, TOutput> implements EventStreamController {
-    lastEventId: string | undefined;
+    lastMsgId: string | undefined;
 
     req: RpcRequest<TParams>;
     validator: RpcRequestValidator<TParams, TOutput>;
@@ -408,7 +405,7 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
                 action: undefined,
                 contentType: 'application/json',
                 clientVersion: this.req.clientVersion,
-                lastEventId: this.lastEventId,
+                lastMsgId: this.lastMsgId,
                 customHeaders: await getHeaders(this.req.customHeaders),
                 body: serialValue,
             };
@@ -421,11 +418,11 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
 
     async handleMessage(msg: ServerMessage) {
         switch (msg.type) {
-            case 'ES_START':
+            case 'STREAM_START':
                 this.hooks.onOpen?.();
                 return;
-            case 'ES_EVENT': {
-                if (msg.eventId) this.lastEventId = msg.eventId;
+            case 'STREAM_DATA': {
+                if (msg.msgId) this.lastMsgId = msg.msgId;
                 const parsedMsg = this.validator.response.fromJsonString(
                     msg.body ?? '',
                 );
@@ -433,7 +430,7 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
                 return;
             }
 
-            case 'ES_END':
+            case 'STREAM_END':
                 this.handleClose(false);
                 return;
             case 'FAILURE':
@@ -462,7 +459,7 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
             action: 'CLOSE',
             contentType: 'application/json',
             clientVersion: this.req.clientVersion,
-            lastEventId: undefined,
+            lastMsgId: undefined,
             customHeaders: {},
             body: undefined,
         };

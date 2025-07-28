@@ -18,9 +18,9 @@ describe('Type inference', () => {
     type Response = a.infer<typeof Response>;
     test('params and response present', () => {
         defineRpc({
-            params: Params,
-            response: Response,
-            handler({ params }) {
+            input: Params,
+            output: Response,
+            handler({ input: params }) {
                 assertType<Params>(params);
                 assertType<'FOO' | 'BAR'>(params.type);
                 return {
@@ -31,7 +31,7 @@ describe('Type inference', () => {
                     },
                 };
             },
-            postHandler({ params, response }) {
+            postHandler({ input: params, output: response }) {
                 assertType<Params>(params);
                 assertType<Response>(response);
             },
@@ -39,11 +39,11 @@ describe('Type inference', () => {
     });
     test('params present', () => {
         defineRpc({
-            params: Params,
-            handler({ params }) {
+            input: Params,
+            handler({ input: params }) {
                 assertType<Params>(params);
             },
-            postHandler({ params, response }) {
+            postHandler({ input: params, output: response }) {
                 assertType<Params>(params);
                 assertType<undefined>(response);
             },
@@ -51,8 +51,8 @@ describe('Type inference', () => {
     });
     test('response present', () => {
         defineRpc({
-            response: Response,
-            handler({ params }) {
+            output: Response,
+            handler({ input: params }) {
                 assertType<undefined>(params);
                 return {
                     foo: '',
@@ -62,7 +62,7 @@ describe('Type inference', () => {
                     },
                 };
             },
-            postHandler({ params, response }) {
+            postHandler({ input: params, output: response }) {
                 assertType<undefined>(params);
                 assertType<Response>(response);
             },
@@ -127,9 +127,9 @@ describe('Type inference', () => {
                 }),
         );
         defineRpc({
-            params: RecursiveUnion,
-            response: RecursiveUnion,
-            async handler({ params }) {
+            input: RecursiveUnion,
+            output: RecursiveUnion,
+            async handler({ input: params }) {
                 return params;
             },
         });

@@ -7,11 +7,11 @@ import {
     RpcOnErrorContext,
 } from './middleware';
 import { RpcHandler, RpcPostHandler, RpcPostHandlerContext } from './rpc';
-import { EventStreamRpcHandler } from './rpc_event_stream';
+import { OutputStreamRpcHandler } from './rpc_output_stream';
 
 export type RpcValidators = {
-    params?: CompiledValidator<any>;
-    response?: CompiledValidator<any>;
+    input?: CompiledValidator<any>;
+    output?: CompiledValidator<any>;
 };
 
 export interface TransportAdapterOptions {
@@ -53,7 +53,7 @@ export interface TransportAdapter {
         name: string,
         definition: RpcDefinition,
         validators: RpcValidators,
-        handler: EventStreamRpcHandler<any, any>,
+        handler: OutputStreamRpcHandler<any, any>,
     ): void;
 
     start(): Promise<void> | void;

@@ -10,7 +10,7 @@ test('Type Inference', () => {
     app.rpc(
         'foo',
         defineRpc({
-            async handler({ params }) {
+            async handler({ input: params }) {
                 assertType<undefined>(params);
             },
         }),

@@ -1,5 +1,5 @@
 import { RpcHttpMethod } from '@arrirpc/codegen-utils';
-import { ServerEventStreamMessage } from '@arrirpc/core';
+import { StreamMessage } from '@arrirpc/core';
 import {
     a,
     ADiscriminatorSchema,
@@ -12,29 +12,32 @@ import {
 
 import { RpcContext } from './rpc';
 
-export interface EventStreamHandlerContext<TParams, TResponse>
-    extends RpcContext<TParams> {
-    stream: RpcEventStreamConnection<TResponse>;
+export interface OutputStreamHandlerContext<TInput, TOutput>
+    extends RpcContext<TInput> {
+    stream: RpcOutputStreamConnection<TOutput>;
 }
 
-export type EventStreamRpcHandler<TParams, TResponse> = (
-    context: EventStreamHandlerContext<TParams, TResponse>,
+export type OutputStreamRpcHandler<TInput, TOutput> = (
+    context: OutputStreamHandlerContext<TInput, TOutput>,
 ) => Promise<void> | void;
 
-export interface EventStreamRpc<
-    TParams extends ASchema | undefined = undefined,
-    TResponse extends ASchema | undefined = undefined,
+// InputStreamRpc
+// ClientStreamRpc
+
+export interface OutputStreamRpc<
+    TInput extends ASchema | undefined = undefined,
+    TOutput extends ASchema | undefined = undefined,
 > {
-    isEventStream: true;
     transport?: string | string[];
     name?: string;
     method?: RpcHttpMethod;
     path?: string;
-    params?: TParams;
-    response?: TResponse;
-    handler: EventStreamRpcHandler<
-        TParams extends ASchema ? InferType<TParams> : undefined,
-        TResponse extends ASchema ? InferType<TResponse> : undefined
+    input?: TInput;
+    output?: TOutput;
+    outputIsStream: true;
+    handler: OutputStreamRpcHandler<
+        TInput extends ASchema ? InferType<TInput> : undefined,
+        TOutput extends ASchema ? InferType<TOutput> : undefined
     >;
     isDeprecated?: boolean | string;
     description?: string;
@@ -42,41 +45,39 @@ export interface EventStreamRpc<
 
 export function isEventStreamRpc(
     input: unknown,
-): input is EventStreamRpc<any, any> {
+): input is OutputStreamRpc<any, any> {
     return (
         typeof input === 'object' &&
         input !== null &&
-        'isEventStream' in input &&
-        typeof input.isEventStream === 'boolean' &&
-        input.isEventStream &&
+        'outputIsStream' in input &&
+        typeof input.outputIsStream === 'boolean' &&
+        input.outputIsStream &&
         'handler' in input &&
         typeof input.handler === 'function'
     );
 }
 
-export interface EventStreamDispatcher<T> {
+export interface StreamDispatcher<T> {
     lastEventId?: string;
 
     send(): void;
 
-    push(msg: ServerEventStreamMessage<T>): Promise<void> | void;
-    push(msgs: ServerEventStreamMessage<T>[]): Promise<void> | void;
-    push(
-        msg: ServerEventStreamMessage<T> | ServerEventStreamMessage<T>[],
-    ): Promise<void> | void;
+    push(msg: StreamMessage<T>): Promise<void> | void;
+    push(msgs: StreamMessage<T>[]): Promise<void> | void;
+    push(msg: StreamMessage<T> | StreamMessage<T>[]): Promise<void> | void;
 
     close(): void;
     onClosed(cb: () => void): void;
 }
 
-export type EventStreamPushResult =
+export type OutputStreamPushResult =
     | {
           success: true;
       }
     | { success: false; errors: ValueError[] };
 
-export class RpcEventStreamConnection<TData> {
-    readonly dispatcher: EventStreamDispatcher<string>;
+export class RpcOutputStreamConnection<TData> {
+    readonly dispatcher: StreamDispatcher<string>;
 
     private readonly _reqId: string | undefined;
     private readonly _validator: CompiledValidator<ASchema<TData>>;
@@ -85,7 +86,7 @@ export class RpcEventStreamConnection<TData> {
     private readonly _heartbeatEnabled: boolean;
 
     constructor(
-        dispatcher: EventStreamDispatcher<string>,
+        dispatcher: StreamDispatcher<string>,
         validator: CompiledValidator<ASchema<TData>> | undefined,
         heartbeatInterval: number,
         heartbeatEnabled: boolean,
@@ -120,7 +121,7 @@ export class RpcEventStreamConnection<TData> {
         if (this._isSent) return;
         void this.dispatcher.send();
         this.dispatcher.push({
-            type: 'ES_START',
+            type: 'STREAM_START',
             reqId: this._reqId,
             heartbeatInterval: this._heartbeatIntervalMs,
             contentType: 'application/json',
@@ -134,15 +135,15 @@ export class RpcEventStreamConnection<TData> {
         this._isSent = true;
     }
 
-    async push(data: TData, eventId?: string): Promise<EventStreamPushResult>;
+    async push(data: TData, eventId?: string): Promise<OutputStreamPushResult>;
     async push(
         data: TData[],
         eventId?: string,
-    ): Promise<EventStreamPushResult[]>;
-    async push(data: TData | TData[], eventId?: string) {
+    ): Promise<OutputStreamPushResult[]>;
+    async push(data: TData | TData[], msgId?: string) {
         if (Array.isArray(data)) {
-            const results: EventStreamPushResult[] = [];
-            const events: ServerEventStreamMessage<string>[] = [];
+            const results: OutputStreamPushResult[] = [];
+            const events: StreamMessage<string>[] = [];
             for (const item of data) {
                 if (!this._validator.validate(item)) {
                     const errors = this._validator.errors(item);
@@ -158,9 +159,9 @@ export class RpcEventStreamConnection<TData> {
                     continue;
                 }
                 events.push({
-                    type: 'ES_EVENT',
+                    type: 'STREAM_DATA',
                     reqId: this._reqId,
-                    eventId: eventId,
+                    msgId: msgId,
                     body: serialResult.value,
                 });
             }
@@ -179,9 +180,9 @@ export class RpcEventStreamConnection<TData> {
             return serialResult;
         }
         await this.dispatcher.push({
-            type: 'ES_EVENT',
+            type: 'STREAM_DATA',
             reqId: this._reqId,
-            eventId: eventId,
+            msgId: msgId,
             body: serialResult.value,
         });
         return {
@@ -209,7 +210,7 @@ export class RpcEventStreamConnection<TData> {
         if (options?.notifyClients ?? true) {
             try {
                 await this.dispatcher.push({
-                    type: 'ES_END',
+                    type: 'STREAM_END',
                     reqId: this._reqId,
                     reason: options?.reason,
                 });
@@ -226,20 +227,20 @@ export class RpcEventStreamConnection<TData> {
     }
 }
 
-export function defineEventStreamRpc<
-    TParams extends
+export function defineOutputStreamRpc<
+    TInput extends
         | AObjectSchema
         | ADiscriminatorSchema<any>
         | undefined = undefined,
-    TResponse extends
+    TOutput extends
         | AObjectSchema
         | ADiscriminatorSchema<any>
         | undefined = undefined,
 >(
-    config: Omit<EventStreamRpc<TParams, TResponse>, 'isEventStream'>,
-): EventStreamRpc<TParams, TResponse> {
+    config: Omit<OutputStreamRpc<TInput, TOutput>, 'outputIsStream'>,
+): OutputStreamRpc<TInput, TOutput> {
     return {
-        isEventStream: true,
+        outputIsStream: true,
         ...config,
     };
 }

@@ -18,7 +18,7 @@ export interface ClientMessage<T = string> {
     action: ClientMessageAction | undefined;
     contentType: 'application/json';
     clientVersion: string | undefined;
-    lastEventId: string | undefined;
+    lastMsgId: string | undefined;
     customHeaders: Record<string, string>;
     body: T | undefined;
 }
@@ -38,11 +38,11 @@ export function isClientMessageAction(
 export type ServerMessage<T = string> =
     | ServerSuccessMessage<T>
     | ServerFailureMessage
-    | ServerHeartbeatMessage
+    | HeartbeatMessage
     | ServerConnectionStartMessage
-    | ServerEventStreamStartMessage
-    | ServerEventStreamEventMessage<T>
-    | ServerEventStreamEndMessage;
+    | StreamStartMessage
+    | StreamDataMessage<T>
+    | StreamEndMessage;
 export interface ServerSuccessMessage<T = string> {
     type: 'SUCCESS';
     reqId?: string;
@@ -61,7 +61,7 @@ export interface ServerFailureMessage {
     contentType: 'application/json';
     error: ArriError;
 }
-export interface ServerHeartbeatMessage {
+export interface HeartbeatMessage {
     type: 'HEARTBEAT';
     heartbeatInterval: number | undefined;
 }
@@ -69,26 +69,26 @@ export interface ServerConnectionStartMessage {
     type: 'CONNECTION_START';
     heartbeatInterval: number | undefined;
 }
-export type ServerEventStreamMessage<T = string> =
-    | ServerHeartbeatMessage
-    | ServerEventStreamStartMessage
-    | ServerEventStreamEventMessage<T>
-    | ServerEventStreamEndMessage;
-export interface ServerEventStreamStartMessage {
-    type: 'ES_START';
+export type StreamMessage<T = string> =
+    | HeartbeatMessage
+    | StreamStartMessage
+    | StreamDataMessage<T>
+    | StreamEndMessage;
+export interface StreamStartMessage {
+    type: 'STREAM_START';
     reqId: string | undefined;
     heartbeatInterval: number | undefined;
     customHeaders: Record<string, string>;
     contentType: 'application/json';
 }
-export interface ServerEventStreamEventMessage<T> {
-    type: 'ES_EVENT';
+export interface StreamDataMessage<T> {
+    type: 'STREAM_DATA';
     reqId: string | undefined;
-    eventId: string | undefined;
+    msgId: string | undefined;
     body?: T;
 }
-export interface ServerEventStreamEndMessage {
-    type: 'ES_END';
+export interface StreamEndMessage {
+    type: 'STREAM_END';
     reqId: string | undefined;
     reason: string | undefined;
 }
@@ -118,7 +118,7 @@ export function parseClientMessage(
     let action: ClientMessage['action'];
     let clientVersion: string | undefined;
     let contentType: string | undefined;
-    let lastEventId: string | undefined;
+    let lastMsgId: string | undefined;
     const customHeaders: Record<string, string> = {};
     let currentLine = '';
     let bodyStartIndex: number | undefined;
@@ -149,8 +149,8 @@ export function parseClientMessage(
             case 'content-type':
                 contentType = value;
                 break;
-            case 'last-event-id':
-                lastEventId = value;
+            case 'last-message-id':
+                lastMsgId = value;
                 break;
             default:
                 customHeaders[key] = value;
@@ -211,7 +211,7 @@ export function parseClientMessage(
             value: {
                 rpcName: procedure,
                 reqId: reqId,
-                lastEventId: lastEventId,
+                lastMsgId: lastMsgId,
                 clientVersion: clientVersion,
                 customHeaders: customHeaders,
                 contentType: contentType,
@@ -225,7 +225,7 @@ export function parseClientMessage(
         value: {
             rpcName: procedure,
             reqId: reqId,
-            lastEventId: lastEventId,
+            lastMsgId: lastMsgId,
             clientVersion: clientVersion,
             contentType: contentType,
             customHeaders: customHeaders,
@@ -238,14 +238,16 @@ export function parseClientMessage(
 export function encodeClientMessage(input: ClientMessage<string>): string {
     let output = `ARRIRPC/0.0.8 ${input.rpcName}`;
     if (input.action) output += ` ${input.action}`;
-    output += `\ncontent-type: ${input.contentType}`;
-    if (input.reqId) output += `\nreq-id: ${input.reqId}`;
+    output += `\n`;
+    output += `content-type: ${input.contentType}\n`;
+    if (input.reqId) output += `req-id: ${input.reqId}\n`;
     if (input.clientVersion)
-        output += `\nclient-version: ${input.clientVersion}`;
+        output += `client-version: ${input.clientVersion}\n`;
+    if (input.lastMsgId) output += `last-msg-id: ${input.lastMsgId}\n`;
     for (const [key, value] of Object.entries(input.customHeaders)) {
-        output += `\n${key}: ${value}`;
+        output += `${key}: ${value}\n`;
     }
-    output += '\n\n';
+    output += '\n';
     if (input.body) output += input.body;
     return output;
 }
@@ -285,18 +287,18 @@ export function parseServerMessage(
                     currentLine = '';
                     return;
                 }
-                case `ARRIRPC/${ARRI_VERSION} ES_START`: {
-                    msgType = 'ES_START';
+                case `ARRIRPC/${ARRI_VERSION} STREAM_START`: {
+                    msgType = 'STREAM_START';
                     currentLine = '';
                     return;
                 }
-                case `ARRIRPC/${ARRI_VERSION} ES_EVENT`: {
-                    msgType = 'ES_EVENT';
+                case `ARRIRPC/${ARRI_VERSION} STREAM_DATA`: {
+                    msgType = 'STREAM_DATA';
                     currentLine = '';
                     return;
                 }
-                case `ARRIRPC/${ARRI_VERSION} ES_END`: {
-                    msgType = 'ES_END';
+                case `ARRIRPC/${ARRI_VERSION} STREAM_END`: {
+                    msgType = 'STREAM_END';
                     currentLine = '';
                     return;
                 }
@@ -416,11 +418,11 @@ export function parseServerMessage(
                     heartbeatInterval: heartbeatInterval,
                 },
             };
-        case 'ES_START': {
+        case 'STREAM_START': {
             return {
                 success: true,
                 value: {
-                    type: 'ES_START',
+                    type: 'STREAM_START',
                     reqId: reqId,
                     heartbeatInterval: heartbeatInterval,
                     contentType: contentType ?? 'application/json',
@@ -428,22 +430,22 @@ export function parseServerMessage(
                 },
             };
         }
-        case 'ES_EVENT': {
+        case 'STREAM_DATA': {
             return {
                 success: true,
                 value: {
-                    type: 'ES_EVENT',
+                    type: 'STREAM_DATA',
                     reqId: reqId,
-                    eventId: eventId,
+                    msgId: eventId,
                     body: bodyStr,
                 },
             };
         }
-        case 'ES_END': {
+        case 'STREAM_END': {
             return {
                 success: true,
                 value: {
-                    type: 'ES_END',
+                    type: 'STREAM_END',
                     reqId: reqId,
                     reason: reason,
                 },
@@ -493,7 +495,7 @@ export function encodeServerMessage(
             output += '\n';
             return output;
         }
-        case 'ES_START': {
+        case 'STREAM_START': {
             output += `content-type: ${input.contentType}\n`;
             if (input.reqId) output += `req-id: ${input.reqId}\n`;
             if (input.heartbeatInterval) {
@@ -505,16 +507,16 @@ export function encodeServerMessage(
             output += '\n';
             return output;
         }
-        case 'ES_EVENT': {
+        case 'STREAM_DATA': {
             if (input.reqId) output += `req-id: ${input.reqId}\n`;
-            if (input.eventId) output += `event-id: ${input.eventId}\n`;
+            if (input.msgId) output += `event-id: ${input.msgId}\n`;
             output += '\n';
             if (input.body) {
                 output += input.body;
             }
             return output;
         }
-        case 'ES_END':
+        case 'STREAM_END':
             if (input.reqId) output += `req-id: ${input.reqId}\n`;
             if (input.reason) output += `reason: ${input.reason}\n`;
             output += '\n';
@@ -526,19 +528,19 @@ export function encodeServerMessage(
 }
 
 export function encodeServerEventStreamMessageToSseMessage(
-    message: ServerEventStreamMessage,
+    message: StreamMessage,
 ): string {
     switch (message.type) {
         case 'HEARTBEAT':
             return `event: heartbeat\ndata:\n\n`;
-        case 'ES_START':
+        case 'STREAM_START':
             return `event: start\ndata:\n\n`;
-        case 'ES_END':
+        case 'STREAM_END':
             return `event: end\ndata:\n\n`;
-        case 'ES_EVENT': {
+        case 'STREAM_DATA': {
             let output = `event: message\n`;
-            if (message.eventId) {
-                output += `id: ${message.eventId}\n`;
+            if (message.msgId) {
+                output += `id: ${message.msgId}\n`;
             }
             if (message.body) {
                 output += `data: ${message.body}\n\n`;

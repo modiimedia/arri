@@ -38,14 +38,14 @@ test('create app definition', () => {
             createConnection: {
                 transports: ['ws'],
                 path: '/ws',
-                params: {
+                input: {
                     properties: {
                         message: {
                             type: 'string',
                         },
                     },
                 },
-                response: {
+                output: {
                     properties: {
                         message: {
                             type: 'string',
@@ -57,8 +57,8 @@ test('create app definition', () => {
                 transports: ['http'],
                 method: 'get',
                 path: '/utils/get-settings',
-                params: SettingsParams,
-                response: Settings,
+                input: SettingsParams,
+                output: Settings,
             },
         },
     });
@@ -70,21 +70,21 @@ test('create app definition', () => {
                 transports: ['http'],
                 method: 'post',
                 path: '/say-hello',
-                params: undefined,
-                response: undefined,
+                input: undefined,
+                output: undefined,
             },
             createConnection: {
                 transports: ['ws'],
                 path: '/ws',
-                params: 'CreateConnectionParams',
-                response: 'CreateConnectionResponse',
+                input: 'CreateConnectionParams',
+                output: 'CreateConnectionResponse',
             },
             'utils.getSettings': {
                 transports: ['http'],
                 method: 'get',
                 path: '/utils/get-settings',
-                params: 'SettingsParams',
-                response: 'Settings',
+                input: 'SettingsParams',
+                output: 'Settings',
             },
         },
         definitions: {
@@ -139,22 +139,22 @@ test('is rpc definition', () => {
             transports: ['http', 'ws'],
             method: 'put',
             path: '/hello-world/2',
-            params: 'HelloWorldParams',
-            response: 'HelloWorldResponse',
+            input: 'HelloWorldParams',
+            output: 'HelloWorldResponse',
         },
         {
             transports: ['http'],
             method: 'get',
             path: '/hello-world/2',
-            isEventStream: true,
-            response: 'HelloWorldResponse',
+            output: 'HelloWorldResponse',
+            outputIsStream: true,
         },
         {
             transports: ['http'],
             path: '/rpcs/tests/send-partial-object',
             method: undefined,
-            params: 'ObjectWithEveryOptionalType',
-            response: 'ObjectWithEveryOptionalType',
+            input: 'ObjectWithEveryOptionalType',
+            output: 'ObjectWithEveryOptionalType',
             description: undefined,
             isDeprecated: undefined,
             deprecationNote: undefined,
