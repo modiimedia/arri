@@ -240,7 +240,7 @@ export class HttpDispatcher implements RpcDispatcher {
                     const rawData = await context.response.json();
                     const arriError = ArriError.fromJSON(rawData);
                     if (arriError.success) {
-                        hooks.onError(arriError);
+                        hooks.onError(arriError.value);
                     } else {
                         hooks.onError(rawData);
                     }
