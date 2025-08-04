@@ -18,15 +18,15 @@ type RpcOptions struct {
 	Transports   []string
 }
 
-func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, options RpcOptions, handler func(TParams, Request[TMeta]) (TResponse, RpcError)) {
+func rpc[TInput, TOutput any, TMeta any](app *App[TMeta], serviceName string, options RpcOptions, handler func(TInput, Request[TMeta]) (TOutput, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, RpcDefOptions{
-		Path:          options.Path,
-		Method:        options.Method,
-		Description:   options.Description,
-		IsDeprecated:  options.IsDeprecated,
-		IsEventStream: false,
-		Transports:    options.Transports,
+		Path:           options.Path,
+		Method:         options.Method,
+		Description:    options.Description,
+		IsDeprecated:   options.IsDeprecated,
+		OutputIsStream: false,
+		Transports:     options.Transports,
 	}, app.options.DefaultTransports)
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	encodingOpts := EncodingOptions{
@@ -56,48 +56,48 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 	if options.IsDeprecated {
 		rpcSchema.IsDeprecated.Set(options.IsDeprecated)
 	}
-	params := handlerType.In(0)
-	if params.Kind() != reflect.Struct {
-		panic("rpc params must be a struct. pointers and other types are not allowed.")
+	input := handlerType.In(0)
+	if input.Kind() != reflect.Struct {
+		panic("rpc input must be a struct. pointers and other types are not allowed.")
 	}
-	paramsName := getModelName(rpcName, params.Name(), "Params")
-	hasParams := !utils.IsEmptyMessage(params)
-	if hasParams {
-		paramsDefContext := newTypeDefContext(encodingOpts)
-		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
-		if paramsSchemaErr != nil {
-			panic(paramsSchemaErr)
+	inputName := getModelName(rpcName, input.Name(), "Input")
+	hasInput := !utils.IsEmptyMessage(input)
+	if hasInput {
+		inputDefContext := newTypeDefContext(encodingOpts)
+		inputSchema, inputSchemaErr := typeToTypeDef(input, inputDefContext)
+		if inputSchemaErr != nil {
+			panic(inputSchemaErr)
 		}
-		if paramsSchema.Metadata.IsNone() {
+		if inputSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Params.Set(paramsName)
-		app.definitions.Set(paramsName, *paramsSchema)
+		rpcSchema.Input.Set(inputName)
+		app.definitions.Set(inputName, *inputSchema)
 	} else {
-		rpcSchema.Params.Unset()
+		rpcSchema.Input.Unset()
 	}
-	response := handlerType.Out(0)
-	if response.Kind() == reflect.Ptr {
-		response = response.Elem()
+	output := handlerType.Out(0)
+	if output.Kind() == reflect.Ptr {
+		output = output.Elem()
 	}
-	responseName := getModelName(rpcName, response.Name(), "Response")
-	hasResponse := !utils.IsEmptyMessage(response)
-	if hasResponse {
-		responseDefContext := newTypeDefContext(encodingOpts)
-		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
-		if responseSchemaErr != nil {
-			panic(responseSchemaErr)
+	outputName := getModelName(rpcName, output.Name(), "Output")
+	hasOutput := !utils.IsEmptyMessage(output)
+	if hasOutput {
+		outputDefContext := newTypeDefContext(encodingOpts)
+		outputSchema, outputSchemaErr := typeToTypeDef(output, outputDefContext)
+		if outputSchemaErr != nil {
+			panic(outputSchemaErr)
 		}
-		rpcSchema.Response.Set(responseName)
-		app.definitions.Set(responseName, *responseSchema)
+		rpcSchema.Output.Set(outputName)
+		app.definitions.Set(outputName, *outputSchema)
 	} else {
-		rpcSchema.Response.Unset()
+		rpcSchema.Output.Unset()
 	}
 	app.procedures.Set(rpcName, *rpcSchema)
-	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
-	paramsValidator := CreateValidatorFor[TParams](paramsZero, encodingOpts, !hasParams)
-	responseZero := reflect.Zero(reflect.TypeFor[TResponse]())
-	responseValidator := CreateValidatorFor[TResponse](responseZero, encodingOpts, !hasResponse)
+	inputZero := reflect.Zero(reflect.TypeFor[TInput]())
+	inputValidator := CreateValidatorFor[TInput](inputZero, encodingOpts, !hasInput)
+	outputZero := reflect.Zero(reflect.TypeFor[TOutput]())
+	outputValidator := CreateValidatorFor[TOutput](outputZero, encodingOpts, !hasOutput)
 	for _, transport := range rpcSchema.Transports {
 		adapter, ok := app.adapters[transport]
 		if !ok {
@@ -106,10 +106,10 @@ func rpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string,
 		adapter.RegisterRpc(
 			rpcName,
 			*rpcSchema,
-			paramsValidator,
-			responseValidator,
+			inputValidator,
+			outputValidator,
 			func(a any, e Request[TMeta]) (any, RpcError) {
-				return handler(a.(TParams), e)
+				return handler(a.(TInput), e)
 			},
 		)
 	}
@@ -122,10 +122,10 @@ func getModelName(rpcName string, modelName string, fallbackSuffix string) strin
 	return modelName
 }
 
-func Rpc[TParams, TResponse any, TMeta any](app *App[TMeta], handler func(TParams, Request[TMeta]) (TResponse, RpcError), options RpcOptions) {
+func Rpc[TInput, TOutput any, TMeta any](app *App[TMeta], handler func(TInput, Request[TMeta]) (TOutput, RpcError), options RpcOptions) {
 	rpc(app, "", options, handler)
 }
 
-func ScopedRpc[TParams, TResponse any, TMeta any](app *App[TMeta], serviceName string, handler func(TParams, Request[TMeta]) (TResponse, RpcError), options RpcOptions) {
+func ScopedRpc[TInput, TOutput any, TMeta any](app *App[TMeta], serviceName string, handler func(TInput, Request[TMeta]) (TOutput, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
 }

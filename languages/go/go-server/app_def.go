@@ -35,23 +35,25 @@ const (
 type HttpMethod = string
 
 type RpcDef struct {
-	Transports    []string           `key:"transports"`
-	Path          string             `key:"path"`
-	Method        Option[HttpMethod] `key:"method"`
-	IsEventStream Option[bool]       `key:"isEventStream"`
-	Params        Option[string]     `key:"params"`
-	Response      Option[string]     `key:"response"`
-	Description   Option[string]     `key:"description"`
-	IsDeprecated  Option[bool]       `key:"isDeprecated"`
+	Transports     []string           `key:"transports"`
+	Path           string             `key:"path"`
+	Method         Option[HttpMethod] `key:"method"`
+	Input          Option[string]     `key:"input"`
+	InputIsStream  Option[bool]       `key:"inputIsStream"`
+	Output         Option[string]     `key:"output"`
+	OutputIsStream Option[bool]       `key:"outputIsStream"`
+	Description    Option[string]     `key:"description"`
+	IsDeprecated   Option[bool]       `key:"isDeprecated"`
 }
 
 type RpcDefOptions struct {
-	Path          string
-	Method        HttpMethod
-	Description   string
-	IsDeprecated  bool
-	IsEventStream bool
-	Transports    []string
+	Path           string
+	Method         HttpMethod
+	Description    string
+	IsDeprecated   bool
+	InputIsStream  bool
+	OutputIsStream bool
+	Transports     []string
 }
 
 func ToRpcDef(value interface{}, options RpcDefOptions, defaultTransports []string) (*RpcDef, error) {
@@ -61,20 +63,20 @@ func ToRpcDef(value interface{}, options RpcDefOptions, defaultTransports []stri
 	if valueKind != reflect.Func {
 		return nil, errors.ErrUnsupported
 	}
-	rawParams := valueType.In(0)
-	params := Some(rawParams.Name())
-	hasParam := !utils.IsEmptyMessage(rawParams)
-	if !hasParam {
-		params = None[string]()
+	rawInput := valueType.In(0)
+	input := Some(rawInput.Name())
+	hasInput := !utils.IsEmptyMessage(rawInput)
+	if !hasInput {
+		input = None[string]()
 	}
-	rawResponse := valueType.Out(0)
-	if rawResponse.Kind() == reflect.Pointer {
-		rawResponse = rawResponse.Elem()
+	rawOutput := valueType.Out(0)
+	if rawOutput.Kind() == reflect.Pointer {
+		rawOutput = rawOutput.Elem()
 	}
-	response := Some(rawResponse.Name())
-	hasResponse := !utils.IsEmptyMessage(rawResponse)
-	if !hasResponse {
-		response = None[string]()
+	output := Some(rawOutput.Name())
+	hasOutput := !utils.IsEmptyMessage(rawOutput)
+	if !hasOutput {
+		output = None[string]()
 	}
 	path := "/" + strcase.ToKebab(fnName)
 	if len(options.Path) > 0 {
@@ -92,9 +94,13 @@ func ToRpcDef(value interface{}, options RpcDefOptions, defaultTransports []stri
 	if options.IsDeprecated {
 		isDeprecated = Some(options.IsDeprecated)
 	}
-	var isEventStream = None[bool]()
-	if options.IsEventStream {
-		isEventStream = Some(options.IsEventStream)
+	var inputIsStream = None[bool]()
+	if options.InputIsStream {
+		inputIsStream = Some(options.InputIsStream)
+	}
+	var outputIsStream = None[bool]()
+	if options.OutputIsStream {
+		outputIsStream = Some(options.OutputIsStream)
 	}
 
 	var transports []string
@@ -106,14 +112,15 @@ func ToRpcDef(value interface{}, options RpcDefOptions, defaultTransports []stri
 		transports = []string{"http"}
 	}
 	return &RpcDef{
-			Path:          path,
-			Method:        method,
-			Params:        params,
-			Response:      response,
-			Description:   description,
-			IsEventStream: isEventStream,
-			IsDeprecated:  isDeprecated,
-			Transports:    transports,
+			Path:           path,
+			Method:         method,
+			Input:          input,
+			InputIsStream:  inputIsStream,
+			Output:         output,
+			OutputIsStream: outputIsStream,
+			Description:    description,
+			IsDeprecated:   isDeprecated,
+			Transports:     transports,
 		},
 		nil
 }
