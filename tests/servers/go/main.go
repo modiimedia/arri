@@ -97,8 +97,8 @@ type DiscriminatorWithEmptyObjectNotEmpty struct {
 	Baz bool
 }
 
-func SendDiscriminatorWithEmptyObject(params DiscriminatorWithEmptyObject, _ arri.Request[CustomProps]) (DiscriminatorWithEmptyObject, arri.RpcError) {
-	return params, nil
+func SendDiscriminatorWithEmptyObject(input DiscriminatorWithEmptyObject, _ arri.Request[CustomProps]) (DiscriminatorWithEmptyObject, arri.RpcError) {
+	return input, nil
 }
 
 type DefaultPayload struct {
@@ -126,8 +126,8 @@ type SendErrorParams struct {
 	Message string
 }
 
-func SendError(params SendErrorParams, _ arri.Request[CustomProps]) (arri.EmptyMessage, arri.RpcError) {
-	return arri.EmptyMessage{}, arri.Error(uint32(params.Code), params.Message)
+func SendError(input SendErrorParams, _ arri.Request[CustomProps]) (arri.EmptyMessage, arri.RpcError) {
+	return arri.EmptyMessage{}, arri.Error(uint32(input.Code), input.Message)
 }
 
 type ObjectWithEveryType struct {
@@ -234,8 +234,8 @@ type ObjectWithEveryNullableType struct {
 	}]]]
 }
 
-func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ arri.Request[CustomProps]) (ObjectWithEveryNullableType, arri.RpcError) {
-	return params, nil
+func SendObjectWithNullableFields(input ObjectWithEveryNullableType, _ arri.Request[CustomProps]) (ObjectWithEveryNullableType, arri.RpcError) {
+	return input, nil
 }
 
 type ObjectWithPascalCaseKeys struct {
@@ -246,8 +246,8 @@ type ObjectWithPascalCaseKeys struct {
 	IsAdmin      arri.Option[bool]     `key:"IsAdmin"`
 }
 
-func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ arri.Request[CustomProps]) (ObjectWithPascalCaseKeys, arri.RpcError) {
-	return params, nil
+func SendObjectWithPascalCaseKeys(input ObjectWithPascalCaseKeys, _ arri.Request[CustomProps]) (ObjectWithPascalCaseKeys, arri.RpcError) {
+	return input, nil
 }
 
 type ObjectWithSnakeCaseKeys struct {
@@ -258,8 +258,8 @@ type ObjectWithSnakeCaseKeys struct {
 	IsAdmin      arri.Option[bool]     `key:"is_admin"`
 }
 
-func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ arri.Request[CustomProps]) (ObjectWithSnakeCaseKeys, arri.RpcError) {
-	return params, nil
+func SendObjectWithSnakeCaseKeys(input ObjectWithSnakeCaseKeys, _ arri.Request[CustomProps]) (ObjectWithSnakeCaseKeys, arri.RpcError) {
+	return input, nil
 }
 
 type ObjectWithEveryOptionalType struct {
@@ -312,8 +312,8 @@ type ObjectWithEveryOptionalType struct {
 	}]
 }
 
-func SendPartialObject(params ObjectWithEveryOptionalType, _ arri.Request[CustomProps]) (ObjectWithEveryOptionalType, arri.RpcError) {
-	return params, nil
+func SendPartialObject(input ObjectWithEveryOptionalType, _ arri.Request[CustomProps]) (ObjectWithEveryOptionalType, arri.RpcError) {
+	return input, nil
 }
 
 type RecursiveObject struct {
@@ -322,8 +322,8 @@ type RecursiveObject struct {
 	Value string
 }
 
-func SendRecursiveObject(params RecursiveObject, _ arri.Request[CustomProps]) (RecursiveObject, arri.RpcError) {
-	return params, nil
+func SendRecursiveObject(input RecursiveObject, _ arri.Request[CustomProps]) (RecursiveObject, arri.RpcError) {
+	return input, nil
 }
 
 type RecursiveUnion struct {
@@ -345,8 +345,8 @@ type RecursiveUnion struct {
 	} `discriminator:"SHAPE" description:"Shape node"`
 }
 
-func SendRecursiveUnion(params RecursiveUnion, _ arri.Request[CustomProps]) (RecursiveUnion, arri.RpcError) {
-	return params, nil
+func SendRecursiveUnion(input RecursiveUnion, _ arri.Request[CustomProps]) (RecursiveUnion, arri.RpcError) {
+	return input, nil
 }
 
 type AutoReconnectParams struct {
@@ -358,7 +358,7 @@ type AutoReconnectResponse struct {
 	Message string
 }
 
-func StreamAutoReconnect(params AutoReconnectParams, stream arri.EventStream[AutoReconnectResponse], req arri.Request[CustomProps]) arri.RpcError {
+func StreamAutoReconnect(input AutoReconnectParams, stream arri.EventStream[AutoReconnectResponse], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	var msgCount uint8 = 0
@@ -367,11 +367,11 @@ func StreamAutoReconnect(params AutoReconnectParams, stream arri.EventStream[Aut
 		case <-t.C:
 			msgCount++
 			stream.Send(AutoReconnectResponse{Count: msgCount, Message: "Hello World " + string(msgCount)})
-			if msgCount == params.MessageCount {
+			if msgCount == input.MessageCount {
 				stream.Close(false)
 				return nil
 			}
-			if msgCount > params.MessageCount {
+			if msgCount > input.MessageCount {
 				panic("Request was not properly cancelled")
 			}
 		case <-stream.Done():
@@ -390,11 +390,11 @@ type StreamConnectionErrorTestResponse struct {
 }
 
 func StreamConnectionErrorTest(
-	params StreamConnectionErrorTestParams,
+	input StreamConnectionErrorTestParams,
 	stream arri.EventStream[StreamConnectionErrorTestResponse],
 	_ arri.Request[CustomProps],
 ) arri.RpcError {
-	return arri.Error(uint32(params.StatusCode), params.StatusMessage)
+	return arri.Error(uint32(input.StatusCode), input.StatusMessage)
 }
 
 type StreamLargeObjectsResponse struct {
@@ -406,7 +406,7 @@ type StreamLargeObjectsResponse struct {
 	}
 }
 
-func StreamLargeObjects(params arri.EmptyMessage, stream arri.EventStream[StreamLargeObjectsResponse], _ arri.Request[CustomProps]) arri.RpcError {
+func StreamLargeObjects(input arri.EmptyMessage, stream arri.EventStream[StreamLargeObjectsResponse], _ arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	for {
@@ -479,13 +479,13 @@ type ChatMessageUrl struct {
 	Url       string
 }
 
-func StreamMessages(params ChatMessageParams, stream arri.EventStream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
+func StreamMessages(input ChatMessageParams, stream arri.EventStream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	for {
 		select {
 		case <-t.C:
 			stream.Send(ChatMessage{ChatMessageText: &ChatMessageText{
-				ChannelId: params.ChannelId,
+				ChannelId: input.ChannelId,
 				Text:      "Hello world",
 			}})
 		case <-stream.Done():
@@ -603,7 +603,7 @@ type UserSettings struct {
 	PreferredTheme       string `enum:"dark-mode,light-mode,system"`
 }
 
-func WatchUser(params UsersWatchUserParams, stream arri.EventStream[UsersWatchUserResponse], req arri.Request[CustomProps]) arri.RpcError {
+func WatchUser(input UsersWatchUserParams, stream arri.EventStream[UsersWatchUserResponse], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0
