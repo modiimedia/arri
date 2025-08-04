@@ -6,16 +6,16 @@
       "path": "/send-object",
       "transports": ["http"],
       "method": "post",
-      "params": "NestedObject",
-      "response": "NestedObject"
+      "input": "NestedObject",
+      "output": "NestedObject"
     },
     "books.getBook": {
       "path": "/books/get-book",
       "transports": ["http", "ws"],
       "method": "get",
       "description": "Get a book",
-      "params": "BookParams",
-      "response": "Book"
+      "input": "BookParams",
+      "output": "Book"
     },
     "books.createBook": {
       "path": "/books/create-book",
@@ -23,17 +23,17 @@
       "method": "post",
       "description": "Create a book",
       "isDeprecated": true,
-      "params": "Book",
-      "response": "Book"
+      "input": "Book",
+      "output": "Book"
     },
     "books.watchBook": {
       "path": "/books/watch-book",
       "transports": ["http"],
       "method": "get",
-      "isEventStream": true,
+      "outputIsStream": true,
       "isDeprecated": true,
-      "params": "BookParams",
-      "response": "Book"
+      "input": "BookParams",
+      "output": "Book"
     }
   },
   "definitions": {

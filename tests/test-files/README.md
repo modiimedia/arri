@@ -367,10 +367,10 @@ ARRIRPC/0.0.8 CONNECTION_START
 
 ```
 
-## ServerEsStartMessage.txt
+## StreamStartMessage.txt
 
 ```txt
-ARRIRPC/0.0.8 ES_START
+ARRIRPC/0.0.8 STREAM_START
 content-type: application/json
 req-id: 1515
 heartbeat-interval: 255
@@ -379,20 +379,20 @@ foo: foo
 
 ```
 
-## ServerEsEventMessage.txt
+## StreamDataMessage.txt
 
 ```txt
-ARRIRPC/0.0.8 ES_EVENT
+ARRIRPC/0.0.8 STREAM_DATA
 req-id: 1515
 event-id: 1
 
 {"message":"hello world"}
 ```
 
-## ServerEsEndMessage.txt
+## StreamEndMessage.txt
 
 ```txt
-ARRIRPC/0.0.8 ES_END
+ARRIRPC/0.0.8 STREAM_END
 req-id: 1515
 reason: no more events
 

@@ -151,23 +151,23 @@ const def = createAppDefinition({
             path: '/send-object',
             transports: ['http'],
             method: 'post',
-            params: NestedObject,
-            response: NestedObject,
+            input: NestedObject,
+            output: NestedObject,
         },
         'books.getBook': {
             path: '/books/get-book',
             transports: ['http', 'ws'],
             method: 'get',
-            params: BookParams,
-            response: Book,
+            input: BookParams,
+            output: Book,
             description: 'Get a book',
         },
         'books.createBook': {
             path: '/books/create-book',
             transports: ['http', 'ws'],
             method: 'post',
-            params: Book,
-            response: Book,
+            input: Book,
+            output: Book,
             description: 'Create a book',
             isDeprecated: true,
         },
@@ -175,9 +175,9 @@ const def = createAppDefinition({
             path: '/books/watch-book',
             transports: ['http'],
             method: 'get',
-            params: BookParams,
-            response: Book,
-            isEventStream: true,
+            input: BookParams,
+            output: Book,
+            outputIsStream: true,
             isDeprecated: true,
         },
         // 'books.createConnection': {
@@ -451,7 +451,7 @@ async function main() {
             clientVersion: '1.2.5',
             body: `{"message":"hello world"}`,
             action: undefined,
-            lastEventId: undefined,
+            lastMsgId: undefined,
         }),
     });
 
@@ -468,7 +468,7 @@ async function main() {
             body: undefined,
             action: undefined,
             clientVersion: undefined,
-            lastEventId: undefined,
+            lastMsgId: undefined,
         }),
     });
 
@@ -481,7 +481,7 @@ async function main() {
             customHeaders: {},
             reqId: '54321',
             clientVersion: undefined,
-            lastEventId: undefined,
+            lastMsgId: undefined,
             body: undefined,
         }),
     });
@@ -557,9 +557,9 @@ async function main() {
     });
 
     files.push({
-        filename: 'ServerEsStartMessage.txt',
+        filename: 'StreamStartMessage.txt',
         content: encodeServerMessage({
-            type: 'ES_START',
+            type: 'STREAM_START',
             reqId: '1515',
             heartbeatInterval: 255,
             contentType: 'application/json',
@@ -570,19 +570,19 @@ async function main() {
     });
 
     files.push({
-        filename: 'ServerEsEventMessage.txt',
+        filename: 'StreamDataMessage.txt',
         content: encodeServerMessage({
-            type: 'ES_EVENT',
+            type: 'STREAM_DATA',
             reqId: '1515',
-            eventId: '1',
+            msgId: '1',
             body: `{"message":"hello world"}`,
         }),
     });
 
     files.push({
-        filename: 'ServerEsEndMessage.txt',
+        filename: 'StreamEndMessage.txt',
         content: encodeServerMessage({
-            type: 'ES_END',
+            type: 'STREAM_END',
             reqId: '1515',
             reason: 'no more events',
         }),
