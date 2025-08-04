@@ -8,9 +8,9 @@ const input = a.partial(ObjectWithEveryType, {
 });
 
 export default defineRpc({
-    params: input,
-    response: input,
-    handler({ params }) {
-        return params;
+    input: input,
+    output: input,
+    handler({ input }) {
+        return input;
     },
 });

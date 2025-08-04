@@ -16,15 +16,15 @@ export function tsRpcFromDefinition(
     context: CodegenContext,
 ): string {
     const key = getRpcKey(context);
-    const params = def.params
-        ? `${context.typePrefix}${pascalCase(validVarName(def.params))}`
+    const params = def.input
+        ? `${context.typePrefix}${pascalCase(validVarName(def.input))}`
         : undefined;
-    const response = def.response
-        ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
+    const response = def.output
+        ? `${context.typePrefix}${pascalCase(validVarName(def.output), { normalize: true })}`
         : undefined;
     const transportType = def.transports.map((val) => `'${val}'`).join(' | ');
 
-    if (def.isEventStream) {
+    if (def.outputIsStream) {
         context.usedFeatures.sse = true;
         return `${getJsDocComment({
             description: def.description,

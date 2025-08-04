@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineEventStreamRpc } from '@arrirpc/server';
+import { defineOutputStreamRpc } from '@arrirpc/server';
 import { faker } from '@faker-js/faker';
 import { randomInt, randomUUID } from 'crypto';
 
@@ -21,11 +21,11 @@ export type StreamLargeObjectsResponse = a.infer<
     typeof StreamLargeObjectsResponse
 >;
 
-export default defineEventStreamRpc({
+export default defineOutputStreamRpc({
     description:
         'Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message',
-    params: undefined,
-    response: StreamLargeObjectsResponse,
+    input: undefined,
+    output: StreamLargeObjectsResponse,
     async handler({ stream }) {
         stream.send();
         await stream.push(randomLargeObjectResponse());

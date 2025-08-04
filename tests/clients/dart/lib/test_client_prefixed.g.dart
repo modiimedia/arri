@@ -57,7 +57,7 @@ class TestClientPrefixed {
     }
   }
 
-  Future<FooDefaultPayload> emptyParamsGetRequest({
+  Future<void> emptyParamsGetRequest({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -78,7 +78,7 @@ class TestClientPrefixed {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (input) => FooDefaultPayload.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -86,7 +86,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooDefaultPayload> emptyParamsPostRequest({
+  Future<void> emptyParamsPostRequest({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -107,7 +107,7 @@ class TestClientPrefixed {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (input) => FooDefaultPayload.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -115,8 +115,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<void> emptyResponseGetRequest(
-    FooDefaultPayload params, {
+  Future<void> emptyResponseGetRequest({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -135,7 +134,7 @@ class TestClientPrefixed {
         method: HttpMethod.get,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
       responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
@@ -145,8 +144,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<void> emptyResponsePostRequest(
-    FooDefaultPayload params, {
+  Future<void> emptyResponsePostRequest({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -165,7 +163,7 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
       responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
@@ -177,8 +175,7 @@ class TestClientPrefixed {
 
   /// If the target language supports it. Generated code should mark this procedure as deprecated.
   @deprecated
-  Future<void> deprecatedRpc(
-    FooDeprecatedRpcParams params, {
+  Future<void> deprecatedRpc({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -197,7 +194,7 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
       responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
@@ -207,8 +204,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooDiscriminatorWithEmptyObject> sendDiscriminatorWithEmptyObject(
-    FooDiscriminatorWithEmptyObject params, {
+  Future<void> sendDiscriminatorWithEmptyObject({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -227,10 +223,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooDiscriminatorWithEmptyObject.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -238,8 +233,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<void> sendError(
-    FooSendErrorParams params, {
+  Future<void> sendError({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -258,7 +252,7 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
       responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
@@ -268,8 +262,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooObjectWithEveryType> sendObject(
-    FooObjectWithEveryType params, {
+  Future<void> sendObject({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -288,9 +281,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) => FooObjectWithEveryType.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -298,8 +291,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooObjectWithEveryNullableType> sendObjectWithNullableFields(
-    FooObjectWithEveryNullableType params, {
+  Future<void> sendObjectWithNullableFields({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -318,10 +310,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooObjectWithEveryNullableType.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -329,8 +320,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooObjectWithPascalCaseKeys> sendObjectWithPascalCaseKeys(
-    FooObjectWithPascalCaseKeys params, {
+  Future<void> sendObjectWithPascalCaseKeys({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -349,10 +339,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooObjectWithPascalCaseKeys.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -360,8 +349,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooObjectWithSnakeCaseKeys> sendObjectWithSnakeCaseKeys(
-    FooObjectWithSnakeCaseKeys params, {
+  Future<void> sendObjectWithSnakeCaseKeys({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -380,10 +368,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooObjectWithSnakeCaseKeys.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -391,8 +378,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooObjectWithEveryOptionalType> sendPartialObject(
-    FooObjectWithEveryOptionalType params, {
+  Future<void> sendPartialObject({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -411,10 +397,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooObjectWithEveryOptionalType.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -422,8 +407,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooRecursiveObject> sendRecursiveObject(
-    FooRecursiveObject params, {
+  Future<void> sendRecursiveObject({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -442,9 +426,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) => FooRecursiveObject.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -452,8 +436,7 @@ class TestClientPrefixed {
     );
   }
 
-  Future<FooRecursiveUnion> sendRecursiveUnion(
-    FooRecursiveUnion params, {
+  Future<void> sendRecursiveUnion({
     String? transport,
     Duration? timeout,
     int? retry,
@@ -472,9 +455,9 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) => FooRecursiveUnion.fromJsonString(input),
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -482,24 +465,18 @@ class TestClientPrefixed {
     );
   }
 
-  EventStream<FooAutoReconnectResponse> streamAutoReconnect(
-    FooAutoReconnectParams params, {
-    EventStreamHookOnMessage<FooAutoReconnectResponse>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
-    Duration? timeout,
+  Future<void> streamAutoReconnect({
     String? transport,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
-    String? lastEventId,
-  }) {
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher
-        .handleEventStreamRpc<FooAutoReconnectParams, FooAutoReconnectResponse>(
+    return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "streamAutoReconnect",
         path: "/rpcs/tests/stream-auto-reconnect",
@@ -507,41 +484,29 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooAutoReconnectResponse.fromJsonString(input),
-      lastEventId: lastEventId,
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError,
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
-      maxRetryCount: maxRetryCount,
-      maxRetryInterval: maxRetryInterval,
-      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   /// This route will always return an error. The client should automatically retry with exponential backoff.
-  EventStream<FooStreamConnectionErrorTestResponse> streamConnectionErrorTest(
-    FooStreamConnectionErrorTestParams params, {
-    EventStreamHookOnMessage<FooStreamConnectionErrorTestResponse>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
-    Duration? timeout,
+  Future<void> streamConnectionErrorTest({
     String? transport,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
-    String? lastEventId,
-  }) {
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleEventStreamRpc<FooStreamConnectionErrorTestParams,
-        FooStreamConnectionErrorTestResponse>(
+    return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "streamConnectionErrorTest",
         path: "/rpcs/tests/stream-connection-error-test",
@@ -549,39 +514,29 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) =>
-          FooStreamConnectionErrorTestResponse.fromJsonString(input),
-      lastEventId: lastEventId,
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError,
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
-      maxRetryCount: maxRetryCount,
-      maxRetryInterval: maxRetryInterval,
-      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
-  EventStream<FooStreamLargeObjectsResponse> streamLargeObjects({
-    EventStreamHookOnMessage<FooStreamLargeObjectsResponse>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
-    Duration? timeout,
+  Future<void> streamLargeObjects({
     String? transport,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
-    String? lastEventId,
-  }) {
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleEventStreamRpc<Null, FooStreamLargeObjectsResponse>(
+    return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "streamLargeObjects",
         path: "/rpcs/tests/stream-large-objects",
@@ -591,38 +546,26 @@ class TestClientPrefixed {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (input) =>
-          FooStreamLargeObjectsResponse.fromJsonString(input),
-      lastEventId: lastEventId,
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError,
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
-      maxRetryCount: maxRetryCount,
-      maxRetryInterval: maxRetryInterval,
-      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
-  EventStream<FooChatMessage> streamMessages(
-    FooChatMessageParams params, {
-    EventStreamHookOnMessage<FooChatMessage>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
-    Duration? timeout,
+  Future<void> streamMessages({
     String? transport,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
-    String? lastEventId,
-  }) {
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher
-        .handleEventStreamRpc<FooChatMessageParams, FooChatMessage>(
+    return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "streamMessages",
         path: "/rpcs/tests/stream-messages",
@@ -630,40 +573,28 @@ class TestClientPrefixed {
         method: null,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: null,
       ),
-      responseDecoder: (input) => FooChatMessage.fromJsonString(input),
-      lastEventId: lastEventId,
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError,
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
-      maxRetryCount: maxRetryCount,
-      maxRetryInterval: maxRetryInterval,
-      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
-  EventStream<FooTestsStreamRetryWithNewCredentialsResponse>
-      streamRetryWithNewCredentials({
-    EventStreamHookOnMessage<FooTestsStreamRetryWithNewCredentialsResponse>?
-        onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
-    Duration? timeout,
+  Future<void> streamRetryWithNewCredentials({
     String? transport,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
-    String? lastEventId,
-  }) {
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleEventStreamRpc<Null,
-        FooTestsStreamRetryWithNewCredentialsResponse>(
+    return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "streamRetryWithNewCredentials",
         path: "/rpcs/tests/stream-retry-with-new-credentials",
@@ -673,37 +604,27 @@ class TestClientPrefixed {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (input) =>
-          FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString(input),
-      lastEventId: lastEventId,
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError,
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
-      maxRetryCount: maxRetryCount,
-      maxRetryInterval: maxRetryInterval,
-      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   /// When the client receives the 'done' event, it should close the connection and NOT reconnect
-  EventStream<FooChatMessage> streamTenEventsThenEnd({
-    EventStreamHookOnMessage<FooChatMessage>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
-    Duration? timeout,
+  Future<void> streamTenEventsThenEnd({
     String? transport,
-    int? maxRetryCount,
-    Duration? maxRetryInterval,
-    String? lastEventId,
-  }) {
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleEventStreamRpc<Null, FooChatMessage>(
+    return dispatcher.handleRpc(
       req: RpcRequest(
         procedure: "streamTenEventsThenEnd",
         path: "/rpcs/tests/stream-ten-events-then-end",
@@ -713,16 +634,11 @@ class TestClientPrefixed {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (input) => FooChatMessage.fromJsonString(input),
-      lastEventId: lastEventId,
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError,
+      responseDecoder: (_) => {},
       timeout: timeout ?? _timeout,
-      maxRetryCount: maxRetryCount,
-      maxRetryInterval: maxRetryInterval,
-      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 }

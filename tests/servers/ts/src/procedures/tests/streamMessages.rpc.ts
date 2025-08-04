@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineEventStreamRpc } from '@arrirpc/server';
+import { defineOutputStreamRpc } from '@arrirpc/server';
 import { faker } from '@faker-js/faker';
 import { randomUUID } from 'crypto';
 
@@ -37,11 +37,10 @@ export const ChatMessage = a.discriminator('ChatMessage', 'messageType', {
 
 export type ChatMessage = a.infer<typeof ChatMessage>;
 
-export default defineEventStreamRpc({
-    params: ChatMessageParams,
-    response: ChatMessage,
-    handler({ params, stream }) {
-        console.log('PARAMS', params);
+export default defineOutputStreamRpc({
+    input: ChatMessageParams,
+    output: ChatMessage,
+    handler({ input, stream }) {
         const randomItem = (): ChatMessage => {
             const userId = randomUUID();
             const now = new Date();
@@ -56,7 +55,7 @@ export default defineEventStreamRpc({
                         id: randomUUID(),
                         messageType: 'TEXT',
                         userId,
-                        channelId: params.channelId,
+                        channelId: input.channelId,
                         date: now,
                         text: faker.lorem.words(),
                     };
@@ -64,7 +63,7 @@ export default defineEventStreamRpc({
                     return {
                         id: randomUUID(),
                         messageType: 'IMAGE',
-                        channelId: params.channelId,
+                        channelId: input.channelId,
                         userId,
                         date: now,
                         image: faker.image.url(),
@@ -73,7 +72,7 @@ export default defineEventStreamRpc({
                     return {
                         id: randomUUID(),
                         messageType: 'URL',
-                        channelId: params.channelId,
+                        channelId: input.channelId,
                         userId,
                         date: now,
                         url: faker.internet.url(),

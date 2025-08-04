@@ -1,15 +1,15 @@
 import { a } from '@arrirpc/schema';
-import { defineEventStreamRpc } from '@arrirpc/server';
+import { defineOutputStreamRpc } from '@arrirpc/server';
 
-export default defineEventStreamRpc({
-    params: a.object('AutoReconnectParams', {
+export default defineOutputStreamRpc({
+    input: a.object('AutoReconnectParams', {
         messageCount: a.uint8(),
     }),
-    response: a.object('AutoReconnectResponse', {
+    output: a.object('AutoReconnectResponse', {
         count: a.uint8(),
         message: a.string(),
     }),
-    handler({ params, stream, peer }) {
+    handler({ input, stream, peer }) {
         let messageCount = 0;
         stream.send();
         const interval = setInterval(async () => {
@@ -18,13 +18,13 @@ export default defineEventStreamRpc({
                 count: messageCount,
                 message: `Hello World ${messageCount}`,
             });
-            if (messageCount === params.messageCount) {
+            if (messageCount === input.messageCount) {
                 // manually close the connection without sending a "done" message
                 stream.close({ notifyClients: false });
                 peer?.close();
                 return;
             }
-            if (messageCount > params.messageCount) {
+            if (messageCount > input.messageCount) {
                 throw new Error('Interval was not properly cleaned up');
             }
         }, 1);

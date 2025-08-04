@@ -10,9 +10,9 @@ const ObjectWithSnakeCaseKeys = a.object('ObjectWithSnakeCaseKeys', {
 });
 
 export default defineRpc({
-    params: ObjectWithSnakeCaseKeys,
-    response: ObjectWithSnakeCaseKeys,
-    handler({ params }) {
-        return params;
+    input: ObjectWithSnakeCaseKeys,
+    output: ObjectWithSnakeCaseKeys,
+    handler({ input }) {
+        return input;
     },
 });

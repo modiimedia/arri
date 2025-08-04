@@ -10,9 +10,9 @@ const ObjectWithPascalCaseKeys = a.object('ObjectWithPascalCaseKeys', {
 });
 
 export default defineRpc({
-    params: ObjectWithPascalCaseKeys,
-    response: ObjectWithPascalCaseKeys,
-    handler({ params }) {
-        return params;
+    input: ObjectWithPascalCaseKeys,
+    output: ObjectWithPascalCaseKeys,
+    handler({ input }) {
+        return input;
     },
 });

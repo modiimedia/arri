@@ -1,11 +1,11 @@
 import { a } from '@arrirpc/schema';
-import { defineError, defineEventStreamRpc } from '@arrirpc/server';
+import { defineError, defineOutputStreamRpc } from '@arrirpc/server';
 
 const usedTokens: Record<string, boolean> = {};
 
-export default defineEventStreamRpc({
-    params: undefined,
-    response: a.object({
+export default defineOutputStreamRpc({
+    input: undefined,
+    output: a.object({
         message: a.string(),
     }),
     async handler({ stream, headers, peer }) {

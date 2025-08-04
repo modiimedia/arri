@@ -18,9 +18,9 @@ const RecursiveObject = a.recursive<RecursiveObject>(
 );
 
 export default defineRpc({
-    params: RecursiveObject,
-    response: RecursiveObject,
-    async handler({ params }) {
-        return params;
+    input: RecursiveObject,
+    output: RecursiveObject,
+    async handler({ input }) {
+        return input;
     },
 });

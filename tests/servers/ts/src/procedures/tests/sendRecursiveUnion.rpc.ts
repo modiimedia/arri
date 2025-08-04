@@ -48,9 +48,9 @@ const RecursiveUnion = a.recursive<RecursiveUnion>('RecursiveUnion', (self) =>
 );
 
 export default defineRpc({
-    params: RecursiveUnion,
-    response: RecursiveUnion,
-    async handler({ params }) {
-        return params;
+    input: RecursiveUnion,
+    output: RecursiveUnion,
+    async handler({ input }) {
+        return input;
     },
 });

@@ -19,8 +19,8 @@ const wsConnectionUrl = 'ws://127.0.0.1:2020/establish-connection';
 const headers = {
     'x-test-header': 'test',
 };
-// const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
-const transport = 'http';
+const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
+// const transport = 'http';
 
 console.info(`running tests over "${transport}"`);
 
