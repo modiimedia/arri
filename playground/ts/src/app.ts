@@ -1,4 +1,5 @@
-import { ArriApp, handleCors, HttpAdapter, WsAdapter } from '@arrirpc/server';
+import { ArriApp, HttpAdapter, WsAdapter } from '@arrirpc/server';
+import { handleCors } from '@arrirpc/server/http';
 
 const app = new ArriApp({
     defaultTransport: ['http', 'ws'],
@@ -10,17 +11,8 @@ const http = new HttpAdapter({
         });
     },
 });
-const ws = new WsAdapter(http, '/ws', {
-    onRequest: (peer, context) => {
-        console.log('REQUEST', peer.id, context);
-    },
-    onOpen: (peer) => {
-        console.log('OPENED', peer.id);
-    },
-    onClose: (peer, details) => {
-        console.log('CLOSED', peer.id, details);
-    },
-});
+const ws = new WsAdapter(http, { connectionPath: '/ws' });
+
 app.use(http);
 app.use(ws);
 

@@ -214,12 +214,12 @@ enum _ServerMessageType {
   const _ServerMessageType(this.serialValue);
   final String serialValue;
 
-  factory _ServerMessageType.fromSerialValue(String input) {
-    for (final val in values) {
-      if (val == input) return val;
-    }
-    return unknown;
-  }
+  // factory _ServerMessageType.fromSerialValue(String input) {
+  //   for (final val in values) {
+  //     if (val == input) return val;
+  //   }
+  //   return unknown;
+  // }
 }
 
 sealed class ServerMessage {

@@ -20,7 +20,7 @@ const headers = {
     'x-test-header': 'test',
 };
 const transport = process.env['CLIENT_TRANSPORT'] === 'ws' ? 'ws' : 'http';
-// const transport = 'http';
+// const transport = 'ws';
 
 console.info(`running tests over "${transport}"`);
 
@@ -128,7 +128,7 @@ describe('rpcs', () => {
             ],
         ],
     };
-    it('can send/receive object every field type', async () => {
+    it('can send/receive object with every field type', async () => {
         const result = await client.tests.sendObject(input);
         expect(result).toStrictEqual(input);
     });
@@ -366,6 +366,7 @@ describe('event stream rpcs', () => {
     it('supports event streams', async () => {
         let wasConnected = false;
         let receivedMessageCount = 0;
+        let openCount = 0;
         await new Promise((res, rej) => {
             setTimeout(() => rej('timeout exceeded'), 2000);
             const controller = client.tests.streamMessages(
@@ -391,6 +392,7 @@ describe('event stream rpcs', () => {
                         if (receivedMessageCount >= 12) controller.abort();
                     },
                     onOpen() {
+                        openCount++;
                         wasConnected = true;
                     },
                     onClose() {
@@ -401,6 +403,7 @@ describe('event stream rpcs', () => {
         });
         expect(receivedMessageCount > 0).toBe(true);
         expect(wasConnected).toBe(true);
+        expect(openCount).toBe(1);
     });
 
     it("closes connection when receiving 'done' event", async () => {
@@ -505,40 +508,42 @@ describe('event stream rpcs', () => {
         dynamicClient.terminateConnections();
     });
 
-    it(
-        'can can handle receiving large objects',
-        { timeout: 10000 },
-        async () => {
-            let openCount = 0;
-            let msgCount = 0;
-            await new Promise((res, rej) => {
-                const controller = client.tests.streamLargeObjects({
-                    onOpen() {
-                        openCount++;
-                        if (openCount > 1) {
-                            rej('Should only open once');
-                            controller.abort();
-                        }
-                    },
-                    onMessage() {
-                        msgCount++;
-                        if (msgCount > 2) {
-                            res(undefined);
-                            controller.abort();
-                        }
-                    },
-                    onError(err) {
-                        rej(err);
+    it('can handle receiving large objects', { timeout: 10000 }, async () => {
+        let openCount = 0;
+        let msgCount = 0;
+        let error: unknown = undefined;
+        const largePayloadClient = new TestClient({
+            baseUrl: baseUrl,
+            wsConnectionUrl: wsConnectionUrl,
+            transport: transport,
+            headers: headers,
+            maxReceivedFrameSize: 1096478 * 2,
+        });
+        await new Promise((res) => {
+            const controller = largePayloadClient.tests.streamLargeObjects({
+                onOpen() {
+                    openCount++;
+                    if (openCount > 1) controller.abort();
+                },
+                onMessage() {
+                    msgCount++;
+                    if (msgCount > 2) {
                         controller.abort();
-                    },
-                    onClose() {
-                        res(undefined);
-                    },
-                });
+                    }
+                },
+                onError(err) {
+                    error = err;
+                    controller.abort();
+                },
+                onClose() {
+                    res(undefined);
+                },
             });
-            expect(msgCount > 2).toBe(true);
-        },
-    );
+        });
+        expect(error).toBe(undefined);
+        expect(openCount).toBe(1);
+        expect(msgCount > 2).toBe(true);
+    });
     test('stream connection error test', async () => {
         let errCount = 0;
         let controller: EventStreamController | undefined;

@@ -86,6 +86,6 @@ export default defineOutputStreamRpc({
         stream.onClosed(async () => {
             clearInterval(interval);
         });
-        stream.send();
+        stream.start();
     },
 });

@@ -17,7 +17,7 @@ export default defineOutputStreamRpc({
             });
         }
         usedTokens[authToken] = true;
-        stream.send();
+        stream.start();
         await stream.push({ message: 'ok' });
         let msgCount = 0;
         const interval = setInterval(async () => {
@@ -25,7 +25,7 @@ export default defineOutputStreamRpc({
             msgCount++;
             if (msgCount >= 10) {
                 stream.close({ notifyClients: false });
-                peer?.close();
+                peer?.close(1001);
             }
         });
         stream.onClosed(() => {

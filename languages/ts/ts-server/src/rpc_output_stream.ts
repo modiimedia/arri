@@ -58,10 +58,13 @@ export function isEventStreamRpc(
 }
 
 export interface StreamDispatcher<T> {
-    lastEventId?: string;
+    lastMessageId?: string;
 
-    send(): void;
-
+    get isActive(): boolean;
+    get isPaused(): boolean;
+    start(): void;
+    pause(): void;
+    resume(): void | Promise<void>;
     push(msg: StreamMessage<T>): Promise<void> | void;
     push(msgs: StreamMessage<T>[]): Promise<void> | void;
     push(msg: StreamMessage<T> | StreamMessage<T>[]): Promise<void> | void;
@@ -100,7 +103,7 @@ export class RpcOutputStreamConnection<TData> {
     }
 
     get lastEventId(): string | undefined {
-        return this.dispatcher.lastEventId;
+        return this.dispatcher.lastMessageId;
     }
 
     private _customHeaders: Record<string, string> = {};
@@ -115,11 +118,24 @@ export class RpcOutputStreamConnection<TData> {
         }
     }
 
-    private _isSent = false;
+    get isActive() {
+        return this.dispatcher.isActive;
+    }
 
-    send() {
-        if (this._isSent) return;
-        void this.dispatcher.send();
+    get isPaused() {
+        return this.dispatcher.isPaused;
+    }
+
+    pause() {
+        return this.dispatcher.pause();
+    }
+
+    resume() {
+        return this.dispatcher.resume();
+    }
+
+    start() {
+        void this.dispatcher.start();
         this.dispatcher.push({
             type: 'STREAM_START',
             reqId: this._reqId,
@@ -132,7 +148,6 @@ export class RpcOutputStreamConnection<TData> {
                 await this.heartbeat();
             }, this._heartbeatIntervalMs);
         }
-        this._isSent = true;
     }
 
     async push(data: TData, eventId?: string): Promise<OutputStreamPushResult>;

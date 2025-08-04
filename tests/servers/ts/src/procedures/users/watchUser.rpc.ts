@@ -59,7 +59,7 @@ export default defineOutputStreamRpc({
     }),
     output: TestUser,
     async handler({ input, stream }) {
-        stream.send();
+        stream.start();
         const user: TestUser = {
             id: input.userId,
             role: 'standard',

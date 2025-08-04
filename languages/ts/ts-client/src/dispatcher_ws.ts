@@ -25,6 +25,20 @@ import { getHeaders, RpcRequest, RpcRequestValidator } from './requests';
 export interface WsDispatcherOptions extends RpcDispatcherOptions {
     wsConnectionUrl: string;
     wsConnectionMethod?: HttpMethod;
+    /**
+     * Max frame size in bytes.
+     *
+     * @default
+     * 1096478 bytes (~1 mb)
+     */
+    maxReceivedFrameSize?: number;
+    /**
+     * The maximum size of a frame in bytes before it is automatically fragmented.
+     *
+     * @default
+     * 16384 bytes (16 KiB)
+     */
+    fragmentationThreshold?: number;
 }
 
 export class WsDispatcher implements RpcDispatcher {
@@ -49,7 +63,11 @@ export class WsDispatcher implements RpcDispatcher {
     private closedByClient = false;
 
     constructor(options: WsDispatcherOptions) {
-        this.client = new ws.client();
+        this.client = new ws.client({
+            assembleFragments: true,
+            maxReceivedFrameSize: options.maxReceivedFrameSize ?? 1096478,
+            fragmentationThreshold: options.fragmentationThreshold ?? 16384,
+        });
         this.options = options;
     }
 
@@ -76,6 +94,7 @@ export class WsDispatcher implements RpcDispatcher {
         forceReconnection?: boolean;
         prefetchedHeaders?: Record<string, string> | undefined;
         retryCount?: number;
+        initiatingReqId?: string;
     }): Promise<void> {
         const retryCount = options.retryCount ?? 0;
         if (this.connection?.connected) {
@@ -98,11 +117,24 @@ export class WsDispatcher implements RpcDispatcher {
             const onConnection = (connection: ws.connection) => {
                 this.connection = connection;
                 this.resetHeartbeatTimeout();
-                connection.on('error', (_err) => {});
-                connection.on('close', (_code, _desc) => {
+                connection.on('error', (err) => {
+                    const openStreams = this.eventSources.values();
+                    for (const stream of openStreams) {
+                        stream.hooks.onError?.(err);
+                    }
+                });
+                connection.on('close', (code, desc) => {
                     if (this.closedByClient) {
                         this.cleanupTimeout();
                         return;
+                    }
+                    if (![1000, 1001].includes(code)) {
+                        const openStreams = this.eventSources.values();
+                        for (const stream of openStreams) {
+                            stream.hooks.onError?.(
+                                new ArriError({ code: code, message: desc }),
+                            );
+                        }
                     }
                     this.setupConnection({});
                 });
@@ -161,6 +193,9 @@ export class WsDispatcher implements RpcDispatcher {
                     }
                 });
                 for (const [_, es] of this.eventSources.entries()) {
+                    if (es.req.reqId === options.initiatingReqId) {
+                        continue;
+                    }
                     es.init();
                 }
                 this.client.removeListener('connect', onConnection);
@@ -349,6 +384,7 @@ export class WsDispatcher implements RpcDispatcher {
                 await this.setupConnection({
                     forceReconnection: false,
                     prefetchedHeaders: undefined,
+                    initiatingReqId: req.reqId,
                 });
                 if (!this.connection) {
                     throw new Error(`Error establishing connection`);
@@ -429,7 +465,6 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
                 this.hooks.onMessage?.(parsedMsg);
                 return;
             }
-
             case 'STREAM_END':
                 this.handleClose(false);
                 return;

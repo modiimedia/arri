@@ -431,7 +431,7 @@ export class HttpAdapter
                 (context as any).stream = stream;
                 await handler(context as any);
                 if (!event.handled) {
-                    stream.send();
+                    stream.start();
                 }
             } catch (err) {
                 (context as any).error = err;
@@ -736,13 +736,51 @@ export class HttpAdapter
 class HttpEventStreamDispatcher implements StreamDispatcher<string> {
     eventStream: h3.EventStream;
 
-    constructor(eventStream: h3.EventStream) {
-        this.eventStream = eventStream;
+    lastMessageId?: string | undefined;
+    private _isActive = false;
+    private _onClosedCb?: () => void;
+
+    get isActive(): boolean {
+        return this._isActive;
     }
 
-    lastEventId?: string | undefined;
-    send(): void {
+    get isPaused(): boolean {
+        return this.eventStream.isPaused;
+    }
+
+    constructor(eventStream: h3.EventStream) {
+        this.eventStream = eventStream;
+        this.eventStream.onClosed(() => {
+            this._onClosedCb?.();
+            this._isActive = false;
+        });
+    }
+
+    private _formatMessage(msg: StreamMessage<string>): h3.EventStreamMessage {
+        switch (msg.type) {
+            case 'STREAM_END':
+                return {
+                    event: 'end',
+                    data: msg.reason ?? '',
+                } as const;
+            case 'STREAM_DATA':
+                return {
+                    event: 'message',
+                    data: msg.body ?? '',
+                } as const;
+            case 'STREAM_START':
+                return { event: 'start', data: '' } as const;
+            case 'HEARTBEAT':
+                return { event: 'heartbeat', data: '' } as const;
+            default:
+                msg satisfies never;
+                throw new Error('Invalid msg');
+        }
+    }
+
+    start(): void {
         this.eventStream.send();
+        this._isActive = true;
     }
     push(msg: StreamMessage<string>): Promise<void> | void;
     push(msgs: StreamMessage<string>[]): Promise<void> | void;
@@ -750,50 +788,19 @@ class HttpEventStreamDispatcher implements StreamDispatcher<string> {
         msg: StreamMessage<string> | StreamMessage<string>[],
     ): Promise<void> | void {
         if (Array.isArray(msg)) {
-            this.eventStream.push(
-                msg.map((m) => {
-                    switch (m.type) {
-                        case 'STREAM_END':
-                            return {
-                                event: 'end',
-                                data: m.reason ?? '',
-                            } as const;
-                        case 'STREAM_DATA':
-                            return {
-                                event: 'message',
-                                data: m.body ?? '',
-                            } as const;
-                        case 'STREAM_START':
-                            return { event: 'start', data: '' } as const;
-                        case 'HEARTBEAT':
-                            return { event: 'heartbeat', data: '' } as const;
-                        default:
-                            m satisfies never;
-                            throw new Error('Invalid msg');
-                    }
-                }),
+            return this.eventStream.push(
+                msg.map((m) => this._formatMessage(m)),
             );
-            return;
         }
-        switch (msg.type) {
-            case 'STREAM_START':
-                return this.eventStream.push({ event: 'start', data: '' });
-            case 'STREAM_END':
-                return this.eventStream.push({
-                    event: 'end',
-                    data: msg.reason ?? '',
-                });
-            case 'STREAM_DATA':
-                return this.eventStream.push({
-                    event: 'message',
-                    data: msg.body ?? '',
-                });
-            case 'HEARTBEAT':
-                return this.eventStream.push({ event: 'heartbeat', data: '' });
-            default:
-                msg satisfies never;
-                throw new Error('Invalid msg');
-        }
+        return this.eventStream.push(this._formatMessage(msg));
+    }
+
+    pause(): void {
+        return this.eventStream.pause();
+    }
+
+    resume(): Promise<void> {
+        return this.eventStream.resume();
     }
 
     close(): void {
@@ -801,6 +808,6 @@ class HttpEventStreamDispatcher implements StreamDispatcher<string> {
     }
 
     onClosed(cb: () => void): void {
-        this.eventStream.onClosed(cb);
+        this._onClosedCb = cb;
     }
 }

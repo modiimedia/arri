@@ -43,6 +43,14 @@ export interface ExampleClientOptions
     fetch?: Fetch;
     // WS options
     wsConnectionUrl: string;
+    /**
+     * Max frame size in bytes
+     */
+    maxReceivedFrameSize?: number;
+    /**
+     * The max frame size in bytes before it is automatically fragmented
+     */
+    fragmentationThreshold?: number;
 }
 
 export interface RpcOptions<T extends string> extends RpcDispatcherOptions {

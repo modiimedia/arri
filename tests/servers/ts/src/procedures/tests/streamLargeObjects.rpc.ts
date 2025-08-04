@@ -27,7 +27,7 @@ export default defineOutputStreamRpc({
     input: undefined,
     output: StreamLargeObjectsResponse,
     async handler({ stream }) {
-        stream.send();
+        stream.start();
         await stream.push(randomLargeObjectResponse());
         const interval = setInterval(async () => {
             await stream.push(randomLargeObjectResponse());

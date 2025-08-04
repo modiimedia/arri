@@ -229,6 +229,13 @@ export class WsAdapter implements TransportAdapter {
         details: { code?: number; reason?: string },
     ) {
         this._peers.delete(peer.id);
+        const eventStreams = this._peerEventStreams[peer.id];
+        if (eventStreams) {
+            for (const stream of Object.values(eventStreams)) {
+                stream.close();
+            }
+            delete this._peerEventStreams[peer.id];
+        }
         clearInterval(this._heartbeatTimers.get(peer.id));
         this._heartbeatTimers.delete(peer.id);
         try {
@@ -316,6 +323,9 @@ export class WsAdapter implements TransportAdapter {
                 await m(context);
             }
             if (handler.isEventStream) {
+                const existing =
+                    this._peerEventStreams?.[peer.id]?.[context.reqId!];
+                if (existing) existing.close({ notifyClients: true });
                 const eventStream = new RpcOutputStreamConnection(
                     new WsStream(peer),
                     handler.validators?.output,
@@ -328,6 +338,7 @@ export class WsAdapter implements TransportAdapter {
                 this._peerEventStreams[peer.id]![context.reqId!] = eventStream;
                 (context as any).stream = eventStream;
                 await handler.handler(context as any);
+                if (!eventStream.isActive) eventStream.start();
                 return;
             }
             const output = await handler.handler(context as any);
@@ -460,22 +471,57 @@ export class WsAdapter implements TransportAdapter {
 
 export class WsStream implements StreamDispatcher<string> {
     peer: Peer;
+    private _isActive = false;
+    private _isPaused = false;
+    private _unsentMessages: StreamMessage<string>[] = [];
 
     constructor(peer: Peer) {
         this.peer = peer;
     }
+    lastMessageId?: string | undefined;
 
-    send(): void {
-        // do nothing already connected
+    pause(): void {
+        this._isPaused = true;
+    }
+    async resume(): Promise<void> {
+        this._isPaused = false;
+        if (this._unsentMessages.length) {
+            await this.push(this._unsentMessages);
+            this._unsentMessages = [];
+        }
+    }
+
+    get isActive(): boolean {
+        return this._isActive;
+    }
+    get isPaused(): boolean {
+        return this._isPaused;
+    }
+
+    start(): void {
+        if (this._unsentMessages.length) {
+            this._isPaused = false;
+            this.push(this._unsentMessages);
+            this._unsentMessages = [];
+        }
+        this._isActive = true;
     }
     push(msg: StreamMessage): Promise<void> | void;
     push(msgs: StreamMessage[]): Promise<void> | void;
     push(msg: StreamMessage | StreamMessage[]): Promise<void> | void {
         if (Array.isArray(msg)) {
+            if (this.isPaused || !this.isActive) {
+                this._unsentMessages.concat(msg);
+                return;
+            }
             for (const m of msg) {
                 const encoded = encodeServerMessage(m);
                 this.peer.send(encoded);
             }
+            return;
+        }
+        if (this.isPaused || !this.isActive) {
+            this._unsentMessages.push(msg);
             return;
         }
         const encoded = encodeServerMessage(msg);
@@ -487,6 +533,7 @@ export class WsStream implements StreamDispatcher<string> {
         for (const fn of this._onClosedListeners) {
             fn();
         }
+        this._isActive = false;
     }
 
     private _closedCb: (() => void) | undefined;

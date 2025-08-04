@@ -11,7 +11,7 @@ export default defineOutputStreamRpc({
     }),
     handler({ input, stream, peer }) {
         let messageCount = 0;
-        stream.send();
+        stream.start();
         const interval = setInterval(async () => {
             messageCount++;
             await stream.push({
