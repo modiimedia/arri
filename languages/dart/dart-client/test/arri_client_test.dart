@@ -9,7 +9,7 @@ main() {
   test('auto retry sse', () async {
     int errCount = 0;
     int closeCount = 0;
-    EventSource(
+    HttpArriEventSource(
         url: nonExistentUrl,
         method: HttpMethod.get,
         decoder: (input) => input,

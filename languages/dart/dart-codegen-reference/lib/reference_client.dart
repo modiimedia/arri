@@ -222,12 +222,12 @@ class ExampleClientBooksService {
   }
 
   @deprecated
-  EventStream<Book> watchBook(
+  ArriEventSource<Book> watchBook(
     BookParams input, {
-    EventStreamHookOnMessage<Book>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
+    ArriEventSourceHookOnData<Book>? onMessage,
+    ArriEventSourceHookOnOpen<Book>? onOpen,
+    ArriEventSourceHookOnClose<Book>? onClose,
+    ArriEventSourceHookOnError<Book>? onError,
     Duration? timeout,
     String? transport,
     int? maxRetryCount,
@@ -239,7 +239,7 @@ class ExampleClientBooksService {
     ], transport ?? _defaultTransport);
     final dispatcher = _dispatchers[selectedTransport];
     if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleEventStreamRpc<BookParams, Book>(
+    return dispatcher.handleOutputStreamRpc<BookParams, Book>(
       req: RpcRequest(
         procedure: "books.watchBook",
         path: "/books/watch-book",
@@ -251,7 +251,7 @@ class ExampleClientBooksService {
       ),
       responseDecoder: (data) => Book.fromJsonString(data),
       lastEventId: lastEventId,
-      onMessage: onMessage,
+      onData: onMessage,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,

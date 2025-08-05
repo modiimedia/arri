@@ -42,27 +42,27 @@ class HttpDispatcher implements Dispatcher {
   }
 
   @override
-  EventStream<TOutput>
-      handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
+  ArriEventSource<TOutput>
+      handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     String? lastEventId,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnMessage<TOutput>? onMessage,
-    EventStreamHookOnError? onError,
+    ArriEventSourceHookOnOpen<TOutput>? onOpen,
+    ArriEventSourceHookOnClose<TOutput>? onClose,
+    ArriEventSourceHookOnData<TOutput>? onData,
+    ArriEventSourceHookOnError<TOutput>? onError,
     Duration? timeout,
     int? maxRetryCount,
     Duration? maxRetryInterval,
     double? heartbeatTimeoutMultiplier,
   }) {
     final url = _baseUrl + req.path;
-    return EventSource<TOutput>(
+    return HttpArriEventSource<TOutput>(
       httpClient: createHttpClient?.call(),
       url: url,
       method: req.method ?? HttpMethod.post,
       decoder: responseDecoder,
-      params: req.data,
+      input: req.data,
       headers: () async {
         final result = await req.customHeaders?.call() ?? {};
         if (req.clientVersion != null && req.clientVersion!.isNotEmpty) {
@@ -78,7 +78,7 @@ class HttpDispatcher implements Dispatcher {
       maxRetryCount: maxRetryCount,
       lastEventId: lastEventId,
       onOpen: onOpen,
-      onMessage: onMessage,
+      onData: onData,
       onClose: onClose,
       onError: onError,
       timeout: timeout,
@@ -199,11 +199,11 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel?>({
   return response;
 }
 
-class EventSource<T> implements EventStream<T> {
+class HttpArriEventSource<T> implements ArriEventSource<T> {
   late final http.Client _httpClient;
   final String url;
   final HttpMethod method;
-  final ArriModel? _params;
+  final ArriModel? _input;
   final FutureOr<Map<String, String>> Function()? _headers;
   String? lastEventId;
   StreamController<T>? _streamController;
@@ -223,30 +223,32 @@ class EventSource<T> implements EventStream<T> {
   T Function(String data) decoder;
 
   // hooks
-  late final void Function(T data) _onMessage;
+  late final void Function(T data) _onData;
+  late final void Function(String rawData) _onRawData;
   late final void Function(ArriError error) _onError;
   late final void Function(http.StreamedResponse response) _onOpen;
   late final void Function() _onClose;
 
-  EventSource({
+  HttpArriEventSource({
     required this.url,
     required this.decoder,
     http.Client? httpClient,
     this.method = HttpMethod.get,
-    ArriModel? params,
+    ArriModel? input,
     FutureOr<Map<String, String>> Function()? headers,
     Duration maxRetryInterval = const Duration(milliseconds: 30000),
     int? maxRetryCount,
     // hooks
-    EventStreamHookOnMessage<T>? onMessage,
-    EventStreamHookOnOpen? onOpen,
-    EventStreamHookOnClose? onClose,
-    EventStreamHookOnError? onError,
+    ArriEventSourceHookOnData<T>? onData,
+    ArriEventSourceHookOnRawData<T>? onRawData,
+    ArriEventSourceHookOnOpen<T>? onOpen,
+    ArriEventSourceHookOnClose<T>? onClose,
+    ArriEventSourceHookOnError<T>? onError,
     double? heartbeatTimeoutMultiplier,
     this.lastEventId,
     Duration? timeout,
   })  : _headers = headers,
-        _params = params,
+        _input = input,
         _maxRetryInterval = maxRetryInterval.inMilliseconds,
         _maxRetryCount = maxRetryCount,
         _heartbeatTimerMultiplier = heartbeatTimeoutMultiplier ?? 2,
@@ -255,9 +257,12 @@ class EventSource<T> implements EventStream<T> {
     this._httpClient = httpClient ?? http.Client();
 
     // set hooks
-    _onMessage = (data) {
-      onMessage?.call(data, this);
+    _onData = (data) {
+      onData?.call(data, this);
       _streamController?.add(data);
+    };
+    _onRawData = (data) {
+      onRawData?.call(data, this);
     };
     _onError = (err) {
       onError?.call(err, this);
@@ -289,14 +294,14 @@ class EventSource<T> implements EventStream<T> {
     }
     String parsedUrl = url;
     String body = "";
-    if (_params != null) {
+    if (_input != null) {
       switch (method) {
         case HttpMethod.get:
         case HttpMethod.head:
-          parsedUrl += "?${_params.toUrlQueryParams()}";
+          parsedUrl += "?${_input.toUrlQueryParams()}";
           break;
         default:
-          body = _params.toJsonString();
+          body = _input.toJsonString();
           break;
       }
     }
@@ -366,6 +371,7 @@ class EventSource<T> implements EventStream<T> {
             pendingBytes = value;
             return;
           }
+          _onRawData(input);
           final eventResult = parseSseEvents(pendingData + input, decoder);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
@@ -376,10 +382,12 @@ class EventSource<T> implements EventStream<T> {
             switch (event) {
               case SseRawEvent<T>():
                 break;
-              case SseMessageEvent<T>():
-                _onMessage(event.data);
+              case SseStartEvent():
                 break;
-              case SseDoneEvent<T>():
+              case SseMessageEvent<T>():
+                _onData(event.data);
+                break;
+              case SseEndEvent<T>():
                 close();
                 break;
             }
@@ -604,8 +612,10 @@ sealed class SseEvent<TData> {
   ) {
     try {
       switch (event.event) {
-        case "done":
-          return SseDoneEvent.fromRawSseEvent(event);
+        case "start":
+          return SseStartEvent.fromRawSseEvent(event);
+        case "end":
+          return SseEndEvent.fromRawSseEvent(event);
         case "message":
           return SseMessageEvent.fromRawSseEvent(event, parser);
         default:
@@ -646,16 +656,32 @@ class SseMessageEvent<TData> extends SseEvent<TData> {
   }
 }
 
-class SseDoneEvent<TData> extends SseEvent<TData> {
+class SseStartEvent<TData> extends SseEvent<TData> {
   final String data = "";
 
-  const SseDoneEvent({
+  const SseStartEvent({
     super.id,
     super.retry,
-  }) : super(event: "done");
+  }) : super(event: "start");
 
-  factory SseDoneEvent.fromRawSseEvent(SseRawEvent event) {
-    return SseDoneEvent(
+  factory SseStartEvent.fromRawSseEvent(SseRawEvent event) {
+    return SseStartEvent(
+      id: event.id,
+      retry: event.retry,
+    );
+  }
+}
+
+class SseEndEvent<TData> extends SseEvent<TData> {
+  final String data = "";
+
+  const SseEndEvent({
+    super.id,
+    super.retry,
+  }) : super(event: "end");
+
+  factory SseEndEvent.fromRawSseEvent(SseRawEvent event) {
+    return SseEndEvent(
       id: event.id,
       retry: event.retry,
     );

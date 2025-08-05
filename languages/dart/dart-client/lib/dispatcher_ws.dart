@@ -25,7 +25,6 @@ class WsDispatcher implements Dispatcher {
   })  : _connectionUrl = connectionUrl,
         _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier ?? 2 {
     _connectionCheckerTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      print("CLOSE_CODE, ${_channel?.closeCode}");
       if (_channel?.closeCode != null) {
         setupConnection(forceReconnect: true, isReconnect: true);
       }
@@ -167,24 +166,24 @@ class WsDispatcher implements Dispatcher {
   }
 
   @override
-  EventStream<TOutput>
-      handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
+  ArriEventSource<TOutput>
+      handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     required String? lastEventId,
-    required EventStreamHookOnMessage<TOutput>? onMessage,
-    required EventStreamHookOnOpen? onOpen,
-    required EventStreamHookOnClose? onClose,
-    required EventStreamHookOnError? onError,
+    required ArriEventSourceHookOnData<TOutput>? onData,
+    required ArriEventSourceHookOnOpen<TOutput>? onOpen,
+    required ArriEventSourceHookOnClose<TOutput>? onClose,
+    required ArriEventSourceHookOnError<TOutput>? onError,
     required Duration? timeout,
     required int? maxRetryCount,
     required Duration? maxRetryInterval,
     required double? heartbeatTimeoutMultiplier,
   }) {
     if (req.reqId == null) req.reqId = Ulid().toString();
-    final eventStream = WsEventStream(
+    final eventStream = WsArriEventSource(
       decoder: responseDecoder,
-      onMessage: onMessage,
+      onMessage: onData,
       onOpen: onOpen,
       onClose: (es) {
         if (_messageHandlers.containsKey(req.reqId)) {
@@ -209,24 +208,24 @@ class WsDispatcher implements Dispatcher {
     return eventStream;
   }
 
-  final Map<String, EventStream<dynamic>> _eventStreams = {};
+  final Map<String, ArriEventSource<dynamic>> _eventStreams = {};
 
   @override
   String get transport => "ws";
 }
 
-class WsEventStream<T> implements EventStream<T> {
+class WsArriEventSource<T> implements ArriEventSource<T> {
   @override
   final T Function(String) decoder;
-  final EventStreamHookOnMessage<T>? onMessage;
-  final EventStreamHookOnOpen? onOpen;
-  final EventStreamHookOnClose? onClose;
-  final EventStreamHookOnError? onError;
+  final ArriEventSourceHookOnData<T>? onMessage;
+  final ArriEventSourceHookOnOpen<T>? onOpen;
+  final ArriEventSourceHookOnClose<T>? onClose;
+  final ArriEventSourceHookOnError<T>? onError;
 
   final RpcRequest req;
   String? lastEventId;
   Future<WebSocketChannel?> Function() getWebsocketChannel;
-  WsEventStream({
+  WsArriEventSource({
     required this.decoder,
     required this.onMessage,
     required this.onOpen,
@@ -273,6 +272,7 @@ class WsEventStream<T> implements EventStream<T> {
         customHeaders: await req.customHeaders?.call() ?? {},
         body: req.data,
       );
+      print("MSG: $msg");
       c?.sink.add(msg.encodeString());
       onOpen?.call(this);
     }).catchError((err) {

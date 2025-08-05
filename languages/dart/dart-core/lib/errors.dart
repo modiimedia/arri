@@ -50,9 +50,9 @@ class ArriError implements Exception {
   @override
   String toString() {
     if (stack == null) {
-      return "{ code: $code, message: $message, data: ${data.encodeString()} }";
+      return "{ code: $code, message: $message, data: ${data} }";
     }
-    return "{ code: $code, message: $message, data: ${data.encodeString()}, stack: [${stack!.map((e) => "\"$e\"").join(",")}] }";
+    return "{ code: $code, message: $message, data: ${data}, stack: [${stack!.map((e) => "\"$e\"").join(",")}] }";
   }
 
   factory ArriError.fromJson(Map<String, dynamic> json) {

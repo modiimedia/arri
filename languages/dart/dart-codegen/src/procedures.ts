@@ -31,12 +31,12 @@ export function dartRpcFromSchema(
         inputType = `${context.modelPrefix}${validDartClassName(schema.input, context.modelPrefix)}`;
     }
     if (schema.outputIsStream) {
-        return `${getCodeComments(metadata)}EventStream<${outputType}> ${functionName}(
+        return `${getCodeComments(metadata)}ArriEventSource<${outputType}> ${functionName}(
             ${inputType ? `${inputType} input, ` : ''} {
-            EventStreamHookOnMessage<${outputType}>? onMessage,
-            EventStreamHookOnOpen? onOpen,
-            EventStreamHookOnClose? onClose,
-            EventStreamHookOnError? onError,
+            ArriEventSourceHookOnData<${outputType}>? onData,
+            ArriEventSourceHookOnOpen<${outputType}>? onOpen,
+            ArriEventSourceHookOnClose<${outputType}>? onClose,
+            ArriEventSourceHookOnError<${outputType}>? onError,
             Duration? timeout,
             String? transport,
             int? maxRetryCount,
@@ -46,7 +46,7 @@ export function dartRpcFromSchema(
             final selectedTransport = resolveTransport([${schema.transports.map((transport) => `"${transport}"`).join(', ')}], transport ?? _defaultTransport);
             final dispatcher = _dispatchers[selectedTransport];
             if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-            return dispatcher.handleEventStreamRpc<${schema.input ? inputType : `Null`}, ${outputType}>(
+            return dispatcher.handleOutputStreamRpc<${schema.input ? inputType : `Null`}, ${outputType}>(
                 req: RpcRequest(
                     procedure: "${context.instancePath}",
                     path: "${schema.path}",
@@ -58,7 +58,7 @@ export function dartRpcFromSchema(
                 ),
                 responseDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : `(_) => {}`},
                 lastEventId: lastEventId,
-                onMessage: onMessage,
+                onData: onData,
                 onOpen: onOpen,
                 onClose: onClose,
                 onError: onError,

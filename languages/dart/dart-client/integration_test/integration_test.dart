@@ -51,7 +51,7 @@ main() {
         var msgCount = 0;
         var openCount = 0;
         final completer = Completer();
-        final stream = dispatcher.handleEventStreamRpc(
+        final stream = dispatcher.handleOutputStreamRpc(
             req: RpcRequest(
               procedure: "heartbeatTest",
               reqId: Random().nextInt(9999).toString(),
@@ -64,7 +64,7 @@ main() {
               ),
             ),
             responseDecoder: (input) => TestResponse.fromJsonString(input),
-            onMessage: (_, stream) {
+            onData: (_, stream) {
               msgCount++;
               if (msgCount >= 15) {
                 stream.close();
@@ -90,7 +90,7 @@ main() {
         var msgCount = 0;
         var openCount = 0;
         final completer = Completer();
-        final stream = dispatcher.handleEventStreamRpc(
+        final stream = dispatcher.handleOutputStreamRpc(
             req: RpcRequest(
               procedure: "heartbeatTest",
               reqId: Random().nextInt(9999).toString(),
@@ -103,7 +103,7 @@ main() {
               ),
             ),
             responseDecoder: (input) => TestResponse.fromJsonString(input),
-            onMessage: (_, stream) {
+            onData: (_, stream) {
               msgCount++;
               if (msgCount >= 15) {
                 stream.close();

@@ -18,15 +18,15 @@ abstract class Dispatcher {
     required OnErrorHook? onError,
     int? retryCount,
   });
-  EventStream<TOutput>
-      handleEventStreamRpc<TInput extends ArriModel?, TOutput>({
+  ArriEventSource<TOutput>
+      handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
     required TOutput Function(String input) responseDecoder,
     required String? lastEventId,
-    required EventStreamHookOnMessage<TOutput>? onMessage,
-    required EventStreamHookOnOpen? onOpen,
-    required EventStreamHookOnClose? onClose,
-    required EventStreamHookOnError? onError,
+    required ArriEventSourceHookOnData<TOutput>? onData,
+    required ArriEventSourceHookOnOpen<TOutput>? onOpen,
+    required ArriEventSourceHookOnClose<TOutput>? onClose,
+    required ArriEventSourceHookOnError<TOutput>? onError,
     required Duration? timeout,
     required int? maxRetryCount,
     required Duration? maxRetryInterval,
@@ -51,10 +51,10 @@ class DispatcherOptions {
   });
 }
 
-abstract class EventStream<T> {
+abstract class ArriEventSource<T> {
   final T Function(String) decoder;
 
-  const EventStream({required this.decoder});
+  const ArriEventSource({required this.decoder});
 
   void close();
   void reconnect();
@@ -62,18 +62,25 @@ abstract class EventStream<T> {
   bool get isClosed;
 }
 
-typedef EventStreamHookOnMessage<T> = Function(T msg, EventStream stream);
-typedef EventStreamHookOnOpen = Function(EventStream stream);
-typedef EventStreamHookOnClose = Function(EventStream stream);
-typedef EventStreamHookOnError = Function(Object err, EventStream stream);
+typedef ArriEventSourceHookOnData<T> = Function(
+    T data, ArriEventSource<T> eventSource);
+typedef ArriEventSourceHookOnRawData<T> = Function(
+    String rawData, ArriEventSource<T> eventSource);
+typedef ArriEventSourceHookOnOpen<T> = Function(ArriEventSource<T> eventSource);
+typedef ArriEventSourceHookOnClose<T> = Function(
+    ArriEventSource<T> eventSource);
+typedef ArriEventSourceHookOnError<T> = Function(
+    Object err, ArriEventSource<T> eventSource);
 
-class EventStreamHooks<T> {
-  final EventStreamHookOnMessage<T>? onMessage;
-  final EventStreamHookOnOpen? onOpen;
-  final EventStreamHookOnClose? onClose;
-  final EventStreamHookOnError? onError;
-  const EventStreamHooks({
-    this.onMessage,
+class ArriEventSourceHooks<T> {
+  final ArriEventSourceHookOnData<T>? onData;
+  final ArriEventSourceHookOnRawData<T>? onRawData;
+  final ArriEventSourceHookOnOpen<T>? onOpen;
+  final ArriEventSourceHookOnClose<T>? onClose;
+  final ArriEventSourceHookOnError<T>? onError;
+  const ArriEventSourceHooks({
+    this.onData,
+    this.onRawData,
     this.onOpen,
     this.onClose,
     this.onError,
