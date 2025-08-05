@@ -22,18 +22,18 @@ export function dartRpcFromSchema(
         description: schema.description,
         isDeprecated: schema.isDeprecated,
     };
-    let responseType = 'void';
-    let paramsType = '';
-    if (schema.response) {
-        responseType = `${context.modelPrefix}${validDartClassName(schema.response, context.modelPrefix)}`;
+    let outputType = 'void';
+    let inputType = '';
+    if (schema.output) {
+        outputType = `${context.modelPrefix}${validDartClassName(schema.output, context.modelPrefix)}`;
     }
-    if (schema.params) {
-        paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
+    if (schema.input) {
+        inputType = `${context.modelPrefix}${validDartClassName(schema.input, context.modelPrefix)}`;
     }
-    if (schema.isEventStream) {
-        return `${getCodeComments(metadata)}EventStream<${responseType}> ${functionName}(
-            ${paramsType ? `${paramsType} params, ` : ''} {
-            EventStreamHookOnMessage<${responseType}>? onMessage,
+    if (schema.outputIsStream) {
+        return `${getCodeComments(metadata)}EventStream<${outputType}> ${functionName}(
+            ${inputType ? `${inputType} input, ` : ''} {
+            EventStreamHookOnMessage<${outputType}>? onMessage,
             EventStreamHookOnOpen? onOpen,
             EventStreamHookOnClose? onClose,
             EventStreamHookOnError? onError,
@@ -46,7 +46,7 @@ export function dartRpcFromSchema(
             final selectedTransport = resolveTransport([${schema.transports.map((transport) => `"${transport}"`).join(', ')}], transport ?? _defaultTransport);
             final dispatcher = _dispatchers[selectedTransport];
             if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-            return dispatcher.handleEventStreamRpc<${schema.params ? paramsType : `Null`}, ${responseType}>(
+            return dispatcher.handleEventStreamRpc<${schema.input ? inputType : `Null`}, ${outputType}>(
                 req: RpcRequest(
                     procedure: "${context.instancePath}",
                     path: "${schema.path}",
@@ -54,9 +54,9 @@ export function dartRpcFromSchema(
                     method: ${schema.method ? `HttpMethod.${schema.method.toLowerCase()}` : 'null'},
                     clientVersion: _clientVersion,
                     customHeaders: _headers,
-                    data: ${schema.params ? `params` : 'null'},
+                    data: ${schema.input ? `input` : 'null'},
                 ),
-                responseDecoder: ${schema.response ? `(input) => ${responseType}.fromJsonString(input)` : `(_) => {}`},
+                responseDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : `(_) => {}`},
                 lastEventId: lastEventId,
                 onMessage: onMessage,
                 onOpen: onOpen,
@@ -69,7 +69,7 @@ export function dartRpcFromSchema(
             );
         }`;
     }
-    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params, ` : ''}{
+    return `${getCodeComments(metadata)}Future<${outputType}> ${functionName}(${inputType ? `${inputType} input, ` : ''}{
         String? transport,
         Duration? timeout,
         int? retry,
@@ -87,9 +87,9 @@ export function dartRpcFromSchema(
                 method: ${schema.method ? `HttpMethod.${schema.method.toLowerCase()}` : 'null'},
                 clientVersion: _clientVersion,
                 customHeaders: _headers,
-                data: ${schema.params ? 'params' : 'null'},
+                data: ${schema.input ? 'input' : 'null'},
             ),
-            responseDecoder: ${schema.response ? `(input) => ${responseType}.fromJsonString(input)` : '(_) => {}'},
+            responseDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : '(_) => {}'},
             timeout: timeout ?? _timeout,
             retry: retry ?? _retry,
             retryDelay: retryDelay ?? _retryDelay,

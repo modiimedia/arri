@@ -59,7 +59,7 @@ class ExampleClient {
   }
 
   Future<NestedObject> sendObject(
-    NestedObject params, {
+    NestedObject input, {
     String? transport,
     Duration? timeout,
     int? retry,
@@ -79,9 +79,9 @@ class ExampleClient {
         method: HttpMethod.post,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: input,
       ),
-      responseDecoder: (input) => NestedObject.fromJsonString(input),
+      responseDecoder: (data) => NestedObject.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -156,7 +156,7 @@ class ExampleClientBooksService {
 
   /// Get a book
   Future<Book> getBook(
-    BookParams params, {
+    BookParams input, {
     String? transport,
     Duration? timeout,
     int? retry,
@@ -177,9 +177,9 @@ class ExampleClientBooksService {
         method: HttpMethod.get,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: input,
       ),
-      responseDecoder: (input) => Book.fromJsonString(input),
+      responseDecoder: (data) => Book.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -190,7 +190,7 @@ class ExampleClientBooksService {
   /// Create a book
   @deprecated
   Future<Book> createBook(
-    Book params, {
+    Book input, {
     String? transport,
     Duration? timeout,
     int? retry,
@@ -211,9 +211,9 @@ class ExampleClientBooksService {
         method: HttpMethod.post,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: input,
       ),
-      responseDecoder: (input) => Book.fromJsonString(input),
+      responseDecoder: (data) => Book.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -223,7 +223,7 @@ class ExampleClientBooksService {
 
   @deprecated
   EventStream<Book> watchBook(
-    BookParams params, {
+    BookParams input, {
     EventStreamHookOnMessage<Book>? onMessage,
     EventStreamHookOnOpen? onOpen,
     EventStreamHookOnClose? onClose,
@@ -247,9 +247,9 @@ class ExampleClientBooksService {
         method: HttpMethod.get,
         clientVersion: _clientVersion,
         customHeaders: _headers,
-        data: params,
+        data: input,
       ),
-      responseDecoder: (input) => Book.fromJsonString(input),
+      responseDecoder: (data) => Book.fromJsonString(data),
       lastEventId: lastEventId,
       onMessage: onMessage,
       onOpen: onOpen,
