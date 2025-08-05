@@ -10,10 +10,11 @@ import 'package:http/io_client.dart';
 
 const baseUrl = "http://127.0.0.1:2020";
 const wsConnectionUrl = "ws://127.0.0.1:2020/establish-connection";
-Future<void> main() async {
-  final defaultTransport = String.fromEnvironment("CLIENT_TRANSPORT");
-  // final defaultTransport = "http";
 
+const defaultTransport =
+    String.fromEnvironment("CLIENT_TRANSPORT", defaultValue: "http");
+// final defaultTransport = "http";
+Future<void> main() async {
   print("running tests over \"$defaultTransport\"");
   final client = TestClient(
     baseUrl: baseUrl,
