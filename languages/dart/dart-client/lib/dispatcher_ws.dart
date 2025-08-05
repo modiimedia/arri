@@ -47,14 +47,12 @@ class WsDispatcher implements Dispatcher {
         print("CHANNEL:ERROR $err");
       },
       onDone: () {
-        print("CHANNEL:DONE");
         if (_channel?.closeCode != null) {
           setupConnection(forceReconnect: true, isReconnect: true);
         }
       },
     );
     await _channel!.ready;
-    print("CHANNEL READY");
     if (isReconnect) {
       for (final es in _eventStreams.values) {
         es.reconnect();
@@ -115,10 +113,10 @@ class WsDispatcher implements Dispatcher {
                   ),
             );
             return;
-          case ServerHeartbeatMessage():
+          case HeartbeatMessage():
           case ServerConnectionStartMessage():
-          case ServerEventStreamStartMessage():
-          case ServerEventStreamEventMessage():
+          case StreamStartMessage():
+          case StreamDataMessage():
           case ServerEventStreamEndMessage():
             return;
         }
@@ -172,6 +170,7 @@ class WsDispatcher implements Dispatcher {
     required TOutput Function(String input) responseDecoder,
     required String? lastEventId,
     required ArriEventSourceHookOnData<TOutput>? onData,
+    required ArriEventSourceHookOnRawData<TOutput>? onRawData,
     required ArriEventSourceHookOnOpen<TOutput>? onOpen,
     required ArriEventSourceHookOnClose<TOutput>? onClose,
     required ArriEventSourceHookOnError<TOutput>? onError,
@@ -183,7 +182,8 @@ class WsDispatcher implements Dispatcher {
     if (req.reqId == null) req.reqId = Ulid().toString();
     final eventStream = WsArriEventSource(
       decoder: responseDecoder,
-      onMessage: onData,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: (es) {
         if (_messageHandlers.containsKey(req.reqId)) {
@@ -217,7 +217,8 @@ class WsDispatcher implements Dispatcher {
 class WsArriEventSource<T> implements ArriEventSource<T> {
   @override
   final T Function(String) decoder;
-  final ArriEventSourceHookOnData<T>? onMessage;
+  final ArriEventSourceHookOnData<T>? onData;
+  final ArriEventSourceHookOnRawData<T>? onRawData;
   final ArriEventSourceHookOnOpen<T>? onOpen;
   final ArriEventSourceHookOnClose<T>? onClose;
   final ArriEventSourceHookOnError<T>? onError;
@@ -227,7 +228,8 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
   Future<WebSocketChannel?> Function() getWebsocketChannel;
   WsArriEventSource({
     required this.decoder,
-    required this.onMessage,
+    required this.onData,
+    required this.onRawData,
     required this.onOpen,
     required this.onClose,
     required this.onError,
@@ -243,14 +245,14 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         onError?.call(msg.error ?? ArriError.unknown(), this);
         reconnect();
         break;
-      case ServerHeartbeatMessage():
+      case HeartbeatMessage():
       case ServerConnectionStartMessage():
         break;
-      case ServerEventStreamStartMessage():
+      case StreamStartMessage():
         break;
-      case ServerEventStreamEventMessage():
+      case StreamDataMessage():
         final data = decoder(msg.body ?? "");
-        onMessage?.call(data, this);
+        onData?.call(data, this);
         _streamController?.sink.add(data);
         break;
       case ServerEventStreamEndMessage():
@@ -272,7 +274,6 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         customHeaders: await req.customHeaders?.call() ?? {},
         body: req.data,
       );
-      print("MSG: $msg");
       c?.sink.add(msg.encodeString());
       onOpen?.call(this);
     }).catchError((err) {

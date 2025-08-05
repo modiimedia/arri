@@ -24,6 +24,7 @@ abstract class Dispatcher {
     required TOutput Function(String input) responseDecoder,
     required String? lastEventId,
     required ArriEventSourceHookOnData<TOutput>? onData,
+    required ArriEventSourceHookOnRawData<TOutput>? onRawData,
     required ArriEventSourceHookOnOpen<TOutput>? onOpen,
     required ArriEventSourceHookOnClose<TOutput>? onClose,
     required ArriEventSourceHookOnError<TOutput>? onError,

@@ -166,10 +166,10 @@ void main() {
                 expect(withBodyResult.value, equals(withBody));
                 break;
               case ServerFailureMessage():
-              case ServerHeartbeatMessage():
+              case HeartbeatMessage():
               case ServerConnectionStartMessage():
-              case ServerEventStreamStartMessage():
-              case ServerEventStreamEventMessage():
+              case StreamStartMessage():
+              case StreamDataMessage():
               case ServerEventStreamEndMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerSuccessMessage()",
@@ -186,10 +186,10 @@ void main() {
                 expect(withoutBodyResult.value, equals(withoutBody));
                 break;
               case ServerFailureMessage():
-              case ServerHeartbeatMessage():
+              case HeartbeatMessage():
               case ServerConnectionStartMessage():
-              case ServerEventStreamStartMessage():
-              case ServerEventStreamEventMessage():
+              case StreamStartMessage():
+              case StreamDataMessage():
               case ServerEventStreamEndMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerSuccessMessage()",
@@ -223,10 +223,10 @@ void main() {
                 expect(result.value, equals(msg));
                 break;
               case ServerSuccessMessage():
-              case ServerHeartbeatMessage():
+              case HeartbeatMessage():
               case ServerConnectionStartMessage():
-              case ServerEventStreamStartMessage():
-              case ServerEventStreamEventMessage():
+              case StreamStartMessage():
+              case StreamDataMessage():
               case ServerEventStreamEndMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerFailureMessage().",
@@ -241,7 +241,7 @@ void main() {
       });
     });
     group("Heartbeat Message", () {
-      final msg = ServerHeartbeatMessage(heartbeatInterval: 150);
+      final msg = HeartbeatMessage(heartbeatInterval: 150);
       final msgEncoded =
           "ARRIRPC/$arriVersion HEARTBEAT\nheartbeat-interval: 150\n\n";
       test("parse", () {
@@ -249,14 +249,14 @@ void main() {
         switch (result) {
           case Ok<ServerMessage, String>():
             switch (result.value) {
-              case ServerHeartbeatMessage():
+              case HeartbeatMessage():
                 expect(result.value, equals(msg));
                 break;
               case ServerSuccessMessage():
               case ServerFailureMessage():
               case ServerConnectionStartMessage():
-              case ServerEventStreamStartMessage():
-              case ServerEventStreamEventMessage():
+              case StreamStartMessage():
+              case StreamDataMessage():
               case ServerEventStreamEndMessage():
                 fail(
                     "Parsed to wrong message. Should be ServerHeartbeatMessage().");
@@ -283,11 +283,11 @@ void main() {
               case ServerConnectionStartMessage():
                 expect(result.value, equals(msg));
                 break;
-              case ServerHeartbeatMessage():
+              case HeartbeatMessage():
               case ServerSuccessMessage():
               case ServerFailureMessage():
-              case ServerEventStreamStartMessage():
-              case ServerEventStreamEventMessage():
+              case StreamStartMessage():
+              case StreamDataMessage():
               case ServerEventStreamEndMessage():
                 fail(
                     "Parsed to wrong message. Should be ServerConnectionStartMessage().");

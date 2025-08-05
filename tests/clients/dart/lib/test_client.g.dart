@@ -560,6 +560,7 @@ class TestClientTestsService {
   ArriEventSource<AutoReconnectResponse> streamAutoReconnect(
     AutoReconnectParams input, {
     ArriEventSourceHookOnData<AutoReconnectResponse>? onData,
+    ArriEventSourceHookOnRawData<AutoReconnectResponse>? onRawData,
     ArriEventSourceHookOnOpen<AutoReconnectResponse>? onOpen,
     ArriEventSourceHookOnClose<AutoReconnectResponse>? onClose,
     ArriEventSourceHookOnError<AutoReconnectResponse>? onError,
@@ -587,6 +588,7 @@ class TestClientTestsService {
       responseDecoder: (data) => AutoReconnectResponse.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
@@ -601,6 +603,7 @@ class TestClientTestsService {
   ArriEventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
     StreamConnectionErrorTestParams input, {
     ArriEventSourceHookOnData<StreamConnectionErrorTestResponse>? onData,
+    ArriEventSourceHookOnRawData<StreamConnectionErrorTestResponse>? onRawData,
     ArriEventSourceHookOnOpen<StreamConnectionErrorTestResponse>? onOpen,
     ArriEventSourceHookOnClose<StreamConnectionErrorTestResponse>? onClose,
     ArriEventSourceHookOnError<StreamConnectionErrorTestResponse>? onError,
@@ -629,6 +632,7 @@ class TestClientTestsService {
           StreamConnectionErrorTestResponse.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
@@ -642,6 +646,7 @@ class TestClientTestsService {
   /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
   ArriEventSource<StreamLargeObjectsResponse> streamLargeObjects({
     ArriEventSourceHookOnData<StreamLargeObjectsResponse>? onData,
+    ArriEventSourceHookOnRawData<StreamLargeObjectsResponse>? onRawData,
     ArriEventSourceHookOnOpen<StreamLargeObjectsResponse>? onOpen,
     ArriEventSourceHookOnClose<StreamLargeObjectsResponse>? onClose,
     ArriEventSourceHookOnError<StreamLargeObjectsResponse>? onError,
@@ -669,6 +674,7 @@ class TestClientTestsService {
           StreamLargeObjectsResponse.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
@@ -682,6 +688,7 @@ class TestClientTestsService {
   ArriEventSource<ChatMessage> streamMessages(
     ChatMessageParams input, {
     ArriEventSourceHookOnData<ChatMessage>? onData,
+    ArriEventSourceHookOnRawData<ChatMessage>? onRawData,
     ArriEventSourceHookOnOpen<ChatMessage>? onOpen,
     ArriEventSourceHookOnClose<ChatMessage>? onClose,
     ArriEventSourceHookOnError<ChatMessage>? onError,
@@ -708,6 +715,7 @@ class TestClientTestsService {
       responseDecoder: (data) => ChatMessage.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
@@ -722,6 +730,8 @@ class TestClientTestsService {
       streamRetryWithNewCredentials({
     ArriEventSourceHookOnData<TestsStreamRetryWithNewCredentialsResponse>?
         onData,
+    ArriEventSourceHookOnRawData<TestsStreamRetryWithNewCredentialsResponse>?
+        onRawData,
     ArriEventSourceHookOnOpen<TestsStreamRetryWithNewCredentialsResponse>?
         onOpen,
     ArriEventSourceHookOnClose<TestsStreamRetryWithNewCredentialsResponse>?
@@ -753,6 +763,7 @@ class TestClientTestsService {
           TestsStreamRetryWithNewCredentialsResponse.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
@@ -766,6 +777,7 @@ class TestClientTestsService {
   /// When the client receives the 'done' event, it should close the connection and NOT reconnect
   ArriEventSource<ChatMessage> streamTenEventsThenEnd({
     ArriEventSourceHookOnData<ChatMessage>? onData,
+    ArriEventSourceHookOnRawData<ChatMessage>? onRawData,
     ArriEventSourceHookOnOpen<ChatMessage>? onOpen,
     ArriEventSourceHookOnClose<ChatMessage>? onClose,
     ArriEventSourceHookOnError<ChatMessage>? onError,
@@ -792,6 +804,7 @@ class TestClientTestsService {
       responseDecoder: (data) => ChatMessage.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
@@ -858,6 +871,7 @@ class TestClientUsersService {
   ArriEventSource<UsersWatchUserResponse> watchUser(
     UsersWatchUserParams input, {
     ArriEventSourceHookOnData<UsersWatchUserResponse>? onData,
+    ArriEventSourceHookOnRawData<UsersWatchUserResponse>? onRawData,
     ArriEventSourceHookOnOpen<UsersWatchUserResponse>? onOpen,
     ArriEventSourceHookOnClose<UsersWatchUserResponse>? onClose,
     ArriEventSourceHookOnError<UsersWatchUserResponse>? onError,
@@ -885,6 +899,7 @@ class TestClientUsersService {
       responseDecoder: (data) => UsersWatchUserResponse.fromJsonString(data),
       lastEventId: lastEventId,
       onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,

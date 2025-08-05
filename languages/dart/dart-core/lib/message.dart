@@ -207,9 +207,9 @@ enum _ServerMessageType {
   failure("FAILURE"),
   heartbeat("HEARTBEAT"),
   connectionStart("CONNECTION_START"),
-  esStart("ES_START"),
-  esEvent("ES_EVENT"),
-  esEnd("ES_END");
+  streamStart("ES_START"),
+  streamData("ES_EVENT"),
+  streamEnd("ES_END");
 
   const _ServerMessageType(this.serialValue);
   final String serialValue;
@@ -233,7 +233,7 @@ sealed class ServerMessage {
   static Result<ServerMessage, String> fromString<TBody>(String input) {
     _ServerMessageType? type;
     String? reqId;
-    String? eventId;
+    String? msgId;
     String? reason;
     ContentType? contentType;
     final Map<String, String> customHeaders = {};
@@ -256,14 +256,14 @@ sealed class ServerMessage {
           case "ARRIRPC/$arriVersion CONNECTION_START":
             type = _ServerMessageType.connectionStart;
             break;
-          case "ARRIRPC/$arriVersion ES_START":
-            type = _ServerMessageType.esStart;
+          case "ARRIRPC/$arriVersion STREAM_START":
+            type = _ServerMessageType.streamStart;
             break;
-          case "ARRIRPC/$arriVersion ES_EVENT":
-            type = _ServerMessageType.esEvent;
+          case "ARRIRPC/$arriVersion STREAM_DATA":
+            type = _ServerMessageType.streamData;
             break;
-          case "ARRIRPC/$arriVersion ES_END":
-            type = _ServerMessageType.esEnd;
+          case "ARRIRPC/$arriVersion STREAM_END":
+            type = _ServerMessageType.streamEnd;
             break;
         }
         currentLine = "";
@@ -277,8 +277,8 @@ sealed class ServerMessage {
         case 'req-id':
           reqId = value;
           break;
-        case "event-id":
-          eventId = value;
+        case "msg-id":
+          msgId = value;
           break;
         case "reason":
           reason = reason;
@@ -340,29 +340,29 @@ sealed class ServerMessage {
           ),
         );
       case _ServerMessageType.heartbeat:
-        return Ok(ServerHeartbeatMessage(heartbeatInterval: heartbeatInterval));
+        return Ok(HeartbeatMessage(heartbeatInterval: heartbeatInterval));
       case _ServerMessageType.connectionStart:
         return Ok(
           ServerConnectionStartMessage(
             heartbeatInterval: heartbeatInterval,
           ),
         );
-      case _ServerMessageType.esStart:
-        return Ok(ServerEventStreamStartMessage(
+      case _ServerMessageType.streamStart:
+        return Ok(StreamStartMessage(
           reqId: reqId,
           contentType: contentType ?? ContentType.unknown,
           heartbeatInterval: heartbeatInterval,
           customHeaders: customHeaders,
         ));
-      case _ServerMessageType.esEvent:
+      case _ServerMessageType.streamData:
         final bodyStr = input.substring(bodyStartIndex);
         final body = bodyStr.isEmpty ? null : bodyStr;
-        return Ok(ServerEventStreamEventMessage(
+        return Ok(StreamDataMessage(
           reqId: reqId,
-          eventId: eventId,
+          msgId: msgId,
           body: body,
         ));
-      case _ServerMessageType.esEnd:
+      case _ServerMessageType.streamEnd:
         return Ok(ServerEventStreamEndMessage(
           reqId: reqId,
           reason: reason ?? "",
@@ -447,9 +447,9 @@ class ServerFailureMessage implements ServerMessage {
   }
 }
 
-class ServerHeartbeatMessage implements ServerMessage {
+class HeartbeatMessage implements ServerMessage {
   final int? heartbeatInterval;
-  const ServerHeartbeatMessage({
+  const HeartbeatMessage({
     required this.heartbeatInterval,
   });
 
@@ -461,7 +461,7 @@ class ServerHeartbeatMessage implements ServerMessage {
 
   @override
   bool operator ==(Object other) {
-    return other is ServerHeartbeatMessage && listsAreEqual(props, other.props);
+    return other is HeartbeatMessage && listsAreEqual(props, other.props);
   }
 
   @override
@@ -504,12 +504,12 @@ class ServerConnectionStartMessage implements ServerMessage {
   }
 }
 
-class ServerEventStreamStartMessage implements ServerMessage {
+class StreamStartMessage implements ServerMessage {
   final String? reqId;
   final int? heartbeatInterval;
   final ContentType contentType;
   final Map<String, String> customHeaders;
-  const ServerEventStreamStartMessage({
+  const StreamStartMessage({
     required this.reqId,
     required this.heartbeatInterval,
     required this.customHeaders,
@@ -522,7 +522,7 @@ class ServerEventStreamStartMessage implements ServerMessage {
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion ES_START\n";
+    String output = "ARRIRPC/$arriVersion STREAM_START\n";
     output += "content-type: ${contentType.serialValue}\n";
     if (reqId != null) output += "req-id: ${reqId}\n";
     if (heartbeatInterval != null) {
@@ -536,24 +536,24 @@ class ServerEventStreamStartMessage implements ServerMessage {
   }
 }
 
-class ServerEventStreamEventMessage implements ServerMessage {
+class StreamDataMessage implements ServerMessage {
   final String? reqId;
-  final String? eventId;
+  final String? msgId;
   final String? body;
-  ServerEventStreamEventMessage({
+  StreamDataMessage({
     required this.reqId,
-    required this.eventId,
+    required this.msgId,
     required this.body,
   });
 
   @override
-  List<Object?> get props => [reqId, eventId, body];
+  List<Object?> get props => [reqId, msgId, body];
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion ES_EVENT\n";
+    String output = "ARRIRPC/$arriVersion STREAM_DATA\n";
     if (reqId != null) output += "req-id: ${reqId}\n";
-    if (eventId != null) output += "event-id: ${eventId}\n";
+    if (msgId != null) output += "msg-id: ${msgId}\n";
     output += "\n";
     if (body != null) output += body!;
     return output;
@@ -570,7 +570,7 @@ class ServerEventStreamEndMessage implements ServerMessage {
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion ES_END\n";
+    String output = "ARRIRPC/$arriVersion STREAM_END\n";
     if (reqId != null) output += "req-id: $reqId\n";
     output += "reason: $reason\n";
     output += "\n";

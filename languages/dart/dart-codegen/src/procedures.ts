@@ -34,6 +34,7 @@ export function dartRpcFromSchema(
         return `${getCodeComments(metadata)}ArriEventSource<${outputType}> ${functionName}(
             ${inputType ? `${inputType} input, ` : ''} {
             ArriEventSourceHookOnData<${outputType}>? onData,
+            ArriEventSourceHookOnRawData<${outputType}>? onRawData,
             ArriEventSourceHookOnOpen<${outputType}>? onOpen,
             ArriEventSourceHookOnClose<${outputType}>? onClose,
             ArriEventSourceHookOnError<${outputType}>? onError,
@@ -59,6 +60,7 @@ export function dartRpcFromSchema(
                 responseDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : `(_) => {}`},
                 lastEventId: lastEventId,
                 onData: onData,
+                onRawData: onRawData,
                 onOpen: onOpen,
                 onClose: onClose,
                 onError: onError,

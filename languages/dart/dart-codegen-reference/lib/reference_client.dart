@@ -224,7 +224,8 @@ class ExampleClientBooksService {
   @deprecated
   ArriEventSource<Book> watchBook(
     BookParams input, {
-    ArriEventSourceHookOnData<Book>? onMessage,
+    ArriEventSourceHookOnData<Book>? onData,
+    ArriEventSourceHookOnRawData<Book?>? onRawData,
     ArriEventSourceHookOnOpen<Book>? onOpen,
     ArriEventSourceHookOnClose<Book>? onClose,
     ArriEventSourceHookOnError<Book>? onError,
@@ -251,7 +252,8 @@ class ExampleClientBooksService {
       ),
       responseDecoder: (data) => Book.fromJsonString(data),
       lastEventId: lastEventId,
-      onData: onMessage,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
