@@ -10,344 +10,353 @@ import 'package:http/io_client.dart';
 
 const baseUrl = "http://127.0.0.1:2020";
 const wsConnectionUrl = "ws://127.0.0.1:2020/establish-connection";
+Map<String, String> headers() => {"x-test-header": 'test'};
 
 const defaultTransport =
     String.fromEnvironment("CLIENT_TRANSPORT", defaultValue: "http");
 // final defaultTransport = "http";
 Future<void> main() async {
-  print("running tests over \"$defaultTransport\"");
-  final client = TestClient(
-    baseUrl: baseUrl,
-    wsConnectionUrl: wsConnectionUrl,
-    defaultTransport: defaultTransport,
-    headers: () => {"x-test-header": 'test'},
-  );
-  final httpClient =
-      HttpClient(context: SecurityContext(withTrustedRoots: true));
-  final clientWCustomHttpClient = TestClient(
-    baseUrl: baseUrl,
-    wsConnectionUrl: wsConnectionUrl,
-    createHttpClient: () => IOClient(httpClient),
-    defaultTransport: defaultTransport,
-    headers: () => {"x-test-header": 'test'},
-  );
+  group("Standard RPCs", () {
+    print("running tests over \"$defaultTransport\"");
+    final client = TestClient(
+      baseUrl: baseUrl,
+      wsConnectionUrl: wsConnectionUrl,
+      defaultTransport: defaultTransport,
+      headers: headers,
+    );
+    final httpClient =
+        HttpClient(context: SecurityContext(withTrustedRoots: true));
+    final clientWCustomHttpClient = TestClient(
+      baseUrl: baseUrl,
+      wsConnectionUrl: wsConnectionUrl,
+      createHttpClient: () => IOClient(httpClient),
+      defaultTransport: defaultTransport,
+      headers: () => {"x-test-header": 'test'},
+    );
 
-  test("supports RPCs with no params", () async {
-    try {
-      await client.tests.emptyParamsGetRequest();
-      await client.tests.emptyParamsPostRequest();
-    } catch (err) {
-      print("ERROR: ${err.toString()}");
-      expect(false, equals(true));
-    }
-  });
-  test("supports RPCs with no response", () async {
-    try {
-      await client.tests.emptyResponseGetRequest(
-        DefaultPayload(message: "ok"),
-      );
-      await client.tests.emptyResponsePostRequest(
-        DefaultPayload(message: "ok"),
-      );
-    } catch (err) {
-      print("ERROR ${err.toString()}");
-      expect(false, equals(true));
-    }
-  });
+    test("supports RPCs with no params", () async {
+      try {
+        await client.tests.emptyParamsGetRequest();
+        await client.tests.emptyParamsPostRequest();
+      } catch (err) {
+        print("ERROR: ${err.toString()}");
+        expect(false, equals(true));
+      }
+    });
+    test("supports RPCs with no response", () async {
+      try {
+        await client.tests.emptyResponseGetRequest(
+          DefaultPayload(message: "ok"),
+        );
+        await client.tests.emptyResponsePostRequest(
+          DefaultPayload(message: "ok"),
+        );
+      } catch (err) {
+        print("ERROR ${err.toString()}");
+        expect(false, equals(true));
+      }
+    });
 
-  final targetDate = DateTime.parse("2001-01-01T16:36:00.000Z");
-  final input = ObjectWithEveryType(
-      any: {"hello": "world", "goodbye": "world"},
-      boolean: true,
-      string: "",
-      timestamp: targetDate,
-      float32: 1,
-      float64: 1,
-      int8: 1,
-      uint8: 1,
-      int16: 1,
-      uint16: 1,
-      int32: 1,
-      uint32: 1,
-      int64: BigInt.from(1),
-      uint64: BigInt.from(1),
-      enumerator: ObjectWithEveryTypeEnumerator.a,
-      array: [true, false],
-      object: ObjectWithEveryTypeObject(
+    final targetDate = DateTime.parse("2001-01-01T16:36:00.000Z");
+    final input = ObjectWithEveryType(
+        any: {"hello": "world", "goodbye": "world"},
         boolean: true,
         string: "",
         timestamp: targetDate,
-      ),
-      record: {
-        "A": BigInt.from(1),
-        "B": BigInt.from(0),
-        "\"C\"\t": BigInt.from(1),
-      },
-      discriminator: ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
-      nestedObject: ObjectWithEveryTypeNestedObject(
-        id: "",
-        timestamp: targetDate,
-        data: ObjectWithEveryTypeNestedObjectData(
-            id: "",
-            timestamp: targetDate,
-            data: ObjectWithEveryTypeNestedObjectDataData(
+        float32: 1,
+        float64: 1,
+        int8: 1,
+        uint8: 1,
+        int16: 1,
+        uint16: 1,
+        int32: 1,
+        uint32: 1,
+        int64: BigInt.from(1),
+        uint64: BigInt.from(1),
+        enumerator: ObjectWithEveryTypeEnumerator.a,
+        array: [true, false],
+        object: ObjectWithEveryTypeObject(
+          boolean: true,
+          string: "",
+          timestamp: targetDate,
+        ),
+        record: {
+          "A": BigInt.from(1),
+          "B": BigInt.from(0),
+          "\"C\"\t": BigInt.from(1),
+        },
+        discriminator: ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
+        nestedObject: ObjectWithEveryTypeNestedObject(
+          id: "",
+          timestamp: targetDate,
+          data: ObjectWithEveryTypeNestedObjectData(
               id: "",
               timestamp: targetDate,
-            )),
-      ),
-      nestedArray: [
-        [
-          ObjectWithEveryTypeNestedArrayElementElement(
-            id: "",
-            timestamp: targetDate,
-          )
-        ]
-      ]);
-  test("can send/receive objects with every field type", () async {
-    final result = await client.tests.sendObject(input);
-    expect(result, equals(input));
-    final input2 = input.copyWith(int16: 999);
-    final result2 = await client.tests.sendObject(input2);
-    expect(result2, equals(input2));
-    expect(input == input2, equals(false));
-  });
-  test("can send/receive objects with snake_case keys", () async {
-    final payload = ObjectWithSnakeCaseKeys(
-      createdAt: targetDate,
-      displayName: "testing 123",
-      phoneNumber: "211-211-2111",
-      emailAddress: "johndoe@gmail",
-    );
-    final result = await client.tests.sendObjectWithSnakeCaseKeys(payload);
-    expect(result, equals(payload));
-  });
-  test("can send/receive objects with PascalCase keys", () async {
-    final payload = ObjectWithPascalCaseKeys(
-      createdAt: targetDate,
-      displayName: "testing 123",
-      phoneNumber: null,
-    );
-    final result = await client.tests.sendObjectWithPascalCaseKeys(payload);
-    expect(result, equals(payload));
-    final payload2 = payload.copyWith(
-      phoneNumber: () => "2112112111",
-      emailAddress: () => "johndoe@gmail.com",
-    );
-    final result2 = await client.tests.sendObjectWithPascalCaseKeys(payload2);
-    expect(result2, equals(payload2));
-  });
-  test("supports injecting custom http clients", () async {
-    final result = await clientWCustomHttpClient.tests.sendObject(input);
-    expect(result.array.length, equals(input.array.length));
-    expect(result.int64, equals(input.int64));
-    expect(result.uint64, equals(input.uint64));
-  });
-  test("supports async header functions", () async {
-    final asyncHeaderClient = TestClient(
-      baseUrl: baseUrl,
-      wsConnectionUrl: "",
-      headers: () async {
-        await Future.delayed(Duration(milliseconds: 100));
-        return {"x-test-header": "async-test"};
-      },
-    );
-    final result = await asyncHeaderClient.tests.sendObject(input);
-    expect(result.array.length, equals(input.array.length));
-    expect(result.int64, equals(input.int64));
-    expect(result.uint64, equals(input.uint64));
-  });
-  test("unauthenticated RPC requests return a 401 error", () async {
-    bool firedOnErr = false;
-    final unauthenticatedClient = TestClient(
-      baseUrl: baseUrl,
-      wsConnectionUrl: "",
-      onError: (_, __) {
-        firedOnErr = true;
-      },
-    );
-    try {
-      await unauthenticatedClient.tests.sendObject(input);
-      expect(false, equals(true));
-    } catch (err) {
-      if (err is ArriError) {
-        expect(err.code, equals(401));
-        return;
+              data: ObjectWithEveryTypeNestedObjectDataData(
+                id: "",
+                timestamp: targetDate,
+              )),
+        ),
+        nestedArray: [
+          [
+            ObjectWithEveryTypeNestedArrayElementElement(
+              id: "",
+              timestamp: targetDate,
+            )
+          ]
+        ]);
+    test("can send/receive objects with every field type", () async {
+      final result = await client.tests.sendObject(input);
+      expect(result, equals(input));
+      final input2 = input.copyWith(int16: 999);
+      final result2 = await client.tests.sendObject(input2);
+      expect(result2, equals(input2));
+      expect(input == input2, equals(false));
+    });
+    test("can send/receive objects with snake_case keys", () async {
+      final payload = ObjectWithSnakeCaseKeys(
+        createdAt: targetDate,
+        displayName: "testing 123",
+        phoneNumber: "211-211-2111",
+        emailAddress: "johndoe@gmail",
+      );
+      final result = await client.tests.sendObjectWithSnakeCaseKeys(payload);
+      expect(result, equals(payload));
+    });
+    test("can send/receive objects with PascalCase keys", () async {
+      final payload = ObjectWithPascalCaseKeys(
+        createdAt: targetDate,
+        displayName: "testing 123",
+        phoneNumber: null,
+      );
+      final result = await client.tests.sendObjectWithPascalCaseKeys(payload);
+      expect(result, equals(payload));
+      final payload2 = payload.copyWith(
+        phoneNumber: () => "2112112111",
+        emailAddress: () => "johndoe@gmail.com",
+      );
+      final result2 = await client.tests.sendObjectWithPascalCaseKeys(payload2);
+      expect(result2, equals(payload2));
+    });
+    test("supports injecting custom http clients", () async {
+      final result = await clientWCustomHttpClient.tests.sendObject(input);
+      expect(result.array.length, equals(input.array.length));
+      expect(result.int64, equals(input.int64));
+      expect(result.uint64, equals(input.uint64));
+    });
+    test("supports async header functions", () async {
+      final asyncHeaderClient = TestClient(
+        baseUrl: baseUrl,
+        wsConnectionUrl: "",
+        headers: () async {
+          await Future.delayed(Duration(milliseconds: 100));
+          return {"x-test-header": "async-test"};
+        },
+      );
+      final result = await asyncHeaderClient.tests.sendObject(input);
+      expect(result.array.length, equals(input.array.length));
+      expect(result.int64, equals(input.int64));
+      expect(result.uint64, equals(input.uint64));
+    });
+    test("unauthenticated RPC requests return a 401 error", () async {
+      bool firedOnErr = false;
+      final unauthenticatedClient = TestClient(
+        baseUrl: baseUrl,
+        wsConnectionUrl: "",
+        onError: (_, __) {
+          firedOnErr = true;
+        },
+      );
+      try {
+        await unauthenticatedClient.tests.sendObject(input);
+        expect(false, equals(true));
+      } catch (err) {
+        if (err is ArriError) {
+          expect(err.code, equals(401));
+          return;
+        }
+        expect(false, equals(true));
       }
-      expect(false, equals(true));
-    }
-    expect(firedOnErr, equals(true));
-  });
-  test("can send/receive objects with partial fields", () async {
-    final input = ObjectWithEveryOptionalType(
-      int16: 0,
-      int64: BigInt.zero,
-      nestedArray: [
-        [
-          ObjectWithEveryOptionalTypeNestedArrayElementElement(
-            id: "",
-            timestamp: DateTime.now(),
-          )
-        ]
-      ],
-    );
-    final result = await client.tests.sendPartialObject(input);
-    expect(result.string, equals(null));
-    expect(result.int16, equals(0));
-    expect(result.int64, equals(BigInt.zero));
-    expect(result.nestedArray?[0][0].id, equals(""));
-  });
-  test("can send/receive objects with nullable fields", () async {
-    final input = ObjectWithEveryNullableType(
-      any: null,
-      boolean: null,
-      string: null,
-      timestamp: null,
-      float32: null,
-      float64: null,
-      int8: null,
-      uint8: null,
-      int16: null,
-      uint16: null,
-      int32: null,
-      uint32: null,
-      int64: null,
-      uint64: null,
-      enumerator: null,
-      array: null,
-      object: null,
-      record: null,
-      discriminator: null,
-      nestedObject: null,
-      nestedArray: null,
-    );
-    final result = await client.tests.sendObjectWithNullableFields(input);
-    expect(result.string, equals(null));
-    expect(result.array, equals(null));
-    final input2 = ObjectWithEveryNullableType(
-      any: {"hello": "world", "goodbye": "world"},
-      boolean: true,
-      string: "",
-      timestamp: DateTime.now(),
-      float32: 1,
-      float64: 1,
-      int8: 1,
-      uint8: 1,
-      int16: 1,
-      uint16: 1,
-      int32: 1,
-      uint32: 1,
-      int64: BigInt.from(1),
-      uint64: BigInt.from(1),
-      enumerator: ObjectWithEveryNullableTypeEnumerator.a,
-      array: [true, false],
-      object: ObjectWithEveryNullableTypeObject(
-          boolean: true, string: "", timestamp: DateTime.now()),
-      record: {
-        "A": BigInt.from(1),
-        "B": BigInt.from(0),
-      },
-      discriminator:
-          ObjectWithEveryNullableTypeDiscriminatorA(title: "Hello World"),
-      nestedObject: ObjectWithEveryNullableTypeNestedObject(
-        id: "",
-        timestamp: DateTime.now(),
-        data: ObjectWithEveryNullableTypeNestedObjectData(
-            id: "",
-            timestamp: DateTime.now(),
-            data: ObjectWithEveryNullableTypeNestedObjectDataData(
+      expect(firedOnErr, equals(true));
+    });
+    test("can send/receive objects with partial fields", () async {
+      final input = ObjectWithEveryOptionalType(
+        int16: 0,
+        int64: BigInt.zero,
+        nestedArray: [
+          [
+            ObjectWithEveryOptionalTypeNestedArrayElementElement(
               id: "",
               timestamp: DateTime.now(),
-            )),
-      ),
-      nestedArray: [
-        [
-          ObjectWithEveryNullableTypeNestedArrayElementElement(
-            id: "",
-            timestamp: DateTime.now(),
-          )
-        ]
-      ],
-    );
-    final result2 = await client.tests.sendObjectWithNullableFields(input2);
-    expect(result2.nestedArray?.length, equals(1));
-    expect(result2.nestedArray?.length, equals(1));
-    expect(result2.nestedArray?[0]?[0]?.id, equals(""));
-    expect(result2.nestedObject?.data?.id, equals(""));
-    expect(result2.int64, equals(BigInt.from(1)));
-    expect(
-      result2.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
-      equals(true),
-    );
-  });
-  test("can send/receive recursive objects", () async {
-    final input = RecursiveObject(
-      left: RecursiveObject(
+            )
+          ]
+        ],
+      );
+      final result = await client.tests.sendPartialObject(input);
+      expect(result.string, equals(null));
+      expect(result.int16, equals(0));
+      expect(result.int64, equals(BigInt.zero));
+      expect(result.nestedArray?[0][0].id, equals(""));
+    });
+    test("can send/receive objects with nullable fields", () async {
+      final input = ObjectWithEveryNullableType(
+        any: null,
+        boolean: null,
+        string: null,
+        timestamp: null,
+        float32: null,
+        float64: null,
+        int8: null,
+        uint8: null,
+        int16: null,
+        uint16: null,
+        int32: null,
+        uint32: null,
+        int64: null,
+        uint64: null,
+        enumerator: null,
+        array: null,
+        object: null,
+        record: null,
+        discriminator: null,
+        nestedObject: null,
+        nestedArray: null,
+      );
+      final result = await client.tests.sendObjectWithNullableFields(input);
+      expect(result.string, equals(null));
+      expect(result.array, equals(null));
+      final input2 = ObjectWithEveryNullableType(
+        any: {"hello": "world", "goodbye": "world"},
+        boolean: true,
+        string: "",
+        timestamp: DateTime.now(),
+        float32: 1,
+        float64: 1,
+        int8: 1,
+        uint8: 1,
+        int16: 1,
+        uint16: 1,
+        int32: 1,
+        uint32: 1,
+        int64: BigInt.from(1),
+        uint64: BigInt.from(1),
+        enumerator: ObjectWithEveryNullableTypeEnumerator.a,
+        array: [true, false],
+        object: ObjectWithEveryNullableTypeObject(
+            boolean: true, string: "", timestamp: DateTime.now()),
+        record: {
+          "A": BigInt.from(1),
+          "B": BigInt.from(0),
+        },
+        discriminator:
+            ObjectWithEveryNullableTypeDiscriminatorA(title: "Hello World"),
+        nestedObject: ObjectWithEveryNullableTypeNestedObject(
+          id: "",
+          timestamp: DateTime.now(),
+          data: ObjectWithEveryNullableTypeNestedObjectData(
+              id: "",
+              timestamp: DateTime.now(),
+              data: ObjectWithEveryNullableTypeNestedObjectDataData(
+                id: "",
+                timestamp: DateTime.now(),
+              )),
+        ),
+        nestedArray: [
+          [
+            ObjectWithEveryNullableTypeNestedArrayElementElement(
+              id: "",
+              timestamp: DateTime.now(),
+            )
+          ]
+        ],
+      );
+      final result2 = await client.tests.sendObjectWithNullableFields(input2);
+      expect(result2.nestedArray?.length, equals(1));
+      expect(result2.nestedArray?.length, equals(1));
+      expect(result2.nestedArray?[0]?[0]?.id, equals(""));
+      expect(result2.nestedObject?.data?.id, equals(""));
+      expect(result2.int64, equals(BigInt.from(1)));
+      expect(
+        result2.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
+        equals(true),
+      );
+    });
+    test("can send/receive recursive objects", () async {
+      final input = RecursiveObject(
         left: RecursiveObject(
+          left: RecursiveObject(
+            left: null,
+            right: null,
+            value: "depth2",
+          ),
+          right: null,
+          value: "depth1",
+        ),
+        right: RecursiveObject(
           left: null,
           right: null,
-          value: "depth2",
+          value: "depth1,",
         ),
-        right: null,
-        value: "depth1",
-      ),
-      right: RecursiveObject(
-        left: null,
-        right: null,
-        value: "depth1,",
-      ),
-      value: "depth0",
-    );
-    final result = await client.tests.sendRecursiveObject(input);
-    expect(result.left?.left?.left, equals(null));
-    expect(result.left?.left?.value, equals("depth2"));
-  });
-  test("can send/receive recursive unions", () async {
-    final input = RecursiveUnionChildren(
-      data: [
-        RecursiveUnionChild(
-          data: RecursiveUnionText(
-            data: "hello world",
+        value: "depth0",
+      );
+      final result = await client.tests.sendRecursiveObject(input);
+      expect(result.left?.left?.left, equals(null));
+      expect(result.left?.left?.value, equals("depth2"));
+    });
+    test("can send/receive recursive unions", () async {
+      final input = RecursiveUnionChildren(
+        data: [
+          RecursiveUnionChild(
+            data: RecursiveUnionText(
+              data: "hello world",
+            ),
           ),
-        ),
-        RecursiveUnionShape(
-          data: RecursiveUnionShapeData(
-            width: 1,
-            height: 1,
-            color: "blue",
+          RecursiveUnionShape(
+            data: RecursiveUnionShapeData(
+              width: 1,
+              height: 1,
+              color: "blue",
+            ),
           ),
-        ),
-      ],
-    );
-    final result = await client.tests.sendRecursiveUnion(input);
-    expect(result is RecursiveUnionChildren, equals(true));
-    expect((result as RecursiveUnionChildren).data.length, equals(2));
-    expect((result.data[0] as RecursiveUnionChild).data is RecursiveUnionText,
-        equals(true));
-  });
+        ],
+      );
+      final result = await client.tests.sendRecursiveUnion(input);
+      expect(result is RecursiveUnionChildren, equals(true));
+      expect((result as RecursiveUnionChildren).data.length, equals(2));
+      expect((result.data[0] as RecursiveUnionChild).data is RecursiveUnionText,
+          equals(true));
+    });
 
-  test("onError hook fires", () async {
-    bool onErrFired = false;
-    final customClient = TestClient(
-      baseUrl: baseUrl,
-      wsConnectionUrl: "",
-      onError: (req, err) {
-        onErrFired = true;
-        expect(err is ArriError, equals(true));
-      },
-    );
-    try {
-      await customClient.tests.sendObject(input);
-    } catch (_) {}
-    expect(onErrFired, equals(true));
+    test("onError hook fires", () async {
+      bool onErrFired = false;
+      final customClient = TestClient(
+        baseUrl: baseUrl,
+        wsConnectionUrl: "",
+        onError: (req, err) {
+          onErrFired = true;
+          expect(err is ArriError, equals(true));
+        },
+      );
+      try {
+        await customClient.tests.sendObject(input);
+      } catch (_) {}
+      expect(onErrFired, equals(true));
+    });
   });
 
   group("output stream rpcs", () {
+    final defaultClient = TestClient(
+      baseUrl: baseUrl,
+      wsConnectionUrl: wsConnectionUrl,
+      headers: headers,
+      defaultTransport: defaultTransport,
+    );
     test(
       "supports output stream rpcs",
       () async {
         int messageCount = 0;
         final completer = Completer();
-        final eventSource = client.tests.streamMessages(
+        final eventSource = defaultClient.tests.streamMessages(
           ChatMessageParams(channelId: "12345"),
           onData: (data, es) {
             messageCount++;
@@ -384,8 +393,8 @@ Future<void> main() async {
       "supports converting ArriEventSource to a Dart 'Stream'",
       () async {
         int messageCount = 0;
-        final eventSource =
-            client.tests.streamMessages(ChatMessageParams(channelId: "12345"));
+        final eventSource = defaultClient.tests
+            .streamMessages(ChatMessageParams(channelId: "12345"));
         final listener = eventSource.toStream().listen((message) {
           messageCount++;
           switch (message) {
@@ -416,7 +425,7 @@ Future<void> main() async {
         int messageCount = 0;
         int errorCount = 0;
         final completer = Completer();
-        final eventSource = client.tests.streamTenEventsThenEnd(
+        final eventSource = defaultClient.tests.streamTenEventsThenEnd(
           onData: (data, connection) {
             messageCount++;
           },
@@ -437,6 +446,12 @@ Future<void> main() async {
     test(
       "auto-reconnects when connection is closed by server",
       () async {
+        final client = TestClient(
+          baseUrl: baseUrl,
+          wsConnectionUrl: wsConnectionUrl,
+          defaultTransport: defaultTransport,
+          headers: headers,
+        );
         int connectionCount = 0;
         int messageCount = 0;
         int errorCount = 0;
@@ -474,7 +489,7 @@ Future<void> main() async {
         var msgCount = 0;
         var errorCount = 0;
         final completer = Completer();
-        client.tests.streamLargeObjects(
+        defaultClient.tests.streamLargeObjects(
           onOpen: (_) {
             openCount++;
           },
@@ -498,6 +513,12 @@ Future<void> main() async {
     );
 
     test("auto-retry when initial connection fails", () async {
+      final client = TestClient(
+        baseUrl: baseUrl,
+        wsConnectionUrl: wsConnectionUrl,
+        defaultTransport: defaultTransport,
+        headers: headers,
+      );
       var openCount = 0;
       var errorCount = 0;
       var msgCount = 0;
@@ -550,7 +571,6 @@ Future<void> main() async {
       var msgCount = 0;
       var openCount = 0;
       final completer = Completer();
-
       final eventStream = dynamicClient.tests.streamRetryWithNewCredentials(
         onData: (data, stream) {
           msgCount++;

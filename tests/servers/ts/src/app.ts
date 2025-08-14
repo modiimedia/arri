@@ -4,6 +4,7 @@ import * as h3 from '@arrirpc/server/http';
 
 import { registerHeartbeatTestRouteH3 } from './heartbeat-tests';
 import { manualTestService } from './routes/other';
+import { Peer } from '@arrirpc/server/ws';
 
 const app = new ArriApp({
     rpcRoutePrefix: '/rpcs',
@@ -54,6 +55,26 @@ http.h3Router.use(
         return 'hello world';
     }),
     ['get', 'post'],
+);
+
+http.h3Router.get(
+    '/active-ws-connections',
+    h3.defineEventHandler((_) => {
+        const peerIds: string[] = [];
+        for (const val of ws.peers.values()) {
+            peerIds.push(val.id);
+        }
+        const streamIds: string[] = [];
+        for (const [key, val] of Object.entries(ws.outputStreams)) {
+            for (const [innerKey, _] of Object.entries(val)) {
+                streamIds.push(`${key}+${innerKey}`);
+            }
+        }
+        return {
+            peers: peerIds,
+            outputStreams: streamIds,
+        };
+    }),
 );
 
 registerHeartbeatTestRouteH3(http.h3Router);

@@ -75,13 +75,17 @@ export class WsAdapter implements TransportAdapter {
 
     private _middlewares: RpcMiddleware[] = [];
     private _peers: Map<string, Peer> = new Map();
-    private _peerEventStreams: Record<
+    private _peerOutputStreams: Record<
         string,
         Record<string, RpcOutputStreamConnection<any>>
     > = {};
 
     get peers() {
         return this._peers;
+    }
+
+    get outputStreams() {
+        return this._peerOutputStreams;
     }
 
     constructor(
@@ -180,8 +184,8 @@ export class WsAdapter implements TransportAdapter {
         // disconnect peers
         for (const peer of this._peers.values()) {
             peer.close(1001);
-            const es = this._peerEventStreams[peer.id];
-            if (es) delete this._peerEventStreams[peer.id];
+            const es = this._peerOutputStreams[peer.id];
+            if (es) delete this._peerOutputStreams[peer.id];
         }
         this._peers.clear();
     }
@@ -229,12 +233,12 @@ export class WsAdapter implements TransportAdapter {
         details: { code?: number; reason?: string },
     ) {
         this._peers.delete(peer.id);
-        const eventStreams = this._peerEventStreams[peer.id];
+        const eventStreams = this._peerOutputStreams[peer.id];
         if (eventStreams) {
             for (const stream of Object.values(eventStreams)) {
                 stream.close();
             }
-            delete this._peerEventStreams[peer.id];
+            delete this._peerOutputStreams[peer.id];
         }
         clearInterval(this._heartbeatTimers.get(peer.id));
         this._heartbeatTimers.delete(peer.id);
@@ -324,7 +328,7 @@ export class WsAdapter implements TransportAdapter {
             }
             if (handler.isEventStream) {
                 const existing =
-                    this._peerEventStreams?.[peer.id]?.[context.reqId!];
+                    this._peerOutputStreams?.[peer.id]?.[context.reqId!];
                 if (existing) existing.close({ notifyClients: true });
                 const eventStream = new RpcOutputStreamConnection(
                     new WsStream(peer),
@@ -333,9 +337,9 @@ export class WsAdapter implements TransportAdapter {
                     this._globalOptions?.heartbeatEnabled ?? true,
                     context.reqId,
                 );
-                if (!this._peerEventStreams[peer.id])
-                    this._peerEventStreams[peer.id] = {};
-                this._peerEventStreams[peer.id]![context.reqId!] = eventStream;
+                if (!this._peerOutputStreams[peer.id])
+                    this._peerOutputStreams[peer.id] = {};
+                this._peerOutputStreams[peer.id]![context.reqId!] = eventStream;
                 (context as any).stream = eventStream;
                 await handler.handler(context as any);
                 if (!eventStream.isActive) eventStream.start();
@@ -386,7 +390,7 @@ export class WsAdapter implements TransportAdapter {
             switch (message.action) {
                 case 'CLOSE': {
                     const esConnection =
-                        this._peerEventStreams[peer.id]?.[context.reqId ?? ''];
+                        this._peerOutputStreams[peer.id]?.[context.reqId ?? ''];
                     if (!esConnection) return;
                     await esConnection.close({
                         reason: 'closed by client',

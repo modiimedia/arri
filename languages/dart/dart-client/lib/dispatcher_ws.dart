@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/dispatcher.dart';
 import 'package:arri_client/request.dart';
 import 'package:ulid/ulid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-
-final File logFile = File("log.txt");
 
 class WsDispatcher implements Dispatcher {
   final String _connectionUrl;
@@ -58,12 +55,10 @@ class WsDispatcher implements Dispatcher {
         es.reconnect();
       }
     }
-    logFile.writeAsString("", mode: FileMode.write);
   }
 
   _handleMessage(dynamic data) {
     if (data is! String) return;
-    logFile.writeAsStringSync("$data\n-----\n", mode: FileMode.append);
     final msg = ServerMessage.fromString(data).unwrap();
     if (msg == null || msg.reqId == null) return;
     _messageHandlers[msg.reqId]?.call(msg);
