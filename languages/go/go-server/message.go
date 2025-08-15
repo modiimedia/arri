@@ -2,6 +2,7 @@ package arri
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -37,15 +38,23 @@ const (
 	ContentTypeJson    ContentType = "application/json"
 )
 
+func ContentTypeFromString(input string) ContentType {
+	switch input {
+	case string(ContentTypeJson):
+		return ContentTypeJson
+	default:
+		return ContentTypeUnknown
+	}
+}
+
 type Message struct {
 	ArriRpcVersion    string
 	Type              MessageType
 	RpcName           Option[string]
 	ReqId             string
-	Headers           map[string]string
+	CustomHeaders     map[string]string
 	ContentType       Option[ContentType]
 	Action            Option[string]
-	Success           Option[bool]
 	Error             Option[RpcError]
 	HeartbeatInterval Option[uint32]
 	Reason            Option[string]
@@ -103,7 +112,7 @@ func (m Message) EncodeBytes() []byte {
 		allowBody = true
 	case StreamEndMessage:
 	}
-	output = AppendCustomHeaders(output, m.Headers)
+	output = AppendCustomHeaders(output, m.CustomHeaders)
 	output = append(output, '\n')
 	if allowBody && m.Body.IsSet {
 		output = append(output, m.Body.Value...)
@@ -124,6 +133,184 @@ func AppendCustomHeaders(input []byte, headers map[string]string) []byte {
 		input = append(input, strings.ToLower(key)+": "+val+"\n"...)
 	}
 	return input
+}
+
+func NewServerSuccessMessage(reqId string, contentType ContentType, headers map[string]string, body Option[[]byte]) Message {
+	return Message{
+		ArriRpcVersion: ARRI_VERSION,
+		Type:           ServerSuccessMessage,
+		ReqId:          reqId,
+		ContentType:    Some(contentType),
+		CustomHeaders:  headers,
+		Body:           body,
+	}
+}
+
+func NewServerFailureMessage(reqId string, contentType ContentType, headers map[string]string, err RpcError) Message {
+	return Message{
+		ArriRpcVersion: ARRI_VERSION,
+		Type:           ServerFailureMessage,
+		ReqId:          reqId,
+		ContentType:    Some(contentType),
+		CustomHeaders:  headers,
+		Error:          Some(err),
+	}
+}
+
+func DecodeMessage(input []byte) (Message, DecodeMessageError) {
+	msgType := None[MessageType]()
+	procedure := None[string]()
+	reqId := None[string]()
+	msgId := None[string]()
+	clientVersion := None[string]()
+	contentType := None[ContentType]()
+	heartbeatInterval := None[uint32]()
+	customHeaders := Headers{}
+	currentLine := []byte{}
+	bodyStartIndex := -1
+	action := None[string]()
+
+	var processLine = func() DecodeMessageError {
+		lineStr := string(currentLine)
+		if !msgType.IsSet {
+			lineParts := strings.Split(lineStr, " ")
+			if len(lineParts) < 2 {
+				return NewDecodeMessageError(
+					DMECode_MalformedMessage,
+					Some("Invalid client message. Must start with ARRIRPC/{version} {procedureName}"),
+				)
+			}
+			_ = lineParts[0]
+			typeValue := lineParts[1]
+			switch typeValue {
+			case "SUCCESS":
+				msgType.Set(ServerSuccessMessage)
+			case "FAILURE":
+				msgType.Set(ServerFailureMessage)
+			case "CONNECTION_START":
+				msgType.Set(ConnectionStartMessage)
+			case "STREAM_START":
+				msgType.Set(StreamStartMessage)
+			case "STREAM_DATA":
+				msgType.Set(StreamDataMessage)
+			case "STREAM_END":
+				msgType.Set(StreamEndMessage)
+			case "HEARTBEAT":
+				msgType.Set(HeartbeatMessage)
+			default:
+				msgType.Set(ClientMessage)
+				procedure.Set(strings.TrimSpace(typeValue))
+			}
+			if len(lineParts) > 2 {
+				action.Set(lineParts[2])
+			}
+			currentLine = []byte{}
+			return nil
+		}
+		key, val := ParseHeaderLine(lineStr)
+		switch key {
+		case "client-version":
+			clientVersion.Set(val)
+		case "req-id":
+			reqId.Set(val)
+		case "content-type":
+			contentType.Set(ContentTypeFromString(val))
+		case "heartbeat-interval":
+			parsedVal, err := strconv.ParseUint(val, 10, 32)
+			if err == nil {
+				heartbeatInterval.Set(uint32(parsedVal))
+			}
+		case "msg-id":
+			msgId.Set(val)
+		default:
+			customHeaders.Set(key, val)
+		}
+		currentLine = []byte{}
+		return nil
+	}
+
+	for i, char := range input {
+		if char == '\n' && input[i+1] == '\n' {
+			err := processLine()
+			if err != nil {
+				return Message{}, err
+			}
+			bodyStartIndex = i + 2
+			break
+		}
+		if char == '\n' {
+			err := processLine()
+			if err != nil {
+				return Message{}, err
+			}
+			continue
+		}
+		currentLine = append(currentLine, char)
+	}
+
+	if msgType.IsNone() {
+		return Message{}, NewDecodeMessageError(DMECode_MalformedMessage, Some("missing arrirpc version"))
+	}
+	if bodyStartIndex < 0 {
+		return Message{}, NewDecodeMessageError(DMECode_MalformedMessage, Some("must terminate headers with the following character sequence \n\n"))
+	}
+
+	var body Option[[]byte]
+	rawBody := input[bodyStartIndex:]
+	if len(rawBody) > 0 {
+		body = Some(rawBody)
+	} else {
+		body = None[[]byte]()
+	}
+
+	switch msgType.Value {
+	case ClientMessage:
+		if procedure.IsNone() {
+			return Message{}, NewDecodeMessageError(DMECode_MalformedMessage, Some("missing procedure name"))
+		}
+		return Message{
+			ArriRpcVersion: ARRI_VERSION,
+			ReqId:          reqId.Value,
+			RpcName:        procedure,
+			Type:           msgType.Value,
+			ContentType:    contentType,
+			CustomHeaders:  customHeaders,
+			Body:           body,
+		}, nil
+
+	case ServerSuccessMessage:
+		return Message{
+			ArriRpcVersion: ARRI_VERSION,
+			ReqId:          reqId.Value,
+			Type:           msgType.Value,
+			ContentType:    contentType,
+			CustomHeaders:  customHeaders,
+			Body:           body,
+		}, nil
+	case ServerFailureMessage:
+		var err RpcError
+		if body.IsSome() {
+			err = Error(0, "unknown error")
+		} else {
+			parsed, paringErr := RpcErrorFromJson(body.Value)
+			if paringErr != nil {
+				err = Error(0, "unknown error")
+			} else {
+				err = parsed
+			}
+		}
+		return Message{
+			ArriRpcVersion: ARRI_VERSION,
+			ReqId:          reqId.Value,
+			Type:           msgType.Value,
+			ContentType:    contentType,
+			CustomHeaders:  customHeaders,
+			Error:          Some(err),
+		}, nil
+	default:
+		return Message{}, NewDecodeMessageCustomError(fmt.Errorf("Not implemented: " + string(msgType.Value)))
+	}
+
 }
 
 // DME = "Decode Message Error"
