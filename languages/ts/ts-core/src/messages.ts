@@ -322,6 +322,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                 type: 'STREAM_DATA',
                 reqId: reqId,
                 msgId: msgId,
+                body: body,
             };
             return Ok(msg);
         }

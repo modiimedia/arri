@@ -324,7 +324,7 @@ export class WsAdapter implements TransportAdapter {
             },
         };
         if (msg.type === 'STREAM_CANCEL') {
-            return this._handleActionMessage(peer, context, msg);
+            return this._handleStreamCancelMessage(peer, context, msg);
         }
         if (msg.type !== 'INVOCATION') {
             console.log('NOT YET SUPPORTED FOR CLIENT ', msg.type);
@@ -415,7 +415,7 @@ export class WsAdapter implements TransportAdapter {
         }
     }
 
-    private async _handleActionMessage(
+    private async _handleStreamCancelMessage(
         peer: ws.Peer,
         context: RpcMiddlewareContext,
         message: StreamCancelMessage,

@@ -555,7 +555,6 @@ describe('event stream rpcs', () => {
                 },
                 {
                     onError(err) {
-                        console.log('ERROR', err);
                         expect(err instanceof ArriError).toBe(true);
                         if (err instanceof ArriError) {
                             expect(err.code).toBe(411);
