@@ -52,7 +52,9 @@ type Message struct {
 	Type              MessageType
 	RpcName           Option[string]
 	ReqId             string
-	CustomHeaders     map[string]string
+	MsgId             Option[string]
+	CustomHeaders     Headers
+	ClientVersion     Option[string]
 	ContentType       Option[ContentType]
 	Action            Option[string]
 	Error             Option[RpcError]
@@ -107,9 +109,22 @@ func (m Message) EncodeBytes() []byte {
 		if len(m.ReqId) > 0 {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
+		if m.ClientVersion.IsSet {
+			output = AppendHeader(output, "client-version", m.ClientVersion.Value)
+		}
 	case StreamStartMessage:
 	case StreamDataMessage:
 		allowBody = true
+		output = append(output, "ARRIRPC/"+ARRI_VERSION+" "+"STREAM_DATA\n"...)
+		if m.ContentType.IsSet {
+			output = AppendHeader(output, "content-type", string(m.ContentType.Value))
+		}
+		if len(m.ReqId) > 0 {
+			output = AppendHeader(output, "req-id", m.ReqId)
+		}
+		if m.MsgId.IsSet {
+			output = AppendHeader(output, "msg-id", m.MsgId.Value)
+		}
 	case StreamEndMessage:
 	}
 	output = AppendCustomHeaders(output, m.CustomHeaders)
@@ -128,14 +143,39 @@ func AppendHeader(input []byte, key string, value string) []byte {
 	return input
 }
 
-func AppendCustomHeaders(input []byte, headers map[string]string) []byte {
+func AppendCustomHeaders(input []byte, headers Headers) []byte {
 	for key, val := range headers {
-		input = append(input, strings.ToLower(key)+": "+val+"\n"...)
+		input = append(input, key+": "+val+"\n"...)
 	}
 	return input
 }
 
-func NewServerSuccessMessage(reqId string, contentType ContentType, headers map[string]string, body Option[[]byte]) Message {
+func NewClientMessage(
+	reqId string,
+	rpcName string,
+	clientVersion Option[string],
+	contentType ContentType,
+	headers Headers,
+	body Option[[]byte],
+) Message {
+	return Message{
+		ArriRpcVersion: ARRI_VERSION,
+		Type:           ClientMessage,
+		RpcName:        Some(rpcName),
+		ReqId:          reqId,
+		ContentType:    Some(contentType),
+		ClientVersion:  clientVersion,
+		CustomHeaders:  headers,
+		Body:           body,
+	}
+}
+
+func NewServerSuccessMessage(
+	reqId string,
+	contentType ContentType,
+	headers Headers,
+	body Option[[]byte],
+) Message {
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
 		Type:           ServerSuccessMessage,
@@ -146,7 +186,12 @@ func NewServerSuccessMessage(reqId string, contentType ContentType, headers map[
 	}
 }
 
-func NewServerFailureMessage(reqId string, contentType ContentType, headers map[string]string, err RpcError) Message {
+func NewServerFailureMessage(
+	reqId string,
+	contentType ContentType,
+	headers Headers,
+	err RpcError,
+) Message {
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
 		Type:           ServerFailureMessage,
@@ -154,6 +199,33 @@ func NewServerFailureMessage(reqId string, contentType ContentType, headers map[
 		ContentType:    Some(contentType),
 		CustomHeaders:  headers,
 		Error:          Some(err),
+	}
+}
+
+func NewConnectionStartMessage(heartbeatInterval Option[uint32]) Message {
+	return Message{Type: ConnectionStartMessage, HeartbeatInterval: heartbeatInterval}
+}
+
+func NewHeartbeatMessage(heartbeatInterval uint32) Message {
+	return Message{Type: HeartbeatMessage, HeartbeatInterval: Some(heartbeatInterval)}
+}
+
+func NewStreamStartMessage(reqId string, contentType ContentType, heartbeatInterval Option[uint32], customHeaders Headers) Message {
+	return Message{
+		Type:              StreamStartMessage,
+		ContentType:       Some(contentType),
+		ReqId:             reqId,
+		HeartbeatInterval: heartbeatInterval,
+		CustomHeaders:     customHeaders,
+	}
+}
+
+func NewStreamDataMessage(reqId string, msgId Option[string], body []byte) Message {
+	return Message{
+		Type:  StreamDataMessage,
+		ReqId: reqId,
+		MsgId: msgId,
+		Body:  Some(body),
 	}
 }
 
@@ -274,6 +346,7 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			RpcName:        procedure,
 			Type:           msgType.Value,
 			ContentType:    contentType,
+			ClientVersion:  clientVersion,
 			CustomHeaders:  customHeaders,
 			Body:           body,
 		}, nil
@@ -306,6 +379,23 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			ContentType:    contentType,
 			CustomHeaders:  customHeaders,
 			Error:          Some(err),
+		}, nil
+	case StreamStartMessage:
+		return Message{
+			ArriRpcVersion:    ARRI_VERSION,
+			Type:              msgType.Value,
+			ContentType:       contentType,
+			ReqId:             reqId.Value,
+			HeartbeatInterval: heartbeatInterval,
+			CustomHeaders:     customHeaders,
+		}, nil
+	case StreamDataMessage:
+		return Message{
+			ArriRpcVersion: ARRI_VERSION,
+			Type:           msgType.Value,
+			ReqId:          reqId.Value,
+			MsgId:          msgId,
+			Body:           body,
 		}, nil
 	default:
 		return Message{}, NewDecodeMessageCustomError(fmt.Errorf("Not implemented: " + string(msgType.Value)))
