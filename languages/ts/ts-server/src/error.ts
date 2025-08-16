@@ -12,7 +12,7 @@ export function defineError(
             options?.message ??
             ERROR_RESPONSE_DEFAULTS[code]?.message ??
             'Unknown Error',
-        data: options?.data,
+        body: { data: options?.data },
     });
 }
 
@@ -174,7 +174,7 @@ export const ArriErrorResponse = a.object({
     code: a.uint32(),
     message: a.string(),
     data: a.optional(a.any()),
-    stack: a.optional(a.array(a.string())),
+    trace: a.optional(a.array(a.string())),
 });
 export type ArriErrorResponse = a.infer<typeof ArriErrorResponse>;
 
@@ -185,22 +185,31 @@ export function getValidationErrorMessage(input: ValueError[]) {
 export function serializeArriErrorResponse(
     input: ArriErrorResponse,
     includeStack: boolean,
+    includeHeaders: boolean,
 ): string {
     let output = '{';
-    output += `"code":${input.code}`;
-    output += `,"message":${serializeString(input.message)}`;
+    let hasField = false;
+    if (includeHeaders) {
+        output += `"code":${input.code}`;
+        output += `,"message":${serializeString(input.message)}`;
+        hasField = true;
+    }
     if (input.data) {
+        if (hasField) output += ',';
         try {
-            output += `,"data":${JSON.stringify(input.data)}`;
+            output += `"data":${JSON.stringify(input.data)}`;
         } catch (err) {
             // eslint-disable-next-line no-console
             console.error(
                 `WARNING: Error serializing data in error response. ${err}.`,
             );
         }
+        hasField = true;
     }
-    if (includeStack && input.stack) {
-        output += `,"stack":${JSON.stringify(input.stack)}`;
+    if (includeStack && input.trace) {
+        if (hasField) output += ',';
+        output += `"trace":${JSON.stringify(input.trace)}`;
+        hasField = true;
     }
     output += '}';
     return output;

@@ -25,6 +25,7 @@ const okMessage: Message = {
     type: 'OK',
     reqId: '15',
     contentType: 'application/json',
+    heartbeatInterval: undefined,
     customHeaders: {
         foo: 'foo',
     },

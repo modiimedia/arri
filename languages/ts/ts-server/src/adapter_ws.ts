@@ -3,14 +3,13 @@ import assert from 'node:assert';
 import { HttpMethod, RpcDefinition } from '@arrirpc/codegen-utils';
 import {
     ArriError,
-    ClientMessage,
-    encodeServerMessage,
-    parseClientMessage,
-    ServerMessage,
-    StreamMessage,
+    encodeMessage,
+    parseMessage,
+    Message,
+    StreamCancelMessage,
 } from '@arrirpc/core';
 import { CompiledValidator, errorMessageFromErrors } from '@arrirpc/schema';
-import { defineHooks, Hooks, Message, Peer, WSError } from 'crossws';
+import * as ws from 'crossws';
 
 import {
     RpcValidators,
@@ -34,14 +33,14 @@ export interface WsOptions {
     connectionPath: string;
     connectionMethod?: HttpMethod;
     debug?: boolean;
-    onOpen?: (peer: Peer) => Promise<void> | void;
-    onUpgrade?: Hooks['upgrade'];
-    onError?: (peer: Peer, error: unknown) => Promise<void> | void;
+    onOpen?: (peer: ws.Peer) => Promise<void> | void;
+    onUpgrade?: ws.Hooks['upgrade'];
+    onError?: (peer: ws.Peer, error: unknown) => Promise<void> | void;
     onRequest?: (
-        peer: Peer,
+        peer: ws.Peer,
         context: RpcMiddlewareContext,
     ) => Promise<void> | void;
-    onClose?: Hooks['close'];
+    onClose?: ws.Hooks['close'];
 }
 
 type HandlerItem = RpcHandlerObj | EventStreamRpcHandlerObj;
@@ -69,12 +68,12 @@ export class WsAdapter implements TransportAdapter {
 
     // options passed to every adapter by the ArriApp
     private _globalOptions: TransportAdapterOptions | undefined;
-    private readonly _hooks: Hooks;
+    private readonly _hooks: ws.Hooks;
 
     private _handlers: Map<string, HandlerItem> = new Map();
 
     private _middlewares: RpcMiddleware[] = [];
-    private _peers: Map<string, Peer> = new Map();
+    private _peers: Map<string, ws.Peer> = new Map();
     private _peerOutputStreams: Record<
         string,
         Record<string, RpcOutputStreamConnection<any>>
@@ -98,7 +97,7 @@ export class WsAdapter implements TransportAdapter {
         );
         this._register = register;
         this._config = config;
-        this._hooks = defineHooks({
+        this._hooks = ws.defineHooks({
             upgrade: (req) => {
                 if (this._config.onUpgrade) {
                     return this._config.onUpgrade(req);
@@ -195,12 +194,12 @@ export class WsAdapter implements TransportAdapter {
         return this._globalOptions?.heartbeatInterval ?? 20000;
     }
 
-    private async _handleOpen(peer: Peer) {
+    private async _handleOpen(peer: ws.Peer) {
         const existing = this._peers.get(peer.id);
         const existingTimer = this._heartbeatTimers.get(peer.id);
         if (existing) existing.close(1012);
         if (existingTimer) clearInterval(existingTimer);
-        const connectedMsg = encodeServerMessage({
+        const connectedMsg = encodeMessage({
             type: 'CONNECTION_START',
             heartbeatInterval: this.heartbeatInterval,
         });
@@ -209,7 +208,7 @@ export class WsAdapter implements TransportAdapter {
         this._heartbeatTimers.set(
             peer.id,
             setInterval(() => {
-                const msg = encodeServerMessage({
+                const msg = encodeMessage({
                     type: 'HEARTBEAT',
                     heartbeatInterval: this.heartbeatInterval,
                 });
@@ -223,13 +222,13 @@ export class WsAdapter implements TransportAdapter {
         }
     }
 
-    private async _handleError(peer: Peer, error: WSError) {
+    private async _handleError(peer: ws.Peer, error: ws.WSError) {
         if (!this._config.onError) return;
         await this._config.onError(peer, error);
     }
 
     private async _handleClose(
-        peer: Peer,
+        peer: ws.Peer,
         details: { code?: number; reason?: string },
     ) {
         this._peers.delete(peer.id);
@@ -249,10 +248,10 @@ export class WsAdapter implements TransportAdapter {
         }
     }
 
-    private async _handleMessage(peer: Peer, message: Message) {
+    private async _handleMessage(peer: ws.Peer, message: ws.Message) {
         const reqStart = new Date();
-        const result = parseClientMessage(message.text());
-        if (!result.success) {
+        const result = parseMessage(message.text());
+        if (!result.ok) {
             await this._handleArriError(peer, {
                 reqId: undefined,
                 error: new ArriError({
@@ -277,15 +276,44 @@ export class WsAdapter implements TransportAdapter {
             return;
         }
         const msg = result.value;
+        if (
+            msg.type !== 'INVOCATION' &&
+            msg.type !== 'STREAM_DATA' &&
+            msg.type !== 'STREAM_CANCEL' &&
+            msg.type !== 'STREAM_END'
+        ) {
+            await this._handleArriError(peer, {
+                reqId: undefined,
+                error: new ArriError({
+                    code: 400,
+                    message: `Client cannot send a ${msg.type} message`,
+                }),
+                rpcName: '',
+                reqStart: reqStart,
+                transport: 'ws',
+                remoteAddress: peer.remoteAddress,
+                clientVersion: undefined,
+                headers: {},
+                setResponseHeader: function (
+                    _key: string,
+                    _val: string,
+                ): void {},
+                setResponseHeaders: function (
+                    _headers: Record<string, string>,
+                ): void {},
+            });
+            peer.close(1003, `Client cannot send a ${msg.type} message`);
+            return;
+        }
         const responseHeaders: Record<string, string> = {};
         const context: RpcMiddlewareContext = {
             reqId: msg.reqId,
-            rpcName: msg.rpcName,
+            rpcName: (msg as any).rpcName ?? '',
             reqStart: reqStart,
             remoteAddress: peer.remoteAddress,
             transport: this.transportId,
-            clientVersion: msg.clientVersion,
-            headers: result.value.customHeaders,
+            clientVersion: (msg as any).clientVersion,
+            headers: (msg as any).customHeaders ?? {},
             setResponseHeader: (key, val) => {
                 responseHeaders[key] = val;
             },
@@ -295,8 +323,12 @@ export class WsAdapter implements TransportAdapter {
                 }
             },
         };
-        if (msg.action) {
+        if (msg.type === 'STREAM_CANCEL') {
             return this._handleActionMessage(peer, context, msg);
+        }
+        if (msg.type !== 'INVOCATION') {
+            console.log('NOT YET SUPPORTED FOR CLIENT ', msg.type);
+            return;
         }
         try {
             await this._config.onRequest?.(peer, context);
@@ -316,7 +348,7 @@ export class WsAdapter implements TransportAdapter {
                     const err = new ArriError({
                         code: 400,
                         message: errorMessageFromErrors(result.errors),
-                        data: result.errors,
+                        body: { data: result.errors },
                     });
                     (context as any).error = err;
                     return this._handleArriError(peer, context as any);
@@ -335,7 +367,7 @@ export class WsAdapter implements TransportAdapter {
                     handler.validators?.output,
                     this._globalOptions?.heartbeatInterval ?? 20000,
                     this._globalOptions?.heartbeatEnabled ?? true,
-                    context.reqId,
+                    context.reqId ?? '',
                 );
                 if (!this._peerOutputStreams[peer.id])
                     this._peerOutputStreams[peer.id] = {};
@@ -352,26 +384,28 @@ export class WsAdapter implements TransportAdapter {
                     const err = new ArriError({
                         code: 500,
                         message: 'Error serializing response',
-                        data: payload.errors,
+                        body: { data: payload.errors },
                     });
                     (context as any).error = err;
                     return this._handleArriError(peer, context as any);
                 }
                 (context as any).output = output;
-                const serverMsg: ServerMessage = {
-                    type: 'SUCCESS',
+                const serverMsg: Message = {
+                    type: 'OK',
                     reqId: msg.reqId,
                     contentType: 'application/json',
                     customHeaders: responseHeaders,
+                    heartbeatInterval: undefined,
                     body: payload.value,
                 };
                 return this._sendMessage(peer, serverMsg, context as any);
             }
-            const serverMsg: ServerMessage = {
-                type: 'SUCCESS',
+            const serverMsg: Message = {
+                type: 'OK',
                 reqId: msg.reqId,
                 contentType: 'application/json',
                 customHeaders: responseHeaders,
+                heartbeatInterval: undefined,
                 body: undefined,
             };
             return this._sendMessage(peer, serverMsg, context as any);
@@ -382,34 +416,19 @@ export class WsAdapter implements TransportAdapter {
     }
 
     private async _handleActionMessage(
-        peer: Peer,
+        peer: ws.Peer,
         context: RpcMiddlewareContext,
-        message: ClientMessage,
+        message: StreamCancelMessage,
     ) {
         try {
-            switch (message.action) {
-                case 'CLOSE': {
-                    const esConnection =
-                        this._peerOutputStreams[peer.id]?.[context.reqId ?? ''];
-                    if (!esConnection) return;
-                    await esConnection.close({
-                        reason: 'closed by client',
-                        notifyClients: true,
-                    });
-                    return;
-                }
-                case undefined:
-                    throw new ArriError({
-                        code: 500,
-                        message: `Invalid state. Action should not be undefined when invoking _handleActionMessage()`,
-                    });
-                default:
-                    message.action satisfies never;
-                    throw new ArriError({
-                        code: 400,
-                        message: `Unsupported action ${message.action}`,
-                    });
-            }
+            const esConnection =
+                this._peerOutputStreams[peer.id]?.[context.reqId ?? ''];
+            if (!esConnection) return;
+            await esConnection.close({
+                reason: 'closed by client',
+                notifyClients: true,
+            });
+            return;
         } catch (err) {
             (context as any).error = err;
             this._handleArriError(peer, context as any);
@@ -417,15 +436,13 @@ export class WsAdapter implements TransportAdapter {
     }
 
     private async _sendMessage(
-        peer: Peer,
-        message: ServerMessage,
+        peer: ws.Peer,
+        message: Message,
         context: RpcPostHandlerContext<any, any>,
     ) {
         try {
             await this._globalOptions?.onBeforeResponse?.(context);
-            const payload = encodeServerMessage(message, {
-                includeErrorStackTrack: this._config.debug,
-            });
+            const payload = encodeMessage(message);
             peer.send(payload);
             await this._globalOptions?.onAfterResponse?.(context);
         } catch (err) {
@@ -434,7 +451,7 @@ export class WsAdapter implements TransportAdapter {
         }
     }
 
-    private async _handleArriError(peer: Peer, context: RpcOnErrorContext) {
+    private async _handleArriError(peer: ws.Peer, context: RpcOnErrorContext) {
         let err: ArriError;
         if (context.error instanceof ArriError) {
             err = context.error;
@@ -442,22 +459,34 @@ export class WsAdapter implements TransportAdapter {
             err = new ArriError({
                 code: 500,
                 message: context.error.message,
-                data: context.error,
-                stackList: context.error.stack?.split('\n'),
+                body: {
+                    data: context.error,
+                    trace: context.error.stack?.split('\n'),
+                },
             });
         } else {
             err = new ArriError({
                 code: 500,
                 message: `${context.error}`,
-                data: context.error,
+                body: {
+                    data: context.error,
+                },
             });
         }
-        const output: ServerMessage = {
-            type: 'FAILURE',
-            reqId: context.reqId,
+        const output: Message = {
+            type: 'ERROR',
+            reqId: context.reqId ?? '',
             contentType: 'application/json',
             customHeaders: context.headers as any,
-            error: err,
+            errorCode: err.code,
+            errorMessage: err.message,
+            body:
+                (this._config.debug && err.trace) || err.data
+                    ? JSON.stringify({
+                          data: err.data,
+                          trace: this._config.debug ? err.trace : undefined,
+                      })
+                    : undefined,
         };
         try {
             await this._config.onError?.(peer, err);
@@ -465,21 +494,17 @@ export class WsAdapter implements TransportAdapter {
         } catch (_) {
             // do nothing
         }
-        peer.send(
-            encodeServerMessage(output, {
-                includeErrorStackTrack: this._config.debug,
-            }),
-        );
+        peer.send(encodeMessage(output));
     }
 }
 
 export class WsStream implements StreamDispatcher<string> {
-    peer: Peer;
+    peer: ws.Peer;
     private _isActive = false;
     private _isPaused = false;
-    private _unsentMessages: StreamMessage<string>[] = [];
+    private _unsentMessages: Message<string>[] = [];
 
-    constructor(peer: Peer) {
+    constructor(peer: ws.Peer) {
         this.peer = peer;
     }
     lastMessageId?: string | undefined;
@@ -510,16 +535,16 @@ export class WsStream implements StreamDispatcher<string> {
         }
         this._isActive = true;
     }
-    push(msg: StreamMessage): Promise<void> | void;
-    push(msgs: StreamMessage[]): Promise<void> | void;
-    push(msg: StreamMessage | StreamMessage[]): Promise<void> | void {
+    push(msg: Message): Promise<void> | void;
+    push(msgs: Message[]): Promise<void> | void;
+    push(msg: Message | Message[]): Promise<void> | void {
         if (Array.isArray(msg)) {
             if (this.isPaused || !this.isActive) {
                 this._unsentMessages.concat(msg);
                 return;
             }
             for (const m of msg) {
-                const encoded = encodeServerMessage(m);
+                const encoded = encodeMessage(m);
                 this.peer.send(encoded);
             }
             return;
@@ -528,7 +553,7 @@ export class WsStream implements StreamDispatcher<string> {
             this._unsentMessages.push(msg);
             return;
         }
-        const encoded = encodeServerMessage(msg);
+        const encoded = encodeMessage(msg);
         this.peer.send(encoded);
     }
 

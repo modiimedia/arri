@@ -98,23 +98,24 @@ export class HttpDispatcher implements RpcDispatcher {
             let arriError: ArriError;
             if (err instanceof ArriError) {
                 arriError = err;
-            } else if (err instanceof FetchError && isArriErrorBase(err.data)) {
-                arriError = new ArriError(err.data);
             } else if (err instanceof FetchError) {
+                const code = Number.parseInt(
+                    err.response?.headers.get('err-code') ?? '0',
+                );
+                const message =
+                    err.response?.headers.get('err-msg') ?? 'Unknown error';
                 arriError = new ArriError({
-                    code: err.statusCode ?? 500,
-                    message:
-                        err.statusMessage ??
-                        err.message ??
-                        `Error connecting to ${url}`,
-                    data: err.data,
-                    stackList: err.stack?.split('\n'),
+                    code: code,
+                    message: message,
+                    body:
+                        err.response?._data ??
+                        (await err.response?.text()) ??
+                        err.data,
                 });
             } else {
                 arriError = new ArriError({
                     code: 0,
                     message: err instanceof Error ? err.message : `${err}`,
-                    data: err,
                 });
             }
             const maxRetryCount =
@@ -237,13 +238,10 @@ export class HttpDispatcher implements RpcDispatcher {
                 this.options.onError?.(req, context.error);
                 if (!hooks.onError) return;
                 try {
-                    const rawData = await context.response.json();
-                    const arriError = ArriError.fromJSON(rawData);
-                    if (arriError.success) {
-                        hooks.onError(arriError.value);
-                    } else {
-                        hooks.onError(rawData);
-                    }
+                    const arriError = await ArriError.fromHTTPResponse(
+                        context.response,
+                    );
+                    hooks.onError(arriError);
                 } catch (err) {
                     hooks.onError(err);
                 }

@@ -55,6 +55,7 @@ export interface OkMessage<T = string> {
     reqId: string;
     customHeaders: Record<string, string>;
     contentType: ContentType;
+    heartbeatInterval: number | undefined;
     body: T | undefined;
 }
 export interface ErrorMessage<T = string> {
@@ -264,6 +265,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                 reqId: reqId,
                 customHeaders: customHeaders,
                 contentType: contentType,
+                heartbeatInterval: heartbeatInterval,
                 body: body,
             };
             return Ok(msg);
@@ -377,6 +379,9 @@ export function encodeMessage(msg: Message<string>): string {
             output += `ARRIRPC/${ARRI_VERSION} OK\n`;
             output += `content-type: ${msg.contentType}\n`;
             output += `req-id: ${msg.reqId}\n`;
+            if (msg.heartbeatInterval) {
+                output += `heartbeat-interval: ${msg.heartbeatInterval}\n`;
+            }
             for (const [key, value] of Object.entries(msg.customHeaders)) {
                 output += `${key}: ${value}\n`;
             }

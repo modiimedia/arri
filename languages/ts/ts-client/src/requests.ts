@@ -7,7 +7,7 @@ export interface RpcRequestValidator<TParams, TResponse> {
 
 export interface RpcRawRequest {
     procedure: string;
-    reqId?: string;
+    reqId: string;
     path: string;
     method?: string;
     clientVersion?: string;
@@ -17,7 +17,7 @@ export interface RpcRawRequest {
 
 export interface RpcRawResponse {
     procedure: string;
-    reqId?: string;
+    reqId: string;
     path: string;
     method?: string;
     success: boolean;
@@ -30,132 +30,6 @@ export interface RpcRequest<TParams> extends Omit<RpcRawRequest, 'data'> {
 
 export interface RpcResponse<TResponse> extends Omit<RpcRawResponse, 'data'> {
     data: TResponse;
-}
-
-export async function encodeRequest<TParams>(
-    req: RpcRequest<TParams>,
-    paramEncoder: (input: TParams) => string,
-) {
-    if (!req.reqId) {
-        throw new Error(`reqId is required for transporting over websockets`);
-    }
-    let result = `procedure: ${req.procedure}\npath: ${req.path}\nclient-version: ${req.clientVersion ?? ''}\nreq-id: ${req.reqId ?? ''}`;
-    if (typeof req.customHeaders !== 'undefined') {
-        const headers = await getHeaders(req.customHeaders);
-        for (const [key, value] of Object.entries(headers)) {
-            result += `\n${key}: ${value}`;
-        }
-    }
-    result += '\n\n';
-    if (req.data) {
-        result += paramEncoder(req.data);
-    }
-    return result;
-}
-
-export function decodeRequest(input: string): RpcRawResponse {
-    let reqId: string | undefined;
-    let procedure: string = '';
-    let path: string = '';
-    let success: boolean = false;
-    let method: string | undefined;
-
-    let previousChar = '';
-    let currentLine = '';
-    let bodyIndex = -1;
-
-    function handleParseLine() {
-        const parseResult = parseLine(currentLine);
-        switch (parseResult.type) {
-            case 'invalid':
-                break;
-            case 'method':
-                method = parseResult.value;
-                break;
-            case 'path':
-                path = parseResult.value;
-                break;
-            case 'procedure':
-                procedure = parseResult.value;
-                break;
-            case 'reqId':
-                reqId = parseResult.value;
-                break;
-            case 'success':
-                success =
-                    parseResult.value === 'true' ||
-                    parseResult.value === 'TRUE';
-                break;
-            default:
-                parseResult satisfies never;
-                break;
-        }
-    }
-    for (let i = 0; i < input.length; i++) {
-        const char = input[i]!;
-        if (char === '\n') {
-            handleParseLine();
-            if (previousChar === '\n') {
-                bodyIndex = i + 1;
-                break;
-            }
-            previousChar = char;
-            continue;
-        }
-        currentLine += char;
-        previousChar = char;
-    }
-    const result: RpcRawResponse = {
-        procedure: procedure,
-        reqId: reqId,
-        path: path,
-        method: method,
-        success: success,
-    };
-    if (!input[bodyIndex]) return result;
-    result.data = input.substring(bodyIndex);
-    return result;
-}
-
-function parseLine(input: string):
-    | {
-          type: 'procedure' | 'reqId' | 'path' | 'method' | 'success';
-          value: string;
-      }
-    | { type: 'invalid' } {
-    if (input.startsWith('procedure:')) {
-        return {
-            type: 'procedure',
-            value: input.substring(10).trim(),
-        };
-    }
-    if (input.startsWith('req-id:')) {
-        return {
-            type: 'reqId',
-            value: input.substring(7).trim(),
-        };
-    }
-    if (input.startsWith('path:')) {
-        return {
-            type: 'path',
-            value: input.substring(5).trim(),
-        };
-    }
-    if (input.startsWith('method:')) {
-        return {
-            type: 'method',
-            value: input.substring(7).trim(),
-        };
-    }
-    if (input.startsWith('success:')) {
-        return {
-            type: 'success',
-            value: input.substring(8).trim(),
-        };
-    }
-    return {
-        type: 'invalid',
-    };
 }
 
 export interface ArriModelValidator<T> {

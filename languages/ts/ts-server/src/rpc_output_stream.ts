@@ -1,5 +1,5 @@
 import { RpcHttpMethod } from '@arrirpc/codegen-utils';
-import { StreamMessage } from '@arrirpc/core';
+import { Message } from '@arrirpc/core';
 import {
     a,
     ADiscriminatorSchema,
@@ -65,9 +65,9 @@ export interface StreamDispatcher<T> {
     start(): void;
     pause(): void;
     resume(): void | Promise<void>;
-    push(msg: StreamMessage<T>): Promise<void> | void;
-    push(msgs: StreamMessage<T>[]): Promise<void> | void;
-    push(msg: StreamMessage<T> | StreamMessage<T>[]): Promise<void> | void;
+    push(msg: Message<T>): Promise<void> | void;
+    push(msgs: Message<T>[]): Promise<void> | void;
+    push(msg: Message<T> | Message<T>[]): Promise<void> | void;
 
     close(): void;
     onClosed(cb: () => void): void;
@@ -82,7 +82,7 @@ export type OutputStreamPushResult =
 export class RpcOutputStreamConnection<TData> {
     readonly dispatcher: StreamDispatcher<string>;
 
-    private readonly _reqId: string | undefined;
+    private readonly _reqId: string;
     private readonly _validator: CompiledValidator<ASchema<TData>>;
     private _heartbeatInterval: any | undefined = undefined;
     private readonly _heartbeatIntervalMs: number;
@@ -93,7 +93,7 @@ export class RpcOutputStreamConnection<TData> {
         validator: CompiledValidator<ASchema<TData>> | undefined,
         heartbeatInterval: number,
         heartbeatEnabled: boolean,
-        reqId: string | undefined,
+        reqId: string,
     ) {
         this.dispatcher = dispatcher;
         this._validator = validator ?? a.compile(a.any());
@@ -137,11 +137,12 @@ export class RpcOutputStreamConnection<TData> {
     start() {
         void this.dispatcher.start();
         this.dispatcher.push({
-            type: 'STREAM_START',
+            type: 'OK',
             reqId: this._reqId,
             heartbeatInterval: this._heartbeatIntervalMs,
             contentType: 'application/json',
             customHeaders: this._customHeaders,
+            body: undefined,
         });
         if (this._heartbeatEnabled) {
             this._heartbeatInterval = setInterval(async () => {
@@ -158,7 +159,7 @@ export class RpcOutputStreamConnection<TData> {
     async push(data: TData | TData[], msgId?: string) {
         if (Array.isArray(data)) {
             const results: OutputStreamPushResult[] = [];
-            const events: StreamMessage<string>[] = [];
+            const events: Message<string>[] = [];
             for (const item of data) {
                 if (!this._validator.validate(item)) {
                     const errors = this._validator.errors(item);

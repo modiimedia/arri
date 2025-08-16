@@ -1,12 +1,10 @@
 import {
     ArriError,
-    ClientMessage,
-    encodeClientMessage,
-    parseServerMessage,
-    ServerFailureMessage,
-    ServerMessage,
-    ServerSuccessMessage,
-    StreamMessage,
+    encodeMessage,
+    InvocationMessage,
+    Message,
+    parseMessage,
+    StreamCancelMessage,
 } from '@arrirpc/core';
 import { HttpMethod } from 'event-source-plus';
 import { IncomingMessage } from 'http';
@@ -46,12 +44,7 @@ export class WsDispatcher implements RpcDispatcher {
     private connection: ws.connection | undefined;
     private reqCount = 0;
     private options: WsDispatcherOptions;
-    private responseHandlers: Map<
-        string,
-        (
-            msg: ServerSuccessMessage | ServerFailureMessage | StreamMessage,
-        ) => any
-    > = new Map();
+    private responseHandlers: Map<string, (msg: Message) => any> = new Map();
     private eventSources: Map<string, WsEventSource<any, any>> = new Map();
 
     private heartbeatTimeout: any | undefined;
@@ -139,11 +132,11 @@ export class WsDispatcher implements RpcDispatcher {
                     this.setupConnection({});
                 });
                 connection.on('message', (msg) => {
-                    let parsedMsg: ServerMessage | undefined;
+                    let parsedMsg: Message | undefined;
                     switch (msg.type) {
                         case 'utf8': {
-                            const result = parseServerMessage(msg.utf8Data);
-                            if (!result.success) {
+                            const result = parseMessage(msg.utf8Data);
+                            if (!result.ok) {
                                 // eslint-disable-next-line no-console
                                 console.warn(
                                     `Error parsing response from server: ${result.error}`,
@@ -165,9 +158,9 @@ export class WsDispatcher implements RpcDispatcher {
                         return;
                     }
                     switch (parsedMsg.type) {
-                        case 'SUCCESS':
-                        case 'FAILURE':
-                        case 'STREAM_START':
+                        case 'OK':
+                        case 'ERROR':
+                        case 'STREAM_CANCEL':
                         case 'STREAM_END':
                         case 'STREAM_DATA': {
                             this.resetHeartbeatTimeout();
@@ -269,13 +262,13 @@ export class WsDispatcher implements RpcDispatcher {
         await this.setupConnection({
             prefetchedHeaders: headers,
         });
-        const msgPayload = encodeClientMessage({
+        const msgPayload = encodeMessage({
+            type: 'INVOCATION',
             rpcName: req.procedure,
             reqId: reqId,
             contentType: 'application/json',
             customHeaders: headers,
             body: validator.params.toJsonString(req.data),
-            action: undefined,
             clientVersion: req.clientVersion,
             lastMsgId: undefined,
         });
@@ -310,17 +303,17 @@ export class WsDispatcher implements RpcDispatcher {
             this.responseHandlers.set(reqId, (msg) => {
                 responseReceived = true;
                 this.responseHandlers.delete(reqId);
-                if (msg.type !== 'SUCCESS') {
-                    if (msg.type !== 'FAILURE') {
+                if (msg.type !== 'OK') {
+                    if (msg.type !== 'ERROR') {
                         const err = new ArriError({
                             code: 0,
-                            message: `Unexpected message type received from server. Expected either "SUCCESS" or "FAILURE". Got "${msg.type}".`,
+                            message: `Unexpected message type received from server. Expected either "OK" or "ERROR". Got "${msg.type}".`,
                         });
                         onErr?.(req, err);
                         rej(err);
                         return;
                     }
-                    const err = msg.error;
+                    const err = ArriError.fromMessage(msg);
                     onErr?.(req, err);
                     rej(err);
                     return;
@@ -435,26 +428,26 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
             const serialValue = this.validator.params.toJsonString(
                 this.req.data,
             );
-            const msg: ClientMessage = {
+            const msg: InvocationMessage = {
+                type: 'INVOCATION',
                 rpcName: this.req.procedure,
                 reqId: this.req.reqId,
-                action: undefined,
                 contentType: 'application/json',
                 clientVersion: this.req.clientVersion,
                 lastMsgId: this.lastMsgId,
                 customHeaders: await getHeaders(this.req.customHeaders),
                 body: serialValue,
             };
-            connection.send(encodeClientMessage(msg));
+            connection.send(encodeMessage(msg));
         } catch (err) {
             this.hooks.onError?.(err);
             this.globalOnError?.(this.req, err);
         }
     }
 
-    async handleMessage(msg: ServerMessage) {
+    async handleMessage(msg: Message) {
         switch (msg.type) {
-            case 'STREAM_START':
+            case 'OK':
                 this.hooks.onOpen?.();
                 return;
             case 'STREAM_DATA': {
@@ -468,14 +461,19 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
             case 'STREAM_END':
                 this.handleClose(false);
                 return;
-            case 'FAILURE':
-                this.hooks.onError?.(msg.error);
-                this.globalOnError?.(this.req, msg.error);
+            case 'ERROR':
+                const error = ArriError.fromMessage(msg);
+                this.hooks.onError?.(error);
+                this.globalOnError?.(this.req, error);
                 this.init();
                 return;
             case 'CONNECTION_START':
             case 'HEARTBEAT':
-            case 'SUCCESS':
+            case 'INVOCATION':
+            case 'STREAM_CANCEL':
+                return;
+            default:
+                msg satisfies never;
                 return;
         }
     }
@@ -486,19 +484,14 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
         this.cb?.();
     }
 
-    async abort(): Promise<void> {
+    async abort(reason?: string): Promise<void> {
         const connection = await this.getConnection();
-        const msg: ClientMessage = {
-            rpcName: this.req.procedure,
+        const msg: StreamCancelMessage = {
+            type: 'STREAM_CANCEL',
             reqId: this.req.reqId,
-            action: 'CLOSE',
-            contentType: 'application/json',
-            clientVersion: this.req.clientVersion,
-            lastMsgId: undefined,
-            customHeaders: {},
-            body: undefined,
+            reason: reason,
         };
-        const encodedMsg = encodeClientMessage(msg);
+        const encodedMsg = encodeMessage(msg);
         connection.send(encodedMsg);
         this.hooks.onClose?.();
         this.cb?.();

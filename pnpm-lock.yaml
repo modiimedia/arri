@@ -333,6 +333,9 @@ importers:
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
+      ulidx:
+        specifier: ^2.4.1
+        version: 2.4.1
     devDependencies:
       bun-types:
         specifier: ^1.2.18
@@ -2703,6 +2706,9 @@ packages:
   knitwork@1.2.0:
     resolution: {integrity: sha512-xYSH7AvuQ6nXkq42x0v5S8/Iry+cfulBz/DJQzhIyESdLD7425jXsPy4vn5cCXU+HhRN2kVw51Vd1K6/By4BQg==}
 
+  layerr@3.0.0:
+    resolution: {integrity: sha512-tv754Ki2dXpPVApOrjTyRo4/QegVb9eVFq4mjqp4+NM5NaX7syQvN5BBNfV/ZpAHCEHV24XdUVrBAoka4jt3pA==}
+
   lazy-ass@1.6.0:
     resolution: {integrity: sha512-cc8oEVoctTvsFZ/Oje/kGnHbpWHYBe8IAJe4C0QNc3t8uM/0Y8+erSz/7Y1ALuXTEZTMvxXwO6YbX1ey3ujiZw==}
     engines: {node: '> 0.8'}
@@ -3792,6 +3798,10 @@ packages:
 
   ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
+
+  ulidx@2.4.1:
+    resolution: {integrity: sha512-xY7c8LPyzvhvew0Fn+Ek3wBC9STZAuDI/Y5andCKi9AX6/jvfaX45PhsDX8oxgPL0YFp0Jhr8qWMbS/p9375Xg==}
+    engines: {node: '>=16'}
 
   unbuild@3.5.0:
     resolution: {integrity: sha512-DPFttsiADnHRb/K+yJ9r9jdn6JyXlsmdT0S12VFC14DFSJD+cxBnHq+v0INmqqPVPxOoUjvJFYUVIb02rWnVeA==}
@@ -6287,6 +6297,8 @@ snapshots:
 
   knitwork@1.2.0: {}
 
+  layerr@3.0.0: {}
+
   lazy-ass@1.6.0: {}
 
   levn@0.4.1:
@@ -7359,6 +7371,10 @@ snapshots:
       typescript: 5.8.3
 
   ufo@1.6.1: {}
+
+  ulidx@2.4.1:
+    dependencies:
+      layerr: 3.0.0
 
   unbuild@3.5.0(typescript@5.8.3):
     dependencies:

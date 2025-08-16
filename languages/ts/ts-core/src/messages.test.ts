@@ -106,6 +106,7 @@ foo: foo
         customHeaders: {
             foo: 'foo',
         },
+        heartbeatInterval: undefined,
         body: `{"message":"hello world"}`,
     };
     test('encoding', () => {

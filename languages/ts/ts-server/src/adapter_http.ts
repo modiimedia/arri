@@ -5,8 +5,9 @@ import {
     RpcDefinition,
     RpcHttpMethod,
 } from '@arrirpc/codegen-utils';
-import { ArriError, StreamMessage } from '@arrirpc/core';
+import { ArriError, encodeMessageAsSseMessage, Message } from '@arrirpc/core';
 import { CompiledValidator } from '@arrirpc/schema';
+import { ulid } from 'ulidx';
 import * as listhen from '@joshmossas/listhen';
 import * as ws from 'crossws';
 import * as h3 from 'h3';
@@ -244,7 +245,7 @@ export class HttpAdapter
                     throw new ArriError({
                         code: 400,
                         message: getValidationErrorMessage(parsedResult.errors),
-                        data: parsedResult.errors,
+                        body: { data: parsedResult.errors },
                     });
                 }
                 return parsedResult.value;
@@ -266,7 +267,7 @@ export class HttpAdapter
                     throw new ArriError({
                         code: 400,
                         message: getValidationErrorMessage(parsedResult.errors),
-                        data: parsedResult.errors,
+                        body: { data: parsedResult.errors },
                     });
                 }
                 return parsedResult.value;
@@ -330,7 +331,7 @@ export class HttpAdapter
                         throw new ArriError({
                             code: 500,
                             message: 'Error serializing response',
-                            data: serialResult.errors,
+                            body: { data: serialResult.errors },
                         });
                     }
                     await h3.send(
@@ -390,9 +391,10 @@ export class HttpAdapter
                 h3.setResponseStatus(event, 200);
                 return h3.send(event, 'ok');
             }
+            const reqId = h3.getHeader(event, 'req-id') ?? ulid();
             const context: RpcMiddlewareContext = {
                 rpcName: name,
-                reqId: h3.getHeader(event, 'req-id'),
+                reqId: reqId,
                 reqStart: event.context.reqStart ?? new Date(),
                 remoteAddress: h3.getRequestIP(event, {
                     xForwardedFor: this._trustXForwardedFor,
@@ -426,7 +428,7 @@ export class HttpAdapter
                     validators.output,
                     this._options?.heartbeatInterval ?? 20000,
                     this._options?.heartbeatEnabled ?? true,
-                    undefined,
+                    reqId,
                 );
                 (context as any).stream = stream;
                 await handler(context as any);
@@ -574,6 +576,10 @@ export class HttpAdapter
             h3.setResponseHeader(event, 'Content-Type', 'application/json');
             if (context.error instanceof ArriError) {
                 h3.setResponseStatus(event, context.error.code);
+                h3.setHeaders(event, {
+                    'err-code': context.error.code,
+                    'err-msg': context.error.message,
+                });
                 await h3.send(
                     event,
                     serializeArriErrorResponse(
@@ -581,9 +587,10 @@ export class HttpAdapter
                             code: context.error.code,
                             message: context.error.message,
                             data: context.error.data,
-                            stack: context.error.stackList,
+                            trace: context.error.trace,
                         },
                         this._debug,
+                        true,
                     ),
                 );
                 return;
@@ -599,9 +606,10 @@ export class HttpAdapter
                                 context.error.statusMessage ??
                                 context.error.message,
                             data: context.error.data,
-                            stack: context.error.stack?.split('\n'),
+                            trace: context.error.stack?.split('\n'),
                         },
                         this._debug,
+                        true,
                     ),
                 );
                 return;
@@ -617,12 +625,13 @@ export class HttpAdapter
                                 ? context.error.message
                                 : `${context.error}`,
                         data: context.error,
-                        stack:
+                        trace:
                             context.error instanceof Error
                                 ? context.error.stack?.split('\n')
                                 : undefined,
                     },
                     this._debug,
+                    true,
                 ),
             );
             return;
@@ -637,9 +646,10 @@ export class HttpAdapter
                             code: err.code,
                             message: err.message,
                             data: err.data,
-                            stack: err.stackList,
+                            trace: err.trace,
                         },
                         this._debug,
+                        true,
                     ),
                 );
                 return;
@@ -653,9 +663,10 @@ export class HttpAdapter
                             code: err.statusCode,
                             message: err.statusMessage ?? err.message,
                             data: err.data,
-                            stack: err.stack?.split('\n'),
+                            trace: err.stack?.split('\n'),
                         },
                         this._debug,
+                        true,
                     ),
                 );
                 return;
@@ -668,12 +679,13 @@ export class HttpAdapter
                         code: 500,
                         message: err instanceof Error ? err.message : `${err}`,
                         data: err,
-                        stack:
+                        trace:
                             err instanceof Error
                                 ? err.stack?.split('\n')
                                 : undefined,
                     },
                     this._debug,
+                    true,
                 ),
             );
             return;
@@ -756,7 +768,7 @@ class HttpEventStreamDispatcher implements StreamDispatcher<string> {
         });
     }
 
-    private _formatMessage(msg: StreamMessage<string>): h3.EventStreamMessage {
+    private _formatMessage(msg: Message<string>): h3.EventStreamMessage {
         switch (msg.type) {
             case 'STREAM_END':
                 return {
@@ -768,10 +780,22 @@ class HttpEventStreamDispatcher implements StreamDispatcher<string> {
                     event: 'message',
                     data: msg.body ?? '',
                 } as const;
-            case 'STREAM_START':
+            case 'OK':
                 return { event: 'start', data: '' } as const;
             case 'HEARTBEAT':
                 return { event: 'heartbeat', data: '' } as const;
+            case 'ERROR':
+                return {
+                    event: 'error',
+                    data: JSON.stringify({
+                        code: msg.errorCode,
+                        message: msg.errorMessage,
+                    }),
+                };
+            case 'CONNECTION_START':
+            case 'INVOCATION':
+            case 'STREAM_CANCEL':
+                throw new Error('Unsupported sse msg');
             default:
                 msg satisfies never;
                 throw new Error('Invalid msg');
@@ -782,11 +806,9 @@ class HttpEventStreamDispatcher implements StreamDispatcher<string> {
         this.eventStream.send();
         this._isActive = true;
     }
-    push(msg: StreamMessage<string>): Promise<void> | void;
-    push(msgs: StreamMessage<string>[]): Promise<void> | void;
-    push(
-        msg: StreamMessage<string> | StreamMessage<string>[],
-    ): Promise<void> | void {
+    push(msg: Message<string>): Promise<void> | void;
+    push(msgs: Message<string>[]): Promise<void> | void;
+    push(msg: Message<string> | Message<string>[]): Promise<void> | void {
         if (Array.isArray(msg)) {
             return this.eventStream.push(
                 msg.map((m) => this._formatMessage(m)),

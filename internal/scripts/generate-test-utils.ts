@@ -484,6 +484,7 @@ async function main() {
             reqId: '12345',
             contentType: 'application/json',
             customHeaders: {},
+            heartbeatInterval: undefined,
             body: `{"message":"hello world"}`,
         }),
     });
@@ -494,6 +495,7 @@ async function main() {
             type: 'OK',
             reqId: '54321',
             contentType: 'application/json',
+            heartbeatInterval: undefined,
             customHeaders: {
                 foo: 'foo',
             },

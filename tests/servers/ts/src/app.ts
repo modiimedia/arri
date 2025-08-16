@@ -4,7 +4,6 @@ import * as h3 from '@arrirpc/server/http';
 
 import { registerHeartbeatTestRouteH3 } from './heartbeat-tests';
 import { manualTestService } from './routes/other';
-import { Peer } from '@arrirpc/server/ws';
 
 const app = new ArriApp({
     rpcRoutePrefix: '/rpcs',

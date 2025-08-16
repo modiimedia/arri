@@ -1,3 +1,5 @@
+import { ErrorMessage, Message } from './messages';
+
 export interface ArriErrorBase {
     code: number;
     message: string;
@@ -27,12 +29,16 @@ export function isArriErrorBase(input: unknown): input is ArriErrorBase {
 
 export class ArriError extends Error implements ArriErrorBase {
     code: number;
-    private body?: string;
+    private body?: string | { data?: any; trace?: string[] };
     private hasParsedBody = false;
     private rawData?: any;
     private rawTrace?: string[];
 
-    constructor(config: { code: number; message: string; body?: string }) {
+    constructor(config: {
+        code: number;
+        message: string;
+        body?: string | { data?: any; trace?: string[] };
+    }) {
         super(config.message);
         this.code = config.code;
         this.body = config.body;
@@ -41,6 +47,12 @@ export class ArriError extends Error implements ArriErrorBase {
     private parseBody() {
         if (!this.body) {
             this.hasParsedBody = true;
+            return;
+        }
+        if (typeof this.body === 'object' && this.body) {
+            this.hasParsedBody = true;
+            this.rawData = this.body.data;
+            this.rawTrace = this.body.trace;
             return;
         }
         try {
@@ -72,7 +84,15 @@ export class ArriError extends Error implements ArriErrorBase {
 
     get trace(): string[] | undefined {
         if (!this.hasParsedBody) this.parseBody();
-        return this.rawTrace;
+        return this.rawTrace ?? this.stack?.split('\n');
+    }
+
+    static fromMessage(input: ErrorMessage): ArriError {
+        return new ArriError({
+            code: input.errorCode,
+            message: input.errorMessage,
+            body: input.body,
+        });
     }
 
     static async fromHTTPResponse(input: Response): Promise<ArriError> {
