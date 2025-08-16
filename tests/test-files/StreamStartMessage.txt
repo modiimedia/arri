@@ -1,6 +1,0 @@
-ARRIRPC/0.0.8 STREAM_START
-content-type: application/json
-req-id: 1515
-heartbeat-interval: 255
-foo: foo
-

@@ -2,11 +2,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import path from 'pathe';
 import prettier from 'prettier';
 
-import {
-    ArriError,
-    encodeClientMessage,
-    encodeServerMessage,
-} from '../../languages/ts/ts-core/src/_index';
+import { encodeMessage } from '../../languages/ts/ts-core/src/_index';
 import { a } from '../../languages/ts/ts-schema/src/_index';
 import { createAppDefinition } from '../../tooling/codegen-utils/src';
 
@@ -440,8 +436,9 @@ async function main() {
     });
 
     files.push({
-        filename: 'ClientMessage_WithBody.txt',
-        content: encodeClientMessage({
+        filename: 'InvocationMessage_WithBody.txt',
+        content: encodeMessage({
+            type: 'INVOCATION',
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
@@ -450,14 +447,14 @@ async function main() {
             reqId: '12345',
             clientVersion: '1.2.5',
             body: `{"message":"hello world"}`,
-            action: undefined,
             lastMsgId: undefined,
         }),
     });
 
     files.push({
-        filename: 'ClientMessage_WithoutBody.txt',
-        content: encodeClientMessage({
+        filename: 'InvocationMessage_WithoutBody.txt',
+        content: encodeMessage({
+            type: 'INVOCATION',
             rpcName: 'foo.fooFoo',
             contentType: 'application/json',
             customHeaders: {
@@ -466,43 +463,36 @@ async function main() {
             },
             reqId: '54321',
             body: undefined,
-            action: undefined,
             clientVersion: undefined,
             lastMsgId: undefined,
         }),
     });
 
     files.push({
-        filename: 'ClientActionMessage.txt',
-        content: encodeClientMessage({
-            rpcName: 'foo.fooFoo',
-            contentType: 'application/json',
-            action: 'CLOSE',
-            customHeaders: {},
+        filename: 'CancelStreamMessage.txt',
+        content: encodeMessage({
+            type: 'STREAM_CANCEL',
             reqId: '54321',
-            clientVersion: undefined,
-            lastMsgId: undefined,
-            body: undefined,
+            reason: 'no longer needed',
         }),
     });
 
     files.push({
-        filename: 'ServerSuccessMessage_WithBody.txt',
-        content: encodeServerMessage({
-            type: 'SUCCESS',
+        filename: 'OkMessage_WithBody.txt',
+        content: encodeMessage({
+            type: 'OK',
             reqId: '12345',
             contentType: 'application/json',
             customHeaders: {},
-            path: '/12345/12345',
             body: `{"message":"hello world"}`,
         }),
     });
 
     files.push({
-        filename: 'ServerSuccessMessage_WithoutBody.txt',
-        content: encodeServerMessage({
-            type: 'SUCCESS',
-            reqId: undefined,
+        filename: 'OkMessage_WithoutBody.txt',
+        content: encodeMessage({
+            type: 'OK',
+            reqId: '54321',
             contentType: 'application/json',
             customHeaders: {
                 foo: 'foo',
@@ -512,66 +502,69 @@ async function main() {
     });
 
     files.push({
-        filename: 'ServerFailureMessage.txt',
-        content: encodeServerMessage({
-            type: 'FAILURE',
+        filename: 'ErrorMessage_WithoutBody.txt',
+        content: encodeMessage({
+            type: 'ERROR',
             contentType: 'application/json',
             reqId: '12345',
             customHeaders: {
                 foo: 'foo',
             },
-            error: new ArriError({ code: 54321, message: 'This is an error' }),
+            errorCode: 54321,
+            errorMessage: 'This is an error',
+            body: undefined,
+        }),
+    });
+    files.push({
+        filename: 'ErrorMessage_WithBody.txt',
+        content: encodeMessage({
+            type: 'ERROR',
+            contentType: 'application/json',
+            reqId: '12345',
+            customHeaders: {
+                foo: 'foo',
+            },
+            errorCode: 54321,
+            errorMessage: 'This is an error',
+            body: '{"data":[],"trace":["foo","bar","baz"]}',
         }),
     });
 
     files.push({
-        filename: 'ServerHeartbeatMessage_WithInterval.txt',
-        content: encodeServerMessage({
+        filename: 'HeartbeatMessage_WithInterval.txt',
+        content: encodeMessage({
             type: 'HEARTBEAT',
             heartbeatInterval: 155,
         }),
     });
 
     files.push({
-        filename: 'ServerHeartbeatMessage_WithoutInterval.txt',
-        content: encodeServerMessage({
+        filename: 'HeartbeatMessage_WithoutInterval.txt',
+        content: encodeMessage({
             type: 'HEARTBEAT',
             heartbeatInterval: undefined,
         }),
     });
 
     files.push({
-        filename: 'ServerConnectionStartMessage_WithInterval.txt',
-        content: encodeServerMessage({
+        filename: 'ConnectionStartMessage_WithInterval.txt',
+        content: encodeMessage({
             type: 'CONNECTION_START',
             heartbeatInterval: 255,
         }),
     });
 
     files.push({
-        filename: 'ServerConnectionStartMessage_WithoutInterval.txt',
-        content: encodeServerMessage({
+        filename: 'ConnectionStartMessage_WithoutInterval.txt',
+        content: encodeMessage({
             type: 'CONNECTION_START',
             heartbeatInterval: undefined,
         }),
     });
 
     files.push({
-        filename: 'StreamStartMessage.txt',
-        content: encodeServerMessage({
-            type: 'STREAM_START',
-            reqId: '1515',
-            heartbeatInterval: 255,
-            contentType: 'application/json',
-            customHeaders: {
-                foo: 'foo',
-            },
-        }),
-    });
-
-    files.push({
         filename: 'StreamDataMessage.txt',
-        content: encodeServerMessage({
+        content: encodeMessage({
             type: 'STREAM_DATA',
             reqId: '1515',
             msgId: '1',
@@ -581,7 +574,7 @@ async function main() {
 
     files.push({
         filename: 'StreamEndMessage.txt',
-        content: encodeServerMessage({
+        content: encodeMessage({
             type: 'STREAM_END',
             reqId: '1515',
             reason: 'no more events',

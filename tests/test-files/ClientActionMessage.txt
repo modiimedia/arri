@@ -1,4 +1,0 @@
-ARRIRPC/0.0.8 foo.fooFoo CLOSE
-content-type: application/json
-req-id: 54321
-

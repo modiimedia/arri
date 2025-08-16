@@ -78,7 +78,7 @@ void main() {
       body: MessageBody(message: "hello world"),
     );
     final withBodyEncoded =
-        File("../../../tests/test-files/ClientMessage_WithBody.txt")
+        File("../../../tests/test-files/InvocationMessage_WithBody.txt")
             .readAsStringSync();
 
     final withoutBody = ClientMessage<MessageBody>(
@@ -92,7 +92,7 @@ void main() {
       body: null,
     );
     final withoutBodyEncoded =
-        File("../../../tests/test-files/ClientMessage_WithoutBody.txt")
+        File("../../../tests/test-files/InvocationMessage_WithoutBody.txt")
             .readAsStringSync();
     test("parsing", () {
       final withBodyResult = ClientMessage.fromString(
@@ -146,7 +146,7 @@ void main() {
         body: MessageBody(message: "hello world").toJsonString(),
       );
       final withBodyEncoded =
-          File("../../../tests/test-files/ServerSuccessMessage_WithBody.txt")
+          File("../../../tests/test-files/OkMessage_WithBody.txt")
               .readAsStringSync();
       final withoutBody = ServerSuccessMessage(
         reqId: null,
@@ -155,7 +155,7 @@ void main() {
         body: null,
       );
       final withoutBodyEncoded =
-          File("../../../tests/test-files/ServerSuccessMessage_WithoutBody.txt")
+          File("../../../tests/test-files/OkMessage_WithoutBody.txt")
               .readAsStringSync();
       test("parsing", () {
         final withBodyResult = ServerMessage.fromString(withBodyEncoded);
@@ -212,7 +212,7 @@ void main() {
         error: ArriError(code: 54321, message: "This is an error"),
       );
       final msgEncoded =
-          File("../../../tests/test-files/ServerFailureMessage.txt")
+          File("../../../tests/test-files/ErrorMessage_WithoutBody.txt")
               .readAsStringSync();
       test("parsing", () {
         final result = ServerMessage.fromString(msgEncoded);

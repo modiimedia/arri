@@ -1,13 +1,10 @@
-import { ArriError } from './errors';
 import {
     ARRI_VERSION,
-    ClientMessage,
-    encodeClientMessage,
-    encodeServerMessage,
-    parseClientMessage,
+    InvocationMessage,
+    encodeMessage,
     parseHeaderLine,
-    parseServerMessage,
-    ServerMessage,
+    Message,
+    parseMessage,
 } from './messages';
 
 test('parseHeaderLine', () => {
@@ -34,8 +31,9 @@ test('parseHeaderLine', () => {
     }
 });
 
-describe('client messages', async () => {
-    const decodedMsg: ClientMessage = {
+describe('invocation messages', async () => {
+    const decodedMsg: InvocationMessage = {
+        type: 'INVOCATION',
         rpcName: 'example.foo.bar',
         reqId: '15',
         clientVersion: '1',
@@ -46,7 +44,6 @@ describe('client messages', async () => {
         },
         body: `{"message":"hello world"}`,
         lastMsgId: undefined,
-        action: undefined,
     };
     const encodedMsg = `ARRIRPC/${ARRI_VERSION} example.foo.bar
 content-type: application/json
@@ -57,40 +54,16 @@ bar: hello\\nworld
 
 {"message":"hello world"}`;
 
-    const decodedActionMsg: ClientMessage = {
-        rpcName: 'example.foo.bar',
-        contentType: 'application/json',
-        reqId: '15',
-        customHeaders: {},
-        action: 'CLOSE',
-        clientVersion: undefined,
-        lastMsgId: undefined,
-        body: undefined,
-    };
-    const encodedActionMsg = `ARRIRPC/${ARRI_VERSION} example.foo.bar CLOSE
-content-type: application/json
-req-id: 15
-
-`;
-
     test('encoding', () => {
-        const result = encodeClientMessage(decodedMsg);
+        const result = encodeMessage(decodedMsg);
         expect(result).toStrictEqual(encodedMsg);
-        const actionResult = encodeClientMessage(decodedActionMsg);
-        expect(actionResult).toStrictEqual(encodedActionMsg);
     });
     test('decoding', () => {
-        const result = parseClientMessage(encodedMsg);
-        if (!result.success) console.error(result.error);
-        expect(result.success).toBe(true);
-        if (!result.success) return;
+        const result = parseMessage(encodedMsg);
+        if (!result.ok) console.error(result.error);
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
         expect(result.value).toStrictEqual(decodedMsg);
-
-        const actionResult = parseClientMessage(encodedActionMsg);
-        if (!actionResult.success) console.error(actionResult.error);
-        expect(actionResult.success).toBe(true);
-        if (!actionResult.success) return;
-        expect(actionResult.value).toStrictEqual(decodedActionMsg);
     });
     test('decoding failures', () => {
         const testCases = [
@@ -112,138 +85,136 @@ foo: foo
 bar: hello world`,
         ];
         for (const testCase of testCases) {
-            const result = parseClientMessage(testCase);
-            if (result.success)
-                console.log('UNEXPECTED SUCCESS:', result.value);
-            expect(result.success).toBe(false);
+            const result = parseMessage(testCase);
+            if (result.ok) console.log('UNEXPECTED SUCCESS:', result.value);
+            expect(result.ok).toBe(false);
         }
     });
 });
 
-describe('server messages', () => {
-    describe('success message', () => {
-        const encodedMsg = `ARRIRPC/${ARRI_VERSION} SUCCESS
+describe('success message', () => {
+    const encodedMsg = `ARRIRPC/${ARRI_VERSION} OK
 content-type: application/json
 req-id: 15
 foo: foo
 
 {"message":"hello world"}`;
-        const decodedMsg: ServerMessage = {
-            type: 'SUCCESS',
-            reqId: '15',
+    const decodedMsg: Message = {
+        type: 'OK',
+        reqId: '15',
+        contentType: 'application/json',
+        customHeaders: {
+            foo: 'foo',
+        },
+        body: `{"message":"hello world"}`,
+    };
+    test('encoding', () => {
+        expect(encodeMessage(decodedMsg)).toBe(encodedMsg);
+    });
+    test('decoding', () => {
+        const result = parseMessage(encodedMsg);
+        if (!result.ok) console.log(result.error);
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
+        expect(result.value).toStrictEqual(decodedMsg);
+    });
+});
+describe('failure message', () => {
+    test('encoding', () => {
+        const expectedResult = `ARRIRPC/${ARRI_VERSION} ERROR
+content-type: application/json
+req-id: 15
+err-code: 12345
+err-msg: there was an error
+foo: foo
+
+`;
+        const message: Message = {
+            type: 'ERROR',
             contentType: 'application/json',
+            reqId: '15',
             customHeaders: {
                 foo: 'foo',
             },
-            body: `{"message":"hello world"}`,
+            errorCode: 12345,
+            errorMessage: 'there was an error',
+            body: undefined,
         };
-        test('encoding', () => {
-            expect(encodeServerMessage(decodedMsg)).toBe(encodedMsg);
-        });
-        test('decoding', () => {
-            const result = parseServerMessage(encodedMsg);
-            if (!result.success) console.log(result.error);
-            expect(result.success).toBe(true);
-            if (!result.success) return;
-            expect(result.value).toStrictEqual(decodedMsg);
-        });
+        const result = encodeMessage(message);
+        expect(result).toBe(expectedResult);
     });
-    describe('failure message', () => {
-        test('encoding', () => {
-            const expectedResult = `ARRIRPC/${ARRI_VERSION} FAILURE
-content-type: application/json
-req-id: 15
-foo: foo
-
-{"code":12345,"message":"there was an error"}`;
-            const message: ServerMessage = {
-                type: 'FAILURE',
-                contentType: 'application/json',
-                reqId: '15',
-                customHeaders: {
-                    foo: 'foo',
-                },
-                error: new ArriError({
-                    code: 12345,
-                    message: 'there was an error',
-                }),
-            };
-            const result = encodeServerMessage(message);
-            expect(result).toBe(expectedResult);
-        });
-    });
-    describe('heartbeat message', () => {
-        const withInterval: ServerMessage = {
-            type: 'HEARTBEAT',
-            heartbeatInterval: 150,
-        };
-        const withIntervalEncoded = `ARRIRPC/${ARRI_VERSION} HEARTBEAT
+});
+describe('heartbeat message', () => {
+    const withInterval: Message = {
+        type: 'HEARTBEAT',
+        heartbeatInterval: 150,
+    };
+    const withIntervalEncoded = `ARRIRPC/${ARRI_VERSION} HEARTBEAT
 heartbeat-interval: 150\n\n`;
-        const withoutInterval: ServerMessage = {
-            type: 'HEARTBEAT',
-            heartbeatInterval: undefined,
-        };
-        const withoutIntervalEncoded = `ARRIRPC/${ARRI_VERSION} HEARTBEAT\n\n`;
-        test('encoding', () => {
-            const result1 = encodeServerMessage(withInterval);
-            expect(result1).toBe(withIntervalEncoded);
-            const result2 = encodeServerMessage(withoutInterval);
-            expect(result2).toBe(withoutIntervalEncoded);
-        });
-        test('decoding', () => {
-            const result1 = parseServerMessage(withIntervalEncoded);
-            expect(result1.success).toBe(true);
-            if (!result1.success) return;
-            expect(result1.value).toStrictEqual(withInterval);
-            const result2 = parseServerMessage(withoutIntervalEncoded);
-            expect(result2.success).toBe(true);
-            if (!result2.success) return;
-            expect(result2.value).toStrictEqual(withoutInterval);
-        });
+    const withoutInterval: Message = {
+        type: 'HEARTBEAT',
+        heartbeatInterval: undefined,
+    };
+    const withoutIntervalEncoded = `ARRIRPC/${ARRI_VERSION} HEARTBEAT\n\n`;
+    test('encoding', () => {
+        const result1 = encodeMessage(withInterval);
+        expect(result1).toBe(withIntervalEncoded);
+        const result2 = encodeMessage(withoutInterval);
+        expect(result2).toBe(withoutIntervalEncoded);
     });
-    describe('start message', () => {
-        const decodedMessageWithInterval: ServerMessage = {
-            type: 'CONNECTION_START',
-            heartbeatInterval: 150,
-        };
-        const encodedMessageWithInterval = `ARRIRPC/${ARRI_VERSION} CONNECTION_START
+    test('decoding', () => {
+        const result1 = parseMessage(withIntervalEncoded);
+        expect(result1.ok).toBe(true);
+        if (!result1.ok) return;
+        expect(result1.value).toStrictEqual(withInterval);
+        const result2 = parseMessage(withoutIntervalEncoded);
+        expect(result2.ok).toBe(true);
+        if (!result2.ok) return;
+        expect(result2.value).toStrictEqual(withoutInterval);
+    });
+});
+describe('start message', () => {
+    const decodedMessageWithInterval: Message = {
+        type: 'CONNECTION_START',
+        heartbeatInterval: 150,
+    };
+    const encodedMessageWithInterval = `ARRIRPC/${ARRI_VERSION} CONNECTION_START
 heartbeat-interval: 150\n\n`;
 
-        const decodedMessageWithoutInterval: ServerMessage = {
-            type: 'CONNECTION_START',
-            heartbeatInterval: undefined,
-        };
-        const encodedMessageWithoutInterval = `ARRIRPC/${ARRI_VERSION} CONNECTION_START\n\n`;
-        test('encoding', () => {
-            const result1 = encodeServerMessage(decodedMessageWithInterval);
-            expect(result1).toStrictEqual(encodedMessageWithInterval);
-            const result2 = encodeServerMessage(decodedMessageWithoutInterval);
-            expect(result2).toBe(encodedMessageWithoutInterval);
-        });
-        test('decoding', () => {
-            const result1 = parseServerMessage(encodedMessageWithInterval);
-            expect(result1.success).toBe(true);
-            if (!result1.success) return;
-            expect(result1.value).toStrictEqual(decodedMessageWithInterval);
-            const result2 = parseServerMessage(encodedMessageWithoutInterval);
-            expect(result2.success).toBe(true);
-            if (!result2.success) return;
-            expect(result2.value).toStrictEqual(decodedMessageWithoutInterval);
-        });
+    const decodedMessageWithoutInterval: Message = {
+        type: 'CONNECTION_START',
+        heartbeatInterval: undefined,
+    };
+    const encodedMessageWithoutInterval = `ARRIRPC/${ARRI_VERSION} CONNECTION_START\n\n`;
+    test('encoding', () => {
+        const result1 = encodeMessage(decodedMessageWithInterval);
+        expect(result1).toStrictEqual(encodedMessageWithInterval);
+        const result2 = encodeMessage(decodedMessageWithoutInterval);
+        expect(result2).toBe(encodedMessageWithoutInterval);
     });
-    test('invalid messages', () => {
-        const messageInputs = [
-            `ARRIRPC/${ARRI_VERSION} FOO\n\n`,
-            `HTTP/1 GET /hello-world`,
-            `ARRIRPC/${ARRI_VERSION} SUCCESS\ncontent-type: application/json\nreq-id: 1\n`,
-        ];
-        for (const input of messageInputs) {
-            const result = parseServerMessage(input);
-            if (result.success) {
-                console.log('Should not pass:');
-                console.log(input);
-            }
-            expect(result.success).toBe(false);
+    test('decoding', () => {
+        const result1 = parseMessage(encodedMessageWithInterval);
+        expect(result1.ok).toBe(true);
+        if (!result1.ok) return;
+        expect(result1.value).toStrictEqual(decodedMessageWithInterval);
+        const result2 = parseMessage(encodedMessageWithoutInterval);
+        expect(result2.ok).toBe(true);
+        if (!result2.ok) return;
+        expect(result2.value).toStrictEqual(decodedMessageWithoutInterval);
+    });
+});
+test('invalid messages', () => {
+    const messageInputs = [
+        `ARRIRPC/${ARRI_VERSION} FOO\n\n`,
+        `HTTP/1 GET /hello-world`,
+        `ARRIRPC/${ARRI_VERSION} OK\ncontent-type: application/json\nreq-id: 1\n`,
+    ];
+    for (const input of messageInputs) {
+        const result = parseMessage(input);
+        if (result.ok) {
+            console.log('Should not pass:');
+            console.log(input);
         }
-    });
+        expect(result.ok).toBe(false);
+    }
 });

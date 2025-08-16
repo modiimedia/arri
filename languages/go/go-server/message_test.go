@@ -10,8 +10,8 @@ import (
 
 var clientMessageWithBody = arri.NewClientMessage("12345", "foo.fooFoo", arri.Some("1.2.5"), arri.ContentTypeJson, map[string]string{"foo": "hello foo"}, arri.Some([]byte("{\"message\":\"hello world\"}")))
 var clientMessageWithoutBody = arri.NewClientMessage("54321", "foo.fooFoo", arri.None[string](), arri.ContentTypeJson, arri.Headers{"foo": "hello foo", "bar": "hello bar"}, arri.None[[]byte]())
-var clientMessageWithBodyFilePath = "../../../tests/test-files/ClientMessage_WithBody.txt"
-var clientMessageWithoutBodyFilePath = "../../../tests/test-files/ClientMessage_WithoutBody.txt"
+var clientMessageWithBodyFilePath = "../../../tests/test-files/InvocationMessage_WithBody.txt"
+var clientMessageWithoutBodyFilePath = "../../../tests/test-files/InvocationMessage_WithoutBody.txt"
 
 func TestEncodeClientMessage(t *testing.T) {
 	dat, err := os.ReadFile(clientMessageWithBodyFilePath)
@@ -68,8 +68,8 @@ func TestDecodeClientMessage(t *testing.T) {
 
 var serverMessageWithBody = arri.NewServerSuccessMessage("12345", arri.ContentTypeJson, map[string]string{}, arri.Some([]byte("{\"message\":\"hello world\"}")))
 var serverMessageWithoutBody = arri.NewServerSuccessMessage("", arri.ContentTypeJson, map[string]string{"foo": "foo"}, arri.None[[]byte]())
-var serverMessageWithBodyFilePath = "../../../tests/test-files/ServerSuccessMessage_WithBody.txt"
-var serverMessageWithoutBodyFilePath = "../../../tests/test-files/ServerSuccessMessage_WithoutBody.txt"
+var serverMessageWithBodyFilePath = "../../../tests/test-files/OkMessage_WithBody.txt"
+var serverMessageWithoutBodyFilePath = "../../../tests/test-files/OkMessage_WithoutBody.txt"
 
 func TestEncodeServerSuccessMessage(t *testing.T) {
 	dat, err := os.ReadFile(serverMessageWithBodyFilePath)

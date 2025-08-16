@@ -268,7 +268,7 @@ Below are all of the contents of the test JSON files in an easier to read format
 }
 ```
 
-## ClientMessage_WithBody.txt
+## InvocationMessage_WithBody.txt
 
 ```txt
 ARRIRPC/0.0.8 foo.fooFoo
@@ -280,7 +280,7 @@ foo: hello foo
 {"message":"hello world"}
 ```
 
-## ClientMessage_WithoutBody.txt
+## InvocationMessage_WithoutBody.txt
 
 ```txt
 ARRIRPC/0.0.8 foo.fooFoo
@@ -292,48 +292,64 @@ bar: hello bar
 
 ```
 
-## ClientActionMessage.txt
+## CancelStreamMessage.txt
 
 ```txt
-ARRIRPC/0.0.8 foo.fooFoo CLOSE
-content-type: application/json
+ARRIRPC/0.0.8 STREAM_CANCEL
 req-id: 54321
+reason: no longer needed
 
 
 ```
 
-## ServerSuccessMessage_WithBody.txt
+## OkMessage_WithBody.txt
 
 ```txt
-ARRIRPC/0.0.8 SUCCESS
+ARRIRPC/0.0.8 OK
 content-type: application/json
 req-id: 12345
 
 {"message":"hello world"}
 ```
 
-## ServerSuccessMessage_WithoutBody.txt
+## OkMessage_WithoutBody.txt
 
 ```txt
-ARRIRPC/0.0.8 SUCCESS
+ARRIRPC/0.0.8 OK
 content-type: application/json
+req-id: 54321
 foo: foo
 
 
 ```
 
-## ServerFailureMessage.txt
+## ErrorMessage_WithoutBody.txt
 
 ```txt
-ARRIRPC/0.0.8 FAILURE
+ARRIRPC/0.0.8 ERROR
 content-type: application/json
 req-id: 12345
+err-code: 54321
+err-msg: This is an error
 foo: foo
 
-{"code":54321,"message":"This is an error"}
+
 ```
 
-## ServerHeartbeatMessage_WithInterval.txt
+## ErrorMessage_WithBody.txt
+
+```txt
+ARRIRPC/0.0.8 ERROR
+content-type: application/json
+req-id: 12345
+err-code: 54321
+err-msg: This is an error
+foo: foo
+
+{"data":[],"trace":["foo","bar","baz"]}
+```
+
+## HeartbeatMessage_WithInterval.txt
 
 ```txt
 ARRIRPC/0.0.8 HEARTBEAT
@@ -342,7 +358,7 @@ heartbeat-interval: 155
 
 ```
 
-## ServerHeartbeatMessage_WithoutInterval.txt
+## HeartbeatMessage_WithoutInterval.txt
 
 ```txt
 ARRIRPC/0.0.8 HEARTBEAT
@@ -350,7 +366,7 @@ ARRIRPC/0.0.8 HEARTBEAT
 
 ```
 
-## ServerConnectionStartMessage_WithInterval.txt
+## ConnectionStartMessage_WithInterval.txt
 
 ```txt
 ARRIRPC/0.0.8 CONNECTION_START
@@ -359,22 +375,10 @@ heartbeat-interval: 255
 
 ```
 
-## ServerConnectionStartMessage_WithoutInterval.txt
+## ConnectionStartMessage_WithoutInterval.txt
 
 ```txt
 ARRIRPC/0.0.8 CONNECTION_START
-
-
-```
-
-## StreamStartMessage.txt
-
-```txt
-ARRIRPC/0.0.8 STREAM_START
-content-type: application/json
-req-id: 1515
-heartbeat-interval: 255
-foo: foo
 
 
 ```
@@ -384,7 +388,7 @@ foo: foo
 ```txt
 ARRIRPC/0.0.8 STREAM_DATA
 req-id: 1515
-event-id: 1
+msg-id: 1
 
 {"message":"hello world"}
 ```

@@ -2,13 +2,10 @@ import { a } from '@arrirpc/schema';
 import * as b from 'benny';
 
 import {
-    ArriError,
-    ClientMessage,
-    encodeClientMessage,
-    encodeServerMessage,
-    parseClientMessage,
-    parseServerMessage,
-    ServerMessage,
+    InvocationMessage,
+    encodeMessage,
+    parseMessage,
+    Message,
 } from '../src/_index';
 
 const MessageData = a.object('MessageData', {
@@ -24,8 +21,8 @@ const msgDataInstance: MessageData = {
     uint32: 15,
 };
 
-const successServerMessage: ServerMessage = {
-    type: 'SUCCESS',
+const okMessage: Message = {
+    type: 'OK',
     reqId: '15',
     contentType: 'application/json',
     customHeaders: {
@@ -33,19 +30,22 @@ const successServerMessage: ServerMessage = {
     },
     body: $$MessageData.serializeUnsafe(msgDataInstance),
 };
-const successServerMessageString = encodeServerMessage(successServerMessage);
-const failureServerMessage: ServerMessage = {
-    type: 'FAILURE',
+const okMessageString = encodeMessage(okMessage);
+const errorMessage: Message = {
+    type: 'ERROR',
     reqId: '15',
     contentType: 'application/json',
     customHeaders: {
         foo: 'foo',
     },
-    error: new ArriError({ code: 150, message: 'failure' }),
+    errorCode: 150,
+    errorMessage: 'failure',
+    body: undefined,
 };
-const failureServerMessageString = encodeServerMessage(failureServerMessage);
+const errorMessageString = encodeMessage(errorMessage);
 
-const clientMessage: ClientMessage = {
+const invocationMessage: InvocationMessage = {
+    type: 'INVOCATION',
     reqId: '15',
     rpcName: 'example.foo',
     contentType: 'application/json',
@@ -53,33 +53,30 @@ const clientMessage: ClientMessage = {
         foo: 'foo',
     },
     lastMsgId: undefined,
-    action: undefined,
     clientVersion: undefined,
     body: $$MessageData.serializeUnsafe(msgDataInstance),
 };
-const clientMessageString = encodeClientMessage(clientMessage);
+const clientMessageString = encodeMessage(invocationMessage);
 
 b.suite(
     'parsing messages',
-    b.add('parse server "success" message', () => {
-        const result = parseServerMessage(successServerMessageString);
-        if (!result.success) {
+    b.add('parse server "ok" message', () => {
+        const result = parseMessage(okMessageString);
+        if (!result.ok) {
             throw new Error(`Received error. "${result.error}"`);
         }
-        $$MessageData.parse((result.value as any).body);
     }),
     b.add('parse server "failure" message', () => {
-        const result = parseServerMessage(failureServerMessageString);
-        if (!result.success) {
+        const result = parseMessage(errorMessageString);
+        if (!result.ok) {
             throw new Error(`Received error. "${result.error}"`);
         }
     }),
     b.add('parse client message', () => {
-        const result = parseClientMessage(clientMessageString);
-        if (!result.success) {
+        const result = parseMessage(clientMessageString);
+        if (!result.ok) {
             throw new Error(`Received error. "${result.error}"`);
         }
-        $$MessageData.parse(result.value.body);
     }),
     b.cycle(),
     b.save({ file: 'parsing-messages', format: 'chart.html' }),
@@ -88,13 +85,13 @@ b.suite(
 b.suite(
     'encoding messages',
     b.add('server "success" message', () => {
-        encodeServerMessage(successServerMessage);
+        encodeMessage(okMessage);
     }),
     b.add('server "failure" message', () => {
-        encodeServerMessage(failureServerMessage);
+        encodeMessage(errorMessage);
     }),
     b.add('client message', () => {
-        encodeClientMessage(clientMessage);
+        encodeMessage(invocationMessage);
     }),
     b.cycle(),
     b.save({ file: 'encoding-messages', format: 'chart.html' }),
