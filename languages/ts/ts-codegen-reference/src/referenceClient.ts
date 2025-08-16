@@ -6,11 +6,7 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
-    type ArriRequestOptions,
-    arriRequest,
-    arriSseRequest,
-    arriWsRequest,
-    type EventSourceController,
+    UndefinedModelValidator,
     INT8_MAX,
     INT8_MIN,
     INT16_MAX,
@@ -21,113 +17,187 @@ import {
     INT64_MIN,
     isObject,
     serializeString,
-    type SseOptions,
     UINT8_MAX,
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
     type Fetch,
-    type $Fetch,
-    createFetch,
-    type WsController,
-    type WsOptions,
+    type RpcDispatcher,
+    type RpcDispatcherOptions,
+    type RpcRequest,
+    type RpcRequestValidator,
+    HttpDispatcher,
+    WsDispatcher,
+    type EventStreamController,
+    type EventStreamHooks,
+    resolveDispatcherOptions,
+    resolveTransport,
 } from '@arrirpc/client';
 
-type HeaderMap = Record<string, string | undefined>;
+export interface ExampleClientOptions
+    extends Omit<RpcDispatcherOptions, 'signal'> {
+    transport?: 'http' | 'ws';
+    dispatchers?: Record<string, RpcDispatcher>;
+    // HTTP options
+    baseUrl: string;
+    fetch?: Fetch;
+    // WS options
+    wsConnectionUrl: string;
+    /**
+     * Max frame size in bytes
+     */
+    maxReceivedFrameSize?: number;
+    /**
+     * The max frame size in bytes before it is automatically fragmented
+     */
+    fragmentationThreshold?: number;
+}
+
+export interface RpcOptions<T extends string> extends RpcDispatcherOptions {
+    transport?: T;
+}
 
 export class ExampleClient {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly _dispatchers: Record<string, RpcDispatcher>;
+    private readonly _options: RpcDispatcherOptions;
+    private readonly _defaultTransport: string;
     books: ExampleClientBooksService;
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    constructor(config: ExampleClientOptions) {
+        this._options = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this._defaultTransport = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this._dispatchers = config.dispatchers!;
         this.books = new ExampleClientBooksService(config);
+    }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
     }
 
     async sendObject(
         params: NestedObject,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http'>,
     ): Promise<NestedObject> {
-        return arriRequest<NestedObject, NestedObject>({
-            url: `${this._baseUrl}/send-object`,
+        const finalOptions = resolveDispatcherOptions(options, this._options);
+        const req: RpcRequest<NestedObject> = {
+            procedure: 'sendObject',
+            path: '/send-object',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$NestedObject.fromJson,
-            responseFromString: $$NestedObject.fromJsonString,
-            serializer: $$NestedObject.toJsonString,
             clientVersion: '20',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<NestedObject, NestedObject> = {
+            params: $$NestedObject,
+            response: $$NestedObject,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<NestedObject, NestedObject>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
 }
 
 export class ExampleClientBooksService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    private readonly _dispatchers: Record<string, RpcDispatcher>;
+    private readonly _options: RpcDispatcherOptions;
+    private readonly _defaultTransport: string;
+
+    constructor(config: ExampleClientOptions) {
+        this._options = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this._defaultTransport = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this._dispatchers = config.dispatchers!;
     }
+
+    /**
+     * Close all active connections
+     */
+    terminateConnections() {
+        for (const dispatcher of Object.values(this._dispatchers)) {
+            dispatcher.terminateConnections();
+        }
+    }
+
     /**
      * Get a book
      */
     async getBook(
         params: BookParams,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<Book> {
-        return arriRequest<Book, BookParams>({
-            url: `${this._baseUrl}/books/get-book`,
+        const finalOptions = resolveDispatcherOptions(options, this._options);
+        const req: RpcRequest<BookParams> = {
+            procedure: 'books.getBook',
+            path: '/books/get-book',
             method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toUrlQueryString,
             clientVersion: '20',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<BookParams, Book> = {
+            params: $$BookParams,
+            response: $$Book,
+        };
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<BookParams, Book>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     /**
      * Create a book
@@ -135,61 +205,69 @@ export class ExampleClientBooksService {
      */
     async createBook(
         params: Book,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<Book> {
-        return arriRequest<Book, Book>({
-            url: `${this._baseUrl}/books/create-book`,
+        const finalOptions = resolveDispatcherOptions(options, this._options);
+        const req: RpcRequest<Book> = {
+            procedure: 'books.createBook',
+            path: '/books/create-book',
             method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$Book.toJsonString,
             clientVersion: '20',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<Book, Book> = {
+            params: $$Book,
+            response: $$Book,
+        };
+        const transport = resolveTransport(
+            ['http', 'ws'],
+            options?.transport,
+            this._defaultTransport,
+        );
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<Book, Book>(req, validator, finalOptions);
     }
     /**
      * @deprecated
      */
     watchBook(
         params: BookParams,
-        options: SseOptions<Book> = {},
-    ): EventSourceController {
-        return arriSseRequest<Book, BookParams>(
-            {
-                url: `${this._baseUrl}/books/watch-book`,
-                method: 'get',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$BookParams.toUrlQueryString,
-                clientVersion: '20',
-            },
-            options,
-        );
-    }
-    async createConnection(
-        options: WsOptions<Book> = {},
-    ): Promise<WsController<BookParams, Book>> {
-        return arriWsRequest<BookParams, Book>({
-            url: `${this._baseUrl}/books/create-connection`,
-            headers: this._headers,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
+        options?: EventStreamHooks<Book>,
+    ): EventStreamController {
+        const req: RpcRequest<BookParams> = {
+            procedure: 'books.watchBook',
+            path: '/books/watch-book',
+            method: 'get',
             clientVersion: '20',
-        });
+            data: params,
+            customHeaders: this._options.headers,
+        };
+        const validator: RpcRequestValidator<BookParams, Book> = {
+            params: $$BookParams,
+            response: $$Book,
+        };
+        const transport = 'http';
+        const dispatcher = this._dispatchers[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this._options.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleEventStreamRpc<BookParams, Book>(
+            req,
+            validator,
+            options ?? {},
+        );
     }
 }
 

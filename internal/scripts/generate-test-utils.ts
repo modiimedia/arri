@@ -2,6 +2,11 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import path from 'pathe';
 import prettier from 'prettier';
 
+import {
+    ArriError,
+    encodeClientMessage,
+    encodeServerMessage,
+} from '../../languages/ts/ts-core/src/_index';
 import { a } from '../../languages/ts/ts-schema/src/_index';
 import { createAppDefinition } from '../../tooling/codegen-utils/src';
 
@@ -144,43 +149,43 @@ const def = createAppDefinition({
     procedures: {
         sendObject: {
             path: '/send-object',
-            transport: 'http',
+            transports: ['http'],
             method: 'post',
-            params: NestedObject,
-            response: NestedObject,
+            input: NestedObject,
+            output: NestedObject,
         },
         'books.getBook': {
             path: '/books/get-book',
-            transport: 'http',
+            transports: ['http', 'ws'],
             method: 'get',
-            params: BookParams,
-            response: Book,
+            input: BookParams,
+            output: Book,
             description: 'Get a book',
         },
         'books.createBook': {
             path: '/books/create-book',
-            transport: 'http',
+            transports: ['http', 'ws'],
             method: 'post',
-            params: Book,
-            response: Book,
+            input: Book,
+            output: Book,
             description: 'Create a book',
             isDeprecated: true,
         },
         'books.watchBook': {
             path: '/books/watch-book',
-            transport: 'http',
+            transports: ['http'],
             method: 'get',
-            params: BookParams,
-            response: Book,
-            isEventStream: true,
+            input: BookParams,
+            output: Book,
+            outputIsStream: true,
             isDeprecated: true,
         },
-        'books.createConnection': {
-            path: '/books/create-connection',
-            transport: 'ws',
-            params: BookParams,
-            response: Book,
-        },
+        // 'books.createConnection': {
+        //     path: '/books/create-connection',
+        //     transport: 'ws',
+        //     params: BookParams,
+        //     response: Book,
+        // },
     },
     definitions: {
         EmptyObject,
@@ -434,6 +439,155 @@ async function main() {
         content: a.serializeUnsafe(RecursiveObject, recursiveObject),
     });
 
+    files.push({
+        filename: 'ClientMessage_WithBody.txt',
+        content: encodeClientMessage({
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'hello foo',
+            },
+            reqId: '12345',
+            clientVersion: '1.2.5',
+            body: `{"message":"hello world"}`,
+            action: undefined,
+            lastMsgId: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ClientMessage_WithoutBody.txt',
+        content: encodeClientMessage({
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'hello foo',
+                bar: 'hello bar',
+            },
+            reqId: '54321',
+            body: undefined,
+            action: undefined,
+            clientVersion: undefined,
+            lastMsgId: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ClientActionMessage.txt',
+        content: encodeClientMessage({
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            action: 'CLOSE',
+            customHeaders: {},
+            reqId: '54321',
+            clientVersion: undefined,
+            lastMsgId: undefined,
+            body: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerSuccessMessage_WithBody.txt',
+        content: encodeServerMessage({
+            type: 'SUCCESS',
+            reqId: '12345',
+            contentType: 'application/json',
+            customHeaders: {},
+            path: '/12345/12345',
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerSuccessMessage_WithoutBody.txt',
+        content: encodeServerMessage({
+            type: 'SUCCESS',
+            reqId: undefined,
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'foo',
+            },
+            body: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerFailureMessage.txt',
+        content: encodeServerMessage({
+            type: 'FAILURE',
+            contentType: 'application/json',
+            reqId: '12345',
+            customHeaders: {
+                foo: 'foo',
+            },
+            error: new ArriError({ code: 54321, message: 'This is an error' }),
+        }),
+    });
+
+    files.push({
+        filename: 'ServerHeartbeatMessage_WithInterval.txt',
+        content: encodeServerMessage({
+            type: 'HEARTBEAT',
+            heartbeatInterval: 155,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerHeartbeatMessage_WithoutInterval.txt',
+        content: encodeServerMessage({
+            type: 'HEARTBEAT',
+            heartbeatInterval: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerConnectionStartMessage_WithInterval.txt',
+        content: encodeServerMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: 255,
+        }),
+    });
+
+    files.push({
+        filename: 'ServerConnectionStartMessage_WithoutInterval.txt',
+        content: encodeServerMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'StreamStartMessage.txt',
+        content: encodeServerMessage({
+            type: 'STREAM_START',
+            reqId: '1515',
+            heartbeatInterval: 255,
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'foo',
+            },
+        }),
+    });
+
+    files.push({
+        filename: 'StreamDataMessage.txt',
+        content: encodeServerMessage({
+            type: 'STREAM_DATA',
+            reqId: '1515',
+            msgId: '1',
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'StreamEndMessage.txt',
+        content: encodeServerMessage({
+            type: 'STREAM_END',
+            reqId: '1515',
+            reason: 'no more events',
+        }),
+    });
+
     const mdParts: string[] = [
         'Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.',
         '',
@@ -441,7 +595,7 @@ async function main() {
     for (const file of files) {
         writeFileSync(path.resolve(outDir, file.filename), file.content);
         mdParts.push(`## ${file.filename}
-\`\`\`json
+\`\`\`${file.filename.endsWith('txt') ? 'txt' : 'json'}
 ${file.content}
 \`\`\`
 `);
