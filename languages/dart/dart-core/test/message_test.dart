@@ -139,7 +139,7 @@ void main() {
 
   group("ServerMessages", () {
     group("Success Message", () {
-      final withBody = ServerSuccessMessage(
+      final withBody = OkMessage(
         reqId: "12345",
         contentType: ContentType.json,
         customHeaders: {},
@@ -148,8 +148,8 @@ void main() {
       final withBodyEncoded =
           File("../../../tests/test-files/OkMessage_WithBody.txt")
               .readAsStringSync();
-      final withoutBody = ServerSuccessMessage(
-        reqId: null,
+      final withoutBody = OkMessage(
+        reqId: "54321",
         contentType: ContentType.json,
         customHeaders: {"foo": "foo"},
         body: null,
@@ -158,44 +158,46 @@ void main() {
           File("../../../tests/test-files/OkMessage_WithoutBody.txt")
               .readAsStringSync();
       test("parsing", () {
-        final withBodyResult = ServerMessage.fromString(withBodyEncoded);
+        final withBodyResult = Message.fromString(withBodyEncoded);
         switch (withBodyResult) {
-          case Ok<ServerMessage, String>():
+          case Ok<Message, String>():
             switch (withBodyResult.value) {
-              case ServerSuccessMessage():
+              case OkMessage():
                 expect(withBodyResult.value, equals(withBody));
                 break;
-              case ServerFailureMessage():
+              case ErrorMessage():
+              case InvocationMessage():
               case HeartbeatMessage():
-              case ServerConnectionStartMessage():
-              case StreamStartMessage():
+              case ConnectionStartMessage():
               case StreamDataMessage():
-              case ServerEventStreamEndMessage():
+              case StreamEndMessage():
+              case StreamCancelMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerSuccessMessage()",
                 );
             }
-          case Err<ServerMessage, String>():
+          case Err<Message, String>():
             fail(withBodyResult.error);
         }
-        final withoutBodyResult = ServerMessage.fromString(withoutBodyEncoded);
+        final withoutBodyResult = Message.fromString(withoutBodyEncoded);
         switch (withoutBodyResult) {
-          case Ok<ServerMessage, String>():
+          case Ok<Message, String>():
             switch (withoutBodyResult.value) {
-              case ServerSuccessMessage():
+              case OkMessage():
                 expect(withoutBodyResult.value, equals(withoutBody));
                 break;
-              case ServerFailureMessage():
+              case ErrorMessage():
+              case InvocationMessage():
               case HeartbeatMessage():
-              case ServerConnectionStartMessage():
-              case StreamStartMessage():
+              case ConnectionStartMessage():
               case StreamDataMessage():
-              case ServerEventStreamEndMessage():
+              case StreamEndMessage():
+              case StreamCancelMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerSuccessMessage()",
                 );
             }
-          case Err<ServerMessage, String>():
+          case Err<Message, String>():
             fail(withoutBodyResult.error);
         }
       });
@@ -205,34 +207,37 @@ void main() {
       });
     });
     group("Failure Message", () {
-      final msg = ServerFailureMessage(
+      final msg = ErrorMessage(
         reqId: "12345",
         contentType: ContentType.json,
         customHeaders: {"foo": "foo"},
-        error: ArriError(code: 54321, message: "This is an error"),
+        code: 54321,
+        message: "This is an error",
+        body: null,
       );
       final msgEncoded =
           File("../../../tests/test-files/ErrorMessage_WithoutBody.txt")
               .readAsStringSync();
       test("parsing", () {
-        final result = ServerMessage.fromString(msgEncoded);
+        final result = Message.fromString(msgEncoded);
         switch (result) {
-          case Ok<ServerMessage, String>():
+          case Ok<Message, String>():
             switch (result.value) {
-              case ServerFailureMessage():
+              case ErrorMessage():
                 expect(result.value, equals(msg));
                 break;
-              case ServerSuccessMessage():
+              case OkMessage():
+              case InvocationMessage():
               case HeartbeatMessage():
-              case ServerConnectionStartMessage():
-              case StreamStartMessage():
+              case ConnectionStartMessage():
               case StreamDataMessage():
-              case ServerEventStreamEndMessage():
+              case StreamEndMessage():
+              case StreamCancelMessage():
                 fail(
                   "Parsed to wrong message. Should be ServerFailureMessage().",
                 );
             }
-          case Err<ServerMessage, String>():
+          case Err<Message, String>():
             fail(result.error);
         }
       });
@@ -245,24 +250,25 @@ void main() {
       final msgEncoded =
           "ARRIRPC/$arriVersion HEARTBEAT\nheartbeat-interval: 150\n\n";
       test("parse", () {
-        final result = ServerMessage.fromString(msgEncoded);
+        final result = Message.fromString(msgEncoded);
         switch (result) {
-          case Ok<ServerMessage, String>():
+          case Ok<Message, String>():
             switch (result.value) {
               case HeartbeatMessage():
                 expect(result.value, equals(msg));
                 break;
-              case ServerSuccessMessage():
-              case ServerFailureMessage():
-              case ServerConnectionStartMessage():
-              case StreamStartMessage():
+              case OkMessage():
+              case ErrorMessage():
+              case InvocationMessage():
+              case ConnectionStartMessage():
               case StreamDataMessage():
-              case ServerEventStreamEndMessage():
+              case StreamEndMessage():
+              case StreamCancelMessage():
                 fail(
                     "Parsed to wrong message. Should be ServerHeartbeatMessage().");
             }
             break;
-          case Err<ServerMessage, String>():
+          case Err<Message, String>():
             fail(result.error);
         }
       });
@@ -271,29 +277,30 @@ void main() {
       });
     });
     group("Connection Start Message", () {
-      final msg = ServerConnectionStartMessage(heartbeatInterval: 1510);
+      final msg = ConnectionStartMessage(heartbeatInterval: 1510);
       final msgEncoded =
           "ARRIRPC/$arriVersion CONNECTION_START\nheartbeat-interval: 1510\n\n";
 
       test("parse", () {
-        final result = ServerMessage.fromString(msgEncoded);
+        final result = Message.fromString(msgEncoded);
         switch (result) {
-          case Ok<ServerMessage, String>():
+          case Ok<Message, String>():
             switch (result.value) {
-              case ServerConnectionStartMessage():
+              case ConnectionStartMessage():
                 expect(result.value, equals(msg));
                 break;
               case HeartbeatMessage():
-              case ServerSuccessMessage():
-              case ServerFailureMessage():
-              case StreamStartMessage():
+              case InvocationMessage():
+              case OkMessage():
+              case ErrorMessage():
               case StreamDataMessage():
-              case ServerEventStreamEndMessage():
+              case StreamEndMessage():
+              case StreamCancelMessage():
                 fail(
                     "Parsed to wrong message. Should be ServerConnectionStartMessage().");
             }
             break;
-          case Err<ServerMessage, String>():
+          case Err<Message, String>():
             fail(result.error);
         }
       });

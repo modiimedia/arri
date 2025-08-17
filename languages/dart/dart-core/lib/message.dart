@@ -201,73 +201,94 @@ class ClientMessage<TBody extends ArriModel?> {
   }
 }
 
-enum _ServerMessageType {
-  unknown(""),
-  success("SUCCESS"),
-  failure("FAILURE"),
-  heartbeat("HEARTBEAT"),
-  connectionStart("CONNECTION_START"),
-  streamStart("ES_START"),
-  streamData("ES_EVENT"),
-  streamEnd("ES_END");
-
-  const _ServerMessageType(this.serialValue);
-  final String serialValue;
-
-  // factory _ServerMessageType.fromSerialValue(String input) {
-  //   for (final val in values) {
-  //     if (val == input) return val;
-  //   }
-  //   return unknown;
-  // }
+bool isCurrentArriVersionPrefix(String input) {
+  return input == "ARRIRPC/$arriVersion";
 }
 
-sealed class ServerMessage {
-  const ServerMessage();
+enum MessageType {
+  unknown(""),
+  invocation("INVOCATION"),
+  ok("OK"),
+  error("ERROR"),
+  heartbeat("HEARTBEAT"),
+  connectionStart("CONNECTION_START"),
+  streamData("STREAM_DATA"),
+  streamEnd("STREAM_END"),
+  streamCancel("STREAM_CANCEL");
+
+  const MessageType(this.serialValue);
+  final String serialValue;
+
+  factory MessageType.fromSerialValue(String input) {
+    for (final val in values) {
+      if (val == input) return val;
+    }
+    return unknown;
+  }
+}
+
+sealed class Message {
+  const Message();
   String encodeString();
 
   List<Object?> get props;
 
   String? get reqId;
 
-  static Result<ServerMessage, String> fromString<TBody>(String input) {
-    _ServerMessageType? type;
+  static Result<Message, String> fromString<TBody>(String input) {
+    MessageType? type;
     String? reqId;
     String? msgId;
+    String? rpcName;
     String? reason;
+    String? clientVersion;
+    int? errCode;
+    String? errMsg;
     ContentType? contentType;
     final Map<String, String> customHeaders = {};
     int? heartbeatInterval;
     int? bodyStartIndex;
     String currentLine = "";
 
-    final processLine = () {
+    String? processLine() {
       if (type == null) {
-        switch (currentLine) {
-          case "ARRIRPC/$arriVersion SUCCESS":
-            type = _ServerMessageType.success;
+        final parts = currentLine.split(' ');
+        if (parts.length < 2) {
+          return "Invalid message. Message must begin with \"ARRIRPC/$arriVersion <msg-type>\"";
+        }
+        final [version, typeIndicator] = parts;
+        if (!isCurrentArriVersionPrefix(version)) {
+          return "Unsupported Arri version. Expected \"${arriVersion}\" got \"${version}\"";
+        }
+        switch (typeIndicator) {
+          case "OK":
+            type = MessageType.ok;
             break;
-          case "ARRIRPC/$arriVersion FAILURE":
-            type = _ServerMessageType.failure;
+          case "ERROR":
+            type = MessageType.error;
             break;
-          case "ARRIRPC/$arriVersion HEARTBEAT":
-            type = _ServerMessageType.heartbeat;
+          case "HEARTBEAT":
+            type = MessageType.heartbeat;
             break;
-          case "ARRIRPC/$arriVersion CONNECTION_START":
-            type = _ServerMessageType.connectionStart;
+          case "CONNECTION_START":
+            type = MessageType.connectionStart;
             break;
-          case "ARRIRPC/$arriVersion STREAM_START":
-            type = _ServerMessageType.streamStart;
+          case "STREAM_DATA":
+            type = MessageType.streamData;
             break;
-          case "ARRIRPC/$arriVersion STREAM_DATA":
-            type = _ServerMessageType.streamData;
+          case "STREAM_END":
+            type = MessageType.streamEnd;
             break;
-          case "ARRIRPC/$arriVersion STREAM_END":
-            type = _ServerMessageType.streamEnd;
+          case "STREAM_CANCEL":
+            type = MessageType.streamCancel;
+            break;
+          default:
+            type = MessageType.invocation;
+            rpcName = typeIndicator;
             break;
         }
         currentLine = "";
-        return;
+        return null;
       }
       final (key, value) = parseHeaderLine(currentLine);
       switch (key) {
@@ -286,13 +307,24 @@ sealed class ServerMessage {
         case 'heartbeat-interval':
           heartbeatInterval = int.tryParse(value);
           break;
-
+        case "client-version":
+          clientVersion = value;
+          break;
+        case "err-code":
+          errCode = int.tryParse(value);
+          break;
+        case "err-msg":
+          errMsg = value;
+          break;
         default:
           customHeaders[key] = value;
           break;
       }
       currentLine = "";
-    };
+      return null;
+    }
+
+    ;
 
     for (var i = 0; i < input.length; i++) {
       final char = input[i];
@@ -312,71 +344,158 @@ sealed class ServerMessage {
       return Err(
           "Invalid message. Missing \\n\\n delimiter indicating end of headers");
     }
+    String? body;
+    final bodyStr = input.substring(bodyStartIndex);
+    if (bodyStr.length > 0) body = bodyStr;
     switch (type!) {
-      case _ServerMessageType.unknown:
+      case MessageType.unknown:
         return Err(
           "Invalid message. Invalid message type or outdated ARRIRPC/{version}",
         );
-      case _ServerMessageType.success:
-        final bodyStr = input.substring(bodyStartIndex);
-        final body = bodyStr.isEmpty ? null : bodyStr;
+      case MessageType.invocation:
+        if (reqId == null) {
+          return Err("req-id is required for invocation messages");
+        }
+        if (rpcName == null) {
+          return Err("Invalid message. Unable to determine RPC name.");
+        }
+        if (contentType == null || contentType == ContentType.unknown) {
+          return Err("content-type is a required header for invocation RPCs");
+        }
+        return Ok(InvocationMessage(
+          reqId: reqId!,
+          rpcName: rpcName!,
+          contentType: contentType!,
+          clientVersion: clientVersion,
+          customHeaders: customHeaders,
+          method: null,
+          path: null,
+          body: body,
+        ));
+      case MessageType.ok:
+        if (reqId == null) {
+          return Err("req-id is required for OK messages");
+        }
         return Ok(
-          ServerSuccessMessage(
-            reqId: reqId,
+          OkMessage(
+            reqId: reqId!,
             contentType: contentType ?? ContentType.unknown,
             customHeaders: customHeaders,
             body: body,
           ),
         );
-      case _ServerMessageType.failure:
-        final errStr = input.substring(bodyStartIndex);
-        final err = errStr.isEmpty ? null : ArriError.fromJsonString(errStr);
+      case MessageType.error:
+        if (reqId == null) {
+          return Err("req-id is required for ERROR messages");
+        }
+        if (errCode == null) {
+          return Err("err-code is a required header for ERROR messages");
+        }
+        if (errMsg == null) {
+          return Err("err-msg is a required header for ERROR messages");
+        }
         return Ok(
-          ServerFailureMessage(
-            reqId: reqId,
+          ErrorMessage(
+            reqId: reqId!,
             contentType: contentType ?? ContentType.unknown,
+            code: errCode!,
+            message: errMsg!,
             customHeaders: customHeaders,
-            error: err,
+            body: body,
           ),
         );
-      case _ServerMessageType.heartbeat:
+      case MessageType.heartbeat:
         return Ok(HeartbeatMessage(heartbeatInterval: heartbeatInterval));
-      case _ServerMessageType.connectionStart:
-        return Ok(
-          ServerConnectionStartMessage(
-            heartbeatInterval: heartbeatInterval,
-          ),
-        );
-      case _ServerMessageType.streamStart:
-        return Ok(StreamStartMessage(
-          reqId: reqId,
-          contentType: contentType ?? ContentType.unknown,
-          heartbeatInterval: heartbeatInterval,
-          customHeaders: customHeaders,
+      case MessageType.connectionStart:
+        return Ok(ConnectionStartMessage(heartbeatInterval: heartbeatInterval));
+      case MessageType.streamData:
+        if (reqId == null) {
+          return Err("req-id is required for STREAM_DATA messages");
+        }
+        return Ok(StreamDataMessage(reqId: reqId!, msgId: msgId, body: body));
+      case MessageType.streamEnd:
+        if (reqId == null) {
+          return Err("req-id is required for STREAM_END messages");
+        }
+        return Ok(StreamEndMessage(
+          reqId: reqId!,
+          reason: reason,
         ));
-      case _ServerMessageType.streamData:
-        final bodyStr = input.substring(bodyStartIndex);
-        final body = bodyStr.isEmpty ? null : bodyStr;
-        return Ok(StreamDataMessage(
-          reqId: reqId,
-          msgId: msgId,
-          body: body,
-        ));
-      case _ServerMessageType.streamEnd:
-        return Ok(ServerEventStreamEndMessage(
-          reqId: reqId,
-          reason: reason ?? "",
-        ));
+      case MessageType.streamCancel:
+        if (reqId == null) {
+          return Err("req-id is required for STREAM_CANCEL messages");
+        }
+        return Ok(StreamCancelMessage(reqId: reqId!, reason: reason));
     }
   }
 }
 
-class ServerSuccessMessage implements ServerMessage {
-  final String? reqId;
+class InvocationMessage implements Message {
+  final String reqId;
+  final String rpcName;
+  final ContentType contentType;
+  final String? clientVersion;
+  final Map<String, String> customHeaders;
+  final HttpMethods? method;
+  final String? path;
+  final String? body;
+  InvocationMessage({
+    required this.reqId,
+    required this.rpcName,
+    required this.contentType,
+    required this.clientVersion,
+    required this.customHeaders,
+    required this.method,
+    required this.path,
+    required this.body,
+  });
+
+  @override
+  String encodeString() {
+    String output = "ARRIRPC/$arriVersion $rpcName\n";
+    output += "content-type: ${contentType.serialValue}\n";
+    output += "req-id: $reqId\n";
+    if (clientVersion != null) output += "client-version: $clientVersion\n";
+    for (final entry in customHeaders.entries) {
+      output += "${entry.key}: ${entry.value}\n";
+    }
+    output += "\n";
+    if (body != null) output += body!;
+    return output;
+  }
+
+  @override
+  List<Object?> get props => [
+        reqId,
+        rpcName,
+        contentType,
+        clientVersion,
+        customHeaders,
+        body,
+      ];
+
+  http.Request toHttpRequest(String baseUrl) {
+    final req = http.Request(
+      method?.serialValue ?? "POST",
+      Uri.parse(baseUrl + (path ?? "")),
+    );
+    req.headers['content-type'] = contentType.serialValue;
+    req.headers["req-id"] = reqId;
+    if (clientVersion != null) req.headers["client-version"] = clientVersion!;
+    for (final entry in customHeaders.entries) {
+      req.headers[entry.key.toLowerCase()] = entry.value;
+    }
+    if (body != null) req.body = body!;
+    return req;
+  }
+}
+
+class OkMessage implements Message {
+  final String reqId;
   final ContentType contentType;
   final Map<String, String> customHeaders;
   final String? body;
-  const ServerSuccessMessage({
+  const OkMessage({
     required this.reqId,
     required this.contentType,
     required this.customHeaders,
@@ -385,9 +504,9 @@ class ServerSuccessMessage implements ServerMessage {
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion SUCCESS\n";
+    String output = "ARRIRPC/$arriVersion OK\n";
     output += "content-type: ${contentType.serialValue}\n";
-    if (reqId != null) output += "req-id: $reqId\n";
+    output += "req-id: $reqId\n";
     for (final entry in customHeaders.entries) {
       output += "${entry.key.toLowerCase()}: ${entry.value}\n";
     }
@@ -400,54 +519,63 @@ class ServerSuccessMessage implements ServerMessage {
 
   @override
   bool operator ==(Object other) {
-    return other is ServerSuccessMessage && listsAreEqual(props, other.props);
+    return other is OkMessage && listsAreEqual(props, other.props);
   }
 }
 
-class ServerFailureMessage implements ServerMessage {
-  final String? reqId;
+class ErrorMessage implements Message {
+  final String reqId;
+  final int code;
+  final String message;
   final ContentType contentType;
   final Map<String, String> customHeaders;
-  final ArriError? error;
-  const ServerFailureMessage({
+  final String? body;
+  const ErrorMessage({
     required this.reqId,
+    required this.code,
+    required this.message,
     required this.contentType,
     required this.customHeaders,
-    required this.error,
+    required this.body,
   });
 
   @override
-  List<Object?> get props => [reqId, contentType, customHeaders, error];
+  List<Object?> get props => [
+        reqId,
+        code,
+        message,
+        contentType,
+        customHeaders,
+        body,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is ServerFailureMessage && listsAreEqual(props, other.props);
+    return other is ErrorMessage && listsAreEqual(props, other.props);
   }
 
   @override
   String toString() {
-    return "ServerFailureMessage { reqId: $reqId, contentType: $contentType, customHeaders: $customHeaders, error: $error }";
+    return "ErrorMessage { reqId: $reqId, code: $code, message: $message, contentType: $contentType, customHeaders: $customHeaders, body: $body }";
   }
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion FAILURE\n";
+    String output = "ARRIRPC/$arriVersion ERROR\n";
     output += "content-type: ${contentType.serialValue}\n";
-    if (reqId != null) output += "req-id: $reqId\n";
+    output += "req-id: $reqId\n";
+    output += "err-code: $code\n";
+    output += "err-msg: $message\n";
     for (final entry in customHeaders.entries) {
       output += "${entry.key.toLowerCase()}: ${entry.value}\n";
     }
     output += "\n";
-    if (error != null) {
-      output += json.encode(error!.toJson());
-    } else {
-      output += json.encode(ArriError.unknown().toJson());
-    }
+    if (body != null) output += body!;
     return output;
   }
 }
 
-class HeartbeatMessage implements ServerMessage {
+class HeartbeatMessage implements Message {
   final int? heartbeatInterval;
   const HeartbeatMessage({
     required this.heartbeatInterval,
@@ -475,9 +603,9 @@ class HeartbeatMessage implements ServerMessage {
   }
 }
 
-class ServerConnectionStartMessage implements ServerMessage {
+class ConnectionStartMessage implements Message {
   final int? heartbeatInterval;
-  const ServerConnectionStartMessage({
+  const ConnectionStartMessage({
     required this.heartbeatInterval,
   });
 
@@ -489,8 +617,7 @@ class ServerConnectionStartMessage implements ServerMessage {
 
   @override
   bool operator ==(Object other) {
-    return other is ServerConnectionStartMessage &&
-        listsAreEqual(props, other.props);
+    return other is ConnectionStartMessage && listsAreEqual(props, other.props);
   }
 
   @override
@@ -504,40 +631,8 @@ class ServerConnectionStartMessage implements ServerMessage {
   }
 }
 
-class StreamStartMessage implements ServerMessage {
-  final String? reqId;
-  final int? heartbeatInterval;
-  final ContentType contentType;
-  final Map<String, String> customHeaders;
-  const StreamStartMessage({
-    required this.reqId,
-    required this.heartbeatInterval,
-    required this.customHeaders,
-    required this.contentType,
-  });
-
-  @override
-  List<Object?> get props =>
-      [reqId, heartbeatInterval, customHeaders, contentType];
-
-  @override
-  String encodeString() {
-    String output = "ARRIRPC/$arriVersion STREAM_START\n";
-    output += "content-type: ${contentType.serialValue}\n";
-    if (reqId != null) output += "req-id: ${reqId}\n";
-    if (heartbeatInterval != null) {
-      output += "heartbeat-interval: $heartbeatInterval\n";
-    }
-    for (final entry in customHeaders.entries) {
-      output += "${entry.key.toLowerCase()}: ${entry.value}\n";
-    }
-    output += "\n";
-    return output;
-  }
-}
-
-class StreamDataMessage implements ServerMessage {
-  final String? reqId;
+class StreamDataMessage implements Message {
+  final String reqId;
   final String? msgId;
   final String? body;
   StreamDataMessage({
@@ -552,7 +647,7 @@ class StreamDataMessage implements ServerMessage {
   @override
   String encodeString() {
     String output = "ARRIRPC/$arriVersion STREAM_DATA\n";
-    if (reqId != null) output += "req-id: ${reqId}\n";
+    output += "req-id: ${reqId}\n";
     if (msgId != null) output += "msg-id: ${msgId}\n";
     output += "\n";
     if (body != null) output += body!;
@@ -560,10 +655,10 @@ class StreamDataMessage implements ServerMessage {
   }
 }
 
-class ServerEventStreamEndMessage implements ServerMessage {
-  final String? reqId;
-  final String reason;
-  ServerEventStreamEndMessage({required this.reqId, required this.reason});
+class StreamEndMessage implements Message {
+  final String reqId;
+  final String? reason;
+  StreamEndMessage({required this.reqId, required this.reason});
 
   @override
   List<Object?> get props => [reqId, reason];
@@ -571,7 +666,25 @@ class ServerEventStreamEndMessage implements ServerMessage {
   @override
   String encodeString() {
     String output = "ARRIRPC/$arriVersion STREAM_END\n";
-    if (reqId != null) output += "req-id: $reqId\n";
+    output += "req-id: $reqId\n";
+    output += "reason: $reason\n";
+    output += "\n";
+    return output;
+  }
+}
+
+class StreamCancelMessage implements Message {
+  final String reqId;
+  final String? reason;
+  StreamCancelMessage({required this.reqId, required this.reason});
+
+  @override
+  List<Object?> get props => [reqId, reason];
+
+  @override
+  String encodeString() {
+    String output = "ARRIRPC/$arriVersion STREAM_CANCEL\n";
+    output += "req-id: $reqId\n";
     output += "reason: $reason\n";
     output += "\n";
     return output;
