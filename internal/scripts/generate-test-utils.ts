@@ -583,6 +583,15 @@ async function main() {
         }),
     });
 
+    files.push({
+        filename: 'StreamCancelMessage.txt',
+        content: encodeMessage({
+            type: 'STREAM_CANCEL',
+            reqId: '1515',
+            reason: 'no longer needed',
+        }),
+    });
+
     const mdParts: string[] = [
         'Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.',
         '',

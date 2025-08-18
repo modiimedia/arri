@@ -13,7 +13,7 @@ class WsDispatcher implements Dispatcher {
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _streamSubscription;
 
-  final Map<String, Function(ServerMessage)> _messageHandlers = {};
+  final Map<String, Function(Message)> _messageHandlers = {};
   late Timer? _connectionCheckerTimer;
 
   WsDispatcher({
@@ -59,7 +59,7 @@ class WsDispatcher implements Dispatcher {
 
   _handleMessage(dynamic data) {
     if (data is! String) return;
-    final msg = ServerMessage.fromString(data).unwrap();
+    final msg = Message.fromString(data).unwrap();
     if (msg == null || msg.reqId == null) return;
     _messageHandlers[msg.reqId]?.call(msg);
   }
@@ -76,7 +76,7 @@ class WsDispatcher implements Dispatcher {
   }) async {
     final actualRetryCount = retryCount ?? 0;
     try {
-      if (req.reqId == null || req.reqId!.isEmpty) {
+      if (req.reqId.isEmpty) {
         req.reqId = Ulid().toString();
       }
       await setupConnection();
@@ -91,32 +91,27 @@ class WsDispatcher implements Dispatcher {
           TimeoutException("Timeout exceeded", timerDuration),
         );
       });
-      _messageHandlers[req.reqId!] = (msg) {
+      _messageHandlers[req.reqId] = (msg) {
         switch (msg) {
-          case ServerSuccessMessage():
+          case OkMessage():
             final result = responseDecoder(msg.body ?? "");
             timer.cancel();
             completer.complete(result);
             return;
-          case ServerFailureMessage():
+          case ErrorMessage():
             timer.cancel();
-            completer.completeError(
-              msg.error ??
-                  ArriError(
-                    code: 0,
-                    message: 'Received error response from server',
-                  ),
-            );
+            completer.completeError(ArriError.fromErrorMessage(msg));
             return;
           case HeartbeatMessage():
-          case ServerConnectionStartMessage():
-          case StreamStartMessage():
+          case ConnectionStartMessage():
           case StreamDataMessage():
-          case ServerEventStreamEndMessage():
+          case StreamEndMessage():
+          case StreamCancelMessage():
+          case InvocationMessage():
             return;
         }
       };
-      final payload = ClientMessage(
+      final payload = InvocationMessage(
         rpcName: req.procedure,
         reqId: req.reqId,
         method: null,
@@ -124,7 +119,7 @@ class WsDispatcher implements Dispatcher {
         contentType: ContentType.json,
         clientVersion: req.clientVersion,
         customHeaders: await req.customHeaders?.call() ?? {},
-        body: req.data,
+        body: req.data?.toJsonString(),
       );
       _channel?.sink.add(payload.encodeString());
       final result = await completer.future;
@@ -174,7 +169,6 @@ class WsDispatcher implements Dispatcher {
     required Duration? maxRetryInterval,
     required double? heartbeatTimeoutMultiplier,
   }) {
-    if (req.reqId == null) req.reqId = Ulid().toString();
     final eventStream = WsArriEventSource(
       decoder: responseDecoder,
       onData: onData,
@@ -197,8 +191,8 @@ class WsDispatcher implements Dispatcher {
       },
       req: req,
     );
-    _messageHandlers[req.reqId!] = (msg) => eventStream.handleMessage(msg);
-    _eventStreams[req.reqId!] = eventStream;
+    _messageHandlers[req.reqId] = (msg) => eventStream.handleMessage(msg);
+    _eventStreams[req.reqId] = eventStream;
     Timer.run(() => eventStream.start());
     return eventStream;
   }
@@ -230,36 +224,36 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
     required this.onError,
     required this.getWebsocketChannel,
     required this.req,
-  }) : assert(req.reqId != null);
+  });
 
-  void handleMessage(ServerMessage msg) {
+  void handleMessage(Message msg) {
     switch (msg) {
-      case ServerSuccessMessage():
+      case OkMessage():
         break;
-      case ServerFailureMessage():
-        onError?.call(msg.error ?? ArriError.unknown(), this);
+      case ErrorMessage():
+        onError?.call(ArriError.fromErrorMessage(msg), this);
         reconnect();
-        break;
-      case HeartbeatMessage():
-      case ServerConnectionStartMessage():
-        break;
-      case StreamStartMessage():
         break;
       case StreamDataMessage():
         final data = decoder(msg.body ?? "");
         onData?.call(data, this);
         _streamController?.sink.add(data);
         break;
-      case ServerEventStreamEndMessage():
+      case StreamEndMessage():
         _streamController?.close();
         close();
+        break;
+      case InvocationMessage():
+      case HeartbeatMessage():
+      case ConnectionStartMessage():
+      case StreamCancelMessage():
         break;
     }
   }
 
   start() {
     getWebsocketChannel().then((c) async {
-      final msg = ClientMessage(
+      final msg = InvocationMessage(
         rpcName: req.procedure,
         reqId: req.reqId,
         method: null,
@@ -267,7 +261,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         contentType: ContentType.json,
         clientVersion: req.clientVersion,
         customHeaders: await req.customHeaders?.call() ?? {},
-        body: req.data,
+        body: req.data?.toJsonString(),
       );
       c?.sink.add(msg.encodeString());
       onOpen?.call(this);

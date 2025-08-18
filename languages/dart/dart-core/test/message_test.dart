@@ -241,36 +241,61 @@ void main() {
           msgWithoutInterval.encodeString(), equals(msgWithoutIntervalEncoded));
     });
   });
-  group("Connection Start Message", () {
-    final msg = ConnectionStartMessage(heartbeatInterval: 1510);
-    final msgEncoded =
-        "ARRIRPC/$arriVersion CONNECTION_START\nheartbeat-interval: 1510\n\n";
-
+  group("ConnectionStartMessage", () {
+    final msgWithInterval = ConnectionStartMessage(heartbeatInterval: 255);
+    final msgWithIntervalEncoded = File(
+            "../../../tests/test-files/ConnectionStartMessage_WithInterval.txt")
+        .readAsStringSync();
+    final msgWithoutInterval = ConnectionStartMessage(heartbeatInterval: null);
+    final msgWithoutIntervalEncoded = File(
+            "../../../tests/test-files/ConnectionStartMessage_WithoutInterval.txt")
+        .readAsStringSync();
     test("parse", () {
-      final result = Message.fromString(msgEncoded);
-      switch (result) {
-        case Ok<Message, String>():
-          switch (result.value) {
-            case ConnectionStartMessage():
-              expect(result.value, equals(msg));
-              break;
-            case HeartbeatMessage():
-            case InvocationMessage():
-            case OkMessage():
-            case ErrorMessage():
-            case StreamDataMessage():
-            case StreamEndMessage():
-            case StreamCancelMessage():
-              fail(
-                  "Parsed to wrong message. Should be ServerConnectionStartMessage().");
-          }
-          break;
-        case Err<Message, String>():
-          fail(result.error);
-      }
+      var result = Message.fromString(msgWithIntervalEncoded);
+      expect(result.unwrap(), equals(msgWithInterval));
+      result = Message.fromString(msgWithoutIntervalEncoded);
+      expect(result.unwrap(), equals(msgWithoutInterval));
     });
     test("encode", () {
+      expect(msgWithInterval.encodeString(), equals(msgWithIntervalEncoded));
+      expect(
+          msgWithoutInterval.encodeString(), equals(msgWithoutIntervalEncoded));
+    });
+  });
+
+  group("StreamDataMessage", () {
+    final msg = StreamDataMessage(
+      reqId: "1515",
+      msgId: "1",
+      body: "{\"message\":\"hello world\"}",
+    );
+    final msgEncoded = File(
+      "../../../tests/test-files/StreamDataMessage.txt",
+    ).readAsStringSync();
+    test("parsing", () {
+      final result = Message.fromString(msgEncoded);
+      expect(result.unwrap(), equals(msg));
+    });
+    test("encoding", () {
       expect(msg.encodeString(), equals(msgEncoded));
     });
+  });
+
+  test("StreamEndMessage", () {
+    final msg = StreamEndMessage(reqId: "1515", reason: "no more events");
+    final msgEncoded = File("../../../tests/test-files/StreamEndMessage.txt")
+        .readAsStringSync();
+
+    final result = Message.fromString(msgEncoded);
+    expect(result.unwrap(), equals(msg));
+    expect(msg.encodeString(), equals(msgEncoded));
+  });
+  test("StreamCancelMessage", () {
+    final msg = StreamCancelMessage(reqId: "1515", reason: "no longer needed");
+    final msgEncoded = File("../../../tests/test-files/StreamCancelMessage.txt")
+        .readAsStringSync();
+    final result = Message.fromString(msgEncoded);
+    expect(result.unwrap(), equals(msg));
+    expect(msg.encodeString(), equals(msgEncoded));
   });
 }

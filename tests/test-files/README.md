@@ -402,3 +402,13 @@ reason: no more events
 
 
 ```
+
+## StreamCancelMessage.txt
+
+```txt
+ARRIRPC/0.0.8 STREAM_CANCEL
+req-id: 1515
+reason: no longer needed
+
+
+```

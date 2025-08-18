@@ -3,7 +3,7 @@ import 'package:arri_core/arri_core.dart';
 
 class RpcRequest<T extends ArriModel?> {
   final String procedure;
-  String? reqId;
+  String reqId;
   final String path;
   final HttpMethod? method;
   final String? clientVersion;

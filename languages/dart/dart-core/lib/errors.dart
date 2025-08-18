@@ -1,13 +1,16 @@
 import 'dart:convert';
 
 import 'package:arri_core/helpers.dart';
+import 'package:arri_core/message.dart';
 import 'package:http/http.dart' as http;
 
 /// Serializable request error that can parse the error responses from an Arri RPC server.
 class ArriError implements Exception {
+  final String? reqId;
   final int code;
   final String message;
   late final String? _body;
+  final ContentType contentType;
   bool _bodyParsed = false;
 
   late List<String>? _trace;
@@ -16,6 +19,8 @@ class ArriError implements Exception {
   ArriError({
     required this.code,
     required this.message,
+    this.reqId,
+    this.contentType = ContentType.json,
     String? body,
     dynamic data,
     List<String>? trace,
@@ -64,15 +69,40 @@ class ArriError implements Exception {
   }
 
   /// Create an ArriRequestError from an HTTP response
-  factory ArriError.fromResponse(http.Response response) {
+  factory ArriError.fromHttpResponse(http.Response response) {
+    final reqId = response.headers["req-id"];
     final code = int.tryParse(response.headers["err-code"] ?? "0") ?? 0;
     final message = response.headers["err-msg"] ?? "unknown error";
     return ArriError(
       code: code,
       message: message,
+      reqId: reqId,
       body: response.body,
       data: null,
       trace: null,
+    );
+  }
+
+  static Future<ArriError> fromHttpStreamedResponse(
+      http.StreamedResponse response) async {
+    final reqId = response.headers["req-id"];
+    final code = int.tryParse(response.headers["err-code"] ?? "0");
+    final message = response.headers["err-msg"] ?? "unknown error";
+    final body = await utf8.decodeStream(response.stream).tryCatch();
+    return ArriError(
+      reqId: reqId,
+      code: code ?? 0,
+      message: message,
+      body: body.unwrap(),
+    );
+  }
+
+  factory ArriError.fromErrorMessage(ErrorMessage msg) {
+    return ArriError(
+      code: msg.code,
+      message: msg.message,
+      contentType: msg.contentType,
+      body: msg.body,
     );
   }
 
@@ -88,19 +118,21 @@ class ArriError implements Exception {
     return "ArriError { code: $code, message: $message, data: ${data}, stack: [${trace!.map((e) => "\"$e\"").join(",")}] }";
   }
 
-  Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{"code": code, "message": message};
-    if (data != null) {
-      result["data"] = data;
+  Message toMessage(String reqId, {Map<String, String>? headers}) {
+    String? body;
+    if (_trace != null || _data != null) {
+      body = json.encode({"data": _data, "trace": _trace});
+    } else if (_body != null) {
+      body = _body;
     }
-    if (trace != null) {
-      result["stack"] = trace;
-    }
-    return result;
-  }
-
-  String toJsonString() {
-    return json.encode(toJson());
+    return ErrorMessage(
+      reqId: reqId,
+      code: code,
+      message: message,
+      contentType: contentType,
+      customHeaders: headers ?? {},
+      body: body,
+    );
   }
 }
 

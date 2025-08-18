@@ -115,7 +115,7 @@ sealed class Message {
           msgId = value;
           break;
         case "reason":
-          reason = reason;
+          reason = value;
           break;
         case 'heartbeat-interval':
           heartbeatInterval = int.tryParse(value);
@@ -172,13 +172,10 @@ sealed class Message {
         if (rpcName == null) {
           return Err("Invalid message. Unable to determine RPC name.");
         }
-        if (contentType == null || contentType == ContentType.unknown) {
-          return Err("content-type is a required header for invocation RPCs");
-        }
         return Ok(InvocationMessage(
           reqId: reqId!,
           rpcName: rpcName!,
-          contentType: contentType!,
+          contentType: contentType ?? ContentType.json,
           clientVersion: clientVersion,
           customHeaders: customHeaders,
           method: null,
@@ -192,7 +189,7 @@ sealed class Message {
         return Ok(
           OkMessage(
             reqId: reqId!,
-            contentType: contentType ?? ContentType.unknown,
+            contentType: contentType ?? ContentType.json,
             customHeaders: customHeaders,
             body: body,
           ),
@@ -210,7 +207,7 @@ sealed class Message {
         return Ok(
           ErrorMessage(
             reqId: reqId!,
-            contentType: contentType ?? ContentType.unknown,
+            contentType: contentType ?? ContentType.json,
             code: errCode!,
             message: errMsg!,
             customHeaders: customHeaders,
@@ -241,8 +238,6 @@ sealed class Message {
         return Ok(StreamCancelMessage(reqId: reqId!, reason: reason));
     }
   }
-
-  bool operator ==(Object other);
 }
 
 class InvocationMessage implements Message {
@@ -501,6 +496,11 @@ class StreamEndMessage implements Message {
     output += "\n";
     return output;
   }
+
+  @override
+  String toString() {
+    return "StreamEndMessage { reqId: $reqId, reason: $reason }";
+  }
 }
 
 class StreamCancelMessage implements Message {
@@ -524,21 +524,25 @@ class StreamCancelMessage implements Message {
     output += "\n";
     return output;
   }
+
+  @override
+  String toString() {
+    return "StreamCancelMessage { reqId: $reqId, reason: $reason }";
+  }
 }
 
 enum ContentType {
-  unknown(""),
   json("application/json");
 
   const ContentType(this.serialValue);
 
   final String serialValue;
 
-  factory ContentType.fromSerialValue(String input) {
+  static ContentType? fromSerialValue(String input) {
     for (final val in values) {
       if (val.serialValue == input) return val;
     }
-    return unknown;
+    return null;
   }
 }
 

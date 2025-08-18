@@ -194,7 +194,7 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel?>({
         onError: onError,
       );
     }
-    final err = ArriError.fromResponse(response);
+    final err = ArriError.fromHttpResponse(response);
     onError?.call(req, err);
     throw err;
   }
@@ -327,23 +327,7 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
       final response = await _httpClient.send(request).timeout(_timeout);
       _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
-        final body = await utf8.decodeStream(response.stream);
-        Map<String, dynamic>? parsedJson;
-        try {
-          parsedJson = json.decode(body);
-        } catch (_) {}
-        if (parsedJson != null) {
-          throw ArriError.fromJson(parsedJson);
-        }
-        throw ArriError(
-          code: response.statusCode,
-          message: response.reasonPhrase ?? "Unknown error connection to $url",
-        );
-      }
-      if (response.statusCode != 200) {
-        throw http.ClientException(
-          "Server must return statusCode 200. Instead got ${response.statusCode}",
-        );
+        throw await ArriError.fromHttpStreamedResponse(response);
       }
       final heartbeatIntervalHeader =
           int.tryParse(response.headers["heartbeat-interval"] ?? "0");

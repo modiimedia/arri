@@ -234,7 +234,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                     `req-id is a required header for INVOCATION messages`,
                 );
             }
-            if (!contentType || contentType === 'unknown') {
+            if (contentType === 'unknown') {
                 return Err(
                     'Missing or invalid content-type header. Accepted values: ["application/json"]',
                 );
@@ -243,7 +243,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                 type: 'INVOCATION',
                 rpcName: rpcName,
                 reqId: reqId,
-                contentType: contentType,
+                contentType: contentType ?? 'application/json',
                 clientVersion: clientVersion,
                 lastMsgId: lastMsgId,
                 customHeaders: customHeaders,
@@ -255,7 +255,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
             if (!reqId) {
                 return Err('req-id is a required header for OK messages');
             }
-            if (!contentType || contentType === 'unknown') {
+            if (contentType === 'unknown') {
                 return Err(
                     'Missing or invalid content-type header. Accepted values: ["application/json"]',
                 );
@@ -264,7 +264,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                 type: 'OK',
                 reqId: reqId,
                 customHeaders: customHeaders,
-                contentType: contentType,
+                contentType: contentType ?? 'application/json',
                 heartbeatInterval: heartbeatInterval,
                 body: body,
             };
@@ -274,7 +274,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
             if (!reqId) {
                 return Err(`req-id is a required header for ERROR messages`);
             }
-            if (!contentType || contentType === 'unknown') {
+            if (contentType === 'unknown') {
                 return Err(
                     'Missing or invalid content-type header. Accepted values: ["application/json"]',
                 );
@@ -291,7 +291,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                 type: 'ERROR',
                 reqId: reqId,
                 customHeaders: customHeaders,
-                contentType: contentType,
+                contentType: contentType ?? 'application/json',
                 errorCode: errorCode,
                 errorMessage: errorMessage,
                 body: body,
