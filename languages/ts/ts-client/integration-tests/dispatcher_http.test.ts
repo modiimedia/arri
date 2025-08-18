@@ -10,6 +10,7 @@ describe('[HTTP] respects heartbeat header', () => {
     const requestFactory = (
         heartbeatEnabled: boolean,
     ): RpcRequest<{ heartbeatEnabled: boolean }> => ({
+        reqId: '1',
         clientVersion: '22',
         procedure: 'heartbeatTest',
         method: 'get',
