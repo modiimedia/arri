@@ -29,8 +29,8 @@ export const ReservedHeaders = [
     'client-version',
     'msg-id',
     'last-msg-id',
-    'error-code',
-    'error-msg',
+    'err-code',
+    'err-msg',
     'heartbeat-interval',
     'reason',
 ] as const;
@@ -162,14 +162,14 @@ export function parseMessage(input: string): Result<Message<string>, string> {
             case 'msg-id':
                 msgId = value;
                 break;
-            case 'error-code':
+            case 'err-code':
                 const code = Number.parseInt(value);
                 if (Number.isNaN(code)) {
                     return 'Invalid error code. Must be an integer.';
                 }
                 errorCode = code;
                 break;
-            case 'error-msg':
+            case 'err-msg':
                 errorMessage = value;
                 break;
             case 'heartbeat-interval':
@@ -284,7 +284,7 @@ export function parseMessage(input: string): Result<Message<string>, string> {
                 typeof errorMessage === 'undefined'
             ) {
                 return Err(
-                    `Missing one or more required headers for ERROR message: ["error-code", "error-msg"]`,
+                    `Missing one or more required headers for ERROR message: ["err-code", "err-msg"]`,
                 );
             }
             const msg: ErrorMessage = {
@@ -393,8 +393,8 @@ export function encodeMessage(msg: Message<string>): string {
             output += `ARRIRPC/${ARRI_VERSION} ERROR\n`;
             output += `content-type: ${msg.contentType}\n`;
             output += `req-id: ${msg.reqId}\n`;
-            output += `error-code: ${msg.errorCode}\n`;
-            output += `error-msg: ${msg.errorMessage}\n`;
+            output += `err-code: ${msg.errorCode}\n`;
+            output += `err-msg: ${msg.errorMessage}\n`;
             for (const [key, value] of Object.entries(msg.customHeaders)) {
                 output += `${key}: ${value}\n`;
             }
