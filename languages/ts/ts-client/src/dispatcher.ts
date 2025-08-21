@@ -46,8 +46,8 @@ export interface EventStreamHooks<TData> {
     maxRetryInterval?: number;
 }
 
-export interface RpcDispatcher {
-    transport: string;
+export interface RpcDispatcher<T extends string> {
+    transport: T;
     handleRpc<TParams, TOutput>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TOutput>,
@@ -66,7 +66,7 @@ export interface EventStreamController {
     abort(): void;
 }
 
-export type TransportMap = Record<string, RpcDispatcher>;
+export type TransportMap = Record<string, RpcDispatcher<any>>;
 
 export type SafeResponse<T> =
     | {
@@ -75,11 +75,11 @@ export type SafeResponse<T> =
       }
     | { success: false; error: ArriError };
 
-export function resolveTransport(
-    availableTransports: string[],
-    selectedTransport: string | undefined,
-    globalDefault: string | undefined,
-): string {
+export function resolveTransport<T extends string>(
+    availableTransports: T[],
+    selectedTransport: T | undefined,
+    globalDefault: T | undefined,
+): T | undefined {
     if (availableTransports.length === 1) {
         return availableTransports[0]!;
     }
@@ -89,7 +89,7 @@ export function resolveTransport(
     if (globalDefault && availableTransports.includes(globalDefault)) {
         return globalDefault;
     }
-    return availableTransports[0] ?? '';
+    return availableTransports[0];
 }
 
 export function waitFor(ms: number): Promise<void> {

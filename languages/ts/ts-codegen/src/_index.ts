@@ -195,11 +195,20 @@ import {
     ${context.usedFeatures.sse ? 'type EventStreamHooks,' : ''}
     resolveDispatcherOptions,
     resolveTransport,
+    generateRequestId,
 } from "@arrirpc/client";
+
+const __transportOptions__ = [${def.transports.map((val) => `'${val}'`).join(', ')}] as const;
+type __TransportOption__ = typeof __transportOptions__[number];
  
 export interface ${context.clientName}Options extends Omit<RpcDispatcherOptions, 'signal'> {
-    transport?: ${def.transports.map((val) => `'${val}'`).join(' | ')};
-    dispatchers?: Record<string, RpcDispatcher>;
+    transport?: __TransportOption__;
+    dispatchers?: Record<string, RpcDispatcher<__TransportOption__>>;
+    /**
+     * Override the default function to generate request ids.
+     * By default Arri uses ULIDs but you are free to use your own algorithm so long as each request has a unique id.
+     */
+    genReqId?: () => string;
     ${httpImportPart.join('\n    ')}
     ${wsImportPart.join('\n    ')}
 }

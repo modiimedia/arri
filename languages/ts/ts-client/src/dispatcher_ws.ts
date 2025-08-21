@@ -39,7 +39,8 @@ export interface WsDispatcherOptions extends RpcDispatcherOptions {
     fragmentationThreshold?: number;
 }
 
-export class WsDispatcher implements RpcDispatcher {
+export class WsDispatcher implements RpcDispatcher<'ws'> {
+    transport = 'ws' as const;
     private readonly client: ws.client;
     private connection: ws.connection | undefined;
     private reqCount = 0;
@@ -234,8 +235,6 @@ export class WsDispatcher implements RpcDispatcher {
             });
         }
     }
-
-    transport: string = 'ws';
 
     async handleRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,

@@ -166,6 +166,9 @@ importers:
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
+      ulidx:
+        specifier: ^2.4.1
+        version: 2.4.1
       uncrypto:
         specifier: ^0.1.3
         version: 0.1.3

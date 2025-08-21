@@ -16,8 +16,8 @@ export interface HttpDispatcherOptions extends RpcDispatcherOptions {
     fetch?: Fetch;
 }
 
-export class HttpDispatcher implements RpcDispatcher {
-    transport: string = 'http';
+export class HttpDispatcher implements RpcDispatcher<'http'> {
+    transport = 'http' as const;
     ofetch: $Fetch;
     options: HttpDispatcherOptions;
 

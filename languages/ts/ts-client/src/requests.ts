@@ -1,4 +1,5 @@
 import { serializeSmallString } from '@arrirpc/schema';
+import { ulid } from 'ulidx';
 
 export interface RpcRequestValidator<TParams, TResponse> {
     params: ArriModelValidator<TParams>;
@@ -106,3 +107,9 @@ export type HeaderInput =
     | (() =>
           | Promise<Record<string, string | undefined>>
           | Record<string, string | undefined>);
+
+/**
+ * Default implementation for generating unique request IDs for client requests. (Uses ULID) */
+export function generateRequestId() {
+    return ulid();
+}

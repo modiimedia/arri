@@ -34,12 +34,13 @@ export function tsRpcFromDefinition(
         options?: EventStreamHooks<${response ?? 'undefined'}>
     ): EventStreamController {
         const req: RpcRequest<${params ?? 'undefined'}> = {
+            reqId: this.__genReqId__(),
             procedure: '${context.instancePath}',
             path: '${def.path}',
             method: ${def.method ? `'${def.method}'` : 'undefined'},
             clientVersion: ${context.versionNumber ? `'${context.versionNumber}'` : 'undefined'},
             data: ${params ? 'params' : 'undefined'},
-            customHeaders: this._options.headers,
+            customHeaders: this.__options__.headers,
         };
         const validator: RpcRequestValidator<${params ?? 'undefined'}, ${response ?? 'undefined'}> = {
             params: ${params ? `$$${params}` : 'UndefinedModelValidator'},
@@ -48,18 +49,25 @@ export function tsRpcFromDefinition(
         const transport = ${
             def.transports.length === 1
                 ? `'${def.transports[0]!}'`
-                : `resolveTransport(
+                : `resolveTransport<__TransportOption__>(
             [${def.transports.map((val) => `'${val}'`).join(', ')}],
             options?.transport,
-            this._defaultTransport,
-        )`
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                \`Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.\`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }`
         };
-        const dispatcher = this._dispatchers[transport];
+        const dispatcher = this.__dispatchers__[transport];
         if(!dispatcher) {
             const err = new Error(
                 \`Missing dispatcher for transport "\${transport}"\`,
             );
-            this._options.onError?.(req, err);
+            this.__options__.onError?.(req, err);
             throw err;
         }
         return dispatcher.handleEventStreamRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
@@ -74,8 +82,9 @@ export function tsRpcFromDefinition(
         description: def.description,
         isDeprecated: def.isDeprecated,
     })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: RpcOptions<${transportType}>): Promise<${response ?? 'undefined'}> {
-        const finalOptions = resolveDispatcherOptions(options, this._options);
+        const finalOptions = resolveDispatcherOptions(options, this.__options__);
         const req: RpcRequest<${params ?? 'undefined'}> = {
+            reqId: this.__genReqId__(),
             procedure: '${context.instancePath}',
             path: '${def.path}',
             method: ${def.method ? `'${def.method}'` : 'undefined'},
@@ -90,13 +99,20 @@ export function tsRpcFromDefinition(
         const transport = ${
             def.transports.length === 1
                 ? `'${def.transports[0]!}'`
-                : `resolveTransport(
+                : `resolveTransport<__TransportOption__>(
             [${def.transports.map((val) => `'${val}'`).join(', ')}],
             options?.transport,
-            this._defaultTransport,
-        )`
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                \`Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.\`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }`
         };
-        const dispatcher = this._dispatchers[transport];
+        const dispatcher = this.__dispatchers__[transport];
         if(!dispatcher) {
             const err = new Error(
                 \`Missing dispatcher for transport "\${transport}"\`,

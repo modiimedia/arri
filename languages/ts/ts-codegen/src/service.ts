@@ -79,12 +79,13 @@ export function tsServiceFromDefinition(
         key,
         name: serviceName,
         content: `export class ${serviceName} {
-    private readonly _dispatchers: Record<string, RpcDispatcher>;
-    private readonly _options: RpcDispatcherOptions;
-    private readonly _defaultTransport: string;
+    private readonly __dispatchers__: Record<string, RpcDispatcher<__TransportOption__>>;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
 ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
     constructor(config: ${context.clientName}Options) {
-        this._options = {
+        this.__options__ = {
             headers: config.headers,
             onError: config.onError,
             retry: config.retry,
@@ -92,7 +93,8 @@ ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n'
             retryErrorCodes: config.retryErrorCodes,
             timeout: config.timeout,
         };
-        this._defaultTransport = config.transport ?? 'http';
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
         if (!config.dispatchers) config.dispatchers = {};
         if (!config.dispatchers['http']) {
             config.dispatchers['http'] = new HttpDispatcher(config);
@@ -100,15 +102,16 @@ ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n'
         if (!config.dispatchers['ws']) {
             config.dispatchers['ws'] = new WsDispatcher(config);
         }
-        this._dispatchers = config.dispatchers!
+        this.__dispatchers__ = config.dispatchers!
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
 
     /**
-     * Close all active connections
+     * Close all active connections for a specific transport or for all transports.
      */
-    terminateConnections() {
-        for (const dispatcher of Object.values(this._dispatchers)) {
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
             dispatcher.terminateConnections();
         }
     }
