@@ -109,7 +109,8 @@ export type HeaderInput =
           | Record<string, string | undefined>);
 
 /**
- * Default implementation for generating unique request IDs for client requests. (Uses ULID) */
+ * Default implementation for generating unique request IDs for client requests. (Uses ULID)
+ */
 export function generateRequestId() {
     return ulid();
 }

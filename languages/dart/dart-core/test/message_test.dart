@@ -41,9 +41,10 @@ void main() {
       customHeaders: {"foo": "hello foo"},
       body: "{\"message\":\"hello world\"}",
     );
-    final withBodyEncoded =
-        File("../../../tests/test-files/InvocationMessage_WithBody.txt")
-            .readAsStringSync();
+    final withBodyFile =
+        File("../../../tests/test-files/InvocationMessage_WithBody.txt");
+    final withBodyString = withBodyFile.readAsStringSync();
+    final withBodyBytes = withBodyFile.readAsBytesSync();
 
     final withoutBody = InvocationMessage(
       rpcName: "foo.fooFoo",
@@ -55,11 +56,12 @@ void main() {
       customHeaders: {"foo": "hello foo", "bar": "hello bar"},
       body: null,
     );
-    final withoutBodyEncoded =
-        File("../../../tests/test-files/InvocationMessage_WithoutBody.txt")
-            .readAsStringSync();
-    test("parsing", () {
-      final withBodyResult = Message.fromString(withBodyEncoded);
+    final withoutBodyFile =
+        File("../../../tests/test-files/InvocationMessage_WithoutBody.txt");
+    final withoutBodyEncoded = withoutBodyFile.readAsStringSync();
+    final withoutBodyBytes = withoutBodyFile.readAsBytesSync();
+    test("parsing string", () {
+      final withBodyResult = Message.fromString(withBodyString);
       switch (withBodyResult) {
         case Ok<Message, String>():
           expect(withBodyResult.value is InvocationMessage, equals(true));
@@ -77,7 +79,7 @@ void main() {
           fail(withoutBodyResult.error);
       }
 
-      final malformedResult = Message.fromString("HTTP/1 " + withBodyEncoded);
+      final malformedResult = Message.fromString("HTTP/1 " + withBodyString);
       switch (malformedResult) {
         case Ok<Message, String>():
           print("RESULT: ${malformedResult.value}");
@@ -87,9 +89,29 @@ void main() {
           break;
       }
     });
-    test("encoding", () {
-      expect(withBody.encodeString(), equals(withBodyEncoded));
+    test("encoding string", () {
+      expect(withBody.encodeString(), equals(withBodyString));
       expect(withoutBody.encodeString(), equals(withoutBodyEncoded));
+    });
+
+    test("parsing bytes", () {
+      final withBodyResult = Message.fromBytes(withBodyBytes);
+      switch (withBodyResult) {
+        case Ok<Message, String>():
+          expect(withBodyResult.value is InvocationMessage, equals(true));
+          expect(withBodyResult.value, equals(withBody));
+          break;
+        case Err<Message, String>():
+          fail(withBodyResult.error);
+      }
+      final withoutBodyResult = Message.fromBytes(withoutBodyBytes);
+      switch (withoutBodyResult) {
+        case Ok<Message, String>():
+          expect(withoutBodyResult.value, equals(withoutBody));
+          break;
+        case Err<Message, String>():
+          fail(withoutBodyResult.error);
+      }
     });
   });
 

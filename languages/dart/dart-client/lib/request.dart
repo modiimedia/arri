@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:arri_core/arri_core.dart';
+import 'package:ulid/ulid.dart';
 
 class RpcRequest<T extends ArriModel?> {
   final String procedure;
@@ -84,4 +85,9 @@ class ArriResultErr<T> implements ArriResult<T> {
 
   @override
   T unwrapOr(T fallback) => fallback;
+}
+
+/// Default implementation for generating unique request IDs for client requests. (Uses ULID)
+String generateRequestId() {
+  return Ulid().toString();
 }

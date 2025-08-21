@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
 import './helpers.dart';
 
@@ -42,11 +45,209 @@ enum MessageType {
 
 sealed class Message {
   const Message();
+  Uint8List encode();
   String encodeString();
 
   List<Object?> get props;
 
   String? get reqId;
+
+  static Result<Message, String> fromBytes<TBody>(Uint8List bytes) {
+    MessageType? type;
+    String? reqId;
+    String? msgId;
+    String? rpcName;
+    String? reason;
+    String? clientVersion;
+    int? errCode;
+    String? errMsg;
+    ContentType? contentType;
+    final Map<String, String> customHeaders = {};
+    int? heartbeatInterval;
+    int? bodyStartIndex;
+
+    int currentLineStart = 0;
+    int currentLineEnd = 0;
+    final endOfLineByte = 10;
+
+    String? processLine() {
+      final lineString = String.fromCharCodes(
+          Uint8List.sublistView(bytes, currentLineStart, currentLineEnd));
+      print(lineString);
+      if (type == null) {
+        final parts = lineString.split(' ');
+        if (parts.length < 2) {
+          return "Invalid message. Message must begin with \"ARRIRPC/$arriVersion <msg-type>\"";
+        }
+        final [version, typeIndicator, ..._] = parts;
+        if (!isCurrentArriVersionPrefix(version)) {
+          return "Unsupported Arri version. Expected \"${arriVersion}\" got \"${version}\"";
+        }
+        switch (typeIndicator) {
+          case "OK":
+            type = MessageType.ok;
+            break;
+          case "ERROR":
+            type = MessageType.error;
+            break;
+          case "HEARTBEAT":
+            type = MessageType.heartbeat;
+            break;
+          case "CONNECTION_START":
+            type = MessageType.connectionStart;
+            break;
+          case "STREAM_DATA":
+            type = MessageType.streamData;
+            break;
+          case "STREAM_END":
+            type = MessageType.streamEnd;
+            break;
+          case "STREAM_CANCEL":
+            type = MessageType.streamCancel;
+            break;
+          default:
+            type = MessageType.invocation;
+            rpcName = typeIndicator;
+            break;
+        }
+        currentLineStart = currentLineEnd + 2;
+        return null;
+      }
+      return null;
+    }
+
+    for (var i = 0; i < bytes.length; i++) {
+      final byte = bytes[i];
+      if (byte == endOfLineByte && bytes[i + 1] == endOfLineByte) {
+        currentLineEnd = i;
+        final err = processLine();
+        if (err != null) return Err(err);
+        bodyStartIndex = i + 2;
+        break;
+      }
+      if (byte == endOfLineByte) {
+        currentLineEnd = i;
+        final err = processLine();
+        if (err != null) return Err(err);
+        continue;
+      }
+    }
+    if (type == null) return Err("Invalid message");
+    if (bodyStartIndex == null) {
+      return Err(
+          "Invalid message. Missing \\n\\n delimiter indicating end of headers");
+    }
+    Uint8List? body;
+    final bodyBytes = Uint8List.sublistView(bytes, bodyStartIndex);
+    if (bodyBytes.isNotEmpty) body = bodyBytes;
+    return _createMessage(
+      type: type!,
+      reqId: reqId,
+      msgId: msgId,
+      rpcName: rpcName,
+      reason: reason,
+      clientVersion: clientVersion,
+      errCode: errCode,
+      errMsg: errMsg,
+      contentType: contentType,
+      customHeaders: customHeaders,
+      heartbeatInterval: heartbeatInterval,
+      body: body,
+    );
+  }
+
+  static Result<Message, String> _createMessage<T>({
+    required MessageType type,
+    required String? reqId,
+    required String? msgId,
+    required String? rpcName,
+    required String? reason,
+    required String? clientVersion,
+    required int? errCode,
+    required String? errMsg,
+    required ContentType? contentType,
+    required Map<String, String> customHeaders,
+    required int? heartbeatInterval,
+    required Uint8List? body,
+  }) {
+    switch (type) {
+      case MessageType.unknown:
+        return Err(
+          "Invalid message. Invalid message type or outdated ARRIRPC/{version}",
+        );
+      case MessageType.invocation:
+        if (reqId == null) {
+          return Err("req-id is required for invocation messages");
+        }
+        if (rpcName == null) {
+          return Err("Invalid message. Unable to determine RPC name.");
+        }
+        return Ok(InvocationMessage(
+          reqId: reqId,
+          rpcName: rpcName,
+          contentType: contentType ?? ContentType.json,
+          clientVersion: clientVersion,
+          customHeaders: customHeaders,
+          method: null,
+          path: null,
+          body: body,
+        ));
+      case MessageType.ok:
+        if (reqId == null) {
+          return Err("req-id is required for OK messages");
+        }
+        return Ok(
+          OkMessage(
+            reqId: reqId,
+            contentType: contentType ?? ContentType.json,
+            customHeaders: customHeaders,
+            body: body,
+          ),
+        );
+      case MessageType.error:
+        if (reqId == null) {
+          return Err("req-id is required for ERROR messages");
+        }
+        if (errCode == null) {
+          return Err("err-code is a required header for ERROR messages");
+        }
+        if (errMsg == null) {
+          return Err("err-msg is a required header for ERROR messages");
+        }
+        return Ok(
+          ErrorMessage(
+            reqId: reqId,
+            contentType: contentType ?? ContentType.json,
+            code: errCode,
+            message: errMsg,
+            customHeaders: customHeaders,
+            body: body,
+          ),
+        );
+      case MessageType.heartbeat:
+        return Ok(HeartbeatMessage(heartbeatInterval: heartbeatInterval));
+      case MessageType.connectionStart:
+        return Ok(ConnectionStartMessage(heartbeatInterval: heartbeatInterval));
+      case MessageType.streamData:
+        if (reqId == null) {
+          return Err("req-id is required for STREAM_DATA messages");
+        }
+        return Ok(StreamDataMessage(reqId: reqId, msgId: msgId, body: body));
+      case MessageType.streamEnd:
+        if (reqId == null) {
+          return Err("req-id is required for STREAM_END messages");
+        }
+        return Ok(StreamEndMessage(
+          reqId: reqId,
+          reason: reason,
+        ));
+      case MessageType.streamCancel:
+        if (reqId == null) {
+          return Err("req-id is required for STREAM_CANCEL messages");
+        }
+        return Ok(StreamCancelMessage(reqId: reqId, reason: reason));
+    }
+  }
 
   static Result<Message, String> fromString<TBody>(String input) {
     MessageType? type;
@@ -142,12 +343,14 @@ sealed class Message {
     for (var i = 0; i < input.length; i++) {
       final char = input[i];
       if (char == '\n' && input[i + 1] == '\n') {
-        processLine();
+        final err = processLine();
+        if (err != null) return Err(err);
         bodyStartIndex = i + 2;
         break;
       }
       if (char == '\n') {
-        processLine();
+        final err = processLine();
+        if (err != null) return Err(err);
         continue;
       }
       currentLine += char;
@@ -157,86 +360,21 @@ sealed class Message {
       return Err(
           "Invalid message. Missing \\n\\n delimiter indicating end of headers");
     }
-    String? body;
-    final bodyStr = input.substring(bodyStartIndex);
-    if (bodyStr.length > 0) body = bodyStr;
-    switch (type!) {
-      case MessageType.unknown:
-        return Err(
-          "Invalid message. Invalid message type or outdated ARRIRPC/{version}",
-        );
-      case MessageType.invocation:
-        if (reqId == null) {
-          return Err("req-id is required for invocation messages");
-        }
-        if (rpcName == null) {
-          return Err("Invalid message. Unable to determine RPC name.");
-        }
-        return Ok(InvocationMessage(
-          reqId: reqId!,
-          rpcName: rpcName!,
-          contentType: contentType ?? ContentType.json,
-          clientVersion: clientVersion,
-          customHeaders: customHeaders,
-          method: null,
-          path: null,
-          body: body,
-        ));
-      case MessageType.ok:
-        if (reqId == null) {
-          return Err("req-id is required for OK messages");
-        }
-        return Ok(
-          OkMessage(
-            reqId: reqId!,
-            contentType: contentType ?? ContentType.json,
-            customHeaders: customHeaders,
-            body: body,
-          ),
-        );
-      case MessageType.error:
-        if (reqId == null) {
-          return Err("req-id is required for ERROR messages");
-        }
-        if (errCode == null) {
-          return Err("err-code is a required header for ERROR messages");
-        }
-        if (errMsg == null) {
-          return Err("err-msg is a required header for ERROR messages");
-        }
-        return Ok(
-          ErrorMessage(
-            reqId: reqId!,
-            contentType: contentType ?? ContentType.json,
-            code: errCode!,
-            message: errMsg!,
-            customHeaders: customHeaders,
-            body: body,
-          ),
-        );
-      case MessageType.heartbeat:
-        return Ok(HeartbeatMessage(heartbeatInterval: heartbeatInterval));
-      case MessageType.connectionStart:
-        return Ok(ConnectionStartMessage(heartbeatInterval: heartbeatInterval));
-      case MessageType.streamData:
-        if (reqId == null) {
-          return Err("req-id is required for STREAM_DATA messages");
-        }
-        return Ok(StreamDataMessage(reqId: reqId!, msgId: msgId, body: body));
-      case MessageType.streamEnd:
-        if (reqId == null) {
-          return Err("req-id is required for STREAM_END messages");
-        }
-        return Ok(StreamEndMessage(
-          reqId: reqId!,
-          reason: reason,
-        ));
-      case MessageType.streamCancel:
-        if (reqId == null) {
-          return Err("req-id is required for STREAM_CANCEL messages");
-        }
-        return Ok(StreamCancelMessage(reqId: reqId!, reason: reason));
-    }
+    Uint8List? body;
+    return _createMessage(
+      type: type!,
+      reqId: reqId,
+      msgId: msgId,
+      rpcName: rpcName,
+      reason: reason,
+      clientVersion: clientVersion,
+      errCode: errCode,
+      errMsg: errMsg,
+      contentType: contentType,
+      customHeaders: customHeaders,
+      heartbeatInterval: heartbeatInterval,
+      body: body,
+    );
   }
 }
 
@@ -248,7 +386,7 @@ class InvocationMessage implements Message {
   final Map<String, String> customHeaders;
   final HttpMethods? method;
   final String? path;
-  final String? body;
+  final Uint8List? body;
   InvocationMessage({
     required this.reqId,
     required this.rpcName,
@@ -266,17 +404,25 @@ class InvocationMessage implements Message {
   }
 
   @override
-  String encodeString() {
-    String output = "ARRIRPC/$arriVersion $rpcName\n";
-    output += "content-type: ${contentType.serialValue}\n";
-    output += "req-id: $reqId\n";
-    if (clientVersion != null) output += "client-version: $clientVersion\n";
-    for (final entry in customHeaders.entries) {
-      output += "${entry.key}: ${entry.value}\n";
+  Uint8List encode() {
+    BytesBuilder builder = BytesBuilder();
+    builder.add(utf8.encode("ARRIRPC/$arriVersion $rpcName\n"));
+    builder.add(utf8.encode("content-type: ${contentType.serialValue}\n"));
+    builder.add(utf8.encode("req-id: $reqId\n"));
+    if (clientVersion != null) {
+      builder.add(utf8.encode("client-version: $clientVersion\n"));
     }
-    output += "\n";
-    if (body != null) output += body!;
-    return output;
+    customHeaders.forEach((key, value) {
+      builder.add(utf8.encode("$key: $value\n"));
+    });
+    builder.addByte(10);
+    if (body != null) builder.add(body!);
+    return builder.toBytes();
+  }
+
+  @override
+  String encodeString() {
+    return utf8.decode(encode());
   }
 
   @override
@@ -296,11 +442,9 @@ class InvocationMessage implements Message {
     );
     req.headers['content-type'] = contentType.serialValue;
     req.headers["req-id"] = reqId;
-    if (clientVersion != null) req.headers["client-version"] = clientVersion!;
     for (final entry in customHeaders.entries) {
       req.headers[entry.key.toLowerCase()] = entry.value;
     }
-    if (body != null) req.body = body!;
     return req;
   }
 }
@@ -309,13 +453,32 @@ class OkMessage implements Message {
   final String reqId;
   final ContentType contentType;
   final Map<String, String> customHeaders;
-  final String? body;
+  final Uint8List? body;
   const OkMessage({
     required this.reqId,
     required this.contentType,
     required this.customHeaders,
     required this.body,
   });
+
+  @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    _appendHeaders(
+      builder,
+      contentType: contentType,
+      reqId: reqId,
+      msgId: null,
+      reason: null,
+      clientVersion: null,
+      errCode: null,
+      errMsg: null,
+      customHeaders: customHeaders,
+      heartbeatInterval: null,
+    );
+    if (body != null) builder.add(body!);
+    return builder.toBytes();
+  }
 
   @override
   String encodeString() {
@@ -326,7 +489,7 @@ class OkMessage implements Message {
       output += "${entry.key.toLowerCase()}: ${entry.value}\n";
     }
     output += "\n";
-    if (body != null) output += body!;
+    if (body != null) output += String.fromCharCodes(body!);
     return output;
   }
 
@@ -344,7 +507,7 @@ class ErrorMessage implements Message {
   final String message;
   final ContentType contentType;
   final Map<String, String> customHeaders;
-  final String? body;
+  final Uint8List? body;
   const ErrorMessage({
     required this.reqId,
     required this.code,
@@ -375,6 +538,25 @@ class ErrorMessage implements Message {
   }
 
   @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    _appendHeaders(
+      builder,
+      contentType: contentType,
+      reqId: reqId,
+      msgId: null,
+      reason: null,
+      clientVersion: null,
+      errCode: null,
+      errMsg: null,
+      customHeaders: customHeaders,
+      heartbeatInterval: null,
+    );
+    if (body != null) builder.add(body!);
+    return builder.toBytes();
+  }
+
+  @override
   String encodeString() {
     String output = "ARRIRPC/$arriVersion ERROR\n";
     output += "content-type: ${contentType.serialValue}\n";
@@ -385,7 +567,6 @@ class ErrorMessage implements Message {
       output += "${entry.key.toLowerCase()}: ${entry.value}\n";
     }
     output += "\n";
-    if (body != null) output += body!;
     return output;
   }
 }
@@ -405,6 +586,17 @@ class HeartbeatMessage implements Message {
   @override
   bool operator ==(Object other) {
     return other is HeartbeatMessage && listsAreEqual(props, other.props);
+  }
+
+  @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    builder.add(utf8.encode("ARRIRPC/$arriVersion HEARTBEAT"));
+    if (heartbeatInterval != null) {
+      builder.add(utf8.encode("heartbeat-interval: $heartbeatInterval\n"));
+    }
+    builder.addByte(10);
+    return builder.toBytes();
   }
 
   @override
@@ -436,6 +628,17 @@ class ConnectionStartMessage implements Message {
   }
 
   @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    builder.add(utf8.encode("ARRIRPC/$arriVersion CONNECTION_START\n"));
+    if (heartbeatInterval != null) {
+      builder.add(utf8.encode("heartbeat-interval: $heartbeatInterval\n"));
+    }
+    builder.addByte(10);
+    return builder.toBytes();
+  }
+
+  @override
   String encodeString() {
     String output = "ARRIRPC/$arriVersion CONNECTION_START\n";
     if (heartbeatInterval != null) {
@@ -449,7 +652,7 @@ class ConnectionStartMessage implements Message {
 class StreamDataMessage implements Message {
   final String reqId;
   final String? msgId;
-  final String? body;
+  final Uint8List? body;
   StreamDataMessage({
     required this.reqId,
     required this.msgId,
@@ -465,13 +668,18 @@ class StreamDataMessage implements Message {
   }
 
   @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    builder.add(utf8.encode("ARRIRPC/$arriVersion STREAM_DATA\n"));
+    builder.add(utf8.encode("req-id: $reqId\n"));
+    builder.addByte(10);
+    if (body != null) builder.add(body!);
+    return builder.toBytes();
+  }
+
+  @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion STREAM_DATA\n";
-    output += "req-id: ${reqId}\n";
-    if (msgId != null) output += "msg-id: ${msgId}\n";
-    output += "\n";
-    if (body != null) output += body!;
-    return output;
+    return utf8.decode(encode());
   }
 }
 
@@ -489,12 +697,18 @@ class StreamEndMessage implements Message {
   }
 
   @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    builder
+        .add(utf8.encode("ARRIRPC/$arriVersion STREAM_END\nreq-id: $reqId\n"));
+    if (reason != null) builder.add(utf8.encode("reason: $reason\n"));
+    builder.addByte(10);
+    return builder.toBytes();
+  }
+
+  @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion STREAM_END\n";
-    output += "req-id: $reqId\n";
-    output += "reason: $reason\n";
-    output += "\n";
-    return output;
+    return utf8.decode(encode());
   }
 
   @override
@@ -517,12 +731,18 @@ class StreamCancelMessage implements Message {
   }
 
   @override
+  Uint8List encode() {
+    final builder = BytesBuilder();
+    builder.add(
+        utf8.encode("ARRIRPC/$arriVersion STREAM_CANCEL\nreq-id: $reqId\n"));
+    if (reason != null) builder.add(utf8.encode("reason: $reason\n"));
+    builder.addByte(10);
+    return builder.toBytes();
+  }
+
+  @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion STREAM_CANCEL\n";
-    output += "req-id: $reqId\n";
-    output += "reason: $reason\n";
-    output += "\n";
-    return output;
+    return utf8.decode(encode());
   }
 
   @override

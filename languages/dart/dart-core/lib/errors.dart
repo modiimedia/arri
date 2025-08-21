@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:arri_core/helpers.dart';
 import 'package:arri_core/message.dart';
@@ -9,7 +10,7 @@ class ArriError implements Exception {
   final String? reqId;
   final int code;
   final String message;
-  late final String? _body;
+  late final Uint8List? _body;
   final ContentType contentType;
   bool _bodyParsed = false;
 
@@ -21,7 +22,7 @@ class ArriError implements Exception {
     required this.message,
     this.reqId,
     this.contentType = ContentType.json,
-    String? body,
+    Uint8List? body,
     dynamic data,
     List<String>? trace,
   }) {
@@ -41,7 +42,7 @@ class ArriError implements Exception {
       return;
     }
     try {
-      final result = json.decode(_body);
+      final result = json.decode(String.fromCharCodes(_body));
       this._data = result["data"];
       this._trace = result["trace"] is List &&
               (result["trace"] as List).every((el) => el is String)
@@ -77,7 +78,7 @@ class ArriError implements Exception {
       code: code,
       message: message,
       reqId: reqId,
-      body: response.body,
+      body: response.bodyBytes,
       data: null,
       trace: null,
     );
@@ -88,7 +89,7 @@ class ArriError implements Exception {
     final reqId = response.headers["req-id"];
     final code = int.tryParse(response.headers["err-code"] ?? "0");
     final message = response.headers["err-msg"] ?? "unknown error";
-    final body = await utf8.decodeStream(response.stream).tryCatch();
+    final body = await byteStreamToUint8List(response.stream).tryCatch();
     return ArriError(
       reqId: reqId,
       code: code ?? 0,
@@ -119,9 +120,10 @@ class ArriError implements Exception {
   }
 
   Message toMessage(String reqId, {Map<String, String>? headers}) {
-    String? body;
+    Uint8List? body;
     if (_trace != null || _data != null) {
-      body = json.encode({"data": _data, "trace": _trace});
+      body = Uint8List.fromList(
+          json.encode({"data": _data, "trace": _trace}).codeUnits);
     } else if (_body != null) {
       body = _body;
     }
@@ -147,4 +149,12 @@ class MissingDispatcherError extends ArriError {
           message:
               "Missing dispatcher for the following transport: \"$transport\"",
         );
+}
+
+Future<Uint8List> byteStreamToUint8List(http.ByteStream stream) async {
+  List<int> allBytes = [];
+  await for (var chunk in stream) {
+    allBytes.addAll(chunk);
+  }
+  return Uint8List.fromList(allBytes);
 }
