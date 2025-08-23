@@ -72,8 +72,8 @@ sealed class Message {
 
     String? processLine() {
       final lineString = String.fromCharCodes(
-          Uint8List.sublistView(bytes, currentLineStart, currentLineEnd));
-      print(lineString);
+        Uint8List.sublistView(bytes, currentLineStart, currentLineEnd),
+      );
       if (type == null) {
         final parts = lineString.split(' ');
         if (parts.length < 2) {
@@ -110,9 +110,40 @@ sealed class Message {
             rpcName = typeIndicator;
             break;
         }
-        currentLineStart = currentLineEnd + 2;
+        currentLineStart = currentLineEnd + 1;
         return null;
       }
+      final (key, value) = parseHeaderLine(lineString);
+      switch (key) {
+        case "content-type":
+          contentType = ContentType.fromSerialValue(value);
+          break;
+        case 'req-id':
+          reqId = value;
+          break;
+        case "msg-id":
+          msgId = value;
+          break;
+        case "reason":
+          reason = value;
+          break;
+        case 'heartbeat-interval':
+          heartbeatInterval = int.tryParse(value);
+          break;
+        case "client-version":
+          clientVersion = value;
+          break;
+        case "err-code":
+          errCode = int.tryParse(value);
+          break;
+        case "err-msg":
+          errMsg = value;
+          break;
+        default:
+          customHeaders[key] = value;
+          break;
+      }
+      currentLineStart = currentLineEnd + 1;
       return null;
     }
 
@@ -338,8 +369,6 @@ sealed class Message {
       return null;
     }
 
-    ;
-
     for (var i = 0; i < input.length; i++) {
       final char = input[i];
       if (char == '\n' && input[i + 1] == '\n') {
@@ -361,6 +390,8 @@ sealed class Message {
           "Invalid message. Missing \\n\\n delimiter indicating end of headers");
     }
     Uint8List? body;
+    final bodyView = input.substring(bodyStartIndex);
+    if (bodyView.isNotEmpty) body = Uint8List.fromList(utf8.encode(bodyView));
     return _createMessage(
       type: type!,
       reqId: reqId,
@@ -464,33 +495,20 @@ class OkMessage implements Message {
   @override
   Uint8List encode() {
     final builder = BytesBuilder();
-    _appendHeaders(
-      builder,
-      contentType: contentType,
-      reqId: reqId,
-      msgId: null,
-      reason: null,
-      clientVersion: null,
-      errCode: null,
-      errMsg: null,
-      customHeaders: customHeaders,
-      heartbeatInterval: null,
-    );
+    builder.add(utf8.encode("ARRIRPC/$arriVersion OK\n"));
+    builder.add(utf8.encode("content-type: ${contentType.serialValue}\n"));
+    builder.add(utf8.encode("req-id: $reqId\n"));
+    customHeaders.forEach((key, val) {
+      builder.add(utf8.encode("$key: $val\n"));
+    });
+    builder.addByte(10);
     if (body != null) builder.add(body!);
     return builder.toBytes();
   }
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion OK\n";
-    output += "content-type: ${contentType.serialValue}\n";
-    output += "req-id: $reqId\n";
-    for (final entry in customHeaders.entries) {
-      output += "${entry.key.toLowerCase()}: ${entry.value}\n";
-    }
-    output += "\n";
-    if (body != null) output += String.fromCharCodes(body!);
-    return output;
+    return utf8.decode(encode());
   }
 
   List<Object?> get props => [reqId, contentType, customHeaders, body];
@@ -540,34 +558,21 @@ class ErrorMessage implements Message {
   @override
   Uint8List encode() {
     final builder = BytesBuilder();
-    _appendHeaders(
-      builder,
-      contentType: contentType,
-      reqId: reqId,
-      msgId: null,
-      reason: null,
-      clientVersion: null,
-      errCode: null,
-      errMsg: null,
-      customHeaders: customHeaders,
-      heartbeatInterval: null,
-    );
+    builder.add(utf8.encode("ARRIRPC/$arriVersion ERROR\n"));
+    builder.add(utf8.encode("content-type: ${contentType.serialValue}\n"));
+    builder.add(
+        utf8.encode("req-id: $reqId\nerr-code: $code\nerr-msg: $message\n"));
+    customHeaders.forEach((key, val) {
+      builder.add(utf8.encode("$key: $val\n"));
+    });
+    builder.addByte(10);
     if (body != null) builder.add(body!);
     return builder.toBytes();
   }
 
   @override
   String encodeString() {
-    String output = "ARRIRPC/$arriVersion ERROR\n";
-    output += "content-type: ${contentType.serialValue}\n";
-    output += "req-id: $reqId\n";
-    output += "err-code: $code\n";
-    output += "err-msg: $message\n";
-    for (final entry in customHeaders.entries) {
-      output += "${entry.key.toLowerCase()}: ${entry.value}\n";
-    }
-    output += "\n";
-    return output;
+    return utf8.decode(encode());
   }
 }
 
@@ -672,6 +677,7 @@ class StreamDataMessage implements Message {
     final builder = BytesBuilder();
     builder.add(utf8.encode("ARRIRPC/$arriVersion STREAM_DATA\n"));
     builder.add(utf8.encode("req-id: $reqId\n"));
+    if (msgId != null) builder.add(utf8.encode("msg-id: $msgId\n"));
     builder.addByte(10);
     if (body != null) builder.add(body!);
     return builder.toBytes();

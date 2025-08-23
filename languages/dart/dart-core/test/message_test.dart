@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -39,7 +40,7 @@ void main() {
       contentType: ContentType.json,
       clientVersion: "1.2.5",
       customHeaders: {"foo": "hello foo"},
-      body: "{\"message\":\"hello world\"}",
+      body: utf8.encode("{\"message\":\"hello world\"}"),
     );
     final withBodyFile =
         File("../../../tests/test-files/InvocationMessage_WithBody.txt");
@@ -120,7 +121,7 @@ void main() {
       reqId: "12345",
       contentType: ContentType.json,
       customHeaders: {},
-      body: "{\"message\":\"hello world\"}",
+      body: utf8.encode("{\"message\":\"hello world\"}"),
     );
     final withBodyEncoded =
         File("../../../tests/test-files/OkMessage_WithBody.txt")
@@ -190,7 +191,7 @@ void main() {
       message: "This is an error",
       contentType: ContentType.json,
       customHeaders: {"foo": "foo"},
-      body: "{\"data\":[],\"trace\":[\"foo\",\"bar\",\"baz\"]}",
+      body: utf8.encode("{\"data\":[],\"trace\":[\"foo\",\"bar\",\"baz\"]}"),
     );
     final msgWithBodyEncoded =
         File("../../../tests/test-files/ErrorMessage_WithBody.txt")
@@ -289,7 +290,7 @@ void main() {
     final msg = StreamDataMessage(
       reqId: "1515",
       msgId: "1",
-      body: "{\"message\":\"hello world\"}",
+      body: utf8.encode("{\"message\":\"hello world\"}"),
     );
     final msgEncoded = File(
       "../../../tests/test-files/StreamDataMessage.txt",
