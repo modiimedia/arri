@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/dispatcher.dart';
@@ -67,7 +69,7 @@ class WsDispatcher implements Dispatcher {
   @override
   FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
+    required TOutput Function(Uint8List input) responseDecoder,
     required Duration? timeout,
     required int? retry,
     required Duration? retryDelay,
@@ -94,7 +96,7 @@ class WsDispatcher implements Dispatcher {
       _messageHandlers[req.reqId] = (msg) {
         switch (msg) {
           case OkMessage():
-            final result = responseDecoder(msg.body ?? "");
+            final result = responseDecoder(msg.body ?? Uint8List(0));
             timer.cancel();
             completer.complete(result);
             return;
@@ -119,7 +121,7 @@ class WsDispatcher implements Dispatcher {
         contentType: ContentType.json,
         clientVersion: req.clientVersion,
         customHeaders: await req.customHeaders?.call() ?? {},
-        body: req.data?.toJsonString(),
+        body: req.data != null ? utf8.encode(req.data!.toJsonString()) : null,
       );
       _channel?.sink.add(payload.encodeString());
       final result = await completer.future;
@@ -157,7 +159,7 @@ class WsDispatcher implements Dispatcher {
   ArriEventSource<TOutput>
       handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
+    required TOutput Function(Uint8List bytes) responseDecoder,
     required String? lastEventId,
     required ArriEventSourceHookOnData<TOutput>? onData,
     required ArriEventSourceHookOnRawData<TOutput>? onRawData,
@@ -171,6 +173,7 @@ class WsDispatcher implements Dispatcher {
   }) {
     final eventStream = WsArriEventSource(
       decoder: responseDecoder,
+      stringDecoder: responseStringDecoder,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -205,7 +208,9 @@ class WsDispatcher implements Dispatcher {
 
 class WsArriEventSource<T> implements ArriEventSource<T> {
   @override
-  final T Function(String) decoder;
+  final T Function(Uint8List) decoder;
+  @override
+  T Function(String) stringDecoder;
   final ArriEventSourceHookOnData<T>? onData;
   final ArriEventSourceHookOnRawData<T>? onRawData;
   final ArriEventSourceHookOnOpen<T>? onOpen;
@@ -217,6 +222,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
   Future<WebSocketChannel?> Function() getWebsocketChannel;
   WsArriEventSource({
     required this.decoder,
+    required this.stringDecoder,
     required this.onData,
     required this.onRawData,
     required this.onOpen,
@@ -235,7 +241,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         reconnect();
         break;
       case StreamDataMessage():
-        final data = decoder(msg.body ?? "");
+        final data = decoder(msg.body ?? Uint8List(0));
         onData?.call(data, this);
         _streamController?.sink.add(data);
         break;
@@ -261,7 +267,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         contentType: ContentType.json,
         clientVersion: req.clientVersion,
         customHeaders: await req.customHeaders?.call() ?? {},
-        body: req.data?.toJsonString(),
+        body: req.data != null ? utf8.encode(req.data!.toJsonString()) : null,
       );
       c?.sink.add(msg.encodeString());
       onOpen?.call(this);

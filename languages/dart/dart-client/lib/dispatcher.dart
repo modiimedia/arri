@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/request.dart';
@@ -11,7 +12,7 @@ abstract class Dispatcher {
 
   FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
+    required TOutput Function(Uint8List input) responseDecoder,
     required Duration? timeout,
     required int? retry,
     required Duration? retryDelay,
@@ -21,7 +22,7 @@ abstract class Dispatcher {
   ArriEventSource<TOutput>
       handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
+    required TOutput Function(Uint8List input) responseDecoder,
     required String? lastEventId,
     required ArriEventSourceHookOnData<TOutput>? onData,
     required ArriEventSourceHookOnRawData<TOutput>? onRawData,
@@ -53,9 +54,9 @@ class DispatcherOptions {
 }
 
 abstract class ArriEventSource<T> {
-  final T Function(String) decoder;
+  final ArriModelValidator<T> validator;
 
-  const ArriEventSource({required this.decoder});
+  const ArriEventSource({required this.validator});
 
   void close();
   void reconnect();
@@ -66,7 +67,7 @@ abstract class ArriEventSource<T> {
 typedef ArriEventSourceHookOnData<T> = Function(
     T data, ArriEventSource<T> eventSource);
 typedef ArriEventSourceHookOnRawData<T> = Function(
-    String rawData, ArriEventSource<T> eventSource);
+    Uint8List rawData, ArriEventSource<T> eventSource);
 typedef ArriEventSourceHookOnOpen<T> = Function(ArriEventSource<T> eventSource);
 typedef ArriEventSourceHookOnClose<T> = Function(
     ArriEventSource<T> eventSource);

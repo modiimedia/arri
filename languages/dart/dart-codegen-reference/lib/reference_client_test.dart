@@ -190,11 +190,11 @@ void main() {
     });
     test("toJson()", () {
       expect(
-        json.encode(ObjectWithOptionalFields.empty().toJson()),
+        json.encode(ObjectWithOptionalFields.empty().toMap()),
         equals(allUndefinedReference),
       );
       expect(
-        json.encode(noUndefinedInput.toJson()),
+        json.encode(noUndefinedInput.toMap()),
         equals(noUndefinedReference),
       );
     });

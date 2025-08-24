@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:arri_core/arri_core.dart';
 import 'package:arri_client/dispatcher.dart';
@@ -20,7 +21,7 @@ class HttpDispatcher implements Dispatcher {
   @override
   FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
+    required TOutput Function(Uint8List bytes) responseDecoder,
     required Duration? timeout,
     required int? retry,
     required Duration? retryDelay,
@@ -37,7 +38,7 @@ class HttpDispatcher implements Dispatcher {
       retryDelay: retryDelay,
       onError: onError,
     );
-    final parsedResponse = responseDecoder(response.body);
+    final parsedResponse = responseDecoder(response.bodyBytes);
     return parsedResponse;
   }
 
@@ -45,12 +46,12 @@ class HttpDispatcher implements Dispatcher {
   ArriEventSource<TOutput>
       handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(String input) responseDecoder,
+    required TOutput Function(Uint8List bytes) responseDecoder,
     String? lastEventId,
     ArriEventSourceHookOnOpen<TOutput>? onOpen,
     ArriEventSourceHookOnClose<TOutput>? onClose,
     ArriEventSourceHookOnData<TOutput>? onData,
-    ArriEventSourceHookOnRawData<TOutput>? onRawData,
+    ArriEventSourceHookOnRawData<Message>? onRawData,
     ArriEventSourceHookOnError<TOutput>? onError,
     Duration? timeout,
     int? maxRetryCount,
@@ -69,8 +70,8 @@ class HttpDispatcher implements Dispatcher {
         if (req.clientVersion != null && req.clientVersion!.isNotEmpty) {
           result["client-version"] = req.clientVersion!;
         }
-        if (req.reqId != null && req.reqId!.isNotEmpty) {
-          result["req-id"] = req.reqId!;
+        if (req.reqId.isNotEmpty) {
+          result["req-id"] = req.reqId;
         }
         return result;
       },
@@ -113,8 +114,8 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel?>({
   if (req.clientVersion != null && req.clientVersion!.isNotEmpty) {
     finalHeaders["client-version"] = req.clientVersion!;
   }
-  if (req.reqId != null && req.reqId!.isNotEmpty) {
-    finalHeaders["req-id"] = req.reqId!;
+  if (req.reqId.isNotEmpty) {
+    finalHeaders["req-id"] = req.reqId;
   }
   String? bodyInput;
   if (req.method != HttpMethod.get && req.method != HttpMethod.head) {
@@ -222,11 +223,11 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
   final Duration _timeout;
 
   @override
-  T Function(String data) decoder;
+  T Function(Uint8List data) decoder;
 
   // hooks
   late final void Function(T data) _onData;
-  late final void Function(String rawData) _onRawData;
+  late final void Function(Uint8List rawData) _onRawData;
   late final void Function(ArriError error) _onError;
   late final void Function(http.StreamedResponse response) _onOpen;
   late final void Function() _onClose;
@@ -345,20 +346,18 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
 
       _requestStream = response.stream.listen(
         (value) {
-          String input;
+          Uint8List input = Uint8List(0);
           try {
-            if (pendingBytes != null) {
-              input = utf8.decode([...pendingBytes!, ...value]);
-            } else {
-              input = utf8.decode(value);
-            }
+            if (pendingBytes != null) input.addAll(pendingBytes!);
+            input.addAll(value);
             pendingBytes = null;
           } catch (err) {
             pendingBytes = value;
             return;
           }
           _onRawData(input);
-          final eventResult = parseSseEvents(pendingData + input, decoder);
+          final eventResult =
+              parseSseEvents(pendingData + utf8.decode(input), decoder);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
             _resetHeartbeatCheck();

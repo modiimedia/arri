@@ -10,7 +10,7 @@ class TestParams implements ArriModel {
   const TestParams({required this.heartbeatEnabled});
 
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {"heartbeatEnabled": heartbeatEnabled};
   }
 
