@@ -120,7 +120,7 @@ Future<http.Response> _handleHttpRequest<T extends ArriModel?>({
   String? bodyInput;
   if (req.method != HttpMethod.get && req.method != HttpMethod.head) {
     finalHeaders["Content-Type"] = "application/json";
-    bodyInput = req.data?.toJsonString();
+    bodyInput = req.data?.toJson();
   }
   switch (req.method) {
     case HttpMethod.get:
@@ -304,7 +304,7 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
           parsedUrl += "?${_input.toUrlQueryParams()}";
           break;
         default:
-          body = _input.toJsonString();
+          body = _input.toJson();
           break;
       }
     }

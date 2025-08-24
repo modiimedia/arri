@@ -121,7 +121,7 @@ class WsDispatcher implements Dispatcher {
         contentType: ContentType.json,
         clientVersion: req.clientVersion,
         customHeaders: await req.customHeaders?.call() ?? {},
-        body: req.data != null ? utf8.encode(req.data!.toJsonString()) : null,
+        body: req.data != null ? utf8.encode(req.data!.toJson()) : null,
       );
       _channel?.sink.add(payload.encodeString());
       final result = await completer.future;
@@ -267,7 +267,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         contentType: ContentType.json,
         clientVersion: req.clientVersion,
         customHeaders: await req.customHeaders?.call() ?? {},
-        body: req.data != null ? utf8.encode(req.data!.toJsonString()) : null,
+        body: req.data != null ? utf8.encode(req.data!.toJson()) : null,
       );
       c?.sink.add(msg.encodeString());
       onOpen?.call(this);

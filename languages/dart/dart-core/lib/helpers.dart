@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 sealed class Result<T, E> {
   T? unwrap();
@@ -130,4 +131,61 @@ int mapToHashCode(Map input) {
     }
   }
   return result;
+}
+
+void serializeString(StringBuffer buffer, String input) {
+  // Use a StringBuffer for efficient string building, as it avoids
+  // creating a new string object for each append operation.
+  buffer.write('"');
+  for (int i = 0; i < input.length; i++) {
+    final codeUnit = input.codeUnitAt(i);
+    switch (codeUnit) {
+      case 0x22: // '"'
+        buffer.write('\\"');
+        break;
+      case 0x5c: // '\'
+        buffer.write('\\\\');
+        break;
+      case 0x2f: // '/'
+        buffer.write('\\/');
+        break;
+      case 0x08: // backspace
+        buffer.write('\\b');
+        break;
+      case 0x09: // tab
+        buffer.write('\\t');
+        break;
+      case 0x0a: // newline
+        buffer.write('\\n');
+        break;
+      case 0x0c: // form feed
+        buffer.write('\\f');
+        break;
+      case 0x0d: // carriage return
+        buffer.write('\\r');
+        break;
+      default:
+        // Handle control characters (0x00 - 0x1f) and unpaired surrogates
+        if (codeUnit <= 0x1f || (codeUnit >= 0xd800 && codeUnit <= 0xdfff)) {
+          // Use a helper to format the unicode escape sequence
+          _writeHexEscape(buffer, codeUnit);
+        } else {
+          buffer.writeCharCode(codeUnit);
+        }
+        break;
+    }
+  }
+
+  buffer.write('"');
+}
+
+void _writeHexEscape(StringBuffer buffer, int codeUnit) {
+  buffer.write('\\u');
+  // Pad with leading zeros if necessary
+  buffer.write(codeUnit.toRadixString(16).padLeft(4, '0'));
+}
+
+class CharCodes {
+  static const LEFT_BRACKET = 123;
+  static const RIGHT_BRACKET = 125;
 }

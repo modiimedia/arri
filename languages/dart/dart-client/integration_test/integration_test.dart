@@ -15,7 +15,7 @@ class TestParams implements ArriModel {
   }
 
   @override
-  String toJsonString() {
+  String toJson() {
     return "{\"heartbeatEnabled\":$heartbeatEnabled}";
   }
 
