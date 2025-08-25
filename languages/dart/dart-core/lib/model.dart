@@ -4,8 +4,8 @@ import 'package:arri_core/helpers.dart';
 import 'package:arri_core/message.dart';
 
 abstract class ArriModel {
-  Map<String, dynamic> toMap();
-  String toJson();
+  Map<String, dynamic> toJson();
+  String toJsonString();
   String toUrlQueryParams();
   List<Object?> get props;
 }

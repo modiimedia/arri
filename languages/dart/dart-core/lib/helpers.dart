@@ -186,6 +186,9 @@ void _writeHexEscape(StringBuffer buffer, int codeUnit) {
 }
 
 class CharCodes {
-  static const LEFT_BRACKET = 123;
-  static const RIGHT_BRACKET = 125;
+  static const LEFT_CURLY_BRACKET = 123;
+  static const RIGHT_CURLY_BRACKET = 125;
+  static const LEFT_SQUARE_BRACKET = 91;
+  static const RIGHT_SQUARE_BRACKET = 93;
+  static const COMMA = 44;
 }

@@ -10,12 +10,12 @@ class TestParams implements ArriModel {
   const TestParams({required this.heartbeatEnabled});
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {"heartbeatEnabled": heartbeatEnabled};
   }
 
   @override
-  String toJson() {
+  String toJsonString() {
     return "{\"heartbeatEnabled\":$heartbeatEnabled}";
   }
 
@@ -63,7 +63,8 @@ main() {
                 heartbeatEnabled: false,
               ),
             ),
-            responseDecoder: (input) => TestResponse.fromJsonString(input),
+            responseDecoder: (input) =>
+                TestResponse.fromJsonString(utf8.decode(input)),
             onData: (_, stream) {
               msgCount++;
               if (msgCount >= 15) {
@@ -102,7 +103,8 @@ main() {
                 heartbeatEnabled: true,
               ),
             ),
-            responseDecoder: (input) => TestResponse.fromJsonString(input),
+            responseDecoder: (input) =>
+                TestResponse.fromJsonString(utf8.decode(input)),
             onData: (_, stream) {
               msgCount++;
               if (msgCount >= 15) {

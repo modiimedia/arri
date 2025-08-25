@@ -19,10 +19,10 @@ void main() {
           await File("../../../tests/test-files/Book.json").readAsString();
     });
     test("toJson()", () {
-      expect(input.toJson(), equals(reference));
+      expect(input.toJsonString(), equals(reference));
     });
     test("fromJson()", () {
-      expect(Book.fromJson(reference), equals(input));
+      expect(Book.fromJsonString(reference), equals(input));
     });
     test("toUrlQueryParams()", () {
       expect(
@@ -58,13 +58,16 @@ void main() {
           ).readAsString();
     });
     test("toJsonString()", () {
-      expect(input.toJson(), equals(noSpecialCharsReference));
-      expect(specialCharsInput.toJson(), equals(specialCharsReference));
+      expect(input.toJsonString(), equals(noSpecialCharsReference));
+      expect(specialCharsInput.toJsonString(), equals(specialCharsReference));
     });
     test("fromJsonString()", () {
-      expect(NestedObject.fromJson(noSpecialCharsReference), equals(input));
       expect(
-        NestedObject.fromJson(specialCharsReference),
+        NestedObject.fromJsonString(noSpecialCharsReference),
+        equals(input),
+      );
+      expect(
+        NestedObject.fromJsonString(specialCharsReference),
         equals(specialCharsInput),
       );
     });
@@ -119,9 +122,9 @@ void main() {
     });
     test("fromJsonString()", () {
       final now = DateTime.now();
-      expect(ObjectWithEveryType.fromJson(reference), equals(input));
+      expect(ObjectWithEveryType.fromJsonString(reference), equals(input));
       expect(
-        ObjectWithEveryType.fromJson(emptyReference).copyWith(
+        ObjectWithEveryType.fromJsonString(emptyReference).copyWith(
           timestamp: now,
           discriminator: DiscriminatorC.empty().copyWith(date: now),
         ),
@@ -134,7 +137,7 @@ void main() {
       );
     });
     test("toJsonString()", () {
-      expect(input.toJson(), equals(reference));
+      expect(input.toJsonString(), equals(reference));
     });
   });
   group("ObjectWithOptionalFields", () {
@@ -177,30 +180,30 @@ void main() {
     });
     test("fromJsonString()", () {
       expect(
-        ObjectWithOptionalFields.fromJson(allUndefinedReference),
+        ObjectWithOptionalFields.fromJsonString(allUndefinedReference),
         equals(ObjectWithOptionalFields.empty()),
       );
       expect(
-        ObjectWithOptionalFields.fromJson(noUndefinedReference),
+        ObjectWithOptionalFields.fromJsonString(noUndefinedReference),
         equals(noUndefinedInput),
       );
     });
     test("toJson()", () {
       expect(
-        json.encode(ObjectWithOptionalFields.empty().toMap()),
+        json.encode(ObjectWithOptionalFields.empty().toJson()),
         equals(allUndefinedReference),
       );
       expect(
-        json.encode(noUndefinedInput.toMap()),
+        json.encode(noUndefinedInput.toJson()),
         equals(noUndefinedReference),
       );
     });
     test("toJsonString()", () {
       expect(
-        ObjectWithOptionalFields.empty().toJson(),
+        ObjectWithOptionalFields.empty().toJsonString(),
         equals(allUndefinedReference),
       );
-      expect(noUndefinedInput.toJson(), equals(noUndefinedReference));
+      expect(noUndefinedInput.toJsonString(), equals(noUndefinedReference));
     });
     test("== operator", () {
       expect(

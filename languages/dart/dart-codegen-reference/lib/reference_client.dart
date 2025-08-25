@@ -2,7 +2,6 @@
 // ignore_for_file: type=lint, unused_field, unnecessary_cast
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:arri_client/arri_client.dart';
 import 'package:http/http.dart' as http;
 
@@ -82,7 +81,7 @@ class ExampleClient {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => NestedObject.fromJson(utf8.decode(data)),
+      responseDecoder: (data) => NestedObject.fromJsonString(utf8.decode(data)),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -180,7 +179,7 @@ class ExampleClientBooksService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => Book.fromJson(utf8.decode(data)),
+      responseDecoder: (data) => Book.fromJsonString(utf8.decode(data)),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -214,7 +213,7 @@ class ExampleClientBooksService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => Book.fromJson(utf8.decode(data)),
+      responseDecoder: (data) => Book.fromJsonString(utf8.decode(data)),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -251,7 +250,7 @@ class ExampleClientBooksService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => Book.fromJson(utf8.decode(data)),
+      responseDecoder: (data) => Book.fromJsonString(utf8.decode(data)),
       lastEventId: lastEventId,
       onData: onData,
       onRawData: onRawData,
@@ -273,26 +272,23 @@ class EmptyObject implements ArriModel {
     return EmptyObject();
   }
 
-  factory EmptyObject.fromMap(Map<String, dynamic> _input_) {
+  factory EmptyObject.fromJson(Map<String, dynamic> _input_) {
     return EmptyObject();
   }
 
-  factory EmptyObject.fromJson(String input) {
-    return EmptyObject.fromMap(json.decode(input));
+  factory EmptyObject.fromJsonString(String input) {
+    return EmptyObject.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{};
     return _output_;
   }
 
   @override
-  String toJson() {
-    final buffer = StringBuffer();
-    buffer.writeCharCode(CharCodes.LEFT_BRACKET);
-    buffer.writeCharCode(CharCodes.RIGHT_BRACKET);
-    return buffer.toString();
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -318,7 +314,7 @@ class EmptyObject implements ArriModel {
 
   @override
   String toString() {
-    return "EmptyObject ${toJson()}";
+    return "EmptyObject ${toJsonString()}";
   }
 }
 
@@ -351,15 +347,7 @@ class Book implements ArriModel {
     );
   }
 
-  factory Book.fromBytes(Uint8List _input_, {ContentType? contentType}) {
-    switch (contentType) {
-      case null:
-      case ContentType.json:
-        return Book.fromMap(json.decode(utf8.decode(_input_)));
-    }
-  }
-
-  factory Book.fromMap(Map<String, dynamic> _input_) {
+  factory Book.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
     final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime.now());
@@ -367,12 +355,12 @@ class Book implements ArriModel {
     return Book(id: id, name: name, createdAt: createdAt, updatedAt: updatedAt);
   }
 
-  factory Book.fromJson(String input) {
-    return Book.fromMap(json.decode(input));
+  factory Book.fromJsonString(String input) {
+    return Book.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
       "id": id,
       "name": name,
@@ -383,17 +371,8 @@ class Book implements ArriModel {
   }
 
   @override
-  String toJson() {
-    final buffer = StringBuffer();
-    buffer.writeCharCode(CharCodes.LEFT_BRACKET);
-    buffer.write('"id":');
-    serializeString(buffer, id);
-    buffer.write(',"name":');
-    serializeString(buffer, name);
-    buffer.write(',"createdAt":"${createdAt.toUtc().toIso8601String()}"');
-    buffer.write(',"updatedAt":"${updatedAt.toUtc().toIso8601String()}"');
-    buffer.writeCharCode(CharCodes.RIGHT_BRACKET);
-    return buffer.toString();
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -433,7 +412,7 @@ class Book implements ArriModel {
 
   @override
   String toString() {
-    return "Book ${toJson()}";
+    return "Book ${toJsonString()}";
   }
 }
 
@@ -441,10 +420,10 @@ final BookValidator = ArriModelClientValidator(
   empty: () => Book.empty(),
   decode:
       (input, {ContentType? contentType}) => switch (contentType) {
-        null => Book.fromJson(utf8.decode(input)),
-        ContentType.json => Book.fromJson(utf8.decode(input)),
+        null => Book.fromJsonString(utf8.decode(input)),
+        ContentType.json => Book.fromJsonString(utf8.decode(input)),
       },
-  decodeJson: (input, {ContentType? contentType}) => Book.fromJson(input),
+  decodeJson: (input, {ContentType? contentType}) => Book.fromJsonString(input),
 );
 
 class BookParams implements ArriModel {
@@ -455,37 +434,24 @@ class BookParams implements ArriModel {
     return BookParams(bookId: "");
   }
 
-  factory BookParams.fromBytes(Uint8List _input_, {ContentType? contentType}) {
-    switch (contentType) {
-      case null:
-      case ContentType.json:
-        return BookParams.fromMap(json.decode(utf8.decode(_input_)));
-    }
-  }
-
-  factory BookParams.fromMap(Map<String, dynamic> _input_) {
+  factory BookParams.fromJson(Map<String, dynamic> _input_) {
     final bookId = typeFromDynamic<String>(_input_["bookId"], "");
     return BookParams(bookId: bookId);
   }
 
-  factory BookParams.fromJson(String input) {
-    return BookParams.fromMap(json.decode(input));
+  factory BookParams.fromJsonString(String input) {
+    return BookParams.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{"bookId": bookId};
     return _output_;
   }
 
   @override
-  String toJson() {
-    final buffer = StringBuffer();
-    buffer.writeCharCode(CharCodes.LEFT_BRACKET);
-    buffer.write('"bookId":');
-    serializeString(buffer, bookId);
-    buffer.writeCharCode(CharCodes.RIGHT_BRACKET);
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -512,7 +478,7 @@ class BookParams implements ArriModel {
 
   @override
   String toString() {
-    return "BookParams ${toJson()}";
+    return "BookParams ${toJsonString()}";
   }
 }
 
@@ -525,36 +491,25 @@ class NestedObject implements ArriModel {
     return NestedObject(id: "", content: "");
   }
 
-  factory NestedObject.fromBytes(
-    Uint8List _input_, {
-    ContentType? contentType,
-  }) {
-    switch (contentType) {
-      case null:
-      case ContentType.json:
-        return NestedObject.fromMap(json.decode(utf8.decode(_input_)));
-    }
-  }
-
-  factory NestedObject.fromMap(Map<String, dynamic> _input_) {
+  factory NestedObject.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
     return NestedObject(id: id, content: content);
   }
 
-  factory NestedObject.fromJson(String input) {
-    return NestedObject.fromMap(json.decode(input));
+  factory NestedObject.fromJsonString(String input) {
+    return NestedObject.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{"id": id, "content": content};
     return _output_;
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -582,7 +537,7 @@ class NestedObject implements ArriModel {
 
   @override
   String toString() {
-    return "NestedObject ${toJson()}";
+    return "NestedObject ${toJsonString()}";
   }
 }
 
@@ -651,18 +606,7 @@ class ObjectWithEveryType implements ArriModel {
     );
   }
 
-  factory ObjectWithEveryType.fromBytes(
-    Uint8List _input_, {
-    ContentType? contentType,
-  }) {
-    switch (contentType) {
-      case null:
-      case ContentType.json:
-        return ObjectWithEveryType.fromMap(json.decode(utf8.decode(_input_)));
-    }
-  }
-
-  factory ObjectWithEveryType.fromMap(Map<String, dynamic> _input_) {
+  factory ObjectWithEveryType.fromJson(Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
@@ -681,7 +625,7 @@ class ObjectWithEveryType implements ArriModel {
     );
     final object =
         _input_["object"] is Map<String, dynamic>
-            ? NestedObject.fromMap(_input_["object"])
+            ? NestedObject.fromJson(_input_["object"])
             : NestedObject.empty();
     final array =
         _input_["array"] is List
@@ -698,7 +642,7 @@ class ObjectWithEveryType implements ArriModel {
             : <String, bool>{};
     final discriminator =
         _input_["discriminator"] is Map<String, dynamic>
-            ? Discriminator.fromMap(_input_["discriminator"])
+            ? Discriminator.fromJson(_input_["discriminator"])
             : Discriminator.empty();
     final any = _input_["any"];
     return ObjectWithEveryType(
@@ -724,12 +668,12 @@ class ObjectWithEveryType implements ArriModel {
     );
   }
 
-  factory ObjectWithEveryType.fromJson(String input) {
-    return ObjectWithEveryType.fromMap(json.decode(input));
+  factory ObjectWithEveryType.fromJsonString(String input) {
+    return ObjectWithEveryType.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
       "string": string,
       "boolean": boolean,
@@ -745,18 +689,18 @@ class ObjectWithEveryType implements ArriModel {
       "int64": int64.toString(),
       "uint64": uint64.toString(),
       "enum": k_enum.serialValue,
-      "object": object.toMap(),
+      "object": object.toJson(),
       "array": array.map((_el_) => _el_).toList(),
       "record": record.map((_key_, _val_) => MapEntry(_key_, _val_)),
-      "discriminator": discriminator.toMap(),
+      "discriminator": discriminator.toJson(),
       "any": any,
     };
     return _output_;
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -871,7 +815,7 @@ class ObjectWithEveryType implements ArriModel {
 
   @override
   String toString() {
-    return "ObjectWithEveryType ${toJson()}";
+    return "ObjectWithEveryType ${toJsonString()}";
   }
 }
 
@@ -904,22 +848,22 @@ sealed class Discriminator implements ArriModel {
     return DiscriminatorA.empty();
   }
 
-  factory Discriminator.fromMap(Map<String, dynamic> _input_) {
+  factory Discriminator.fromJson(Map<String, dynamic> _input_) {
     final typeName = typeFromDynamic<String>(_input_["typeName"], "");
     switch (typeName) {
       case "A":
-        return DiscriminatorA.fromMap(_input_);
+        return DiscriminatorA.fromJson(_input_);
       case "B":
-        return DiscriminatorB.fromMap(_input_);
+        return DiscriminatorB.fromJson(_input_);
       case "C":
-        return DiscriminatorC.fromMap(_input_);
+        return DiscriminatorC.fromJson(_input_);
       default:
         return Discriminator.empty();
     }
   }
 
-  factory Discriminator.fromJson(String input) {
-    return Discriminator.fromMap(json.decode(input));
+  factory Discriminator.fromJsonString(String input) {
+    return Discriminator.fromJson(json.decode(input));
   }
 }
 
@@ -934,24 +878,24 @@ class DiscriminatorA implements Discriminator {
     return DiscriminatorA(id: "");
   }
 
-  factory DiscriminatorA.fromMap(Map<String, dynamic> _input_) {
+  factory DiscriminatorA.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     return DiscriminatorA(id: id);
   }
 
-  factory DiscriminatorA.fromJson(String input) {
-    return DiscriminatorA.fromMap(json.decode(input));
+  factory DiscriminatorA.fromJsonString(String input) {
+    return DiscriminatorA.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{"typeName": typeName, "id": id};
     return _output_;
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -979,7 +923,7 @@ class DiscriminatorA implements Discriminator {
 
   @override
   String toString() {
-    return "DiscriminatorA ${toJson()}";
+    return "DiscriminatorA ${toJsonString()}";
   }
 }
 
@@ -995,18 +939,18 @@ class DiscriminatorB implements Discriminator {
     return DiscriminatorB(id: "", name: "");
   }
 
-  factory DiscriminatorB.fromMap(Map<String, dynamic> _input_) {
+  factory DiscriminatorB.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
     return DiscriminatorB(id: id, name: name);
   }
 
-  factory DiscriminatorB.fromJson(String input) {
-    return DiscriminatorB.fromMap(json.decode(input));
+  factory DiscriminatorB.fromJsonString(String input) {
+    return DiscriminatorB.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
       "typeName": typeName,
       "id": id,
@@ -1016,8 +960,8 @@ class DiscriminatorB implements Discriminator {
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -1046,7 +990,7 @@ class DiscriminatorB implements Discriminator {
 
   @override
   String toString() {
-    return "DiscriminatorB ${toJson()}";
+    return "DiscriminatorB ${toJsonString()}";
   }
 }
 
@@ -1067,19 +1011,19 @@ class DiscriminatorC implements Discriminator {
     return DiscriminatorC(id: "", name: "", date: DateTime.now());
   }
 
-  factory DiscriminatorC.fromMap(Map<String, dynamic> _input_) {
+  factory DiscriminatorC.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
     final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
     return DiscriminatorC(id: id, name: name, date: date);
   }
 
-  factory DiscriminatorC.fromJson(String input) {
-    return DiscriminatorC.fromMap(json.decode(input));
+  factory DiscriminatorC.fromJsonString(String input) {
+    return DiscriminatorC.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
       "typeName": typeName,
       "id": id,
@@ -1090,8 +1034,8 @@ class DiscriminatorC implements Discriminator {
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -1125,7 +1069,7 @@ class DiscriminatorC implements Discriminator {
 
   @override
   String toString() {
-    return "DiscriminatorC ${toJson()}";
+    return "DiscriminatorC ${toJsonString()}";
   }
 }
 
@@ -1175,7 +1119,7 @@ class ObjectWithOptionalFields implements ArriModel {
     return ObjectWithOptionalFields();
   }
 
-  factory ObjectWithOptionalFields.fromMap(Map<String, dynamic> _input_) {
+  factory ObjectWithOptionalFields.fromJson(Map<String, dynamic> _input_) {
     final string = nullableTypeFromDynamic<String>(_input_["string"]);
     final boolean = nullableTypeFromDynamic<bool>(_input_["boolean"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
@@ -1195,7 +1139,7 @@ class ObjectWithOptionalFields implements ArriModel {
             : null;
     final object =
         _input_["object"] is Map<String, dynamic>
-            ? NestedObject.fromMap(_input_["object"])
+            ? NestedObject.fromJson(_input_["object"])
             : null;
     final array =
         _input_["array"] is List
@@ -1212,7 +1156,7 @@ class ObjectWithOptionalFields implements ArriModel {
             : null;
     final discriminator =
         _input_["discriminator"] is Map<String, dynamic>
-            ? Discriminator.fromMap(_input_["discriminator"])
+            ? Discriminator.fromJson(_input_["discriminator"])
             : null;
     final any = _input_["any"];
     return ObjectWithOptionalFields(
@@ -1237,12 +1181,12 @@ class ObjectWithOptionalFields implements ArriModel {
       any: any,
     );
   }
-  factory ObjectWithOptionalFields.fromJson(String input) {
-    return ObjectWithOptionalFields.fromMap(json.decode(input));
+  factory ObjectWithOptionalFields.fromJsonString(String input) {
+    return ObjectWithOptionalFields.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{};
     if (string != null) _output_["string"] = string;
     if (boolean != null) _output_["boolean"] = boolean;
@@ -1259,21 +1203,21 @@ class ObjectWithOptionalFields implements ArriModel {
     if (int64 != null) _output_["int64"] = int64!.toString();
     if (uint64 != null) _output_["uint64"] = uint64!.toString();
     if (k_enum != null) _output_["enum"] = k_enum!.serialValue;
-    if (object != null) _output_["object"] = object!.toMap();
+    if (object != null) _output_["object"] = object!.toJson();
     if (array != null) _output_["array"] = array!.map((_el_) => _el_).toList();
     if (record != null)
       _output_["record"] = record!.map(
         (_key_, _val_) => MapEntry(_key_, _val_),
       );
     if (discriminator != null)
-      _output_["discriminator"] = discriminator!.toMap();
+      _output_["discriminator"] = discriminator!.toJson();
     if (any != null) _output_["any"] = any;
     return _output_;
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -1391,7 +1335,7 @@ class ObjectWithOptionalFields implements ArriModel {
 
   @override
   String toString() {
-    return "ObjectWithOptionalFields ${toJson()}";
+    return "ObjectWithOptionalFields ${toJsonString()}";
   }
 }
 
@@ -1461,7 +1405,7 @@ class ObjectWithNullableFields implements ArriModel {
     );
   }
 
-  factory ObjectWithNullableFields.fromMap(Map<String, dynamic> _input_) {
+  factory ObjectWithNullableFields.fromJson(Map<String, dynamic> _input_) {
     final string = nullableTypeFromDynamic<String>(_input_["string"]);
     final boolean = nullableTypeFromDynamic<bool>(_input_["boolean"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
@@ -1481,7 +1425,7 @@ class ObjectWithNullableFields implements ArriModel {
             : null;
     final object =
         _input_["object"] is Map<String, dynamic>
-            ? NestedObject.fromMap(_input_["object"])
+            ? NestedObject.fromJson(_input_["object"])
             : null;
     final array =
         _input_["array"] is List
@@ -1498,7 +1442,7 @@ class ObjectWithNullableFields implements ArriModel {
             : null;
     final discriminator =
         _input_["discriminator"] is Map<String, dynamic>
-            ? Discriminator.fromMap(_input_["discriminator"])
+            ? Discriminator.fromJson(_input_["discriminator"])
             : null;
     final any = _input_["any"];
     return ObjectWithNullableFields(
@@ -1524,12 +1468,12 @@ class ObjectWithNullableFields implements ArriModel {
     );
   }
 
-  factory ObjectWithNullableFields.fromJson(String input) {
-    return ObjectWithNullableFields.fromMap(json.decode(input));
+  factory ObjectWithNullableFields.fromJsonString(String input) {
+    return ObjectWithNullableFields.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
       "string": string,
       "boolean": boolean,
@@ -1545,18 +1489,18 @@ class ObjectWithNullableFields implements ArriModel {
       "int64": int64?.toString(),
       "uint64": uint64?.toString(),
       "enum": k_enum?.serialValue,
-      "object": object?.toMap(),
+      "object": object?.toJson(),
       "array": array?.map((_el_) => _el_).toList(),
       "record": record?.map((_key_, _val_) => MapEntry(_key_, _val_)),
-      "discriminator": discriminator?.toMap(),
+      "discriminator": discriminator?.toJson(),
       "any": any,
     };
     return _output_;
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -1673,7 +1617,7 @@ class ObjectWithNullableFields implements ArriModel {
 
   @override
   String toString() {
-    return "ObjectWithNullableFields ${toJson()}";
+    return "ObjectWithNullableFields ${toJsonString()}";
   }
 }
 
@@ -1684,33 +1628,33 @@ class RecursiveObject implements ArriModel {
   factory RecursiveObject.empty() {
     return RecursiveObject(left: null, right: null);
   }
-  factory RecursiveObject.fromMap(Map<String, dynamic> _input_) {
+  factory RecursiveObject.fromJson(Map<String, dynamic> _input_) {
     final left =
         _input_["left"] is Map<String, dynamic>
-            ? RecursiveObject.fromMap(_input_["left"])
+            ? RecursiveObject.fromJson(_input_["left"])
             : null;
     final right =
         _input_["right"] is Map<String, dynamic>
-            ? RecursiveObject.fromMap(_input_["right"])
+            ? RecursiveObject.fromJson(_input_["right"])
             : null;
     return RecursiveObject(left: left, right: right);
   }
-  factory RecursiveObject.fromJson(String input) {
-    return RecursiveObject.fromMap(json.decode(input));
+  factory RecursiveObject.fromJsonString(String input) {
+    return RecursiveObject.fromJson(json.decode(input));
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
-      "left": left?.toMap(),
-      "right": right?.toMap(),
+      "left": left?.toJson(),
+      "right": right?.toJson(),
     };
     return _output_;
   }
 
   @override
-  String toJson() {
-    return json.encode(toMap());
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override
@@ -1748,6 +1692,6 @@ class RecursiveObject implements ArriModel {
 
   @override
   String toString() {
-    return "RecursiveObject ${toJson()}";
+    return "RecursiveObject ${toJsonString()}";
   }
 }
