@@ -21,7 +21,7 @@ class HttpDispatcher implements Dispatcher {
   @override
   FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(Uint8List bytes) responseDecoder,
+    required TOutput Function(String input) jsonDecoder,
     required Duration? timeout,
     required int? retry,
     required Duration? retryDelay,
@@ -38,7 +38,7 @@ class HttpDispatcher implements Dispatcher {
       retryDelay: retryDelay,
       onError: onError,
     );
-    final parsedResponse = responseDecoder(response.bodyBytes);
+    final parsedResponse = jsonDecoder(utf8.decode(response.bodyBytes));
     return parsedResponse;
   }
 
@@ -46,12 +46,12 @@ class HttpDispatcher implements Dispatcher {
   ArriEventSource<TOutput>
       handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(Uint8List bytes) responseDecoder,
-    String? lastEventId,
+    required TOutput Function(String input) jsonDecoder,
+    String? lastMsgId,
     ArriEventSourceHookOnOpen<TOutput>? onOpen,
     ArriEventSourceHookOnClose<TOutput>? onClose,
     ArriEventSourceHookOnData<TOutput>? onData,
-    ArriEventSourceHookOnRawData<Message>? onRawData,
+    ArriEventSourceHookOnRawData<TOutput>? onRawData,
     ArriEventSourceHookOnError<TOutput>? onError,
     Duration? timeout,
     int? maxRetryCount,
@@ -63,7 +63,7 @@ class HttpDispatcher implements Dispatcher {
       httpClient: createHttpClient?.call(),
       url: url,
       method: req.method ?? HttpMethod.post,
-      decoder: responseDecoder,
+      jsonDecoder: jsonDecoder,
       input: req.data,
       headers: () async {
         final result = await req.customHeaders?.call() ?? {};
@@ -78,7 +78,7 @@ class HttpDispatcher implements Dispatcher {
       heartbeatTimeoutMultiplier: heartbeatTimeoutMultiplier,
       maxRetryInterval: maxRetryInterval ?? Duration(seconds: 30),
       maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
+      lastEventId: lastMsgId,
       onOpen: onOpen,
       onData: onData,
       onRawData: onRawData,
@@ -223,7 +223,7 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
   final Duration _timeout;
 
   @override
-  T Function(Uint8List data) decoder;
+  T Function(String data) jsonDecoder;
 
   // hooks
   late final void Function(T data) _onData;
@@ -234,7 +234,7 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
 
   HttpArriEventSource({
     required this.url,
-    required this.decoder,
+    required this.jsonDecoder,
     http.Client? httpClient,
     this.method = HttpMethod.get,
     ArriModel? input,
@@ -357,7 +357,7 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
           }
           _onRawData(input);
           final eventResult =
-              parseSseEvents(pendingData + utf8.decode(input), decoder);
+              parseSseEvents(pendingData + utf8.decode(input), jsonDecoder);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
             _resetHeartbeatCheck();

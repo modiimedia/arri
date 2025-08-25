@@ -42,7 +42,7 @@ export function dartRpcFromSchema(
             String? transport,
             int? maxRetryCount,
             Duration? maxRetryInterval,
-            String? lastEventId,
+            String? lastMsgId,
         }) {
             final selectedTransport = resolveTransport([${schema.transports.map((transport) => `"${transport}"`).join(', ')}], transport ?? _defaultTransport);
             final dispatcher = _dispatchers[selectedTransport];
@@ -57,8 +57,8 @@ export function dartRpcFromSchema(
                     customHeaders: _headers,
                     data: ${schema.input ? `input` : 'null'},
                 ),
-                responseDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : `(_) => {}`},
-                lastEventId: lastEventId,
+                jsonDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : `(_) => {}`},
+                lastMsgId: lastMsgId,
                 onData: onData,
                 onRawData: onRawData,
                 onOpen: onOpen,
@@ -91,7 +91,7 @@ export function dartRpcFromSchema(
                 customHeaders: _headers,
                 data: ${schema.input ? 'input' : 'null'},
             ),
-            responseDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : '(_) => {}'},
+            jsonDecoder: ${schema.output ? `(data) => ${outputType}.fromJsonString(data)` : '(_) => {}'},
             timeout: timeout ?? _timeout,
             retry: retry ?? _retry,
             retryDelay: retryDelay ?? _retryDelay,

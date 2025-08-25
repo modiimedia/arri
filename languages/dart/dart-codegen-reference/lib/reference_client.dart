@@ -81,7 +81,7 @@ class ExampleClient {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => NestedObject.fromJsonString(utf8.decode(data)),
+      jsonDecoder: (data) => NestedObject.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -179,7 +179,7 @@ class ExampleClientBooksService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => Book.fromJsonString(utf8.decode(data)),
+      jsonDecoder: (data) => Book.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -213,7 +213,7 @@ class ExampleClientBooksService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => Book.fromJsonString(utf8.decode(data)),
+      jsonDecoder: (data) => Book.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -225,7 +225,7 @@ class ExampleClientBooksService {
   ArriEventSource<Book> watchBook(
     BookParams input, {
     ArriEventSourceHookOnData<Book>? onData,
-    ArriEventSourceHookOnRawData<Book?>? onRawData,
+    ArriEventSourceHookOnRawData<Book>? onRawData,
     ArriEventSourceHookOnOpen<Book>? onOpen,
     ArriEventSourceHookOnClose<Book>? onClose,
     ArriEventSourceHookOnError<Book>? onError,
@@ -233,7 +233,7 @@ class ExampleClientBooksService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport = resolveTransport([
       "http",
@@ -250,8 +250,8 @@ class ExampleClientBooksService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => Book.fromJsonString(utf8.decode(data)),
-      lastEventId: lastEventId,
+      jsonDecoder: (data) => Book.fromJsonString(data),
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -415,16 +415,6 @@ class Book implements ArriModel {
     return "Book ${toJsonString()}";
   }
 }
-
-final BookValidator = ArriModelClientValidator(
-  empty: () => Book.empty(),
-  decode:
-      (input, {ContentType? contentType}) => switch (contentType) {
-        null => Book.fromJsonString(utf8.decode(input)),
-        ContentType.json => Book.fromJsonString(utf8.decode(input)),
-      },
-  decodeJson: (input, {ContentType? contentType}) => Book.fromJsonString(input),
-);
 
 class BookParams implements ArriModel {
   final String bookId;

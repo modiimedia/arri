@@ -69,7 +69,7 @@ class WsDispatcher implements Dispatcher {
   @override
   FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(Uint8List input) responseDecoder,
+    required TOutput Function(String input) jsonDecoder,
     required Duration? timeout,
     required int? retry,
     required Duration? retryDelay,
@@ -96,7 +96,7 @@ class WsDispatcher implements Dispatcher {
       _messageHandlers[req.reqId] = (msg) {
         switch (msg) {
           case OkMessage():
-            final result = responseDecoder(msg.body ?? Uint8List(0));
+            final result = jsonDecoder(utf8.decode(msg.body ?? Uint8List(0)));
             timer.cancel();
             completer.complete(result);
             return;
@@ -136,7 +136,7 @@ class WsDispatcher implements Dispatcher {
         if (timeout != null) await Future.delayed(timeout);
         return handleRpc(
           req: req,
-          responseDecoder: responseDecoder,
+          jsonDecoder: jsonDecoder,
           timeout: timeout,
           retry: retry,
           retryDelay: retryDelay,
@@ -159,8 +159,8 @@ class WsDispatcher implements Dispatcher {
   ArriEventSource<TOutput>
       handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(Uint8List bytes) responseDecoder,
-    required String? lastEventId,
+    required TOutput Function(String bytes) jsonDecoder,
+    required String? lastMsgId,
     required ArriEventSourceHookOnData<TOutput>? onData,
     required ArriEventSourceHookOnRawData<TOutput>? onRawData,
     required ArriEventSourceHookOnOpen<TOutput>? onOpen,
@@ -172,8 +172,7 @@ class WsDispatcher implements Dispatcher {
     required double? heartbeatTimeoutMultiplier,
   }) {
     final eventStream = WsArriEventSource(
-      decoder: responseDecoder,
-      stringDecoder: responseStringDecoder,
+      jsonDecoder: jsonDecoder,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -208,9 +207,8 @@ class WsDispatcher implements Dispatcher {
 
 class WsArriEventSource<T> implements ArriEventSource<T> {
   @override
-  final T Function(Uint8List) decoder;
-  @override
-  T Function(String) stringDecoder;
+  final T Function(String) jsonDecoder;
+
   final ArriEventSourceHookOnData<T>? onData;
   final ArriEventSourceHookOnRawData<T>? onRawData;
   final ArriEventSourceHookOnOpen<T>? onOpen;
@@ -221,8 +219,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
   String? lastEventId;
   Future<WebSocketChannel?> Function() getWebsocketChannel;
   WsArriEventSource({
-    required this.decoder,
-    required this.stringDecoder,
+    required this.jsonDecoder,
     required this.onData,
     required this.onRawData,
     required this.onOpen,
@@ -241,7 +238,7 @@ class WsArriEventSource<T> implements ArriEventSource<T> {
         reconnect();
         break;
       case StreamDataMessage():
-        final data = decoder(msg.body ?? Uint8List(0));
+        final data = jsonDecoder(utf8.decode(msg.body ?? Uint8List(0)));
         onData?.call(data, this);
         _streamController?.sink.add(data);
         break;

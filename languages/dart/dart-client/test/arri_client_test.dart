@@ -12,7 +12,7 @@ main() {
     HttpArriEventSource(
         url: nonExistentUrl,
         method: HttpMethod.get,
-        decoder: (input) => input,
+        jsonDecoder: (input) => input,
         onError: (err, event) {
           errCount++;
           if (errCount >= 5) {

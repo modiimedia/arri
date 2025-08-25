@@ -12,7 +12,11 @@ abstract class Dispatcher {
 
   FutureOr<TOutput> handleRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(Uint8List input) responseDecoder,
+    required TOutput Function(String input) jsonDecoder,
+
+    /// TODO: for eventual CBOR or MSGPACK support
+    // required TOutput Function(Uint8List input) byteDecoder,
+
     required Duration? timeout,
     required int? retry,
     required Duration? retryDelay,
@@ -22,8 +26,12 @@ abstract class Dispatcher {
   ArriEventSource<TOutput>
       handleOutputStreamRpc<TInput extends ArriModel?, TOutput>({
     required RpcRequest<TInput> req,
-    required TOutput Function(Uint8List input) responseDecoder,
-    required String? lastEventId,
+    required TOutput Function(String input) jsonDecoder,
+
+    /// TODO: for eventual CBOR or MSGPACK support
+    // required TOutput Function(Uint8List input) byteDecoder,
+
+    required String? lastMsgId,
     required ArriEventSourceHookOnData<TOutput>? onData,
     required ArriEventSourceHookOnRawData<TOutput>? onRawData,
     required ArriEventSourceHookOnOpen<TOutput>? onOpen,
@@ -54,9 +62,9 @@ class DispatcherOptions {
 }
 
 abstract class ArriEventSource<T> {
-  final ArriModelValidator<T> validator;
+  final T Function(String) jsonDecoder;
 
-  const ArriEventSource({required this.validator});
+  const ArriEventSource({required this.jsonDecoder});
 
   void close();
   void reconnect();

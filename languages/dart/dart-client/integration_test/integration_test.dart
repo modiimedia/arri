@@ -63,8 +63,7 @@ main() {
                 heartbeatEnabled: false,
               ),
             ),
-            responseDecoder: (input) =>
-                TestResponse.fromJsonString(utf8.decode(input)),
+            jsonDecoder: (input) => TestResponse.fromJsonString(input),
             onData: (_, stream) {
               msgCount++;
               if (msgCount >= 15) {
@@ -103,8 +102,7 @@ main() {
                 heartbeatEnabled: true,
               ),
             ),
-            responseDecoder: (input) =>
-                TestResponse.fromJsonString(utf8.decode(input)),
+            jsonDecoder: (input) => TestResponse.fromJsonString(input),
             onData: (_, stream) {
               msgCount++;
               if (msgCount >= 15) {
