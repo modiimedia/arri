@@ -23,8 +23,12 @@ export function tsServiceFromDefinition(
                 clientName: context.clientName,
                 typePrefix: context.typePrefix,
                 generatedTypes: context.generatedTypes,
-                instancePath: `${context.instancePath}.${key}`,
-                schemaPath: `${context.instancePath}.${key}`,
+                instancePath: context.instancePath.length
+                    ? `${context.instancePath}.${key}`
+                    : key,
+                schemaPath: context.schemaPath
+                    ? `${context.schemaPath}.${key}`
+                    : key,
                 discriminatorParent: '',
                 discriminatorKey: '',
                 discriminatorValue: '',
@@ -42,8 +46,12 @@ export function tsServiceFromDefinition(
                 clientName: context.clientName,
                 typePrefix: context.typePrefix,
                 generatedTypes: context.generatedTypes,
-                instancePath: `${context.instancePath}.${key}`,
-                schemaPath: `${context.schemaPath}.${key}`,
+                instancePath: context.instancePath.length
+                    ? `${context.instancePath}.${key}`
+                    : key,
+                schemaPath: context.schemaPath
+                    ? `${context.schemaPath}.${key}`
+                    : key,
                 discriminatorParent: '',
                 discriminatorKey: '',
                 discriminatorValue: '',
@@ -57,7 +65,7 @@ export function tsServiceFromDefinition(
             continue;
         }
         console.warn(
-            `Invalid definition found at procedures.${context.schemaPath}`,
+            `Invalid definition found at procedures.${context.schemaPath}.${key}`,
         );
     }
     if (subServices.length === 0 && rpcParts.length === 0) {
@@ -71,30 +79,43 @@ export function tsServiceFromDefinition(
         key,
         name: serviceName,
         content: `export class ${serviceName} {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly __dispatchers__: Record<string, RpcDispatcher<__TransportOption__>>;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
 ${subServices.map((service) => `    ${service.key}: ${service.name};`).join('\n')}
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? "";
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    constructor(config: ${context.clientName}Options) {
+        this.__options__ = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this.__dispatchers__ = config.dispatchers!
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(config);`).join('\n')}
     }
+
+    /**
+     * Close all active connections for a specific transport or for all transports.
+     */
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
+            dispatcher.terminateConnections();
+        }
+    }
+
 ${rpcParts.map((rpc) => `    ${rpc}`).join('\n')}
 }
 

@@ -317,7 +317,7 @@ func TestDecodeBadStringInput(t *testing.T) {
 	if err == nil {
 		t.Fatalf("should have an error")
 	}
-	if len(err.Errors) != 1 {
+	if len(err.Errors()) != 1 {
 		t.Fatalf("should return 1 error")
 	}
 	err = arri.DecodeJSON([]byte(objectInput), &target, arri.EncodingOptions{})
@@ -325,7 +325,7 @@ func TestDecodeBadStringInput(t *testing.T) {
 		t.Fatalf("should have errors")
 		return
 	}
-	if len(err.Errors) != 18 {
+	if len(err.Errors()) != 18 {
 		t.Fatalf("should have 18 errors")
 		return
 	}

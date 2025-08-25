@@ -6,145 +6,261 @@ import 'package:arri_client/arri_client.dart';
 import 'package:http/http.dart' as http;
 
 class ExampleClient {
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "20";
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = "20";
   final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  final int? _heartbeatTimeoutMultiplier;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
   final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
   ExampleClient({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-    int? heartbeatTimeoutMultiplier,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  }) : _baseUrl = baseUrl,
+       _wsConnectionUrl = wsConnectionUrl,
+       _createHttpClient = createHttpClient,
        _headers = headers,
        _onError = onError,
+       _retry = retry,
+       _retryDelay = retryDelay,
        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+       _timeout = timeout,
+       _defaultTransport = defaultTransport ?? "http" {
+    _dispatchers = dispatchers ?? {};
+    if (_dispatchers["http"] == null) {
+      _dispatchers["http"] = HttpDispatcher(
+        baseUrl: baseUrl,
+        createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
+    }
+  }
 
-  Future<NestedObject> sendObject(NestedObject params) async {
-    return parsedArriRequest(
-      "$_baseUrl/send-object",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => NestedObject.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+  Future<NestedObject> sendObject(
+    NestedObject input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport = resolveTransport([
+      "http",
+    ], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendObject",
+        path: "/send-object",
+        reqId: getRequestId(),
+        method: HttpMethod.post,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => NestedObject.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   ExampleClientBooksService get books => ExampleClientBooksService(
     baseUrl: _baseUrl,
+    wsConnectionUrl: _wsConnectionUrl,
     headers: _headers,
-    httpClient: _httpClient,
+    createHttpClient: _createHttpClient,
     onError: _onError,
     heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     timeout: _timeout,
+    dispatchers: _dispatchers,
+    defaultTransport: _defaultTransport,
   );
 }
 
 class ExampleClientBooksService {
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "20";
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = "20";
   final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  final int? _heartbeatTimeoutMultiplier;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
   final Duration? _timeout;
+  final String _defaultTransport;
+
+  late final Map<String, Dispatcher> _dispatchers;
   ExampleClientBooksService({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-    int? heartbeatTimeoutMultiplier,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  }) : _baseUrl = baseUrl,
+       _wsConnectionUrl = wsConnectionUrl,
+       _createHttpClient = createHttpClient,
        _headers = headers,
        _onError = onError,
+       _retry = retry,
+       _retryDelay = retryDelay,
        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+       _timeout = timeout,
+       _defaultTransport = defaultTransport ?? "http" {
+    _dispatchers = dispatchers ?? {};
+    if (_dispatchers["http"] == null) {
+      _dispatchers["http"] = HttpDispatcher(
+        baseUrl: baseUrl,
+        createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
+    }
+  }
 
   /// Get a book
-  Future<Book> getBook(BookParams params) async {
-    return parsedArriRequest(
-      "$_baseUrl/books/get-book",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => Book.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+  Future<Book> getBook(
+    BookParams input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport = resolveTransport([
+      "http",
+      "ws",
+    ], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "books.getBook",
+        path: "/books/get-book",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => Book.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   /// Create a book
   @deprecated
-  Future<Book> createBook(Book params) async {
-    return parsedArriRequest(
-      "$_baseUrl/books/create-book",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => Book.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+  Future<Book> createBook(
+    Book input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport = resolveTransport([
+      "http",
+      "ws",
+    ], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "books.createBook",
+        path: "/books/create-book",
+        reqId: getRequestId(),
+        method: HttpMethod.post,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => Book.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   @deprecated
-  EventSource<Book> watchBook(
-    BookParams params, {
-    void Function(Book data, EventSource<Book> connection)? onMessage,
-    void Function(http.StreamedResponse response, EventSource<Book> connection)?
-    onOpen,
-    void Function(EventSource<Book> connection)? onClose,
-    void Function(ArriError error, EventSource<Book> connection)? onError,
-    Duration? retryDelay,
+  ArriEventSource<Book> watchBook(
+    BookParams input, {
+    ArriEventSourceHookOnData<Book>? onData,
+    ArriEventSourceHookOnRawData<Book>? onRawData,
+    ArriEventSourceHookOnOpen<Book>? onOpen,
+    ArriEventSourceHookOnClose<Book>? onClose,
+    ArriEventSourceHookOnError<Book>? onError,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/books/watch-book",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      params: params.toJson(),
-      parser: (body) => Book.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport = resolveTransport([
+      "http",
+    ], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleOutputStreamRpc<BookParams, Book>(
+      req: RpcRequest(
+        procedure: "books.watchBook",
+        path: "/books/watch-book",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => Book.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError:
-          onError != null && _onError != null
-              ? (err, es) {
-                _onError.call(onError);
-                return onError(err, es);
-              }
-              : onError != null
-              ? onError
-              : _onError != null
-              ? (err, _) => _onError.call(err)
-              : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 }
@@ -181,7 +297,6 @@ class EmptyObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   EmptyObject copyWith() {
     return EmptyObject();
   }
@@ -270,7 +385,6 @@ class Book implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   Book copyWith({
     String? id,
     String? name,
@@ -337,7 +451,6 @@ class BookParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   BookParams copyWith({String? bookId}) {
     return BookParams(bookId: bookId ?? this.bookId);
   }
@@ -397,7 +510,6 @@ class NestedObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   NestedObject copyWith({String? id, String? content}) {
     return NestedObject(id: id ?? this.id, content: content ?? this.content);
   }
@@ -483,6 +595,7 @@ class ObjectWithEveryType implements ArriModel {
       any: null,
     );
   }
+
   factory ObjectWithEveryType.fromJson(Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
@@ -615,7 +728,6 @@ class ObjectWithEveryType implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   ObjectWithEveryType copyWith({
     String? string,
     bool? boolean,
@@ -784,7 +896,6 @@ class DiscriminatorA implements Discriminator {
     return _queryParts_.join("&");
   }
 
-  @override
   DiscriminatorA copyWith({String? id}) {
     return DiscriminatorA(id: id ?? this.id);
   }
@@ -852,7 +963,6 @@ class DiscriminatorB implements Discriminator {
     return _queryParts_.join("&");
   }
 
-  @override
   DiscriminatorB copyWith({String? id, String? name}) {
     return DiscriminatorB(id: id ?? this.id, name: name ?? this.name);
   }
@@ -928,7 +1038,6 @@ class DiscriminatorC implements Discriminator {
     return _queryParts_.join("&");
   }
 
-  @override
   DiscriminatorC copyWith({String? id, String? name, DateTime? date}) {
     return DiscriminatorC(
       id: id ?? this.id,
@@ -1137,7 +1246,6 @@ class ObjectWithOptionalFields implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   ObjectWithOptionalFields copyWith({
     String? Function()? string,
     bool? Function()? boolean,
@@ -1420,7 +1528,6 @@ class ObjectWithNullableFields implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   ObjectWithNullableFields copyWith({
     String? Function()? string,
     bool? Function()? boolean,
@@ -1552,7 +1659,6 @@ class RecursiveObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   RecursiveObject copyWith({
     RecursiveObject? Function()? left,
     RecursiveObject? Function()? right,
