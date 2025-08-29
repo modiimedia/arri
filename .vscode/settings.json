@@ -69,6 +69,7 @@
   "rust-analyzer.linkedProjects": [
     "${workspaceFolder}/languages/rust/rust-client/Cargo.toml",
     "${workspaceFolder}/languages/rust/rust-codegen-reference/Cargo.toml",
+    "${workspaceFolder}/languages/rust/rust-core/Cargo.toml",
     "${workspaceFolder}/tests/clients/rust/Cargo.toml"
   ],
   "[rust]": {
