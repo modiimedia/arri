@@ -336,28 +336,15 @@ class HttpArriEventSource<T> implements ArriEventSource<T> {
         _heartbeatTimerMs = heartbeatIntervalHeader;
       }
       _resetHeartbeatCheck();
-      String pendingData = "";
 
       // reset retry count when connection is successful
       _retryInterval = 0;
       _retryDelay = 100;
-
-      List<int>? pendingBytes;
-
+      String pendingData = "";
       _requestStream = response.stream.listen(
         (value) {
-          Uint8List input = Uint8List(0);
-          try {
-            if (pendingBytes != null) input.addAll(pendingBytes!);
-            input.addAll(value);
-            pendingBytes = null;
-          } catch (err) {
-            pendingBytes = value;
-            return;
-          }
-          _onRawData(input);
           final eventResult =
-              parseSseEvents(pendingData + utf8.decode(input), jsonDecoder);
+              parseSseEvents(pendingData + utf8.decode(value), jsonDecoder);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {
             _resetHeartbeatCheck();

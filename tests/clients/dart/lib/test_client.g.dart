@@ -155,7 +155,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (data) => DefaultPayload.fromJsonString(data),
+      jsonDecoder: (data) => DefaultPayload.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -184,7 +184,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (data) => DefaultPayload.fromJsonString(data),
+      jsonDecoder: (data) => DefaultPayload.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -214,7 +214,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (_) => {},
+      jsonDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -244,7 +244,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (_) => {},
+      jsonDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -276,7 +276,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (_) => {},
+      jsonDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -306,8 +306,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) =>
-          DiscriminatorWithEmptyObject.fromJsonString(data),
+      jsonDecoder: (data) => DiscriminatorWithEmptyObject.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -337,7 +336,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (_) => {},
+      jsonDecoder: (_) => {},
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -367,7 +366,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => ObjectWithEveryType.fromJsonString(data),
+      jsonDecoder: (data) => ObjectWithEveryType.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -397,8 +396,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) =>
-          ObjectWithEveryNullableType.fromJsonString(data),
+      jsonDecoder: (data) => ObjectWithEveryNullableType.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -428,7 +426,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => ObjectWithPascalCaseKeys.fromJsonString(data),
+      jsonDecoder: (data) => ObjectWithPascalCaseKeys.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -458,7 +456,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => ObjectWithSnakeCaseKeys.fromJsonString(data),
+      jsonDecoder: (data) => ObjectWithSnakeCaseKeys.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -488,8 +486,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) =>
-          ObjectWithEveryOptionalType.fromJsonString(data),
+      jsonDecoder: (data) => ObjectWithEveryOptionalType.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -519,7 +516,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => RecursiveObject.fromJsonString(data),
+      jsonDecoder: (data) => RecursiveObject.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -549,7 +546,7 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => RecursiveUnion.fromJsonString(data),
+      jsonDecoder: (data) => RecursiveUnion.fromJsonString(data),
       timeout: timeout ?? _timeout,
       retry: retry ?? _retry,
       retryDelay: retryDelay ?? _retryDelay,
@@ -568,7 +565,7 @@ class TestClientTestsService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -585,8 +582,8 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => AutoReconnectResponse.fromJsonString(data),
-      lastEventId: lastEventId,
+      jsonDecoder: (data) => AutoReconnectResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -611,7 +608,7 @@ class TestClientTestsService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -628,9 +625,9 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) =>
+      jsonDecoder: (data) =>
           StreamConnectionErrorTestResponse.fromJsonString(data),
-      lastEventId: lastEventId,
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -654,7 +651,7 @@ class TestClientTestsService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -670,9 +667,8 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (data) =>
-          StreamLargeObjectsResponse.fromJsonString(data),
-      lastEventId: lastEventId,
+      jsonDecoder: (data) => StreamLargeObjectsResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -696,7 +692,7 @@ class TestClientTestsService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -712,8 +708,8 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => ChatMessage.fromJsonString(data),
-      lastEventId: lastEventId,
+      jsonDecoder: (data) => ChatMessage.fromJsonString(data),
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -742,7 +738,7 @@ class TestClientTestsService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -759,9 +755,9 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (data) =>
+      jsonDecoder: (data) =>
           TestsStreamRetryWithNewCredentialsResponse.fromJsonString(data),
-      lastEventId: lastEventId,
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -785,7 +781,7 @@ class TestClientTestsService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -801,8 +797,8 @@ class TestClientTestsService {
         customHeaders: _headers,
         data: null,
       ),
-      responseDecoder: (data) => ChatMessage.fromJsonString(data),
-      lastEventId: lastEventId,
+      jsonDecoder: (data) => ChatMessage.fromJsonString(data),
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
@@ -879,7 +875,7 @@ class TestClientUsersService {
     String? transport,
     int? maxRetryCount,
     Duration? maxRetryInterval,
-    String? lastEventId,
+    String? lastMsgId,
   }) {
     final selectedTransport =
         resolveTransport(["http", "ws"], transport ?? _defaultTransport);
@@ -896,8 +892,8 @@ class TestClientUsersService {
         customHeaders: _headers,
         data: input,
       ),
-      responseDecoder: (data) => UsersWatchUserResponse.fromJsonString(data),
-      lastEventId: lastEventId,
+      jsonDecoder: (data) => UsersWatchUserResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
       onData: onData,
       onRawData: onRawData,
       onOpen: onOpen,
