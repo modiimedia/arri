@@ -22,6 +22,18 @@
         "cwd": "languages/dart/dart-client"
       }
     },
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/lib/**/*.dart",
+        "{projectRoot}/integration_test/**/*.dart",
+        "{projectRoot}/pubspec.yaml"
+      ],
+      "options": {
+        "command": "dart test ./integration_test",
+        "cwd": "languages/dart/dart-client"
+      }
+    },
     "pub": {
       "executor": "nx:run-commands",
       "options": {

@@ -307,37 +307,23 @@ describe('RecursiveObject', () => {
 describe('HTTP options', () => {
     const client = new ExampleClient({
         baseUrl: 'https://thisdomaindoesnotexist.thisdomaindoesnotexist',
+        wsConnectionUrl:
+            'https://thisdomaindoesnotexist.thisdomaindoesnotexit/ws',
     });
     test('request hooks', async () => {
-        let didFireRequest = false;
         let didFireRequestError = false;
-        let didFireResponse = false;
-        let didFireResponseError = false;
         try {
             await client.books.getBook(
                 { bookId: '1' },
                 {
-                    timeout: 200,
-                    onRequest: (_) => {
-                        didFireRequest = true;
-                    },
-                    onRequestError: (_) => {
+                    onError: (_, __) => {
                         didFireRequestError = true;
-                    },
-                    onResponse: (_) => {
-                        didFireResponse = true;
-                    },
-                    onResponseError: (_) => {
-                        didFireResponseError = false;
                     },
                 },
             );
         } catch (_) {
             // do nothing
         }
-        expect(didFireRequest).toBe(true);
         expect(didFireRequestError).toBe(true);
-        expect(didFireResponse).toBe(false);
-        expect(didFireResponseError).toBe(false);
     });
 });

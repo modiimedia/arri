@@ -1,0 +1,8 @@
+ARRIRPC/0.0.8 ERROR
+content-type: application/json
+req-id: 12345
+err-code: 54321
+err-msg: This is an error
+foo: foo
+
+{"data":[],"trace":["foo","bar","baz"]}

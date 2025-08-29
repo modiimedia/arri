@@ -109,7 +109,7 @@ func TestFromUrlQueryWithEveryTypeWithBadInput(t *testing.T) {
 		t.Fatalf("should return an error")
 		return
 	}
-	if len(err.Errors) != 14 {
+	if len(err.Errors()) != 14 {
 		t.Fatalf("should have 14 validation errors")
 		return
 	}

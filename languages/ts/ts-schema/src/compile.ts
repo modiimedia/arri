@@ -5,7 +5,7 @@ import { createStandardSchemaProperty } from './adapters';
 import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
 import { createSerializationV2Template as getSchemaSerializationCode } from './compiler/serialize';
 import { createValidationTemplate as getSchemaValidationCode } from './compiler/validate';
-import { Result, ValidationException } from './errors';
+import { Result, ValidationException, ValueError } from './errors';
 import {
     int8Max,
     int8Min,
@@ -51,6 +51,9 @@ export interface CompiledValidator<
     TSchema extends ASchema<any>,
     TIncludeCode extends boolean = false,
 > {
+    /**
+     * The ATD Schema
+     */
     schema: ASchemaStrict<TSchema>;
     /**
      * Determine if a type matches a schema. This is a type guard.
@@ -81,8 +84,9 @@ export interface CompiledValidator<
      */
     serializeUnsafe: (input: InferType<TSchema>) => string;
     /**
-     * The ATD Schema
+     * Return a list of all the validation errors with an input.
      */
+    errors: (input: InferType<TSchema>) => ValueError[];
     compiledCode: TIncludeCode extends true
         ? CompiledValidatorCompiledCode
         : undefined;
@@ -221,6 +225,11 @@ export function compile<
         serialize,
         serializeUnsafe(input) {
             return serializeFn(input);
+        },
+        errors(input) {
+            const context = newValidationContext();
+            parserFn(input, context);
+            return context.errors;
         },
         compiledCode:
             includeCompiledCode === true

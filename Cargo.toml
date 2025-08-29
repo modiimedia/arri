@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "languages/rust/rust-client",
+    "languages/rust/rust-core",
+    "languages/rust/rust-codegen-reference",
+    "tests/clients/rust",
+]

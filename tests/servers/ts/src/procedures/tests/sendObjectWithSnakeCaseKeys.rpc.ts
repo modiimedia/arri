@@ -1,7 +1,7 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
-const ObjectWithSnakeCaseKeys = a.object("ObjectWithSnakeCaseKeys", {
+const ObjectWithSnakeCaseKeys = a.object('ObjectWithSnakeCaseKeys', {
     created_at: a.timestamp(),
     display_name: a.string(),
     email_address: a.optional(a.string()),
@@ -10,9 +10,9 @@ const ObjectWithSnakeCaseKeys = a.object("ObjectWithSnakeCaseKeys", {
 });
 
 export default defineRpc({
-    params: ObjectWithSnakeCaseKeys,
-    response: ObjectWithSnakeCaseKeys,
-    handler({ params }) {
-        return params;
+    input: ObjectWithSnakeCaseKeys,
+    output: ObjectWithSnakeCaseKeys,
+    handler({ input }) {
+        return input;
     },
 });

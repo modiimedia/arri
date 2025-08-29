@@ -2,7 +2,7 @@ import { a } from '@arrirpc/schema';
 import { defineRpc } from '@arrirpc/server';
 
 export default defineRpc({
-    method: 'post',
+    method: 'get',
     params: a.object({
         name: a.string(),
     }),

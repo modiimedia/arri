@@ -1,0 +1,30 @@
+{
+  "name": "@arrirpc/core",
+  "version": "0.79.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modiimedia/arri.git",
+    "directory": "languages/ts/ts-client"
+  },
+  "dependencies": {
+    "@arrirpc/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "benny": "^3.7.1"
+  }
+}
