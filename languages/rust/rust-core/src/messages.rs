@@ -93,18 +93,17 @@ impl Message {
         todo!()
     }
 
-    pub fn encode(&self) -> String {
+    pub fn encode(&self) -> Vec<u8> {
         match self {
-            Message::Unknown => "".to_string(),
+            Message::Unknown => Vec::new(),
             Message::InvocationMessage {
                 req_id,
                 rpc_name,
                 content_type,
                 client_version,
                 custom_headers,
-                http_method,
-                path,
                 body,
+                ..
             } => {
                 let mut output: Vec<u8> = Vec::new();
                 output.extend_from_slice(format!("ARRIRPC/0.0.8 {}\n", rpc_name).as_bytes());
@@ -116,22 +115,21 @@ impl Message {
                     }
                     None => {}
                 }
-                output.push_str("req-id: ");
-                output.push_str(&req_id);
-                output.push('\n');
+                output.extend_from_slice(format!("req-id: {}\n", req_id).as_bytes());
                 match client_version {
                     Some(val) => {
-                        output.push_str("client-version: ");
-                        output.push_str(&val);
-                        output.push('\n');
+                        output.extend_from_slice(format!("client-version: {}\n", val).as_bytes());
                     }
-                    None => todo!(),
+                    None => {}
                 }
                 for (key, value) in custom_headers {
-                    output.push_str(&format!("{}: {}\n", key, value));
+                    output.extend_from_slice(format!("{}: {}\n", key, value).as_bytes());
                 }
-                output.push('\n');
-
+                output.extend_from_slice("\n".as_bytes());
+                match body {
+                    Some(body) => output.extend_from_slice(body),
+                    None => {}
+                }
                 output
             }
             Message::OkMessage {
@@ -158,5 +156,57 @@ impl Message {
             Message::StreamEndMessage { req_id, reason } => todo!(),
             Message::StreamCancelMessage { req_id, reason } => todo!(),
         }
+    }
+}
+
+#[cfg(test)]
+mod message_tests {
+    use std::{
+        collections::{BTreeMap, btree_map},
+        fs::{self, read_to_string},
+        str::from_utf8,
+    };
+
+    use crate::messages::{ContentType, Message};
+
+    #[test]
+    pub fn encode_invocation_message() {
+        let w_body_file_path: String =
+            "../../../tests/test-files/InvocationMessage_WithBody.txt".to_string();
+        let w_body_file_contents = fs::read_to_string(w_body_file_path).unwrap();
+        let w_body_message = Message::InvocationMessage {
+            req_id: "12345".to_string(),
+            rpc_name: "foo.fooFoo".to_string(),
+            content_type: Some(ContentType::Json),
+            client_version: Some("1.2.5".to_string()),
+            custom_headers: BTreeMap::from([("foo".to_string(), "hello foo".to_string())]),
+            http_method: None,
+            path: None,
+            body: Some("{\"message\":\"hello world\"}".as_bytes().to_vec()),
+        };
+        let w_body_output = String::from_utf8(w_body_message.encode());
+        assert_eq!(
+            w_body_output.unwrap_or("".to_string()),
+            w_body_file_contents
+        );
+
+        let wo_body_file_path: String =
+            "../../../tests/test-files/InvocationMessage_WithoutBody.txt".to_string();
+        let wo_body_file_contents = fs::read_to_string(wo_body_file_path).unwrap();
+        let wo_body_message = Message::InvocationMessage {
+            req_id: "54321".to_string(),
+            rpc_name: "foo.fooFoo".to_string(),
+            content_type: Some(ContentType::Json),
+            client_version: None,
+            custom_headers: BTreeMap::from([
+                ("foo".to_string(), "hello foo".to_string()),
+                ("bar".to_string(), "hello bar".to_string()),
+            ]),
+            http_method: None,
+            path: None,
+            body: None,
+        };
+        let wo_body_output = String::from_utf8(wo_body_message.encode()).unwrap();
+        assert_eq!(wo_body_output, wo_body_file_contents);
     }
 }
