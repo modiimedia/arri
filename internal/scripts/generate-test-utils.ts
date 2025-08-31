@@ -467,7 +467,22 @@ async function main() {
             lastMsgId: undefined,
         }),
     });
-
+    files.push({
+        filename: 'InvocationMessage_WithoutBody2.txt',
+        content: encodeMessage({
+            type: 'INVOCATION',
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                bar: 'hello bar',
+                foo: 'hello foo',
+            },
+            reqId: '54321',
+            body: undefined,
+            clientVersion: undefined,
+            lastMsgId: undefined,
+        }),
+    });
     files.push({
         filename: 'CancelStreamMessage.txt',
         content: encodeMessage({

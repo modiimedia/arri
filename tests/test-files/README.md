@@ -292,6 +292,18 @@ bar: hello bar
 
 ```
 
+## InvocationMessage_WithoutBody2.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 54321
+bar: hello bar
+foo: hello foo
+
+
+```
+
 ## CancelStreamMessage.txt
 
 ```txt
