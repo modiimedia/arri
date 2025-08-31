@@ -13,6 +13,7 @@ pub enum ContentType {
 }
 
 static ARRI_VERSION: &'static str = "0.0.8";
+static NEWLINE_BYTE: u8 = 10;
 
 impl ContentType {
     pub fn from_serial_value(input: String) -> Result<Self, String> {
@@ -129,7 +130,7 @@ impl Message {
                 for (key, value) in custom_headers {
                     output.extend_from_slice(format!("{}: {}\n", key, value).as_bytes());
                 }
-                output.extend_from_slice("\n".as_bytes());
+                output.push(NEWLINE_BYTE);
                 match body {
                     Some(body) => output.extend_from_slice(body),
                     None => {}
@@ -157,7 +158,7 @@ impl Message {
                     output
                         .extend_from_slice(format!("{}: {}\n", key.to_lowercase(), val).as_bytes());
                 }
-                output.extend_from_slice("\n".as_bytes());
+                output.push(NEWLINE_BYTE);
                 match body {
                     Some(body) => output.extend(body),
                     None => {}
@@ -186,7 +187,7 @@ impl Message {
                 for (key, val) in custom_headers {
                     output.extend_from_slice(format!("{}: {}\n", key, val).as_bytes());
                 }
-                output.extend_from_slice("\n".as_bytes());
+                output.push(NEWLINE_BYTE);
                 match body {
                     Some(body) => output.extend_from_slice(body),
                     None => {}
@@ -194,9 +195,9 @@ impl Message {
                 output
             }
             Message::Heartbeat { heartbeat_interval } => match heartbeat_interval {
-                Some(interval) => format!(
+                Some(heartbeat_interval) => format!(
                     "ARRIRPC/{} HEARTBEAT\nheartbeat-interval: {}\n\n",
-                    ARRI_VERSION, interval,
+                    ARRI_VERSION, heartbeat_interval,
                 )
                 .as_bytes()
                 .to_vec(),
@@ -204,14 +205,71 @@ impl Message {
                     .as_bytes()
                     .to_vec(),
             },
-            Message::ConnectionStart { heartbeat_interval } => todo!(),
+            Message::ConnectionStart { heartbeat_interval } => match heartbeat_interval {
+                Some(heartbeat_interval) => format!(
+                    "ARRIRPC/{} CONNECTION_START\nheartbeat-interval: {}\n\n",
+                    ARRI_VERSION, heartbeat_interval
+                )
+                .as_bytes()
+                .to_vec(),
+                None => format!("ARRIRPC/{} CONNECTION_START\n\n", ARRI_VERSION)
+                    .as_bytes()
+                    .to_vec(),
+            },
             Message::StreamData {
                 req_id,
                 msg_id,
                 body,
-            } => todo!(),
-            Message::StreamEnd { req_id, reason } => todo!(),
-            Message::StreamCancel { req_id, reason } => todo!(),
+            } => {
+                let mut output: Vec<u8> = Vec::new();
+                output.extend_from_slice(
+                    format!("ARRIRPC/{} STREAM_DATA\n", ARRI_VERSION).as_bytes(),
+                );
+                output.extend_from_slice(format!("req-id: {}\n", req_id).as_bytes());
+                match msg_id {
+                    Some(msg_id) => {
+                        output.extend_from_slice(format!("msg-id: {}\n", msg_id).as_bytes());
+                    }
+                    None => {}
+                }
+                output.push(NEWLINE_BYTE);
+                match body {
+                    Some(body) => {
+                        output.extend_from_slice(body);
+                    }
+                    None => {}
+                }
+                output
+            }
+            Message::StreamEnd { req_id, reason } => {
+                let mut output: Vec<u8> = Vec::new();
+                output
+                    .extend_from_slice(format!("ARRIRPC/{} STREAM_END\n", ARRI_VERSION).as_bytes());
+                output.extend_from_slice(format!("req-id: {}\n", req_id).as_bytes());
+                match reason {
+                    Some(reason) => {
+                        output.extend_from_slice(format!("reason: {}\n", reason).as_bytes())
+                    }
+                    None => {}
+                }
+                output.push(NEWLINE_BYTE);
+                output
+            }
+            Message::StreamCancel { req_id, reason } => {
+                let mut output: Vec<u8> = Vec::new();
+                output.extend_from_slice(
+                    format!("ARRIRPC/{} STREAM_CANCEL\n", ARRI_VERSION).as_bytes(),
+                );
+                output.extend_from_slice(format!("req-id: {}\n", req_id).as_bytes());
+                match reason {
+                    Some(reason) => {
+                        output.extend_from_slice(format!("reason: {}\n", reason).as_bytes())
+                    }
+                    None => {}
+                }
+                output.push(NEWLINE_BYTE);
+                output
+            }
         }
     }
 }
@@ -393,5 +451,84 @@ mod message_tests {
         };
         let w_body_output = String::from_utf8(w_body_message.encode()).unwrap();
         assert_eq!(w_body_output, w_body_file_contents);
+    }
+
+    #[test]
+    pub fn encode_heartbeat_message() {
+        let wo_interval_file_path =
+            "../../../tests/test-files/HeartbeatMessage_WithoutInterval.txt".to_string();
+        let wo_interval_file_contents = fs::read_to_string(wo_interval_file_path).unwrap();
+        let wo_interval_message = Message::Heartbeat {
+            heartbeat_interval: None,
+        };
+        let wo_interval_output = String::from_utf8(wo_interval_message.encode()).unwrap();
+        assert_eq!(wo_interval_output, wo_interval_file_contents);
+
+        let w_interval_file_path =
+            "../../../tests/test-files/HeartbeatMessage_WithInterval.txt".to_string();
+        let w_interval_file_contents = fs::read_to_string(w_interval_file_path).unwrap();
+        let w_interval_message = Message::Heartbeat {
+            heartbeat_interval: Some(155),
+        };
+        let w_interval_output = String::from_utf8(w_interval_message.encode()).unwrap();
+        assert_eq!(w_interval_output, w_interval_file_contents);
+    }
+
+    #[test]
+    pub fn encode_connection_start_message() {
+        let wo_interval_file_path =
+            "../../../tests/test-files/ConnectionStartMessage_WithoutInterval.txt".to_string();
+        let wo_interval_file_contents = fs::read_to_string(wo_interval_file_path).unwrap();
+        let wo_interval_message = Message::ConnectionStart {
+            heartbeat_interval: None,
+        };
+        let wo_interval_output = String::from_utf8(wo_interval_message.encode()).unwrap();
+        assert_eq!(wo_interval_output, wo_interval_file_contents);
+
+        let w_interval_file_path =
+            "../../../tests/test-files/ConnectionStartMessage_WithInterval.txt".to_string();
+        let w_interval_file_contents = fs::read_to_string(w_interval_file_path).unwrap();
+        let w_interval_message = Message::ConnectionStart {
+            heartbeat_interval: Some(255),
+        };
+        let w_interval_output = String::from_utf8(w_interval_message.encode()).unwrap();
+        assert_eq!(w_interval_output, w_interval_file_contents);
+    }
+
+    #[test]
+    pub fn encode_stream_data_message() {
+        let file_path = "../../../tests/test-files/StreamDataMessage.txt".to_string();
+        let file_contents = fs::read_to_string(file_path).unwrap();
+        let message = Message::StreamData {
+            req_id: "1515".to_string(),
+            msg_id: Some("1".to_string()),
+            body: Some("{\"message\":\"hello world\"}".as_bytes().to_vec()),
+        };
+        let output = String::from_utf8(message.encode()).unwrap();
+        assert_eq!(output, file_contents);
+    }
+
+    #[test]
+    pub fn encode_stream_end_message() {
+        let file_path = "../../../tests/test-files/StreamEndMessage.txt".to_string();
+        let file_contents = fs::read_to_string(file_path).unwrap();
+        let message = Message::StreamEnd {
+            req_id: "1515".to_string(),
+            reason: Some("no more events".to_string()),
+        };
+        let output = String::from_utf8(message.encode()).unwrap();
+        assert_eq!(output, file_contents);
+    }
+
+    #[test]
+    pub fn encode_stream_cancel_message() {
+        let file_path = "../../../tests/test-files/StreamCancelMessage.txt".to_string();
+        let file_contents = fs::read_to_string(file_path).unwrap();
+        let message = Message::StreamCancel {
+            req_id: "1515".to_string(),
+            reason: Some("no longer needed".to_string()),
+        };
+        let output = String::from_utf8(message.encode()).unwrap();
+        assert_eq!(output, file_contents);
     }
 }
