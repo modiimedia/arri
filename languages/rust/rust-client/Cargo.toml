@@ -17,3 +17,5 @@ include = ["/src"]
 chrono = "0.4"
 reqwest = {version = "0.12", features = ["stream"]}
 serde_json = "1"
+arri_core = { path = "../rust-core", version = "0.80.3" }
+ulid = "1.2.1"

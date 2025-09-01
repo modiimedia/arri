@@ -7,8 +7,6 @@ use std::{
 
 use serde_json::from_str;
 
-use crate::{ArriError, ArriModel, ArriRequestErrorMethods};
-
 pub struct ArriParsedSseRequestOptions<'a> {
     pub client: &'a reqwest::Client,
     pub client_version: String,
