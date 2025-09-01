@@ -1,4 +1,4 @@
-import { ErrorMessage, Message } from './messages';
+import { ErrorMessage } from './messages';
 
 export interface ArriErrorBase {
     code: number;
