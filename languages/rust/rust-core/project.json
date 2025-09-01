@@ -35,6 +35,19 @@
         "command": "cargo build",
         "cwd": "languages/rust/rust-core"
       }
+    },
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "cache": false,
+      "options": {
+        "command": "cargo bench",
+        "cwd": "languages/rust/rust-core"
+      }
     }
   }
 }

@@ -114,7 +114,7 @@ impl Message {
         }
     }
 
-    pub fn decode(bytes: Vec<u8>) -> Result<Self, String> {
+    pub fn decode(bytes: &[u8]) -> Result<Self, String> {
         let mut message_type = MessageType::Unknown;
         let mut req_id: Option<String> = None;
         let mut rpc_name: Option<String> = None;
@@ -772,7 +772,7 @@ mod message_tests {
         let w_body_file_path: String =
             "../../../tests/test-files/InvocationMessage_WithBody.txt".to_string();
         let w_body_file_contents = fs::read_to_string(w_body_file_path).unwrap();
-        let w_body_message = Message::decode(w_body_file_contents.as_bytes().to_vec()).unwrap();
+        let w_body_message = Message::decode(w_body_file_contents.as_bytes()).unwrap();
         assert_eq!(
             w_body_message,
             Message::Invocation {
@@ -793,7 +793,7 @@ mod message_tests {
         let wo_body_file_path: String =
             "../../../tests/test-files/InvocationMessage_WithoutBody.txt".to_string();
         let wo_body_file_contents = fs::read_to_string(wo_body_file_path).unwrap();
-        let wo_body_message = Message::decode(wo_body_file_contents.as_bytes().to_vec()).unwrap();
+        let wo_body_message = Message::decode(wo_body_file_contents.as_bytes()).unwrap();
         assert_eq!(
             wo_body_message,
             Message::Invocation {
@@ -816,7 +816,7 @@ mod message_tests {
     pub fn decode_ok_message() {
         let wo_body_file_path = "../../../tests/test-files/OkMessage_WithoutBody.txt".to_string();
         let wo_body_file_contents = fs::read_to_string(wo_body_file_path).unwrap();
-        let wo_body_message = Message::decode(wo_body_file_contents.as_bytes().to_vec()).unwrap();
+        let wo_body_message = Message::decode(wo_body_file_contents.as_bytes()).unwrap();
         assert_eq!(
             wo_body_message,
             Message::Ok {
@@ -829,7 +829,7 @@ mod message_tests {
 
         let w_body_file_path = "../../../tests/test-files/OkMessage_WithBody.txt".to_string();
         let w_body_file_contents = fs::read_to_string(w_body_file_path).unwrap();
-        let w_body_message = Message::decode(w_body_file_contents.as_bytes().to_vec()).unwrap();
+        let w_body_message = Message::decode(w_body_file_contents.as_bytes()).unwrap();
         assert_eq!(
             w_body_message,
             Message::Ok {
@@ -846,7 +846,7 @@ mod message_tests {
         let wo_body_file_path =
             "../../../tests/test-files/ErrorMessage_WithoutBody.txt".to_string();
         let wo_body_file_contents = fs::read_to_string(wo_body_file_path).unwrap();
-        let wo_body_message = Message::decode(wo_body_file_contents.as_bytes().to_vec()).unwrap();
+        let wo_body_message = Message::decode(wo_body_file_contents.as_bytes()).unwrap();
         assert_eq!(
             wo_body_message,
             Message::Error {
@@ -861,7 +861,7 @@ mod message_tests {
 
         let w_body_file_path = "../../../tests/test-files/ErrorMessage_WithBody.txt".to_string();
         let w_body_file_contents = fs::read_to_string(w_body_file_path).unwrap();
-        let w_body_message = Message::decode(w_body_file_contents.as_bytes().to_vec()).unwrap();
+        let w_body_message = Message::decode(w_body_file_contents.as_bytes()).unwrap();
         assert_eq!(
             w_body_message,
             Message::Error {
@@ -884,8 +884,7 @@ mod message_tests {
         let wo_interval_file_path =
             "../../../tests/test-files/HeartbeatMessage_WithoutInterval.txt".to_string();
         let wo_interval_file_contents = fs::read_to_string(wo_interval_file_path).unwrap();
-        let wo_interval_message =
-            Message::decode(wo_interval_file_contents.as_bytes().to_vec()).unwrap();
+        let wo_interval_message = Message::decode(wo_interval_file_contents.as_bytes()).unwrap();
         assert_eq!(
             wo_interval_message,
             Message::Heartbeat {
@@ -896,8 +895,7 @@ mod message_tests {
         let w_interval_file_path =
             "../../../tests/test-files/HeartbeatMessage_WithInterval.txt".to_string();
         let w_interval_file_contents = fs::read_to_string(w_interval_file_path).unwrap();
-        let w_interval_message =
-            Message::decode(w_interval_file_contents.as_bytes().to_vec()).unwrap();
+        let w_interval_message = Message::decode(w_interval_file_contents.as_bytes()).unwrap();
         assert_eq!(
             w_interval_message,
             Message::Heartbeat {
@@ -911,8 +909,7 @@ mod message_tests {
         let wo_interval_file_path =
             "../../../tests/test-files/ConnectionStartMessage_WithoutInterval.txt".to_string();
         let wo_interval_file_contents = fs::read_to_string(wo_interval_file_path).unwrap();
-        let wo_interval_message =
-            Message::decode(wo_interval_file_contents.as_bytes().to_vec()).unwrap();
+        let wo_interval_message = Message::decode(wo_interval_file_contents.as_bytes()).unwrap();
         assert_eq!(
             wo_interval_message,
             Message::ConnectionStart {
@@ -923,8 +920,7 @@ mod message_tests {
         let w_interval_file_path =
             "../../../tests/test-files/ConnectionStartMessage_WithInterval.txt".to_string();
         let w_interval_file_contents = fs::read_to_string(w_interval_file_path).unwrap();
-        let w_interval_message =
-            Message::decode(w_interval_file_contents.as_bytes().to_vec()).unwrap();
+        let w_interval_message = Message::decode(w_interval_file_contents.as_bytes()).unwrap();
         assert_eq!(
             w_interval_message,
             Message::ConnectionStart {
@@ -937,7 +933,7 @@ mod message_tests {
     pub fn decode_stream_data_message() {
         let file_path = "../../../tests/test-files/StreamDataMessage.txt".to_string();
         let file_contents = fs::read_to_string(file_path).unwrap();
-        let message = Message::decode(file_contents.as_bytes().to_vec()).unwrap();
+        let message = Message::decode(file_contents.as_bytes()).unwrap();
         assert_eq!(
             message,
             Message::StreamData {
@@ -952,7 +948,7 @@ mod message_tests {
     pub fn decode_stream_end_message() {
         let file_path = "../../../tests/test-files/StreamEndMessage.txt".to_string();
         let file_contents = fs::read_to_string(file_path).unwrap();
-        let message = Message::decode(file_contents.as_bytes().to_vec()).unwrap();
+        let message = Message::decode(file_contents.as_bytes()).unwrap();
         assert_eq!(
             message,
             Message::StreamEnd {
@@ -966,7 +962,7 @@ mod message_tests {
     pub fn decode_stream_cancel_message() {
         let file_path = "../../../tests/test-files/CancelStreamMessage.txt".to_string();
         let file_contents = fs::read_to_string(file_path).unwrap();
-        let message = Message::decode(file_contents.as_bytes().to_vec()).unwrap();
+        let message = Message::decode(file_contents.as_bytes()).unwrap();
         assert_eq!(
             message,
             Message::StreamCancel {
