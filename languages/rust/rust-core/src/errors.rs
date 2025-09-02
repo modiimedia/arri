@@ -38,15 +38,16 @@ impl ArriError {
             self.has_parsed_body = true;
             return;
         }
-        let body = String::from_utf8(self.body.unwrap());
-        if body.is_err() {
+        let body = self.body.clone().unwrap();
+        let body_str = String::from_utf8(body);
+        if body_str.is_err() {
             self.has_parsed_body = true;
             return;
         }
-        let body = body.unwrap();
+        let body_str = body_str.unwrap();
         match self.content_type {
             ContentType::Json => {
-                let val = json!(body);
+                let val = json!(body_str);
                 match val.get("data") {
                     Some(val) => {
                         self._data = Some(val.to_owned());
@@ -88,7 +89,10 @@ impl fmt::Display for ArriError {
         write!(
             f,
             "ArriError {{ code: {}, message: {}, data: {:?}, trace: {:?} }}",
-            self.code, self.message, self.data, self.trace
+            self.code,
+            self.message,
+            self.data(),
+            self.trace(),
         )
     }
 }

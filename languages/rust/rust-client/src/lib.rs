@@ -2,33 +2,30 @@ pub mod dispatcher;
 pub mod dispatcher_http;
 pub mod model;
 pub mod rpc_call;
-pub mod sse;
 pub mod utils;
+use arri_core::headers::HeaderMap;
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 #[derive(Clone)]
 pub struct ArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: HashMap<&'static str, String>,
+    pub headers: HeaderMap,
 }
 
 #[derive(Clone)]
 pub struct InternalArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
+    pub headers: Arc<RwLock<HeaderMap>>,
 }
 
 pub trait ArriClientService {
     fn create(config: ArriClientConfig) -> Self;
-    fn update_headers(&self, headers: HashMap<&'static str, String>);
+    fn update_headers(&self, headers: HeaderMap);
 }
 
 impl InternalArriClientConfig {
@@ -41,21 +38,21 @@ impl InternalArriClientConfig {
     }
 }
 
-pub struct ArriRequestOptions<'a> {
-    pub http_client: &'a reqwest::Client,
-    pub url: String,
-    pub method: reqwest::Method,
-    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
-    pub client_version: String,
-}
+// pub struct ArriRequestOptions<'a> {
+//     pub http_client: &'a reqwest::Client,
+//     pub url: String,
+//     pub method: reqwest::Method,
+//     pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
+//     pub client_version: String,
+// }
 
-pub struct ArriParsedRequestOptions<'a> {
-    pub http_client: &'a reqwest::Client,
-    pub url: String,
-    pub method: reqwest::Method,
-    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
-    pub client_version: String,
-}
+// pub struct ArriParsedRequestOptions<'a> {
+//     pub http_client: &'a reqwest::Client,
+//     pub url: String,
+//     pub method: reqwest::Method,
+//     pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
+//     pub client_version: String,
+// }
 
 // trait ArriRequestErrorMethods {
 //     fn from_response_data(status: u16, body: String) -> Self;
@@ -196,10 +193,6 @@ pub struct ArriParsedRequestOptions<'a> {
 //         }
 //     }
 // }
-
-pub trait ArriService {
-    fn new() -> Self;
-}
 
 // pub async fn parsed_arri_request<'a, TResponse>(
 //     opts: ArriParsedRequestOptions<'a>,

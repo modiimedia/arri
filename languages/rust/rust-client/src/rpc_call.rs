@@ -39,33 +39,21 @@ impl<T: ArriClientModel> RpcCall<T> {
     }
 
     pub fn to_message(&self) -> Message {
+        let content_type = self.content_type.clone();
         Message::Invocation {
-            req_id: &self.req_id,
-            rpc_name: &self.rpc_name,
-            content_type: &self.content_type,
-            client_version: &self.client_version,
-            custom_headers: &self.custom_headers.unwrap_or(HeaderMap::new()),
-            http_method: &self.method,
-            path: &self.path,
+            req_id: self.req_id.clone(),
+            rpc_name: self.rpc_name.clone(),
+            content_type: content_type.clone(),
+            client_version: self.client_version.clone(),
+            custom_headers: self.custom_headers.clone().unwrap_or(HeaderMap::new()),
+            http_method: self.method.clone(),
+            path: Some(self.path.clone()),
             body: match &self.data {
-                Some(data) => match &self.content_type.unwrap_or(ContentType::Json) {
-                    ContentType::Json => data.to_json_string().as_bytes(),
+                Some(data) => match content_type.unwrap_or(ContentType::Json) {
+                    ContentType::Json => Some(data.to_json_string().as_bytes().to_vec()),
                 },
                 None => None,
             },
         }
     }
-}
-
-fn testing_123() {
-    let call: RpcCall = RpcCall {
-        rpc_name: "".to_string(),
-        req_id: "".to_string(),
-        path: "".to_string(),
-        method: Some(HttpMethod::Get),
-        client_version: None,
-        content_type: None,
-        custom_headers: None,
-        data: None,
-    };
 }

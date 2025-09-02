@@ -202,15 +202,25 @@ export class HttpDispatcher implements RpcDispatcher<'http'> {
                     message.event === 'message' ||
                     message.event === undefined ||
                     message.event === '' ||
-                    message.event === 'ES_EVENT'
+                    message.event === 'STREAM_DATA'
                 ) {
                     hooks.onMessage?.(
                         validator.response.fromJsonString(message.data),
                     );
                     return;
                 }
-                if (message.event === 'end' || message.event === 'ES_END') {
+                if (
+                    message.event === 'end' ||
+                    message.event === 'STREAM_END' ||
+                    message.event === 'STREAM_CANCEL'
+                ) {
                     clearTimeout(timeout);
+                    controller.abort();
+                }
+
+                if (message.event === 'error' || message.event === 'ERROR') {
+                    clearTimeout(timeout);
+                    console.log('UNHANDLED ERROR MESSAGE', message);
                     controller.abort();
                 }
             },
