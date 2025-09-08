@@ -1,10 +1,13 @@
-use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
+use arri_client::{
+    arri_core::headers::SharableHeaderMap, chrono::DateTime, reqwest, ArriClientConfig,
+    ArriClientService,
+};
 use example_client::{Book, BookParams, ExampleClient};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 mod example_client;
 
-fn get_headers() -> HashMap<&'static str, String> {
+fn get_headers() -> SharableHeaderMap {
     let mut headers = HashMap::new();
     headers.insert("Authorization", "Bearer 12345".to_string());
     headers
@@ -35,13 +38,13 @@ async fn main() {
                     book_id: "12345".to_string(),
                 },
                 &mut |event, controller| match event {
-                    arri_client::sse::SseEvent::Message(_) => {
+                    arri_client::dispatcher_http::SseEvent::Message(_) => {
                         controller.abort();
                         client.update_headers(HashMap::new());
                     }
-                    arri_client::sse::SseEvent::Error(_) => {}
-                    arri_client::sse::SseEvent::Open => {}
-                    arri_client::sse::SseEvent::Close => {}
+                    arri_client::dispatcher_http::SseEvent::Error(_) => {}
+                    arri_client::dispatcher_http::SseEvent::Open => {}
+                    arri_client::dispatcher_http::SseEvent::Close => {}
                 },
                 None,
                 None,
@@ -59,8 +62,8 @@ mod parsing_and_serialization_tests {
     };
     use arri_client::{
         chrono::{DateTime, FixedOffset},
+        model::ArriClientModel,
         serde_json::{self, json},
-        ArriModel,
     };
     use std::{collections::BTreeMap, fs};
 

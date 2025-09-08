@@ -3,7 +3,8 @@ pub mod dispatcher_http;
 pub mod model;
 pub mod rpc_call;
 pub mod utils;
-use arri_core::headers::HeaderMap;
+pub use arri_core;
+use arri_core::headers::SharableHeaderMap;
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
@@ -13,19 +14,19 @@ use std::sync::{Arc, RwLock};
 pub struct ArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: HeaderMap,
+    pub headers: SharableHeaderMap,
 }
 
 #[derive(Clone)]
 pub struct InternalArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: Arc<RwLock<HeaderMap>>,
+    pub headers: Arc<RwLock<SharableHeaderMap>>,
 }
 
 pub trait ArriClientService {
     fn create(config: ArriClientConfig) -> Self;
-    fn update_headers(&self, headers: HeaderMap);
+    fn update_headers(&self, headers: SharableHeaderMap);
 }
 
 impl InternalArriClientConfig {

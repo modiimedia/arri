@@ -4,7 +4,11 @@ use std::{
     time::{Duration, Instant},
 };
 
-use arri_core::{errors::ArriError, headers::HeaderMap, message::ContentType};
+use arri_core::{
+    errors::ArriError,
+    headers::{HeaderMap, SharableHeaderMap},
+    message::ContentType,
+};
 use reqwest::header::HeaderValue;
 use serde_json::from_str;
 
@@ -261,7 +265,7 @@ pub struct EventSource<'a> {
     pub url: String,
     pub method: reqwest::Method,
     pub client_version: String,
-    pub headers: Arc<RwLock<HeaderMap>>,
+    pub headers: Arc<RwLock<SharableHeaderMap>>,
     pub retry_count: u64,
     pub retry_interval: u64,
     pub max_retry_interval: u64,
@@ -275,7 +279,7 @@ enum SseAction {
 
 impl<'a> EventSource<'a> {
     async fn listen<T: ArriClientModel, OnEvent>(
-        &'a mut self,
+        &mut self,
         params: Option<impl ArriClientModel + Clone>,
         on_event: &mut OnEvent,
     ) where
@@ -316,7 +320,7 @@ impl<'a> EventSource<'a> {
         }
     }
     async fn send_request<T: ArriClientModel, OnEvent>(
-        &'a mut self,
+        &mut self,
         params: Option<impl ArriClientModel + Clone>,
         on_event: &mut OnEvent,
     ) -> SseAction
@@ -332,7 +336,7 @@ impl<'a> EventSource<'a> {
             for (key, value) in unlocked.iter() {
                 match reqwest::header::HeaderValue::from_str(value) {
                     Ok(header_val) => {
-                        headers.insert(key.as_str().to_owned(), header_val);
+                        headers.insert(*key, header_val);
                     }
                     Err(error) => {
                         println!("Invalid header value: {:?}", error);

@@ -6,14 +6,14 @@
     deprecated
 )]
 use arri_client::{
+    arri_core::{errors::ArriError, headers::SharableHeaderMap},
     chrono::{DateTime, FixedOffset},
-    parsed_arri_request,
+    dispatcher_http::{SseController, SseEvent},
+    model::{ArriClientEnum, ArriClientModel},
     reqwest::{self, Request},
     serde_json::{self, Map},
-    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, ArriEnum, ArriError, ArriModel, ArriParsedRequestOptions,
-    EmptyArriModel, InternalArriClientConfig,
+    ArriClientConfig, ArriClientService, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
 
@@ -31,7 +31,7 @@ impl ArriClientService for ExampleClient {
         }
     }
 
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+    fn update_headers(&self, headers: SharableHeaderMap) {
         let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
         self.books.update_headers(headers);
@@ -40,18 +40,7 @@ impl ArriClientService for ExampleClient {
 
 impl ExampleClient {
     pub async fn send_object(&self, params: NestedObject) -> Result<NestedObject, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/send-object", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "20".to_string(),
-            },
-            Some(params),
-            |body| return NestedObject::from_json_string(body),
-        )
-        .await
+        todo!();
     }
 }
 
@@ -67,7 +56,7 @@ impl ArriClientService for ExampleClientBooksService {
         }
     }
 
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+    fn update_headers(&self, headers: SharableHeaderMap) {
         let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
@@ -76,35 +65,13 @@ impl ArriClientService for ExampleClientBooksService {
 impl ExampleClientBooksService {
     /// Get a book
     pub async fn get_book(&self, params: BookParams) -> Result<Book, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/books/get-book", &self._config.base_url),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "20".to_string(),
-            },
-            Some(params),
-            |body| return Book::from_json_string(body),
-        )
-        .await
+        todo!();
     }
 
     /// Create a book
     #[deprecated]
     pub async fn create_book(&self, params: Book) -> Result<Book, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/books/create-book", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "20".to_string(),
-            },
-            Some(params),
-            |body| return Book::from_json_string(body),
-        )
-        .await
+        todo!();
     }
     #[deprecated]
     pub async fn watch_book<OnEvent>(
@@ -116,27 +83,14 @@ impl ExampleClientBooksService {
     ) where
         OnEvent: FnMut(SseEvent<Book>, &mut SseController) + std::marker::Send + std::marker::Sync,
     {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!("{}/books/watch-book", &self._config.base_url),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "20".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
+        todo!();
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct EmptyObject {}
 
-impl ArriModel for EmptyObject {
+impl ArriClientModel for EmptyObject {
     fn new() -> Self {
         Self {}
     }
@@ -182,7 +136,7 @@ pub struct Book {
     pub updated_at: DateTime<FixedOffset>,
 }
 
-impl ArriModel for Book {
+impl ArriClientModel for Book {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -270,7 +224,7 @@ pub struct BookParams {
     pub book_id: String,
 }
 
-impl ArriModel for BookParams {
+impl ArriClientModel for BookParams {
     fn new() -> Self {
         Self {
             book_id: "".to_string(),
@@ -318,7 +272,7 @@ pub struct NestedObject {
     pub content: String,
 }
 
-impl ArriModel for NestedObject {
+impl ArriClientModel for NestedObject {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -391,7 +345,7 @@ pub struct ObjectWithEveryType {
     pub any: serde_json::Value,
 }
 
-impl ArriModel for ObjectWithEveryType {
+impl ArriClientModel for ObjectWithEveryType {
     fn new() -> Self {
         Self {
             string: "".to_string(),
@@ -681,7 +635,7 @@ pub enum Enumerator {
     Baz,
 }
 
-impl ArriEnum for Enumerator {
+impl ArriClientEnum for Enumerator {
     fn default() -> Self {
         Enumerator::Foo
     }
@@ -720,7 +674,7 @@ pub enum Discriminator {
     },
 }
 
-impl ArriModel for Discriminator {
+impl ArriClientModel for Discriminator {
     fn new() -> Self {
         Self::A { id: "".to_string() }
     }
@@ -858,7 +812,7 @@ pub struct ObjectWithOptionalFields {
     pub any: Option<serde_json::Value>,
 }
 
-impl ArriModel for ObjectWithOptionalFields {
+impl ArriClientModel for ObjectWithOptionalFields {
     fn new() -> Self {
         Self {
             string: None,
@@ -1440,7 +1394,7 @@ pub struct ObjectWithNullableFields {
     pub any: serde_json::Value,
 }
 
-impl ArriModel for ObjectWithNullableFields {
+impl ArriClientModel for ObjectWithNullableFields {
     fn new() -> Self {
         Self {
             string: None,
@@ -1991,7 +1945,7 @@ pub struct RecursiveObject {
     pub right: Option<Box<RecursiveObject>>,
 }
 
-impl ArriModel for RecursiveObject {
+impl ArriClientModel for RecursiveObject {
     fn new() -> Self {
         Self {
             left: None,

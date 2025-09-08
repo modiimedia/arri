@@ -1,7 +1,9 @@
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, HashMap},
     ops::{Deref, DerefMut},
 };
+
+pub type SharableHeaderMap = HashMap<&'static str, String>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HeaderMap(BTreeMap<String, String>);
