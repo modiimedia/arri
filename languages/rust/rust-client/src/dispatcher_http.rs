@@ -8,11 +8,15 @@ use arri_core::{
     errors::ArriError,
     headers::{HeaderMap, SharableHeaderMap},
     message::ContentType,
+    stream_event::StreamEvent,
 };
 use reqwest::header::HeaderValue;
 use serde_json::from_str;
 
-use crate::{dispatcher::TransportDispatcher, model::ArriClientModel};
+use crate::{
+    dispatcher::{EventStreamController, TransportDispatcher},
+    model::ArriClientModel,
+};
 
 #[derive(Debug, Clone)]
 pub struct HttpDispatcher {
@@ -159,6 +163,20 @@ impl TransportDispatcher for HttpDispatcher {
                 Ok(TOut::from_json_string(json_text))
             }
         }
+    }
+
+    fn dispatch_event_stream_rpc<
+        TIn: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
+        TOut: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
+        TOnEvent,
+    >(
+        &self,
+        call: crate::rpc_call::RpcCall<TIn>,
+        on_event: &mut TOnEvent,
+    ) where
+        TOnEvent: FnMut(StreamEvent<TOut>, EventStreamController) -> Result<(), ArriError>,
+    {
+        todo!()
     }
 }
 
