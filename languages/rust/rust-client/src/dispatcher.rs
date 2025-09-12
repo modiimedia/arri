@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use arri_core::{errors::ArriError, stream_event::StreamEvent};
 
 use crate::{model::ArriClientModel, rpc_call::RpcCall};
@@ -21,8 +23,9 @@ pub trait TransportDispatcher {
         &self,
         call: RpcCall<TIn>,
         on_event: &mut TOnEvent,
+        stream_controller: &mut EventStreamController,
     ) where
-        TOnEvent: FnMut(StreamEvent<TOut>, EventStreamController) -> Result<(), ArriError>;
+        TOnEvent: FnMut(StreamEvent<TOut>) -> Result<(), ArriError>;
 }
 
 // pub struct EventStream {
@@ -34,8 +37,9 @@ pub trait TransportDispatcher {
 //     pub max_retry_count: Option<u64>,
 // }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EventStreamController {
-    is_aborted: bool,
+    pub is_aborted: bool,
 }
 
 impl EventStreamController {
@@ -48,9 +52,12 @@ impl EventStreamController {
 }
 
 pub trait EventStream {
-    async fn listen<T: ArriClientModel, OnEvent>(&mut self, on_event: &mut OnEvent)
+    fn listen<T: ArriClientModel, OnEvent>(
+        &mut self,
+        on_event: &mut OnEvent,
+    ) -> impl Future<Output = ()>
     where
-        OnEvent: FnMut(StreamEvent<T>, EventStreamController);
+        OnEvent: FnMut(StreamEvent<T>, &mut EventStreamController);
 }
 
 enum SseAction {

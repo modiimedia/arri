@@ -5,16 +5,13 @@ use std::{
 };
 
 use arri_core::{
-    errors::ArriError,
-    headers::{HeaderMap, SharableHeaderMap},
-    message::ContentType,
-    stream_event::StreamEvent,
+    errors::ArriError, headers::SharableHeaderMap, message::ContentType, stream_event::StreamEvent,
 };
 use reqwest::header::HeaderValue;
 use serde_json::from_str;
 
 use crate::{
-    dispatcher::{EventStreamController, TransportDispatcher},
+    dispatcher::{EventStream, EventStreamController, TransportDispatcher},
     model::ArriClientModel,
 };
 
@@ -173,8 +170,9 @@ impl TransportDispatcher for HttpDispatcher {
         &self,
         call: crate::rpc_call::RpcCall<TIn>,
         on_event: &mut TOnEvent,
+        stream_controller: &mut EventStreamController,
     ) where
-        TOnEvent: FnMut(StreamEvent<TOut>, EventStreamController) -> Result<(), ArriError>,
+        TOnEvent: FnMut(StreamEvent<TOut>) -> Result<(), ArriError>,
     {
         todo!()
     }
@@ -278,16 +276,18 @@ fn wait(duration: Duration) {
 }
 
 #[derive(Debug)]
-pub struct EventSource<'a> {
+pub struct EventSource<'a, 'b, TIn: ArriClientModel + Clone> {
     pub dispatcher: &'a HttpDispatcher,
     pub url: String,
     pub method: reqwest::Method,
+    pub params: Option<TIn>,
     pub client_version: String,
     pub headers: Arc<RwLock<SharableHeaderMap>>,
     pub retry_count: u64,
     pub retry_interval: u64,
     pub max_retry_interval: u64,
     pub max_retry_count: Option<u64>,
+    pub controller: &'b mut EventStreamController,
 }
 
 enum SseAction {
@@ -295,57 +295,14 @@ enum SseAction {
     Abort,
 }
 
-impl<'a> EventSource<'a> {
-    async fn listen<T: ArriClientModel, OnEvent>(
-        &mut self,
-        params: Option<impl ArriClientModel + Clone>,
-        on_event: &mut OnEvent,
-    ) where
-        OnEvent: FnMut(SseEvent<T>, &mut SseController),
-    {
-        loop {
-            match &self.max_retry_count {
-                Some(max_retry_count) => {
-                    if &self.retry_count > max_retry_count {
-                        return;
-                    }
-                }
-                None => {}
-            }
-            if self.retry_count > 5 {
-                if self.retry_interval == 0 {
-                    self.retry_interval = 2;
-                } else {
-                    self.retry_interval = if self.retry_interval * 2 > self.max_retry_interval {
-                        self.max_retry_interval
-                    } else {
-                        self.retry_interval * 2
-                    };
-                }
-            }
-            if self.retry_interval > 0 {
-                wait(Duration::from_millis(self.retry_interval.clone()));
-            }
-            let result = self.send_request(params.clone(), on_event).await;
-            match result {
-                SseAction::Retry => {
-                    self.retry_count += 1;
-                }
-                SseAction::Abort => {
-                    return;
-                }
-            }
-        }
-    }
+impl<'a, 'b, TIn: ArriClientModel + Clone> EventSource<'a, 'b, TIn> {
     async fn send_request<T: ArriClientModel, OnEvent>(
         &mut self,
-        params: Option<impl ArriClientModel + Clone>,
         on_event: &mut OnEvent,
     ) -> SseAction
     where
-        OnEvent: FnMut(SseEvent<T>, &mut SseController),
+        OnEvent: FnMut(StreamEvent<T>, &mut EventStreamController),
     {
-        let mut controller = SseController::new();
         let query_string: Option<String>;
         let json_body: Option<String>;
         let mut headers = reqwest::header::HeaderMap::new();
@@ -368,7 +325,7 @@ impl<'a> EventSource<'a> {
                 reqwest::header::HeaderValue::from_str(&self.client_version).unwrap(),
             );
         }
-        match params.clone() {
+        match self.params.clone() {
             Some(val) => match self.method {
                 reqwest::Method::GET => {
                     query_string = Some(val.to_query_params_string());
@@ -409,16 +366,16 @@ impl<'a> EventSource<'a> {
                     .await
             }
         };
-        if controller.is_aborted {
+        if self.controller.is_aborted {
             return SseAction::Abort;
         }
 
         if !response.is_ok() {
             on_event(
-                SseEvent::Error(ArriError::new(0, "".to_string(), None, None)),
-                &mut controller,
+                StreamEvent::Error(ArriError::new(0, "".to_string(), None, None)),
+                self.controller,
             );
-            if controller.is_aborted {
+            if self.controller.is_aborted {
                 return SseAction::Abort;
             }
             return SseAction::Retry;
@@ -432,15 +389,15 @@ impl<'a> EventSource<'a> {
             None => 0,
         };
 
-        on_event(SseEvent::Open, &mut controller);
-        if controller.is_aborted {
+        on_event(StreamEvent::Start, self.controller);
+        if self.controller.is_aborted {
             return SseAction::Abort;
         }
         let status = ok_response.status().as_u16();
         if status < 200 || status >= 300 {
             let err = error_message_from_response(ok_response).await;
-            on_event(SseEvent::Error(err), &mut controller);
-            if controller.is_aborted {
+            on_event(StreamEvent::Error(err), self.controller);
+            if self.controller.is_aborted {
                 return SseAction::Abort;
             }
             return SseAction::Retry;
@@ -448,7 +405,7 @@ impl<'a> EventSource<'a> {
         self.retry_count = 0;
         let mut pending_data: String = "".to_string();
         while let Some(chunk) = ok_response.chunk().await.unwrap_or_default() {
-            if controller.is_aborted {
+            if self.controller.is_aborted {
                 return SseAction::Abort;
             }
             let chunk_vec = chunk.to_vec();
@@ -465,23 +422,19 @@ impl<'a> EventSource<'a> {
                     for message in messages {
                         let event = message.event.unwrap_or("".to_string());
                         match event.as_str() {
-                            "done" => {
-                                on_event(SseEvent::Close, &mut controller);
+                            "end" | "done" => {
+                                on_event(StreamEvent::End, self.controller);
                                 return SseAction::Abort;
                             }
-                            "message" => {
+                            "message" | "data" | "" => {
                                 on_event(
-                                    SseEvent::Message(T::from_json_string(message.data)),
-                                    &mut controller,
+                                    StreamEvent::Data(T::from_json_string(message.data)),
+                                    self.controller,
                                 );
-                                if controller.is_aborted {
+                                if self.controller.is_aborted {
                                     return SseAction::Abort;
                                 }
                             }
-                            "" => on_event(
-                                SseEvent::Message(T::from_json_string(message.data)),
-                                &mut controller,
-                            ),
                             _ => {}
                         }
                     }
@@ -489,10 +442,51 @@ impl<'a> EventSource<'a> {
                 _ => {}
             }
         }
-        if controller.is_aborted {
+        if self.controller.is_aborted {
             return SseAction::Abort;
         }
         return SseAction::Retry;
+    }
+}
+
+impl<'a, 'b, TIn: ArriClientModel + Clone> EventStream for EventSource<'a, 'b, TIn> {
+    async fn listen<T: ArriClientModel, OnEvent>(&mut self, on_event: &mut OnEvent)
+    where
+        OnEvent: FnMut(StreamEvent<T>, &mut EventStreamController),
+    {
+        loop {
+            match &self.max_retry_count {
+                Some(max_retry_count) => {
+                    if &self.retry_count > max_retry_count {
+                        return;
+                    }
+                }
+                None => {}
+            }
+            if self.retry_count > 5 {
+                if self.retry_interval == 0 {
+                    self.retry_interval = 2;
+                } else {
+                    self.retry_interval = if self.retry_interval * 2 > self.max_retry_interval {
+                        self.max_retry_interval
+                    } else {
+                        self.retry_interval * 2
+                    };
+                }
+            }
+            if self.retry_interval > 0 {
+                wait(Duration::from_millis(self.retry_interval.clone()));
+            }
+            let result = self.send_request(on_event).await;
+            match result {
+                SseAction::Retry => {
+                    self.retry_count += 1;
+                }
+                SseAction::Abort => {
+                    return;
+                }
+            }
+        }
     }
 }
 
