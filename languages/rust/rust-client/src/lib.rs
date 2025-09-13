@@ -3,40 +3,26 @@ pub mod dispatcher_http;
 pub mod model;
 pub mod rpc_call;
 pub mod utils;
+use std::sync::{Arc, RwLock};
+
 pub use arri_core;
-use arri_core::headers::SharableHeaderMap;
+use arri_core::{headers::SharableHeaderMap, message::ContentType};
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
-use std::sync::{Arc, RwLock};
+
+use crate::dispatcher::TransportDispatcher;
 
 #[derive(Clone)]
-pub struct ArriClientConfig {
-    pub http_client: reqwest::Client,
-    pub base_url: String,
+pub struct ArriClientConfig<TDispatcher: TransportDispatcher> {
     pub headers: SharableHeaderMap,
+    pub content_type: ContentType,
+    pub dispatcher: TDispatcher,
 }
 
-#[derive(Clone)]
-pub struct InternalArriClientConfig {
-    pub http_client: reqwest::Client,
-    pub base_url: String,
-    pub headers: Arc<RwLock<SharableHeaderMap>>,
-}
-
-pub trait ArriClientService {
-    fn create(config: ArriClientConfig) -> Self;
+pub trait ArriClientService<TDispatcher: TransportDispatcher> {
+    fn create(config: ArriClientConfig<TDispatcher>) -> Self;
     fn update_headers(&self, headers: SharableHeaderMap);
-}
-
-impl InternalArriClientConfig {
-    pub fn from(config: ArriClientConfig) -> Self {
-        Self {
-            http_client: config.http_client,
-            base_url: config.base_url,
-            headers: Arc::new(RwLock::new(config.headers)),
-        }
-    }
 }
 
 // pub struct ArriRequestOptions<'a> {

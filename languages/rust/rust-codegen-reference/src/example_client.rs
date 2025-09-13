@@ -1,68 +1,93 @@
-#![allow(
-    dead_code,
-    unused_imports,
-    unused_variables,
-    unconditional_recursion,
-    deprecated
-)]
+// #![allow(
+//     dead_code,
+//     unused_imports,
+//     unused_variables,
+//     unconditional_recursion,
+//     deprecated
+// )]
 use arri_client::{
-    arri_core::{errors::ArriError, headers::SharableHeaderMap},
+    arri_core::{errors::ArriError, headers::SharableHeaderMap, message::ContentType},
     chrono::{DateTime, FixedOffset},
+    dispatcher::TransportDispatcher,
     dispatcher_http::{SseController, SseEvent},
     model::{ArriClientEnum, ArriClientModel},
-    reqwest::{self, Request},
-    serde_json::{self, Map},
+    rpc_call::RpcCall,
+    serde_json::{self},
     utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, InternalArriClientConfig,
+    ArriClientConfig, ArriClientService,
 };
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 
 #[derive(Clone)]
-pub struct ExampleClient {
-    _config: InternalArriClientConfig,
-    pub books: ExampleClientBooksService,
+pub struct ExampleClient<TDispatcher: TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: ContentType,
+
+    pub books: ExampleClientBooksService<TDispatcher>,
 }
 
-impl ArriClientService for ExampleClient {
-    fn create(config: ArriClientConfig) -> Self {
+impl<TDispatcher: TransportDispatcher> ArriClientService<TDispatcher>
+    for ExampleClient<TDispatcher>
+{
+    fn create(config: ArriClientConfig<TDispatcher>) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config.clone()),
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
             books: ExampleClientBooksService::create(config),
         }
     }
 
     fn update_headers(&self, headers: SharableHeaderMap) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
+        let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
         self.books.update_headers(headers);
     }
 }
 
-impl ExampleClient {
+impl<TDispatcher: TransportDispatcher> ExampleClient<TDispatcher> {
     pub async fn send_object(&self, params: NestedObject) -> Result<NestedObject, ArriError> {
-        todo!();
+        let call = RpcCall::new(
+            "sendObject".to_string(),
+            "/send-object".to_string(),
+            Some(arri_client::arri_core::message::HttpMethod::Post),
+            Some("20".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(params),
+        );
+        self._dispatcher
+            .dispatch_rpc::<NestedObject, NestedObject>(call)
+            .await
     }
 }
 
 #[derive(Clone)]
-pub struct ExampleClientBooksService {
-    _config: InternalArriClientConfig,
+pub struct ExampleClientBooksService<TDispatcher: TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: ContentType,
 }
 
-impl ArriClientService for ExampleClientBooksService {
-    fn create(config: ArriClientConfig) -> Self {
+impl<TDispatcher: TransportDispatcher> ArriClientService<TDispatcher>
+    for ExampleClientBooksService<TDispatcher>
+{
+    fn create(config: ArriClientConfig<TDispatcher>) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config),
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
         }
     }
 
     fn update_headers(&self, headers: SharableHeaderMap) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
+        let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }
 
-impl ExampleClientBooksService {
+impl<TDispatcher: TransportDispatcher> ExampleClientBooksService<TDispatcher> {
     /// Get a book
     pub async fn get_book(&self, params: BookParams) -> Result<Book, ArriError> {
         todo!();

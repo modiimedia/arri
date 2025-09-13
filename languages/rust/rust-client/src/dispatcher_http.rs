@@ -45,11 +45,11 @@ impl TransportDispatcher for HttpDispatcher {
     }
 
     async fn dispatch_rpc<
-        TIn: crate::model::ArriClientModel + std::marker::Send + std::marker::Sync + std::marker::Copy,
-        TOut: crate::model::ArriClientModel + std::marker::Send + std::marker::Sync + std::marker::Copy,
+        TIn: crate::model::ArriClientModel,
+        TOut: crate::model::ArriClientModel,
     >(
         &self,
-        call: crate::rpc_call::RpcCall<TIn>,
+        call: crate::rpc_call::RpcCall<'_, TIn>,
     ) -> Result<TOut, arri_core::errors::ArriError> {
         let method = match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
             arri_core::message::HttpMethod::Get => reqwest::Method::GET,
@@ -58,12 +58,14 @@ impl TransportDispatcher for HttpDispatcher {
             arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
             arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
         };
+        let mut is_using_query_string = false;
         let url_string = if method == reqwest::Method::GET && call.data.is_some() {
+            is_using_query_string = true;
             format!(
                 "{}{}?{}",
                 &self.options.base_url,
                 call.path,
-                &call.data.unwrap().to_query_params_string()
+                &call.data.as_ref().unwrap().to_query_params_string()
             )
         } else {
             format!("{}{}", &self.options.base_url, call.path)
@@ -162,11 +164,7 @@ impl TransportDispatcher for HttpDispatcher {
         }
     }
 
-    fn dispatch_event_stream_rpc<
-        TIn: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
-        TOut: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
-        TOnEvent,
-    >(
+    fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
         &self,
         call: crate::rpc_call::RpcCall<TIn>,
         on_event: &mut TOnEvent,
@@ -174,6 +172,27 @@ impl TransportDispatcher for HttpDispatcher {
     ) where
         TOnEvent: FnMut(StreamEvent<TOut>) -> Result<(), ArriError>,
     {
+        let mut url = self.options.base_url.clone();
+        url.push_str(&call.path);
+        let es = EventSource {
+            dispatcher: self,
+            client_version: call.client_version.unwrap_or("".to_string()),
+            url: url,
+            method: match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
+                arri_core::message::HttpMethod::Get => reqwest::Method::GET,
+                arri_core::message::HttpMethod::Post => reqwest::Method::POST,
+                arri_core::message::HttpMethod::Put => reqwest::Method::PUT,
+                arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
+                arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
+            },
+            params: call.data,
+            headers: todo!(),
+            retry_count: todo!(),
+            retry_interval: todo!(),
+            max_retry_interval: todo!(),
+            max_retry_count: todo!(),
+            controller: todo!(),
+        };
         todo!()
     }
 }
@@ -643,11 +662,7 @@ pub struct SseMessage {
     retry: Option<i32>,
 }
 
-pub trait SeeMessageMethods {
-    fn new() -> Self;
-}
-
-impl SeeMessageMethods for SseMessage {
+impl SseMessage {
     fn new() -> Self {
         Self {
             id: None,
@@ -656,40 +671,15 @@ impl SeeMessageMethods for SseMessage {
             retry: None,
         }
     }
-}
 
-struct ParsedSseMessage<T: ArriClientModel> {
-    pub id: Option<String>,
-    pub event: Option<String>,
-    pub data: T,
-    pub retry: Option<i32>,
-}
-
-impl<T: ArriClientModel> SeeMessageMethods for ParsedSseMessage<T> {
-    fn new() -> Self {
-        Self {
-            id: None,
-            event: None,
-            data: T::new(),
-            retry: None,
-        }
-    }
-}
-
-impl<T: ArriClientModel> ParsedSseMessage<T> {
-    fn from_sse_message(message: SseMessage) -> Self {
-        Self {
-            id: message.id,
-            event: message.event,
-            data: T::from_json_string(message.data),
-            retry: message.retry,
-        }
+    fn multiple_from_string(input: String) -> (Vec<Self>, String) {
+        sse_message_list_from_string(input, false)
     }
 }
 
 #[cfg(test)]
 mod parsing_and_serialization_tests {
-    use crate::dispatcher_http::{sse_message_list_from_string, SseMessage};
+    use crate::dispatcher_http::{sse_message_list_from_string, SseEvent, SseMessage};
     fn get_test_data() -> (Vec<String>, Vec<SseMessage>, String) {
         (
             vec![
@@ -790,5 +780,47 @@ mod parsing_and_serialization_tests {
             assert_eq!(messages, expected_messages);
             assert_eq!(leftover, expected_leftover);
         }
+    }
+
+    #[test]
+    fn parsing_different_message_types() {
+        let lines = vec![
+            "data: hello world".to_string(),
+            "".to_string(),
+            "event: heartbeat  ".to_string(),
+            "data:  ".to_string(),
+            "".to_string(),
+            "".to_string(),
+            "id: foo".to_string(),
+            "event: end".to_string(),
+            "data: stream has ended".to_string(),
+            "retry: 15".to_string(),
+            "".to_string(),
+            "id: foo".to_string(),
+        ];
+        let expected_messages = vec![
+            SseMessage {
+                id: None,
+                data: "hello world".to_string(),
+                event: None,
+                retry: None,
+            },
+            SseMessage {
+                id: None,
+                data: "".to_string(),
+                event: Some("heartbeat".to_string()),
+                retry: None,
+            },
+            SseMessage {
+                id: Some("foo".to_string()),
+                event: Some("end".to_string()),
+                data: "stream has ended".to_string(),
+                retry: Some(15),
+            },
+        ];
+        let expected_leftovers = "id: foo".to_string();
+        let (messages, leftovers) = SseMessage::multiple_from_string(lines.join("\n"));
+        assert_eq!(messages, expected_messages);
+        assert_eq!(leftovers, expected_leftovers);
     }
 }

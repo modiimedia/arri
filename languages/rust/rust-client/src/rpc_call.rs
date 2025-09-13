@@ -1,29 +1,31 @@
+use std::sync::{Arc, RwLock};
+
 use arri_core::{
-    headers::HeaderMap,
+    headers::{HeaderMap, SharableHeaderMap},
     message::{ContentType, HttpMethod, Message},
 };
 
 use crate::model::ArriClientModel;
 
-pub struct RpcCall<T: ArriClientModel> {
+pub struct RpcCall<'a, T: ArriClientModel> {
     pub rpc_name: String,
     pub req_id: String,
     pub path: String,
     pub method: Option<HttpMethod>,
     pub client_version: Option<String>,
     pub content_type: Option<ContentType>,
-    pub custom_headers: Option<HeaderMap>,
+    pub custom_headers: &'a Arc<RwLock<SharableHeaderMap>>,
     pub data: Option<T>,
 }
 
-impl<T: ArriClientModel> RpcCall<T> {
+impl<'a, T: ArriClientModel> RpcCall<'a, T> {
     pub fn new(
         rpc_name: String,
         path: String,
         method: Option<HttpMethod>,
         client_version: Option<String>,
         content_type: Option<ContentType>,
-        custom_headers: Option<HeaderMap>,
+        custom_headers: &'a Arc<RwLock<SharableHeaderMap>>,
         data: Option<T>,
     ) -> Self {
         Self {
@@ -38,14 +40,25 @@ impl<T: ArriClientModel> RpcCall<T> {
         }
     }
 
-    pub fn to_message(&self) -> Message {
+    pub fn to_message(&self) -> Result<Message, String> {
         let content_type = self.content_type.clone();
-        Message::Invocation {
+        let mut custom_headers = HeaderMap::new();
+        {
+            let headers = self.custom_headers.read();
+            if headers.is_err() {
+                return Err(headers.unwrap_err().to_string());
+            }
+            let headers = headers.unwrap().clone();
+            for (key, value) in headers {
+                custom_headers.insert(key.to_lowercase().as_str(), value.clone().as_str());
+            }
+        }
+        Ok(Message::Invocation {
             req_id: self.req_id.clone(),
             rpc_name: self.rpc_name.clone(),
             content_type: content_type.clone(),
             client_version: self.client_version.clone(),
-            custom_headers: self.custom_headers.clone().unwrap_or(HeaderMap::new()),
+            custom_headers: custom_headers,
             http_method: self.method.clone(),
             path: Some(self.path.clone()),
             body: match &self.data {
@@ -54,6 +67,6 @@ impl<T: ArriClientModel> RpcCall<T> {
                 },
                 None => None,
             },
-        }
+        })
     }
 }

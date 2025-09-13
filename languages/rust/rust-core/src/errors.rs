@@ -69,17 +69,19 @@ impl ArriError {
         }
     }
 
-    pub fn data(&self) -> &Option<serde_json::Value> {
+    pub fn data(&mut self) -> &Option<serde_json::Value> {
         if self.has_parsed_body {
             return &self._data;
         }
+        self.parse_body();
         &self._data
     }
 
-    pub fn trace(&self) -> &Option<Vec<String>> {
+    pub fn trace(&mut self) -> &Option<Vec<String>> {
         if self.has_parsed_body {
             return &self._trace;
         }
+        self.parse_body();
         &self._trace
     }
 }
@@ -88,11 +90,17 @@ impl fmt::Display for ArriError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "ArriError {{ code: {}, message: {}, data: {:?}, trace: {:?} }}",
+            "ArriError {{ code: {}, message: {}, body: {:?} }}",
             self.code,
             self.message,
-            self.data(),
-            self.trace(),
+            match self.body.clone() {
+                Some(body) => match self.content_type {
+                    ContentType::Json => Some(String::from_utf8(body).unwrap_or("".to_string())),
+                },
+                None => {
+                    None
+                }
+            },
         )
     }
 }

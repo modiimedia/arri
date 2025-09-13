@@ -1,6 +1,8 @@
 use arri_client::{
-    arri_core::headers::SharableHeaderMap, chrono::DateTime, reqwest, ArriClientConfig,
-    ArriClientService,
+    arri_core::headers::SharableHeaderMap,
+    chrono::DateTime,
+    dispatcher_http::{HttpDispatcher, HttpDispatcherOptions},
+    reqwest, ArriClientConfig, ArriClientService,
 };
 use example_client::{Book, BookParams, ExampleClient};
 use std::collections::{BTreeMap, HashMap};
@@ -16,8 +18,17 @@ fn get_headers() -> SharableHeaderMap {
 #[tokio::main]
 async fn main() {
     let client = ExampleClient::create(ArriClientConfig {
-        http_client: reqwest::Client::new(),
-        base_url: "http://localhost:2020".to_string(),
+        content_type: arri_client::arri_core::message::ContentType::Json,
+        dispatcher: HttpDispatcher::new(
+            None,
+            HttpDispatcherOptions {
+                base_url: "http://localhost:2020".to_string(),
+                timeout: None,
+                retry: None,
+                retry_delay: None,
+                retry_error_codes: None,
+            },
+        ),
         headers: get_headers(),
     });
     let result = client

@@ -4,38 +4,45 @@ use arri_core::{errors::ArriError, stream_event::StreamEvent};
 
 use crate::{model::ArriClientModel, rpc_call::RpcCall};
 
-pub trait TransportDispatcher {
+pub fn resolve_dispatcher(
+    transports: Vec<String>,
+    default_transport: Option<String>,
+    transport: Option<String>,
+) -> Option<String> {
+    if transports.is_empty() {
+        return None;
+    }
+    if transport.is_some() {
+        let transport = transport.unwrap();
+        if transports.contains(&transport) {
+            return Some(transport);
+        }
+    }
+
+    if default_transport.is_some() {
+        let default_transport = default_transport.clone().unwrap();
+        if transports.contains(&default_transport) {
+            return Some(default_transport);
+        }
+    }
+    None
+}
+
+pub trait TransportDispatcher: Clone {
     fn transport_id(&self) -> String;
 
-    fn dispatch_rpc<
-        TIn: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
-        TOut: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
-    >(
+    fn dispatch_rpc<TIn: ArriClientModel, TOut: ArriClientModel>(
         &self,
-        call: RpcCall<TIn>,
+        call: RpcCall<'_, TIn>,
     ) -> impl std::future::Future<Output = Result<TOut, ArriError>>;
-
-    fn dispatch_event_stream_rpc<
-        TIn: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
-        TOut: ArriClientModel + std::marker::Copy + std::marker::Send + std::marker::Sync,
-        TOnEvent,
-    >(
+    fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
         &self,
-        call: RpcCall<TIn>,
+        call: RpcCall<'_, TIn>,
         on_event: &mut TOnEvent,
         stream_controller: &mut EventStreamController,
     ) where
         TOnEvent: FnMut(StreamEvent<TOut>) -> Result<(), ArriError>;
 }
-
-// pub struct EventStream {
-//     pub headers: Arc<RwLock<SharableHeaderMap>>,
-//     pub client_version: String,
-//     pub retry_count: u64,
-//     pub retry_interval: u64,
-//     pub max_retry_interval: u64,
-//     pub max_retry_count: Option<u64>,
-// }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EventStreamController {
