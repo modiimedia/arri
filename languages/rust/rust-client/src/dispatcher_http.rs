@@ -164,11 +164,13 @@ impl TransportDispatcher for HttpDispatcher {
         }
     }
 
-    fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
+    async fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
         &self,
-        call: crate::rpc_call::RpcCall<TIn>,
+        call: crate::rpc_call::RpcCall<'_, TIn>,
         on_event: &mut TOnEvent,
         stream_controller: Option<&mut EventStreamController>,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
     ) where
         TOnEvent: FnMut(StreamEvent<TOut>, &mut EventStreamController),
     {
@@ -178,7 +180,7 @@ impl TransportDispatcher for HttpDispatcher {
             Some(c) => c,
             None => &mut EventStreamController::new(),
         };
-        let es = EventSource {
+        let mut es = EventSource {
             dispatcher: self,
             client_version: call.client_version.unwrap_or("".to_string()),
             url: url,
@@ -193,10 +195,11 @@ impl TransportDispatcher for HttpDispatcher {
             headers: call.custom_headers,
             retry_count: 0,
             retry_interval: 0,
-            max_retry_interval: 0,
-            max_retry_count: None,
+            max_retry_interval: max_retry_interval.unwrap_or(30000),
+            max_retry_count: max_retry_count,
             controller: controller,
         };
+        es.listen(on_event).await;
     }
 }
 

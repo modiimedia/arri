@@ -6,7 +6,7 @@
 //     deprecated
 // )]
 use arri_client::{
-    arri_core::{self},
+    arri_core::{self, errors::ArriError},
     chrono::{self},
     model::ArriClientEnum,
     serde_json::{self},
@@ -46,6 +46,16 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TD
         &self,
         params: NestedObject,
     ) -> Result<NestedObject, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(ArriError::new(
+                0,
+                format!("sendObject doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
         let call = arri_client::rpc_call::RpcCall::new(
             "sendObject".to_string(),
             "/send-object".to_string(),
@@ -90,6 +100,16 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
 {
     /// Get a book
     pub async fn get_book(&self, params: BookParams) -> Result<Book, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(ArriError::new(
+                0,
+                format!("books.getBook doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
         let call = arri_client::rpc_call::RpcCall::new(
             "books.getBook".to_string(),
             "/books/get-book".to_string(),
@@ -105,6 +125,16 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
     /// Create a book
     #[deprecated]
     pub async fn create_book(&self, params: Book) -> Result<Book, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(ArriError::new(
+                0,
+                format!("books.createBook doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
         let call = arri_client::rpc_call::RpcCall::new(
             "books.createBook".to_string(),
             "/books/create-book".to_string(),
@@ -124,13 +154,24 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
         stream_controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
+    ) -> Result<(), ArriError>
+    where
         OnEvent: FnMut(
                 arri_core::stream_event::StreamEvent<Book>,
                 &mut arri_client::dispatcher::EventStreamController,
             ) + std::marker::Send
             + std::marker::Sync,
     {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(ArriError::new(
+                0,
+                format!("books.watchBook doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
         let call = arri_client::rpc_call::RpcCall::new(
             "books.watchBook".to_string(),
             "/books/watch-book".to_string(),
@@ -141,7 +182,9 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
             Some(params),
         );
         self._dispatcher
-            .dispatch_event_stream_rpc(call, on_event, stream_controller);
+            .dispatch_event_stream_rpc(call, on_event, stream_controller, None, None)
+            .await;
+        Ok(())
     }
 }
 

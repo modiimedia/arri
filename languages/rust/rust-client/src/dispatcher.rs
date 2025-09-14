@@ -35,12 +35,19 @@ pub trait TransportDispatcher: Clone {
         &self,
         call: RpcCall<'_, TIn>,
     ) -> impl std::future::Future<Output = Result<TOut, ArriError>>;
+    ///
+    /// ## Arguments
+    /// * `max_retry_count` - max number of retries when trying to establish a connection
+    /// * `max_retry_interval` - max time between retries in milliseconds
     fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
         &self,
         call: RpcCall<'_, TIn>,
         on_event: &mut TOnEvent,
         stream_controller: Option<&mut EventStreamController>,
-    ) where
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) -> impl std::future::Future<Output = ()>
+    where
         TOnEvent: FnMut(StreamEvent<TOut>, &mut EventStreamController);
 }
 
