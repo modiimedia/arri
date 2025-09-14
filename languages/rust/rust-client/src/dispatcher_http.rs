@@ -168,12 +168,16 @@ impl TransportDispatcher for HttpDispatcher {
         &self,
         call: crate::rpc_call::RpcCall<TIn>,
         on_event: &mut TOnEvent,
-        stream_controller: &mut EventStreamController,
+        stream_controller: Option<&mut EventStreamController>,
     ) where
-        TOnEvent: FnMut(StreamEvent<TOut>) -> Result<(), ArriError>,
+        TOnEvent: FnMut(StreamEvent<TOut>, &mut EventStreamController),
     {
         let mut url = self.options.base_url.clone();
         url.push_str(&call.path);
+        let controller = match stream_controller {
+            Some(c) => c,
+            None => &mut EventStreamController::new(),
+        };
         let es = EventSource {
             dispatcher: self,
             client_version: call.client_version.unwrap_or("".to_string()),
@@ -186,14 +190,13 @@ impl TransportDispatcher for HttpDispatcher {
                 arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
             },
             params: call.data,
-            headers: todo!(),
-            retry_count: todo!(),
-            retry_interval: todo!(),
-            max_retry_interval: todo!(),
-            max_retry_count: todo!(),
-            controller: todo!(),
+            headers: call.custom_headers,
+            retry_count: 0,
+            retry_interval: 0,
+            max_retry_interval: 0,
+            max_retry_count: None,
+            controller: controller,
         };
-        todo!()
     }
 }
 
@@ -301,7 +304,7 @@ pub struct EventSource<'a, 'b, TIn: ArriClientModel + Clone> {
     pub method: reqwest::Method,
     pub params: Option<TIn>,
     pub client_version: String,
-    pub headers: Arc<RwLock<SharableHeaderMap>>,
+    pub headers: &'a Arc<RwLock<SharableHeaderMap>>,
     pub retry_count: u64,
     pub retry_interval: u64,
     pub max_retry_interval: u64,

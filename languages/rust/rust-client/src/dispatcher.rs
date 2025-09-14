@@ -39,9 +39,9 @@ pub trait TransportDispatcher: Clone {
         &self,
         call: RpcCall<'_, TIn>,
         on_event: &mut TOnEvent,
-        stream_controller: &mut EventStreamController,
+        stream_controller: Option<&mut EventStreamController>,
     ) where
-        TOnEvent: FnMut(StreamEvent<TOut>) -> Result<(), ArriError>;
+        TOnEvent: FnMut(StreamEvent<TOut>, &mut EventStreamController);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

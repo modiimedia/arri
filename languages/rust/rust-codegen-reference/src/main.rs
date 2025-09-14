@@ -1,11 +1,13 @@
+use std::collections::HashMap;
+
 use arri_client::{
     arri_core::headers::SharableHeaderMap,
     chrono::DateTime,
+    dispatcher::EventStreamController,
     dispatcher_http::{HttpDispatcher, HttpDispatcherOptions},
-    reqwest, ArriClientConfig, ArriClientService,
+    ArriClientConfig, ArriClientService,
 };
 use example_client::{Book, BookParams, ExampleClient};
-use std::collections::{BTreeMap, HashMap};
 
 mod example_client;
 
@@ -31,7 +33,7 @@ async fn main() {
         ),
         headers: get_headers(),
     });
-    let result = client
+    let _result = client
         .books
         .create_book(Book {
             id: "1".to_string(),
@@ -42,6 +44,7 @@ async fn main() {
         .await;
 
     tokio::spawn(async move {
+        let mut controller = EventStreamController::new();
         client
             .books
             .watch_book(
@@ -49,20 +52,20 @@ async fn main() {
                     book_id: "12345".to_string(),
                 },
                 &mut |event, controller| match event {
-                    arri_client::dispatcher_http::SseEvent::Message(_) => {
+                    arri_client::arri_core::stream_event::StreamEvent::Data(data) => {
                         controller.abort();
-                        client.update_headers(HashMap::new());
                     }
-                    arri_client::dispatcher_http::SseEvent::Error(_) => {}
-                    arri_client::dispatcher_http::SseEvent::Open => {}
-                    arri_client::dispatcher_http::SseEvent::Close => {}
+                    arri_client::arri_core::stream_event::StreamEvent::Error(arri_error) => todo!(),
+                    arri_client::arri_core::stream_event::StreamEvent::Start => todo!(),
+                    arri_client::arri_core::stream_event::StreamEvent::End => todo!(),
+                    arri_client::arri_core::stream_event::StreamEvent::Cancel => todo!(),
                 },
+                Some(&mut controller),
                 None,
                 None,
             )
             .await;
     });
-    println!("CREATE_BOOK_RESULT: {:?}", result);
 }
 
 #[cfg(test)]
