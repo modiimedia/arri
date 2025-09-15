@@ -30,7 +30,7 @@ pub fn resolve_dispatcher(
 }
 
 #[async_trait]
-pub trait TransportDispatcher: Send + Sync + Debug {
+pub trait TransportDispatcher: Clone + Send + Sync + Debug {
     fn transport_id(&self) -> String;
 
     async fn dispatch_rpc(&self, call: RpcCall<'_>) -> Result<(ContentType, Vec<u8>), ArriError>;
@@ -43,14 +43,14 @@ pub trait TransportDispatcher: Send + Sync + Debug {
         max_retry_interval: Option<u64>,
     );
 
-    fn clone_box(&self) -> Box<dyn TransportDispatcher>;
+    // fn clone_box(&self) -> Box<dyn TransportDispatcher>;
 }
 
-impl Clone for Box<dyn TransportDispatcher> {
-    fn clone(&self) -> Box<dyn TransportDispatcher> {
-        self.clone_box()
-    }
-}
+// impl Clone for Box<dyn TransportDispatcher> {
+//     fn clone(&self) -> Box<dyn TransportDispatcher> {
+//         self.clone_box()
+//     }
+// }
 
 pub type OnEventClosure<'a, T> = dyn FnMut(StreamEvent<T>, &mut EventStreamController) + Send + 'a;
 
@@ -80,12 +80,12 @@ enum SseAction {
 
 #[cfg(test)]
 pub mod dispatcher_tests {
-    use crate::dispatcher::TransportDispatcher;
+    // use crate::dispatcher::TransportDispatcher;
 
-    #[test]
-    fn dispatcher_is_dyn_compatible() {
-        fn get_dispatcher() -> Box<dyn TransportDispatcher> {
-            todo!()
-        }
-    }
+    // #[test]
+    // fn dispatcher_is_dyn_compatible() {
+    //     fn get_dispatcher() -> Box<dyn TransportDispatcher> {
+    //         todo!()
+    //     }
+    // }
 }

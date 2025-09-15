@@ -38,7 +38,7 @@ impl TransportDispatcher for WsDispatcher {
         todo!()
     }
 
-    fn clone_box(&self) -> Box<dyn TransportDispatcher> {
-        todo!()
-    }
+    // fn clone_box(&self) -> Box<dyn TransportDispatcher> {
+    //     todo!()
+    // }
 }

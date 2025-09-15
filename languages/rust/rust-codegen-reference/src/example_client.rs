@@ -19,7 +19,7 @@ use arri_client::{
 #[derive(Clone)]
 pub struct ExampleClient<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
     _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
-    _dispatcher: std::sync::Arc<std::sync::RwLock<TDispatcher>>,
+    _dispatcher: TDispatcher,
     _content_type: arri_core::message::ContentType,
 
     pub books: ExampleClientBooksService<TDispatcher>,
@@ -50,21 +50,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TD
         input: NestedObject,
     ) -> Result<NestedObject, arri_core::errors::ArriError> {
         let available_transports = vec!["http"];
-        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
-        match self._dispatcher.read() {
-            Ok(d) => {
-                dispatcher = d;
-            }
-            Err(err) => {
-                return Err(ArriError::new(
-                    0,
-                    "error reading dispatcher".to_string(),
-                    None,
-                    None,
-                ))
-            }
-        }
-        let transport_id = dispatcher.transport_id();
+        let transport_id = self._dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
             return Err(arri_core::errors::ArriError::new(
                 0,
@@ -86,7 +72,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TD
             &self._headers,
             Some(input.to_json_string().as_bytes().to_vec()),
         );
-        let result = dispatcher.dispatch_rpc(call).await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
             Ok((content_type, body)) => match content_type {
                 arri_core::message::ContentType::Json => Ok(NestedObject::from_json_string(
@@ -101,7 +87,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TD
 #[derive(Clone)]
 pub struct ExampleClientBooksService<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
     _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
-    _dispatcher: std::sync::Arc<std::sync::RwLock<TDispatcher>>,
+    _dispatcher: TDispatcher,
     _content_type: arri_core::message::ContentType,
 }
 
@@ -128,21 +114,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
     /// Get a book
     pub async fn get_book(&self, input: BookParams) -> Result<Book, arri_core::errors::ArriError> {
         let available_transports = vec!["http", "ws"];
-        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
-        match self._dispatcher.read() {
-            Ok(d) => {
-                dispatcher = d;
-            }
-            Err(err) => {
-                return Err(ArriError::new(
-                    0,
-                    "error reading dispatcher".to_string(),
-                    None,
-                    None,
-                ))
-            }
-        }
-        let transport_id = dispatcher.transport_id();
+        let transport_id = self._dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
             return Err(arri_core::errors::ArriError::new(
                 0,
@@ -164,7 +136,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
             &self._headers,
             None,
         );
-        let result = dispatcher.dispatch_rpc(call).await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
             Ok((content_type, body)) => match content_type {
                 arri_core::message::ContentType::Json => Ok(Book::from_json_string(
@@ -179,21 +151,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
     #[deprecated]
     pub async fn create_book(&self, input: Book) -> Result<Book, arri_core::errors::ArriError> {
         let available_transports = vec!["http", "ws"];
-        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
-        match self._dispatcher.read() {
-            Ok(d) => {
-                dispatcher = d;
-            }
-            Err(err) => {
-                return Err(ArriError::new(
-                    0,
-                    "error reading dispatcher".to_string(),
-                    None,
-                    None,
-                ))
-            }
-        }
-        let transport_id = dispatcher.transport_id();
+        let transport_id = self._dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
             return Err(arri_core::errors::ArriError::new(
                 0,
@@ -212,7 +170,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
             &self._headers,
             Some(input.to_json_string().as_bytes().to_vec()),
         );
-        let result = dispatcher.dispatch_rpc(call).await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
             Ok((content_type, body)) => match content_type {
                 arri_core::message::ContentType::Json => Ok(Book::from_json_string(
@@ -232,21 +190,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
         max_retry_interval: Option<u64>,
     ) -> Result<(), arri_core::errors::ArriError> {
         let available_transports = vec!["http"];
-        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
-        match self._dispatcher.read() {
-            Ok(d) => {
-                dispatcher = d;
-            }
-            Err(err) => {
-                return Err(ArriError::new(
-                    0,
-                    "error reading dispatcher".to_string(),
-                    None,
-                    None,
-                ))
-            }
-        }
-        let transport_id = dispatcher.transport_id();
+        let transport_id = self._dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
             return Err(arri_core::errors::ArriError::new(
                 0,
@@ -268,7 +212,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
             &self._headers,
             None,
         );
-        dispatcher
+        self._dispatcher
             .dispatch_output_stream_rpc(
                 call,
                 Box::new(|evt, controller| match evt {

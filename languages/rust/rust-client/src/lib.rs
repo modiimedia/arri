@@ -18,7 +18,7 @@ use crate::dispatcher::TransportDispatcher;
 pub struct ArriClientConfig<TDispatcher: TransportDispatcher> {
     pub headers: SharableHeaderMap,
     pub content_type: ContentType,
-    pub dispatcher: Arc<RwLock<TDispatcher>>,
+    pub dispatcher: TDispatcher,
 }
 
 pub trait ArriClientService<TDispatcher: TransportDispatcher> {

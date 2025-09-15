@@ -24,7 +24,7 @@ fn get_headers() -> SharableHeaderMap {
 async fn main() {
     let client = ExampleClient::create(ArriClientConfig {
         content_type: arri_client::arri_core::message::ContentType::Json,
-        dispatcher: Arc::new(RwLock::new(HttpDispatcher::new(
+        dispatcher: HttpDispatcher::new(
             None,
             HttpDispatcherOptions {
                 base_url: "http://localhost:2020".to_string(),
@@ -33,7 +33,7 @@ async fn main() {
                 retry_delay: None,
                 retry_error_codes: None,
             },
-        ))),
+        ),
         headers: get_headers(),
     });
     let _result = client

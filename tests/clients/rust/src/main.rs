@@ -231,10 +231,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_object_with_nullable_fields() {
-        let config = match DISPATCHER_TYPE {
-            DispatcherType::http => get_config(dispatcher(), headers()),
-            DispatcherType::ws => get_config(WsDispatcher::new(None), headers()),
-        };
+        let config = get_config(dispatcher(), headers());
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
         let client = TestClient::create(config);
         let all_null_input = ObjectWithEveryNullableType {

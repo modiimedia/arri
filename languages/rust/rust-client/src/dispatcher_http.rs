@@ -1,6 +1,6 @@
 use std::{
     str::FromStr,
-    sync::{Arc, RwLock, RwLockReadGuard},
+    sync::{Arc, RwLock},
     time::{Duration, Instant},
 };
 
@@ -220,9 +220,9 @@ impl TransportDispatcher for HttpDispatcher {
         // es.listen(boxed_on_event).await;
     }
 
-    fn clone_box(&self) -> Box<dyn TransportDispatcher> {
-        todo!()
-    }
+    // fn clone_box(&self) -> Box<dyn TransportDispatcher> {
+    //     todo!()
+    // }
 }
 
 async fn error_message_from_response(res: reqwest::Response) -> ArriError {
