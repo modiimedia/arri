@@ -1,9 +1,10 @@
 pub mod dispatcher;
 pub mod dispatcher_http;
+pub mod dispatcher_ws;
 pub mod model;
 pub mod rpc_call;
 pub mod utils;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 pub use arri_core;
 use arri_core::{headers::SharableHeaderMap, message::ContentType};
@@ -17,7 +18,7 @@ use crate::dispatcher::TransportDispatcher;
 pub struct ArriClientConfig<TDispatcher: TransportDispatcher> {
     pub headers: SharableHeaderMap,
     pub content_type: ContentType,
-    pub dispatcher: TDispatcher,
+    pub dispatcher: Arc<RwLock<TDispatcher>>,
 }
 
 pub trait ArriClientService<TDispatcher: TransportDispatcher> {

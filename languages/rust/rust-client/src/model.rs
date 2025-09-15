@@ -1,4 +1,4 @@
-pub trait ArriClientModel: Clone {
+pub trait ArriClientModel {
     fn new() -> Self;
     fn from_json(input: serde_json::Value) -> Self;
     fn from_json_string(input: String) -> Self;

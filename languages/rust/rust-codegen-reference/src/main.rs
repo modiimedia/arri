@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, RwLock},
+};
 
 use arri_client::{
     arri_core::headers::SharableHeaderMap,
@@ -21,7 +24,7 @@ fn get_headers() -> SharableHeaderMap {
 async fn main() {
     let client = ExampleClient::create(ArriClientConfig {
         content_type: arri_client::arri_core::message::ContentType::Json,
-        dispatcher: HttpDispatcher::new(
+        dispatcher: Arc::new(RwLock::new(HttpDispatcher::new(
             None,
             HttpDispatcherOptions {
                 base_url: "http://localhost:2020".to_string(),
@@ -30,7 +33,7 @@ async fn main() {
                 retry_delay: None,
                 retry_error_codes: None,
             },
-        ),
+        ))),
         headers: get_headers(),
     });
     let _result = client
@@ -43,9 +46,11 @@ async fn main() {
         })
         .await;
 
+    let open_count = Arc::new(Mutex::new(0));
     tokio::spawn(async move {
+        let mut internal_open_count = 0;
         let mut controller = EventStreamController::new();
-        client
+        let _ = client
             .books
             .watch_book(
                 BookParams {
@@ -55,8 +60,18 @@ async fn main() {
                     arri_client::arri_core::stream_event::StreamEvent::Data(data) => {
                         controller.abort();
                     }
-                    arri_client::arri_core::stream_event::StreamEvent::Error(arri_error) => todo!(),
-                    arri_client::arri_core::stream_event::StreamEvent::Start => todo!(),
+                    arri_client::arri_core::stream_event::StreamEvent::Error(arri_error) => {
+                        todo!()
+                    }
+                    arri_client::arri_core::stream_event::StreamEvent::Start => {
+                        internal_open_count += 1;
+                        let open_count_mut = open_count.lock();
+                        if open_count_mut.is_err() {
+                            return;
+                        }
+                        let mut open_count_mut = open_count_mut.unwrap();
+                        *open_count_mut += 1;
+                    }
                     arri_client::arri_core::stream_event::StreamEvent::End => todo!(),
                     arri_client::arri_core::stream_event::StreamEvent::Cancel => todo!(),
                 },

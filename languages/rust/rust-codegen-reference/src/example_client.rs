@@ -1,14 +1,17 @@
-// #![allow(
-//     dead_code,
-//     unused_imports,
-//     unused_variables,
-//     unconditional_recursion,
-//     deprecated
-// )]
+#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unconditional_recursion,
+    deprecated
+)]
+use std::sync::{Arc, Mutex, MutexGuard, RwLockReadGuard};
+
 use arri_client::{
     arri_core::{self, errors::ArriError},
     chrono::{self},
-    model::ArriClientEnum,
+    dispatcher::{OnEventClosure, TransportDispatcher},
+    model::{ArriClientEnum, ArriClientModel},
     serde_json::{self},
     utils::{self},
 };
@@ -16,7 +19,7 @@ use arri_client::{
 #[derive(Clone)]
 pub struct ExampleClient<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
     _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
-    _dispatcher: TDispatcher,
+    _dispatcher: std::sync::Arc<std::sync::RwLock<TDispatcher>>,
     _content_type: arri_core::message::ContentType,
 
     pub books: ExampleClientBooksService<TDispatcher>,
@@ -44,12 +47,26 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
 impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TDispatcher> {
     pub async fn send_object(
         &self,
-        params: NestedObject,
+        input: NestedObject,
     ) -> Result<NestedObject, arri_core::errors::ArriError> {
-        let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
+        let available_transports = vec!["http"];
+        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
+        match self._dispatcher.read() {
+            Ok(d) => {
+                dispatcher = d;
+            }
+            Err(err) => {
+                return Err(ArriError::new(
+                    0,
+                    "error reading dispatcher".to_string(),
+                    None,
+                    None,
+                ))
+            }
+        }
+        let transport_id = dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(ArriError::new(
+            return Err(arri_core::errors::ArriError::new(
                 0,
                 format!("sendObject doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
                 None,
@@ -59,22 +76,32 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TD
         let call = arri_client::rpc_call::RpcCall::new(
             "sendObject".to_string(),
             "/send-object".to_string(),
-            Some(arri_client::arri_core::message::HttpMethod::Post),
+            match transport_id.as_str() {
+                "http" => None,
+                _ => None,
+            },
+            Some(arri_core::message::HttpMethod::Post),
             Some("20".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(params),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<NestedObject, NestedObject>(call)
-            .await
+        let result = dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(NestedObject::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
 }
 
 #[derive(Clone)]
 pub struct ExampleClientBooksService<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
     _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
-    _dispatcher: TDispatcher,
+    _dispatcher: std::sync::Arc<std::sync::RwLock<TDispatcher>>,
     _content_type: arri_core::message::ContentType,
 }
 
@@ -99,11 +126,25 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
     ExampleClientBooksService<TDispatcher>
 {
     /// Get a book
-    pub async fn get_book(&self, params: BookParams) -> Result<Book, arri_core::errors::ArriError> {
+    pub async fn get_book(&self, input: BookParams) -> Result<Book, arri_core::errors::ArriError> {
         let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
+        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
+        match self._dispatcher.read() {
+            Ok(d) => {
+                dispatcher = d;
+            }
+            Err(err) => {
+                return Err(ArriError::new(
+                    0,
+                    "error reading dispatcher".to_string(),
+                    None,
+                    None,
+                ))
+            }
+        }
+        let transport_id = dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(ArriError::new(
+            return Err(arri_core::errors::ArriError::new(
                 0,
                 format!("books.getBook doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
                 None,
@@ -113,22 +154,48 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
         let call = arri_client::rpc_call::RpcCall::new(
             "books.getBook".to_string(),
             "/books/get-book".to_string(),
-            Some(arri_client::arri_core::message::HttpMethod::Get),
+            match transport_id.as_str() {
+                "http" => Some(input.to_query_params_string()),
+                _ => None,
+            },
+            Some(arri_core::message::HttpMethod::Get),
             Some("20".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(params),
+            None,
         );
-        self._dispatcher.dispatch_rpc(call).await
+        let result = dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(Book::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
 
     /// Create a book
     #[deprecated]
-    pub async fn create_book(&self, params: Book) -> Result<Book, arri_core::errors::ArriError> {
+    pub async fn create_book(&self, input: Book) -> Result<Book, arri_core::errors::ArriError> {
         let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
+        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
+        match self._dispatcher.read() {
+            Ok(d) => {
+                dispatcher = d;
+            }
+            Err(err) => {
+                return Err(ArriError::new(
+                    0,
+                    "error reading dispatcher".to_string(),
+                    None,
+                    None,
+                ))
+            }
+        }
+        let transport_id = dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(ArriError::new(
+            return Err(arri_core::errors::ArriError::new(
                 0,
                 format!("books.createBook doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
                 None,
@@ -138,34 +205,50 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
         let call = arri_client::rpc_call::RpcCall::new(
             "books.createBook".to_string(),
             "/books/create-book".to_string(),
-            Some(arri_client::arri_core::message::HttpMethod::Post),
+            None,
+            Some(arri_core::message::HttpMethod::Post),
             Some("20".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(params),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher.dispatch_rpc(call).await
+        let result = dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(Book::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
     #[deprecated]
-    pub async fn watch_book<OnEvent>(
+    pub async fn watch_book(
         &self,
-        params: BookParams,
-        on_event: &mut OnEvent,
-        stream_controller: Option<&mut arri_client::dispatcher::EventStreamController>,
+        input: BookParams,
+        on_event: &mut OnEventClosure<'_, Book>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) -> Result<(), ArriError>
-    where
-        OnEvent: FnMut(
-                arri_core::stream_event::StreamEvent<Book>,
-                &mut arri_client::dispatcher::EventStreamController,
-            ) + std::marker::Send
-            + std::marker::Sync,
-    {
-        let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http"];
+        let dispatcher: RwLockReadGuard<'_, TDispatcher>;
+        match self._dispatcher.read() {
+            Ok(d) => {
+                dispatcher = d;
+            }
+            Err(err) => {
+                return Err(ArriError::new(
+                    0,
+                    "error reading dispatcher".to_string(),
+                    None,
+                    None,
+                ))
+            }
+        }
+        let transport_id = dispatcher.transport_id();
         if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(ArriError::new(
+            return Err(arri_core::errors::ArriError::new(
                 0,
                 format!("books.watchBook doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
                 None,
@@ -175,14 +258,44 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
         let call = arri_client::rpc_call::RpcCall::new(
             "books.watchBook".to_string(),
             "/books/watch-book".to_string(),
-            Some(arri_client::arri_core::message::HttpMethod::Post),
+            match transport_id.as_str() {
+                "http" => Some(input.to_query_params_string()),
+                _ => None,
+            },
+            Some(arri_core::message::HttpMethod::Get),
             Some("20".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(params),
+            None,
         );
-        self._dispatcher
-            .dispatch_event_stream_rpc(call, on_event, stream_controller, None, None)
+        dispatcher
+            .dispatch_output_stream_rpc(
+                call,
+                Box::new(|evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data(data) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(Book::from_json_string(
+                            String::from_utf8(data).unwrap_or("".to_string()),
+                        )),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                }),
+                controller,
+                None,
+                None,
+            )
             .await;
         Ok(())
     }

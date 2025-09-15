@@ -244,7 +244,7 @@ pub enum ${prefixedEnumName} {
         .join('\n')}
 }
 
-impl ArriModel for ${prefixedEnumName} {
+impl arri_client::model::ArriClientModel for ${prefixedEnumName} {
     fn new() -> Self {
         Self::${subTypes[0]!.name} {
             ${subTypes[0]?.properties.map((prop) => `${prop.name}: ${prop.defaultValue},`).join('\n')}

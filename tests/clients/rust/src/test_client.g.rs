@@ -6,563 +6,732 @@
     deprecated
 )]
 use arri_client::{
-    chrono::{DateTime, FixedOffset},
-    parsed_arri_request,
-    reqwest::{self, Request},
-    serde_json::{self, Map},
-    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
-    utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, ArriEnum, ArriError, ArriModel, ArriParsedRequestOptions,
-    EmptyArriModel, InternalArriClientConfig,
+    arri_core::{self},
+    chrono::{self},
+    dispatcher::OnEventClosure,
+    model::ArriClientEnum,
+    serde_json::{self},
+    utils::{self},
 };
-use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone)]
-pub struct TestClient {
-    _config: InternalArriClientConfig,
-    pub tests: TestClientTestsService,
-    pub users: TestClientUsersService,
+pub struct TestClient<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: arri_core::message::ContentType,
+
+    pub tests: TestClientTestsService<TDispatcher>,
+    pub users: TestClientUsersService<TDispatcher>,
 }
 
-impl ArriClientService for TestClient {
-    fn create(config: ArriClientConfig) -> Self {
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    arri_client::ArriClientService<TDispatcher> for TestClient<TDispatcher>
+{
+    fn create(config: arri_client::ArriClientConfig<TDispatcher>) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config.clone()),
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
             tests: TestClientTestsService::create(config.clone()),
             users: TestClientUsersService::create(config),
         }
     }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
+    fn update_headers(&self, headers: arri_core::headers::SharableHeaderMap) {
+        let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
         self.tests.update_headers(headers.clone());
         self.users.update_headers(headers);
     }
 }
 
-impl TestClient {}
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClient<TDispatcher> {}
 
 #[derive(Clone)]
-pub struct TestClientTestsService {
-    _config: InternalArriClientConfig,
+pub struct TestClientTestsService<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: arri_core::message::ContentType,
 }
 
-impl ArriClientService for TestClientTestsService {
-    fn create(config: ArriClientConfig) -> Self {
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    arri_client::ArriClientService<TDispatcher> for TestClientTestsService<TDispatcher>
+{
+    fn create(config: arri_client::ArriClientConfig<TDispatcher>) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config),
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
         }
     }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
+    fn update_headers(&self, headers: arri_core::headers::SharableHeaderMap) {
+        let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }
 
-impl TestClientTestsService {
-    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-params-get-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            None::<EmptyArriModel>,
-            |body| return DefaultPayload::from_json_string(body),
-        )
-        .await
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    TestClientTestsService<TDispatcher>
+{
+    pub async fn empty_params_get_request(
+        &self,
+    ) -> Result<DefaultPayload, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.emptyParamsGetRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.emptyParamsGetRequest".to_string(),
+            "/rpcs/tests/empty-params-get-request".to_string(),
+            Some(arri_core::message::HttpMethod::Get),
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None::<arri_client::model::EmptyArriClientModel>,
+        );
+        self._dispatcher
+            .dispatch_rpc::<arri_client::model::EmptyArriClientModel, DefaultPayload>(call)
+            .await
     }
-    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-params-post-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            None::<EmptyArriModel>,
-            |body| return DefaultPayload::from_json_string(body),
-        )
-        .await
+    pub async fn empty_params_post_request(
+        &self,
+    ) -> Result<DefaultPayload, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.emptyParamsPostRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.emptyParamsPostRequest".to_string(),
+            "/rpcs/tests/empty-params-post-request".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None::<arri_client::model::EmptyArriClientModel>,
+        );
+        self._dispatcher
+            .dispatch_rpc::<arri_client::model::EmptyArriClientModel, DefaultPayload>(call)
+            .await
     }
     pub async fn empty_response_get_request(
         &self,
-        params: DefaultPayload,
-    ) -> Result<(), ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-response-get-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| {},
-        )
-        .await
+        input: DefaultPayload,
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.emptyResponseGetRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.emptyResponseGetRequest".to_string(),
+            "/rpcs/tests/empty-response-get-request".to_string(),
+            Some(arri_core::message::HttpMethod::Get),
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        let result = self
+            ._dispatcher
+            .dispatch_rpc::<DefaultPayload, arri_client::model::EmptyArriClientModel>(call)
+            .await;
+        match result {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err),
+        }
     }
     pub async fn empty_response_post_request(
         &self,
-        params: DefaultPayload,
-    ) -> Result<(), ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-response-post-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| {},
-        )
-        .await
+        input: DefaultPayload,
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.emptyResponsePostRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.emptyResponsePostRequest".to_string(),
+            "/rpcs/tests/empty-response-post-request".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        let result = self
+            ._dispatcher
+            .dispatch_rpc::<DefaultPayload, arri_client::model::EmptyArriClientModel>(call)
+            .await;
+        match result {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err),
+        }
     }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     #[deprecated]
-    pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/deprecated-rpc", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| {},
-        )
-        .await
+    pub async fn deprecated_rpc(
+        &self,
+        input: DeprecatedRpcParams,
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.deprecatedRpc doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.deprecatedRpc".to_string(),
+            "/rpcs/tests/deprecated-rpc".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        let result = self
+            ._dispatcher
+            .dispatch_rpc::<DeprecatedRpcParams, arri_client::model::EmptyArriClientModel>(call)
+            .await;
+        match result {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_discriminator_with_empty_object(
         &self,
-        params: DiscriminatorWithEmptyObject,
-    ) -> Result<DiscriminatorWithEmptyObject, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/send-discriminator-with-empty-object",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return DiscriminatorWithEmptyObject::from_json_string(body),
-        )
-        .await
+        input: DiscriminatorWithEmptyObject,
+    ) -> Result<DiscriminatorWithEmptyObject, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendDiscriminatorWithEmptyObject doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendDiscriminatorWithEmptyObject".to_string(),
+            "/rpcs/tests/send-discriminator-with-empty-object".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<DiscriminatorWithEmptyObject, DiscriminatorWithEmptyObject>(call)
+            .await
     }
-    pub async fn send_error(&self, params: SendErrorParams) -> Result<(), ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/send-error", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| {},
-        )
-        .await
+    pub async fn send_error(
+        &self,
+        input: SendErrorParams,
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendError doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendError".to_string(),
+            "/rpcs/tests/send-error".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        let result = self
+            ._dispatcher
+            .dispatch_rpc::<SendErrorParams, arri_client::model::EmptyArriClientModel>(call)
+            .await;
+        match result {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_object(
         &self,
-        params: ObjectWithEveryType,
-    ) -> Result<ObjectWithEveryType, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/send-object", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return ObjectWithEveryType::from_json_string(body),
-        )
-        .await
+        input: ObjectWithEveryType,
+    ) -> Result<ObjectWithEveryType, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendObject doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendObject".to_string(),
+            "/rpcs/tests/send-object".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<ObjectWithEveryType, ObjectWithEveryType>(call)
+            .await
     }
     pub async fn send_object_with_nullable_fields(
         &self,
-        params: ObjectWithEveryNullableType,
-    ) -> Result<ObjectWithEveryNullableType, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/send-object-with-nullable-fields",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return ObjectWithEveryNullableType::from_json_string(body),
-        )
-        .await
+        input: ObjectWithEveryNullableType,
+    ) -> Result<ObjectWithEveryNullableType, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendObjectWithNullableFields doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendObjectWithNullableFields".to_string(),
+            "/rpcs/tests/send-object-with-nullable-fields".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<ObjectWithEveryNullableType, ObjectWithEveryNullableType>(call)
+            .await
     }
     pub async fn send_object_with_pascal_case_keys(
         &self,
-        params: ObjectWithPascalCaseKeys,
-    ) -> Result<ObjectWithPascalCaseKeys, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/send-object-with-pascal-case-keys",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return ObjectWithPascalCaseKeys::from_json_string(body),
-        )
-        .await
+        input: ObjectWithPascalCaseKeys,
+    ) -> Result<ObjectWithPascalCaseKeys, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendObjectWithPascalCaseKeys doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendObjectWithPascalCaseKeys".to_string(),
+            "/rpcs/tests/send-object-with-pascal-case-keys".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<ObjectWithPascalCaseKeys, ObjectWithPascalCaseKeys>(call)
+            .await
     }
     pub async fn send_object_with_snake_case_keys(
         &self,
-        params: ObjectWithSnakeCaseKeys,
-    ) -> Result<ObjectWithSnakeCaseKeys, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/send-object-with-snake-case-keys",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return ObjectWithSnakeCaseKeys::from_json_string(body),
-        )
-        .await
+        input: ObjectWithSnakeCaseKeys,
+    ) -> Result<ObjectWithSnakeCaseKeys, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendObjectWithSnakeCaseKeys doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendObjectWithSnakeCaseKeys".to_string(),
+            "/rpcs/tests/send-object-with-snake-case-keys".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<ObjectWithSnakeCaseKeys, ObjectWithSnakeCaseKeys>(call)
+            .await
     }
     pub async fn send_partial_object(
         &self,
-        params: ObjectWithEveryOptionalType,
-    ) -> Result<ObjectWithEveryOptionalType, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/send-partial-object", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return ObjectWithEveryOptionalType::from_json_string(body),
-        )
-        .await
+        input: ObjectWithEveryOptionalType,
+    ) -> Result<ObjectWithEveryOptionalType, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendPartialObject doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendPartialObject".to_string(),
+            "/rpcs/tests/send-partial-object".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<ObjectWithEveryOptionalType, ObjectWithEveryOptionalType>(call)
+            .await
     }
     pub async fn send_recursive_object(
         &self,
-        params: RecursiveObject,
-    ) -> Result<RecursiveObject, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/send-recursive-object",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return RecursiveObject::from_json_string(body),
-        )
-        .await
+        input: RecursiveObject,
+    ) -> Result<RecursiveObject, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendRecursiveObject doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendRecursiveObject".to_string(),
+            "/rpcs/tests/send-recursive-object".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<RecursiveObject, RecursiveObject>(call)
+            .await
     }
     pub async fn send_recursive_union(
         &self,
-        params: RecursiveUnion,
-    ) -> Result<RecursiveUnion, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/send-recursive-union", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return RecursiveUnion::from_json_string(body),
-        )
-        .await
+        input: RecursiveUnion,
+    ) -> Result<RecursiveUnion, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.sendRecursiveUnion doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.sendRecursiveUnion".to_string(),
+            "/rpcs/tests/send-recursive-union".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_rpc::<RecursiveUnion, RecursiveUnion>(call)
+            .await
     }
-    pub async fn stream_auto_reconnect<OnEvent>(
+    pub async fn stream_auto_reconnect(
         &self,
-        params: AutoReconnectParams,
-        on_event: &mut OnEvent,
+        input: AutoReconnectParams,
+        on_event: &mut OnEventClosure<'_, AutoReconnectResponse>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<AutoReconnectResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/stream-auto-reconnect",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("tests.streamAutoReconnect doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.streamAutoReconnect".to_string(),
+            "/rpcs/tests/stream-auto-reconnect".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_output_stream_rpc::<AutoReconnectParams, AutoReconnectResponse>(
+                call, on_event, controller, None, None,
+            )
+            .await;
+        Ok(())
     }
     /// This route will always return an error. The client should automatically retry with exponential backoff.
-    pub async fn stream_connection_error_test<OnEvent>(
+    pub async fn stream_connection_error_test(
         &self,
-        params: StreamConnectionErrorTestParams,
-        on_event: &mut OnEvent,
+        input: StreamConnectionErrorTestParams,
+        on_event: &mut OnEventClosure<'_, StreamConnectionErrorTestResponse>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<StreamConnectionErrorTestResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/stream-connection-error-test",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
-    }
-    /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
-    /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
-    /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-    pub async fn stream_heartbeat_detection_test<OnEvent>(
-        &self,
-        params: StreamHeartbeatDetectionTestParams,
-        on_event: &mut OnEvent,
-        max_retry_count: Option<u64>,
-        max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<StreamHeartbeatDetectionTestResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/stream-heartbeat-detection-test",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("tests.streamConnectionErrorTest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.streamConnectionErrorTest".to_string(),
+            "/rpcs/tests/stream-connection-error-test".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+                .dispatch_output_stream_rpc::<StreamConnectionErrorTestParams, StreamConnectionErrorTestResponse>(call, on_event, controller, None, None)
+                .await;
+        Ok(())
     }
     /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
-    pub async fn stream_large_objects<OnEvent>(
+    pub async fn stream_large_objects(
         &self,
 
-        on_event: &mut OnEvent,
+        on_event: &mut OnEventClosure<'_, StreamLargeObjectsResponse>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<StreamLargeObjectsResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/stream-large-objects", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            None::<EmptyArriModel>,
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("tests.streamLargeObjects doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.streamLargeObjects".to_string(),
+            "/rpcs/tests/stream-large-objects".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None::<arri_client::model::EmptyArriClientModel>,
+        );
+        self._dispatcher
+                .dispatch_output_stream_rpc::<arri_client::model::EmptyArriClientModel, StreamLargeObjectsResponse>(call, on_event, controller, None, None)
+                .await;
+        Ok(())
     }
-    pub async fn stream_messages<OnEvent>(
+    pub async fn stream_messages(
         &self,
-        params: ChatMessageParams,
-        on_event: &mut OnEvent,
+        input: ChatMessageParams,
+        on_event: &mut OnEventClosure<'_, ChatMessage>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<ChatMessage>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/stream-messages", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("tests.streamMessages doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.streamMessages".to_string(),
+            "/rpcs/tests/stream-messages".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_output_stream_rpc::<ChatMessageParams, ChatMessage>(
+                call, on_event, controller, None, None,
+            )
+            .await;
+        Ok(())
     }
-    pub async fn stream_retry_with_new_credentials<OnEvent>(
+    pub async fn stream_retry_with_new_credentials(
         &self,
 
-        on_event: &mut OnEvent,
+        on_event: &mut OnEventClosure<'_, TestsStreamRetryWithNewCredentialsResponse>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<TestsStreamRetryWithNewCredentialsResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/stream-retry-with-new-credentials",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            None::<EmptyArriModel>,
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("tests.streamRetryWithNewCredentials doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.streamRetryWithNewCredentials".to_string(),
+            "/rpcs/tests/stream-retry-with-new-credentials".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None::<arri_client::model::EmptyArriClientModel>,
+        );
+        self._dispatcher
+                .dispatch_output_stream_rpc::<arri_client::model::EmptyArriClientModel, TestsStreamRetryWithNewCredentialsResponse>(call, on_event, controller, None, None)
+                .await;
+        Ok(())
     }
     /// When the client receives the 'done' event, it should close the connection and NOT reconnect
-    pub async fn stream_ten_events_then_end<OnEvent>(
+    pub async fn stream_ten_events_then_end(
         &self,
 
-        on_event: &mut OnEvent,
+        on_event: &mut OnEventClosure<'_, ChatMessage>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<ChatMessage>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/stream-ten-events-then-end",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            None::<EmptyArriModel>,
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("tests.streamTenEventsThenEnd doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.streamTenEventsThenEnd".to_string(),
+            "/rpcs/tests/stream-ten-events-then-end".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None::<arri_client::model::EmptyArriClientModel>,
+        );
+        self._dispatcher
+            .dispatch_output_stream_rpc::<arri_client::model::EmptyArriClientModel, ChatMessage>(
+                call, on_event, controller, None, None,
+            )
+            .await;
+        Ok(())
     }
 }
 
 #[derive(Clone)]
-pub struct TestClientUsersService {
-    _config: InternalArriClientConfig,
+pub struct TestClientUsersService<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: arri_core::message::ContentType,
 }
 
-impl ArriClientService for TestClientUsersService {
-    fn create(config: ArriClientConfig) -> Self {
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    arri_client::ArriClientService<TDispatcher> for TestClientUsersService<TDispatcher>
+{
+    fn create(config: arri_client::ArriClientConfig<TDispatcher>) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config),
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
         }
     }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
+    fn update_headers(&self, headers: arri_core::headers::SharableHeaderMap) {
+        let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }
 
-impl TestClientUsersService {
-    pub async fn watch_user<OnEvent>(
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    TestClientUsersService<TDispatcher>
+{
+    pub async fn watch_user(
         &self,
-        params: UsersWatchUserParams,
-        on_event: &mut OnEvent,
+        input: UsersWatchUserParams,
+        on_event: &mut OnEventClosure<'_, UsersWatchUserResponse>,
+        controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        OnEvent: FnMut(SseEvent<UsersWatchUserResponse>, &mut SseController)
-            + std::marker::Send
-            + std::marker::Sync,
-    {
-        parsed_arri_sse_request(
-            ArriParsedSseRequestOptions {
-                client: &self._config.http_client,
-                url: format!("{}/rpcs/users/watch-user", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-                max_retry_count,
-                max_retry_interval,
-            },
-            Some(params),
-            on_event,
-        )
-        .await;
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                    0,
+                    format!("users.watchUser doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                    None,
+                    None,
+                ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "users.watchUser".to_string(),
+            "/rpcs/users/watch-user".to_string(),
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input),
+        );
+        self._dispatcher
+            .dispatch_output_stream_rpc::<UsersWatchUserParams, UsersWatchUserResponse>(
+                call, on_event, controller, None, None,
+            )
+            .await;
+        Ok(())
     }
 }
 
@@ -571,7 +740,7 @@ pub struct ManuallyAddedModel {
     pub hello: String,
 }
 
-impl ArriModel for ManuallyAddedModel {
+impl arri_client::model::ArriClientModel for ManuallyAddedModel {
     fn new() -> Self {
         Self {
             hello: "".to_string(),
@@ -599,7 +768,7 @@ impl ArriModel for ManuallyAddedModel {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"hello\":");
-        _json_output_.push_str(serialize_string(&self.hello).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.hello).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -615,7 +784,7 @@ pub struct DefaultPayload {
     pub message: String,
 }
 
-impl ArriModel for DefaultPayload {
+impl arri_client::model::ArriClientModel for DefaultPayload {
     fn new() -> Self {
         Self {
             message: "".to_string(),
@@ -643,7 +812,7 @@ impl ArriModel for DefaultPayload {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"message\":");
-        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.message).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -661,7 +830,7 @@ pub struct DeprecatedRpcParams {
     pub deprecated_field: String,
 }
 
-impl ArriModel for DeprecatedRpcParams {
+impl arri_client::model::ArriClientModel for DeprecatedRpcParams {
     fn new() -> Self {
         Self {
             deprecated_field: "".to_string(),
@@ -691,7 +860,7 @@ impl ArriModel for DeprecatedRpcParams {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"deprecatedField\":");
-        _json_output_.push_str(serialize_string(&self.deprecated_field).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.deprecated_field).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -708,7 +877,7 @@ pub enum DiscriminatorWithEmptyObject {
     NotEmpty { foo: String, bar: f64, baz: bool },
 }
 
-impl ArriModel for DiscriminatorWithEmptyObject {
+impl arri_client::model::ArriClientModel for DiscriminatorWithEmptyObject {
     fn new() -> Self {
         Self::Empty {}
     }
@@ -762,7 +931,7 @@ impl ArriModel for DiscriminatorWithEmptyObject {
             Self::NotEmpty { foo, bar, baz } => {
                 _json_output_.push_str("\"type\":\"NOT_EMPTY\"");
                 _json_output_.push_str(",\"foo\":");
-                _json_output_.push_str(serialize_string(foo).as_str());
+                _json_output_.push_str(utils::serialize_string(foo).as_str());
                 _json_output_.push_str(",\"bar\":");
                 _json_output_.push_str(bar.to_string().as_str());
                 _json_output_.push_str(",\"baz\":");
@@ -796,7 +965,7 @@ pub struct SendErrorParams {
     pub message: String,
 }
 
-impl ArriModel for SendErrorParams {
+impl arri_client::model::ArriClientModel for SendErrorParams {
     fn new() -> Self {
         Self {
             code: 0,
@@ -833,7 +1002,7 @@ impl ArriModel for SendErrorParams {
         _json_output_.push_str("\"code\":");
         _json_output_.push_str(&self.code.to_string().as_str());
         _json_output_.push_str(",\"message\":");
-        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.message).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -850,7 +1019,7 @@ pub struct ObjectWithEveryType {
     pub any: serde_json::Value,
     pub boolean: bool,
     pub string: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
     pub float32: f32,
     pub float64: f64,
     pub int8: i8,
@@ -864,19 +1033,19 @@ pub struct ObjectWithEveryType {
     pub enumerator: ObjectWithEveryTypeEnumerator,
     pub array: Vec<bool>,
     pub object: ObjectWithEveryTypeObject,
-    pub record: BTreeMap<String, u64>,
+    pub record: std::collections::BTreeMap<String, u64>,
     pub discriminator: ObjectWithEveryTypeDiscriminator,
     pub nested_object: ObjectWithEveryTypeNestedObject,
     pub nested_array: Vec<Vec<ObjectWithEveryTypeNestedArrayElementElement>>,
 }
 
-impl ArriModel for ObjectWithEveryType {
+impl arri_client::model::ArriClientModel for ObjectWithEveryType {
     fn new() -> Self {
         Self {
             any: serde_json::Value::Null,
             boolean: false,
             string: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
             float32: 0.0,
             float64: 0.0,
             int8: 0,
@@ -890,7 +1059,7 @@ impl ArriModel for ObjectWithEveryType {
             enumerator: ObjectWithEveryTypeEnumerator::default(),
             array: Vec::new(),
             object: ObjectWithEveryTypeObject::new(),
-            record: BTreeMap::new(),
+            record: std::collections::BTreeMap::new(),
             discriminator: ObjectWithEveryTypeDiscriminator::new(),
             nested_object: ObjectWithEveryTypeNestedObject::new(),
             nested_array: Vec::new(),
@@ -913,10 +1082,10 @@ impl ArriModel for ObjectWithEveryType {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let float32 = match _val_.get("float32") {
                     Some(serde_json::Value::Number(float32_val)) => {
@@ -1005,7 +1174,8 @@ impl ArriModel for ObjectWithEveryType {
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
-                        let mut record_val_result: BTreeMap<String, u64> = BTreeMap::new();
+                        let mut record_val_result: std::collections::BTreeMap<String, u64> =
+                            std::collections::BTreeMap::new();
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
@@ -1019,7 +1189,7 @@ impl ArriModel for ObjectWithEveryType {
                         }
                         record_val_result
                     }
-                    _ => BTreeMap::new(),
+                    _ => std::collections::BTreeMap::new(),
                 };
                 let discriminator = match _val_.get("discriminator") {
                     Some(discriminator_val) => match discriminator_val {
@@ -1107,9 +1277,9 @@ impl ArriModel for ObjectWithEveryType {
         _json_output_.push_str(",\"boolean\":");
         _json_output_.push_str(&self.boolean.to_string().as_str());
         _json_output_.push_str(",\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.string).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push_str(",\"float32\":");
         _json_output_.push_str(&self.float32.to_string().as_str());
         _json_output_.push_str(",\"float64\":");
@@ -1149,7 +1319,7 @@ impl ArriModel for ObjectWithEveryType {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
+            _json_output_.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
             _json_output_.push_str(format!("\"{}\"", _value_).as_str());
         }
         _json_output_.push('}');
@@ -1183,7 +1353,7 @@ impl ArriModel for ObjectWithEveryType {
         _query_parts_.push(format!("string={}", &self.string));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.push(format!("float32={}", &self.float32));
         _query_parts_.push(format!("float64={}", &self.float64));
@@ -1213,7 +1383,7 @@ pub enum ObjectWithEveryTypeEnumerator {
     C,
 }
 
-impl ArriEnum for ObjectWithEveryTypeEnumerator {
+impl arri_client::model::ArriClientEnum for ObjectWithEveryTypeEnumerator {
     fn default() -> Self {
         ObjectWithEveryTypeEnumerator::A
     }
@@ -1238,15 +1408,15 @@ impl ArriEnum for ObjectWithEveryTypeEnumerator {
 pub struct ObjectWithEveryTypeObject {
     pub string: String,
     pub boolean: bool,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl ArriModel for ObjectWithEveryTypeObject {
+impl arri_client::model::ArriClientModel for ObjectWithEveryTypeObject {
     fn new() -> Self {
         Self {
             string: "".to_string(),
             boolean: false,
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -1262,10 +1432,10 @@ impl ArriModel for ObjectWithEveryTypeObject {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 Self {
                     string,
@@ -1286,11 +1456,11 @@ impl ArriModel for ObjectWithEveryTypeObject {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.string).as_str());
         _json_output_.push_str(",\"boolean\":");
         _json_output_.push_str(&self.boolean.to_string().as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -1300,7 +1470,7 @@ impl ArriModel for ObjectWithEveryTypeObject {
         _query_parts_.push(format!("boolean={}", &self.boolean));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.join("&")
     }
@@ -1312,7 +1482,7 @@ pub enum ObjectWithEveryTypeDiscriminator {
     B { title: String, description: String },
 }
 
-impl ArriModel for ObjectWithEveryTypeDiscriminator {
+impl arri_client::model::ArriClientModel for ObjectWithEveryTypeDiscriminator {
     fn new() -> Self {
         Self::A {
             title: "".to_string(),
@@ -1367,14 +1537,14 @@ impl ArriModel for ObjectWithEveryTypeDiscriminator {
             Self::A { title } => {
                 _json_output_.push_str("\"type\":\"A\"");
                 _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
+                _json_output_.push_str(utils::serialize_string(title).as_str());
             }
             Self::B { title, description } => {
                 _json_output_.push_str("\"type\":\"B\"");
                 _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
+                _json_output_.push_str(utils::serialize_string(title).as_str());
                 _json_output_.push_str(",\"description\":");
-                _json_output_.push_str(serialize_string(description).as_str());
+                _json_output_.push_str(utils::serialize_string(description).as_str());
             }
         }
         _json_output_.push('}');
@@ -1401,15 +1571,15 @@ impl ArriModel for ObjectWithEveryTypeDiscriminator {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryTypeNestedObject {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
     pub data: ObjectWithEveryTypeNestedObjectData,
 }
 
-impl ArriModel for ObjectWithEveryTypeNestedObject {
+impl arri_client::model::ArriClientModel for ObjectWithEveryTypeNestedObject {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
             data: ObjectWithEveryTypeNestedObjectData::new(),
         }
     }
@@ -1422,10 +1592,10 @@ impl ArriModel for ObjectWithEveryTypeNestedObject {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => {
@@ -1452,9 +1622,9 @@ impl ArriModel for ObjectWithEveryTypeNestedObject {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push_str(",\"data\":");
         _json_output_.push_str(&self.data.to_json_string().as_str());
         _json_output_.push('}');
@@ -1465,7 +1635,7 @@ impl ArriModel for ObjectWithEveryTypeNestedObject {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.");
         _query_parts_.join("&")
@@ -1475,15 +1645,15 @@ impl ArriModel for ObjectWithEveryTypeNestedObject {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryTypeNestedObjectData {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
     pub data: ObjectWithEveryTypeNestedObjectDataData,
 }
 
-impl ArriModel for ObjectWithEveryTypeNestedObjectData {
+impl arri_client::model::ArriClientModel for ObjectWithEveryTypeNestedObjectData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
             data: ObjectWithEveryTypeNestedObjectDataData::new(),
         }
     }
@@ -1496,10 +1666,10 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectData {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => {
@@ -1526,9 +1696,9 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectData {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push_str(",\"data\":");
         _json_output_.push_str(&self.data.to_json_string().as_str());
         _json_output_.push('}');
@@ -1539,7 +1709,7 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectData {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.");
         _query_parts_.join("&")
@@ -1549,14 +1719,14 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryTypeNestedObjectDataData {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl ArriModel for ObjectWithEveryTypeNestedObjectDataData {
+impl arri_client::model::ArriClientModel for ObjectWithEveryTypeNestedObjectDataData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -1568,10 +1738,10 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectDataData {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 Self { id, timestamp }
             }
@@ -1588,9 +1758,9 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectDataData {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -1599,7 +1769,7 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectDataData {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.join("&")
     }
@@ -1608,14 +1778,14 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectDataData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryTypeNestedArrayElementElement {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl ArriModel for ObjectWithEveryTypeNestedArrayElementElement {
+impl arri_client::model::ArriClientModel for ObjectWithEveryTypeNestedArrayElementElement {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -1627,10 +1797,10 @@ impl ArriModel for ObjectWithEveryTypeNestedArrayElementElement {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 Self { id, timestamp }
             }
@@ -1647,9 +1817,9 @@ impl ArriModel for ObjectWithEveryTypeNestedArrayElementElement {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -1658,7 +1828,7 @@ impl ArriModel for ObjectWithEveryTypeNestedArrayElementElement {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.join("&")
     }
@@ -1669,7 +1839,7 @@ pub struct ObjectWithEveryNullableType {
     pub any: serde_json::Value,
     pub boolean: Option<bool>,
     pub string: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub float32: Option<f32>,
     pub float64: Option<f64>,
     pub int8: Option<i8>,
@@ -1683,14 +1853,14 @@ pub struct ObjectWithEveryNullableType {
     pub enumerator: Option<ObjectWithEveryNullableTypeEnumerator>,
     pub array: Option<Vec<Option<bool>>>,
     pub object: Option<ObjectWithEveryNullableTypeObject>,
-    pub record: Option<BTreeMap<String, Option<u64>>>,
+    pub record: Option<std::collections::BTreeMap<String, Option<u64>>>,
     pub discriminator: Option<ObjectWithEveryNullableTypeDiscriminator>,
     pub nested_object: Option<ObjectWithEveryNullableTypeNestedObject>,
     pub nested_array:
         Option<Vec<Option<Vec<Option<ObjectWithEveryNullableTypeNestedArrayElementElement>>>>>,
 }
 
-impl ArriModel for ObjectWithEveryNullableType {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableType {
     fn new() -> Self {
         Self {
             any: serde_json::Value::Null,
@@ -1733,7 +1903,9 @@ impl ArriModel for ObjectWithEveryNullableType {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -1864,7 +2036,8 @@ impl ArriModel for ObjectWithEveryNullableType {
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
-                        let mut record_val_result: BTreeMap<String, Option<u64>> = BTreeMap::new();
+                        let mut record_val_result: std::collections::BTreeMap<String, Option<u64>> =
+                            std::collections::BTreeMap::new();
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
@@ -1990,7 +2163,7 @@ impl ArriModel for ObjectWithEveryNullableType {
         _json_output_.push_str(",\"string\":");
         match &self.string {
             Some(string_val) => {
-                _json_output_.push_str(serialize_string(string_val).as_str());
+                _json_output_.push_str(utils::serialize_string(string_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -1999,7 +2172,7 @@ impl ArriModel for ObjectWithEveryNullableType {
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2144,7 +2317,7 @@ impl ArriModel for ObjectWithEveryNullableType {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
+                    _json_output_.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
                     match _value_ {
                         Some(value_val) => {
                             _json_output_.push_str(format!("\"{}\"", value_val).as_str());
@@ -2242,7 +2415,7 @@ impl ArriModel for ObjectWithEveryNullableType {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {
@@ -2354,7 +2527,7 @@ pub enum ObjectWithEveryNullableTypeEnumerator {
     C,
 }
 
-impl ArriEnum for ObjectWithEveryNullableTypeEnumerator {
+impl arri_client::model::ArriClientEnum for ObjectWithEveryNullableTypeEnumerator {
     fn default() -> Self {
         ObjectWithEveryNullableTypeEnumerator::A
     }
@@ -2379,10 +2552,10 @@ impl ArriEnum for ObjectWithEveryNullableTypeEnumerator {
 pub struct ObjectWithEveryNullableTypeObject {
     pub string: Option<String>,
     pub boolean: Option<bool>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
 }
 
-impl ArriModel for ObjectWithEveryNullableTypeObject {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableTypeObject {
     fn new() -> Self {
         Self {
             string: None,
@@ -2403,7 +2576,9 @@ impl ArriModel for ObjectWithEveryNullableTypeObject {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -2431,7 +2606,7 @@ impl ArriModel for ObjectWithEveryNullableTypeObject {
         _json_output_.push_str("\"string\":");
         match &self.string {
             Some(string_val) => {
-                _json_output_.push_str(serialize_string(string_val).as_str());
+                _json_output_.push_str(utils::serialize_string(string_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2449,7 +2624,7 @@ impl ArriModel for ObjectWithEveryNullableTypeObject {
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2480,7 +2655,7 @@ impl ArriModel for ObjectWithEveryNullableTypeObject {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {
@@ -2502,7 +2677,7 @@ pub enum ObjectWithEveryNullableTypeDiscriminator {
     },
 }
 
-impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableTypeDiscriminator {
     fn new() -> Self {
         Self::A { title: None }
     }
@@ -2561,7 +2736,7 @@ impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
                 _json_output_.push_str(",\"title\":");
                 match title {
                     Some(title_val) => {
-                        _json_output_.push_str(serialize_string(title_val).as_str());
+                        _json_output_.push_str(utils::serialize_string(title_val).as_str());
                     }
                     _ => {
                         _json_output_.push_str("null");
@@ -2573,7 +2748,7 @@ impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
                 _json_output_.push_str(",\"title\":");
                 match title {
                     Some(title_val) => {
-                        _json_output_.push_str(serialize_string(title_val).as_str());
+                        _json_output_.push_str(utils::serialize_string(title_val).as_str());
                     }
                     _ => {
                         _json_output_.push_str("null");
@@ -2582,7 +2757,7 @@ impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
                 _json_output_.push_str(",\"description\":");
                 match description {
                     Some(description_val) => {
-                        _json_output_.push_str(serialize_string(description_val).as_str());
+                        _json_output_.push_str(utils::serialize_string(description_val).as_str());
                     }
                     _ => {
                         _json_output_.push_str("null");
@@ -2635,11 +2810,11 @@ impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryNullableTypeNestedObject {
     pub id: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub data: Option<ObjectWithEveryNullableTypeNestedObjectData>,
 }
 
-impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableTypeNestedObject {
     fn new() -> Self {
         Self {
             id: None,
@@ -2656,7 +2831,9 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -2695,7 +2872,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
         _json_output_.push_str("\"id\":");
         match &self.id {
             Some(id_val) => {
-                _json_output_.push_str(serialize_string(id_val).as_str());
+                _json_output_.push_str(utils::serialize_string(id_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2704,7 +2881,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2736,7 +2913,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {
@@ -2751,11 +2928,11 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryNullableTypeNestedObjectData {
     pub id: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub data: Option<ObjectWithEveryNullableTypeNestedObjectDataData>,
 }
 
-impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableTypeNestedObjectData {
     fn new() -> Self {
         Self {
             id: None,
@@ -2772,7 +2949,9 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -2811,7 +2990,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
         _json_output_.push_str("\"id\":");
         match &self.id {
             Some(id_val) => {
-                _json_output_.push_str(serialize_string(id_val).as_str());
+                _json_output_.push_str(utils::serialize_string(id_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2820,7 +2999,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2852,7 +3031,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {
@@ -2867,10 +3046,10 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryNullableTypeNestedObjectDataData {
     pub id: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
 }
 
-impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableTypeNestedObjectDataData {
     fn new() -> Self {
         Self {
             id: None,
@@ -2886,7 +3065,9 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -2910,7 +3091,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
         _json_output_.push_str("\"id\":");
         match &self.id {
             Some(id_val) => {
-                _json_output_.push_str(serialize_string(id_val).as_str());
+                _json_output_.push_str(utils::serialize_string(id_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2919,7 +3100,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -2942,7 +3123,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {
@@ -2956,10 +3137,10 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryNullableTypeNestedArrayElementElement {
     pub id: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
 }
 
-impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
+impl arri_client::model::ArriClientModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
     fn new() -> Self {
         Self {
             id: None,
@@ -2975,7 +3156,9 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -2999,7 +3182,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
         _json_output_.push_str("\"id\":");
         match &self.id {
             Some(id_val) => {
-                _json_output_.push_str(serialize_string(id_val).as_str());
+                _json_output_.push_str(utils::serialize_string(id_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -3008,7 +3191,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -3031,7 +3214,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {
@@ -3044,17 +3227,17 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithPascalCaseKeys {
-    pub created_at: DateTime<FixedOffset>,
+    pub created_at: chrono::DateTime<chrono::FixedOffset>,
     pub display_name: String,
     pub phone_number: Option<String>,
     pub email_address: Option<String>,
     pub is_admin: Option<bool>,
 }
 
-impl ArriModel for ObjectWithPascalCaseKeys {
+impl arri_client::model::ArriClientModel for ObjectWithPascalCaseKeys {
     fn new() -> Self {
         Self {
-            created_at: DateTime::default(),
+            created_at: chrono::DateTime::default(),
             display_name: "".to_string(),
             phone_number: None,
             email_address: None,
@@ -3066,10 +3249,10 @@ impl ArriModel for ObjectWithPascalCaseKeys {
             serde_json::Value::Object(_val_) => {
                 let created_at = match _val_.get("CreatedAt") {
                     Some(serde_json::Value::String(created_at_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(created_at_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let display_name = match _val_.get("DisplayName") {
                     Some(serde_json::Value::String(display_name_val)) => {
@@ -3114,13 +3297,13 @@ impl ArriModel for ObjectWithPascalCaseKeys {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"CreatedAt\":");
-        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.created_at, true).as_str());
         _json_output_.push_str(",\"DisplayName\":");
-        _json_output_.push_str(serialize_string(&self.display_name).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.display_name).as_str());
         _json_output_.push_str(",\"PhoneNumber\":");
         match &self.phone_number {
             Some(phone_number_val) => {
-                _json_output_.push_str(serialize_string(phone_number_val).as_str());
+                _json_output_.push_str(utils::serialize_string(phone_number_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -3129,7 +3312,7 @@ impl ArriModel for ObjectWithPascalCaseKeys {
         match &self.email_address {
             Some(email_address_val) => {
                 _json_output_.push_str(",\"EmailAddress\":");
-                _json_output_.push_str(serialize_string(email_address_val).as_str())
+                _json_output_.push_str(utils::serialize_string(email_address_val).as_str())
             }
             _ => {}
         };
@@ -3147,7 +3330,7 @@ impl ArriModel for ObjectWithPascalCaseKeys {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!(
             "CreatedAt={}",
-            serialize_date_time(&self.created_at, false)
+            utils::serialize_date_time(&self.created_at, false)
         ));
         _query_parts_.push(format!("DisplayName={}", &self.display_name));
         match &self.phone_number {
@@ -3176,17 +3359,17 @@ impl ArriModel for ObjectWithPascalCaseKeys {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithSnakeCaseKeys {
-    pub created_at: DateTime<FixedOffset>,
+    pub created_at: chrono::DateTime<chrono::FixedOffset>,
     pub display_name: String,
     pub phone_number: Option<String>,
     pub email_address: Option<String>,
     pub is_admin: Option<bool>,
 }
 
-impl ArriModel for ObjectWithSnakeCaseKeys {
+impl arri_client::model::ArriClientModel for ObjectWithSnakeCaseKeys {
     fn new() -> Self {
         Self {
-            created_at: DateTime::default(),
+            created_at: chrono::DateTime::default(),
             display_name: "".to_string(),
             phone_number: None,
             email_address: None,
@@ -3198,10 +3381,10 @@ impl ArriModel for ObjectWithSnakeCaseKeys {
             serde_json::Value::Object(_val_) => {
                 let created_at = match _val_.get("created_at") {
                     Some(serde_json::Value::String(created_at_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(created_at_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let display_name = match _val_.get("display_name") {
                     Some(serde_json::Value::String(display_name_val)) => {
@@ -3246,13 +3429,13 @@ impl ArriModel for ObjectWithSnakeCaseKeys {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"created_at\":");
-        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.created_at, true).as_str());
         _json_output_.push_str(",\"display_name\":");
-        _json_output_.push_str(serialize_string(&self.display_name).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.display_name).as_str());
         _json_output_.push_str(",\"phone_number\":");
         match &self.phone_number {
             Some(phone_number_val) => {
-                _json_output_.push_str(serialize_string(phone_number_val).as_str());
+                _json_output_.push_str(utils::serialize_string(phone_number_val).as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -3261,7 +3444,7 @@ impl ArriModel for ObjectWithSnakeCaseKeys {
         match &self.email_address {
             Some(email_address_val) => {
                 _json_output_.push_str(",\"email_address\":");
-                _json_output_.push_str(serialize_string(email_address_val).as_str())
+                _json_output_.push_str(utils::serialize_string(email_address_val).as_str())
             }
             _ => {}
         };
@@ -3279,7 +3462,7 @@ impl ArriModel for ObjectWithSnakeCaseKeys {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!(
             "created_at={}",
-            serialize_date_time(&self.created_at, false)
+            utils::serialize_date_time(&self.created_at, false)
         ));
         _query_parts_.push(format!("display_name={}", &self.display_name));
         match &self.phone_number {
@@ -3311,7 +3494,7 @@ pub struct ObjectWithEveryOptionalType {
     pub any: Option<serde_json::Value>,
     pub boolean: Option<bool>,
     pub string: Option<String>,
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub float32: Option<f32>,
     pub float64: Option<f64>,
     pub int8: Option<i8>,
@@ -3325,13 +3508,13 @@ pub struct ObjectWithEveryOptionalType {
     pub enumerator: Option<ObjectWithEveryOptionalTypeEnumerator>,
     pub array: Option<Vec<bool>>,
     pub object: Option<ObjectWithEveryOptionalTypeObject>,
-    pub record: Option<BTreeMap<String, u64>>,
+    pub record: Option<std::collections::BTreeMap<String, u64>>,
     pub discriminator: Option<ObjectWithEveryOptionalTypeDiscriminator>,
     pub nested_object: Option<ObjectWithEveryOptionalTypeNestedObject>,
     pub nested_array: Option<Vec<Vec<ObjectWithEveryOptionalTypeNestedArrayElementElement>>>,
 }
 
-impl ArriModel for ObjectWithEveryOptionalType {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalType {
     fn new() -> Self {
         Self {
             any: None,
@@ -3374,7 +3557,9 @@ impl ArriModel for ObjectWithEveryOptionalType {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                            timestamp_val,
+                        ) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -3505,7 +3690,8 @@ impl ArriModel for ObjectWithEveryOptionalType {
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
-                        let mut record_val_result: BTreeMap<String, u64> = BTreeMap::new();
+                        let mut record_val_result: std::collections::BTreeMap<String, u64> =
+                            std::collections::BTreeMap::new();
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
@@ -3632,7 +3818,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
                     _json_output_.push(',');
                 }
                 _json_output_.push_str("\"string\":");
-                _json_output_.push_str(serialize_string(string_val).as_str());
+                _json_output_.push_str(utils::serialize_string(string_val).as_str());
                 _has_keys_ = true;
             }
             _ => {}
@@ -3643,7 +3829,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
                     _json_output_.push(',');
                 }
                 _json_output_.push_str("\"timestamp\":");
-                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(timestamp_val, true).as_str());
                 _has_keys_ = true;
             }
             _ => {}
@@ -3809,7 +3995,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
+                    _json_output_.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
                     _json_output_.push_str(format!("\"{}\"", _value_).as_str());
                 }
                 _json_output_.push('}');
@@ -3885,7 +4071,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    utils::serialize_date_time(timestamp_val, false)
                 ));
             }
             _ => {}
@@ -3973,7 +4159,7 @@ pub enum ObjectWithEveryOptionalTypeEnumerator {
     C,
 }
 
-impl ArriEnum for ObjectWithEveryOptionalTypeEnumerator {
+impl arri_client::model::ArriClientEnum for ObjectWithEveryOptionalTypeEnumerator {
     fn default() -> Self {
         ObjectWithEveryOptionalTypeEnumerator::A
     }
@@ -3998,15 +4184,15 @@ impl ArriEnum for ObjectWithEveryOptionalTypeEnumerator {
 pub struct ObjectWithEveryOptionalTypeObject {
     pub string: String,
     pub boolean: bool,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl ArriModel for ObjectWithEveryOptionalTypeObject {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalTypeObject {
     fn new() -> Self {
         Self {
             string: "".to_string(),
             boolean: false,
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -4022,10 +4208,10 @@ impl ArriModel for ObjectWithEveryOptionalTypeObject {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 Self {
                     string,
@@ -4046,11 +4232,11 @@ impl ArriModel for ObjectWithEveryOptionalTypeObject {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.string).as_str());
         _json_output_.push_str(",\"boolean\":");
         _json_output_.push_str(&self.boolean.to_string().as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4060,7 +4246,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeObject {
         _query_parts_.push(format!("boolean={}", &self.boolean));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.join("&")
     }
@@ -4072,7 +4258,7 @@ pub enum ObjectWithEveryOptionalTypeDiscriminator {
     B { title: String, description: String },
 }
 
-impl ArriModel for ObjectWithEveryOptionalTypeDiscriminator {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalTypeDiscriminator {
     fn new() -> Self {
         Self::A {
             title: "".to_string(),
@@ -4127,14 +4313,14 @@ impl ArriModel for ObjectWithEveryOptionalTypeDiscriminator {
             Self::A { title } => {
                 _json_output_.push_str("\"type\":\"A\"");
                 _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
+                _json_output_.push_str(utils::serialize_string(title).as_str());
             }
             Self::B { title, description } => {
                 _json_output_.push_str("\"type\":\"B\"");
                 _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
+                _json_output_.push_str(utils::serialize_string(title).as_str());
                 _json_output_.push_str(",\"description\":");
-                _json_output_.push_str(serialize_string(description).as_str());
+                _json_output_.push_str(utils::serialize_string(description).as_str());
             }
         }
         _json_output_.push('}');
@@ -4161,15 +4347,15 @@ impl ArriModel for ObjectWithEveryOptionalTypeDiscriminator {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryOptionalTypeNestedObject {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
     pub data: ObjectWithEveryOptionalTypeNestedObjectData,
 }
 
-impl ArriModel for ObjectWithEveryOptionalTypeNestedObject {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalTypeNestedObject {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
             data: ObjectWithEveryOptionalTypeNestedObjectData::new(),
         }
     }
@@ -4182,10 +4368,10 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObject {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => {
@@ -4212,9 +4398,9 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObject {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push_str(",\"data\":");
         _json_output_.push_str(&self.data.to_json_string().as_str());
         _json_output_.push('}');
@@ -4225,7 +4411,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObject {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.");
         _query_parts_.join("&")
@@ -4235,15 +4421,15 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObject {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryOptionalTypeNestedObjectData {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
     pub data: ObjectWithEveryOptionalTypeNestedObjectDataData,
 }
 
-impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectData {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalTypeNestedObjectData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
             data: ObjectWithEveryOptionalTypeNestedObjectDataData::new(),
         }
     }
@@ -4256,10 +4442,10 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectData {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let data = match _val_.get("data") {
                     Some(data_val) => ObjectWithEveryOptionalTypeNestedObjectDataData::from_json(
@@ -4286,9 +4472,9 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectData {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push_str(",\"data\":");
         _json_output_.push_str(&self.data.to_json_string().as_str());
         _json_output_.push('}');
@@ -4299,7 +4485,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectData {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.");
         _query_parts_.join("&")
@@ -4309,14 +4495,14 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryOptionalTypeNestedObjectDataData {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -4328,10 +4514,10 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 Self { id, timestamp }
             }
@@ -4348,9 +4534,9 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4359,7 +4545,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.join("&")
     }
@@ -4368,14 +4554,14 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryOptionalTypeNestedArrayElementElement {
     pub id: String,
-    pub timestamp: DateTime<FixedOffset>,
+    pub timestamp: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl ArriModel for ObjectWithEveryOptionalTypeNestedArrayElementElement {
+impl arri_client::model::ArriClientModel for ObjectWithEveryOptionalTypeNestedArrayElementElement {
     fn new() -> Self {
         Self {
             id: "".to_string(),
-            timestamp: DateTime::default(),
+            timestamp: chrono::DateTime::default(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
@@ -4387,10 +4573,10 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedArrayElementElement {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 Self { id, timestamp }
             }
@@ -4407,9 +4593,9 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedArrayElementElement {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"timestamp\":");
-        _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4418,7 +4604,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedArrayElementElement {
         _query_parts_.push(format!("id={}", &self.id));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            utils::serialize_date_time(&self.timestamp, false)
         ));
         _query_parts_.join("&")
     }
@@ -4431,7 +4617,7 @@ pub struct RecursiveObject {
     pub value: String,
 }
 
-impl ArriModel for RecursiveObject {
+impl arri_client::model::ArriClientModel for RecursiveObject {
     fn new() -> Self {
         Self {
             left: None,
@@ -4497,7 +4683,7 @@ impl ArriModel for RecursiveObject {
             }
         };
         _json_output_.push_str(",\"value\":");
-        _json_output_.push_str(serialize_string(&self.value).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.value).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4522,7 +4708,7 @@ pub enum RecursiveUnion {
     Shape { data: RecursiveUnionDataShape },
 }
 
-impl ArriModel for RecursiveUnion {
+impl arri_client::model::ArriClientModel for RecursiveUnion {
     fn new() -> Self {
         Self::Child {
             data: Box::new(RecursiveUnion::new()),
@@ -4627,7 +4813,7 @@ impl ArriModel for RecursiveUnion {
             Self::Text { data } => {
                 _json_output_.push_str("\"type\":\"TEXT\"");
                 _json_output_.push_str(",\"data\":");
-                _json_output_.push_str(serialize_string(data).as_str());
+                _json_output_.push_str(utils::serialize_string(data).as_str());
             }
             Self::Shape { data } => {
                 _json_output_.push_str("\"type\":\"SHAPE\"");
@@ -4670,7 +4856,7 @@ pub struct RecursiveUnionDataShape {
     pub color: String,
 }
 
-impl ArriModel for RecursiveUnionDataShape {
+impl arri_client::model::ArriClientModel for RecursiveUnionDataShape {
     fn new() -> Self {
         Self {
             width: 0.0,
@@ -4718,7 +4904,7 @@ impl ArriModel for RecursiveUnionDataShape {
         _json_output_.push_str(",\"height\":");
         _json_output_.push_str(&self.height.to_string().as_str());
         _json_output_.push_str(",\"color\":");
-        _json_output_.push_str(serialize_string(&self.color).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.color).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4736,7 +4922,7 @@ pub struct AutoReconnectParams {
     pub message_count: u8,
 }
 
-impl ArriModel for AutoReconnectParams {
+impl arri_client::model::ArriClientModel for AutoReconnectParams {
     fn new() -> Self {
         Self { message_count: 0 }
     }
@@ -4781,7 +4967,7 @@ pub struct AutoReconnectResponse {
     pub message: String,
 }
 
-impl ArriModel for AutoReconnectResponse {
+impl arri_client::model::ArriClientModel for AutoReconnectResponse {
     fn new() -> Self {
         Self {
             count: 0,
@@ -4818,7 +5004,7 @@ impl ArriModel for AutoReconnectResponse {
         _json_output_.push_str("\"count\":");
         _json_output_.push_str(&self.count.to_string().as_str());
         _json_output_.push_str(",\"message\":");
-        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.message).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4836,7 +5022,7 @@ pub struct StreamConnectionErrorTestParams {
     pub status_message: String,
 }
 
-impl ArriModel for StreamConnectionErrorTestParams {
+impl arri_client::model::ArriClientModel for StreamConnectionErrorTestParams {
     fn new() -> Self {
         Self {
             status_code: 0,
@@ -4878,7 +5064,7 @@ impl ArriModel for StreamConnectionErrorTestParams {
         _json_output_.push_str("\"statusCode\":");
         _json_output_.push_str(&self.status_code.to_string().as_str());
         _json_output_.push_str(",\"statusMessage\":");
-        _json_output_.push_str(serialize_string(&self.status_message).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.status_message).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -4895,7 +5081,7 @@ pub struct StreamConnectionErrorTestResponse {
     pub message: String,
 }
 
-impl ArriModel for StreamConnectionErrorTestResponse {
+impl arri_client::model::ArriClientModel for StreamConnectionErrorTestResponse {
     fn new() -> Self {
         Self {
             message: "".to_string(),
@@ -4923,97 +5109,7 @@ impl ArriModel for StreamConnectionErrorTestResponse {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"message\":");
-        _json_output_.push_str(serialize_string(&self.message).as_str());
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("message={}", &self.message));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct StreamHeartbeatDetectionTestParams {
-    pub heartbeat_enabled: bool,
-}
-
-impl ArriModel for StreamHeartbeatDetectionTestParams {
-    fn new() -> Self {
-        Self {
-            heartbeat_enabled: false,
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let heartbeat_enabled = match _val_.get("heartbeatEnabled") {
-                    Some(serde_json::Value::Bool(heartbeat_enabled_val)) => {
-                        heartbeat_enabled_val.to_owned()
-                    }
-                    _ => false,
-                };
-                Self { heartbeat_enabled }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"heartbeatEnabled\":");
-        _json_output_.push_str(&self.heartbeat_enabled.to_string().as_str());
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("heartbeatEnabled={}", &self.heartbeat_enabled));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct StreamHeartbeatDetectionTestResponse {
-    pub message: String,
-}
-
-impl ArriModel for StreamHeartbeatDetectionTestResponse {
-    fn new() -> Self {
-        Self {
-            message: "".to_string(),
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let message = match _val_.get("message") {
-                    Some(serde_json::Value::String(message_val)) => message_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                Self { message }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"message\":");
-        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.message).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -5030,7 +5126,7 @@ pub struct StreamLargeObjectsResponse {
     pub objects: Vec<StreamLargeObjectsResponseObjectsElement>,
 }
 
-impl ArriModel for StreamLargeObjectsResponse {
+impl arri_client::model::ArriClientModel for StreamLargeObjectsResponse {
     fn new() -> Self {
         Self {
             numbers: Vec::new(),
@@ -5123,7 +5219,7 @@ pub struct StreamLargeObjectsResponseObjectsElement {
     pub email: String,
 }
 
-impl ArriModel for StreamLargeObjectsResponseObjectsElement {
+impl arri_client::model::ArriClientModel for StreamLargeObjectsResponseObjectsElement {
     fn new() -> Self {
         Self {
             id: "".to_string(),
@@ -5161,11 +5257,11 @@ impl ArriModel for StreamLargeObjectsResponseObjectsElement {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"name\":");
-        _json_output_.push_str(serialize_string(&self.name).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.name).as_str());
         _json_output_.push_str(",\"email\":");
-        _json_output_.push_str(serialize_string(&self.email).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.email).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -5183,7 +5279,7 @@ pub struct ChatMessageParams {
     pub channel_id: String,
 }
 
-impl ArriModel for ChatMessageParams {
+impl arri_client::model::ArriClientModel for ChatMessageParams {
     fn new() -> Self {
         Self {
             channel_id: "".to_string(),
@@ -5211,7 +5307,7 @@ impl ArriModel for ChatMessageParams {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"channelId\":");
-        _json_output_.push_str(serialize_string(&self.channel_id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.channel_id).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -5228,32 +5324,32 @@ pub enum ChatMessage {
         id: String,
         channel_id: String,
         user_id: String,
-        date: DateTime<FixedOffset>,
+        date: chrono::DateTime<chrono::FixedOffset>,
         text: String,
     },
     Image {
         id: String,
         channel_id: String,
         user_id: String,
-        date: DateTime<FixedOffset>,
+        date: chrono::DateTime<chrono::FixedOffset>,
         image: String,
     },
     Url {
         id: String,
         channel_id: String,
         user_id: String,
-        date: DateTime<FixedOffset>,
+        date: chrono::DateTime<chrono::FixedOffset>,
         url: String,
     },
 }
 
-impl ArriModel for ChatMessage {
+impl arri_client::model::ArriClientModel for ChatMessage {
     fn new() -> Self {
         Self::Text {
             id: "".to_string(),
             channel_id: "".to_string(),
             user_id: "".to_string(),
-            date: DateTime::default(),
+            date: chrono::DateTime::default(),
             text: "".to_string(),
         }
     }
@@ -5285,10 +5381,12 @@ impl ArriModel for ChatMessage {
                         };
                         let date = match _val_.get("date") {
                             Some(serde_json::Value::String(date_val)) => {
-                                DateTime::<FixedOffset>::parse_from_rfc3339(date_val)
-                                    .unwrap_or(DateTime::default())
+                                chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                                    date_val,
+                                )
+                                .unwrap_or(chrono::DateTime::default())
                             }
-                            _ => DateTime::default(),
+                            _ => chrono::DateTime::default(),
                         };
                         let text = match _val_.get("text") {
                             Some(serde_json::Value::String(text_val)) => text_val.to_owned(),
@@ -5319,10 +5417,12 @@ impl ArriModel for ChatMessage {
                         };
                         let date = match _val_.get("date") {
                             Some(serde_json::Value::String(date_val)) => {
-                                DateTime::<FixedOffset>::parse_from_rfc3339(date_val)
-                                    .unwrap_or(DateTime::default())
+                                chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                                    date_val,
+                                )
+                                .unwrap_or(chrono::DateTime::default())
                             }
-                            _ => DateTime::default(),
+                            _ => chrono::DateTime::default(),
                         };
                         let image = match _val_.get("image") {
                             Some(serde_json::Value::String(image_val)) => image_val.to_owned(),
@@ -5353,10 +5453,12 @@ impl ArriModel for ChatMessage {
                         };
                         let date = match _val_.get("date") {
                             Some(serde_json::Value::String(date_val)) => {
-                                DateTime::<FixedOffset>::parse_from_rfc3339(date_val)
-                                    .unwrap_or(DateTime::default())
+                                chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(
+                                    date_val,
+                                )
+                                .unwrap_or(chrono::DateTime::default())
                             }
-                            _ => DateTime::default(),
+                            _ => chrono::DateTime::default(),
                         };
                         let url = match _val_.get("url") {
                             Some(serde_json::Value::String(url_val)) => url_val.to_owned(),
@@ -5396,15 +5498,15 @@ impl ArriModel for ChatMessage {
             } => {
                 _json_output_.push_str("\"messageType\":\"TEXT\"");
                 _json_output_.push_str(",\"id\":");
-                _json_output_.push_str(serialize_string(id).as_str());
+                _json_output_.push_str(utils::serialize_string(id).as_str());
                 _json_output_.push_str(",\"channelId\":");
-                _json_output_.push_str(serialize_string(channel_id).as_str());
+                _json_output_.push_str(utils::serialize_string(channel_id).as_str());
                 _json_output_.push_str(",\"userId\":");
-                _json_output_.push_str(serialize_string(user_id).as_str());
+                _json_output_.push_str(utils::serialize_string(user_id).as_str());
                 _json_output_.push_str(",\"date\":");
-                _json_output_.push_str(serialize_date_time(date, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(date, true).as_str());
                 _json_output_.push_str(",\"text\":");
-                _json_output_.push_str(serialize_string(text).as_str());
+                _json_output_.push_str(utils::serialize_string(text).as_str());
             }
             Self::Image {
                 id,
@@ -5415,15 +5517,15 @@ impl ArriModel for ChatMessage {
             } => {
                 _json_output_.push_str("\"messageType\":\"IMAGE\"");
                 _json_output_.push_str(",\"id\":");
-                _json_output_.push_str(serialize_string(id).as_str());
+                _json_output_.push_str(utils::serialize_string(id).as_str());
                 _json_output_.push_str(",\"channelId\":");
-                _json_output_.push_str(serialize_string(channel_id).as_str());
+                _json_output_.push_str(utils::serialize_string(channel_id).as_str());
                 _json_output_.push_str(",\"userId\":");
-                _json_output_.push_str(serialize_string(user_id).as_str());
+                _json_output_.push_str(utils::serialize_string(user_id).as_str());
                 _json_output_.push_str(",\"date\":");
-                _json_output_.push_str(serialize_date_time(date, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(date, true).as_str());
                 _json_output_.push_str(",\"image\":");
-                _json_output_.push_str(serialize_string(image).as_str());
+                _json_output_.push_str(utils::serialize_string(image).as_str());
             }
             Self::Url {
                 id,
@@ -5434,15 +5536,15 @@ impl ArriModel for ChatMessage {
             } => {
                 _json_output_.push_str("\"messageType\":\"URL\"");
                 _json_output_.push_str(",\"id\":");
-                _json_output_.push_str(serialize_string(id).as_str());
+                _json_output_.push_str(utils::serialize_string(id).as_str());
                 _json_output_.push_str(",\"channelId\":");
-                _json_output_.push_str(serialize_string(channel_id).as_str());
+                _json_output_.push_str(utils::serialize_string(channel_id).as_str());
                 _json_output_.push_str(",\"userId\":");
-                _json_output_.push_str(serialize_string(user_id).as_str());
+                _json_output_.push_str(utils::serialize_string(user_id).as_str());
                 _json_output_.push_str(",\"date\":");
-                _json_output_.push_str(serialize_date_time(date, true).as_str());
+                _json_output_.push_str(utils::serialize_date_time(date, true).as_str());
                 _json_output_.push_str(",\"url\":");
-                _json_output_.push_str(serialize_string(url).as_str());
+                _json_output_.push_str(utils::serialize_string(url).as_str());
             }
         }
         _json_output_.push('}');
@@ -5463,7 +5565,7 @@ impl ArriModel for ChatMessage {
                 _query_parts_.push(format!("id={}", id));
                 _query_parts_.push(format!("channelId={}", channel_id));
                 _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("date={}", serialize_date_time(date, false)));
+                _query_parts_.push(format!("date={}", utils::serialize_date_time(date, false)));
                 _query_parts_.push(format!("text={}", text));
             }
             Self::Image {
@@ -5477,7 +5579,7 @@ impl ArriModel for ChatMessage {
                 _query_parts_.push(format!("id={}", id));
                 _query_parts_.push(format!("channelId={}", channel_id));
                 _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("date={}", serialize_date_time(date, false)));
+                _query_parts_.push(format!("date={}", utils::serialize_date_time(date, false)));
                 _query_parts_.push(format!("image={}", image));
             }
             Self::Url {
@@ -5491,7 +5593,7 @@ impl ArriModel for ChatMessage {
                 _query_parts_.push(format!("id={}", id));
                 _query_parts_.push(format!("channelId={}", channel_id));
                 _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("date={}", serialize_date_time(date, false)));
+                _query_parts_.push(format!("date={}", utils::serialize_date_time(date, false)));
                 _query_parts_.push(format!("url={}", url));
             }
         }
@@ -5504,7 +5606,7 @@ pub struct TestsStreamRetryWithNewCredentialsResponse {
     pub message: String,
 }
 
-impl ArriModel for TestsStreamRetryWithNewCredentialsResponse {
+impl arri_client::model::ArriClientModel for TestsStreamRetryWithNewCredentialsResponse {
     fn new() -> Self {
         Self {
             message: "".to_string(),
@@ -5532,7 +5634,7 @@ impl ArriModel for TestsStreamRetryWithNewCredentialsResponse {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"message\":");
-        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.message).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -5548,7 +5650,7 @@ pub struct UsersWatchUserParams {
     pub user_id: String,
 }
 
-impl ArriModel for UsersWatchUserParams {
+impl arri_client::model::ArriClientModel for UsersWatchUserParams {
     fn new() -> Self {
         Self {
             user_id: "".to_string(),
@@ -5576,7 +5678,7 @@ impl ArriModel for UsersWatchUserParams {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"userId\":");
-        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.user_id).as_str());
         _json_output_.push('}');
         _json_output_
     }
@@ -5593,28 +5695,28 @@ pub struct UsersWatchUserResponse {
     pub role: UsersWatchUserResponseRole,
     /// A profile picture
     pub photo: Option<UserPhoto>,
-    pub created_at: DateTime<FixedOffset>,
+    pub created_at: chrono::DateTime<chrono::FixedOffset>,
     pub num_followers: i32,
     pub settings: UserSettings,
     pub recent_notifications: Vec<UsersWatchUserResponseRecentNotificationsElement>,
-    pub bookmarks: BTreeMap<String, UsersWatchUserResponseBookmarksValue>,
-    pub metadata: BTreeMap<String, serde_json::Value>,
+    pub bookmarks: std::collections::BTreeMap<String, UsersWatchUserResponseBookmarksValue>,
+    pub metadata: std::collections::BTreeMap<String, serde_json::Value>,
     pub random_list: Vec<serde_json::Value>,
     pub bio: Option<String>,
 }
 
-impl ArriModel for UsersWatchUserResponse {
+impl arri_client::model::ArriClientModel for UsersWatchUserResponse {
     fn new() -> Self {
         Self {
             id: "".to_string(),
             role: UsersWatchUserResponseRole::default(),
             photo: None,
-            created_at: DateTime::default(),
+            created_at: chrono::DateTime::default(),
             num_followers: 0,
             settings: UserSettings::new(),
             recent_notifications: Vec::new(),
-            bookmarks: BTreeMap::new(),
-            metadata: BTreeMap::new(),
+            bookmarks: std::collections::BTreeMap::new(),
+            metadata: std::collections::BTreeMap::new(),
             random_list: Vec::new(),
             bio: None,
         }
@@ -5643,10 +5745,10 @@ impl ArriModel for UsersWatchUserResponse {
                 };
                 let created_at = match _val_.get("createdAt") {
                     Some(serde_json::Value::String(created_at_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
-                            .unwrap_or(DateTime::default())
+                        chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(created_at_val)
+                            .unwrap_or(chrono::DateTime::default())
                     }
-                    _ => DateTime::default(),
+                    _ => chrono::DateTime::default(),
                 };
                 let num_followers = match _val_.get("numFollowers") {
                     Some(serde_json::Value::Number(num_followers_val)) => {
@@ -5680,10 +5782,10 @@ impl ArriModel for UsersWatchUserResponse {
                 };
                 let bookmarks = match _val_.get("bookmarks") {
                     Some(serde_json::Value::Object(bookmarks_val)) => {
-                        let mut bookmarks_val_result: BTreeMap<
+                        let mut bookmarks_val_result: std::collections::BTreeMap<
                             String,
                             UsersWatchUserResponseBookmarksValue,
-                        > = BTreeMap::new();
+                        > = std::collections::BTreeMap::new();
                         for (_key_, _value_) in bookmarks_val.into_iter() {
                             bookmarks_val_result.insert(
                                 _key_.to_owned(),
@@ -5699,12 +5801,14 @@ impl ArriModel for UsersWatchUserResponse {
                         }
                         bookmarks_val_result
                     }
-                    _ => BTreeMap::new(),
+                    _ => std::collections::BTreeMap::new(),
                 };
                 let metadata = match _val_.get("metadata") {
                     Some(serde_json::Value::Object(metadata_val)) => {
-                        let mut metadata_val_result: BTreeMap<String, serde_json::Value> =
-                            BTreeMap::new();
+                        let mut metadata_val_result: std::collections::BTreeMap<
+                            String,
+                            serde_json::Value,
+                        > = std::collections::BTreeMap::new();
                         for (_key_, _value_) in metadata_val.into_iter() {
                             metadata_val_result.insert(
                                 _key_.to_owned(),
@@ -5716,7 +5820,7 @@ impl ArriModel for UsersWatchUserResponse {
                         }
                         metadata_val_result
                     }
-                    _ => BTreeMap::new(),
+                    _ => std::collections::BTreeMap::new(),
                 };
                 let random_list = match _val_.get("randomList") {
                     Some(serde_json::Value::Array(random_list_val)) => {
@@ -5764,7 +5868,7 @@ impl ArriModel for UsersWatchUserResponse {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.id).as_str());
         _json_output_.push_str(",\"role\":");
         _json_output_.push_str(format!("\"{}\"", &self.role.serial_value()).as_str());
         _json_output_.push_str(",\"photo\":");
@@ -5777,7 +5881,7 @@ impl ArriModel for UsersWatchUserResponse {
             }
         };
         _json_output_.push_str(",\"createdAt\":");
-        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
+        _json_output_.push_str(utils::serialize_date_time(&self.created_at, true).as_str());
         _json_output_.push_str(",\"numFollowers\":");
         _json_output_.push_str(&self.num_followers.to_string().as_str());
         _json_output_.push_str(",\"settings\":");
@@ -5797,7 +5901,7 @@ impl ArriModel for UsersWatchUserResponse {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
+            _json_output_.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
             _json_output_.push_str(_value_.to_json_string().as_str());
         }
         _json_output_.push('}');
@@ -5807,7 +5911,7 @@ impl ArriModel for UsersWatchUserResponse {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
+            _json_output_.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
             _json_output_.push_str(
                 serde_json::to_string(_value_)
                     .unwrap_or("null".to_string())
@@ -5831,7 +5935,7 @@ impl ArriModel for UsersWatchUserResponse {
         match &self.bio {
             Some(bio_val) => {
                 _json_output_.push_str(",\"bio\":");
-                _json_output_.push_str(serialize_string(bio_val).as_str())
+                _json_output_.push_str(utils::serialize_string(bio_val).as_str())
             }
             _ => {}
         };
@@ -5845,7 +5949,7 @@ impl ArriModel for UsersWatchUserResponse {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/photo.");
         _query_parts_.push(format!(
             "createdAt={}",
-            serialize_date_time(&self.created_at, false)
+            utils::serialize_date_time(&self.created_at, false)
         ));
         _query_parts_.push(format!("numFollowers={}", &self.num_followers));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/settings.");
@@ -5869,7 +5973,7 @@ pub enum UsersWatchUserResponseRole {
     Admin,
 }
 
-impl ArriEnum for UsersWatchUserResponseRole {
+impl arri_client::model::ArriClientEnum for UsersWatchUserResponseRole {
     fn default() -> Self {
         UsersWatchUserResponseRole::Standard
     }
@@ -5899,7 +6003,7 @@ pub struct UserPhoto {
     pub nanoseconds: u64,
 }
 
-impl ArriModel for UserPhoto {
+impl arri_client::model::ArriClientModel for UserPhoto {
     fn new() -> Self {
         Self {
             url: "".to_string(),
@@ -5959,7 +6063,7 @@ impl ArriModel for UserPhoto {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"url\":");
-        _json_output_.push_str(serialize_string(&self.url).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.url).as_str());
         _json_output_.push_str(",\"width\":");
         _json_output_.push_str(&self.width.to_string().as_str());
         _json_output_.push_str(",\"height\":");
@@ -5988,7 +6092,7 @@ pub struct UserSettings {
     pub preferred_theme: UserSettingsPreferredTheme,
 }
 
-impl ArriModel for UserSettings {
+impl arri_client::model::ArriClientModel for UserSettings {
     fn new() -> Self {
         Self {
             notifications_enabled: false,
@@ -6055,7 +6159,7 @@ pub enum UserSettingsPreferredTheme {
     System,
 }
 
-impl ArriEnum for UserSettingsPreferredTheme {
+impl arri_client::model::ArriClientEnum for UserSettingsPreferredTheme {
     fn default() -> Self {
         UserSettingsPreferredTheme::DarkMode
     }
@@ -6089,7 +6193,7 @@ pub enum UsersWatchUserResponseRecentNotificationsElement {
     },
 }
 
-impl ArriModel for UsersWatchUserResponseRecentNotificationsElement {
+impl arri_client::model::ArriClientModel for UsersWatchUserResponseRecentNotificationsElement {
     fn new() -> Self {
         Self::PostLike {
             post_id: "".to_string(),
@@ -6159,9 +6263,9 @@ impl ArriModel for UsersWatchUserResponseRecentNotificationsElement {
             Self::PostLike { post_id, user_id } => {
                 _json_output_.push_str("\"notificationType\":\"POST_LIKE\"");
                 _json_output_.push_str(",\"postId\":");
-                _json_output_.push_str(serialize_string(post_id).as_str());
+                _json_output_.push_str(utils::serialize_string(post_id).as_str());
                 _json_output_.push_str(",\"userId\":");
-                _json_output_.push_str(serialize_string(user_id).as_str());
+                _json_output_.push_str(utils::serialize_string(user_id).as_str());
             }
             Self::PostComment {
                 post_id,
@@ -6170,11 +6274,11 @@ impl ArriModel for UsersWatchUserResponseRecentNotificationsElement {
             } => {
                 _json_output_.push_str("\"notificationType\":\"POST_COMMENT\"");
                 _json_output_.push_str(",\"postId\":");
-                _json_output_.push_str(serialize_string(post_id).as_str());
+                _json_output_.push_str(utils::serialize_string(post_id).as_str());
                 _json_output_.push_str(",\"userId\":");
-                _json_output_.push_str(serialize_string(user_id).as_str());
+                _json_output_.push_str(utils::serialize_string(user_id).as_str());
                 _json_output_.push_str(",\"commentText\":");
-                _json_output_.push_str(serialize_string(comment_text).as_str());
+                _json_output_.push_str(utils::serialize_string(comment_text).as_str());
             }
         }
         _json_output_.push('}');
@@ -6210,7 +6314,7 @@ pub struct UsersWatchUserResponseBookmarksValue {
     pub user_id: String,
 }
 
-impl ArriModel for UsersWatchUserResponseBookmarksValue {
+impl arri_client::model::ArriClientModel for UsersWatchUserResponseBookmarksValue {
     fn new() -> Self {
         Self {
             post_id: "".to_string(),
@@ -6243,9 +6347,9 @@ impl ArriModel for UsersWatchUserResponseBookmarksValue {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"postId\":");
-        _json_output_.push_str(serialize_string(&self.post_id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.post_id).as_str());
         _json_output_.push_str(",\"userId\":");
-        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push_str(utils::serialize_string(&self.user_id).as_str());
         _json_output_.push('}');
         _json_output_
     }

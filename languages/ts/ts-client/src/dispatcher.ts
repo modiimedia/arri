@@ -34,8 +34,8 @@ export function resolveDispatcherOptions(
     return result;
 }
 
-export interface EventStreamHooks<TData> {
-    onMessage?: (data: TData) => any;
+export interface StreamHooks<TData> {
+    onData?: (data: TData) => any;
     onOpen?: () => any;
     onClose?: () => any;
     onError?: (error: unknown) => any;
@@ -54,15 +54,15 @@ export interface RpcDispatcher<T extends string> {
         options?: RpcDispatcherOptions,
         retryCount?: number,
     ): Promise<TOutput> | TOutput;
-    handleEventStreamRpc<TParams, TOutput>(
+    handleOutputStreamRpc<TParams, TOutput>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TOutput>,
-        hooks: EventStreamHooks<TOutput>,
-    ): EventStreamController;
+        hooks: StreamHooks<TOutput>,
+    ): StreamController;
     terminateConnections(): void;
 }
 
-export interface EventStreamController {
+export interface StreamController {
     abort(): void;
 }
 

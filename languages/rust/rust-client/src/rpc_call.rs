@@ -5,33 +5,34 @@ use arri_core::{
     message::{ContentType, HttpMethod, Message},
 };
 
-use crate::model::ArriClientModel;
-
-pub struct RpcCall<'a, T: ArriClientModel> {
+pub struct RpcCall<'a> {
     pub rpc_name: String,
     pub req_id: String,
     pub path: String,
+    pub query_params: Option<String>,
     pub method: Option<HttpMethod>,
     pub client_version: Option<String>,
     pub content_type: Option<ContentType>,
     pub custom_headers: &'a Arc<RwLock<SharableHeaderMap>>,
-    pub data: Option<T>,
+    pub data: Option<Vec<u8>>,
 }
 
-impl<'a, T: ArriClientModel> RpcCall<'a, T> {
+impl<'a> RpcCall<'a> {
     pub fn new(
         rpc_name: String,
         path: String,
+        query_params: Option<String>,
         method: Option<HttpMethod>,
         client_version: Option<String>,
         content_type: Option<ContentType>,
         custom_headers: &'a Arc<RwLock<SharableHeaderMap>>,
-        data: Option<T>,
+        data: Option<Vec<u8>>,
     ) -> Self {
         Self {
             rpc_name: rpc_name,
             req_id: ulid::Ulid::new().to_string(),
             path: path,
+            query_params: query_params,
             method: method,
             client_version: client_version,
             content_type: content_type,
@@ -61,12 +62,7 @@ impl<'a, T: ArriClientModel> RpcCall<'a, T> {
             custom_headers: custom_headers,
             http_method: self.method.clone(),
             path: Some(self.path.clone()),
-            body: match &self.data {
-                Some(data) => match content_type.unwrap_or(ContentType::Json) {
-                    ContentType::Json => Some(data.to_json_string().as_bytes().to_vec()),
-                },
-                None => None,
-            },
+            body: self.data.to_owned(),
         })
     }
 }

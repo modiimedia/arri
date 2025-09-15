@@ -222,7 +222,7 @@ pub struct ${prefixedStructName} {
 ${fieldDeclarationParts.join(',\n')}${maybeStr(hasProperties, ',')}
 }
 
-impl ArriModel for ${prefixedStructName} {
+impl arri_client::model::ArriClientModel for ${prefixedStructName} {
     fn new() -> Self {
         Self {
 ${defaultParts.join(',\n')}${maybeStr(hasProperties, ',')}

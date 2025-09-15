@@ -1,19 +1,20 @@
 use std::{
     str::FromStr,
-    sync::{Arc, RwLock},
+    sync::{Arc, RwLock, RwLockReadGuard},
     time::{Duration, Instant},
 };
 
 use arri_core::{
-    errors::ArriError, headers::SharableHeaderMap, message::ContentType, stream_event::StreamEvent,
+    errors::ArriError,
+    headers::SharableHeaderMap,
+    message::{ContentType, HttpMethod},
+    stream_event::StreamEvent,
 };
+use async_trait::async_trait;
 use reqwest::header::HeaderValue;
 use serde_json::from_str;
 
-use crate::{
-    dispatcher::{EventStream, EventStreamController, TransportDispatcher},
-    model::ArriClientModel,
-};
+use crate::dispatcher::{EventStream, EventStreamController, OnEventClosure, TransportDispatcher};
 
 #[derive(Debug, Clone)]
 pub struct HttpDispatcher {
@@ -39,33 +40,31 @@ impl HttpDispatcher {
     }
 }
 
+#[async_trait]
 impl TransportDispatcher for HttpDispatcher {
     fn transport_id(&self) -> String {
         "http".to_string()
     }
 
-    async fn dispatch_rpc<
-        TIn: crate::model::ArriClientModel,
-        TOut: crate::model::ArriClientModel,
-    >(
+    async fn dispatch_rpc(
         &self,
-        call: crate::rpc_call::RpcCall<'_, TIn>,
-    ) -> Result<TOut, arri_core::errors::ArriError> {
-        let method = match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
-            arri_core::message::HttpMethod::Get => reqwest::Method::GET,
-            arri_core::message::HttpMethod::Post => reqwest::Method::POST,
-            arri_core::message::HttpMethod::Put => reqwest::Method::PUT,
-            arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
-            arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
+        call: crate::rpc_call::RpcCall<'_>,
+    ) -> Result<(ContentType, Vec<u8>), ArriError> {
+        let method = match call.method.unwrap_or(HttpMethod::Post) {
+            HttpMethod::Get => reqwest::Method::GET,
+            HttpMethod::Post => reqwest::Method::POST,
+            HttpMethod::Put => reqwest::Method::PUT,
+            HttpMethod::Patch => reqwest::Method::PATCH,
+            HttpMethod::Delete => reqwest::Method::DELETE,
         };
         let mut is_using_query_string = false;
-        let url_string = if method == reqwest::Method::GET && call.data.is_some() {
+        let url_string = if method == reqwest::Method::GET && call.query_params.is_some() {
             is_using_query_string = true;
             format!(
                 "{}{}?{}",
                 &self.options.base_url,
                 call.path,
-                &call.data.as_ref().unwrap().to_query_params_string()
+                call.query_params.unwrap(),
             )
         } else {
             format!("{}{}", &self.options.base_url, call.path)
@@ -80,6 +79,27 @@ impl TransportDispatcher for HttpDispatcher {
             ));
         }
         let mut headers = reqwest::header::HeaderMap::new();
+        {
+            let custom_headers = call.custom_headers.read();
+            match custom_headers {
+                Ok(custom_headers) => {
+                    for (key, val) in custom_headers.iter() {
+                        headers.append(
+                            *key,
+                            HeaderValue::from_str(val.to_owned().as_str()).unwrap(),
+                        );
+                    }
+                }
+                Err(err) => {
+                    return Err(ArriError::new(
+                        0,
+                        format!("Error reading custom headers. {:?}", err),
+                        None,
+                        None,
+                    ))
+                }
+            }
+        }
         headers.insert("req-id", HeaderValue::from_str(&call.req_id).unwrap());
         headers.insert("rpc-name", HeaderValue::from_str(&call.rpc_name).unwrap());
         match call.client_version {
@@ -103,18 +123,24 @@ impl TransportDispatcher for HttpDispatcher {
                 }
             }
         }
-        let body = match call.data {
-            Some(data) => match &content_type {
-                ContentType::Json => data.to_json_string().into_bytes(),
-            },
-            None => Vec::new(),
+        let req: Result<reqwest::Request, reqwest::Error> = if is_using_query_string {
+            self.http_client
+                .request(method, url.unwrap())
+                .headers(headers)
+                .build()
+        } else {
+            let body = match call.data {
+                Some(data) => match &content_type {
+                    ContentType::Json => data,
+                },
+                None => Vec::new(),
+            };
+            self.http_client
+                .request(method, url.unwrap())
+                .headers(headers)
+                .body(body)
+                .build()
         };
-        let req = self
-            .http_client
-            .request(method, url.unwrap())
-            .headers(headers)
-            .body(body)
-            .build();
         if req.is_err() {
             let err = req.unwrap_err();
             return Err(ArriError::new(
@@ -132,7 +158,7 @@ impl TransportDispatcher for HttpDispatcher {
         let result = result.unwrap();
         let status = result.status().as_u16();
         if status < 200 || status >= 299 {
-            todo!("Return error")
+            return Err(error_message_from_response(result).await);
         }
         let content_type = ContentType::from_serial_value(
             result
@@ -144,62 +170,58 @@ impl TransportDispatcher for HttpDispatcher {
                 .to_string(),
         )
         .unwrap_or(ContentType::Json);
-        match content_type {
-            ContentType::Json => {
-                let json_text = result.text().await;
-                if json_text.is_err() {
-                    return Err(ArriError::new(
-                        0,
-                        format!(
-                            "Error parsing response from server: {}",
-                            json_text.unwrap_err()
-                        ),
-                        None,
-                        None,
-                    ));
-                }
-                let json_text = json_text.unwrap();
-                Ok(TOut::from_json_string(json_text))
-            }
+        let res_body = result.bytes().await;
+        match res_body {
+            Ok(res_body) => Ok((content_type, res_body.to_vec())),
+            Err(err) => Err(ArriError::new(
+                0,
+                format!("expected to received response from server. {:?}", err),
+                Some(content_type),
+                None,
+            )),
         }
     }
 
-    async fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
+    async fn dispatch_output_stream_rpc(
         &self,
-        call: crate::rpc_call::RpcCall<'_, TIn>,
-        on_event: &mut TOnEvent,
+        call: crate::rpc_call::RpcCall<'_>,
+        on_event: Box<OnEventClosure<'_, Vec<u8>>>,
         stream_controller: Option<&mut EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) where
-        TOnEvent: FnMut(StreamEvent<TOut>, &mut EventStreamController),
-    {
-        let mut url = self.options.base_url.clone();
-        url.push_str(&call.path);
-        let controller = match stream_controller {
-            Some(c) => c,
-            None => &mut EventStreamController::new(),
-        };
-        let mut es = EventSource {
-            dispatcher: self,
-            client_version: call.client_version.unwrap_or("".to_string()),
-            url: url,
-            method: match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
-                arri_core::message::HttpMethod::Get => reqwest::Method::GET,
-                arri_core::message::HttpMethod::Post => reqwest::Method::POST,
-                arri_core::message::HttpMethod::Put => reqwest::Method::PUT,
-                arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
-                arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
-            },
-            params: call.data,
-            headers: call.custom_headers,
-            retry_count: 0,
-            retry_interval: 0,
-            max_retry_interval: max_retry_interval.unwrap_or(30000),
-            max_retry_count: max_retry_count,
-            controller: controller,
-        };
-        es.listen(on_event).await;
+    ) {
+        todo!();
+        // let mut url = self.options.base_url.clone();
+        // url.push_str(&call.path);
+        // let controller = match stream_controller {
+        //     Some(c) => c,
+        //     None => &mut EventStreamController::new(),
+        // };
+        // let mut es = EventSource {
+        //     dispatcher: self,
+        //     client_version: call.client_version.unwrap_or("".to_string()),
+        //     url: url,
+        //     method: match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
+        //         arri_core::message::HttpMethod::Get => reqwest::Method::GET,
+        //         arri_core::message::HttpMethod::Post => reqwest::Method::POST,
+        //         arri_core::message::HttpMethod::Put => reqwest::Method::PUT,
+        //         arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
+        //         arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
+        //     },
+        //     body: call.data,
+        //     headers: call.custom_headers,
+        //     retry_count: 0,
+        //     retry_interval: 0,
+        //     max_retry_interval: max_retry_interval.unwrap_or(30000),
+        //     max_retry_count: max_retry_count,
+        //     controller: controller,
+        // };
+        // let mut boxed_on_event: Box<OnEventClosure<'_, u8>> = Box::new(on_event);
+        // es.listen(boxed_on_event).await;
+    }
+
+    fn clone_box(&self) -> Box<dyn TransportDispatcher> {
+        todo!()
     }
 }
 
@@ -301,11 +323,11 @@ fn wait(duration: Duration) {
 }
 
 #[derive(Debug)]
-pub struct EventSource<'a, 'b, TIn: ArriClientModel + Clone> {
+pub struct EventSource<'a, 'b> {
     pub dispatcher: &'a HttpDispatcher,
     pub url: String,
     pub method: reqwest::Method,
-    pub params: Option<TIn>,
+    pub body: Option<Vec<u8>>,
     pub client_version: String,
     pub headers: &'a Arc<RwLock<SharableHeaderMap>>,
     pub retry_count: u64,
@@ -320,16 +342,8 @@ enum SseAction {
     Abort,
 }
 
-impl<'a, 'b, TIn: ArriClientModel + Clone> EventSource<'a, 'b, TIn> {
-    async fn send_request<T: ArriClientModel, OnEvent>(
-        &mut self,
-        on_event: &mut OnEvent,
-    ) -> SseAction
-    where
-        OnEvent: FnMut(StreamEvent<T>, &mut EventStreamController),
-    {
-        let query_string: Option<String>;
-        let json_body: Option<String>;
+impl<'a, 'b> EventSource<'a, 'b> {
+    async fn send_request(&mut self, on_event: &mut OnEventClosure<'_, Vec<u8>>) -> SseAction {
         let mut headers = reqwest::header::HeaderMap::new();
         {
             let unlocked = self.headers.read().unwrap();
@@ -350,42 +364,21 @@ impl<'a, 'b, TIn: ArriClientModel + Clone> EventSource<'a, 'b, TIn> {
                 reqwest::header::HeaderValue::from_str(&self.client_version).unwrap(),
             );
         }
-        match self.params.clone() {
-            Some(val) => match self.method {
-                reqwest::Method::GET => {
-                    query_string = Some(val.to_query_params_string());
-                    json_body = None;
-                }
-                _ => {
-                    query_string = None;
-                    json_body = Some(val.to_json_string());
-                }
-            },
-            None => {
-                query_string = None;
-                json_body = None;
-            }
-        }
 
-        let url = match query_string {
-            Some(val) => format!("{}?{}", self.url.clone(), val),
-            None => self.url.clone(),
-        };
-
-        let response = match json_body {
+        let response = match &self.body {
             Some(body) => {
                 self.dispatcher
                     .http_client
-                    .request(self.method.clone(), url.clone())
+                    .request(self.method.clone(), self.url.clone())
                     .headers(headers)
-                    .body(body)
+                    .body(body.to_owned())
                     .send()
                     .await
             }
             None => {
                 self.dispatcher
                     .http_client
-                    .request(self.method.clone(), url.clone())
+                    .request(self.method.clone(), self.url.clone())
                     .headers(headers)
                     .send()
                     .await
@@ -453,7 +446,7 @@ impl<'a, 'b, TIn: ArriClientModel + Clone> EventSource<'a, 'b, TIn> {
                             }
                             "message" | "data" | "" => {
                                 on_event(
-                                    StreamEvent::Data(T::from_json_string(message.data)),
+                                    StreamEvent::Data(message.data.as_bytes().to_vec()),
                                     self.controller,
                                 );
                                 if self.controller.is_aborted {
@@ -474,11 +467,9 @@ impl<'a, 'b, TIn: ArriClientModel + Clone> EventSource<'a, 'b, TIn> {
     }
 }
 
-impl<'a, 'b, TIn: ArriClientModel + Clone> EventStream for EventSource<'a, 'b, TIn> {
-    async fn listen<T: ArriClientModel, OnEvent>(&mut self, on_event: &mut OnEvent)
-    where
-        OnEvent: FnMut(StreamEvent<T>, &mut EventStreamController),
-    {
+#[async_trait]
+impl<'a, 'b> EventStream for EventSource<'a, 'b> {
+    async fn listen(&mut self, on_event: Box<OnEventClosure<'_, Vec<u8>>>) {
         loop {
             match &self.max_retry_count {
                 Some(max_retry_count) => {
@@ -502,15 +493,16 @@ impl<'a, 'b, TIn: ArriClientModel + Clone> EventStream for EventSource<'a, 'b, T
             if self.retry_interval > 0 {
                 wait(Duration::from_millis(self.retry_interval.clone()));
             }
-            let result = self.send_request(on_event).await;
-            match result {
-                SseAction::Retry => {
-                    self.retry_count += 1;
-                }
-                SseAction::Abort => {
-                    return;
-                }
-            }
+            todo!();
+            // let result = self.send_request(on_event).await;
+            // match result {
+            //     SseAction::Retry => {
+            //         self.retry_count += 1;
+            //     }
+            //     SseAction::Abort => {
+            //         return;
+            //     }
+            // }
         }
     }
 }

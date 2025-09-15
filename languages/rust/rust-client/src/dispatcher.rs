@@ -1,8 +1,9 @@
-use std::future::Future;
+use std::fmt::Debug;
 
-use arri_core::{errors::ArriError, stream_event::StreamEvent};
+use arri_core::{errors::ArriError, message::ContentType, stream_event::StreamEvent};
+use async_trait::async_trait;
 
-use crate::{model::ArriClientModel, rpc_call::RpcCall};
+use crate::rpc_call::RpcCall;
 
 pub fn resolve_dispatcher(
     transports: Vec<String>,
@@ -28,28 +29,30 @@ pub fn resolve_dispatcher(
     None
 }
 
-pub trait TransportDispatcher: Clone {
+#[async_trait]
+pub trait TransportDispatcher: Send + Sync + Debug {
     fn transport_id(&self) -> String;
 
-    fn dispatch_rpc<TIn: ArriClientModel, TOut: ArriClientModel>(
+    async fn dispatch_rpc(&self, call: RpcCall<'_>) -> Result<(ContentType, Vec<u8>), ArriError>;
+    async fn dispatch_output_stream_rpc(
         &self,
-        call: RpcCall<'_, TIn>,
-    ) -> impl std::future::Future<Output = Result<TOut, ArriError>>;
-    ///
-    /// ## Arguments
-    /// * `max_retry_count` - max number of retries when trying to establish a connection
-    /// * `max_retry_interval` - max time between retries in milliseconds
-    fn dispatch_event_stream_rpc<TIn: ArriClientModel, TOut: ArriClientModel, TOnEvent>(
-        &self,
-        call: RpcCall<'_, TIn>,
-        on_event: &mut TOnEvent,
+        call: RpcCall<'_>,
+        on_event: Box<OnEventClosure<'_, Vec<u8>>>,
         stream_controller: Option<&mut EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
-    ) -> impl std::future::Future<Output = ()>
-    where
-        TOnEvent: FnMut(StreamEvent<TOut>, &mut EventStreamController);
+    );
+
+    fn clone_box(&self) -> Box<dyn TransportDispatcher>;
 }
+
+impl Clone for Box<dyn TransportDispatcher> {
+    fn clone(&self) -> Box<dyn TransportDispatcher> {
+        self.clone_box()
+    }
+}
+
+pub type OnEventClosure<'a, T> = dyn FnMut(StreamEvent<T>, &mut EventStreamController) + Send + 'a;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EventStreamController {
@@ -65,16 +68,24 @@ impl EventStreamController {
     }
 }
 
+#[async_trait]
 pub trait EventStream {
-    fn listen<T: ArriClientModel, OnEvent>(
-        &mut self,
-        on_event: &mut OnEvent,
-    ) -> impl Future<Output = ()>
-    where
-        OnEvent: FnMut(StreamEvent<T>, &mut EventStreamController);
+    async fn listen(&mut self, on_event: Box<OnEventClosure<'_, Vec<u8>>>);
 }
 
 enum SseAction {
     Retry,
     Abort,
+}
+
+#[cfg(test)]
+pub mod dispatcher_tests {
+    use crate::dispatcher::TransportDispatcher;
+
+    #[test]
+    fn dispatcher_is_dyn_compatible() {
+        fn get_dispatcher() -> Box<dyn TransportDispatcher> {
+            todo!()
+        }
+    }
 }

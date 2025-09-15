@@ -4,7 +4,7 @@ import { $Fetch, createFetch, Fetch, FetchError, ofetch } from 'ofetch';
 import { randomUUID } from 'uncrypto';
 
 import {
-    EventStreamHooks,
+    StreamHooks,
     RpcDispatcher,
     RpcDispatcherOptions,
     waitFor,
@@ -152,10 +152,10 @@ export class HttpDispatcher implements RpcDispatcher<'http'> {
         }
     }
 
-    handleEventStreamRpc<TParams, TResponse>(
+    handleOutputStreamRpc<TParams, TResponse>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TResponse>,
-        hooks: EventStreamHooks<TResponse>,
+        hooks: StreamHooks<TResponse>,
     ) {
         let url = this.options.baseUrl + req.path;
         let body: string | undefined;
@@ -204,7 +204,7 @@ export class HttpDispatcher implements RpcDispatcher<'http'> {
                     message.event === '' ||
                     message.event === 'STREAM_DATA'
                 ) {
-                    hooks.onMessage?.(
+                    hooks.onData?.(
                         validator.response.fromJsonString(message.data),
                     );
                     return;

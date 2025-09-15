@@ -168,38 +168,41 @@ ${modelParts.join('\n\n')}`;
     deprecated
 )]
 use arri_client::{
-    chrono::{DateTime, FixedOffset},
-    parsed_arri_request,
-    reqwest::{self, Request},
-    serde_json::{self, Map},
-    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
-    utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriError, EmptyArriModel, InternalArriClientConfig,
+    arri_core::{self},
+    chrono::{self},
+    dispatcher::OnEventClosure,
+    model::ArriClientEnum,
+    serde_json::{self},
+    utils::{self},
 };
-use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone)]
-pub struct ${clientName} {
-    _config: InternalArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join('\n')}
+pub struct ${clientName}<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: arri_core::message::ContentType,
+
+${subServices.map((service) => `    pub ${service.key}: ${service.name}<TDispatcher>,`).join('\n')}
 }
 
-impl ArriClientService for ${clientName} {
-    fn create(config: ArriClientConfig) -> Self {
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    arri_client::ArriClientService<TDispatcher> for ${clientName}<TDispatcher> {
+    fn create(config: arri_client::ArriClientConfig<TDispatcher>) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config${paramSuffix}),
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
 ${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? '' : '.clone()'}),`).join('\n')}
         }
     }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-       let mut unwrapped_headers = self._config.headers.write().unwrap();
+    fn update_headers(&self, headers: arri_core::headers::SharableHeaderMap) {
+       let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
 ${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? '' : '.clone()'});`).join('\n')}
     }
 }
 
-impl ${clientName} {
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ${clientName}<TDispatcher> {
 ${rpcParts.join('\n')}
 }
 

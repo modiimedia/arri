@@ -69,22 +69,22 @@ export default defineConfig({
         //     typePrefix: 'Foo',
         //     rootService: 'tests',
         // }),
-        // generators.rustClient({
-        //     clientName: 'TestClient',
-        //     outputFile: path.resolve(
-        //         __dirname,
-        //         '../../clients/rust/src/test_client.g.rs',
-        //     ),
-        // }),
-        // generators.rustClient({
-        //     clientName: 'TestClientPrefixed',
-        //     outputFile: path.resolve(
-        //         __dirname,
-        //         '../../clients/rust/src/test_client_prefixed.g.rs',
-        //     ),
-        //     typePrefix: 'Foo',
-        //     rootService: 'tests',
-        // }),
+        generators.rustClient({
+            clientName: 'TestClient',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/rust/src/test_client.g.rs',
+            ),
+        }),
+        generators.rustClient({
+            clientName: 'TestClientPrefixed',
+            outputFile: path.resolve(
+                __dirname,
+                '../../clients/rust/src/test_client_prefixed.g.rs',
+            ),
+            typePrefix: 'Foo',
+            rootService: 'tests',
+        }),
         // generators.swiftClient({
         //     clientName: 'TestClient',
         //     outputFile: path.resolve(

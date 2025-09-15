@@ -12,8 +12,8 @@ import { randomUUID } from 'uncrypto';
 import ws from 'websocket';
 
 import {
-    EventStreamController,
-    EventStreamHooks,
+    StreamController,
+    StreamHooks,
     RpcDispatcher,
     RpcDispatcherOptions,
     waitFor,
@@ -362,11 +362,11 @@ export class WsDispatcher implements RpcDispatcher<'ws'> {
         }
     }
 
-    handleEventStreamRpc<TParams, TOutput>(
+    handleOutputStreamRpc<TParams, TOutput>(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TOutput>,
-        hooks?: EventStreamHooks<TOutput> | undefined,
-    ): EventStreamController {
+        hooks?: StreamHooks<TOutput> | undefined,
+    ): StreamController {
         if (!req.reqId) req.reqId = randomUUID();
         const controller = new WsEventSource(
             req,
@@ -398,19 +398,19 @@ export class WsDispatcher implements RpcDispatcher<'ws'> {
     }
 }
 
-class WsEventSource<TParams, TOutput> implements EventStreamController {
+class WsEventSource<TParams, TOutput> implements StreamController {
     lastMsgId: string | undefined;
 
     req: RpcRequest<TParams>;
     validator: RpcRequestValidator<TParams, TOutput>;
-    hooks: EventStreamHooks<TOutput>;
+    hooks: StreamHooks<TOutput>;
     getConnection: () => ws.connection | Promise<ws.connection>;
     globalOnError: RpcDispatcherOptions['onError'];
 
     constructor(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TOutput>,
-        hooks: EventStreamHooks<TOutput>,
+        hooks: StreamHooks<TOutput>,
         getConnection: () => ws.connection | Promise<ws.connection>,
         onError: RpcDispatcherOptions['onError'],
     ) {
@@ -454,7 +454,7 @@ class WsEventSource<TParams, TOutput> implements EventStreamController {
                 const parsedMsg = this.validator.response.fromJsonString(
                     msg.body ?? '',
                 );
-                this.hooks.onMessage?.(parsedMsg);
+                this.hooks.onData?.(parsedMsg);
                 return;
             }
             case 'STREAM_END':

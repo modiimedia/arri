@@ -49,11 +49,11 @@ describe('[HTTP] respects heartbeat header', () => {
             let msgCount = 0;
             let openCount = 0;
             await new Promise((res, rej) => {
-                const controller = dispatcher.handleEventStreamRpc(
+                const controller = dispatcher.handleOutputStreamRpc(
                     requestFactory(false),
                     validator,
                     {
-                        onMessage(_) {
+                        onData(_) {
                             msgCount++;
                             if (msgCount >= 15) controller.abort();
                         },
@@ -80,11 +80,11 @@ describe('[HTTP] respects heartbeat header', () => {
             let msgCount = 0;
             let openCount = 0;
             await new Promise((res, rej) => {
-                const controller = dispatcher.handleEventStreamRpc(
+                const controller = dispatcher.handleOutputStreamRpc(
                     requestFactory(true),
                     validator,
                     {
-                        onMessage(_) {
+                        onData(_) {
                             msgCount++;
                             if (msgCount >= 15) controller.abort();
                         },
