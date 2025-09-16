@@ -8,8 +8,8 @@
 use arri_client::{
     arri_core::{self},
     chrono::{self},
-    dispatcher::OnEventClosure,
-    model::ArriClientEnum,
+    dispatcher::{self},
+    model::{ArriClientEnum, ArriClientModel},
     serde_json::{self},
     utils::{self},
 };
@@ -54,15 +54,22 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
         let call = arri_client::rpc_call::RpcCall::new(
             "emptyParamsGetRequest".to_string(),
             "/rpcs/tests/empty-params-get-request".to_string(),
+            None,
             Some(arri_core::message::HttpMethod::Get),
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            None::<arri_client::model::EmptyArriClientModel>,
+            None,
         );
-        self._dispatcher
-            .dispatch_rpc::<arri_client::model::EmptyArriClientModel, FooDefaultPayload>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(FooDefaultPayload::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn empty_params_post_request(
         &self,
@@ -81,14 +88,21 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "emptyParamsPostRequest".to_string(),
             "/rpcs/tests/empty-params-post-request".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            None::<arri_client::model::EmptyArriClientModel>,
+            None,
         );
-        self._dispatcher
-            .dispatch_rpc::<arri_client::model::EmptyArriClientModel, FooDefaultPayload>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(FooDefaultPayload::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn empty_response_get_request(
         &self,
@@ -107,18 +121,21 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
         let call = arri_client::rpc_call::RpcCall::new(
             "emptyResponseGetRequest".to_string(),
             "/rpcs/tests/empty-response-get-request".to_string(),
+            match transport_id.as_str() {
+                "http" => Some(input.to_query_params_string()),
+                _ => None,
+            },
             Some(arri_core::message::HttpMethod::Get),
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            None,
         );
-        let result = self
-            ._dispatcher
-            .dispatch_rpc::<FooDefaultPayload, arri_client::model::EmptyArriClientModel>(call)
-            .await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
-            Ok(_) => Ok(()),
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(()),
+            },
             Err(err) => Err(err),
         }
     }
@@ -140,17 +157,17 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "emptyResponsePostRequest".to_string(),
             "/rpcs/tests/empty-response-post-request".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        let result = self
-            ._dispatcher
-            .dispatch_rpc::<FooDefaultPayload, arri_client::model::EmptyArriClientModel>(call)
-            .await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
-            Ok(_) => Ok(()),
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(()),
+            },
             Err(err) => Err(err),
         }
     }
@@ -174,17 +191,17 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "deprecatedRpc".to_string(),
             "/rpcs/tests/deprecated-rpc".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        let result = self
-            ._dispatcher
-            .dispatch_rpc::<FooDeprecatedRpcParams, arri_client::model::EmptyArriClientModel>(call)
-            .await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
-            Ok(_) => Ok(()),
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(()),
+            },
             Err(err) => Err(err),
         }
     }
@@ -206,14 +223,23 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendDiscriminatorWithEmptyObject".to_string(),
             "/rpcs/tests/send-discriminator-with-empty-object".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooDiscriminatorWithEmptyObject, FooDiscriminatorWithEmptyObject>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => {
+                    Ok(FooDiscriminatorWithEmptyObject::from_json_string(
+                        String::from_utf8(body).unwrap_or("".to_string()),
+                    ))
+                }
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_error(
         &self,
@@ -233,17 +259,17 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendError".to_string(),
             "/rpcs/tests/send-error".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        let result = self
-            ._dispatcher
-            .dispatch_rpc::<FooSendErrorParams, arri_client::model::EmptyArriClientModel>(call)
-            .await;
+        let result = self._dispatcher.dispatch_rpc(call).await;
         match result {
-            Ok(_) => Ok(()),
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(()),
+            },
             Err(err) => Err(err),
         }
     }
@@ -265,14 +291,23 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendObject".to_string(),
             "/rpcs/tests/send-object".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooObjectWithEveryType, FooObjectWithEveryType>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => {
+                    Ok(FooObjectWithEveryType::from_json_string(
+                        String::from_utf8(body).unwrap_or("".to_string()),
+                    ))
+                }
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_object_with_nullable_fields(
         &self,
@@ -292,14 +327,23 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendObjectWithNullableFields".to_string(),
             "/rpcs/tests/send-object-with-nullable-fields".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooObjectWithEveryNullableType, FooObjectWithEveryNullableType>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => {
+                    Ok(FooObjectWithEveryNullableType::from_json_string(
+                        String::from_utf8(body).unwrap_or("".to_string()),
+                    ))
+                }
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_object_with_pascal_case_keys(
         &self,
@@ -319,14 +363,23 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendObjectWithPascalCaseKeys".to_string(),
             "/rpcs/tests/send-object-with-pascal-case-keys".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooObjectWithPascalCaseKeys, FooObjectWithPascalCaseKeys>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => {
+                    Ok(FooObjectWithPascalCaseKeys::from_json_string(
+                        String::from_utf8(body).unwrap_or("".to_string()),
+                    ))
+                }
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_object_with_snake_case_keys(
         &self,
@@ -346,14 +399,23 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendObjectWithSnakeCaseKeys".to_string(),
             "/rpcs/tests/send-object-with-snake-case-keys".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooObjectWithSnakeCaseKeys, FooObjectWithSnakeCaseKeys>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => {
+                    Ok(FooObjectWithSnakeCaseKeys::from_json_string(
+                        String::from_utf8(body).unwrap_or("".to_string()),
+                    ))
+                }
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_partial_object(
         &self,
@@ -373,14 +435,23 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendPartialObject".to_string(),
             "/rpcs/tests/send-partial-object".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooObjectWithEveryOptionalType, FooObjectWithEveryOptionalType>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => {
+                    Ok(FooObjectWithEveryOptionalType::from_json_string(
+                        String::from_utf8(body).unwrap_or("".to_string()),
+                    ))
+                }
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_recursive_object(
         &self,
@@ -400,14 +471,21 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendRecursiveObject".to_string(),
             "/rpcs/tests/send-recursive-object".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooRecursiveObject, FooRecursiveObject>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(FooRecursiveObject::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn send_recursive_union(
         &self,
@@ -427,19 +505,26 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "sendRecursiveUnion".to_string(),
             "/rpcs/tests/send-recursive-union".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
-        self._dispatcher
-            .dispatch_rpc::<FooRecursiveUnion, FooRecursiveUnion>(call)
-            .await
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(FooRecursiveUnion::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
     }
     pub async fn stream_auto_reconnect(
         &self,
         input: FooAutoReconnectParams,
-        on_event: &mut OnEventClosure<'_, FooAutoReconnectResponse>,
+        on_event: &mut dispatcher::OnEventClosure<'_, FooAutoReconnectResponse>,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
@@ -458,14 +543,43 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "streamAutoReconnect".to_string(),
             "/rpcs/tests/stream-auto-reconnect".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
         self._dispatcher
-            .dispatch_output_stream_rpc::<FooAutoReconnectParams, FooAutoReconnectResponse>(
-                call, on_event, controller, None, None,
+            .dispatch_output_stream_rpc(
+                call,
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => {
+                                FooAutoReconnectResponse::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string()),
+                                )
+                            }
+                        }),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                },
+                controller,
+                None,
+                None,
             )
             .await;
         Ok(())
@@ -474,7 +588,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
     pub async fn stream_connection_error_test(
         &self,
         input: FooStreamConnectionErrorTestParams,
-        on_event: &mut OnEventClosure<'_, FooStreamConnectionErrorTestResponse>,
+        on_event: &mut dispatcher::OnEventClosure<'_, FooStreamConnectionErrorTestResponse>,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
@@ -493,21 +607,52 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "streamConnectionErrorTest".to_string(),
             "/rpcs/tests/stream-connection-error-test".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
         self._dispatcher
-                .dispatch_output_stream_rpc::<FooStreamConnectionErrorTestParams, FooStreamConnectionErrorTestResponse>(call, on_event, controller, None, None)
-                .await;
+            .dispatch_output_stream_rpc(
+                call,
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => {
+                                FooStreamConnectionErrorTestResponse::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string()),
+                                )
+                            }
+                        }),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                },
+                controller,
+                None,
+                None,
+            )
+            .await;
         Ok(())
     }
     /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
     pub async fn stream_large_objects(
         &self,
 
-        on_event: &mut OnEventClosure<'_, FooStreamLargeObjectsResponse>,
+        on_event: &mut dispatcher::OnEventClosure<'_, FooStreamLargeObjectsResponse>,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
@@ -526,20 +671,51 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "streamLargeObjects".to_string(),
             "/rpcs/tests/stream-large-objects".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            None::<arri_client::model::EmptyArriClientModel>,
+            None,
         );
         self._dispatcher
-                .dispatch_output_stream_rpc::<arri_client::model::EmptyArriClientModel, FooStreamLargeObjectsResponse>(call, on_event, controller, None, None)
-                .await;
+            .dispatch_output_stream_rpc(
+                call,
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => {
+                                FooStreamLargeObjectsResponse::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string()),
+                                )
+                            }
+                        }),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                },
+                controller,
+                None,
+                None,
+            )
+            .await;
         Ok(())
     }
     pub async fn stream_messages(
         &self,
         input: FooChatMessageParams,
-        on_event: &mut OnEventClosure<'_, FooChatMessage>,
+        on_event: &mut dispatcher::OnEventClosure<'_, FooChatMessage>,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
@@ -558,14 +734,43 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "streamMessages".to_string(),
             "/rpcs/tests/stream-messages".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            Some(input),
+            Some(input.to_json_string().as_bytes().to_vec()),
         );
         self._dispatcher
-            .dispatch_output_stream_rpc::<FooChatMessageParams, FooChatMessage>(
-                call, on_event, controller, None, None,
+            .dispatch_output_stream_rpc(
+                call,
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => {
+                                FooChatMessage::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string()),
+                                )
+                            }
+                        }),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                },
+                controller,
+                None,
+                None,
             )
             .await;
         Ok(())
@@ -573,7 +778,10 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
     pub async fn stream_retry_with_new_credentials(
         &self,
 
-        on_event: &mut OnEventClosure<'_, FooTestsStreamRetryWithNewCredentialsResponse>,
+        on_event: &mut dispatcher::OnEventClosure<
+            '_,
+            FooTestsStreamRetryWithNewCredentialsResponse,
+        >,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
@@ -592,21 +800,52 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "streamRetryWithNewCredentials".to_string(),
             "/rpcs/tests/stream-retry-with-new-credentials".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            None::<arri_client::model::EmptyArriClientModel>,
+            None,
         );
         self._dispatcher
-                .dispatch_output_stream_rpc::<arri_client::model::EmptyArriClientModel, FooTestsStreamRetryWithNewCredentialsResponse>(call, on_event, controller, None, None)
-                .await;
+            .dispatch_output_stream_rpc(
+                call,
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => {
+                                FooTestsStreamRetryWithNewCredentialsResponse::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string()),
+                                )
+                            }
+                        }),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                },
+                controller,
+                None,
+                None,
+            )
+            .await;
         Ok(())
     }
     /// When the client receives the 'done' event, it should close the connection and NOT reconnect
     pub async fn stream_ten_events_then_end(
         &self,
 
-        on_event: &mut OnEventClosure<'_, FooChatMessage>,
+        on_event: &mut dispatcher::OnEventClosure<'_, FooChatMessage>,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
@@ -625,14 +864,43 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> TestClientPrefix
             "streamTenEventsThenEnd".to_string(),
             "/rpcs/tests/stream-ten-events-then-end".to_string(),
             None,
+            None,
             Some("10".to_string()),
             Some(self._content_type.clone()),
             &self._headers,
-            None::<arri_client::model::EmptyArriClientModel>,
+            None,
         );
         self._dispatcher
-            .dispatch_output_stream_rpc::<arri_client::model::EmptyArriClientModel, FooChatMessage>(
-                call, on_event, controller, None, None,
+            .dispatch_output_stream_rpc(
+                call,
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => {
+                                FooChatMessage::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string()),
+                                )
+                            }
+                        }),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                        arri_core::stream_event::StreamEvent::Error(arri_error),
+                        controller,
+                    ),
+                    arri_core::stream_event::StreamEvent::Start => {
+                        on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::End => {
+                        on_event(arri_core::stream_event::StreamEvent::End, controller)
+                    }
+                    arri_core::stream_event::StreamEvent::Cancel => {
+                        on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                    }
+                },
+                controller,
+                None,
+                None,
             )
             .await;
         Ok(())

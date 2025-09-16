@@ -38,7 +38,7 @@ export function rustRpcFromSchema(
         return `${leading}pub async fn ${functionName}(
             &self,
             ${input ? `input: ${input},` : ''}
-            on_event: &mut OnEventClosure<'_, ${output ?? 'arri_client::model::EmptyArriClientModel'}>,
+            on_event: &mut dispatcher::OnEventClosure<'_, ${output ?? 'arri_client::model::EmptyArriClientModel'}>,
             controller: Option<&mut arri_client::dispatcher::EventStreamController>,
             max_retry_count: Option<u64>,
             max_retry_interval: Option<u64>,
@@ -61,7 +61,7 @@ export function rustRpcFromSchema(
                         ? `match transport_id.as_str() {
                     "http" => Some(input.to_query_params_string()),
                     _ => None,
-                }`
+                },`
                         : 'None,'
                 }
                 ${schema.method ? `Some(arri_core::message::HttpMethod::${pascalCase(schema.method)})` : 'None'},
@@ -70,14 +70,20 @@ export function rustRpcFromSchema(
                 &self._headers,
                 ${input && schema.method !== 'get' ? `Some(input.to_json_string().as_bytes().to_vec())` : 'None'},
             );
-            let result = self._dispatcher
+            self._dispatcher
                 .dispatch_output_stream_rpc(
                     call,
                     &mut |evt, controller| match evt {
-                        arri_core::stream_event::StreamEvent::Data(data) => on_event(
-                            arri_core::stream_event::StreamEvent::Data(${`Book::from_json_string(
-                                String::from_utf8(data).unwrap_or("".to_string()),
-                            ))`},
+                        arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                            arri_core::stream_event::StreamEvent::Data(${
+                                output
+                                    ? `match content_type {
+                                arri_core::message::ContentType::Json => ${output}::from_json_string(
+                                    String::from_utf8(bytes).unwrap_or("".to_string())
+                                )
+                            }`
+                                    : '()'
+                            }),
                             controller,
                         ),
                         arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
@@ -119,15 +125,35 @@ export function rustRpcFromSchema(
         let call = arri_client::rpc_call::RpcCall::new(
             "${context.instancePath}".to_string(),
             "${schema.path}".to_string(),
+            ${
+                input && schema.method === 'get'
+                    ? `match transport_id.as_str() {
+                    "http" => Some(input.to_query_params_string()),
+                    _ => None,
+                },`
+                    : 'None,'
+            }
             ${schema.method ? `Some(arri_core::message::HttpMethod::${pascalCase(schema.method)})` : 'None'},
             ${context.clientVersion ? `Some("${context.clientVersion}".to_string())` : 'None'},
             Some(self._content_type.clone()),
             &self._headers,
-            ${input ? `Some(input)` : `None::<arri_client::model::EmptyArriClientModel>`},
+            ${input && schema.method !== 'get' ? `Some(input.to_json_string().as_bytes().to_vec())` : `None`},
         );
-        ${!output ? `let result = ` : ''}self._dispatcher
-            .dispatch_rpc::<${input ?? 'arri_client::model::EmptyArriClientModel'}, ${output ?? 'arri_client::model::EmptyArriClientModel'}>(call)
-            .await${!output ? ';\nmatch result {\nOk(_) => Ok(()),\nErr(err) => Err(err),\n}' : ''}
+        let result = self._dispatcher
+            .dispatch_rpc(call)
+            .await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => ${
+                    output
+                        ? `Ok(${output}::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),`
+                        : 'Ok(()),'
+                }
+            },
+            Err(err) => Err(err),
+        }
     }`;
 }
 

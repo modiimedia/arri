@@ -5,12 +5,10 @@
     unconditional_recursion,
     deprecated
 )]
-use std::sync::{Arc, Mutex, MutexGuard, RwLockReadGuard};
-
 use arri_client::{
-    arri_core::{self, errors::ArriError},
+    arri_core::{self},
     chrono::{self},
-    dispatcher::{OnEventClosure, TransportDispatcher},
+    dispatcher::{self},
     model::{ArriClientEnum, ArriClientModel},
     serde_json::{self},
     utils::{self},
@@ -62,10 +60,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher> ExampleClient<TD
         let call = arri_client::rpc_call::RpcCall::new(
             "sendObject".to_string(),
             "/send-object".to_string(),
-            match transport_id.as_str() {
-                "http" => None,
-                _ => None,
-            },
+            None,
             Some(arri_core::message::HttpMethod::Post),
             Some("20".to_string()),
             Some(self._content_type.clone()),
@@ -184,7 +179,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
     pub async fn watch_book(
         &self,
         input: BookParams,
-        on_event: &mut OnEventClosure<'_, Book>,
+        on_event: &mut dispatcher::OnEventClosure<'_, Book>,
         controller: Option<&mut arri_client::dispatcher::EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,

@@ -11,7 +11,6 @@ mod tests {
         chrono::{DateTime, Utc},
         dispatcher::TransportDispatcher,
         dispatcher_http::{HttpDispatcher, HttpDispatcherOptions},
-        dispatcher_ws::WsDispatcher,
         reqwest, serde_json, ArriClientConfig, ArriClientService,
     };
     use rand::{self, Rng};

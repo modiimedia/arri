@@ -170,8 +170,8 @@ ${modelParts.join('\n\n')}`;
 use arri_client::{
     arri_core::{self},
     chrono::{self},
-    dispatcher::OnEventClosure,
-    model::ArriClientEnum,
+    dispatcher::{self},
+    model::{ArriClientEnum, ArriClientModel},
     serde_json::{self},
     utils::{self},
 };
