@@ -185,39 +185,37 @@ impl TransportDispatcher for HttpDispatcher {
     async fn dispatch_output_stream_rpc(
         &self,
         call: crate::rpc_call::RpcCall<'_>,
-        on_event: Box<OnEventClosure<'_, Vec<u8>>>,
+        on_event: &mut OnEventClosure<'_, (ContentType, Vec<u8>)>,
         stream_controller: Option<&mut EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) {
-        todo!();
-        // let mut url = self.options.base_url.clone();
-        // url.push_str(&call.path);
-        // let controller = match stream_controller {
-        //     Some(c) => c,
-        //     None => &mut EventStreamController::new(),
-        // };
-        // let mut es = EventSource {
-        //     dispatcher: self,
-        //     client_version: call.client_version.unwrap_or("".to_string()),
-        //     url: url,
-        //     method: match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
-        //         arri_core::message::HttpMethod::Get => reqwest::Method::GET,
-        //         arri_core::message::HttpMethod::Post => reqwest::Method::POST,
-        //         arri_core::message::HttpMethod::Put => reqwest::Method::PUT,
-        //         arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
-        //         arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
-        //     },
-        //     body: call.data,
-        //     headers: call.custom_headers,
-        //     retry_count: 0,
-        //     retry_interval: 0,
-        //     max_retry_interval: max_retry_interval.unwrap_or(30000),
-        //     max_retry_count: max_retry_count,
-        //     controller: controller,
-        // };
-        // let mut boxed_on_event: Box<OnEventClosure<'_, u8>> = Box::new(on_event);
-        // es.listen(boxed_on_event).await;
+        let mut url = self.options.base_url.clone();
+        url.push_str(&call.path);
+        let controller = match stream_controller {
+            Some(c) => c,
+            None => &mut EventStreamController::new(),
+        };
+        let mut es = EventSource {
+            dispatcher: self,
+            client_version: call.client_version.unwrap_or("".to_string()),
+            url: url,
+            method: match call.method.unwrap_or(arri_core::message::HttpMethod::Post) {
+                arri_core::message::HttpMethod::Get => reqwest::Method::GET,
+                arri_core::message::HttpMethod::Post => reqwest::Method::POST,
+                arri_core::message::HttpMethod::Put => reqwest::Method::PUT,
+                arri_core::message::HttpMethod::Patch => reqwest::Method::PATCH,
+                arri_core::message::HttpMethod::Delete => reqwest::Method::DELETE,
+            },
+            body: call.data,
+            headers: call.custom_headers,
+            retry_count: 0,
+            retry_interval: 0,
+            max_retry_interval: max_retry_interval.unwrap_or(30000),
+            max_retry_count: max_retry_count,
+            controller: controller,
+        };
+        es.listen(on_event).await;
     }
 
     // fn clone_box(&self) -> Box<dyn TransportDispatcher> {
@@ -260,18 +258,6 @@ async fn error_message_from_response(res: reqwest::Response) -> ArriError {
     )
 }
 
-// pub struct ArriParsedSseRequestOptions {
-//     pub client: reqwest::Client,
-//     pub client_version: String,
-//     pub url: String,
-//     pub method: reqwest::Method,
-//     pub headers: Arc<RwLock<HeaderMap>>,
-//     // Defaults to None
-//     pub max_retry_count: Option<u64>,
-//     // Max delay time in ms. defaults to Some(30000).
-//     pub max_retry_interval: Option<u64>,
-// }
-
 pub enum SseEvent<T> {
     Message(T),
     Error(ArriError),
@@ -292,28 +278,6 @@ impl SseController {
         self.is_aborted = true;
     }
 }
-
-// pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
-//     options: ArriParsedSseRequestOptions<'a>,
-//     params: Option<impl ArriModel + Clone + std::marker::Send>,
-//     on_event: &mut OnEvent,
-// ) where
-//     T: ArriModel + std::marker::Send + std::marker::Sync,
-//     OnEvent: FnMut(SseEvent<T>, &mut SseController) + std::marker::Send + std::marker::Sync,
-// {
-//     let mut es = EventSource {
-//         http_client: &options.client,
-//         url: options.url,
-//         method: options.method,
-//         client_version: options.client_version,
-//         headers: options.headers,
-//         retry_count: 0,
-//         retry_interval: 0,
-//         max_retry_interval: options.max_retry_interval.unwrap_or(30000),
-//         max_retry_count: options.max_retry_count,
-//     };
-//     es.listen(params, on_event).await
-// }
 
 fn wait(duration: Duration) {
     let start = Instant::now();
@@ -343,7 +307,10 @@ enum SseAction {
 }
 
 impl<'a, 'b> EventSource<'a, 'b> {
-    async fn send_request(&mut self, on_event: &mut OnEventClosure<'_, Vec<u8>>) -> SseAction {
+    async fn send_request(
+        &mut self,
+        on_event: &mut OnEventClosure<'_, (ContentType, Vec<u8>)>,
+    ) -> SseAction {
         let mut headers = reqwest::header::HeaderMap::new();
         {
             let unlocked = self.headers.read().unwrap();
@@ -387,7 +354,6 @@ impl<'a, 'b> EventSource<'a, 'b> {
         if self.controller.is_aborted {
             return SseAction::Abort;
         }
-
         if !response.is_ok() {
             on_event(
                 StreamEvent::Error(ArriError::new(0, "".to_string(), None, None)),
@@ -399,7 +365,16 @@ impl<'a, 'b> EventSource<'a, 'b> {
             return SseAction::Retry;
         }
         let mut ok_response = response.unwrap();
-
+        let content_type = ContentType::from_serial_value(
+            ok_response
+                .headers()
+                .get("Content-Type")
+                .unwrap_or(&HeaderValue::from_str("application/json").unwrap())
+                .to_str()
+                .unwrap_or("application/json")
+                .to_owned(),
+        )
+        .unwrap_or(ContentType::Json);
         // TODO: use this header to setup a heartbeat watcher
         // that will reset whenever a message is received
         let _heartbeat_ms = match ok_response.headers().get("heartbeat-interval") {
@@ -446,7 +421,10 @@ impl<'a, 'b> EventSource<'a, 'b> {
                             }
                             "message" | "data" | "" => {
                                 on_event(
-                                    StreamEvent::Data(message.data.as_bytes().to_vec()),
+                                    StreamEvent::Data((
+                                        content_type.clone(),
+                                        message.data.as_bytes().to_vec(),
+                                    )),
                                     self.controller,
                                 );
                                 if self.controller.is_aborted {
@@ -469,7 +447,7 @@ impl<'a, 'b> EventSource<'a, 'b> {
 
 #[async_trait]
 impl<'a, 'b> EventStream for EventSource<'a, 'b> {
-    async fn listen(&mut self, on_event: Box<OnEventClosure<'_, Vec<u8>>>) {
+    async fn listen(&mut self, mut on_event: &mut OnEventClosure<'_, (ContentType, Vec<u8>)>) {
         loop {
             match &self.max_retry_count {
                 Some(max_retry_count) => {
@@ -493,16 +471,15 @@ impl<'a, 'b> EventStream for EventSource<'a, 'b> {
             if self.retry_interval > 0 {
                 wait(Duration::from_millis(self.retry_interval.clone()));
             }
-            todo!();
-            // let result = self.send_request(on_event).await;
-            // match result {
-            //     SseAction::Retry => {
-            //         self.retry_count += 1;
-            //     }
-            //     SseAction::Abort => {
-            //         return;
-            //     }
-            // }
+            let result = self.send_request(&mut on_event).await;
+            match result {
+                SseAction::Retry => {
+                    self.retry_count += 1;
+                }
+                SseAction::Abort => {
+                    return;
+                }
+            }
         }
     }
 }

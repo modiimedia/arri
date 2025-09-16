@@ -215,11 +215,13 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
         self._dispatcher
             .dispatch_output_stream_rpc(
                 call,
-                Box::new(|evt, controller| match evt {
-                    arri_core::stream_event::StreamEvent::Data(data) => on_event(
-                        arri_core::stream_event::StreamEvent::Data(Book::from_json_string(
-                            String::from_utf8(data).unwrap_or("".to_string()),
-                        )),
+                &mut |evt, controller| match evt {
+                    arri_core::stream_event::StreamEvent::Data((content_type, bytes)) => on_event(
+                        arri_core::stream_event::StreamEvent::Data(match content_type {
+                            arri_core::message::ContentType::Json => Book::from_json_string(
+                                String::from_utf8(bytes).unwrap_or("".to_string()),
+                            ),
+                        }),
                         controller,
                     ),
                     arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
@@ -235,7 +237,7 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
                     arri_core::stream_event::StreamEvent::Cancel => {
                         on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
                     }
-                }),
+                },
                 controller,
                 None,
                 None,

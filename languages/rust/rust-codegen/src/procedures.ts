@@ -56,14 +56,48 @@ export function rustRpcFromSchema(
             let call = arri_client::rpc_call::RpcCall::new(
                 "${context.instancePath}".to_string(),
                 "${schema.path}".to_string(),
+                ${
+                    input && schema.method === 'get'
+                        ? `match transport_id.as_str() {
+                    "http" => Some(input.to_query_params_string()),
+                    _ => None,
+                }`
+                        : 'None,'
+                }
                 ${schema.method ? `Some(arri_core::message::HttpMethod::${pascalCase(schema.method)})` : 'None'},
                 ${context.clientVersion ? `Some("${context.clientVersion}".to_string())` : 'None'},
                 Some(self._content_type.clone()),
                 &self._headers,
-                ${input ? `Some(input)` : 'None::<arri_client::model::EmptyArriClientModel>'},
+                ${input && schema.method !== 'get' ? `Some(input.to_json_string().as_bytes().to_vec())` : 'None'},
             );
-            self._dispatcher
-                .dispatch_output_stream_rpc::<${input ?? 'arri_client::model::EmptyArriClientModel'}, ${output ?? 'arri_client::model::EmptyArriClientModel'}>(call, on_event, controller, None, None)
+            let result = self._dispatcher
+                .dispatch_output_stream_rpc(
+                    call,
+                    &mut |evt, controller| match evt {
+                        arri_core::stream_event::StreamEvent::Data(data) => on_event(
+                            arri_core::stream_event::StreamEvent::Data(${`Book::from_json_string(
+                                String::from_utf8(data).unwrap_or("".to_string()),
+                            ))`},
+                            controller,
+                        ),
+                        arri_core::stream_event::StreamEvent::Error(arri_error) => on_event(
+                            arri_core::stream_event::StreamEvent::Error(arri_error),
+                            controller,
+                        ),
+                        arri_core::stream_event::StreamEvent::Start => {
+                            on_event(arri_core::stream_event::StreamEvent::Start, controller)
+                        }
+                        arri_core::stream_event::StreamEvent::End => {
+                            on_event(arri_core::stream_event::StreamEvent::End, controller)
+                        }
+                        arri_core::stream_event::StreamEvent::Cancel => {
+                            on_event(arri_core::stream_event::StreamEvent::Cancel, controller)
+                        }
+                    },
+                    controller,
+                    None,
+                    None,
+                )
                 .await;
             Ok(())
         }`;

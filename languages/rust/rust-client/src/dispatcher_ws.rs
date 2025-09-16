@@ -30,7 +30,7 @@ impl TransportDispatcher for WsDispatcher {
     async fn dispatch_output_stream_rpc(
         &self,
         call: RpcCall<'_>,
-        on_event: Box<OnEventClosure<'_, Vec<u8>>>,
+        on_event: &mut OnEventClosure<'_, (ContentType, Vec<u8>)>,
         stream_controller: Option<&mut EventStreamController>,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
