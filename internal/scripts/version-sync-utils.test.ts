@@ -49,6 +49,5 @@ async-trait = { version = "0.1" }
 `;
 
     const result = updateCargoToml(input, '1.1.1');
-    console.log('RESULT', result);
     expect(result).toStrictEqual(expectedResult);
 });

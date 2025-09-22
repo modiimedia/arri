@@ -70,7 +70,7 @@ export function tsRpcFromDefinition(
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
+        return dispatcher.handleOutputStreamRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
             req,
             validator,
             options ?? {},

@@ -312,7 +312,7 @@ export class ExampleClientBooksService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<BookParams, Book>(
+        return dispatcher.handleOutputStreamRpc<BookParams, Book>(
             req,
             validator,
             options ?? {},

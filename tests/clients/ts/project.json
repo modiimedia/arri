@@ -15,6 +15,9 @@
       "configurations": {
         "websockets": {
           "command": "CLIENT_TRANSPORT=ws vitest run . --passWithNoTests --globals"
+        },
+        "ws": {
+          "command": "CLIENT_TRANSPORT=ws vitest run . --passWithNoTests --globals"
         }
       }
     },

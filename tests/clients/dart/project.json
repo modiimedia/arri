@@ -26,6 +26,9 @@
       "configurations": {
         "websockets": {
           "command": "dart --define=CLIENT_TRANSPORT=ws test --reporter=expanded --chain-stack-traces --use-data-isolate-strategy"
+        },
+        "ws": {
+          "command": "dart --define=CLIENT_TRANSPORT=ws test --reporter=expanded --chain-stack-traces --use-data-isolate-strategy"
         }
       }
     },
