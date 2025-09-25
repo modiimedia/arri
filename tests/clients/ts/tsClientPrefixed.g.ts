@@ -827,7 +827,7 @@ export class TestClientPrefixed {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             FooAutoReconnectParams,
             FooAutoReconnectResponse
         >(req, validator, options ?? {});
@@ -875,7 +875,7 @@ export class TestClientPrefixed {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             FooStreamConnectionErrorTestParams,
             FooStreamConnectionErrorTestResponse
         >(req, validator, options ?? {});
@@ -922,7 +922,7 @@ export class TestClientPrefixed {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             undefined,
             FooStreamLargeObjectsResponse
         >(req, validator, options ?? {});
@@ -967,7 +967,7 @@ export class TestClientPrefixed {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             FooChatMessageParams,
             FooChatMessage
         >(req, validator, options ?? {});
@@ -1011,7 +1011,7 @@ export class TestClientPrefixed {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             undefined,
             FooTestsStreamRetryWithNewCredentialsResponse
         >(req, validator, options ?? {});
@@ -1055,7 +1055,7 @@ export class TestClientPrefixed {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<undefined, FooChatMessage>(
+        return dispatcher.handleOutputStreamRpc<undefined, FooChatMessage>(
             req,
             validator,
             options ?? {},

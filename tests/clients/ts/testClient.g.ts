@@ -864,7 +864,7 @@ export class TestClientTestsService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             AutoReconnectParams,
             AutoReconnectResponse
         >(req, validator, options ?? {});
@@ -912,7 +912,7 @@ export class TestClientTestsService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             StreamConnectionErrorTestParams,
             StreamConnectionErrorTestResponse
         >(req, validator, options ?? {});
@@ -959,7 +959,7 @@ export class TestClientTestsService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             undefined,
             StreamLargeObjectsResponse
         >(req, validator, options ?? {});
@@ -1001,7 +1001,7 @@ export class TestClientTestsService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<ChatMessageParams, ChatMessage>(
+        return dispatcher.handleOutputStreamRpc<ChatMessageParams, ChatMessage>(
             req,
             validator,
             options ?? {},
@@ -1046,7 +1046,7 @@ export class TestClientTestsService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             undefined,
             TestsStreamRetryWithNewCredentialsResponse
         >(req, validator, options ?? {});
@@ -1090,7 +1090,7 @@ export class TestClientTestsService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<undefined, ChatMessage>(
+        return dispatcher.handleOutputStreamRpc<undefined, ChatMessage>(
             req,
             validator,
             options ?? {},
@@ -1178,7 +1178,7 @@ export class TestClientUsersService {
             this.__options__.onError?.(req, err);
             throw err;
         }
-        return dispatcher.handleEventStreamRpc<
+        return dispatcher.handleOutputStreamRpc<
             UsersWatchUserParams,
             UsersWatchUserResponse
         >(req, validator, options ?? {});
