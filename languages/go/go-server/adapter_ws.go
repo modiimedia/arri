@@ -59,7 +59,7 @@ func (wa *WsAdapter[T]) RegisterRpc(name string, def RpcDef, paramValidator Vali
 	// TODO
 }
 
-func (wa *WsAdapter[T]) RegisterEventStreamRpc(
+func (wa *WsAdapter[T]) RegisterOutputStreamRpc(
 	name string,
 	def RpcDef,
 	paramValidator Validator,

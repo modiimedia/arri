@@ -16,7 +16,7 @@ type TransportAdapter[T any] interface {
 		responseValidator Validator,
 		handler func(any, Request[T]) (any, RpcError),
 	)
-	RegisterEventStreamRpc(
+	RegisterOutputStreamRpc(
 		name string,
 		def RpcDef,
 		paramValidator Validator,

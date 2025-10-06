@@ -157,7 +157,7 @@ func ScopedEventStreamRpc[TInput, TOutput any, TMeta any](
 		if !ok {
 			panic(fmt.Sprintf("Missing adapter for the following transport: \"%v\"", transport))
 		}
-		adapter.RegisterEventStreamRpc(
+		adapter.RegisterOutputStreamRpc(
 			rpcName,
 			*rpcSchema,
 			inputValidator,

@@ -138,7 +138,7 @@ func convertHttpHeaders(input http.Header) Headers {
 	return headers
 }
 
-func (a *HttpAdapter[T]) RegisterEventStreamRpc(
+func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 	name string,
 	def RpcDef,
 	paramValidator Validator,
