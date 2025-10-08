@@ -243,7 +243,6 @@ func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAda
 		fmt.Printf("WARNING a transport adapter has already been registered for \"%s\"\n", transportId)
 	}
 	app.adapters[transportId] = transportAdapter
-
 	httpAdapter, isHttpAdapter := transportAdapter.(HttpTransportAdapter[TMeta])
 	if isHttpAdapter {
 		encodingOptions := EncodingOptions{
@@ -297,11 +296,15 @@ func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAda
 			})
 		}
 	}
+	shouldAppend := true
 	for _, val := range app.transports {
 		if val == transportId {
+			shouldAppend = false
 			// no need to append to transport list
 			break
 		}
+	}
+	if shouldAppend {
 		app.transports = append(app.transports, transportId)
 	}
 }
