@@ -1,23 +1,19 @@
 import { Server } from 'node:http';
 
-import {
-    ArriError,
-    serializeArriError,
-    ServerEventStreamMessage,
-} from '@arrirpc/core';
-import { encodeServerEventStreamMessageToSseMessage } from '@arrirpc/core';
+import { ArriError, encodeMessageAsSseMessage, Message } from '@arrirpc/core';
 import { errorMessageFromErrors, Result } from '@arrirpc/schema';
 import {
-    EventStreamDispatcher,
-    EventStreamRpcHandler,
     HttpEndpointRegister,
-    RpcEventStreamConnection,
+    OutputStreamRpcHandler,
     RpcHandler,
     RpcMiddleware,
     RpcMiddlewareContext,
     RpcOnErrorContext,
+    RpcOutputStreamConnection,
     RpcPostHandler,
     RpcValidators,
+    serializeArriErrorResponse,
+    StreamDispatcher,
     TransportAdapter,
     TransportAdapterOptions,
     WsEndpointRegister,
@@ -101,16 +97,16 @@ export class ExpressAdapter
         postHandler?: RpcPostHandler,
     ) {
         let getParams: ((req: ExpressRequest) => Result<any>) | undefined;
-        if (validators.params) {
+        if (validators.input) {
             switch (procedure.method) {
                 case 'get':
                     getParams = (req: ExpressRequest) => {
-                        return validators.params!.coerce(req.query);
+                        return validators.input!.coerce(req.query);
                     };
                     break;
                 default:
                     getParams = (req: ExpressRequest) => {
-                        return validators.params!.parse(req.body);
+                        return validators.input!.parse(req.body);
                     };
             }
         }
@@ -157,27 +153,27 @@ export class ExpressAdapter
                             new ArriError({
                                 code: 400,
                                 message: errorMessageFromErrors(result.errors),
-                                data: result.errors,
+                                body: { data: result.errors },
                             }),
                         );
                     }
-                    context.params = result.value;
+                    context.input = result.value;
                 }
                 for (const m of this._middlewares) {
                     await m(context);
                 }
-                const response = await handler(context as any);
-                (context as any).response = response;
+                const output = await handler(context as any);
+                (context as any).output = output;
                 await this.globalOptions?.onBeforeResponse?.(context as any);
-                if (validators.response) {
-                    const payload = validators.response.serialize(response);
+                if (validators.output) {
+                    const payload = validators.output.serialize(output);
                     if (!payload.success) {
                         return this._sendError(
                             res,
                             new ArriError({
                                 code: 500,
                                 message: 'Error serializing response',
-                                data: payload.errors,
+                                body: { data: payload.errors },
                             }),
                         );
                     }
@@ -222,19 +218,19 @@ export class ExpressAdapter
         name: string,
         definition: RpcDefinition,
         validators: RpcValidators,
-        handler: EventStreamRpcHandler<any, any>,
+        handler: OutputStreamRpcHandler<any, any>,
     ): void {
         let getParams: (req: ExpressRequest) => Result<any>;
-        if (validators.params) {
+        if (validators.input) {
             switch (definition.method) {
                 case 'get':
                     getParams = (req: ExpressRequest) => {
-                        return validators.params!.coerce(req.query);
+                        return validators.input!.coerce(req.query);
                     };
                     break;
                 default:
                     getParams = (req: ExpressRequest) => {
-                        return validators.params!.parse(req.body);
+                        return validators.input!.parse(req.body);
                     };
             }
         }
@@ -277,26 +273,26 @@ export class ExpressAdapter
                             new ArriError({
                                 code: 400,
                                 message: errorMessageFromErrors(result.errors),
-                                data: result.errors,
+                                body: { data: result.errors },
                             }),
                         );
                     }
-                    context.params = result.value;
+                    context.input = result.value;
                 }
                 for (const m of this._middlewares) {
                     await m(context);
                 }
-                const eventStream = new RpcEventStreamConnection(
+                const eventStream = new RpcOutputStreamConnection(
                     new ExpressEventStreamDispatcher({ req, res }),
-                    validators.params,
+                    validators.input,
                     this.globalOptions?.heartbeatInterval ?? 20000,
                     this.globalOptions?.heartbeatEnabled ?? true,
-                    context.reqId,
+                    context.reqId ?? '',
                 );
                 (context as any).stream = eventStream;
                 await handler(context as any);
                 if (!res.headersSent) {
-                    eventStream.send();
+                    eventStream.start();
                 }
             } catch (err) {
                 (context as any).error = err;
@@ -470,10 +466,12 @@ export class ExpressAdapter
                     new ArriError({
                         code: 500,
                         message: err.message,
-                        data: context.error,
-                        stackList: this._debug
-                            ? err.stack?.split('\n')
-                            : undefined,
+                        body: {
+                            data: context.error,
+                            trace: this._debug
+                                ? err.stack?.split('\n')
+                                : undefined,
+                        },
                     }),
                 );
             }
@@ -482,7 +480,7 @@ export class ExpressAdapter
                 new ArriError({
                     code: 500,
                     message: `${err}`,
-                    data: err,
+                    body: { data: err },
                 }),
             );
         }
@@ -495,10 +493,12 @@ export class ExpressAdapter
                 new ArriError({
                     code: 500,
                     message: context.error.message,
-                    data: context.error,
-                    stackList: this._debug
-                        ? context.error.stack?.split('\n')
-                        : undefined,
+                    body: {
+                        data: context.error,
+                        trace: this._debug
+                            ? context.error.stack?.split('\n')
+                            : undefined,
+                    },
                 }),
             );
         }
@@ -507,7 +507,7 @@ export class ExpressAdapter
             new ArriError({
                 code: 500,
                 message: `${context.error}`,
-                data: context.error,
+                body: { data: context.error },
             }),
         );
     }
@@ -515,7 +515,7 @@ export class ExpressAdapter
     private _sendError(res: ExpressResponse, error: ArriError) {
         res.setHeader('Content-Type', 'application/json');
         res.status(error.code);
-        res.send(serializeArriError(error, this._debug));
+        res.send(serializeArriErrorResponse(error, this._debug, false));
     }
 
     start(): Promise<void> | void {
@@ -536,13 +536,29 @@ export class ExpressAdapter
     }
 }
 
-class ExpressEventStreamDispatcher implements EventStreamDispatcher<string> {
+class ExpressEventStreamDispatcher implements StreamDispatcher<string> {
     req: ExpressRequest;
     res: ExpressResponse;
     lastEventId?: string | undefined;
     constructor(config: { req: ExpressRequest; res: ExpressResponse }) {
         this.req = config.req;
         this.res = config.res;
+    }
+    lastMessageId?: string | undefined;
+    get isActive(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    get isPaused(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    start(): void {
+        throw new Error('Method not implemented.');
+    }
+    pause(): void {
+        throw new Error('Method not implemented.');
+    }
+    resume(): void | Promise<void> {
+        throw new Error('Method not implemented.');
     }
     send(): void {
         this.res.status(200);
@@ -557,16 +573,14 @@ class ExpressEventStreamDispatcher implements EventStreamDispatcher<string> {
         }
         this.res.flushHeaders();
     }
-    push(
-        msg: ServerEventStreamMessage | ServerEventStreamMessage[],
-    ): void | Promise<void> {
+    push(msg: Message | Message[]): void | Promise<void> {
         if (Array.isArray(msg)) {
             for (const m of msg) {
-                this.res.write(encodeServerEventStreamMessageToSseMessage(m));
+                this.res.write(encodeMessageAsSseMessage(m));
             }
             return;
         }
-        this.res.write(encodeServerEventStreamMessageToSseMessage(msg));
+        this.res.write(encodeMessageAsSseMessage(msg));
     }
     close(): void {
         this.res.end();

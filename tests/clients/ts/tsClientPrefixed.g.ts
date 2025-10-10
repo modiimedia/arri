@@ -28,8 +28,8 @@ import {
     type RpcRequestValidator,
     HttpDispatcher,
     WsDispatcher,
-    type EventStreamController,
-    type EventStreamHooks,
+    type StreamController,
+    type StreamHooks,
     resolveDispatcherOptions,
     resolveTransport,
     generateRequestId,
@@ -789,8 +789,8 @@ export class TestClientPrefixed {
     }
     streamAutoReconnect(
         params: FooAutoReconnectParams,
-        options?: EventStreamHooks<FooAutoReconnectResponse>,
-    ): EventStreamController {
+        options?: StreamHooks<FooAutoReconnectResponse>,
+    ): StreamController {
         const req: RpcRequest<FooAutoReconnectParams> = {
             reqId: this.__genReqId__(),
             procedure: 'streamAutoReconnect',
@@ -837,8 +837,8 @@ export class TestClientPrefixed {
      */
     streamConnectionErrorTest(
         params: FooStreamConnectionErrorTestParams,
-        options?: EventStreamHooks<FooStreamConnectionErrorTestResponse>,
-    ): EventStreamController {
+        options?: StreamHooks<FooStreamConnectionErrorTestResponse>,
+    ): StreamController {
         const req: RpcRequest<FooStreamConnectionErrorTestParams> = {
             reqId: this.__genReqId__(),
             procedure: 'streamConnectionErrorTest',
@@ -884,8 +884,8 @@ export class TestClientPrefixed {
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
-        options?: EventStreamHooks<FooStreamLargeObjectsResponse>,
-    ): EventStreamController {
+        options?: StreamHooks<FooStreamLargeObjectsResponse>,
+    ): StreamController {
         const req: RpcRequest<undefined> = {
             reqId: this.__genReqId__(),
             procedure: 'streamLargeObjects',
@@ -929,8 +929,8 @@ export class TestClientPrefixed {
     }
     streamMessages(
         params: FooChatMessageParams,
-        options?: EventStreamHooks<FooChatMessage>,
-    ): EventStreamController {
+        options?: StreamHooks<FooChatMessage>,
+    ): StreamController {
         const req: RpcRequest<FooChatMessageParams> = {
             reqId: this.__genReqId__(),
             procedure: 'streamMessages',
@@ -973,8 +973,8 @@ export class TestClientPrefixed {
         >(req, validator, options ?? {});
     }
     streamRetryWithNewCredentials(
-        options?: EventStreamHooks<FooTestsStreamRetryWithNewCredentialsResponse>,
-    ): EventStreamController {
+        options?: StreamHooks<FooTestsStreamRetryWithNewCredentialsResponse>,
+    ): StreamController {
         const req: RpcRequest<undefined> = {
             reqId: this.__genReqId__(),
             procedure: 'streamRetryWithNewCredentials',
@@ -1020,8 +1020,8 @@ export class TestClientPrefixed {
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
      */
     streamTenEventsThenEnd(
-        options?: EventStreamHooks<FooChatMessage>,
-    ): EventStreamController {
+        options?: StreamHooks<FooChatMessage>,
+    ): StreamController {
         const req: RpcRequest<undefined> = {
             reqId: this.__genReqId__(),
             procedure: 'streamTenEventsThenEnd',

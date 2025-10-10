@@ -31,8 +31,8 @@ export function tsRpcFromDefinition(
             isDeprecated: def.isDeprecated,
         })}    ${key}(
         ${params ? `params: ${params},` : ''}
-        options?: EventStreamHooks<${response ?? 'undefined'}>
-    ): EventStreamController {
+        options?: StreamHooks<${response ?? 'undefined'}>
+    ): StreamController {
         const req: RpcRequest<${params ?? 'undefined'}> = {
             reqId: this.__genReqId__(),
             procedure: '${context.instancePath}',

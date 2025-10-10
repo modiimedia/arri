@@ -191,8 +191,8 @@ import {
     type RpcRequestValidator,
     HttpDispatcher,
     WsDispatcher,
-    ${context.usedFeatures.sse ? 'type EventStreamController,' : ''}
-    ${context.usedFeatures.sse ? 'type EventStreamHooks,' : ''}
+    ${context.usedFeatures.sse ? 'type StreamController,' : ''}
+    ${context.usedFeatures.sse ? 'type StreamHooks,' : ''}
     resolveDispatcherOptions,
     resolveTransport,
     generateRequestId,

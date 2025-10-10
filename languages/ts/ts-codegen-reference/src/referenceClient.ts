@@ -28,8 +28,8 @@ import {
     type RpcRequestValidator,
     HttpDispatcher,
     WsDispatcher,
-    type EventStreamController,
-    type EventStreamHooks,
+    type StreamController,
+    type StreamHooks,
     resolveDispatcherOptions,
     resolveTransport,
     generateRequestId,
@@ -288,8 +288,8 @@ export class ExampleClientBooksService {
      */
     watchBook(
         params: BookParams,
-        options?: EventStreamHooks<Book>,
-    ): EventStreamController {
+        options?: StreamHooks<Book>,
+    ): StreamController {
         const req: RpcRequest<BookParams> = {
             reqId: this.__genReqId__(),
             procedure: 'books.watchBook',

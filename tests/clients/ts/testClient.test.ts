@@ -1,4 +1,4 @@
-import { ArriError, EventStreamController } from '@arrirpc/client';
+import { ArriError, StreamController } from '@arrirpc/client';
 import { randomUUID } from 'crypto';
 import { FetchError, ofetch } from 'ofetch';
 import { afterAll, describe, expect, it, test } from 'vitest';
@@ -372,7 +372,7 @@ describe('event stream rpcs', () => {
             const controller = client.tests.streamMessages(
                 { channelId: '1' },
                 {
-                    onMessage(msg) {
+                    onData(msg) {
                         receivedMessageCount++;
                         expect(msg.channelId).toBe('1');
                         switch (msg.messageType) {
@@ -413,7 +413,7 @@ describe('event stream rpcs', () => {
         await new Promise((res, rej) => {
             setTimeout(() => rej('timeout exceeded'), 2000);
             client.tests.streamTenEventsThenEnd({
-                onMessage(_) {
+                onData(_) {
                     messageCount++;
                 },
                 onError(error) {
@@ -451,7 +451,7 @@ describe('event stream rpcs', () => {
                     onOpen() {
                         resCount++;
                     },
-                    onMessage(data) {
+                    onData(data) {
                         messageCount++;
                         expect(data.count > 0).toBe(true);
                         if (messageCount >= 30) controller.abort();
@@ -488,7 +488,7 @@ describe('event stream rpcs', () => {
             setTimeout(() => rej('timeout exceeded'), 5000);
             const controller =
                 dynamicClient.tests.streamRetryWithNewCredentials({
-                    onMessage(_) {
+                    onData(_) {
                         msgCount++;
                         if (msgCount >= 40) controller.abort();
                     },
@@ -525,7 +525,7 @@ describe('event stream rpcs', () => {
                     openCount++;
                     if (openCount > 1) controller.abort();
                 },
-                onMessage() {
+                onData() {
                     msgCount++;
                     if (msgCount > 2) {
                         controller.abort();
@@ -546,7 +546,7 @@ describe('event stream rpcs', () => {
     });
     test('stream connection error test', async () => {
         let errCount = 0;
-        let controller: EventStreamController | undefined;
+        let controller: StreamController | undefined;
         await new Promise((res) => {
             controller = client.tests.streamConnectionErrorTest(
                 {
