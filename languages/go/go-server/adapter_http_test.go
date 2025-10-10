@@ -15,5 +15,5 @@ func TestHttpAdapterImplementsDesiredInterfaces(t *testing.T) {
 
 func TestHttpSseControllerImplementsEventStreamController(t *testing.T) {
 	stream := arri.HttpEventStream{}
-	arri.IsRawEventStream(&stream)
+	arri.IsUntypedStream(&stream)
 }

@@ -63,13 +63,13 @@ func main() {
 	arri.ScopedRpc(&app, "tests", SendPartialObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveUnion, arri.RpcOptions{})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamAutoReconnect, arri.RpcOptions{})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamConnectionErrorTest, arri.RpcOptions{Description: "This route will always return an error. The client should automatically retry with exponential backoff."})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamLargeObjects, arri.RpcOptions{Description: "Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message"})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamMessages, arri.RpcOptions{})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamRetryWithNewCredentials, arri.RpcOptions{})
-	arri.ScopedEventStreamRpc(&app, "tests", StreamTenEventsThenEnd, arri.RpcOptions{Description: "When the client receives the 'done' event, it should close the connection and NOT reconnect"})
-	arri.ScopedEventStreamRpc(&app, "users", WatchUser, arri.RpcOptions{})
+	arri.ScopedOutputStreamRpc(&app, "tests", StreamAutoReconnect, arri.RpcOptions{})
+	arri.ScopedOutputStreamRpc(&app, "tests", StreamConnectionErrorTest, arri.RpcOptions{Description: "This route will always return an error. The client should automatically retry with exponential backoff."})
+	arri.ScopedOutputStreamRpc(&app, "tests", StreamLargeObjects, arri.RpcOptions{Description: "Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message"})
+	arri.ScopedOutputStreamRpc(&app, "tests", StreamMessages, arri.RpcOptions{})
+	arri.ScopedOutputStreamRpc(&app, "tests", StreamRetryWithNewCredentials, arri.RpcOptions{})
+	arri.ScopedOutputStreamRpc(&app, "tests", StreamTenEventsThenEnd, arri.RpcOptions{Description: "When the client receives the 'done' event, it should close the connection and NOT reconnect"})
+	arri.ScopedOutputStreamRpc(&app, "users", WatchUser, arri.RpcOptions{})
 	app.Start()
 }
 
@@ -359,7 +359,7 @@ type AutoReconnectResponse struct {
 	Message string
 }
 
-func StreamAutoReconnect(input AutoReconnectParams, stream arri.EventStream[AutoReconnectResponse], req arri.Request[CustomProps]) arri.RpcError {
+func StreamAutoReconnect(input AutoReconnectParams, stream arri.Stream[AutoReconnectResponse], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	var msgCount uint8 = 0
@@ -392,7 +392,7 @@ type StreamConnectionErrorTestResponse struct {
 
 func StreamConnectionErrorTest(
 	input StreamConnectionErrorTestParams,
-	stream arri.EventStream[StreamConnectionErrorTestResponse],
+	stream arri.Stream[StreamConnectionErrorTestResponse],
 	_ arri.Request[CustomProps],
 ) arri.RpcError {
 	return arri.Error(uint32(input.StatusCode), input.StatusMessage)
@@ -407,7 +407,7 @@ type StreamLargeObjectsResponse struct {
 	}
 }
 
-func StreamLargeObjects(input arri.EmptyMessage, stream arri.EventStream[StreamLargeObjectsResponse], _ arri.Request[CustomProps]) arri.RpcError {
+func StreamLargeObjects(input arri.EmptyMessage, stream arri.Stream[StreamLargeObjectsResponse], _ arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	for {
@@ -480,7 +480,7 @@ type ChatMessageUrl struct {
 	Url       string
 }
 
-func StreamMessages(input ChatMessageParams, stream arri.EventStream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
+func StreamMessages(input ChatMessageParams, stream arri.Stream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	for {
 		select {
@@ -503,7 +503,7 @@ var usedTokens map[string]bool = map[string]bool{}
 
 func StreamRetryWithNewCredentials(
 	_ arri.EmptyMessage,
-	stream arri.EventStream[TestsStreamRetryWithNewCredentialsResponse],
+	stream arri.Stream[TestsStreamRetryWithNewCredentialsResponse],
 	req arri.Request[CustomProps],
 ) arri.RpcError {
 	authToken := req.Headers["x-test-header"]
@@ -533,7 +533,7 @@ func StreamRetryWithNewCredentials(
 	}
 }
 
-func StreamTenEventsThenEnd(_ arri.EmptyMessage, stream arri.EventStream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
+func StreamTenEventsThenEnd(_ arri.EmptyMessage, stream arri.Stream[ChatMessage], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0
@@ -604,7 +604,7 @@ type UserSettings struct {
 	PreferredTheme       string `enum:"dark-mode,light-mode,system"`
 }
 
-func WatchUser(input UsersWatchUserParams, stream arri.EventStream[UsersWatchUserResponse], req arri.Request[CustomProps]) arri.RpcError {
+func WatchUser(input UsersWatchUserParams, stream arri.Stream[UsersWatchUserResponse], req arri.Request[CustomProps]) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0

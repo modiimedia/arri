@@ -7,6 +7,6 @@ import (
 )
 
 func TestIsEventStream(t *testing.T) {
-	stream := arri.TypedEventStream[struct{ Foo string }]{}
-	arri.IsEventStream[struct{ Foo string }](stream)
+	stream := arri.TypedStream[struct{ Foo string }]{}
+	arri.IsStream[struct{ Foo string }](stream)
 }

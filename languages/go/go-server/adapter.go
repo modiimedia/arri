@@ -21,7 +21,7 @@ type TransportAdapter[T any] interface {
 		def RpcDef,
 		paramValidator Validator,
 		responseValidator Validator,
-		handler func(any, UntypedEventStream, Request[T]) RpcError,
+		handler func(any, UntypedStream, Request[T]) RpcError,
 	)
 	SetGlobalOptions(options AppOptions[T])
 	Use(middleware func(req *Request[T]) RpcError)

@@ -21,14 +21,14 @@ func ParseHeaderLine(input string) (key string, val string) {
 type MessageType string
 
 const (
-	ClientMessage          MessageType = "CLIENT_MESSAGE"
-	ServerSuccessMessage   MessageType = "SERVER_SUCCESS_MESSAGE"
-	ServerFailureMessage   MessageType = "SERVER_FAILURE_MESSAGE"
+	InvocationMessage      MessageType = "INVOCATION"
+	OkMessage              MessageType = "OK"
+	ErrorMessage           MessageType = "ERROR"
 	HeartbeatMessage       MessageType = "HEARTBEAT"
 	ConnectionStartMessage MessageType = "CONNECTION_START"
-	StreamStartMessage     MessageType = "STREAM_START"
 	StreamDataMessage      MessageType = "STREAM_DATA"
 	StreamEndMessage       MessageType = "STREAM_END"
+	StreamCancelMessage    MessageType = "STREAM_CANCEL"
 )
 
 type ContentType string
@@ -78,25 +78,25 @@ func (m Message) EncodeBytes() []byte {
 		if m.HeartbeatInterval.IsSet {
 			output = AppendHeader(output, "heartbeat-interval", fmt.Sprint(m.HeartbeatInterval.Value))
 		}
-	case ServerSuccessMessage:
+	case OkMessage:
 		allowBody = true
-		output = append(output, "ARRIRPC/"+ARRI_VERSION+" SUCCESS\n"...)
+		output = append(output, "ARRIRPC/"+ARRI_VERSION+" OK\n"...)
 		if m.ContentType.IsSet {
 			output = AppendHeader(output, "content-type", string(m.ContentType.Value))
 		}
 		if len(m.ReqId) > 0 {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
-	case ServerFailureMessage:
+	case ErrorMessage:
 		allowError = true
-		output = append(output, "ARRIRPC/"+ARRI_VERSION+" FAILURE\n"...)
+		output = append(output, "ARRIRPC/"+ARRI_VERSION+" ERROR\n"...)
 		if m.ContentType.IsSet {
 			output = AppendHeader(output, "content-type", string(m.ContentType.Value))
 		}
 		if len(m.ReqId) > 0 {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
-	case ClientMessage:
+	case InvocationMessage:
 		allowBody = true
 		if m.Action.IsSet {
 			output = append(output, "ARRIRPC/"+ARRI_VERSION+" "+m.RpcName.Value+m.Action.Value+"\n"...)
@@ -112,10 +112,9 @@ func (m Message) EncodeBytes() []byte {
 		if m.ClientVersion.IsSet {
 			output = AppendHeader(output, "client-version", m.ClientVersion.Value)
 		}
-	case StreamStartMessage:
 	case StreamDataMessage:
 		allowBody = true
-		output = append(output, "ARRIRPC/"+ARRI_VERSION+" "+"STREAM_DATA\n"...)
+		output = append(output, "ARRIRPC/"+ARRI_VERSION+" STREAM_DATA\n"...)
 		if m.ContentType.IsSet {
 			output = AppendHeader(output, "content-type", string(m.ContentType.Value))
 		}
@@ -126,6 +125,17 @@ func (m Message) EncodeBytes() []byte {
 			output = AppendHeader(output, "msg-id", m.MsgId.Value)
 		}
 	case StreamEndMessage:
+		output = append(output, "ARRIRPC/"+ARRI_VERSION+" STREAM_END\n"...)
+		if len(m.ReqId) > 0 {
+			output = AppendHeader(output, "req-id", m.ReqId)
+		}
+		output = AppendHeader(output, "reason", m.Reason.UnwrapOr(""))
+	case StreamCancelMessage:
+		output = append(output, "ARRIRPC/"+ARRI_VERSION+" STREAM_CANCEL\n"...)
+		if len(m.ReqId) > 0 {
+			output = AppendHeader(output, "req-id", m.ReqId)
+		}
+		output = AppendHeader(output, "reason", m.Reason.UnwrapOr(""))
 	}
 	output = AppendCustomHeaders(output, m.CustomHeaders)
 	output = append(output, '\n')
@@ -160,7 +170,7 @@ func NewClientMessage(
 ) Message {
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
-		Type:           ClientMessage,
+		Type:           InvocationMessage,
 		RpcName:        Some(rpcName),
 		ReqId:          reqId,
 		ContentType:    Some(contentType),
@@ -178,7 +188,7 @@ func NewServerSuccessMessage(
 ) Message {
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
-		Type:           ServerSuccessMessage,
+		Type:           OkMessage,
 		ReqId:          reqId,
 		ContentType:    Some(contentType),
 		CustomHeaders:  headers,
@@ -194,7 +204,7 @@ func NewServerFailureMessage(
 ) Message {
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
-		Type:           ServerFailureMessage,
+		Type:           ErrorMessage,
 		ReqId:          reqId,
 		ContentType:    Some(contentType),
 		CustomHeaders:  headers,
@@ -212,7 +222,7 @@ func NewHeartbeatMessage(heartbeatInterval uint32) Message {
 
 func NewStreamStartMessage(reqId string, contentType ContentType, heartbeatInterval Option[uint32], customHeaders Headers) Message {
 	return Message{
-		Type:              StreamStartMessage,
+		Type:              OkMessage,
 		ContentType:       Some(contentType),
 		ReqId:             reqId,
 		HeartbeatInterval: heartbeatInterval,
@@ -234,6 +244,7 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 	procedure := None[string]()
 	reqId := None[string]()
 	msgId := None[string]()
+	reason := None[string]()
 	clientVersion := None[string]()
 	contentType := None[ContentType]()
 	heartbeatInterval := None[uint32]()
@@ -255,22 +266,22 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			_ = lineParts[0]
 			typeValue := lineParts[1]
 			switch typeValue {
-			case "SUCCESS":
-				msgType.Set(ServerSuccessMessage)
-			case "FAILURE":
-				msgType.Set(ServerFailureMessage)
+			case "OK":
+				msgType.Set(OkMessage)
+			case "ERROR":
+				msgType.Set(ErrorMessage)
 			case "CONNECTION_START":
 				msgType.Set(ConnectionStartMessage)
-			case "STREAM_START":
-				msgType.Set(StreamStartMessage)
 			case "STREAM_DATA":
 				msgType.Set(StreamDataMessage)
 			case "STREAM_END":
 				msgType.Set(StreamEndMessage)
+			case "STREAM_CANCEL":
+				msgType.Set(StreamCancelMessage)
 			case "HEARTBEAT":
 				msgType.Set(HeartbeatMessage)
 			default:
-				msgType.Set(ClientMessage)
+				msgType.Set(InvocationMessage)
 				procedure.Set(strings.TrimSpace(typeValue))
 			}
 			if len(lineParts) > 2 {
@@ -292,6 +303,8 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			if err == nil {
 				heartbeatInterval.Set(uint32(parsedVal))
 			}
+		case "reason":
+			reason.Set(val)
 		case "msg-id":
 			msgId.Set(val)
 		default:
@@ -336,7 +349,7 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 	}
 
 	switch msgType.Value {
-	case ClientMessage:
+	case InvocationMessage:
 		if procedure.IsNone() {
 			return Message{}, NewDecodeMessageError(DMECode_MalformedMessage, Some("missing procedure name"))
 		}
@@ -351,7 +364,7 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			Body:           body,
 		}, nil
 
-	case ServerSuccessMessage:
+	case OkMessage:
 		return Message{
 			ArriRpcVersion: ARRI_VERSION,
 			ReqId:          reqId.Value,
@@ -360,7 +373,7 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			CustomHeaders:  customHeaders,
 			Body:           body,
 		}, nil
-	case ServerFailureMessage:
+	case ErrorMessage:
 		var err RpcError
 		if body.IsSome() {
 			err = Error(0, "unknown error")
@@ -380,15 +393,6 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			CustomHeaders:  customHeaders,
 			Error:          Some(err),
 		}, nil
-	case StreamStartMessage:
-		return Message{
-			ArriRpcVersion:    ARRI_VERSION,
-			Type:              msgType.Value,
-			ContentType:       contentType,
-			ReqId:             reqId.Value,
-			HeartbeatInterval: heartbeatInterval,
-			CustomHeaders:     customHeaders,
-		}, nil
 	case StreamDataMessage:
 		return Message{
 			ArriRpcVersion: ARRI_VERSION,
@@ -396,6 +400,13 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			ReqId:          reqId.Value,
 			MsgId:          msgId,
 			Body:           body,
+		}, nil
+	case StreamEndMessage:
+		return Message{
+			ArriRpcVersion: ARRI_VERSION,
+			Type:           msgType.Value,
+			ReqId:          reqId.Value,
+			Reason:         reason,
 		}, nil
 	default:
 		return Message{}, NewDecodeMessageCustomError(fmt.Errorf("Not implemented: " + string(msgType.Value)))

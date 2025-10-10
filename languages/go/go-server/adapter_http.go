@@ -143,7 +143,7 @@ func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 	def RpcDef,
 	paramValidator Validator,
 	responseValidator Validator,
-	handler func(any, UntypedEventStream, Request[T]) RpcError,
+	handler func(any, UntypedStream, Request[T]) RpcError,
 ) {
 	a.Mux.HandleFunc(def.Path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {

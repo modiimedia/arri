@@ -67,7 +67,7 @@ func TestDecodeClientMessage(t *testing.T) {
 }
 
 var serverMessageWithBody = arri.NewServerSuccessMessage("12345", arri.ContentTypeJson, map[string]string{}, arri.Some([]byte("{\"message\":\"hello world\"}")))
-var serverMessageWithoutBody = arri.NewServerSuccessMessage("", arri.ContentTypeJson, map[string]string{"foo": "foo"}, arri.None[[]byte]())
+var serverMessageWithoutBody = arri.NewServerSuccessMessage("54321", arri.ContentTypeJson, map[string]string{"foo": "foo"}, arri.None[[]byte]())
 var serverMessageWithBodyFilePath = "../../../tests/test-files/OkMessage_WithBody.txt"
 var serverMessageWithoutBodyFilePath = "../../../tests/test-files/OkMessage_WithoutBody.txt"
 

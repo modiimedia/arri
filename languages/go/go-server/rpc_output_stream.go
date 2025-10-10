@@ -9,64 +9,64 @@ import (
 	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
-type UntypedEventStream interface {
+type UntypedStream interface {
 	Start()
 	Send(any) RpcError
 	Close(notifyClient bool)
 	Done() <-chan struct{}
 }
 
-func IsRawEventStream(input UntypedEventStream) bool {
+func IsUntypedStream(input UntypedStream) bool {
 	return true
 }
 
-type EventStream[T any] interface {
+type Stream[T any] interface {
 	Start()
 	Send(T) RpcError
 	Close(notifyClient bool)
 	Done() <-chan struct{}
 }
 
-func IsEventStream[T any](input EventStream[T]) bool {
+func IsStream[T any](input Stream[T]) bool {
 	return true
 }
 
-type TypedEventStream[T any] struct {
-	rawStream UntypedEventStream
+type TypedStream[T any] struct {
+	rawStream UntypedStream
 }
 
-func NewTypedEventStream[T any](untypedStream UntypedEventStream) TypedEventStream[T] {
-	return TypedEventStream[T]{rawStream: untypedStream}
+func NewTypedStream[T any](untypedStream UntypedStream) TypedStream[T] {
+	return TypedStream[T]{rawStream: untypedStream}
 }
 
-func (es TypedEventStream[T]) Start() {
+func (es TypedStream[T]) Start() {
 	es.rawStream.Start()
 }
 
-func (es TypedEventStream[T]) Send(val T) RpcError {
+func (es TypedStream[T]) Send(val T) RpcError {
 	return es.rawStream.Send(val)
 }
 
-func (es TypedEventStream[T]) Close(notifyClient bool) {
+func (es TypedStream[T]) Close(notifyClient bool) {
 	es.rawStream.Close(notifyClient)
 }
 
-func (es TypedEventStream[T]) Done() <-chan struct{} {
+func (es TypedStream[T]) Done() <-chan struct{} {
 	return es.rawStream.Done()
 }
 
-func EventStreamRpc[TInput, TOutput any, TMeta any](
+func OutputStreamRpc[TInput, TOutput any, TMeta any](
 	app *App[TMeta],
-	handler func(TInput, EventStream[TOutput], Request[TMeta]) RpcError,
+	handler func(TInput, Stream[TOutput], Request[TMeta]) RpcError,
 	options RpcOptions,
 ) {
-	ScopedEventStreamRpc(app, "", handler, options)
+	ScopedOutputStreamRpc(app, "", handler, options)
 }
 
-func ScopedEventStreamRpc[TInput, TOutput any, TMeta any](
+func ScopedOutputStreamRpc[TInput, TOutput any, TMeta any](
 	app *App[TMeta],
 	scope string,
-	handler func(TInput, EventStream[TOutput], Request[TMeta]) RpcError,
+	handler func(TInput, Stream[TOutput], Request[TMeta]) RpcError,
 	options RpcOptions,
 ) {
 	handlerType := reflect.TypeOf(handler)
@@ -162,8 +162,8 @@ func ScopedEventStreamRpc[TInput, TOutput any, TMeta any](
 			*rpcSchema,
 			inputValidator,
 			outputValidator,
-			func(p any, eventStream UntypedEventStream, req Request[TMeta]) RpcError {
-				es := TypedEventStream[TOutput]{rawStream: eventStream}
+			func(p any, stream UntypedStream, req Request[TMeta]) RpcError {
+				es := TypedStream[TOutput]{rawStream: stream}
 				return handler(
 					p.(TInput),
 					es,
