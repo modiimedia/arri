@@ -30,6 +30,7 @@ func main() {
 			AppVersion:        "10",
 			RpcPathPrefix:     "/rpcs",
 			DefaultTransports: []string{"http", "ws"},
+			Debug:             true,
 		},
 	)
 	registerHeartbeatTestRoute(mux)

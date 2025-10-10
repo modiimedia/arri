@@ -163,6 +163,8 @@ type AppOptions[T any] struct {
 	OnError          func(req *Request[T], err error)
 	// how often to send a heartbeat message over open connections default is 20 seconds
 	HeartbeatInterval time.Duration
+	// Enables stack traces in error responses
+	Debug bool
 }
 
 type AppHooks[T any] struct {

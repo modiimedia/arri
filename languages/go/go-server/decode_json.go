@@ -17,11 +17,13 @@ type DecoderError interface {
 	error
 	Code() uint32
 	Data() Option[any]
+	Trace() Option[[]string]
 	Errors() []ValidationError
 }
 
 type decoderError struct {
 	errors []ValidationError
+	trace  Option[[]string]
 }
 
 func (e decoderError) Code() uint32 {
@@ -58,8 +60,12 @@ func (e decoderError) Error() string {
 	return msg
 }
 
+func (e decoderError) Trace() Option[[]string] {
+	return e.trace
+}
+
 func (e decoderError) Data() Option[any] {
-	return Some[any](e)
+	return Some[any](e.errors)
 }
 
 func (e decoderError) EncodeJSON(options EncodingOptions) ([]byte, error) {
@@ -67,7 +73,11 @@ func (e decoderError) EncodeJSON(options EncodingOptions) ([]byte, error) {
 }
 
 func NewDecoderError(errors []ValidationError) DecoderError {
-	return decoderError{errors: errors}
+	err := decoderError{errors: errors, trace: None[[]string]()}
+	msg := err.Error()
+	trace := traceFromCaller("DecoderError", msg)
+	err.trace.Set(trace)
+	return err
 }
 
 type ValidationError struct {

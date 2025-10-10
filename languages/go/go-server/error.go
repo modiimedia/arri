@@ -1,21 +1,26 @@
 package arri
 
 import (
-	"strconv"
-
-	"github.com/tidwall/gjson"
+	"fmt"
+	"runtime"
 )
 
 type RpcError interface {
 	error
 	Code() uint32
 	Data() Option[any]
+	Trace() Option[[]string]
+}
+
+func IsRpcError(input RpcError) bool {
+	return true
 }
 
 type errorResponse struct {
 	code    uint32
 	message string
 	data    Option[any]
+	trace   Option[[]string]
 }
 
 func (e errorResponse) Error() string {
@@ -30,57 +35,33 @@ func (e errorResponse) Data() Option[any] {
 	return e.data
 }
 
-func RpcErrorFromJson(input []byte) (RpcError, DecoderError) {
-	parsed := gjson.ParseBytes(input)
-	code := parsed.Get("code")
-	message := parsed.Get("message")
-	data := parsed.Get("data")
-	// stack := parsed.Get("stack")
-
-	if code.Type != gjson.Number {
-		return errorResponse{}, NewDecoderError([]ValidationError{NewValidationError("expected number got "+code.Type.String(), "/code", "")})
-	}
-	if message.Type != gjson.String {
-		return errorResponse{}, NewDecoderError([]ValidationError{NewValidationError("expected string got "+message.Type.String(), "/message", "")})
-	}
-
-	finalCode := code.Uint()
-	finalMessage := message.String()
-	finalData := None[any]()
-	// finalStack := None[[]string]()
-	if data.Type == gjson.JSON {
-		finalData.Set(data.Value())
-	}
-	// if stack.Type == gjson.JSON && len(stack.Array()) > 0 {
-	// 	arr := stack.Array()
-	// 	stack := []string{}
-	// 	for _, e := range arr {
-	// 		if e.Type == gjson.String {
-	// 			stack = append(stack, e.String())
-	// 		}
-	// 	}
-	// 	finalStack.Set(stack)
-	// }
-	return errorResponse{
-		code:    uint32(finalCode),
-		message: finalMessage,
-		data:    finalData,
-	}, nil
+func (e errorResponse) Trace() Option[[]string] {
+	return e.trace
 }
 
-func RpcErrorToJSON(err RpcError) []byte {
+func RpcErrorToJSON(err RpcError, encodingOption EncodingOptions, allowTrace bool) []byte {
 	output := []byte{}
-	output = append(output, "{\"code\":"+strconv.FormatUint(uint64(err.Code()), 10)...)
+	output = append(output, '{')
+	data := err.Data()
+	trace := err.Trace()
+	output = append(output, "\"code\":"+fmt.Sprint(err.Code())...)
 	output = append(output, ",\"message\":"...)
 	AppendNormalizedString(&output, err.Error())
-	if err.Data().IsSome() {
-		dataResult, dataErr := EncodeJSON(err.Data().Unwrap(), EncodingOptions{})
-		if dataErr == nil {
+	if data.IsSet {
+		dataJson, err := EncodeJSON(data.Value, encodingOption)
+		if err == nil {
 			output = append(output, ",\"data\":"...)
-			output = append(output, dataResult...)
+			output = append(output, dataJson...)
 		}
 	}
-	output = append(output, "}"...)
+	if allowTrace && trace.IsSet {
+		traceJson, err := EncodeJSON(trace.Value, encodingOption)
+		if err == nil {
+			output = append(output, ",\"trace\":"...)
+			output = append(output, traceJson...)
+		}
+	}
+	output = append(output, '}')
 	return output
 }
 
@@ -136,9 +117,13 @@ func Error(statusCode uint32, message string) errorResponse {
 			msg = "Unknown error"
 		}
 	}
+	trace := None[[]string]()
+	// TODO: make this configurable so that prod servers don't leak stack traces
+	trace.Set(traceFromCaller("RpcError", msg))
 	return errorResponse{
 		code:    statusCode,
 		message: msg,
+		trace:   trace,
 	}
 }
 
@@ -153,9 +138,42 @@ func ErrorWithData(statusCode uint32, message string, data Option[any]) errorRes
 			msg = "Unknown error"
 		}
 	}
+	trace := None[[]string]()
+	// TODO: make this configurable so that prod servers don't leak stack traces
+	trace.Set(traceFromCaller("RpcError", msg))
 	return errorResponse{
 		code:    statusCode,
 		message: msg,
 		data:    data,
+		trace:   trace,
 	}
+}
+
+func traceFromCaller(errorName string, errorMessage string) []string {
+	// pcs will store program counters
+	var pcs [10]uintptr
+	// skip 0: Callers, skip 1: bar, skip 2: foo, skip 3: main
+	n := runtime.Callers(2, pcs[:])
+	frames := runtime.CallersFrames(pcs[:n])
+	trace := []string{}
+	line1 := ""
+	if len(errorName) > 0 {
+		line1 += errorName
+		line1 += ""
+	} else {
+		line1 += "Error"
+	}
+	if len(errorMessage) > 0 {
+		line1 += ": "
+		line1 += errorMessage
+	}
+	trace = append(trace, line1)
+	for {
+		frame, more := frames.Next()
+		trace = append(trace, "at "+frame.Function+" ("+frame.File+":"+fmt.Sprint(frame.Line)+")")
+		if !more {
+			break
+		}
+	}
+	return trace
 }

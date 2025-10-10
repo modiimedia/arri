@@ -57,7 +57,8 @@ type Message struct {
 	ClientVersion     Option[string]
 	ContentType       Option[ContentType]
 	Action            Option[string]
-	Error             Option[RpcError]
+	ErrCode           Option[uint32]
+	ErrMsg            Option[string]
 	HeartbeatInterval Option[uint32]
 	Reason            Option[string]
 	Body              Option[[]byte]
@@ -66,7 +67,6 @@ type Message struct {
 func (m Message) EncodeBytes() []byte {
 	output := []byte{}
 	allowBody := false
-	allowError := false
 	switch m.Type {
 	case ConnectionStartMessage:
 		output = append(output, "ARRIRPC/"+ARRI_VERSION+" CONNECTION_START\n"...)
@@ -88,7 +88,6 @@ func (m Message) EncodeBytes() []byte {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
 	case ErrorMessage:
-		allowError = true
 		output = append(output, "ARRIRPC/"+ARRI_VERSION+" ERROR\n"...)
 		if m.ContentType.IsSet {
 			output = AppendHeader(output, "content-type", string(m.ContentType.Value))
@@ -96,6 +95,8 @@ func (m Message) EncodeBytes() []byte {
 		if len(m.ReqId) > 0 {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
+		output = AppendHeader(output, "err-code", string(m.ErrCode.UnwrapOr(0)))
+		output = AppendHeader(output, "err-msg", m.ErrMsg.UnwrapOr(""))
 	case InvocationMessage:
 		allowBody = true
 		if m.Action.IsSet {
@@ -141,9 +142,6 @@ func (m Message) EncodeBytes() []byte {
 	output = append(output, '\n')
 	if allowBody && m.Body.IsSet {
 		output = append(output, m.Body.Value...)
-	}
-	if allowError && m.Error.IsSet {
-		output = append(output, RpcErrorToJSON(m.Error.Value)...)
 	}
 	return output
 }
@@ -208,7 +206,8 @@ func NewServerFailureMessage(
 		ReqId:          reqId,
 		ContentType:    Some(contentType),
 		CustomHeaders:  headers,
-		Error:          Some(err),
+		ErrCode:        Some(err.Code()),
+		ErrMsg:         Some(err.Error()),
 	}
 }
 
@@ -244,6 +243,8 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 	procedure := None[string]()
 	reqId := None[string]()
 	msgId := None[string]()
+	errCode := None[uint32]()
+	errMsg := None[string]()
 	reason := None[string]()
 	clientVersion := None[string]()
 	contentType := None[ContentType]()
@@ -307,6 +308,13 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			reason.Set(val)
 		case "msg-id":
 			msgId.Set(val)
+		case "err-code":
+			parsedVal, err := strconv.ParseUint(val, 10, 32)
+			if err == nil {
+				errCode.Set(uint32(parsedVal))
+			}
+		case "err-msg":
+			errMsg.Set(val)
 		default:
 			customHeaders.Set(key, val)
 		}
@@ -374,24 +382,15 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			Body:           body,
 		}, nil
 	case ErrorMessage:
-		var err RpcError
-		if body.IsSome() {
-			err = Error(0, "unknown error")
-		} else {
-			parsed, paringErr := RpcErrorFromJson(body.Value)
-			if paringErr != nil {
-				err = Error(0, "unknown error")
-			} else {
-				err = parsed
-			}
-		}
 		return Message{
 			ArriRpcVersion: ARRI_VERSION,
 			ReqId:          reqId.Value,
 			Type:           msgType.Value,
 			ContentType:    contentType,
 			CustomHeaders:  customHeaders,
-			Error:          Some(err),
+			ErrMsg:         errMsg,
+			ErrCode:        errCode,
+			Body:           body,
 		}, nil
 	case StreamDataMessage:
 		return Message{

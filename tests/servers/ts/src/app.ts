@@ -12,6 +12,7 @@ const app = new ArriApp({
 });
 const http = new HttpAdapter({
     port: 2020,
+    debug: true,
     cors: {
         origin: '*',
     },
