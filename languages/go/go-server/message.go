@@ -95,7 +95,7 @@ func (m Message) EncodeBytes() []byte {
 		if len(m.ReqId) > 0 {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
-		output = AppendHeader(output, "err-code", string(m.ErrCode.UnwrapOr(0)))
+		output = AppendHeader(output, "err-code", fmt.Sprint(m.ErrCode.UnwrapOr(0)))
 		output = AppendHeader(output, "err-msg", m.ErrMsg.UnwrapOr(""))
 	case InvocationMessage:
 		allowBody = true
@@ -200,6 +200,27 @@ func NewServerFailureMessage(
 	headers Headers,
 	err RpcError,
 ) Message {
+	body := []byte{'{'}
+	hasFields := false
+	if err.Data().IsSet {
+		dataJson, err := EncodeJSON(err.Data().Value, EncodingOptions{})
+		if err == nil {
+			body = append(body, "\"data\":"...)
+			body = append(body, dataJson...)
+			hasFields = true
+		}
+	}
+	if err.Trace().IsSet {
+		traceJson, err := EncodeJSON(err.Trace().Value, EncodingOptions{})
+		if err == nil {
+			if hasFields {
+				body = append(body, ',')
+			}
+			body = append(body, "\"trace\":"...)
+			body = append(body, traceJson...)
+			hasFields = true
+		}
+	}
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
 		Type:           ErrorMessage,
@@ -208,6 +229,7 @@ func NewServerFailureMessage(
 		CustomHeaders:  headers,
 		ErrCode:        Some(err.Code()),
 		ErrMsg:         Some(err.Error()),
+		Body:           Some(body),
 	}
 }
 

@@ -303,6 +303,8 @@ func handleError[TMeta any](
 	if responseSent {
 		return
 	}
+	w.Header().Set("err-code", fmt.Sprint(err.Code()))
+	w.Header().Set("err-msg", fmt.Sprint(err.Error()))
 	w.WriteHeader(int(err.Code()))
 	body := RpcErrorToJSON(err, encodingOptions, allowTrace)
 	w.Write(body)
@@ -402,7 +404,7 @@ func (controller *HttpEventStream) Close(notifyClient bool) {
 		controller.startStream()
 	}
 	if notifyClient {
-		fmt.Fprint(controller.writer, "event: done\ndata: done\n\n")
+		fmt.Fprint(controller.writer, "event: end\ndata: done\n\n")
 		controller.responseController.Flush()
 	}
 	controller.cancelFunc()

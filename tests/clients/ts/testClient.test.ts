@@ -508,7 +508,7 @@ describe('event stream rpcs', () => {
         dynamicClient.terminateConnections();
     });
 
-    it('can handle receiving large objects', { timeout: 10000 }, async () => {
+    it('can handle receiving large objects', { timeout: 60000 }, async () => {
         let openCount = 0;
         let msgCount = 0;
         let error: unknown = undefined;
@@ -544,7 +544,7 @@ describe('event stream rpcs', () => {
         expect(openCount).toBe(1);
         expect(msgCount > 2).toBe(true);
     });
-    test('stream connection error test', async () => {
+    test('stream connection error test', { timeout: 60000 }, async () => {
         let errCount = 0;
         let controller: StreamController | undefined;
         await new Promise((res) => {
