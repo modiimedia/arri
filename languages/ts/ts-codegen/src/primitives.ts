@@ -78,7 +78,7 @@ export function tsDateFromSchema(
     _context: CodegenContext,
 ): TsProperty {
     const typeName = schema.isNullable ? `Date | null` : 'Date';
-    const defaultValue = schema.isNullable ? `null` : 'new Date()';
+    const defaultValue = schema.isNullable ? `null` : 'new Date(0)';
     return {
         typeName,
         defaultValue,
