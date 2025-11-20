@@ -3,7 +3,12 @@ import type { Linter } from 'eslint';
 import plugin from './plugin';
 import { prefixedRuleMap } from './rules/_index';
 
-export const flatConfigs = {
+type FlatConfigs = {
+    recommended: Linter.Config;
+    all: Linter.Config;
+};
+
+export const flatConfigs: FlatConfigs = {
     recommended: {
         plugins: {
             arri: plugin,
@@ -15,7 +20,7 @@ export const flatConfigs = {
             'no-anonymous-recursive': 2,
             'prefer-modular-imports': 0,
         }),
-    } satisfies Linter.Config,
+    },
     all: {
         plugins: {
             arri: plugin,
@@ -27,7 +32,7 @@ export const flatConfigs = {
             'no-anonymous-recursive': 2,
             'prefer-modular-imports': 2,
         }),
-    } satisfies Linter.Config,
-} as const;
+    },
+};
 
-export default flatConfigs;
+export default flatConfigs as FlatConfigs;
