@@ -7,7 +7,7 @@ import Ajv from 'ajv';
 // import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
-import typia from 'typia';
+// import typia from 'typia';
 import * as v from 'valibot';
 import { assertType } from 'vitest';
 import { z } from 'zod';
@@ -357,45 +357,45 @@ assertType<ArkTypeUser>(goodInput);
 assert(!(ArktypeUser(goodInput) instanceof arktype.errors));
 assert(ArktypeUser(badInput) instanceof arktype.errors);
 
-type TypiaInt32 = number & typia.tags.Type<'int32'>;
-type TypiaUser = {
-    id: TypiaInt32;
-    role: 'standard' | 'admin' | 'moderator';
-    name: string;
-    email: string | null;
-    createdAt: TypiaInt32;
-    updatedAt: TypiaInt32;
-    settings?: {
-        preferredTheme: 'light' | 'dark' | 'system';
-        allowNotifications: boolean;
-    };
-    recentNotifications: Array<
-        | {
-              type: 'POST_LIKE';
-              userId: string;
-              postId: string;
-          }
-        | {
-              type: 'POST_COMMENT';
-              userId: string;
-              postId: string;
-              commentText: string;
-          }
-    >;
-};
-const TypiaValidate = typia.createIs<TypiaUser>();
-const TypiaJsonParse = typia.json.createValidateParse<TypiaUser>();
-const TypiaJsonStringify = typia.json.createStringify<TypiaUser>();
-const TypiaValidateAndJsonStringify =
-    typia.json.createValidateStringify<TypiaUser>();
+// type TypiaInt32 = number & typia.tags.Type<'int32'>;
+// type TypiaUser = {
+//     id: TypiaInt32;
+//     role: 'standard' | 'admin' | 'moderator';
+//     name: string;
+//     email: string | null;
+//     createdAt: TypiaInt32;
+//     updatedAt: TypiaInt32;
+//     settings?: {
+//         preferredTheme: 'light' | 'dark' | 'system';
+//         allowNotifications: boolean;
+//     };
+//     recentNotifications: Array<
+//         | {
+//               type: 'POST_LIKE';
+//               userId: string;
+//               postId: string;
+//           }
+//         | {
+//               type: 'POST_COMMENT';
+//               userId: string;
+//               postId: string;
+//               commentText: string;
+//           }
+//     >;
+// };
+// const TypiaValidate = typia.createIs<TypiaUser>();
+// const TypiaJsonParse = typia.json.createValidateParse<TypiaUser>();
+// const TypiaJsonStringify = typia.json.createStringify<TypiaUser>();
+// const TypiaValidateAndJsonStringify =
+//     typia.json.createValidateStringify<TypiaUser>();
 
-assertType<TypiaUser>(goodInput);
-assert(TypiaValidate(goodInput) === true);
-assert(TypiaValidate(badInput) === false);
-assert(TypiaJsonParse(goodJsonInput).success === true);
-assert(TypiaJsonParse(badJsonInput).success === false);
-assert(typeof TypiaJsonStringify(goodInput) === 'string');
-assert(TypiaValidateAndJsonStringify(goodInput).success === true);
+// assertType<TypiaUser>(goodInput);
+// assert(TypiaValidate(goodInput) === true);
+// assert(TypiaValidate(badInput) === false);
+// assert(TypiaJsonParse(goodJsonInput).success === true);
+// assert(TypiaJsonParse(badJsonInput).success === false);
+// assert(typeof TypiaJsonStringify(goodInput) === 'string');
+// assert(TypiaValidateAndJsonStringify(goodInput).success === true);
 
 void benny.suite(
     'Object Validation - Good Input',
@@ -441,9 +441,9 @@ void benny.suite(
     benny.add('Arktype', () => {
         ArktypeUser(goodInput);
     }),
-    benny.add('Typia', () => {
-        TypiaValidate(goodInput);
-    }),
+    // benny.add('Typia', () => {
+    //     TypiaValidate(goodInput);
+    // }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -502,9 +502,9 @@ void benny.suite(
     benny.add('Arktype', () => {
         ArktypeUser(badInput);
     }),
-    benny.add('Typia', () => {
-        TypiaValidate(badInput);
-    }),
+    // benny.add('Typia', () => {
+    //     TypiaValidate(badInput);
+    // }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -557,9 +557,9 @@ void benny.suite(
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(goodJsonInput));
     }),
-    benny.add('Typia (json.createValidateParse)', () => {
-        TypiaJsonParse(goodJsonInput);
-    }),
+    // benny.add('Typia (json.createValidateParse)', () => {
+    //     TypiaJsonParse(goodJsonInput);
+    // }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -642,9 +642,9 @@ void benny.suite(
     benny.add('JSON.parse + Arktype', () => {
         ArktypeUser(JSON.parse(badJsonInput));
     }),
-    benny.add('Typia (json.createValidateParse)', () => {
-        TypiaJsonParse(badJsonInput);
-    }),
+    // benny.add('Typia (json.createValidateParse)', () => {
+    //     TypiaJsonParse(badJsonInput);
+    // }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -706,12 +706,12 @@ void benny.suite(
     // benny.add('Ajv - JTD (Compiled)', () => {
     //     AjvJtdUserSerializer(goodInput);
     // }),
-    benny.add('Typia', () => {
-        TypiaJsonStringify(goodInput);
-    }),
-    benny.add('Typia - Validate and Serialize', () => {
-        TypiaValidateAndJsonStringify(goodInput);
-    }),
+    // benny.add('Typia', () => {
+    //     TypiaJsonStringify(goodInput);
+    // }),
+    // benny.add('Typia - Validate and Serialize', () => {
+    //     TypiaValidateAndJsonStringify(goodInput);
+    // }),
     benny.add('JSON.stringify', () => {
         JSON.stringify(goodInput);
     }),

@@ -7,7 +7,7 @@ import Ajv from 'ajv';
 // import AjvJtd from 'ajv/dist/jtd';
 import { type as arktype } from 'arktype';
 import benny from 'benny';
-import typia from 'typia';
+// import typia from 'typia';
 import * as v from 'valibot';
 import { z } from 'zod';
 import { z as zV4 } from 'zod/v4';
