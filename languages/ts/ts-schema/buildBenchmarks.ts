@@ -1,6 +1,6 @@
 import { rmSync } from 'node:fs';
 
-import UnpluginTypia from '@ryoppippi/unplugin-typia/esbuild';
+// import UnpluginTypia from '@ryoppippi/unplugin-typia/esbuild';
 import { build } from 'esbuild';
 import path from 'pathe';
 
@@ -16,5 +16,5 @@ build({
     target: 'node20',
     platform: 'node',
     bundle: true,
-    plugins: [UnpluginTypia()],
+    // plugins: [UnpluginTypia()],
 });

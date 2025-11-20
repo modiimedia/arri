@@ -72,14 +72,14 @@ const ValibotIntSchema = v.pipe(v.number(), v.integer());
 assert(v.is(ValibotIntSchema, intGoodInput) === true);
 assert(v.is(ValibotIntSchema, intBadInput) === false);
 
-type TypiaInt32 = number & typia.tags.Type<'int32'>;
+// type TypiaInt32 = number & typia.tags.Type<'int32'>;
 
-const TypiaIntValidator = typia.createIs<TypiaInt32>();
-const TypiaIntSerializer = typia.json.createStringify<TypiaInt32>();
-const TypiaIntValidateAndSerialize =
-    typia.json.createValidateStringify<TypiaInt32>();
-assert(TypiaIntValidator(intGoodInput) === true);
-assert(TypiaIntValidator(intBadInput) === false);
+// const TypiaIntValidator = typia.createIs<TypiaInt32>();
+// const TypiaIntSerializer = typia.json.createStringify<TypiaInt32>();
+// const TypiaIntValidateAndSerialize =
+//     typia.json.createValidateStringify<TypiaInt32>();
+// assert(TypiaIntValidator(intGoodInput) === true);
+// assert(TypiaIntValidator(intBadInput) === false);
 
 void benny.suite(
     'Int Validation',
@@ -125,9 +125,9 @@ void benny.suite(
     benny.add('Arktype', () => {
         ArktypeIntSchema(intGoodInput);
     }),
-    benny.add('Typia', () => {
-        TypiaIntValidator(intGoodInput);
-    }),
+    // benny.add('Typia', () => {
+    //     TypiaIntValidator(intGoodInput);
+    // }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -186,9 +186,9 @@ void benny.suite(
     benny.add('Arktype', () => {
         ArktypeIntSchema(intBadInput);
     }),
-    benny.add('Typia', () => {
-        TypiaIntValidator(intBadInput);
-    }),
+    // benny.add('Typia', () => {
+    //     TypiaIntValidator(intBadInput);
+    // }),
     benny.cycle(),
     benny.complete(),
     benny.save({
@@ -337,12 +337,12 @@ void benny.suite(
     // benny.add('Ajv - JTD (Compiled)', () => {
     //     ajvJtdSerializer(intGoodInput);
     // }),
-    benny.add('Typia', () => {
-        TypiaIntSerializer(intGoodInput);
-    }),
-    benny.add('Typia - Validate and Serialize', () => {
-        TypiaIntValidateAndSerialize(intGoodInput);
-    }),
+    // benny.add('Typia', () => {
+    //     TypiaIntSerializer(intGoodInput);
+    // }),
+    // benny.add('Typia - Validate and Serialize', () => {
+    //     TypiaIntValidateAndSerialize(intGoodInput);
+    // }),
     benny.add('JSON.stringify', () => {
         JSON.stringify(intGoodInput);
     }),

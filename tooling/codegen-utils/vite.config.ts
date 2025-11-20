@@ -20,11 +20,6 @@ export default defineConfig({
 
     test: {
         pool: 'threads',
-        poolOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         reporters: ['default'],
         globals: true,
         environment: 'node',
