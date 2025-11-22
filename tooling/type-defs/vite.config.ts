@@ -23,11 +23,6 @@ export default defineConfig({
         reporters: ['default'],
         pool: 'threads',
         passWithNoTests: true,
-        poolOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         environment: 'node',
         include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },

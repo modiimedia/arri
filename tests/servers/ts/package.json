@@ -6,8 +6,9 @@
     "@arrirpc/express-adapter": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "@types/express": "^5.0.1",
-    "@sinclair/typebox": "^0.34.37",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "@sinclair/typebox": "^0.34.41",
+    "arri": "workspace:*"
   },
   "scripts": {
     "start-server": "nx serve test-server",
@@ -19,7 +20,7 @@
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
-    "@faker-js/faker": "^9.9.0",
+    "@faker-js/faker": "^10.1.0",
     "arri": "workspace:*"
   }
 }

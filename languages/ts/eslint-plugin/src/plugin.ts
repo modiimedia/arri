@@ -31,4 +31,11 @@ export const configs: ESLint.Plugin['configs'] = {
 
 export const rules = allRules;
 
-export default { meta, configs, rules: allRules };
+type DefaultExport = {
+    meta: ESLint.Plugin['meta'];
+    configs: ESLint.Plugin['configs'];
+    rules: typeof allRules;
+};
+const defaultExport: DefaultExport = { meta, configs, rules: allRules };
+
+export default defaultExport;

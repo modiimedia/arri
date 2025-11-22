@@ -342,16 +342,16 @@ class Book implements ArriModel {
     return Book(
       id: "",
       name: "",
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      createdAt: DateTime(0),
+      updatedAt: DateTime(0),
     );
   }
 
   factory Book.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
-    final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime.now());
-    final updatedAt = dateTimeFromDynamic(_input_["updatedAt"], DateTime.now());
+    final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime(0));
+    final updatedAt = dateTimeFromDynamic(_input_["updatedAt"], DateTime(0));
     return Book(id: id, name: name, createdAt: createdAt, updatedAt: updatedAt);
   }
 
@@ -576,7 +576,7 @@ class ObjectWithEveryType implements ArriModel {
     return ObjectWithEveryType(
       string: "",
       boolean: false,
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
       float32: 0.0,
       float64: 0.0,
       int8: 0,
@@ -599,7 +599,7 @@ class ObjectWithEveryType implements ArriModel {
   factory ObjectWithEveryType.fromJson(Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final float32 = doubleFromDynamic(_input_["float32"], 0.0);
     final float64 = doubleFromDynamic(_input_["float64"], 0.0);
     final int8 = intFromDynamic(_input_["int8"], 0);
@@ -998,13 +998,13 @@ class DiscriminatorC implements Discriminator {
   String get typeName => "C";
 
   factory DiscriminatorC.empty() {
-    return DiscriminatorC(id: "", name: "", date: DateTime.now());
+    return DiscriminatorC(id: "", name: "", date: DateTime(0));
   }
 
   factory DiscriminatorC.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
-    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
     return DiscriminatorC(id: id, name: name, date: date);
   }
 

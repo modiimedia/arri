@@ -373,8 +373,8 @@ export const $$Book: ArriModelValidator<Book> = {
         return {
             id: '',
             name: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date(0),
+            updatedAt: new Date(0),
         };
     },
     validate(input): input is Book {
@@ -405,7 +405,7 @@ export const $$Book: ArriModelValidator<Book> = {
         } else if (input.createdAt instanceof Date) {
             _createdAt = input.createdAt;
         } else {
-            _createdAt = new Date();
+            _createdAt = new Date(0);
         }
         let _updatedAt: Date;
         if (typeof input.updatedAt === 'string') {
@@ -413,7 +413,7 @@ export const $$Book: ArriModelValidator<Book> = {
         } else if (input.updatedAt instanceof Date) {
             _updatedAt = input.updatedAt;
         } else {
-            _updatedAt = new Date();
+            _updatedAt = new Date(0);
         }
         return {
             id: _id,
@@ -570,7 +570,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         return {
             string: '',
             boolean: false,
-            timestamp: new Date(),
+            timestamp: new Date(0),
             float32: 0,
             float64: 0,
             int8: 0,
@@ -658,7 +658,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         } else if (input.timestamp instanceof Date) {
             _timestamp = input.timestamp;
         } else {
-            _timestamp = new Date();
+            _timestamp = new Date(0);
         }
         let _float32: number;
         if (typeof input.float32 === 'number') {
@@ -1142,7 +1142,7 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
             typeName: 'C',
             id: '',
             name: '',
-            date: new Date(),
+            date: new Date(0),
         };
     },
     validate(input): input is DiscriminatorC {
@@ -1174,7 +1174,7 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
         } else if (input.date instanceof Date) {
             _date = input.date;
         } else {
-            _date = new Date();
+            _date = new Date(0);
         }
         return {
             typeName: _typeName,
@@ -1328,7 +1328,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 } else if (input.timestamp instanceof Date) {
                     _timestamp = input.timestamp;
                 } else {
-                    _timestamp = new Date();
+                    _timestamp = new Date(0);
                 }
             }
             let _float32: number | undefined;
