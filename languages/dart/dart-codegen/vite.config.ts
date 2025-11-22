@@ -21,11 +21,6 @@ export default defineConfig({
     test: {
         globals: true,
         pool: 'threads',
-        poolOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         reporters: ['default', 'html'],
         outputFile: '.temp/test-results/index.html',
         cache: {

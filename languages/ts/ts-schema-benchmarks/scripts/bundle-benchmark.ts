@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-import unpluginTypia from '@ryoppippi/unplugin-typia/esbuild';
+// import unpluginTypia from '@ryoppippi/unplugin-typia/esbuild';
 import { build } from 'esbuild';
 import prettier from 'prettier';
 
@@ -23,7 +23,7 @@ async function main() {
         ],
         outdir: 'dist/bundle-size',
         bundle: true,
-        plugins: [unpluginTypia({})],
+        // plugins: [unpluginTypia({})],
     });
 
     const files = bundleSizeCases.map(

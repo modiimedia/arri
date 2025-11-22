@@ -22,11 +22,6 @@ export default defineConfig({
         globals: true,
         reporters: ['default'],
         pool: 'threads',
-        poolOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         environment: 'node',
         include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },

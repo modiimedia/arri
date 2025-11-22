@@ -14,6 +14,6 @@ include = ["/src"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4"
-reqwest = {version = "0.12", features = ["stream"]}
-serde_json = "1"
+chrono = { workspace = true }
+reqwest = { workspace = true }
+serde_json = { workspace = true }

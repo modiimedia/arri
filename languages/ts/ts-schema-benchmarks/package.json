@@ -3,16 +3,15 @@
   "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.34.37",
-    "arktype": "^2.1.20",
+    "@sinclair/typebox": "^0.34.41",
+    "arktype": "^2.1.27",
     "prettier": "^3.6.2",
-    "typia": "^9.4.0",
+    "typia": "^10.0.2",
     "valibot": "1.1.0",
-    "zod": "^3.25.76"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@ryoppippi/unplugin-typia": "^2.6.5",
-    "@samchon/openapi": "^4.4.1",
+    "@samchon/openapi": "^5.0.1",
     "autocannon": "^8.0.0",
     "citty": "^0.1.6"
   },

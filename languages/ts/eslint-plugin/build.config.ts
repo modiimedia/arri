@@ -16,7 +16,7 @@ export default defineBuildConfig({
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: false,
+            respectExternal: true,
         },
     },
     outDir: 'dist',
