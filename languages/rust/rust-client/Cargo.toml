@@ -17,9 +17,9 @@ include = ["/src"]
 arri_core = { path = "../rust-core", version = "0.80.3" }
 ulid = "1.2.1"
 async-trait = { version = "0.1" }
+serde_json = { workspace = true }
+reqwest = { workspace = true }
+chrono = { workspace = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
-chrono = { workspace = true }
-reqwest = { workspace = true }
-serde_json = { workspace = true }

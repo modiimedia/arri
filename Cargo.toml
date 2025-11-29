@@ -5,3 +5,11 @@ members = [
     "languages/rust/rust-codegen-reference",
     "tests/clients/rust",
 ]
+
+resolver = "2"
+
+[workspace.dependencies]
+chrono = "0.4"
+reqwest = { version = "0.12", features = ["stream"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
