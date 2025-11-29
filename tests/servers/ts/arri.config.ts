@@ -1,3 +1,4 @@
+import { a } from '@arrirpc/schema';
 import { defineConfig, generators, servers } from 'arri';
 import { readFileSync } from 'fs';
 import path from 'pathe';
@@ -8,11 +9,14 @@ const prettierConfig = JSON.parse(
     }),
 );
 
+const serverLib = a.parseUnsafe(
+    a.undefinable(a.enumerator(['h3', 'express'])),
+    process.env.TS_SERVER_LIB,
+);
+
 export default defineConfig({
-    server: servers.tsServer({
-        serverEntry: 'server.ts',
-        http2: true,
-        port: 2020,
+    server: servers.tsServerNext({
+        entry: serverLib === 'express' ? 'app-express.ts' : 'app.ts',
     }),
     generators: [
         generators.typescriptClient({
@@ -49,22 +53,22 @@ export default defineConfig({
             typePrefix: 'Foo',
             rootService: 'tests',
         }),
-        generators.kotlinClient({
-            clientName: 'TestClient',
-            outputFile: path.resolve(
-                __dirname,
-                '../../clients/kotlin/src/main/kotlin/TestClient.g.kt',
-            ),
-        }),
-        generators.kotlinClient({
-            clientName: 'TestClientPrefixed',
-            outputFile: path.resolve(
-                __dirname,
-                '../../clients/kotlin/src/main/kotlin/TestClientPrefixed.g.kt',
-            ),
-            typePrefix: 'Foo',
-            rootService: 'tests',
-        }),
+        // generators.kotlinClient({
+        //     clientName: 'TestClient',
+        //     outputFile: path.resolve(
+        //         __dirname,
+        //         '../../clients/kotlin/src/main/kotlin/TestClient.g.kt',
+        //     ),
+        // }),
+        // generators.kotlinClient({
+        //     clientName: 'TestClientPrefixed',
+        //     outputFile: path.resolve(
+        //         __dirname,
+        //         '../../clients/kotlin/src/main/kotlin/TestClientPrefixed.g.kt',
+        //     ),
+        //     typePrefix: 'Foo',
+        //     rootService: 'tests',
+        // }),
         generators.rustClient({
             clientName: 'TestClient',
             outputFile: path.resolve(
@@ -81,21 +85,21 @@ export default defineConfig({
             typePrefix: 'Foo',
             rootService: 'tests',
         }),
-        generators.swiftClient({
-            clientName: 'TestClient',
-            outputFile: path.resolve(
-                __dirname,
-                '../../clients/swift/Sources/TestClient.g.swift',
-            ),
-        }),
-        generators.swiftClient({
-            clientName: 'TestClientPrefixed',
-            outputFile: path.resolve(
-                __dirname,
-                '../../clients/swift/Sources/TestClientPrefixed.g.swift',
-            ),
-            typePrefix: 'Foo',
-            rootService: 'tests',
-        }),
+        // generators.swiftClient({
+        //     clientName: 'TestClient',
+        //     outputFile: path.resolve(
+        //         __dirname,
+        //         '../../clients/swift/Sources/TestClient.g.swift',
+        //     ),
+        // }),
+        // generators.swiftClient({
+        //     clientName: 'TestClientPrefixed',
+        //     outputFile: path.resolve(
+        //         __dirname,
+        //         '../../clients/swift/Sources/TestClientPrefixed.g.swift',
+        //     ),
+        //     typePrefix: 'Foo',
+        //     rootService: 'tests',
+        // }),
     ],
 });

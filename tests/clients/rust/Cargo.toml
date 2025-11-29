@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-arri_client = { path = "../../../languages/rust/rust-client"}
+arri_client = { path = "../../../languages/rust/rust-client" }
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
 rand = "0.8"

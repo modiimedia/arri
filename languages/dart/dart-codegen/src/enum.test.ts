@@ -12,6 +12,7 @@ test('Outputs proper enum', () => {
             },
         },
         {
+            transports: ['http'],
             clientName: '',
             clientVersion: '2',
             generatedTypes: [],
@@ -60,6 +61,7 @@ test('Outputs proper enum with prefixed name', () => {
             },
         },
         {
+            transports: ['http'],
             clientName: '',
             clientVersion: '2',
             generatedTypes: [],
@@ -113,7 +115,6 @@ class MyClientUser implements ArriModel {
         _queryParts_.add("role=\${role.serialValue}");
         return _queryParts_.join("&");
     }
-    @override
     MyClientUser copyWith({
         String? id,
         MyClientUserRole? role,
@@ -172,6 +173,7 @@ test('Does not output invalid enum sub type names', () => {
             },
         },
         {
+            transports: ['http'],
             clientName: '',
             modelPrefix: '',
             generatedTypes: [],

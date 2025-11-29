@@ -2,7 +2,7 @@ _This is a work in progress_
 
 # Arri App Definition
 
-This documents defines the app definition specification for Arri RPC. The current schema version is 0.0.7.
+This documents defines the app definition specification for Arri RPC. The current schema version is 0.0.8.
 
 ## Table of Contents
 
@@ -42,34 +42,34 @@ The procedures object contains all of the procedures available in the applicatio
 ```json
 {
     "getUser": {
-        "transport": "http",
+        "transports": ["http"],
         "path": "/get-user",
         "method": "get",
-        "params": "UserParams",
-        "response": "User"
+        "input": "GetUserInput",
+        "output": "User"
     }
 }
 ```
 
-Tells client generators that the procedure `getUser()` can be invoked at `/get-user` using the `GET` HTTP method. It also tells us that the procedures takes `UserParams` as an input and returns `User` as an output.
+Tells client generators that the procedure `getUser()` can be invoked at `/get-user` using the `GET` HTTP method. It also tells us that the procedures takes `GetUserInput` as an input and returns `User` as an output.
 
 Additionally keys can make use of `.` to nest procedures into services. For example,
 
 ```json
 {
     "users.getUser": {
-        "transport": "http",
+        "transports": ["http"],
         "path": "/users/get-user",
         "method": "get",
-        "params": "UserParams",
-        "response": "User"
+        "input": "GetUserInput",
+        "output": "User"
     },
     "users.createUser": {
-        "transport": "http",
+        "transports": ["http"],
         "path": "/users/create-user",
         "method": "post",
-        "params": "User",
-        "response": "User"
+        "input": "User",
+        "output": "User"
     }
 }
 ```
@@ -80,19 +80,15 @@ Tells client generators that `getUser()` and `createUser()` are functions that s
 
 | Property       | Type                                       | Required | Description                                                                                                                                                                                                   |
 | -------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| transport      | string                                     | yes      | The transport used to invoke the RPC. (Right now only `"http"` is supported natively.)                                                                                                                        |
-| path           | string                                     | yes      | URL path used to invoke the procedure                                                                                                                                                                         |
-| method         | "get", "post", "patch", "put", or "delete" | no       | HTTP method. If not present Arri will use `post` by default.                                                                                                                                                  |
+| transports     | string[]                                   | yes      | The support transport(s) that the procedure can be called over. (Arri has 1st party support for HTTP and Websockets)                                                                                          |
+| path           | string                                     | yes      | URL path used to invoke the procedure (HTTP only)                                                                                                                                                             |
+| method         | "get", "post", "patch", "put", or "delete" | no       | HTTP method. If not present Arri will use `post` by default. (HTTP only)                                                                                                                                      |
 | params         | string                                     | no       | A string indicating which type from the [Definitions Object](#definitions-object) this procedure receives as an input. If not defined then the procedure will be treated as having no inputs.                 |
 | response       | string                                     | no       | A string indicating which type from the [Definitions Object](#definitions-object) this procedure returns. If not defined then the procedure will be treated as having no response.                            |
 | description    | string                                     | no       | A string that will become doc comments for this procedure when passed to the arri code generators                                                                                                             |
 | isEventStream  | boolean                                    | no       | Setting this to `true` makes this an "event stream" procedure. Meaning that the server will stream realtime events back to the client. Over HTTP Arri will make use of server sent events to accomplish this. |
 | isDeprecated   | boolean                                    | no       | Mark a procedure as deprecated                                                                                                                                                                                |
 | deprecatedNote | string                                     | no       | Add a deprecation message to the procedure (use alongside `isDeprecated`)                                                                                                                                     |
-
-#### A Note On Transports
-
-Currently Arri only supports `http` however work is being done to allow for swapping of the transport protocol. Long term, Arri plans to have first class support for HTTP and Websockets with the ability for users to use their own custom transports as desired.
 
 ### Definitions Object
 

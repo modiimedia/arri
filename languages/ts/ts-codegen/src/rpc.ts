@@ -1,9 +1,4 @@
-import {
-    HttpRpcDefinition,
-    pascalCase,
-    RpcDefinition,
-    WsRpcDefinition,
-} from '@arrirpc/codegen-utils';
+import { pascalCase, RpcDefinition } from '@arrirpc/codegen-utils';
 
 import { CodegenContext, getJsDocComment, validVarName } from './common';
 
@@ -20,106 +15,116 @@ export function tsRpcFromDefinition(
     def: RpcDefinition,
     context: CodegenContext,
 ): string {
-    const customFn = context.rpcGenerators[def.transport];
-    if (customFn) return customFn(def, context);
-    switch (def.transport) {
-        case 'http':
-            return httpRpcFromDefinition(def, context);
-        case 'ws':
-            return wsRpcFromDefinition(def, context);
-        default:
-            console.warn(
-                `[ts-codegen] Warning: unsupported transport "${def.transport}". Ignoring ${context.instancePath}.`,
-            );
-            return '';
-    }
-}
-
-export function httpRpcFromDefinition(
-    def: HttpRpcDefinition,
-    context: CodegenContext,
-): string {
     const key = getRpcKey(context);
-    const params = def.params
-        ? `${context.typePrefix}${pascalCase(validVarName(def.params))}`
+    const params = def.input
+        ? `${context.typePrefix}${pascalCase(validVarName(def.input))}`
         : undefined;
-    const response = def.response
-        ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
+    const response = def.output
+        ? `${context.typePrefix}${pascalCase(validVarName(def.output), { normalize: true })}`
         : undefined;
-    const serializerMethod =
-        def.method === 'get' ? 'toUrlQueryString' : 'toJsonString';
-    if (def.isEventStream) {
+    const transportType = def.transports.map((val) => `'${val}'`).join(' | ');
+
+    if (def.outputIsStream) {
         context.usedFeatures.sse = true;
         return `${getJsDocComment({
             description: def.description,
             isDeprecated: def.isDeprecated,
-        })}    ${key}(${params ? `params: ${params},` : ''} options: SseOptions<${response ?? 'undefined'}> = {}): EventSourceController {
-        return arriSseRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>(
-            {
-                url: \`\${this._baseUrl}${def.path}\`,
-                method: "${def.method.toLowerCase()}",
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                ${params ? 'params: params,' : ''}
-                responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-                responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-                serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
-                clientVersion: "${context.versionNumber}",
-            },
-            options,
+        })}    ${key}(
+        ${params ? `params: ${params},` : ''}
+        options?: StreamHooks<${response ?? 'undefined'}>
+    ): StreamController {
+        const req: RpcRequest<${params ?? 'undefined'}> = {
+            reqId: this.__genReqId__(),
+            procedure: '${context.instancePath}',
+            path: '${def.path}',
+            method: ${def.method ? `'${def.method}'` : 'undefined'},
+            clientVersion: ${context.versionNumber ? `'${context.versionNumber}'` : 'undefined'},
+            data: ${params ? 'params' : 'undefined'},
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<${params ?? 'undefined'}, ${response ?? 'undefined'}> = {
+            params: ${params ? `$$${params}` : 'UndefinedModelValidator'},
+            response: ${response ? `$$${response}` : 'UndefinedModelValidator'},
+        };
+        const transport = ${
+            def.transports.length === 1
+                ? `'${def.transports[0]!}'`
+                : `resolveTransport<__TransportOption__>(
+            [${def.transports.map((val) => `'${val}'`).join(', ')}],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                \`Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.\`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }`
+        };
+        const dispatcher = this.__dispatchers__[transport];
+        if(!dispatcher) {
+            const err = new Error(
+                \`Missing dispatcher for transport "\${transport}"\`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
+            req,
+            validator,
+            options ?? {},
         );
     }`;
     }
-    return `${getJsDocComment({
-        description: def.description,
-        isDeprecated: def.isDeprecated,
-    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: ArriRequestOptions): Promise<${response ?? 'undefined'}> {
-        return arriRequest<${response ?? 'undefined'}, ${params ?? 'undefined'}>({
-            url: \`\${this._baseUrl}${def.path}\`,
-            method: "${def.method.toLowerCase()}",
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            ${params ? 'params: params,' : ''}
-            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-            serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
-            clientVersion: "${context.versionNumber}",
-            options: options ?? this._options,
-        });
-    }`;
-}
 
-export function wsRpcFromDefinition(
-    def: WsRpcDefinition,
-    context: CodegenContext,
-): string {
-    context.usedFeatures.ws = true;
-    const key = getRpcKey(context);
-    const params = def.params
-        ? `${context.typePrefix}${pascalCase(validVarName(def.params))}`
-        : undefined;
-    const response = def.response
-        ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
-        : undefined;
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
-    })}    async ${key}(options: WsOptions<${response ?? 'undefined'}> = {}): Promise<WsController<${params ?? 'undefined'},${response ?? 'undefined'}>> {
-        return arriWsRequest<${params ?? 'undefined'}, ${response ?? 'undefined'}>({
-            url: \`\${this._baseUrl}${def.path}\`,
-            headers: this._headers,
-            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-            serializer: ${params ? `$$${params}.toJsonString` : '() => {}'},
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: "${context.versionNumber}",
-        });
+    })}    async ${key}(${params ? `params: ${params}, ` : ''}options?: RpcOptions<${transportType}>): Promise<${response ?? 'undefined'}> {
+        const finalOptions = resolveDispatcherOptions(options, this.__options__);
+        const req: RpcRequest<${params ?? 'undefined'}> = {
+            reqId: this.__genReqId__(),
+            procedure: '${context.instancePath}',
+            path: '${def.path}',
+            method: ${def.method ? `'${def.method}'` : 'undefined'},
+            clientVersion: ${context.versionNumber ? `'${context.versionNumber}'` : 'undefined'},
+            data: ${params ? 'params' : 'undefined'},
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<${params ?? 'undefined'}, ${response ?? 'undefined'}> = {
+            params: ${params ? `$$${params}` : 'UndefinedModelValidator'},
+            response: ${response ? `$$${response}` : 'UndefinedModelValidator'},
+        };
+        const transport = ${
+            def.transports.length === 1
+                ? `'${def.transports[0]!}'`
+                : `resolveTransport<__TransportOption__>(
+            [${def.transports.map((val) => `'${val}'`).join(', ')}],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                \`Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.\`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }`
+        };
+        const dispatcher = this.__dispatchers__[transport];
+        if(!dispatcher) {
+            const err = new Error(
+                \`Missing dispatcher for transport "\${transport}"\`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<${params ?? 'undefined'}, ${response ?? 'undefined'}>(
+            req,
+            validator,
+            finalOptions,
+        );
     }`;
 }
 

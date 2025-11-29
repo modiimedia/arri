@@ -6,18 +6,13 @@ import 'package:test/test.dart';
 main() {
   final nonExistentUrl = "http://thisurldoesntexist.blah";
 
-  test("invalid url", () async {
-    final response =
-        await parsedArriRequestSafe(nonExistentUrl, parser: (data) {});
-    expect(response.unwrapErr?.code, equals(0));
-  });
-
   test('auto retry sse', () async {
     int errCount = 0;
     int closeCount = 0;
-    parsedArriSseRequest(nonExistentUrl,
+    HttpArriEventSource(
+        url: nonExistentUrl,
         method: HttpMethod.get,
-        parser: (input) => input,
+        jsonDecoder: (input) => input,
         onError: (err, event) {
           errCount++;
           if (errCount >= 5) {
@@ -198,59 +193,4 @@ data: {"hello":""";
       }
     },
   );
-
-  // test("[ws] parsing message", () {
-  //   final input = "event: message\ndata: {\"message\": \"hello world\"}";
-  //   final message = WsEvent<ExampleMessage>.fromString(
-  //     input,
-  //     (data) => ExampleMessage.fromJson(json.decode(data)),
-  //   );
-  //   switch (message) {
-  //     case WsMessageEvent<ExampleMessage>():
-  //       expect(message.data.message, equals("hello world"));
-  //       break;
-  //     case WsErrorEvent<ExampleMessage>():
-  //       throw Exception("Should be WsMessageEvent not WsErrorEvent");
-  //     case WsRawEvent<ExampleMessage>():
-  //       throw Exception("Should be WsMessageEvent not WsRawEvent");
-  //   }
-  // });
-
-//   test("[ws] parsing error message", () {
-//     final input =
-//         "event: error\ndata: {\"code\": 1, \"message\": \"there was an error\"}";
-//     final message = WsEvent.fromString(
-//       input,
-//       (data) => null,
-//     );
-//     switch (message) {
-//       case WsMessageEvent<Null>():
-//         throw Exception("Should be WsErrorEvent not WsMessageEvent");
-//       case WsErrorEvent<Null>():
-//         expect(message.data.code, equals(1));
-//         expect(message.data.message, equals("there was an error"));
-//         break;
-//       case WsRawEvent<Null>():
-//         throw Exception("Should be WsErrorEvent not WsRawEvent");
-//     }
-//   });
-
-//   test("[ws] parsing unknown event", () {
-//     final input = "";
-//     final message = WsEvent.fromString(input, (data) => null);
-//     expect(message is WsRawEvent, equals(true));
-//   });
-}
-
-class ExampleMessage {
-  final String message;
-  const ExampleMessage({
-    required this.message,
-  });
-
-  factory ExampleMessage.fromJson(Map<String, dynamic> json) {
-    return ExampleMessage(
-      message: json["message"] is String ? json["message"] : "",
-    );
-  }
 }

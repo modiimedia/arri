@@ -20,8 +20,16 @@
     "integration-test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "dart test --reporter=expanded --chain-stack-traces",
+        "command": "dart test --reporter=expanded --chain-stack-traces --use-data-isolate-strategy",
         "cwd": "tests/clients/dart"
+      },
+      "configurations": {
+        "websockets": {
+          "command": "dart --define=CLIENT_TRANSPORT=ws test --reporter=expanded --chain-stack-traces --use-data-isolate-strategy"
+        },
+        "ws": {
+          "command": "dart --define=CLIENT_TRANSPORT=ws test --reporter=expanded --chain-stack-traces --use-data-isolate-strategy"
+        }
       }
     },
     "lint": {

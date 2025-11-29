@@ -1,4 +1,9 @@
-import { AppDefinition, createAppDefinition } from './appDef';
+import {
+    AppDefinition,
+    createAppDefinition,
+    isRpcDefinition,
+    RpcDefinition,
+} from './appDef';
 import { SchemaFormProperties } from './typeDef';
 
 test('create app definition', () => {
@@ -26,21 +31,21 @@ test('create app definition', () => {
     const result = createAppDefinition({
         procedures: {
             sayHello: {
-                transport: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/say-hello',
             },
             createConnection: {
-                transport: 'ws',
+                transports: ['ws'],
                 path: '/ws',
-                params: {
+                input: {
                     properties: {
                         message: {
                             type: 'string',
                         },
                     },
                 },
-                response: {
+                output: {
                     properties: {
                         message: {
                             type: 'string',
@@ -49,36 +54,37 @@ test('create app definition', () => {
                 },
             },
             'utils.getSettings': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/utils/get-settings',
-                params: SettingsParams,
-                response: Settings,
+                input: SettingsParams,
+                output: Settings,
             },
         },
     });
     const expectedResult: AppDefinition = {
         schemaVersion: '0.0.8',
+        transports: ['http', 'ws'],
         procedures: {
             sayHello: {
-                transport: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/say-hello',
-                params: undefined,
-                response: undefined,
+                input: undefined,
+                output: undefined,
             },
             createConnection: {
-                transport: 'ws',
+                transports: ['ws'],
                 path: '/ws',
-                params: 'CreateConnectionParams',
-                response: 'CreateConnectionResponse',
+                input: 'CreateConnectionParams',
+                output: 'CreateConnectionResponse',
             },
             'utils.getSettings': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/utils/get-settings',
-                params: 'SettingsParams',
-                response: 'Settings',
+                input: 'SettingsParams',
+                output: 'Settings',
             },
         },
         definitions: {
@@ -121,4 +127,40 @@ test('create app definition', () => {
     expect(JSON.parse(JSON.stringify(result))).toStrictEqual(
         JSON.parse(JSON.stringify(expectedResult)),
     );
+});
+
+test('is rpc definition', () => {
+    const inputs: RpcDefinition[] = [
+        {
+            transports: ['http'],
+            path: '/hello-world',
+        },
+        {
+            transports: ['http', 'ws'],
+            method: 'put',
+            path: '/hello-world/2',
+            input: 'HelloWorldParams',
+            output: 'HelloWorldResponse',
+        },
+        {
+            transports: ['http'],
+            method: 'get',
+            path: '/hello-world/2',
+            output: 'HelloWorldResponse',
+            outputIsStream: true,
+        },
+        {
+            transports: ['http'],
+            path: '/rpcs/tests/send-partial-object',
+            method: undefined,
+            input: 'ObjectWithEveryOptionalType',
+            output: 'ObjectWithEveryOptionalType',
+            description: undefined,
+            isDeprecated: undefined,
+            deprecationNote: undefined,
+        },
+    ];
+    for (const input of inputs) {
+        expect(isRpcDefinition(input)).toBe(true);
+    }
 });

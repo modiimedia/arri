@@ -371,19 +371,19 @@ func (m OrderedMap[T]) TypeDef(tc TypeDefContext) (*TypeDef, error) {
 	return &result, nil
 }
 
-type Message[T MessageType] struct {
-	Value T
-}
-
-func NewMessage[T MessageType](value T) Message[T] {
-	return Message[T]{Value: value}
-}
-
-type (
-	TextMessage  struct{}
-	ImageMessage struct{}
-)
-
-type MessageType interface {
-	TextMessage | ImageMessage
+func maybeAppendTransport(input []string, val []string) []string {
+	for _, valEl := range val {
+		shouldSkip := false
+		for _, inputEl := range input {
+			if inputEl == valEl {
+				shouldSkip = true
+				break
+			}
+		}
+		if shouldSkip {
+			continue
+		}
+		input = append(input, valEl)
+	}
+	return input
 }

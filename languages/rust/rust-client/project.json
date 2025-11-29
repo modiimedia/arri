@@ -21,7 +21,21 @@
       "outputs": ["{projectRoot}/target"],
       "cache": false,
       "options": {
-        "command": "cargo test -- --nocapture",
+        "command": "cargo test --lib -- --nocapture",
+        "cwd": "languages/rust/rust-client"
+      }
+    },
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src",
+        "{projectRoot}/Cargo.lock",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/tests"
+      ],
+      "cache": false,
+      "options": {
+        "command": "cargo test --test '*'",
         "cwd": "languages/rust/rust-client"
       }
     },
