@@ -88,6 +88,7 @@ func (m Message) EncodeBytes() []byte {
 			output = AppendHeader(output, "req-id", m.ReqId)
 		}
 	case ErrorMessage:
+		allowBody = true
 		output = append(output, "ARRIRPC/"+ARRI_VERSION+" ERROR\n"...)
 		if m.ContentType.IsSet {
 			output = AppendHeader(output, "content-type", string(m.ContentType.Value))
@@ -158,7 +159,7 @@ func AppendCustomHeaders(input []byte, headers Headers) []byte {
 	return input
 }
 
-func NewClientMessage(
+func NewInvocationMessage(
 	reqId string,
 	rpcName string,
 	clientVersion Option[string],
@@ -178,7 +179,7 @@ func NewClientMessage(
 	}
 }
 
-func NewServerSuccessMessage(
+func NewOkMessage(
 	reqId string,
 	contentType ContentType,
 	headers Headers,
@@ -194,32 +195,38 @@ func NewServerSuccessMessage(
 	}
 }
 
-func NewServerFailureMessage(
+func NewErrorMessage(
 	reqId string,
 	contentType ContentType,
 	headers Headers,
 	err RpcError,
 ) Message {
-	body := []byte{'{'}
+	body := []byte{}
 	hasFields := false
 	if err.Data().IsSet {
 		dataJson, err := EncodeJSON(err.Data().Value, EncodingOptions{})
 		if err == nil {
+			body = append(body, '{')
 			body = append(body, "\"data\":"...)
 			body = append(body, dataJson...)
 			hasFields = true
 		}
 	}
-	if err.Trace().IsSet {
+	if debugModeEnabled && err.Trace().IsSet {
 		traceJson, err := EncodeJSON(err.Trace().Value, EncodingOptions{})
 		if err == nil {
 			if hasFields {
 				body = append(body, ',')
+			} else {
+				body = append(body, '{')
 			}
 			body = append(body, "\"trace\":"...)
 			body = append(body, traceJson...)
 			hasFields = true
 		}
+	}
+	if hasFields {
+		body = append(body, '}')
 	}
 	return Message{
 		ArriRpcVersion: ARRI_VERSION,
@@ -237,8 +244,12 @@ func NewConnectionStartMessage(heartbeatInterval Option[uint32]) Message {
 	return Message{Type: ConnectionStartMessage, HeartbeatInterval: heartbeatInterval}
 }
 
-func NewHeartbeatMessage(heartbeatInterval uint32) Message {
-	return Message{Type: HeartbeatMessage, HeartbeatInterval: Some(heartbeatInterval)}
+func NewHeartbeatMessage(heartbeatInterval Option[uint32]) Message {
+	return Message{
+		ArriRpcVersion:    ARRI_VERSION,
+		Type:              HeartbeatMessage,
+		HeartbeatInterval: heartbeatInterval,
+	}
 }
 
 func NewStreamStartMessage(reqId string, contentType ContentType, heartbeatInterval Option[uint32], customHeaders Headers) Message {
@@ -428,6 +439,12 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 			Type:           msgType.Value,
 			ReqId:          reqId.Value,
 			Reason:         reason,
+		}, nil
+	case HeartbeatMessage:
+		return Message{
+			ArriRpcVersion:    ARRI_VERSION,
+			Type:              msgType.Value,
+			HeartbeatInterval: heartbeatInterval,
 		}, nil
 	default:
 		return Message{}, NewDecodeMessageCustomError(fmt.Errorf("Not implemented: " + string(msgType.Value)))

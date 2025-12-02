@@ -61,20 +61,20 @@ func (a *HttpAdapter[T]) RegisterRpc(
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
 			err := Error(404, "")
-			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
 		if a.options.OnRequest != nil {
 			err := a.options.OnRequest(req, r)
 			if err != nil {
-				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 		}
 		err := a.globalOptions.OnRequest(req)
 		if err != nil {
-			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		var params any
@@ -82,19 +82,19 @@ func (a *HttpAdapter[T]) RegisterRpc(
 		case HttpMethodGet:
 			result, err := paramValidator.DecodeURLQueryParams(r.URL.Query())
 			if err != nil {
-				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 			params = result
 		default:
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
-				handleError(false, w, req, Error(400, err.Error()), a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, Error(400, err.Error()), a.globalOptions.OnError, encodingOptions)
 				return
 			}
 			result, decodeErr := paramValidator.DecodeJSON(b)
 			if decodeErr != nil {
-				handleError(false, w, req, decodeErr, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, decodeErr, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 			params = result
@@ -102,30 +102,30 @@ func (a *HttpAdapter[T]) RegisterRpc(
 		for _, middleware := range a.middlewares {
 			err := middleware(req)
 			if err != nil {
-				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 		}
 		response, err := handler(params, *req)
 		if err != nil {
-			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		err = a.globalOptions.OnBeforeResponse(req, params, response)
 		if err != nil {
-			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		payload, payloadErr := responseValidator.EncodeJSON(response)
 		if payloadErr != nil {
-			handleError(false, w, req, ErrorWithData(500, payloadErr.Error(), Some[any](payloadErr)), a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, ErrorWithData(500, payloadErr.Error(), Some[any](payloadErr)), a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(payload)
 		err = a.globalOptions.OnAfterResponse(req, params, response)
 		if err != nil {
-			handleError(true, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(true, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 	})
@@ -157,13 +157,13 @@ func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
 			err := Error(404, "")
-			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
 		err := a.globalOptions.OnRequest(req)
 		if err != nil {
-			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+			handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 			return
 		}
 		var params any
@@ -171,19 +171,19 @@ func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 		case HttpMethodGet:
 			result, err := paramValidator.DecodeURLQueryParams(r.URL.Query())
 			if err != nil {
-				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 			params = result
 		default:
 			b, err := io.ReadAll(r.Body)
 			if err != nil {
-				handleError(false, w, req, Error(400, err.Error()), a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, Error(400, err.Error()), a.globalOptions.OnError, encodingOptions)
 				return
 			}
 			result, decodeErr := paramValidator.DecodeJSON(b)
 			if decodeErr != nil {
-				handleError(false, w, req, decodeErr, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, decodeErr, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 			params = result
@@ -191,7 +191,7 @@ func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 		for _, middleware := range a.middlewares {
 			err := middleware(req)
 			if err != nil {
-				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions, a.globalOptions.Debug)
+				handleError(false, w, req, err, a.globalOptions.OnError, encodingOptions)
 				return
 			}
 		}
@@ -205,7 +205,6 @@ func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 				responseErr,
 				a.globalOptions.OnError,
 				encodingOptions,
-				a.globalOptions.Debug,
 			)
 			return
 		}
@@ -297,7 +296,6 @@ func handleError[TMeta any](
 	err RpcError,
 	onError func(*Request[TMeta], error),
 	encodingOptions EncodingOptions,
-	allowTrace bool,
 ) {
 	onError(req, err)
 	if responseSent {
@@ -306,7 +304,7 @@ func handleError[TMeta any](
 	w.Header().Set("err-code", fmt.Sprint(err.Code()))
 	w.Header().Set("err-msg", fmt.Sprint(err.Error()))
 	w.WriteHeader(int(err.Code()))
-	body := RpcErrorToJSON(err, encodingOptions, allowTrace)
+	body := RpcErrorToJSON(err, encodingOptions)
 	w.Write(body)
 }
 

@@ -39,7 +39,26 @@ func (e errorResponse) Trace() Option[[]string] {
 	return e.trace
 }
 
-func RpcErrorToJSON(err RpcError, encodingOption EncodingOptions, allowTrace bool) []byte {
+func (e errorResponse) ErrorMessage(reqId string, contentType ContentType, allowTrace bool, encodingOptions EncodingOptions) Message {
+	var body Option[[]byte] = None[[]byte]()
+	switch contentType {
+	case ContentTypeJson:
+		bodyBytes, err := EncodeJSON(e.data, encodingOptions)
+		if err == nil {
+			body.Set(bodyBytes)
+		}
+	}
+	return Message{
+		Type:        ErrorMessage,
+		ReqId:       reqId,
+		ContentType: Some(contentType),
+		ErrCode:     Some(e.code),
+		ErrMsg:      Some(e.message),
+		Body:        body,
+	}
+}
+
+func RpcErrorToJSON(err RpcError, encodingOption EncodingOptions) []byte {
 	output := []byte{}
 	output = append(output, '{')
 	data := err.Data()
@@ -54,7 +73,7 @@ func RpcErrorToJSON(err RpcError, encodingOption EncodingOptions, allowTrace boo
 			output = append(output, dataJson...)
 		}
 	}
-	if allowTrace && trace.IsSet {
+	if debugModeEnabled && trace.IsSet {
 		traceJson, err := EncodeJSON(trace.Value, encodingOption)
 		if err == nil {
 			output = append(output, ",\"trace\":"...)

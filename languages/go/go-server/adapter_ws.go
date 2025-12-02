@@ -9,25 +9,32 @@ import (
 	"github.com/lxzan/gws"
 )
 
+type handleObj struct {
+	HandlerType         string // "STANDARD" | "OUTPUT_STREAM"
+	StandardHandler     func(Message) ([]byte, RpcError)
+	OutputStreamHandler func(Message) ([]byte, RpcError)
+}
+
 type WsAdapter[T any] struct {
 	middlewares   [](func(req *Request[T]) RpcError)
 	globalOptions AppOptions[T]
 	httpRegister  HttpTransportAdapter[T]
 	options       WsAdapterOptions[T]
-	handlers      map[string]func(Message) ([]byte, RpcError)
+	handlers      map[string]handleObj
 }
 
 type WsAdapterOptions[T any] struct {
-	OnUpgrade      func(req *Request[T], connection any) // TODO: type the ws connection
-	ConnectionPath string                                // defaults to "/ws"
+	OnUpgrade      func(r *http.Request, connection *gws.Conn) // TODO: type the ws connection
+	ConnectionPath string                                      // defaults to "/ws"
 }
 
 func (w WsAdapter[T]) OnOpen(socket *gws.Conn) {
+	fmt.Println("OPENED", socket.RemoteAddr(), socket.Session())
 	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
 }
 
 func (w WsAdapter[T]) OnClose(socket *gws.Conn, err error) {
-	// TODO
+	fmt.Println("CLOSED", socket.RemoteAddr(), socket.Session(), err)
 }
 
 func (w WsAdapter[T]) OnPing(socket *gws.Conn, payload []byte) {
@@ -39,13 +46,50 @@ func (w WsAdapter[T]) OnPong(socket *gws.Conn, payload []byte) {}
 
 func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 	defer message.Close()
-	msg, err := DecodeMessage(message.Bytes())
+	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
+	encodingOptions := EncodingOptions{KeyCasing: w.globalOptions.KeyCasing, MaxDepth: w.globalOptions.MaxDepth}
+	arriMsg, err := DecodeMessage(message.Bytes())
 	if err != nil {
-		errBody, _ := EncodeJSON(err, EncodingOptions{KeyCasing: w.globalOptions.KeyCasing, MaxDepth: w.globalOptions.MaxDepth})
-		socket.WriteAsync(gws.OpcodeText, errBody, func(err error) {})
+		msgStr := message.Data.String()
+		if msgStr == "ping" || msgStr == "PING" {
+			return
+		}
+		payload := NewErrorMessage(
+			arriMsg.ReqId,
+			arriMsg.ContentType.UnwrapOr(ContentTypeJson),
+			Headers{},
+			Error(400, err.Error()),
+		)
+		socket.WriteAsync(gws.OpcodeText, payload.EncodeBytes(), func(err error) {})
 		return
 	}
-	// TODO
+	contentType := arriMsg.ContentType.UnwrapOr(ContentTypeJson)
+	switch arriMsg.Type {
+	case InvocationMessage:
+		handler, ok := w.handlers[arriMsg.RpcName.UnwrapOr("")]
+		if !ok {
+			errBody, _ := EncodeJSON(Error(404, "Procedure not found"), encodingOptions)
+			socket.WriteAsync(gws.OpcodeText, errBody, func(err error) {})
+			return
+		}
+		if handler.StandardHandler != nil {
+			response, err := handler.StandardHandler(arriMsg)
+			if err != nil {
+				errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
+				socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
+				return
+			}
+			okMsg := NewOkMessage(arriMsg.ReqId, contentType, Headers{}, Some(response))
+			socket.WriteAsync(gws.OpcodeText, okMsg.Body.UnwrapOr([]byte{}), func(err error) {})
+			return
+		}
+		if handler.OutputStreamHandler != nil {
+			// TODO
+			panic("Not yet implemented")
+		}
+	}
+	socket.WriteAsync(gws.OpcodeText, []byte("invalid message"), func(err error) {})
+	socket.WriteClose(1000, []byte("invalid message"))
 }
 
 func NewWsAdapter[T any](httpAdapter HttpTransportAdapter[T], options WsAdapterOptions[T]) *WsAdapter[T] {
@@ -76,6 +120,9 @@ func setupWsConnectionHandler[T any](ws *WsAdapter[T]) {
 			w.Write(payload)
 			return
 		}
+		if ws.options.OnUpgrade != nil {
+			ws.options.OnUpgrade(r, c)
+		}
 		go func() {
 			c.ReadLoop()
 		}()
@@ -87,25 +134,31 @@ func (_ WsAdapter[T]) TransportId() string {
 }
 
 func (w *WsAdapter[T]) RegisterRpc(name string, def RpcDef, paramValidator Validator, responseValidator Validator, handler func(any, Request[T]) (any, RpcError)) {
-	w.handlers[name] = func(msg Message) ([]byte, RpcError) {
-		if msg.Type != InvocationMessage {
-			return []byte{}, Error(400, fmt.Sprintf("Expected RPC invocation message. Got %s", msg.Type))
-		}
-		ctx := context.Background()
-		params, resErr := paramValidator.DecodeJSON(msg.Body.UnwrapOr([]byte{}))
-		if resErr != nil {
-			return []byte{}, resErr
-		}
-		req := NewRequest[T](ctx, name, w.TransportId(), "", "", map[string]string{})
-		res, resErr := handler(params, *req)
-		if resErr != nil {
-			return []byte{}, resErr
-		}
-		body, err := responseValidator.EncodeJSON(res)
-		if err != nil {
-			return []byte{}, Error(500, fmt.Sprintf("Error serializing response, %s", err))
-		}
-		return body, nil
+	if w.handlers == nil {
+		w.handlers = map[string]handleObj{}
+	}
+	w.handlers[name] = handleObj{
+		HandlerType: "STANDARD",
+		StandardHandler: func(msg Message) ([]byte, RpcError) {
+			if msg.Type != InvocationMessage {
+				return []byte{}, Error(400, fmt.Sprintf("Expected RPC invocation message. Got %s", msg.Type))
+			}
+			ctx := context.Background()
+			params, resErr := paramValidator.DecodeJSON(msg.Body.UnwrapOr([]byte{}))
+			if resErr != nil {
+				return []byte{}, resErr
+			}
+			req := NewRequest[T](ctx, name, w.TransportId(), "", "", map[string]string{})
+			res, resErr := handler(params, *req)
+			if resErr != nil {
+				return []byte{}, resErr
+			}
+			body, err := responseValidator.EncodeJSON(res)
+			if err != nil {
+				return []byte{}, Error(500, fmt.Sprintf("Error serializing response, %s", err))
+			}
+			return body, nil
+		},
 	}
 }
 

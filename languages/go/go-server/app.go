@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var debugModeEnabled bool = false
+
 type App[T any] struct {
 	middleware        []Middleware[T]
 	procedures        *OrderedMap[RpcDef]
@@ -57,6 +59,7 @@ func (app *App[TMeta]) GetAppDefinition() AppDef {
 }
 
 func (app *App[TMeta]) Start() error {
+	debugModeEnabled = app.options.Debug
 	if len(app.transports) == 0 {
 		panic("Must register at least one transport adapter")
 	}
