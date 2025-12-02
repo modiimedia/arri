@@ -1590,7 +1590,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             any: undefined,
             boolean: false,
             string: '',
-            timestamp: new Date(),
+            timestamp: new Date(0),
             float32: 0,
             float64: 0,
             int8: 0,
@@ -1695,7 +1695,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         } else if (input.timestamp instanceof Date) {
             _timestamp = input.timestamp;
         } else {
-            _timestamp = new Date();
+            _timestamp = new Date(0);
         }
         let _float32: number;
         if (typeof input.float32 === 'number') {
@@ -2086,7 +2086,7 @@ export const $$ObjectWithEveryTypeObject: ArriModelValidator<ObjectWithEveryType
             return {
                 string: '',
                 boolean: false,
-                timestamp: new Date(),
+                timestamp: new Date(0),
             };
         },
         validate(input): input is ObjectWithEveryTypeObject {
@@ -2116,7 +2116,7 @@ export const $$ObjectWithEveryTypeObject: ArriModelValidator<ObjectWithEveryType
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             return {
                 string: _string,
@@ -2344,7 +2344,7 @@ export const $$ObjectWithEveryTypeNestedObject: ArriModelValidator<ObjectWithEve
         new(): ObjectWithEveryTypeNestedObject {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
                 data: $$ObjectWithEveryTypeNestedObjectData.new(),
             };
         },
@@ -2369,7 +2369,7 @@ export const $$ObjectWithEveryTypeNestedObject: ArriModelValidator<ObjectWithEve
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             let _data: ObjectWithEveryTypeNestedObjectData;
             if (isObject(input.data)) {
@@ -2424,7 +2424,7 @@ export const $$ObjectWithEveryTypeNestedObjectData: ArriModelValidator<ObjectWit
         new(): ObjectWithEveryTypeNestedObjectData {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
                 data: $$ObjectWithEveryTypeNestedObjectDataData.new(),
             };
         },
@@ -2449,7 +2449,7 @@ export const $$ObjectWithEveryTypeNestedObjectData: ArriModelValidator<ObjectWit
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             let _data: ObjectWithEveryTypeNestedObjectDataData;
             if (isObject(input.data)) {
@@ -2503,7 +2503,7 @@ export const $$ObjectWithEveryTypeNestedObjectDataData: ArriModelValidator<Objec
         new(): ObjectWithEveryTypeNestedObjectDataData {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
             };
         },
         validate(input): input is ObjectWithEveryTypeNestedObjectDataData {
@@ -2526,7 +2526,7 @@ export const $$ObjectWithEveryTypeNestedObjectDataData: ArriModelValidator<Objec
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             return {
                 id: _id,
@@ -2564,7 +2564,7 @@ export const $$ObjectWithEveryTypeNestedArrayElementElement: ArriModelValidator<
         new(): ObjectWithEveryTypeNestedArrayElementElement {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
             };
         },
         validate(input): input is ObjectWithEveryTypeNestedArrayElementElement {
@@ -2587,7 +2587,7 @@ export const $$ObjectWithEveryTypeNestedArrayElementElement: ArriModelValidator<
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             return {
                 id: _id,
@@ -3886,7 +3886,7 @@ export const $$ObjectWithPascalCaseKeys: ArriModelValidator<ObjectWithPascalCase
     {
         new(): ObjectWithPascalCaseKeys {
             return {
-                createdAt: new Date(),
+                createdAt: new Date(0),
                 displayName: '',
                 phoneNumber: null,
             };
@@ -3911,7 +3911,7 @@ export const $$ObjectWithPascalCaseKeys: ArriModelValidator<ObjectWithPascalCase
             } else if (input.CreatedAt instanceof Date) {
                 _CreatedAt = input.CreatedAt;
             } else {
-                _CreatedAt = new Date();
+                _CreatedAt = new Date(0);
             }
             let _DisplayName: string;
             if (typeof input.DisplayName === 'string') {
@@ -4001,7 +4001,7 @@ export const $$ObjectWithSnakeCaseKeys: ArriModelValidator<ObjectWithSnakeCaseKe
     {
         new(): ObjectWithSnakeCaseKeys {
             return {
-                createdAt: new Date(),
+                createdAt: new Date(0),
                 displayName: '',
                 phoneNumber: null,
             };
@@ -4026,7 +4026,7 @@ export const $$ObjectWithSnakeCaseKeys: ArriModelValidator<ObjectWithSnakeCaseKe
             } else if (input.created_at instanceof Date) {
                 _created_at = input.created_at;
             } else {
-                _created_at = new Date();
+                _created_at = new Date(0);
             }
             let _display_name: string;
             if (typeof input.display_name === 'string') {
@@ -4253,7 +4253,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                 } else if (input.timestamp instanceof Date) {
                     _timestamp = input.timestamp;
                 } else {
-                    _timestamp = new Date();
+                    _timestamp = new Date(0);
                 }
             }
             let _float32: number | undefined;
@@ -4835,7 +4835,7 @@ export const $$ObjectWithEveryOptionalTypeObject: ArriModelValidator<ObjectWithE
             return {
                 string: '',
                 boolean: false,
-                timestamp: new Date(),
+                timestamp: new Date(0),
             };
         },
         validate(input): input is ObjectWithEveryOptionalTypeObject {
@@ -4865,7 +4865,7 @@ export const $$ObjectWithEveryOptionalTypeObject: ArriModelValidator<ObjectWithE
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             return {
                 string: _string,
@@ -5103,7 +5103,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObject: ArriModelValidator<Objec
         new(): ObjectWithEveryOptionalTypeNestedObject {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
                 data: $$ObjectWithEveryOptionalTypeNestedObjectData.new(),
             };
         },
@@ -5130,7 +5130,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObject: ArriModelValidator<Objec
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             let _data: ObjectWithEveryOptionalTypeNestedObjectData;
             if (isObject(input.data)) {
@@ -5185,7 +5185,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectData: ArriModelValidator<O
         new(): ObjectWithEveryOptionalTypeNestedObjectData {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
                 data: $$ObjectWithEveryOptionalTypeNestedObjectDataData.new(),
             };
         },
@@ -5212,7 +5212,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectData: ArriModelValidator<O
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             let _data: ObjectWithEveryOptionalTypeNestedObjectDataData;
             if (isObject(input.data)) {
@@ -5268,7 +5268,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectDataData: ArriModelValidat
         new(): ObjectWithEveryOptionalTypeNestedObjectDataData {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
             };
         },
         validate(
@@ -5293,7 +5293,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectDataData: ArriModelValidat
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             return {
                 id: _id,
@@ -5331,7 +5331,7 @@ export const $$ObjectWithEveryOptionalTypeNestedArrayElementElement: ArriModelVa
         new(): ObjectWithEveryOptionalTypeNestedArrayElementElement {
             return {
                 id: '',
-                timestamp: new Date(),
+                timestamp: new Date(0),
             };
         },
         validate(
@@ -5356,7 +5356,7 @@ export const $$ObjectWithEveryOptionalTypeNestedArrayElementElement: ArriModelVa
             } else if (input.timestamp instanceof Date) {
                 _timestamp = input.timestamp;
             } else {
-                _timestamp = new Date();
+                _timestamp = new Date(0);
             }
             return {
                 id: _id,
@@ -6371,7 +6371,7 @@ const $$ChatMessageText: ArriModelValidator<ChatMessageText> = {
             id: '',
             channelId: '',
             userId: '',
-            date: new Date(),
+            date: new Date(0),
             text: '',
         };
     },
@@ -6412,7 +6412,7 @@ const $$ChatMessageText: ArriModelValidator<ChatMessageText> = {
         } else if (input.date instanceof Date) {
             _date = input.date;
         } else {
-            _date = new Date();
+            _date = new Date(0);
         }
         let _text: string;
         if (typeof input.text === 'string') {
@@ -6475,7 +6475,7 @@ const $$ChatMessageImage: ArriModelValidator<ChatMessageImage> = {
             id: '',
             channelId: '',
             userId: '',
-            date: new Date(),
+            date: new Date(0),
             image: '',
         };
     },
@@ -6516,7 +6516,7 @@ const $$ChatMessageImage: ArriModelValidator<ChatMessageImage> = {
         } else if (input.date instanceof Date) {
             _date = input.date;
         } else {
-            _date = new Date();
+            _date = new Date(0);
         }
         let _image: string;
         if (typeof input.image === 'string') {
@@ -6579,7 +6579,7 @@ const $$ChatMessageUrl: ArriModelValidator<ChatMessageUrl> = {
             id: '',
             channelId: '',
             userId: '',
-            date: new Date(),
+            date: new Date(0),
             url: '',
         };
     },
@@ -6620,7 +6620,7 @@ const $$ChatMessageUrl: ArriModelValidator<ChatMessageUrl> = {
         } else if (input.date instanceof Date) {
             _date = input.date;
         } else {
-            _date = new Date();
+            _date = new Date(0);
         }
         let _url: string;
         if (typeof input.url === 'string') {
@@ -6775,7 +6775,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 id: '',
                 role: $$UsersWatchUserResponseRole.new(),
                 photo: null,
-                createdAt: new Date(),
+                createdAt: new Date(0),
                 numFollowers: 0,
                 settings: $$UserSettings.new(),
                 recentNotifications: [],
@@ -6841,7 +6841,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
             } else if (input.createdAt instanceof Date) {
                 _createdAt = input.createdAt;
             } else {
-                _createdAt = new Date();
+                _createdAt = new Date(0);
             }
             let _numFollowers: number;
             if (
