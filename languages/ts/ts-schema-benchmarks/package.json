@@ -4,14 +4,14 @@
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
     "@sinclair/typebox": "^0.34.41",
-    "arktype": "^2.1.27",
-    "prettier": "^3.6.2",
-    "typia": "^10.0.2",
-    "valibot": "1.1.0",
-    "zod": "^4.1.12"
+    "arktype": "^2.1.28",
+    "prettier": "^3.7.4",
+    "typia": "^10.1.0",
+    "valibot": "1.2.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@samchon/openapi": "^5.0.1",
+    "@samchon/openapi": "^5.1.0",
     "autocannon": "^8.0.0",
     "citty": "^0.1.6"
   },
