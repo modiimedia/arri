@@ -379,29 +379,51 @@ export type RequestValidator<T = any> = {
     serialize: (input: any) => Result<string>;
 };
 
+let useJitCompiler = true;
+
 export function getSchemaValidator<T extends Record<string, any> = any>(
     rpcName: string,
     type: 'params' | 'response',
     schema: RpcParamSchema<T>,
 ): RequestValidator<T> | undefined {
-    if (isASchema(schema)) {
-        try {
-            const validator = a.compile(schema);
-            return {
-                validate: validator.validate,
-                serialize: validator.serialize,
-                parse: validator.parse,
-                coerce: validator.coerce,
-                errors: (input) => a.errors(schema, input),
-            };
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error(
-                `Error compiling ${type} validator for ${rpcName}. Error: ${err}`,
-            );
-        }
+    if (!isASchema(schema)) return undefined;
+    if (!useJitCompiler) {
+        return {
+            validate: (input) => a.validate(schema, input),
+            serialize: (input) => a.serialize(schema, input),
+            parse: (input) => a.parse(schema, input),
+            coerce: (input) => a.coerce(schema, input),
+            errors: (input) => a.errors(schema, input),
+        };
     }
-    return undefined;
+    try {
+        const validator = a.compile(schema);
+        return {
+            validate: validator.validate,
+            serialize: validator.serialize,
+            parse: validator.parse,
+            coerce: validator.coerce,
+            errors: (input) => a.errors(schema, input),
+        };
+    } catch (err) {
+        // If there's an error running a.compile() we'll just assume that the runtime
+        // has prohibited eval and fallback to the slower non-compile validators.
+        // In the future we can make this smarter to handle other error cases
+        useJitCompiler = false;
+
+        // eslint-disable-next-line no-console
+        console.warn(
+            `Encountered error compiling validator for ${rpcName}. Runtime validator will now be used instead. Error: ${err}. `,
+        );
+
+        return {
+            validate: (input) => a.validate(schema, input),
+            serialize: (input) => a.serialize(schema, input),
+            parse: (input) => a.parse(schema, input),
+            coerce: (input) => a.coerce(schema, input),
+            errors: (input) => a.errors(schema, input),
+        };
+    }
 }
 
 export function getSchemaName(
