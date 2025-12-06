@@ -20,7 +20,7 @@
   "files": [
     "dist"
   ],
-  "version": "0.80.3",
+  "version": "0.81.0",
   "dependencies": {
     "scule": "^1.3.0"
   }

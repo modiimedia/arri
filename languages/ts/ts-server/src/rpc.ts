@@ -42,8 +42,10 @@ export interface RpcContext<TInput> {
     input: TInput;
 }
 
-export interface RpcPostHandlerContext<TInput, TOutput>
-    extends Omit<RpcContext<TInput>, 'input'> {
+export interface RpcPostHandlerContext<TInput, TOutput> extends Omit<
+    RpcContext<TInput>,
+    'input'
+> {
     input: TInput;
     output: TOutput;
 }
@@ -79,14 +81,10 @@ export type RpcPostHandler<TInput = undefined, TOutput = undefined> = (
 ) => Promise<void> | void;
 
 export function defineRpc<
-    TInput extends
-        | AObjectSchema<any>
-        | ADiscriminatorSchema<any>
-        | undefined = undefined,
-    TOutput extends
-        | AObjectSchema<any>
-        | ADiscriminatorSchema<any>
-        | undefined = undefined,
+    TInput extends AObjectSchema<any> | ADiscriminatorSchema<any> | undefined =
+        undefined,
+    TOutput extends AObjectSchema<any> | ADiscriminatorSchema<any> | undefined =
+        undefined,
 >(config: Rpc<TInput, TOutput>) {
     if (config.input?.isNullable || config.output?.isNullable) {
         throw new Error(`Root schemas for procedures cannot be nullable`);

@@ -20,8 +20,9 @@ import { camelCase } from 'scule';
 
 import { type TemplateInput } from './common';
 
-interface SerializeTemplateInput<TSchema extends Schema = any>
-    extends TemplateInput<TSchema> {
+interface SerializeTemplateInput<
+    TSchema extends Schema = any,
+> extends TemplateInput<TSchema> {
     outputPrefix: string;
     needsSanitization: string[];
 }
