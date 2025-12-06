@@ -67,8 +67,10 @@ export type EventStreamRpcHandler<TParams, TResponse> = (
     event: RpcEvent<TResponse>,
 ) => void | Promise<void>;
 
-export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
-    extends RpcEventContext<TParams> {
+export interface EventStreamRpcHandlerContext<
+    TParams = any,
+    TResponse = any,
+> extends RpcEventContext<TParams> {
     stream: EventStreamConnection<TResponse>;
 }
 

@@ -164,8 +164,10 @@ export type InferSubType<
 > = TUnion extends Record<TKey, TVal> ? TUnion : never;
 
 // basic types
-export interface AScalarSchema<T extends JtdType | NumberType = any, TVal = any>
-    extends ASchema<TVal> {
+export interface AScalarSchema<
+    T extends JtdType | NumberType = any,
+    TVal = any,
+> extends ASchema<TVal> {
     type: T;
 }
 export function isAScalarSchema(input: unknown): input is AScalarSchema {
@@ -197,8 +199,9 @@ export const NumberTypeValues = [
 export type NumberType = (typeof NumberTypeValues)[number];
 
 // arrays
-export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
-    extends ASchema<Array<InferType<TInnerSchema>>> {
+export interface AArraySchema<
+    TInnerSchema extends ASchema<any> = any,
+> extends ASchema<Array<InferType<TInnerSchema>>> {
     elements: TInnerSchema;
 }
 export function isAAraySchema(input: unknown): input is AArraySchema {
@@ -208,8 +211,9 @@ export type AArraySchemaWithAdapters<TInnerSchema extends ASchema<any> = any> =
     AArraySchema<TInnerSchema> & WithAdapters<InferType<TInnerSchema>[]>;
 
 // string enums
-export interface AStringEnumSchema<TValues extends string[]>
-    extends ASchema<TValues[number]> {
+export interface AStringEnumSchema<TValues extends string[]> extends ASchema<
+    TValues[number]
+> {
     enum: TValues;
 }
 export function isAStringEnumSchema(
@@ -234,8 +238,9 @@ export type ADiscriminatorSchemaWithAdapters<T> = ADiscriminatorSchema<T> &
     WithAdapters<T>;
 
 // records
-export interface ARecordSchema<TInnerSchema extends ASchema<any>>
-    extends ASchema<Record<string, InferType<TInnerSchema>>> {
+export interface ARecordSchema<
+    TInnerSchema extends ASchema<any>,
+> extends ASchema<Record<string, InferType<TInnerSchema>>> {
     values: TInnerSchema;
 }
 export function isARecordSchema(input: unknown): input is ARecordSchema<any> {
@@ -246,8 +251,10 @@ export type ARecordSchemaWithAdapters<TInnerSchema extends ASchema<any>> =
         WithAdapters<Record<string, InferType<TInnerSchema>>>;
 
 // object types
-export interface AObjectSchema<TVal = any, TStrict extends boolean = false>
-    extends ASchema<TVal> {
+export interface AObjectSchema<
+    TVal = any,
+    TStrict extends boolean = false,
+> extends ASchema<TVal> {
     properties: Record<string, ASchema>;
     optionalProperties?: Record<string, ASchema>;
     isStrict?: TStrict;
@@ -260,8 +267,9 @@ export type AObjectSchemaWithAdapters<
     TStrict extends boolean = false,
 > = AObjectSchema<T, TStrict> & WithAdapters<T>;
 
-export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>
-    extends ASchemaOptions {
+export interface AObjectSchemaOptions<
+    TAdditionalProps extends boolean = false,
+> extends ASchemaOptions {
     /**
      * @deprecated use "isStrict" instead
      */

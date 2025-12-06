@@ -104,13 +104,17 @@ export interface HttpRpc<
           >;
 }
 
-export interface RpcEvent<TParams = undefined>
-    extends Omit<H3Event, 'context'> {
+export interface RpcEvent<TParams = undefined> extends Omit<
+    H3Event,
+    'context'
+> {
     context: RpcEventContext<TParams>;
 }
 
-export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
-    extends Omit<H3Event, 'context'> {
+export interface RpcPostEvent<
+    TParams = undefined,
+    TResponse = undefined,
+> extends Omit<H3Event, 'context'> {
     context: RpcPostEventContext<TParams, TResponse>;
 }
 
