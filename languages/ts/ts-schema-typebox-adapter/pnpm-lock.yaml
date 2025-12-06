@@ -1,0 +1,32 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../ts-schema
+      '@sinclair/typebox':
+        specifier: ^0.32
+        version: 0.32.35
+      json-schema-to-atd:
+        specifier: workspace:*
+        version: link:../../../tooling/json-schema-to-atd
+    devDependencies:
+      '@arrirpc/server':
+        specifier: workspace:*
+        version: link:../ts-server
+
+packages:
+
+  '@sinclair/typebox@0.32.35':
+    resolution: {integrity: sha512-Ul3YyOTU++to8cgNkttakC0dWvpERr6RYoHO2W47DLbFvrwBDJUY31B1sImH6JZSYc4Kt4PyHtoPNu+vL2r2dA==}
+
+snapshots:
+
+  '@sinclair/typebox@0.32.35': {}

@@ -1,0 +1,25 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
+
+packages:
+
+  pathe@2.0.3:
+    resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
+
+snapshots:
+
+  pathe@2.0.3: {}

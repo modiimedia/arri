@@ -1,0 +1,50 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-schema
+      '@sinclair/typebox':
+        specifier: ^0.34.41
+        version: 0.34.41
+      arri:
+        specifier: workspace:*
+        version: link:../../../tooling/cli
+    devDependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../../languages/ts/eslint-plugin
+      '@arrirpc/server':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-server
+      '@arrirpc/typebox-adapter':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-schema-typebox-adapter
+      '@faker-js/faker':
+        specifier: ^10.1.0
+        version: 10.1.0
+
+packages:
+
+  '@faker-js/faker@10.1.0':
+    resolution: {integrity: sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==}
+    engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
+
+  '@sinclair/typebox@0.34.41':
+    resolution: {integrity: sha512-6gS8pZzSXdyRHTIqoqSVknxolr1kzfy4/CeDnrzsVz8TTIWUbOBr6gnzOmTYJ3eXQNh4IYHIGi5aIL7sOZ2G/g==}
+
+snapshots:
+
+  '@faker-js/faker@10.1.0': {}
+
+  '@sinclair/typebox@0.34.41': {}
