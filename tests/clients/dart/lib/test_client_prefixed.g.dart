@@ -1116,7 +1116,7 @@ class FooObjectWithEveryType implements ArriModel {
       any: null,
       boolean: false,
       string: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
       float32: 0.0,
       float64: 0.0,
       int8: 0,
@@ -1141,7 +1141,7 @@ class FooObjectWithEveryType implements ArriModel {
     final any = _input_["any"];
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
     final string = typeFromDynamic<String>(_input_["string"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final float32 = doubleFromDynamic(_input_["float32"], 0.0);
     final float64 = doubleFromDynamic(_input_["float64"], 0.0);
     final int8 = intFromDynamic(_input_["int8"], 0);
@@ -1418,14 +1418,14 @@ class FooObjectWithEveryTypeObject implements ArriModel {
     return FooObjectWithEveryTypeObject(
       string: "",
       boolean: false,
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
     );
   }
 
   factory FooObjectWithEveryTypeObject.fromJson(Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return FooObjectWithEveryTypeObject(
       string: string,
       boolean: boolean,
@@ -1706,7 +1706,7 @@ class FooObjectWithEveryTypeNestedObject implements ArriModel {
   factory FooObjectWithEveryTypeNestedObject.empty() {
     return FooObjectWithEveryTypeNestedObject(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
       data: FooObjectWithEveryTypeNestedObjectData.empty(),
     );
   }
@@ -1714,7 +1714,7 @@ class FooObjectWithEveryTypeNestedObject implements ArriModel {
   factory FooObjectWithEveryTypeNestedObject.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
         ? FooObjectWithEveryTypeNestedObjectData.fromJson(_input_["data"])
         : FooObjectWithEveryTypeNestedObjectData.empty();
@@ -1803,7 +1803,7 @@ class FooObjectWithEveryTypeNestedObjectData implements ArriModel {
   factory FooObjectWithEveryTypeNestedObjectData.empty() {
     return FooObjectWithEveryTypeNestedObjectData(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
       data: FooObjectWithEveryTypeNestedObjectDataData.empty(),
     );
   }
@@ -1811,7 +1811,7 @@ class FooObjectWithEveryTypeNestedObjectData implements ArriModel {
   factory FooObjectWithEveryTypeNestedObjectData.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
         ? FooObjectWithEveryTypeNestedObjectDataData.fromJson(_input_["data"])
         : FooObjectWithEveryTypeNestedObjectDataData.empty();
@@ -1898,14 +1898,14 @@ class FooObjectWithEveryTypeNestedObjectDataData implements ArriModel {
   factory FooObjectWithEveryTypeNestedObjectDataData.empty() {
     return FooObjectWithEveryTypeNestedObjectDataData(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
     );
   }
 
   factory FooObjectWithEveryTypeNestedObjectDataData.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return FooObjectWithEveryTypeNestedObjectDataData(
       id: id,
       timestamp: timestamp,
@@ -1984,14 +1984,14 @@ class FooObjectWithEveryTypeNestedArrayElementElement implements ArriModel {
   factory FooObjectWithEveryTypeNestedArrayElementElement.empty() {
     return FooObjectWithEveryTypeNestedArrayElementElement(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
     );
   }
 
   factory FooObjectWithEveryTypeNestedArrayElementElement.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return FooObjectWithEveryTypeNestedArrayElementElement(
       id: id,
       timestamp: timestamp,
@@ -3092,14 +3092,14 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
 
   factory FooObjectWithPascalCaseKeys.empty() {
     return FooObjectWithPascalCaseKeys(
-      createdAt: DateTime.now(),
+      createdAt: DateTime(0),
       displayName: "",
       phoneNumber: null,
     );
   }
 
   factory FooObjectWithPascalCaseKeys.fromJson(Map<String, dynamic> _input_) {
-    final createdAt = dateTimeFromDynamic(_input_["CreatedAt"], DateTime.now());
+    final createdAt = dateTimeFromDynamic(_input_["CreatedAt"], DateTime(0));
     final displayName = typeFromDynamic<String>(_input_["DisplayName"], "");
     final phoneNumber = nullableTypeFromDynamic<String>(_input_["PhoneNumber"]);
     final emailAddress =
@@ -3203,15 +3203,14 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
 
   factory FooObjectWithSnakeCaseKeys.empty() {
     return FooObjectWithSnakeCaseKeys(
-      createdAt: DateTime.now(),
+      createdAt: DateTime(0),
       displayName: "",
       phoneNumber: null,
     );
   }
 
   factory FooObjectWithSnakeCaseKeys.fromJson(Map<String, dynamic> _input_) {
-    final createdAt =
-        dateTimeFromDynamic(_input_["created_at"], DateTime.now());
+    final createdAt = dateTimeFromDynamic(_input_["created_at"], DateTime(0));
     final displayName = typeFromDynamic<String>(_input_["display_name"], "");
     final phoneNumber =
         nullableTypeFromDynamic<String>(_input_["phone_number"]);
@@ -3645,7 +3644,7 @@ class FooObjectWithEveryOptionalTypeObject implements ArriModel {
     return FooObjectWithEveryOptionalTypeObject(
       string: "",
       boolean: false,
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
     );
   }
 
@@ -3653,7 +3652,7 @@ class FooObjectWithEveryOptionalTypeObject implements ArriModel {
       Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return FooObjectWithEveryOptionalTypeObject(
       string: string,
       boolean: boolean,
@@ -3940,7 +3939,7 @@ class FooObjectWithEveryOptionalTypeNestedObject implements ArriModel {
   factory FooObjectWithEveryOptionalTypeNestedObject.empty() {
     return FooObjectWithEveryOptionalTypeNestedObject(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
       data: FooObjectWithEveryOptionalTypeNestedObjectData.empty(),
     );
   }
@@ -3948,7 +3947,7 @@ class FooObjectWithEveryOptionalTypeNestedObject implements ArriModel {
   factory FooObjectWithEveryOptionalTypeNestedObject.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
         ? FooObjectWithEveryOptionalTypeNestedObjectData.fromJson(
             _input_["data"])
@@ -4040,7 +4039,7 @@ class FooObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
   factory FooObjectWithEveryOptionalTypeNestedObjectData.empty() {
     return FooObjectWithEveryOptionalTypeNestedObjectData(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
       data: FooObjectWithEveryOptionalTypeNestedObjectDataData.empty(),
     );
   }
@@ -4048,7 +4047,7 @@ class FooObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
   factory FooObjectWithEveryOptionalTypeNestedObjectData.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
         ? FooObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
             _input_["data"])
@@ -4138,14 +4137,14 @@ class FooObjectWithEveryOptionalTypeNestedObjectDataData implements ArriModel {
   factory FooObjectWithEveryOptionalTypeNestedObjectDataData.empty() {
     return FooObjectWithEveryOptionalTypeNestedObjectDataData(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
     );
   }
 
   factory FooObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return FooObjectWithEveryOptionalTypeNestedObjectDataData(
       id: id,
       timestamp: timestamp,
@@ -4225,14 +4224,14 @@ class FooObjectWithEveryOptionalTypeNestedArrayElementElement
   factory FooObjectWithEveryOptionalTypeNestedArrayElementElement.empty() {
     return FooObjectWithEveryOptionalTypeNestedArrayElementElement(
       id: "",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(0),
     );
   }
 
   factory FooObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
       Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return FooObjectWithEveryOptionalTypeNestedArrayElementElement(
       id: id,
       timestamp: timestamp,
@@ -5620,7 +5619,7 @@ class FooChatMessageText implements FooChatMessage {
       id: "",
       channelId: "",
       userId: "",
-      date: DateTime.now(),
+      date: DateTime(0),
       text: "",
     );
   }
@@ -5629,7 +5628,7 @@ class FooChatMessageText implements FooChatMessage {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final channelId = typeFromDynamic<String>(_input_["channelId"], "");
     final userId = typeFromDynamic<String>(_input_["userId"], "");
-    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
     final text = typeFromDynamic<String>(_input_["text"], "");
     return FooChatMessageText(
       id: id,
@@ -5737,7 +5736,7 @@ class FooChatMessageImage implements FooChatMessage {
       id: "",
       channelId: "",
       userId: "",
-      date: DateTime.now(),
+      date: DateTime(0),
       image: "",
     );
   }
@@ -5746,7 +5745,7 @@ class FooChatMessageImage implements FooChatMessage {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final channelId = typeFromDynamic<String>(_input_["channelId"], "");
     final userId = typeFromDynamic<String>(_input_["userId"], "");
-    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
     final image = typeFromDynamic<String>(_input_["image"], "");
     return FooChatMessageImage(
       id: id,
@@ -5854,7 +5853,7 @@ class FooChatMessageUrl implements FooChatMessage {
       id: "",
       channelId: "",
       userId: "",
-      date: DateTime.now(),
+      date: DateTime(0),
       url: "",
     );
   }
@@ -5863,7 +5862,7 @@ class FooChatMessageUrl implements FooChatMessage {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final channelId = typeFromDynamic<String>(_input_["channelId"], "");
     final userId = typeFromDynamic<String>(_input_["userId"], "");
-    final date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
     final url = typeFromDynamic<String>(_input_["url"], "");
     return FooChatMessageUrl(
       id: id,
@@ -6132,7 +6131,7 @@ class FooUsersWatchUserResponse implements ArriModel {
       id: "",
       role: FooUsersWatchUserResponseRole.standard,
       photo: null,
-      createdAt: DateTime.now(),
+      createdAt: DateTime(0),
       numFollowers: 0,
       settings: FooUserSettings.empty(),
       recentNotifications: [],
@@ -6149,7 +6148,7 @@ class FooUsersWatchUserResponse implements ArriModel {
     final photo = _input_["photo"] is Map<String, dynamic>
         ? FooUserPhoto.fromJson(_input_["photo"])
         : null;
-    final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime.now());
+    final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime(0));
     final numFollowers = intFromDynamic(_input_["numFollowers"], 0);
     final settings = _input_["settings"] is Map<String, dynamic>
         ? FooUserSettings.fromJson(_input_["settings"])
