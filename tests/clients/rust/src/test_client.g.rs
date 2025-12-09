@@ -45,95 +45,24 @@ impl TestClient {}
 #[derive(Clone)]
 pub struct TestClientTestsService {
     _config: InternalArriClientConfig,
+    pub nested: TestClientTestsNestedService,
 }
 
 impl ArriClientService for TestClientTestsService {
     fn create(config: ArriClientConfig) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config),
+            _config: InternalArriClientConfig::from(config.clone()),
+            nested: TestClientTestsNestedService::create(config),
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
         let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
+        self.nested.update_headers(headers);
     }
 }
 
 impl TestClientTestsService {
-    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-params-get-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            None::<EmptyArriModel>,
-            |body| return DefaultPayload::from_json_string(body),
-        )
-        .await
-    }
-    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-params-post-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            None::<EmptyArriModel>,
-            |body| return DefaultPayload::from_json_string(body),
-        )
-        .await
-    }
-    pub async fn empty_response_get_request(
-        &self,
-        params: DefaultPayload,
-    ) -> Result<(), ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-response-get-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::GET,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| {},
-        )
-        .await
-    }
-    pub async fn empty_response_post_request(
-        &self,
-        params: DefaultPayload,
-    ) -> Result<(), ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!(
-                    "{}/rpcs/tests/empty-response-post-request",
-                    &self._config.base_url
-                ),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| {},
-        )
-        .await
-    }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     #[deprecated]
     pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), ArriError> {

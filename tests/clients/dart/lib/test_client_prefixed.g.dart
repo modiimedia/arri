@@ -27,60 +27,6 @@ class TestClientPrefixed {
         _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
         _timeout = timeout;
 
-  Future<FooDefaultPayload> emptyParamsGetRequest() async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/empty-params-get-request",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      parser: (body) => FooDefaultPayload.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
-    );
-  }
-
-  Future<FooDefaultPayload> emptyParamsPostRequest() async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/empty-params-post-request",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      parser: (body) => FooDefaultPayload.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
-    );
-  }
-
-  Future<void> emptyResponseGetRequest(FooDefaultPayload params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/empty-response-get-request",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) {},
-      onError: _onError,
-      timeout: _timeout,
-    );
-  }
-
-  Future<void> emptyResponsePostRequest(FooDefaultPayload params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/empty-response-post-request",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) {},
-      onError: _onError,
-      timeout: _timeout,
-    );
-  }
-
   /// If the target language supports it. Generated code should mark this procedure as deprecated.
   @deprecated
   Future<void> deprecatedRpc(FooDeprecatedRpcParams params) async {
@@ -570,6 +516,92 @@ class TestClientPrefixed {
               : _onError != null
                   ? (err, _) => _onError.call(err)
                   : null,
+    );
+  }
+
+  TestClientPrefixedNestedService get nested => TestClientPrefixedNestedService(
+        baseUrl: _baseUrl,
+        headers: _headers,
+        httpClient: _httpClient,
+        onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
+      );
+}
+
+class TestClientPrefixedNestedService {
+  final http.Client? _httpClient;
+  final String _baseUrl;
+  final String _clientVersion = "10";
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
+  final int? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
+  TestClientPrefixedNestedService({
+    http.Client? httpClient,
+    required String baseUrl,
+    FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
+    int? heartbeatTimeoutMultiplier,
+    Duration? timeout,
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl,
+        _headers = headers,
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
+
+  Future<FooDefaultPayload> emptyParamsGetRequest() async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/nested/empty-params-get-request",
+      method: HttpMethod.get,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      parser: (body) => FooDefaultPayload.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
+  Future<FooDefaultPayload> emptyParamsPostRequest() async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/nested/empty-params-post-request",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      parser: (body) => FooDefaultPayload.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
+  Future<void> emptyResponseGetRequest(FooDefaultPayload params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/nested/empty-response-get-request",
+      method: HttpMethod.get,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) {},
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
+  Future<void> emptyResponsePostRequest(FooDefaultPayload params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/nested/empty-response-post-request",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) {},
+      onError: _onError,
+      timeout: _timeout,
     );
   }
 }

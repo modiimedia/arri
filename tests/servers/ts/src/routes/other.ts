@@ -14,7 +14,7 @@ manualRouter.route({
     },
 });
 
-export const manualTestService = defineService('tests', {
+export const manualTestService = defineService('tests.nested', {
     emptyParamsGetRequest: defineRpc({
         method: 'get',
         params: undefined,

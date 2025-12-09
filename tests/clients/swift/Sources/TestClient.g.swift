@@ -42,7 +42,7 @@ public class TestClientTestsService {
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
     let onError: (Error) -> Void
-
+    public let nested: TestClientTestsNestedService
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
@@ -53,55 +53,12 @@ public class TestClientTestsService {
         self.delegate = delegate
         self.headers = headers
         self.onError = onError
-    
-    }
-    public func emptyParamsGetRequest() async throws -> DefaultPayload {
-        let result: DefaultPayload = try await parsedArriHttpRequest(
-            delegate: self.delegate,
-            url: "\(self.baseURL)/rpcs/tests/empty-params-get-request",
-            method: "GET",
-            headers: self.headers,
-            clientVersion: "10",
-            params: EmptyArriModel(),
+        self.nested = TestClientTestsNestedService(
+            baseURL: baseURL,
+            delegate: delegate,
+            headers: headers,
             onError: onError
-        )
-        return result
-    }
-    public func emptyParamsPostRequest() async throws -> DefaultPayload {
-        let result: DefaultPayload = try await parsedArriHttpRequest(
-            delegate: self.delegate,
-            url: "\(self.baseURL)/rpcs/tests/empty-params-post-request",
-            method: "POST",
-            headers: self.headers,
-            clientVersion: "10",
-            params: EmptyArriModel(),
-            onError: onError
-        )
-        return result
-    }
-    public func emptyResponseGetRequest(_ params: DefaultPayload) async throws -> () {
-        let _: EmptyArriModel = try await parsedArriHttpRequest(
-            delegate: self.delegate,
-            url: "\(self.baseURL)/rpcs/tests/empty-response-get-request",
-            method: "GET",
-            headers: self.headers,
-            clientVersion: "10",
-            params: params,
-            onError: onError
-        )
-        
-    }
-    public func emptyResponsePostRequest(_ params: DefaultPayload) async throws -> () {
-        let _: EmptyArriModel = try await parsedArriHttpRequest(
-            delegate: self.delegate,
-            url: "\(self.baseURL)/rpcs/tests/empty-response-post-request",
-            method: "POST",
-            headers: self.headers,
-            clientVersion: "10",
-            params: params,
-            onError: onError
-        )
-        
+        )    
     }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     @available(*, deprecated)
@@ -335,6 +292,76 @@ public class TestClientTestsService {
             await eventSource.sendRequest()
         }
         return task
+    }
+        
+}
+
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
+public class TestClientTestsNestedService {
+    let baseURL: String
+    let delegate: ArriRequestDelegate
+    let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void
+
+    public init(
+        baseURL: String,
+        delegate: ArriRequestDelegate,
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
+    ) {
+        self.baseURL = baseURL
+        self.delegate = delegate
+        self.headers = headers
+        self.onError = onError
+    
+    }
+    public func emptyParamsGetRequest() async throws -> DefaultPayload {
+        let result: DefaultPayload = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/nested/empty-params-get-request",
+            method: "GET",
+            headers: self.headers,
+            clientVersion: "10",
+            params: EmptyArriModel(),
+            onError: onError
+        )
+        return result
+    }
+    public func emptyParamsPostRequest() async throws -> DefaultPayload {
+        let result: DefaultPayload = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/nested/empty-params-post-request",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: EmptyArriModel(),
+            onError: onError
+        )
+        return result
+    }
+    public func emptyResponseGetRequest(_ params: DefaultPayload) async throws -> () {
+        let _: EmptyArriModel = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/nested/empty-response-get-request",
+            method: "GET",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        
+    }
+    public func emptyResponsePostRequest(_ params: DefaultPayload) async throws -> () {
+        let _: EmptyArriModel = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/nested/empty-response-post-request",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        
     }
         
 }

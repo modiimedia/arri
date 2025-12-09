@@ -70,7 +70,7 @@ export class TestClientTestsService {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
-
+    nested: TestClientTestsNestedService;
     constructor(
         config: {
             baseUrl?: string;
@@ -87,76 +87,7 @@ export class TestClientTestsService {
         this._headers = config.headers ?? {};
         this._onError = config.onError;
         this._options = config.options;
-    }
-    async emptyParamsGetRequest(
-        options?: ArriRequestOptions,
-    ): Promise<DefaultPayload> {
-        return arriRequest<DefaultPayload, undefined>({
-            url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
-            method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-
-            responseFromJson: $$DefaultPayload.fromJson,
-            responseFromString: $$DefaultPayload.fromJsonString,
-            serializer: () => {},
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
-    }
-    async emptyParamsPostRequest(
-        options?: ArriRequestOptions,
-    ): Promise<DefaultPayload> {
-        return arriRequest<DefaultPayload, undefined>({
-            url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-
-            responseFromJson: $$DefaultPayload.fromJson,
-            responseFromString: $$DefaultPayload.fromJsonString,
-            serializer: () => {},
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
-    }
-    async emptyResponseGetRequest(
-        params: DefaultPayload,
-        options?: ArriRequestOptions,
-    ): Promise<undefined> {
-        return arriRequest<undefined, DefaultPayload>({
-            url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
-            method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$DefaultPayload.toUrlQueryString,
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
-    }
-    async emptyResponsePostRequest(
-        params: DefaultPayload,
-        options?: ArriRequestOptions,
-    ): Promise<undefined> {
-        return arriRequest<undefined, DefaultPayload>({
-            url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$DefaultPayload.toJsonString,
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
+        this.nested = new TestClientTestsNestedService(config);
     }
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
@@ -515,6 +446,104 @@ export class TestClientTestsService {
             },
             options,
         );
+    }
+}
+
+export class TestClientTestsNestedService {
+    private readonly _baseUrl: string;
+    private readonly _fetch?: $Fetch;
+    private readonly _headers:
+        | HeaderMap
+        | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
+    private readonly _options?: ArriRequestOptions;
+
+    constructor(
+        config: {
+            baseUrl?: string;
+            fetch?: Fetch;
+            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
+            options?: ArriRequestOptions;
+        } = {},
+    ) {
+        this._baseUrl = config.baseUrl ?? '';
+        if (config.fetch) {
+            this._fetch = createFetch({ fetch: config.fetch });
+        }
+        this._headers = config.headers ?? {};
+        this._onError = config.onError;
+        this._options = config.options;
+    }
+    async emptyParamsGetRequest(
+        options?: ArriRequestOptions,
+    ): Promise<DefaultPayload> {
+        return arriRequest<DefaultPayload, undefined>({
+            url: `${this._baseUrl}/rpcs/tests/nested/empty-params-get-request`,
+            method: 'get',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+
+            responseFromJson: $$DefaultPayload.fromJson,
+            responseFromString: $$DefaultPayload.fromJsonString,
+            serializer: () => {},
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
+    async emptyParamsPostRequest(
+        options?: ArriRequestOptions,
+    ): Promise<DefaultPayload> {
+        return arriRequest<DefaultPayload, undefined>({
+            url: `${this._baseUrl}/rpcs/tests/nested/empty-params-post-request`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+
+            responseFromJson: $$DefaultPayload.fromJson,
+            responseFromString: $$DefaultPayload.fromJsonString,
+            serializer: () => {},
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
+    async emptyResponseGetRequest(
+        params: DefaultPayload,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
+        return arriRequest<undefined, DefaultPayload>({
+            url: `${this._baseUrl}/rpcs/tests/nested/empty-response-get-request`,
+            method: 'get',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: () => {},
+            responseFromString: () => {},
+            serializer: $$DefaultPayload.toUrlQueryString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
+    async emptyResponsePostRequest(
+        params: DefaultPayload,
+        options?: ArriRequestOptions,
+    ): Promise<undefined> {
+        return arriRequest<undefined, DefaultPayload>({
+            url: `${this._baseUrl}/rpcs/tests/nested/empty-response-post-request`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: () => {},
+            responseFromString: () => {},
+            serializer: $$DefaultPayload.toJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
     }
 }
 
