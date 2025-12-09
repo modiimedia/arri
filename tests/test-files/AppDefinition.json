@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.0.7",
+  "schemaVersion": "0.0.8",
   "info": { "version": "20" },
   "procedures": {
     "sendObject": {
@@ -38,6 +38,14 @@
     "books.createConnection": {
       "path": "/books/create-connection",
       "transport": "ws",
+      "params": "BookParams",
+      "response": "Book"
+    },
+    "v1.books.getBook": {
+      "path": "/v1/books/get-book",
+      "transport": "http",
+      "method": "post",
+      "description": "Get a book",
       "params": "BookParams",
       "response": "Book"
     }
