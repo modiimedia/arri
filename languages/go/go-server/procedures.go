@@ -30,7 +30,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		rpcName = serviceName + "." + rpcName
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Http.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + "/" + formatServicePath(serviceName) + rpcSchema.Http.Path
 	} else {
 		rpcSchema.Http.Path = app.options.RpcRoutePrefix + rpcSchema.Http.Path
 	}
@@ -229,4 +229,15 @@ func handlePreflightRequest(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(200)
 	w.Write([]byte("ok"))
+}
+
+func formatServicePath(path string) string {
+	result := ""
+	for index, part := range strings.Split(path, ".") {
+		if index > 0 {
+			result += "/"
+		}
+		result += strcase.ToKebab(part)
+	}
+	return result
 }

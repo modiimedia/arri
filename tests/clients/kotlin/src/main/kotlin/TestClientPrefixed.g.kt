@@ -38,99 +38,12 @@ class TestClientPrefixed(
     private val headers: __TestClientPrefixedHeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    suspend fun emptyParamsGetRequest(): FooDefaultPayload {
-        try {
-            val response = __prepareRequest(
-                client = httpClient,
-                url = "$baseUrl/rpcs/tests/empty-params-get-request",
-                method = HttpMethod.Get,
-                params = null,
-                headers = headers?.invoke(),
-            ).execute()
-            if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientPrefixedError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
+    val nested: TestClientPrefixedNestedService = TestClientPrefixedNestedService(
+                httpClient = httpClient,
+                baseUrl = baseUrl,
+                headers = headers,
+                onError = onError,
             )
-        }
-            if (response.status.value in 200..299) {
-                return FooDefaultPayload.fromJson(response.bodyAsText())
-            }
-            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
-        } catch (e: Exception) {
-            onError(e)
-            throw e
-        }
-    }
-
-    suspend fun emptyParamsPostRequest(): FooDefaultPayload {
-        try {
-            val response = __prepareRequest(
-                client = httpClient,
-                url = "$baseUrl/rpcs/tests/empty-params-post-request",
-                method = HttpMethod.Post,
-                params = null,
-                headers = headers?.invoke(),
-            ).execute()
-            if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientPrefixedError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
-            if (response.status.value in 200..299) {
-                return FooDefaultPayload.fromJson(response.bodyAsText())
-            }
-            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
-        } catch (e: Exception) {
-            onError(e)
-            throw e
-        }
-    }
-
-    suspend fun emptyResponseGetRequest(params: FooDefaultPayload): Unit {
-        try {
-            val response = __prepareRequest(
-                client = httpClient,
-                url = "$baseUrl/rpcs/tests/empty-response-get-request",
-                method = HttpMethod.Get,
-                params = params,
-                headers = headers?.invoke(),
-            ).execute()
-            
-            if (response.status.value in 200..299) {
-                return 
-            }
-            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
-        } catch (e: Exception) {
-            onError(e)
-            throw e
-        }
-    }
-
-    suspend fun emptyResponsePostRequest(params: FooDefaultPayload): Unit {
-        try {
-            val response = __prepareRequest(
-                client = httpClient,
-                url = "$baseUrl/rpcs/tests/empty-response-post-request",
-                method = HttpMethod.Post,
-                params = params,
-                headers = headers?.invoke(),
-            ).execute()
-            
-            if (response.status.value in 200..299) {
-                return 
-            }
-            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
-        } catch (e: Exception) {
-            onError(e)
-            throw e
-        }
-    }
 
     /**
 * If the target language supports it. Generated code should mark this procedure as deprecated.
@@ -636,6 +549,107 @@ suspend fun streamTenEventsThenEnd(
                 }
             )
         }
+}
+
+class TestClientPrefixedNestedService(
+    private val httpClient: HttpClient,
+    private val baseUrl: String,
+    private val headers: __TestClientPrefixedHeadersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
+) {
+    suspend fun emptyParamsGetRequest(): FooDefaultPayload {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/nested/empty-params-get-request",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientPrefixedError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return FooDefaultPayload.fromJson(response.bodyAsText())
+            }
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun emptyParamsPostRequest(): FooDefaultPayload {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/nested/empty-params-post-request",
+                method = HttpMethod.Post,
+                params = null,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientPrefixedError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return FooDefaultPayload.fromJson(response.bodyAsText())
+            }
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun emptyResponseGetRequest(params: FooDefaultPayload): Unit {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/nested/empty-response-get-request",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun emptyResponsePostRequest(params: FooDefaultPayload): Unit {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/nested/empty-response-post-request",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
 }
 
 

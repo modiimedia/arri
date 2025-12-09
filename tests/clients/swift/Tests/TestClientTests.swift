@@ -202,15 +202,15 @@ final class TestSwiftClientTests: XCTestCase {
     }
 
     func testRpcWithNoParams() async throws {
-        let getReqResult = try await client.tests.emptyParamsGetRequest()
-        let postReqResult = try await client.tests.emptyParamsPostRequest()
+        let getReqResult = try await client.tests.nested.emptyParamsGetRequest()
+        let postReqResult = try await client.tests.nested.emptyParamsPostRequest()
         XCTAssert(getReqResult.message.count > 0)
         XCTAssert(postReqResult.message.count > 0)
     }
 
     func testRpcWithNoResponse() async throws {
-        let getReqResult: () = try await client.tests.emptyResponseGetRequest(DefaultPayload(message: "Hello world"))
-        let postReqResult: () = try await client.tests.emptyResponsePostRequest(DefaultPayload(message: "Hello world"))
+        let getReqResult: () = try await client.tests.nested.emptyResponseGetRequest(DefaultPayload(message: "Hello world"))
+        let postReqResult: () = try await client.tests.nested.emptyResponsePostRequest(DefaultPayload(message: "Hello world"))
         XCTAssert(getReqResult as Any is Void)
         XCTAssert(postReqResult as Any is Void)
     }

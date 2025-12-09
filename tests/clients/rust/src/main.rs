@@ -388,8 +388,8 @@ mod tests {
     async fn can_send_requests_with_no_params() {
         let config = get_config(headers());
         let client = TestClient::create(config);
-        let get_request_result = client.tests.empty_params_get_request().await;
-        let post_request_result = client.tests.empty_params_post_request().await;
+        let get_request_result = client.tests.nested.empty_params_get_request().await;
+        let post_request_result = client.tests.nested.empty_params_post_request().await;
         assert!(!get_request_result.unwrap().message.is_empty());
         assert!(!post_request_result.unwrap().message.is_empty());
     }
@@ -400,12 +400,14 @@ mod tests {
         let client = TestClient::create(config);
         let get_request_result = client
             .tests
+            .nested
             .empty_response_get_request(DefaultPayload {
                 message: "hello world".to_string(),
             })
             .await;
         let post_request_result = client
             .tests
+            .nested
             .empty_response_post_request(DefaultPayload {
                 message: "hello world again".to_string(),
             })

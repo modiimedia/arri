@@ -59,14 +59,14 @@ test('route request (unauthorized)', async () => {
 });
 
 test('can handle RPCs with no params', async () => {
-    const result = await client.tests.emptyParamsGetRequest();
-    const result2 = await client.tests.emptyParamsPostRequest();
+    const result = await client.tests.nested.emptyParamsGetRequest();
+    const result2 = await client.tests.nested.emptyParamsPostRequest();
     expect(typeof result.message).toBe('string');
     expect(typeof result2.message).toBe('string');
 });
 test('can handle RPCs with no response', async () => {
-    await client.tests.emptyResponseGetRequest({ message: 'ok' });
-    await client.tests.emptyResponsePostRequest({ message: 'ok' });
+    await client.tests.nested.emptyResponseGetRequest({ message: 'ok' });
+    await client.tests.nested.emptyResponsePostRequest({ message: 'ok' });
 });
 const input: ObjectWithEveryType = {
     any: {
@@ -200,7 +200,7 @@ test('can use async functions for headers', async () => {
             return headers;
         },
     });
-    const result = await _client.tests.emptyParamsGetRequest();
+    const result = await _client.tests.nested.emptyParamsGetRequest();
     expect(typeof result.message).toBe('string');
 });
 test('can send/receive partial objects', async () => {
@@ -583,7 +583,7 @@ describe('request options', () => {
                 },
             },
         });
-        await client.tests.emptyParamsGetRequest();
+        await client.tests.nested.emptyParamsGetRequest();
         expect(numRequest).toBe(1);
         expect(numRequestErr).toBe(0);
         expect(numResponse).toBe(1);
@@ -627,7 +627,7 @@ describe('request options', () => {
             },
         });
 
-        await client.tests.emptyParamsGetRequest({
+        await client.tests.nested.emptyParamsGetRequest({
             onRequest: () => {
                 numRequest++;
             },

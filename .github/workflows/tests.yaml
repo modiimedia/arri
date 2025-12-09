@@ -61,6 +61,11 @@ jobs:
           sdk: 3.7.2
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '20'
+          distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Setup Golang
@@ -120,6 +125,11 @@ jobs:
           sdk: 3.7.2
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '20'
+          distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Setup pnpm
@@ -164,6 +174,11 @@ jobs:
           sdk: 3.7.2
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '20'
+          distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Setup Golang
