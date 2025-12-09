@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/client",
-  "version": "0.81.0",
+  "version": "0.81.1",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
