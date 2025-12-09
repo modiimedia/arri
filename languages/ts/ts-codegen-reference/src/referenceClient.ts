@@ -44,7 +44,6 @@ export class ExampleClient {
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     books: ExampleClientBooksService;
-    v1: ExampleClientV1Service;
     constructor(
         config: {
             baseUrl?: string;
@@ -62,7 +61,6 @@ export class ExampleClient {
         this._onError = config.onError;
         this._options = config.options;
         this.books = new ExampleClientBooksService(config);
-        this.v1 = new ExampleClientV1Service(config);
     }
 
     async sendObject(
@@ -191,84 +189,6 @@ export class ExampleClientBooksService {
             onConnectionError: options.onConnectionError,
             onMessage: options.onMessage,
             clientVersion: '20',
-        });
-    }
-}
-
-export class ExampleClientV1Service {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
-    books: ExampleClientV1BooksService;
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
-        }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
-        this.books = new ExampleClientV1BooksService(config);
-    }
-}
-
-export class ExampleClientV1BooksService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
-        }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
-    }
-
-    /**
-     * Get a book
-     */
-    async getBook(
-        params: BookParams,
-        options?: ArriRequestOptions,
-    ): Promise<Book> {
-        return arriRequest<Book, BookParams>({
-            url: `${this._baseUrl}/v1/books/get-book`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toJsonString,
-            clientVersion: '20',
-            options: options ?? this._options,
         });
     }
 }

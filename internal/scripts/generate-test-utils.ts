@@ -181,14 +181,6 @@ const def = createAppDefinition({
             params: BookParams,
             response: Book,
         },
-        'v1.books.getBook': {
-            path: '/v1/books/get-book',
-            transport: 'http',
-            method: 'post',
-            params: BookParams,
-            response: Book,
-            description: 'Get a book',
-        },
     },
     definitions: {
         EmptyObject,
