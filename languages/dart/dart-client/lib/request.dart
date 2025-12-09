@@ -1,8 +1,26 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:arri_core/arri_core.dart';
+import 'package:ulid/ulid.dart';
 
-import 'package:arri_client/errors.dart';
-import 'package:http/http.dart' as http;
+class RpcRequest<T extends ArriModel?> {
+  final String procedure;
+  String reqId;
+  final String path;
+  final HttpMethod? method;
+  final String? clientVersion;
+  final FutureOr<Map<String, String>> Function()? customHeaders;
+  final T data;
+
+  RpcRequest({
+    required this.procedure,
+    required this.reqId,
+    required this.path,
+    required this.method,
+    required this.clientVersion,
+    required this.customHeaders,
+    required this.data,
+  });
+}
 
 /// Enum of available HTTP methods
 enum HttpMethod implements Comparable<HttpMethod> {
@@ -18,196 +36,6 @@ enum HttpMethod implements Comparable<HttpMethod> {
 
   @override
   compareTo(HttpMethod other) => value.compareTo(other.value);
-}
-
-final timeoutDefault = Duration(seconds: 30);
-
-/// Perform a raw http request
-Future<http.Response> arriRequest(
-  String url, {
-  http.Client? httpClient,
-  HttpMethod method = HttpMethod.get,
-  Map<String, dynamic>? params,
-  FutureOr<Map<String, String>> Function()? headers,
-
-  /// manually specify specific url query parameters
-  Map<String, String>? query,
-
-  /// manually specify a specific encoding
-  Encoding? encoding,
-  String? clientVersion,
-  Duration? timeout,
-}) async {
-  String defaultErrorMsg =
-      "Placeholder request. If you see this that means a request was never sent to the server.";
-  http.Response result = http.Response(
-    """{"statusCode": 400,"statusMessage":"$defaultErrorMsg"}""",
-    400,
-  );
-
-  final finalHeaders = await headers?.call() ?? {};
-  if (clientVersion != null && clientVersion.isNotEmpty) {
-    finalHeaders["client-version"] = clientVersion;
-  }
-  final client = httpClient ?? http.Client();
-  String? bodyInput;
-  if (method != HttpMethod.get && method != HttpMethod.head && params != null) {
-    finalHeaders["Content-Type"] = "application/json";
-    bodyInput = json.encode(params);
-  }
-  switch (method) {
-    case HttpMethod.get:
-      final paramsInput = query ?? params;
-      if (paramsInput != null) {
-        final queryParts = <String>[];
-        for (final entry in paramsInput.entries) {
-          queryParts.add("${entry.key}=${entry.value.toString()}");
-        }
-        final uri = Uri.parse("$url?${queryParts.join("&")}");
-        result = await client.get(
-          uri,
-          headers: finalHeaders,
-        );
-        break;
-      }
-      final uri = Uri.parse(url);
-      result = await client
-          .get(uri, headers: finalHeaders)
-          .timeout(timeout ?? timeoutDefault);
-      break;
-    case HttpMethod.patch:
-      result = await client
-          .patch(
-            Uri.parse(url),
-            headers: finalHeaders,
-            body: bodyInput,
-            encoding: encoding,
-          )
-          .timeout(timeout ?? timeoutDefault);
-      break;
-    case HttpMethod.put:
-      result = await client
-          .put(
-            Uri.parse(url),
-            headers: finalHeaders,
-            body: bodyInput,
-            encoding: encoding,
-          )
-          .timeout(timeout ?? timeoutDefault);
-      break;
-    case HttpMethod.post:
-      result = await client
-          .post(
-            Uri.parse(url),
-            headers: finalHeaders,
-            body: bodyInput,
-            encoding: encoding,
-          )
-          .timeout(timeout ?? timeoutDefault);
-      break;
-    case HttpMethod.head:
-      final paramsInput = query ?? params;
-      if (paramsInput != null) {
-        final queryParts = <String>[];
-        for (final entry in paramsInput.entries) {
-          queryParts.add("${entry.key}=${entry.value.toString()}");
-        }
-        final uri = Uri.parse("$url?${queryParts.join("&")}");
-        result = await client
-            .head(
-              uri,
-              headers: finalHeaders,
-            )
-            .timeout(timeout ?? timeoutDefault);
-      }
-      break;
-    case HttpMethod.delete:
-      result = await client
-          .delete(
-            Uri.parse(url),
-            headers: finalHeaders,
-            encoding: encoding,
-            body: bodyInput,
-          )
-          .timeout(timeout ?? timeoutDefault);
-      break;
-    // ignore: unreachable_switch_default
-    default:
-      throw ArriError.fromResponse(result);
-  }
-  return result;
-}
-
-/// Helper function for performing raw HTTP request to an Arri RPC server
-/// This function will throw an ArriRequestError if it fails
-Future<T> parsedArriRequest<T, E extends Exception>(
-  String url, {
-  http.Client? httpClient,
-  HttpMethod method = HttpMethod.post,
-  Map<String, dynamic>? params,
-  FutureOr<Map<String, String>> Function()? headers,
-  Duration? timeout,
-  Function(Object)? onError,
-  String? clientVersion,
-  required T Function(String) parser,
-}) async {
-  final http.Response result;
-
-  try {
-    result = await arriRequest(
-      url,
-      httpClient: httpClient,
-      method: method,
-      params: params,
-      headers: headers,
-      clientVersion: clientVersion,
-      timeout: timeout,
-    );
-    if (result.statusCode >= 200 && result.statusCode <= 299) {
-      return parser(utf8.decode(result.bodyBytes));
-    }
-  } catch (err) {
-    onError?.call(err);
-    rethrow;
-  }
-  final err = ArriError.fromResponse(result);
-  onError?.call(err);
-  throw err;
-}
-
-/// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result
-/// in which both value and the error can be null.
-Future<ArriResult<T>> parsedArriRequestSafe<T>(
-  String url, {
-  http.Client? httpClient,
-  HttpMethod httpMethod = HttpMethod.get,
-  Map<String, dynamic>? params,
-  FutureOr<Map<String, String>> Function()? headers,
-  required T Function(String) parser,
-  String? clientVersion,
-}) async {
-  try {
-    final result = await parsedArriRequest(
-      url,
-      parser: parser,
-      headers: headers,
-      params: params,
-      clientVersion: clientVersion,
-      method: httpMethod,
-      httpClient: httpClient,
-    );
-    return ArriResultOk(result);
-  } catch (err) {
-    return ArriResultErr(
-      err is ArriError
-          ? err
-          : ArriError(
-              code: 0,
-              message: err.toString(),
-              data: err,
-            ),
-    );
-  }
 }
 
 /// Container for holding a request data or a request error
@@ -257,4 +85,9 @@ class ArriResultErr<T> implements ArriResult<T> {
 
   @override
   T unwrapOr(T fallback) => fallback;
+}
+
+/// Default implementation for generating unique request IDs for client requests. (Uses ULID)
+String generateRequestId() {
+  return Ulid().toString();
 }

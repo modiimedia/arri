@@ -8,6 +8,7 @@ import {
 export interface CodegenContext {
     clientName: string;
     modelPrefix: string;
+    transports: string[];
     generatedTypes: string[];
     instancePath: string;
     schemaPath: string;

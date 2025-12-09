@@ -1,0 +1,14 @@
+[package]
+name = "arri_core"
+version = "0.80.3"
+edition = "2024"
+
+[dependencies]
+serde_json = { workspace = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "message_benchmarks"
+harness = false

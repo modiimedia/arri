@@ -1,5 +1,5 @@
 import { a } from '@arrirpc/schema';
-import { defineEventStreamRpc, defineRpc } from '@arrirpc/server';
+import { defineOutputStreamRpc, defineRpc } from '@arrirpc/server';
 import { type Static, Type } from '@sinclair/typebox';
 
 import { typeboxAdapter } from './index';
@@ -147,19 +147,19 @@ describe('arri inference', () => {
         });
         type Schema = Static<typeof Schema>;
         defineRpc({
-            params: typeboxAdapter(Schema),
-            response: typeboxAdapter(Schema),
-            handler({ params }) {
-                assertType<Schema>(params);
+            input: typeboxAdapter(Schema),
+            output: typeboxAdapter(Schema),
+            handler({ input }) {
+                assertType<Schema>(input);
                 return { id: '', name: '' };
             },
         });
-        defineEventStreamRpc({
-            params: typeboxAdapter(Schema),
-            response: typeboxAdapter(Schema),
-            handler({ params, stream }) {
-                assertType<Schema>(params);
-                stream.send();
+        defineOutputStreamRpc({
+            input: typeboxAdapter(Schema),
+            output: typeboxAdapter(Schema),
+            handler({ input, stream }) {
+                assertType<Schema>(input);
+                stream.start();
                 void stream.push({ id: '', name: '' });
             },
         });

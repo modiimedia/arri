@@ -23,9 +23,11 @@ export default function rustRecordFromSchema(
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
-        ? `Option<BTreeMap<String, ${innerType.finalTypeName}>>`
-        : `BTreeMap<String, ${innerType.finalTypeName}>`;
-    const defaultValue = isOptionType ? `None` : `BTreeMap::new()`;
+        ? `Option<std::collections::BTreeMap<String, ${innerType.finalTypeName}>>`
+        : `std::collections::BTreeMap<String, ${innerType.finalTypeName}>`;
+    const defaultValue = isOptionType
+        ? `None`
+        : `std::collections::BTreeMap::new()`;
     return {
         typeId: typeName,
         finalTypeName: typeName,
@@ -36,7 +38,7 @@ export default function rustRecordFromSchema(
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::Object(${innerKey})) => {
-                        let mut ${innerKey}_result: BTreeMap<String, ${innerType.finalTypeName}> = BTreeMap::new();
+                        let mut ${innerKey}_result: std::collections::BTreeMap<String, ${innerType.finalTypeName}> = std::collections::BTreeMap::new();
                         for (_key_, _value_) in ${innerKey}.into_iter() {
                             ${innerKey}_result.insert(
                                 _key_.to_owned(),
@@ -50,7 +52,7 @@ export default function rustRecordFromSchema(
             }
             return `match ${input} {
                 Some(serde_json::Value::Object(${innerKey})) => {
-                    let mut ${innerKey}_result: BTreeMap<String, ${innerType.finalTypeName}> = BTreeMap::new();
+                    let mut ${innerKey}_result: std::collections::BTreeMap<String, ${innerType.finalTypeName}> = std::collections::BTreeMap::new();
                     for (_key_, _value_) in ${innerKey}.into_iter() {
                         ${innerKey}_result.insert(
                             _key_.to_owned(),
@@ -59,7 +61,7 @@ export default function rustRecordFromSchema(
                     }
                     ${innerKey}_result
                 }
-                _ => BTreeMap::new(),
+                _ => std::collections::BTreeMap::new(),
             }`;
         },
         toJsonTemplate(input, target) {
@@ -69,7 +71,7 @@ export default function rustRecordFromSchema(
                 if _index_ != 0 {
                     ${target}.push(',');
                 }
-                ${target}.push_str(format!("{}:", serialize_string(_key_)).as_str());
+                ${target}.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
                 match _value_ {
                     Some(value_val) => {
                         ${innerType.toJsonTemplate('value_val', target)};
@@ -86,7 +88,7 @@ export default function rustRecordFromSchema(
                 if _index_ != 0 {
                     ${target}.push(',');
                 }
-                ${target}.push_str(format!("{}:", serialize_string(_key_)).as_str());
+                ${target}.push_str(format!("{}:", utils::serialize_string(_key_)).as_str());
                 ${innerType.toJsonTemplate(`_value_`, target)};
             }
             ${target}.push('}')`;

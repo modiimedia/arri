@@ -37,7 +37,9 @@ type RecursiveCallback<T> = (
 export function recursive<T = any>(
     callback: RecursiveCallback<T>,
     metadata?: ASchemaOptions,
-): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
+): IsUnion<T> extends true
+    ? ADiscriminatorSchemaWithAdapters<T>
+    : AObjectSchemaWithAdapters<T>;
 /**
  * Recursive ID Shorthand
  *
@@ -60,11 +62,15 @@ export function recursive<T = any>(
 export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
-): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
+): IsUnion<T> extends true
+    ? ADiscriminatorSchemaWithAdapters<T>
+    : AObjectSchemaWithAdapters<T>;
 export function recursive<T = any>(
     propA: RecursiveCallback<T> | string,
     propB?: ASchemaOptions | RecursiveCallback<T>,
-): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T> {
+): IsUnion<T> extends true
+    ? ADiscriminatorSchemaWithAdapters<T>
+    : AObjectSchemaWithAdapters<T> {
     const isIdShorthand = typeof propA === 'string';
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
     const options = isIdShorthand
@@ -159,5 +165,12 @@ export function recursive<T = any>(
         serialize: mainSchema[VALIDATOR_KEY].serialize,
         coerce: mainSchema[VALIDATOR_KEY].coerce,
     };
-    return mainSchema;
+    return mainSchema as any;
 }
+
+type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
+    x: infer I,
+) => void
+    ? I
+    : never;
+type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true;

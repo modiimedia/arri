@@ -5,11 +5,20 @@
   "targets": {
     "integration-test": {
       "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/**/*.ts", { "env": "CLIENT_TRANSPORT" }],
       "outputs": ["{workspaceRoot}/coverage/tests/clients/ts"],
       "cache": false,
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "tests/clients/ts"
+      },
+      "configurations": {
+        "websockets": {
+          "command": "CLIENT_TRANSPORT=ws vitest run . --passWithNoTests --globals"
+        },
+        "ws": {
+          "command": "CLIENT_TRANSPORT=ws vitest run . --passWithNoTests --globals"
+        }
       }
     },
     "lint": {

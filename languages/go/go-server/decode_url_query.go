@@ -12,7 +12,7 @@ import (
 	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
-func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOptions) *DecoderError {
+func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOptions) DecoderError {
 	reflectValue := reflect.ValueOf(target).Elem()
 	errors := []ValidationError{}
 	ctx := DecoderContext{KeyCasing: options.KeyCasing, Errors: errors}
@@ -22,7 +22,7 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 				NewValidationError("only structs can be decoded from url query params", ctx.InstancePath, ctx.SchemaPath),
 			},
 		)
-		return &err
+		return err
 	}
 	numFields := reflectValue.NumField()
 	targetType := reflectValue.Type()
@@ -80,7 +80,7 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 	}
 	if len(ctx.Errors) > 0 {
 		err := NewDecoderError(ctx.Errors)
-		return &err
+		return err
 	}
 	return nil
 }

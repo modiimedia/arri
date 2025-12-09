@@ -103,7 +103,7 @@ pub enum ${prefixedEnumName} {
 ${initializationParts.join('\n')}
 }
 
-impl ArriEnum for ${prefixedEnumName} {
+impl arri_client::model::ArriClientEnum for ${prefixedEnumName} {
     fn default() -> Self {
         ${prefixedEnumName}::${defaultEnumValue}
     }
