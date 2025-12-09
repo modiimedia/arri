@@ -450,6 +450,100 @@ impl TestClientTestsService {
 }
 
 #[derive(Clone)]
+pub struct TestClientTestsNestedService {
+    _config: InternalArriClientConfig,
+}
+
+impl ArriClientService for TestClientTestsNestedService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self {
+            _config: InternalArriClientConfig::from(config),
+        }
+    }
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
+        *unwrapped_headers = headers.clone();
+    }
+}
+
+impl TestClientTestsNestedService {
+    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/nested/empty-params-get-request",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            None::<EmptyArriModel>,
+            |body| return DefaultPayload::from_json_string(body),
+        )
+        .await
+    }
+    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/nested/empty-params-post-request",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            None::<EmptyArriModel>,
+            |body| return DefaultPayload::from_json_string(body),
+        )
+        .await
+    }
+    pub async fn empty_response_get_request(
+        &self,
+        params: DefaultPayload,
+    ) -> Result<(), ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/nested/empty-response-get-request",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| {},
+        )
+        .await
+    }
+    pub async fn empty_response_post_request(
+        &self,
+        params: DefaultPayload,
+    ) -> Result<(), ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/nested/empty-response-post-request",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| {},
+        )
+        .await
+    }
+}
+
+#[derive(Clone)]
 pub struct TestClientUsersService {
     _config: InternalArriClientConfig,
 }
