@@ -37,7 +37,7 @@ func rpc[TInput, TOutput any, TMeta any](app *App[TMeta], serviceName string, op
 		rpcName = serviceName + "." + rpcName
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Path = app.options.RpcPathPrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + "/" + FormatServicePath(serviceName) + rpcSchema.Http.Path
 	} else {
 		rpcSchema.Path = app.options.RpcPathPrefix + rpcSchema.Path
 	}
@@ -128,4 +128,15 @@ func Rpc[TInput, TOutput any, TMeta any](app *App[TMeta], handler func(TInput, R
 
 func ScopedRpc[TInput, TOutput any, TMeta any](app *App[TMeta], serviceName string, handler func(TInput, Request[TMeta]) (TOutput, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
+}
+
+func FormatServicePath(path string) string {
+	result := ""
+	for index, part := range strings.Split(path, ".") {
+		if index > 0 {
+			result += "/"
+		}
+		result += strcase.ToKebab(part)
+	}
+	return result
 }
