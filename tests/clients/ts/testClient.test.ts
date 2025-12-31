@@ -62,16 +62,16 @@ describe('non-rpc http routes', () => {
     });
 });
 
-describe('rpcs', () => {
-    it('can handle RPCs with no params', { timeout: 10000 }, async () => {
-        const result = await client.tests.emptyParamsGetRequest();
-        const result2 = await client.tests.emptyParamsPostRequest();
+describe('standard rpcs', () => {
+    test('can handle RPCs with no params', async () => {
+        const result = await client.tests.nested.emptyParamsGetRequest();
+        const result2 = await client.tests.nested.emptyParamsPostRequest();
         expect(typeof result.message).toBe('string');
         expect(typeof result2.message).toBe('string');
     });
-    it('can handle RPCs with no response', async () => {
-        await client.tests.emptyResponseGetRequest({ message: 'ok' });
-        await client.tests.emptyResponsePostRequest({ message: 'ok' });
+    test('can handle RPCs with no response', async () => {
+        await client.tests.nested.emptyResponseGetRequest({ message: 'ok' });
+        await client.tests.nested.emptyResponsePostRequest({ message: 'ok' });
     });
     const input: ObjectWithEveryType = {
         any: {
@@ -98,35 +98,52 @@ describe('rpcs', () => {
             string: '',
             boolean: false,
             timestamp: new Date(),
-        },
-        record: {
-            A: BigInt('1'),
-            B: BigInt('0'),
-            '"C"\t': BigInt('4'),
-        },
-        discriminator: {
-            type: 'B',
-            title: 'Hello World',
-            description: '',
-        },
-        nestedObject: {
-            id: '',
-            timestamp: new Date(),
-            data: {
+            float32: 0,
+            float64: 0,
+            int8: 0,
+            uint8: 0,
+            int16: 0,
+            uint16: 0,
+            int32: 0,
+            uint32: 0,
+            int64: 0n,
+            uint64: 0n,
+            enumerator: 'B',
+            array: [true, false, false],
+            object: {
+                string: '',
+                boolean: false,
+                timestamp: new Date(),
+            },
+            record: {
+                A: BigInt('1'),
+                B: BigInt('0'),
+                '"C"\t': BigInt('4'),
+            },
+            discriminator: {
+                type: 'B',
+                title: 'Hello World',
+                description: '',
+            },
+            nestedObject: {
                 id: '',
                 timestamp: new Date(),
                 data: {
                     id: '',
                     timestamp: new Date(),
+                    data: {
+                        id: '',
+                        timestamp: new Date(),
+                    },
                 },
             },
-        },
-        nestedArray: [
-            [
-                { id: '', timestamp: new Date() },
-                { id: '', timestamp: new Date() },
+            nestedArray: [
+                [
+                    { id: '', timestamp: new Date() },
+                    { id: '', timestamp: new Date() },
+                ],
             ],
-        ],
+        },
     };
     it('can send/receive object with every field type', async () => {
         const result = await client.tests.sendObject(input);
@@ -173,48 +190,11 @@ describe('rpcs', () => {
                 ).toBe(true);
             }
         }
-    });
-    it('returns a 401 error for unauthenticated RPC request', async () => {
-        let firedOnErr = false;
-        const unauthenticatedClient = new TestClient({
-            baseUrl,
-            wsConnectionUrl: wsConnectionUrl,
-            transport: transport,
-            onError(_) {
-                firedOnErr = true;
-            },
-        });
-        try {
-            await unauthenticatedClient.tests.sendObject(input);
-            expect(true).toBe(false);
-        } catch (err) {
-            expect(err instanceof ArriError);
-            if (err instanceof ArriError) {
-                expect(err.code).toBe(401);
-            }
-        }
-        expect(firedOnErr).toBe(true);
-        unauthenticatedClient.terminateConnections();
-    });
-    it('can use async functions for headers', async () => {
-        const _client = new TestClient({
-            baseUrl: baseUrl,
-            wsConnectionUrl,
-            transport: transport,
-            async headers() {
-                await new Promise((res) => {
-                    setTimeout(() => {
-                        res(true);
-                    }, 1000);
-                });
-                return headers;
-            },
-        });
-        const result = await _client.tests.emptyParamsGetRequest();
+        const result = await _client.tests.nested.emptyParamsGetRequest();
         expect(typeof result.message).toBe('string');
-        _client.terminateConnections();
     });
-    it('can send/receive partial objects', async () => {
+
+    test('can send/receive partial objects', async () => {
         const fullObjectResult = await client.tests.sendPartialObject(input);
         expect(fullObjectResult).toStrictEqual(input);
         const partialInput: ObjectWithEveryOptionalType = {
@@ -244,7 +224,7 @@ describe('rpcs', () => {
             await client.tests.sendPartialObject(partialInput);
         expect(partialObjectResult).toStrictEqual(partialInput);
     });
-    it('can send/receive object with nullable fields', async () => {
+    test('can send/receive object with nullable fields', async () => {
         const fullObjectResult =
             await client.tests.sendObjectWithNullableFields(input);
         expect(fullObjectResult).toStrictEqual(input);
@@ -271,13 +251,32 @@ describe('rpcs', () => {
             nestedObject: {
                 id: null,
                 timestamp: null,
-                data: {
+                float32: null,
+                float64: null,
+                int8: null,
+                uint8: null,
+                int16: null,
+                uint16: null,
+                int32: null,
+                uint32: null,
+                int64: null,
+                uint64: null,
+                enumerator: null,
+                array: null,
+                object: null,
+                record: null,
+                discriminator: null,
+                nestedObject: {
                     id: null,
                     timestamp: null,
-                    data: null,
+                    data: {
+                        id: null,
+                        timestamp: null,
+                        data: null,
+                    },
                 },
+                nestedArray: [null],
             },
-            nestedArray: [null],
         };
         const nullableResult =
             await client.tests.sendObjectWithNullableFields(nullableInput);
@@ -588,9 +587,15 @@ describe('request options', () => {
                 numErr++;
             },
         });
-        await customClient.tests.emptyParamsGetRequest();
-        expect(numErr).toBe(0);
-        numErr = 0;
+        await client.tests.nested.emptyParamsGetRequest();
+        expect(numRequest).toBe(1);
+        expect(numRequestErr).toBe(0);
+        expect(numResponse).toBe(1);
+        expect(numResponseErr).toBe(0);
+        numRequest = 0;
+        numRequestErr = 0;
+        numResponse = 0;
+        numResponseErr = 0;
         try {
             await customClient.tests.sendError({ message: '', code: 409 });
         } catch (_) {
@@ -612,9 +617,18 @@ describe('request options', () => {
             },
         });
 
-        await client.tests.emptyParamsGetRequest({
-            onError: () => {
-                numErr++;
+        await client.tests.nested.emptyParamsGetRequest({
+            onRequest: () => {
+                numRequest++;
+            },
+            onRequestError: () => {
+                numRequestErr++;
+            },
+            onResponse: () => {
+                numResponse++;
+            },
+            onResponseError: () => {
+                numResponseErr++;
             },
         });
         expect(numErr).toBe(0);

@@ -38,8 +38,10 @@ import {
 const __transportOptions__ = ['http', 'ws'] as const;
 type __TransportOption__ = (typeof __transportOptions__)[number];
 
-export interface TestClientOptions
-    extends Omit<RpcDispatcherOptions, 'signal'> {
+export interface TestClientOptions extends Omit<
+    RpcDispatcherOptions,
+    'signal'
+> {
     transport?: __TransportOption__;
     dispatchers?: Record<string, RpcDispatcher<__TransportOption__>>;
     /**
@@ -118,7 +120,7 @@ export class TestClientTestsService {
     private readonly __options__: RpcDispatcherOptions;
     private readonly __defaultTransport__: __TransportOption__;
     private readonly __genReqId__: () => string;
-
+    nested: TestClientTestsNestedService;
     constructor(config: TestClientOptions) {
         this.__options__ = {
             headers: config.headers,
@@ -138,6 +140,7 @@ export class TestClientTestsService {
             config.dispatchers['ws'] = new WsDispatcher(config);
         }
         this.__dispatchers__ = config.dispatchers!;
+        this.nested = new TestClientTestsNestedService(config);
     }
 
     /**
@@ -150,192 +153,6 @@ export class TestClientTestsService {
         }
     }
 
-    async emptyParamsGetRequest(
-        options?: RpcOptions<'http' | 'ws'>,
-    ): Promise<DefaultPayload> {
-        const finalOptions = resolveDispatcherOptions(
-            options,
-            this.__options__,
-        );
-        const req: RpcRequest<undefined> = {
-            reqId: this.__genReqId__(),
-            procedure: 'tests.emptyParamsGetRequest',
-            path: '/rpcs/tests/empty-params-get-request',
-            method: 'get',
-            clientVersion: '10',
-            data: undefined,
-            customHeaders: finalOptions.headers,
-        };
-        const validator: RpcRequestValidator<undefined, DefaultPayload> = {
-            params: UndefinedModelValidator,
-            response: $$DefaultPayload,
-        };
-        const transport = resolveTransport<__TransportOption__>(
-            ['http', 'ws'],
-            options?.transport,
-            this.__defaultTransport__,
-        );
-        if (!transport) {
-            const err = new Error(
-                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        const dispatcher = this.__dispatchers__[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleRpc<undefined, DefaultPayload>(
-            req,
-            validator,
-            finalOptions,
-        );
-    }
-    async emptyParamsPostRequest(
-        options?: RpcOptions<'http' | 'ws'>,
-    ): Promise<DefaultPayload> {
-        const finalOptions = resolveDispatcherOptions(
-            options,
-            this.__options__,
-        );
-        const req: RpcRequest<undefined> = {
-            reqId: this.__genReqId__(),
-            procedure: 'tests.emptyParamsPostRequest',
-            path: '/rpcs/tests/empty-params-post-request',
-            method: undefined,
-            clientVersion: '10',
-            data: undefined,
-            customHeaders: finalOptions.headers,
-        };
-        const validator: RpcRequestValidator<undefined, DefaultPayload> = {
-            params: UndefinedModelValidator,
-            response: $$DefaultPayload,
-        };
-        const transport = resolveTransport<__TransportOption__>(
-            ['http', 'ws'],
-            options?.transport,
-            this.__defaultTransport__,
-        );
-        if (!transport) {
-            const err = new Error(
-                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        const dispatcher = this.__dispatchers__[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleRpc<undefined, DefaultPayload>(
-            req,
-            validator,
-            finalOptions,
-        );
-    }
-    async emptyResponseGetRequest(
-        params: DefaultPayload,
-        options?: RpcOptions<'http' | 'ws'>,
-    ): Promise<undefined> {
-        const finalOptions = resolveDispatcherOptions(
-            options,
-            this.__options__,
-        );
-        const req: RpcRequest<DefaultPayload> = {
-            reqId: this.__genReqId__(),
-            procedure: 'tests.emptyResponseGetRequest',
-            path: '/rpcs/tests/empty-response-get-request',
-            method: 'get',
-            clientVersion: '10',
-            data: params,
-            customHeaders: finalOptions.headers,
-        };
-        const validator: RpcRequestValidator<DefaultPayload, undefined> = {
-            params: $$DefaultPayload,
-            response: UndefinedModelValidator,
-        };
-        const transport = resolveTransport<__TransportOption__>(
-            ['http', 'ws'],
-            options?.transport,
-            this.__defaultTransport__,
-        );
-        if (!transport) {
-            const err = new Error(
-                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        const dispatcher = this.__dispatchers__[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleRpc<DefaultPayload, undefined>(
-            req,
-            validator,
-            finalOptions,
-        );
-    }
-    async emptyResponsePostRequest(
-        params: DefaultPayload,
-        options?: RpcOptions<'http' | 'ws'>,
-    ): Promise<undefined> {
-        const finalOptions = resolveDispatcherOptions(
-            options,
-            this.__options__,
-        );
-        const req: RpcRequest<DefaultPayload> = {
-            reqId: this.__genReqId__(),
-            procedure: 'tests.emptyResponsePostRequest',
-            path: '/rpcs/tests/empty-response-post-request',
-            method: undefined,
-            clientVersion: '10',
-            data: params,
-            customHeaders: finalOptions.headers,
-        };
-        const validator: RpcRequestValidator<DefaultPayload, undefined> = {
-            params: $$DefaultPayload,
-            response: UndefinedModelValidator,
-        };
-        const transport = resolveTransport<__TransportOption__>(
-            ['http', 'ws'],
-            options?.transport,
-            this.__defaultTransport__,
-        );
-        if (!transport) {
-            const err = new Error(
-                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        const dispatcher = this.__dispatchers__[transport];
-        if (!dispatcher) {
-            const err = new Error(
-                `Missing dispatcher for transport "${transport}"`,
-            );
-            finalOptions.onError?.(req, err);
-            throw err;
-        }
-        return dispatcher.handleRpc<DefaultPayload, undefined>(
-            req,
-            validator,
-            finalOptions,
-        );
-    }
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
      * @deprecated
@@ -1094,6 +911,234 @@ export class TestClientTestsService {
             req,
             validator,
             options ?? {},
+        );
+    }
+}
+
+export class TestClientTestsNestedService {
+    private readonly __dispatchers__: Record<
+        string,
+        RpcDispatcher<__TransportOption__>
+    >;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
+
+    constructor(config: TestClientOptions) {
+        this.__options__ = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
+        }
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this.__dispatchers__ = config.dispatchers!;
+    }
+
+    /**
+     * Close all active connections for a specific transport or for all transports.
+     */
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
+            dispatcher.terminateConnections();
+        }
+    }
+
+    async emptyParamsGetRequest(
+        options?: RpcOptions<'http' | 'ws'>,
+    ): Promise<DefaultPayload> {
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyParamsGetRequest',
+            path: '/rpcs/tests/nested/empty-params-get-request',
+            method: 'get',
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<undefined, DefaultPayload> = {
+            params: UndefinedModelValidator,
+            response: $$DefaultPayload,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<undefined, DefaultPayload>(
+            req,
+            validator,
+            finalOptions,
+        );
+    }
+    async emptyParamsPostRequest(
+        options?: RpcOptions<'http' | 'ws'>,
+    ): Promise<DefaultPayload> {
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyParamsPostRequest',
+            path: '/rpcs/tests/nested/empty-params-post-request',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<undefined, DefaultPayload> = {
+            params: UndefinedModelValidator,
+            response: $$DefaultPayload,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<undefined, DefaultPayload>(
+            req,
+            validator,
+            finalOptions,
+        );
+    }
+    async emptyResponseGetRequest(
+        params: DefaultPayload,
+        options?: RpcOptions<'http' | 'ws'>,
+    ): Promise<undefined> {
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<DefaultPayload> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyResponseGetRequest',
+            path: '/rpcs/tests/nested/empty-response-get-request',
+            method: 'get',
+            clientVersion: '10',
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<DefaultPayload, undefined> = {
+            params: $$DefaultPayload,
+            response: UndefinedModelValidator,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<DefaultPayload, undefined>(
+            req,
+            validator,
+            finalOptions,
+        );
+    }
+    async emptyResponsePostRequest(
+        params: DefaultPayload,
+        options?: RpcOptions<'http' | 'ws'>,
+    ): Promise<undefined> {
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<DefaultPayload> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyResponsePostRequest',
+            path: '/rpcs/tests/nested/empty-response-post-request',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<DefaultPayload, undefined> = {
+            params: $$DefaultPayload,
+            response: UndefinedModelValidator,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<DefaultPayload, undefined>(
+            req,
+            validator,
+            finalOptions,
         );
     }
 }

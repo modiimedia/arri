@@ -46,10 +46,10 @@ func main() {
 		return nil
 	})
 	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.TypeDefOptions{})
-	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
-	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})
-	arri.ScopedRpc(&app, "tests", EmptyResponseGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
-	arri.ScopedRpc(&app, "tests", EmptyResponsePostRequest, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests.nested", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
+	arri.ScopedRpc(&app, "tests.nested", EmptyParamsPostRequest, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests.nested", EmptyResponseGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
+	arri.ScopedRpc(&app, "tests.nested", EmptyResponsePostRequest, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", DeprecatedRpc, arri.RpcOptions{
 		IsDeprecated: true,
 		Description:  "If the target language supports it. Generated code should mark this procedure as deprecated.",

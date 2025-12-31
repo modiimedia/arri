@@ -22,16 +22,16 @@ fun main() {
 
     runBlocking {
         val tag = "EMPTY PARAM REQUESTS"
-        val getResult = client.tests.emptyParamsGetRequest()
-        val postResult = client.tests.emptyParamsPostRequest()
+        val getResult = client.tests.nested.emptyParamsGetRequest()
+        val postResult = client.tests.nested.emptyParamsPostRequest()
         expect(tag, getResult.message.isNotEmpty(), true)
         expect(tag, postResult.message.isNotEmpty(), true)
     }
 
     runBlocking {
         val tag = "EMPTY RESPONSE REQUESTS"
-        client.tests.emptyResponseGetRequest(DefaultPayload(message = "Hello"))
-        client.tests.emptyResponsePostRequest(DefaultPayload(message = "Hello"))
+        client.tests.nested.emptyResponseGetRequest(DefaultPayload(message = "Hello"))
+        client.tests.nested.emptyResponsePostRequest(DefaultPayload(message = "Hello"))
         expect(tag, true, result = true)
     }
 

@@ -197,6 +197,7 @@ export function rustServiceFromSchema(
                     key: validRustIdentifier(key),
                     name: subService.name,
                 });
+                subServiceContent.push(subService.content);
             }
             continue;
         }

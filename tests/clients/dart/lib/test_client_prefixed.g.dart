@@ -57,124 +57,6 @@ class TestClientPrefixed {
     }
   }
 
-  Future<FooDefaultPayload> emptyParamsGetRequest({
-    String? transport,
-    Duration? timeout,
-    int? retry,
-    Duration? retryDelay,
-    OnErrorHook? onError,
-  }) async {
-    final selectedTransport =
-        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
-    final dispatcher = _dispatchers[selectedTransport];
-    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleRpc(
-      req: RpcRequest(
-        procedure: "emptyParamsGetRequest",
-        path: "/rpcs/tests/empty-params-get-request",
-        reqId: getRequestId(),
-        method: HttpMethod.get,
-        clientVersion: _clientVersion,
-        customHeaders: _headers,
-        data: null,
-      ),
-      jsonDecoder: (data) => FooDefaultPayload.fromJsonString(data),
-      timeout: timeout ?? _timeout,
-      retry: retry ?? _retry,
-      retryDelay: retryDelay ?? _retryDelay,
-      onError: onError ?? _onError,
-    );
-  }
-
-  Future<FooDefaultPayload> emptyParamsPostRequest({
-    String? transport,
-    Duration? timeout,
-    int? retry,
-    Duration? retryDelay,
-    OnErrorHook? onError,
-  }) async {
-    final selectedTransport =
-        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
-    final dispatcher = _dispatchers[selectedTransport];
-    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleRpc(
-      req: RpcRequest(
-        procedure: "emptyParamsPostRequest",
-        path: "/rpcs/tests/empty-params-post-request",
-        reqId: getRequestId(),
-        method: null,
-        clientVersion: _clientVersion,
-        customHeaders: _headers,
-        data: null,
-      ),
-      jsonDecoder: (data) => FooDefaultPayload.fromJsonString(data),
-      timeout: timeout ?? _timeout,
-      retry: retry ?? _retry,
-      retryDelay: retryDelay ?? _retryDelay,
-      onError: onError ?? _onError,
-    );
-  }
-
-  Future<void> emptyResponseGetRequest(
-    FooDefaultPayload input, {
-    String? transport,
-    Duration? timeout,
-    int? retry,
-    Duration? retryDelay,
-    OnErrorHook? onError,
-  }) async {
-    final selectedTransport =
-        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
-    final dispatcher = _dispatchers[selectedTransport];
-    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleRpc(
-      req: RpcRequest(
-        procedure: "emptyResponseGetRequest",
-        path: "/rpcs/tests/empty-response-get-request",
-        reqId: getRequestId(),
-        method: HttpMethod.get,
-        clientVersion: _clientVersion,
-        customHeaders: _headers,
-        data: input,
-      ),
-      jsonDecoder: (_) => {},
-      timeout: timeout ?? _timeout,
-      retry: retry ?? _retry,
-      retryDelay: retryDelay ?? _retryDelay,
-      onError: onError ?? _onError,
-    );
-  }
-
-  Future<void> emptyResponsePostRequest(
-    FooDefaultPayload input, {
-    String? transport,
-    Duration? timeout,
-    int? retry,
-    Duration? retryDelay,
-    OnErrorHook? onError,
-  }) async {
-    final selectedTransport =
-        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
-    final dispatcher = _dispatchers[selectedTransport];
-    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
-    return dispatcher.handleRpc(
-      req: RpcRequest(
-        procedure: "emptyResponsePostRequest",
-        path: "/rpcs/tests/empty-response-post-request",
-        reqId: getRequestId(),
-        method: null,
-        clientVersion: _clientVersion,
-        customHeaders: _headers,
-        data: input,
-      ),
-      jsonDecoder: (_) => {},
-      timeout: timeout ?? _timeout,
-      retry: retry ?? _retry,
-      retryDelay: retryDelay ?? _retryDelay,
-      onError: onError ?? _onError,
-    );
-  }
-
   /// If the target language supports it. Generated code should mark this procedure as deprecated.
   @deprecated
   Future<void> deprecatedRpc(
@@ -738,6 +620,189 @@ class TestClientPrefixed {
       maxRetryCount: maxRetryCount,
       maxRetryInterval: maxRetryInterval,
       heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+    );
+  }
+
+  TestClientPrefixedNestedService get nested => TestClientPrefixedNestedService(
+        baseUrl: _baseUrl,
+        wsConnectionUrl: _wsConnectionUrl,
+        headers: _headers,
+        createHttpClient: _createHttpClient,
+        onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
+        dispatchers: _dispatchers,
+        defaultTransport: _defaultTransport,
+      );
+}
+
+class TestClientPrefixedNestedService {
+  final String _baseUrl;
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = "10";
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
+  final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
+  TestClientPrefixedNestedService({
+    required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client Function()? createHttpClient,
+    FutureOr<Map<String, String>> Function()? headers,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
+    Duration? timeout,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  })  : _baseUrl = baseUrl,
+        _wsConnectionUrl = wsConnectionUrl,
+        _createHttpClient = createHttpClient,
+        _headers = headers,
+        _onError = onError,
+        _retry = retry,
+        _retryDelay = retryDelay,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout,
+        _defaultTransport = defaultTransport ?? "http" {
+    _dispatchers = dispatchers ?? {};
+    if (_dispatchers["http"] == null) {
+      _dispatchers["http"] = HttpDispatcher(
+        baseUrl: baseUrl,
+        createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
+    }
+  }
+
+  Future<FooDefaultPayload> emptyParamsGetRequest({
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyParamsGetRequest",
+        path: "/rpcs/tests/nested/empty-params-get-request",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) => FooDefaultPayload.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
+    );
+  }
+
+  Future<FooDefaultPayload> emptyParamsPostRequest({
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyParamsPostRequest",
+        path: "/rpcs/tests/nested/empty-params-post-request",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) => FooDefaultPayload.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
+    );
+  }
+
+  Future<void> emptyResponseGetRequest(
+    FooDefaultPayload input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyResponseGetRequest",
+        path: "/rpcs/tests/nested/empty-response-get-request",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (_) => {},
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
+    );
+  }
+
+  Future<void> emptyResponsePostRequest(
+    FooDefaultPayload input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyResponsePostRequest",
+        path: "/rpcs/tests/nested/empty-response-post-request",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (_) => {},
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 }

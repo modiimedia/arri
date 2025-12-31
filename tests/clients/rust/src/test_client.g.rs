@@ -51,6 +51,8 @@ pub struct TestClientTestsService<TDispatcher: arri_client::dispatcher::Transpor
     _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
     _dispatcher: TDispatcher,
     _content_type: arri_core::message::ContentType,
+
+    pub nested: TestClientTestsNestedService<TDispatcher>,
 }
 
 impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
@@ -61,150 +63,19 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
             _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
             _dispatcher: config.dispatcher.clone(),
             _content_type: config.content_type.clone(),
+            nested: TestClientTestsNestedService::create(config),
         }
     }
     fn update_headers(&self, headers: arri_core::headers::SharableHeaderMap) {
         let mut unwrapped_headers = self._headers.write().unwrap();
         *unwrapped_headers = headers.clone();
+        self.nested.update_headers(headers);
     }
 }
 
 impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
     TestClientTestsService<TDispatcher>
 {
-    pub async fn empty_params_get_request(
-        &self,
-    ) -> Result<DefaultPayload, arri_core::errors::ArriError> {
-        let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
-        if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(arri_core::errors::ArriError::new(
-                0,
-                format!("tests.emptyParamsGetRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
-                None,
-                None,
-            ));
-        }
-        let call = arri_client::rpc_call::RpcCall::new(
-            "tests.emptyParamsGetRequest".to_string(),
-            "/rpcs/tests/empty-params-get-request".to_string(),
-            None,
-            Some(arri_core::message::HttpMethod::Get),
-            Some("10".to_string()),
-            Some(self._content_type.clone()),
-            &self._headers,
-            None,
-        );
-        let result = self._dispatcher.dispatch_rpc(call).await;
-        match result {
-            Ok((content_type, body)) => match content_type {
-                arri_core::message::ContentType::Json => Ok(DefaultPayload::from_json_string(
-                    String::from_utf8(body).unwrap_or("".to_string()),
-                )),
-            },
-            Err(err) => Err(err),
-        }
-    }
-    pub async fn empty_params_post_request(
-        &self,
-    ) -> Result<DefaultPayload, arri_core::errors::ArriError> {
-        let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
-        if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(arri_core::errors::ArriError::new(
-                0,
-                format!("tests.emptyParamsPostRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
-                None,
-                None,
-            ));
-        }
-        let call = arri_client::rpc_call::RpcCall::new(
-            "tests.emptyParamsPostRequest".to_string(),
-            "/rpcs/tests/empty-params-post-request".to_string(),
-            None,
-            None,
-            Some("10".to_string()),
-            Some(self._content_type.clone()),
-            &self._headers,
-            None,
-        );
-        let result = self._dispatcher.dispatch_rpc(call).await;
-        match result {
-            Ok((content_type, body)) => match content_type {
-                arri_core::message::ContentType::Json => Ok(DefaultPayload::from_json_string(
-                    String::from_utf8(body).unwrap_or("".to_string()),
-                )),
-            },
-            Err(err) => Err(err),
-        }
-    }
-    pub async fn empty_response_get_request(
-        &self,
-        input: DefaultPayload,
-    ) -> Result<(), arri_core::errors::ArriError> {
-        let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
-        if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(arri_core::errors::ArriError::new(
-                0,
-                format!("tests.emptyResponseGetRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
-                None,
-                None,
-            ));
-        }
-        let call = arri_client::rpc_call::RpcCall::new(
-            "tests.emptyResponseGetRequest".to_string(),
-            "/rpcs/tests/empty-response-get-request".to_string(),
-            match transport_id.as_str() {
-                "http" => Some(input.to_query_params_string()),
-                _ => None,
-            },
-            Some(arri_core::message::HttpMethod::Get),
-            Some("10".to_string()),
-            Some(self._content_type.clone()),
-            &self._headers,
-            None,
-        );
-        let result = self._dispatcher.dispatch_rpc(call).await;
-        match result {
-            Ok((content_type, body)) => match content_type {
-                arri_core::message::ContentType::Json => Ok(()),
-            },
-            Err(err) => Err(err),
-        }
-    }
-    pub async fn empty_response_post_request(
-        &self,
-        input: DefaultPayload,
-    ) -> Result<(), arri_core::errors::ArriError> {
-        let available_transports = vec!["http", "ws"];
-        let transport_id = self._dispatcher.transport_id();
-        if !available_transports.contains(&transport_id.clone().as_str()) {
-            return Err(arri_core::errors::ArriError::new(
-                0,
-                format!("tests.emptyResponsePostRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
-                None,
-                None,
-            ));
-        }
-        let call = arri_client::rpc_call::RpcCall::new(
-            "tests.emptyResponsePostRequest".to_string(),
-            "/rpcs/tests/empty-response-post-request".to_string(),
-            None,
-            None,
-            Some("10".to_string()),
-            Some(self._content_type.clone()),
-            &self._headers,
-            Some(input.to_json_string().as_bytes().to_vec()),
-        );
-        let result = self._dispatcher.dispatch_rpc(call).await;
-        match result {
-            Ok((content_type, body)) => match content_type {
-                arri_core::message::ContentType::Json => Ok(()),
-            },
-            Err(err) => Err(err),
-        }
-    }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     #[deprecated]
     pub async fn deprecated_rpc(
@@ -929,6 +800,167 @@ impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
             )
             .await;
         Ok(())
+    }
+}
+
+#[derive(Clone)]
+pub struct TestClientTestsNestedService<TDispatcher: arri_client::dispatcher::TransportDispatcher> {
+    _headers: std::sync::Arc<std::sync::RwLock<arri_core::headers::SharableHeaderMap>>,
+    _dispatcher: TDispatcher,
+    _content_type: arri_core::message::ContentType,
+}
+
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    arri_client::ArriClientService<TDispatcher> for TestClientTestsNestedService<TDispatcher>
+{
+    fn create(config: arri_client::ArriClientConfig<TDispatcher>) -> Self {
+        Self {
+            _headers: std::sync::Arc::new(std::sync::RwLock::new(config.headers.clone())),
+            _dispatcher: config.dispatcher.clone(),
+            _content_type: config.content_type.clone(),
+        }
+    }
+    fn update_headers(&self, headers: arri_core::headers::SharableHeaderMap) {
+        let mut unwrapped_headers = self._headers.write().unwrap();
+        *unwrapped_headers = headers.clone();
+    }
+}
+
+impl<TDispatcher: arri_client::dispatcher::TransportDispatcher>
+    TestClientTestsNestedService<TDispatcher>
+{
+    pub async fn empty_params_get_request(
+        &self,
+    ) -> Result<DefaultPayload, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.nested.emptyParamsGetRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.nested.emptyParamsGetRequest".to_string(),
+            "/rpcs/tests/nested/empty-params-get-request".to_string(),
+            None,
+            Some(arri_core::message::HttpMethod::Get),
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None,
+        );
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(DefaultPayload::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
+    }
+    pub async fn empty_params_post_request(
+        &self,
+    ) -> Result<DefaultPayload, arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.nested.emptyParamsPostRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.nested.emptyParamsPostRequest".to_string(),
+            "/rpcs/tests/nested/empty-params-post-request".to_string(),
+            None,
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None,
+        );
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(DefaultPayload::from_json_string(
+                    String::from_utf8(body).unwrap_or("".to_string()),
+                )),
+            },
+            Err(err) => Err(err),
+        }
+    }
+    pub async fn empty_response_get_request(
+        &self,
+        input: DefaultPayload,
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.nested.emptyResponseGetRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.nested.emptyResponseGetRequest".to_string(),
+            "/rpcs/tests/nested/empty-response-get-request".to_string(),
+            match transport_id.as_str() {
+                "http" => Some(input.to_query_params_string()),
+                _ => None,
+            },
+            Some(arri_core::message::HttpMethod::Get),
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            None,
+        );
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(()),
+            },
+            Err(err) => Err(err),
+        }
+    }
+    pub async fn empty_response_post_request(
+        &self,
+        input: DefaultPayload,
+    ) -> Result<(), arri_core::errors::ArriError> {
+        let available_transports = vec!["http", "ws"];
+        let transport_id = self._dispatcher.transport_id();
+        if !available_transports.contains(&transport_id.clone().as_str()) {
+            return Err(arri_core::errors::ArriError::new(
+                0,
+                format!("tests.nested.emptyResponsePostRequest doesn't support {}. You must call this procedure using a client initialized with a dispatcher for one of the following transports {:?}.", transport_id, available_transports),
+                None,
+                None,
+            ));
+        }
+        let call = arri_client::rpc_call::RpcCall::new(
+            "tests.nested.emptyResponsePostRequest".to_string(),
+            "/rpcs/tests/nested/empty-response-post-request".to_string(),
+            None,
+            None,
+            Some("10".to_string()),
+            Some(self._content_type.clone()),
+            &self._headers,
+            Some(input.to_json_string().as_bytes().to_vec()),
+        );
+        let result = self._dispatcher.dispatch_rpc(call).await;
+        match result {
+            Ok((content_type, body)) => match content_type {
+                arri_core::message::ContentType::Json => Ok(()),
+            },
+            Err(err) => Err(err),
+        }
     }
 }
 

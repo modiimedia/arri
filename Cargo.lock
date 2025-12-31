@@ -34,7 +34,7 @@ checksum = "5192cca8006f1fd4f7237516f40fa183bb07f8fbdfedaa0036de5ea9b0b45e78"
 
 [[package]]
 name = "arri_client"
-version = "0.81.0"
+version = "0.81.1"
 dependencies = [
  "arri_core",
  "async-trait",

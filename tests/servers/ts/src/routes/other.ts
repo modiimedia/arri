@@ -5,7 +5,7 @@ const DefaultPayload = a.object('DefaultPayload', {
     message: a.string(),
 });
 
-export const manualTestService = defineService('tests', {
+export const manualTestService = defineService('tests.nested', {
     emptyParamsGetRequest: defineRpc({
         method: 'get',
         input: undefined,

@@ -36,8 +36,8 @@ Future<void> main() async {
 
     test("supports RPCs with no params", () async {
       try {
-        await client.tests.emptyParamsGetRequest();
-        await client.tests.emptyParamsPostRequest();
+        await client.tests.nested.emptyParamsGetRequest();
+        await client.tests.nested.emptyParamsPostRequest();
       } catch (err) {
         print("ERROR: ${err.toString()}");
         expect(false, equals(true));
@@ -45,10 +45,10 @@ Future<void> main() async {
     });
     test("supports RPCs with no response", () async {
       try {
-        await client.tests.emptyResponseGetRequest(
+        await client.tests.nested.emptyResponseGetRequest(
           DefaultPayload(message: "ok"),
         );
-        await client.tests.emptyResponsePostRequest(
+        await client.tests.nested.emptyResponsePostRequest(
           DefaultPayload(message: "ok"),
         );
       } catch (err) {
