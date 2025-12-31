@@ -37,7 +37,7 @@ func rpc[TInput, TOutput any, TMeta any](app *App[TMeta], serviceName string, op
 		rpcName = serviceName + "." + rpcName
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Path = app.options.RpcPathPrefix + "/" + FormatServicePath(serviceName) + rpcSchema.Http.Path
+		rpcSchema.Path = app.options.RpcPathPrefix + "/" + FormatServicePath(serviceName) + rpcSchema.Path
 	} else {
 		rpcSchema.Path = app.options.RpcPathPrefix + rpcSchema.Path
 	}
