@@ -73,8 +73,6 @@ export interface ToJsonSchemaOptions {
     title?: string;
     /** The description to use for the root schema */
     description?: string;
-    /** Whether to include $defs for named types (types with metadata.id) */
-    definitions?: boolean;
     /** The JSON Schema draft version to target */
     $schema?: string;
 }

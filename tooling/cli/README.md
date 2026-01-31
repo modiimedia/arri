@@ -134,16 +134,17 @@ arri export-schema https://example.com/__definition
 
 ### Export Schema Flags
 
-| Flag     | Aliases | Description                                                  |
-| -------- | ------- | ------------------------------------------------------------ |
-| --output | -o      | Output file path for JSON Schema. Default is `./schema.json` |
-| --id     |         | `$id` to use in the JSON Schema                              |
-| --title  |         | Title for the JSON Schema                                    |
+| Flag          | Aliases | Description                                                  |
+| ------------- | ------- | ------------------------------------------------------------ |
+| --output      | -o      | Output file path for JSON Schema. Default is `./schema.json` |
+| --id          |         | `$id` to use in the JSON Schema                              |
+| --title       |         | Title for the JSON Schema                                    |
+| --description |         | Description for the JSON Schema                              |
 
 ### Example
 
 ```bash
-arri export-schema ./AppDefinition.json --output ./schemas/api.schema.json --id "https://example.com/schemas/api.json" --title "My API Schema"
+arri export-schema ./AppDefinition.json --output ./schemas/api.schema.json --id "https://example.com/schemas/api.json" --title "My API Schema" --description "API type definitions"
 ```
 
 This will generate a JSON Schema file with all your type definitions in the `$defs` section, which can then be used for validation and editor support.

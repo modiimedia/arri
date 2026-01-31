@@ -27,6 +27,10 @@ export default defineCommand({
         },
         id: { type: 'string', description: '$id to use in the JSON Schema' },
         title: { type: 'string', description: 'Title for the JSON Schema' },
+        description: {
+            type: 'string',
+            description: 'Description for the JSON Schema',
+        },
     },
     async run({ args }) {
         logger.info(`Loading AppDefinition from ${args.input}...`);
@@ -34,6 +38,7 @@ export default defineCommand({
         const jsonSchema = appDefinitionToJsonSchema(def, {
             $id: args.id,
             title: args.title,
+            description: args.description,
         });
 
         const outputPath = path.resolve(args.output);
@@ -46,6 +51,7 @@ export default defineCommand({
 export interface ConvertOptions {
     $id?: string;
     title?: string;
+    description?: string;
 }
 
 export function appDefinitionToJsonSchema(
@@ -59,11 +65,13 @@ export function appDefinitionToJsonSchema(
         ]),
     );
 
+    const description = options?.description ?? def.info?.description;
+
     return {
         $schema: 'https://json-schema.org/draft/2020-12/schema',
         ...(options?.$id && { $id: options.$id }),
         title: options?.title ?? def.info?.title,
-        ...(def.info?.description && { description: def.info.description }),
+        ...(description && { description }),
         ...(Object.keys($defs).length > 0 && { $defs }),
     };
 }

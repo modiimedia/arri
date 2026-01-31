@@ -329,14 +329,6 @@ describe('toJsonSchema()', () => {
                 'https://json-schema.org/draft/2019-09/schema',
             );
         });
-
-        it('disables definitions collection', () => {
-            const result = toJsonSchema(
-                a.object({ id: a.string() }, { id: 'User' }),
-                { definitions: false },
-            );
-            expect(result.$defs).toBeUndefined();
-        });
     });
 
     describe('complex schemas', () => {

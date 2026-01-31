@@ -1037,13 +1037,12 @@ const jsonSchema = a.toJsonSchema(User, {
 
 #### Options
 
-| Option        | Type    | Description                                                                             |
-| ------------- | ------- | --------------------------------------------------------------------------------------- |
-| `$id`         | string  | The `$id` to use for the root schema                                                    |
-| `title`       | string  | The title to use for the root schema                                                    |
-| `description` | string  | The description to use for the root schema                                              |
-| `definitions` | boolean | Whether to include `$defs` for named types (default: `true`)                            |
-| `$schema`     | string  | The JSON Schema draft version (default: `https://json-schema.org/draft/2020-12/schema`) |
+| Option        | Type   | Description                                                                             |
+| ------------- | ------ | --------------------------------------------------------------------------------------- |
+| `$id`         | string | The `$id` to use for the root schema                                                    |
+| `title`       | string | The title to use for the root schema                                                    |
+| `description` | string | The description to use for the root schema                                              |
+| `$schema`     | string | The JSON Schema draft version (default: `https://json-schema.org/draft/2020-12/schema`) |
 
 #### Type Mappings
 

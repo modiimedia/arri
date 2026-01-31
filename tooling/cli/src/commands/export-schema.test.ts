@@ -60,6 +60,21 @@ describe('appDefinitionToJsonSchema()', () => {
         expect(result.description).toBe('API description');
     });
 
+    it('uses custom description when provided', () => {
+        const result = appDefinitionToJsonSchema(createDef(), {
+            description: 'Custom description',
+        });
+        expect(result.description).toBe('Custom description');
+    });
+
+    it('custom description overrides info.description', () => {
+        const result = appDefinitionToJsonSchema(
+            createDef({ info: { description: 'API description' } }),
+            { description: 'Override' },
+        );
+        expect(result.description).toBe('Override');
+    });
+
     it('does not include $defs when definitions is empty', () => {
         const result = appDefinitionToJsonSchema(createDef());
         expect(result.$defs).toBeUndefined();
