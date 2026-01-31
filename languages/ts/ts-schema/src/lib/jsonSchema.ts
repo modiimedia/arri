@@ -7,18 +7,10 @@ import {
     isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
+    type Schema,
 } from '@arrirpc/type-defs';
 
-import {
-    AArraySchema,
-    ADiscriminatorSchema,
-    AObjectSchema,
-    ARecordSchema,
-    ARefSchema,
-    AScalarSchema,
-    ASchema,
-    AStringEnumSchema,
-} from '../schemas';
+import { type ASchema } from '../schemas';
 import {
     int8Max,
     int8Min,
@@ -34,9 +26,10 @@ import {
     uint32Min,
 } from './numberConstants';
 
-/**
- * JSON Schema type definitions
- */
+// ============================================================================
+// Types
+// ============================================================================
+
 export type JsonSchemaType =
     | 'string'
     | 'number'
@@ -51,62 +44,38 @@ export interface JsonSchema {
     $id?: string;
     $ref?: string;
     $defs?: Record<string, JsonSchema>;
-
-    // Metadata
     title?: string;
     description?: string;
     deprecated?: boolean;
-
-    // Type
     type?: JsonSchemaType | JsonSchemaType[];
-
-    // String
     pattern?: string;
     format?: string;
     minLength?: number;
     maxLength?: number;
-
-    // Number/Integer
     minimum?: number;
     maximum?: number;
     exclusiveMinimum?: number;
     exclusiveMaximum?: number;
-
-    // Enum
     enum?: unknown[];
     const?: unknown;
-
-    // Array
     items?: JsonSchema;
     minItems?: number;
     maxItems?: number;
-
-    // Object
     properties?: Record<string, JsonSchema>;
     required?: string[];
     additionalProperties?: boolean | JsonSchema;
-
-    // Composition
     oneOf?: JsonSchema[];
     anyOf?: JsonSchema[];
     allOf?: JsonSchema[];
-
-    // Allow additional properties for extensibility
     [key: string]: unknown;
 }
 
 export interface ToJsonSchemaOptions {
-    /**
-     * The $id to use for the root schema
-     */
+    /** The $id to use for the root schema */
     $id?: string;
-    /**
-     * The title to use for the root schema
-     */
+    /** The title to use for the root schema */
     title?: string;
-    /**
-     * The description to use for the root schema
-     */
+    /** The description to use for the root schema */
     description?: string;
     /**
      * Whether to include $defs for named types (types with metadata.id)
@@ -120,11 +89,9 @@ export interface ToJsonSchemaOptions {
     $schema?: string;
 }
 
-interface ConversionContext {
-    definitions: Record<string, JsonSchema>;
-    collectDefinitions: boolean;
-    visitedRefs: Set<string>;
-}
+// ============================================================================
+// Main API
+// ============================================================================
 
 /**
  * Convert an Arri schema to JSON Schema format
@@ -147,356 +114,235 @@ export function toJsonSchema<T>(
     schema: ASchema<T>,
     options?: ToJsonSchemaOptions,
 ): JsonSchema {
-    const ctx: ConversionContext = {
-        definitions: {},
-        collectDefinitions: options?.definitions !== false,
-        visitedRefs: new Set(),
-    };
+    const result = schemaToJsonSchema(schema as unknown as Schema);
+    return applyRootOptions(result, options);
+}
 
-    const result = convertSchema(schema, ctx);
+/**
+ * Convert a raw ATD Schema object to JSON Schema format.
+ * This is useful when working with plain schema objects from AppDefinition.
+ */
+export function schemaToJsonSchema(schema: Schema): JsonSchema {
+    return convertSchema(schema);
+}
 
-    // Add root schema properties
-    if (options?.$schema !== undefined) {
-        result.$schema = options.$schema;
-    } else {
-        result.$schema = 'https://json-schema.org/draft/2020-12/schema';
-    }
+/**
+ * Apply root-level options to a JSON Schema
+ */
+function applyRootOptions(
+    schema: JsonSchema,
+    options?: ToJsonSchemaOptions,
+): JsonSchema {
+    const result = { ...schema };
+
+    result.$schema =
+        options?.$schema ?? 'https://json-schema.org/draft/2020-12/schema';
 
     if (options?.$id) {
         result.$id = options.$id;
     }
-
     if (options?.title) {
         result.title = options.title;
     }
-
     if (options?.description) {
         result.description = options.description;
-    }
-
-    // Add $defs if there are any collected definitions
-    if (ctx.collectDefinitions && Object.keys(ctx.definitions).length > 0) {
-        result.$defs = ctx.definitions;
     }
 
     return result;
 }
 
-function convertSchema(schema: ASchema, ctx: ConversionContext): JsonSchema {
-    // Handle empty schema (any type)
+// ============================================================================
+// Schema Converters
+// ============================================================================
+
+function convertSchema(schema: Schema): JsonSchema {
     if (isSchemaFormEmpty(schema)) {
-        return applyNullableAndMetadata({}, schema);
+        return withMetadata({}, schema);
     }
-
-    // Handle scalar types
     if (isSchemaFormType(schema)) {
-        return convertScalarSchema(schema as AScalarSchema, ctx);
+        return convertScalar(schema as Schema & { type: string });
     }
-
-    // Handle enum
     if (isSchemaFormEnum(schema)) {
-        return convertEnumSchema(schema as AStringEnumSchema<string[]>, ctx);
+        return convertEnum(schema as Schema & { enum: string[] });
     }
-
-    // Handle array
     if (isSchemaFormElements(schema)) {
-        return convertArraySchema(schema as AArraySchema, ctx);
+        return convertArray(schema as Schema & { elements: Schema });
     }
-
-    // Handle object
     if (isSchemaFormProperties(schema)) {
-        return convertObjectSchema(schema as AObjectSchema, ctx);
+        return convertObject(schema as ObjectSchema);
     }
-
-    // Handle record (values)
     if (isSchemaFormValues(schema)) {
-        return convertRecordSchema(schema as ARecordSchema<ASchema>, ctx);
+        return convertRecord(schema as Schema & { values: Schema });
     }
-
-    // Handle discriminator
     if (isSchemaFormDiscriminator(schema)) {
-        return convertDiscriminatorSchema(
-            schema as ADiscriminatorSchema<unknown>,
-            ctx,
-        );
+        return convertDiscriminator(schema as DiscriminatorSchema);
     }
-
-    // Handle ref
     if (isSchemaFormRef(schema)) {
-        return convertRefSchema(schema as ARefSchema<unknown>, ctx);
+        return convertRef(schema as Schema & { ref: string });
     }
-
-    // Fallback: empty schema for any
-    return applyNullableAndMetadata({}, schema);
+    return withMetadata({}, schema);
 }
 
-function convertScalarSchema(
-    schema: AScalarSchema,
-    _ctx: ConversionContext,
-): JsonSchema {
-    const scalarType = schema.type;
-    let result: JsonSchema;
+// Type aliases for cleaner function signatures
+type ObjectSchema = Schema & {
+    properties?: Record<string, Schema>;
+    optionalProperties?: Record<string, Schema>;
+    isStrict?: boolean;
+};
 
-    switch (scalarType) {
-        case 'string':
-            result = { type: 'string' };
-            break;
+type DiscriminatorSchema = Schema & {
+    discriminator: string;
+    mapping: Record<string, Schema>;
+};
 
-        case 'boolean':
-            result = { type: 'boolean' };
-            break;
+// Scalar type mappings
+const SCALAR_MAPPINGS: Record<string, JsonSchema> = {
+    string: { type: 'string' },
+    boolean: { type: 'boolean' },
+    timestamp: { type: 'string', format: 'date-time' },
+    float32: { type: 'number' },
+    float64: { type: 'number' },
+    int8: { type: 'integer', minimum: int8Min, maximum: int8Max },
+    uint8: { type: 'integer', minimum: uint8Min, maximum: uint8Max },
+    int16: { type: 'integer', minimum: int16Min, maximum: int16Max },
+    uint16: { type: 'integer', minimum: uint16Min, maximum: uint16Max },
+    int32: { type: 'integer', minimum: int32Min, maximum: int32Max },
+    uint32: { type: 'integer', minimum: uint32Min, maximum: uint32Max },
+    int64: { type: 'string', pattern: '^-?[0-9]+$' },
+    uint64: { type: 'string', pattern: '^[0-9]+$' },
+};
 
-        case 'timestamp':
-            result = { type: 'string', format: 'date-time' };
-            break;
-
-        case 'float32':
-        case 'float64':
-            result = { type: 'number' };
-            break;
-
-        case 'int8':
-            result = {
-                type: 'integer',
-                minimum: int8Min,
-                maximum: int8Max,
-            };
-            break;
-
-        case 'uint8':
-            result = {
-                type: 'integer',
-                minimum: uint8Min,
-                maximum: uint8Max,
-            };
-            break;
-
-        case 'int16':
-            result = {
-                type: 'integer',
-                minimum: int16Min,
-                maximum: int16Max,
-            };
-            break;
-
-        case 'uint16':
-            result = {
-                type: 'integer',
-                minimum: uint16Min,
-                maximum: uint16Max,
-            };
-            break;
-
-        case 'int32':
-            result = {
-                type: 'integer',
-                minimum: int32Min,
-                maximum: int32Max,
-            };
-            break;
-
-        case 'uint32':
-            result = {
-                type: 'integer',
-                minimum: uint32Min,
-                maximum: uint32Max,
-            };
-            break;
-
-        // 64-bit integers are represented as strings in JSON
-        case 'int64':
-            result = {
-                type: 'string',
-                pattern: '^-?[0-9]+$',
-            };
-            break;
-
-        case 'uint64':
-            result = {
-                type: 'string',
-                pattern: '^[0-9]+$',
-            };
-            break;
-
-        default:
-            // Unknown type, treat as any
-            result = {};
-    }
-
-    return applyNullableAndMetadata(result, schema);
+function convertScalar(schema: Schema & { type: string }): JsonSchema {
+    const mapping = SCALAR_MAPPINGS[schema.type];
+    const result = mapping ? { ...mapping } : {};
+    return withMetadata(result, schema);
 }
 
-function convertEnumSchema(
-    schema: AStringEnumSchema<string[]>,
-    _ctx: ConversionContext,
-): JsonSchema {
-    const result: JsonSchema = {
-        type: 'string',
-        enum: [...schema.enum],
-    };
-
-    return applyNullableAndMetadata(result, schema);
+function convertEnum(schema: Schema & { enum: string[] }): JsonSchema {
+    return withMetadata({ type: 'string', enum: [...schema.enum] }, schema);
 }
 
-function convertArraySchema(
-    schema: AArraySchema,
-    ctx: ConversionContext,
-): JsonSchema {
-    const result: JsonSchema = {
-        type: 'array',
-        items: convertSchema(schema.elements, ctx),
-    };
-
-    return applyNullableAndMetadata(result, schema);
+function convertArray(schema: Schema & { elements: Schema }): JsonSchema {
+    return withMetadata(
+        { type: 'array', items: convertSchema(schema.elements) },
+        schema,
+    );
 }
 
-function convertObjectSchema(
-    schema: AObjectSchema,
-    ctx: ConversionContext,
-): JsonSchema {
+function convertObject(schema: ObjectSchema): JsonSchema {
     const properties: Record<string, JsonSchema> = {};
     const required: string[] = [];
 
-    // Convert required properties
-    if (schema.properties) {
-        for (const [key, propSchema] of Object.entries(schema.properties)) {
-            properties[key] = convertSchema(propSchema as ASchema, ctx);
-            required.push(key);
-        }
+    for (const [key, propSchema] of Object.entries(schema.properties ?? {})) {
+        properties[key] = convertSchema(propSchema);
+        required.push(key);
     }
 
-    // Convert optional properties
-    if (schema.optionalProperties) {
-        for (const [key, propSchema] of Object.entries(
-            schema.optionalProperties,
-        )) {
-            properties[key] = convertSchema(propSchema as ASchema, ctx);
-            // Optional properties are not added to required array
-        }
+    for (const [key, propSchema] of Object.entries(
+        schema.optionalProperties ?? {},
+    )) {
+        properties[key] = convertSchema(propSchema);
     }
 
-    const result: JsonSchema = {
-        type: 'object',
-        properties,
-    };
+    const result: JsonSchema = { type: 'object', properties };
 
     if (required.length > 0) {
         result.required = required;
     }
-
-    // Handle strict mode
     if (schema.isStrict) {
         result.additionalProperties = false;
     }
 
-    return applyNullableAndMetadata(result, schema);
+    return withMetadata(result, schema);
 }
 
-function convertRecordSchema(
-    schema: ARecordSchema<ASchema>,
-    ctx: ConversionContext,
-): JsonSchema {
-    const result: JsonSchema = {
-        type: 'object',
-        additionalProperties: convertSchema(schema.values, ctx),
-    };
-
-    return applyNullableAndMetadata(result, schema);
+function convertRecord(schema: Schema & { values: Schema }): JsonSchema {
+    return withMetadata(
+        { type: 'object', additionalProperties: convertSchema(schema.values) },
+        schema,
+    );
 }
 
-function convertDiscriminatorSchema(
-    schema: ADiscriminatorSchema<unknown>,
-    ctx: ConversionContext,
-): JsonSchema {
-    const oneOf: JsonSchema[] = [];
+function convertDiscriminator(schema: DiscriminatorSchema): JsonSchema {
+    const oneOf: JsonSchema[] = Object.entries(schema.mapping).map(
+        ([value, mappingSchema]) => {
+            const variant = convertObject(mappingSchema as ObjectSchema);
 
-    for (const [discriminatorValue, mappingSchema] of Object.entries(
-        schema.mapping,
-    )) {
-        // Each variant needs to include the discriminator property
-        const variantSchema = convertObjectSchema(
-            mappingSchema as AObjectSchema,
-            ctx,
-        );
+            // Add discriminator property
+            variant.properties = {
+                ...variant.properties,
+                [schema.discriminator]: { type: 'string', const: value },
+            };
 
-        // Add the discriminator property with a const value
-        if (!variantSchema.properties) {
-            variantSchema.properties = {};
-        }
-        variantSchema.properties[schema.discriminator] = {
-            type: 'string',
-            const: discriminatorValue,
-        };
-
-        // Add discriminator to required
-        if (!variantSchema.required) {
-            variantSchema.required = [];
-        }
-        if (!variantSchema.required.includes(schema.discriminator)) {
-            variantSchema.required.push(schema.discriminator);
-        }
-
-        oneOf.push(variantSchema);
-    }
-
-    const result: JsonSchema = { oneOf };
-
-    return applyNullableAndMetadata(result, schema);
-}
-
-function convertRefSchema(
-    schema: ARefSchema<unknown>,
-    _ctx: ConversionContext,
-): JsonSchema {
-    const result: JsonSchema = {
-        $ref: `#/$defs/${schema.ref}`,
-    };
-
-    return applyNullableAndMetadata(result, schema);
-}
-
-function applyNullableAndMetadata(
-    jsonSchema: JsonSchema,
-    atdSchema: ASchema,
-): JsonSchema {
-    // Apply nullable
-    if (atdSchema.isNullable) {
-        if (jsonSchema.type) {
-            // If there's already a type, make it nullable by creating an array of types
-            if (Array.isArray(jsonSchema.type)) {
-                if (!jsonSchema.type.includes('null')) {
-                    jsonSchema.type = [...jsonSchema.type, 'null'];
-                }
-            } else {
-                jsonSchema.type = [jsonSchema.type, 'null'];
+            // Add to required
+            variant.required = variant.required ?? [];
+            if (!variant.required.includes(schema.discriminator)) {
+                variant.required.push(schema.discriminator);
             }
-        } else if (jsonSchema.$ref) {
-            // For $ref schemas, wrap in anyOf to add null
-            return {
-                anyOf: [jsonSchema, { type: 'null' }],
-            };
-        } else if (jsonSchema.oneOf) {
-            // For discriminated unions, add null as an option
-            return {
-                anyOf: [jsonSchema, { type: 'null' }],
-            };
-        } else {
-            // For empty schemas (any), we can add any type including null
-            jsonSchema.type = 'null';
-        }
+
+            return variant;
+        },
+    );
+
+    return withMetadata({ oneOf }, schema);
+}
+
+function convertRef(schema: Schema & { ref: string }): JsonSchema {
+    return withMetadata({ $ref: `#/$defs/${schema.ref}` }, schema);
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function withMetadata(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {
+    // Handle nullable
+    if (atdSchema.isNullable) {
+        return makeNullable(jsonSchema, atdSchema);
+    }
+    return applyMetadataFields(jsonSchema, atdSchema);
+}
+
+function makeNullable(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {
+    // For $ref or oneOf, wrap in anyOf
+    if (jsonSchema.$ref || jsonSchema.oneOf) {
+        return applyMetadataFields(
+            { anyOf: [jsonSchema, { type: 'null' }] },
+            atdSchema,
+        );
     }
 
-    // Apply metadata
-    if (atdSchema.metadata) {
-        if (atdSchema.metadata.id) {
-            jsonSchema.title = atdSchema.metadata.id;
+    // For schemas with type, add null to the type array
+    if (jsonSchema.type) {
+        const types = Array.isArray(jsonSchema.type)
+            ? jsonSchema.type
+            : [jsonSchema.type];
+        if (!types.includes('null')) {
+            jsonSchema.type = [...types, 'null'];
         }
-        if (atdSchema.metadata.description) {
-            jsonSchema.description = atdSchema.metadata.description;
-        }
-        if (atdSchema.metadata.isDeprecated) {
-            jsonSchema.deprecated = true;
-        }
+    } else {
+        // Empty schema (any) - just mark as null type
+        jsonSchema.type = 'null';
+    }
+
+    return applyMetadataFields(jsonSchema, atdSchema);
+}
+
+function applyMetadataFields(
+    jsonSchema: JsonSchema,
+    atdSchema: Schema,
+): JsonSchema {
+    const { metadata } = atdSchema;
+    if (!metadata) return jsonSchema;
+
+    if (metadata.id) {
+        jsonSchema.title = metadata.id;
+    }
+    if (metadata.description) {
+        jsonSchema.description = metadata.description;
+    }
+    if (metadata.isDeprecated) {
+        jsonSchema.deprecated = true;
     }
 
     return jsonSchema;
