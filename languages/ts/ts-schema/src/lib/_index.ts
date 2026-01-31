@@ -3,6 +3,7 @@ export * from './array';
 export * from './boolean';
 export * from './discriminator';
 export * from './enum';
+export * from './jsonSchema';
 export * from './modifiers';
 export * from './numberConstants';
 export * from './numbers';

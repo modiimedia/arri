@@ -4,6 +4,7 @@ import { defineCommand, runMain } from 'citty';
 import build from './commands/build';
 import codegen from './commands/codegen';
 import dev from './commands/dev';
+import exportSchema from './commands/export-schema';
 import init from './commands/init';
 import list from './commands/list';
 import use from './commands/use';
@@ -14,6 +15,7 @@ const main = defineCommand({
         build,
         codegen,
         dev,
+        'export-schema': exportSchema,
         init,
         list,
         use,

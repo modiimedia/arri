@@ -12,15 +12,16 @@ Command line interface for ARRI-RPC
 
 Run `arri --help` to get a full list of commands
 
-| Cmd                  | Description                                                                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| build                | Use the currently registered server plugin to build your arri server and run the code generators                                                    |
-| dev                  | Run the currently registered server plugin in dev mode (basically watches for changes and rebuilds the server and reruns code generators as needed) |
-| codegen [input-file] | Run generate clients specified in the `arri.config.ts`. See [here](#running-arri-codegen) for details.                                              |
-| init [dir]           | Scaffold an arri app/library                                                                                                                        |
-| list                 | List available arri versions                                                                                                                        |
-| use [version]        | Update arri dependencies to a specific version (checks recursively for package.json, pubspec.yaml, cargo.toml, etc)                                 |
-| version              | Print current CLI version                                                                                                                           |
+| Cmd                        | Description                                                                                                                                         |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build                      | Use the currently registered server plugin to build your arri server and run the code generators                                                    |
+| dev                        | Run the currently registered server plugin in dev mode (basically watches for changes and rebuilds the server and reruns code generators as needed) |
+| codegen [input-file]       | Run generate clients specified in the `arri.config.ts`. See [here](#running-arri-codegen) for details.                                              |
+| export-schema [input-file] | Export AppDefinition types as JSON Schema. See [here](#exporting-json-schema) for details.                                                          |
+| init [dir]                 | Scaffold an arri app/library                                                                                                                        |
+| list                       | List available arri versions                                                                                                                        |
+| use [version]              | Update arri dependencies to a specific version (checks recursively for package.json, pubspec.yaml, cargo.toml, etc)                                 |
+| version                    | Print current CLI version                                                                                                                           |
 
 ## Usage with an Arri server
 
@@ -109,3 +110,40 @@ arri codegen https://example.com/__definition
 | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
 | --config | -c      | Path to an arri config. Default is `arri.config.ts`                                                                       |
 | --watch  | -w      | Watch an app definition file for changes. Only works on files. It will throw an error if invoked against an HTTP endpoint |
+
+## Exporting JSON Schema
+
+`arri export-schema` allows you to export your AppDefinition types as a [JSON Schema](https://json-schema.org/) file. This is useful for:
+
+- **Editor support** - YAML/JSON files using Arri-defined schemas can get autocomplete in VS Code, IntelliJ, etc.
+- **Interoperability** - Integration with tools that consume JSON Schema (OpenAPI, documentation generators, etc.)
+- **Configuration validation** - Users defining config files can reference a JSON Schema URL for validation
+
+### Basic Usage
+
+```bash
+# Export from a local file
+arri export-schema ./path/to/AppDefinition.json
+
+# Export from a TS/JS file
+arri export-schema ./path/to/definitions.ts
+
+# Export from an HTTP endpoint
+arri export-schema https://example.com/__definition
+```
+
+### Export Schema Flags
+
+| Flag     | Aliases | Description                                                  |
+| -------- | ------- | ------------------------------------------------------------ |
+| --output | -o      | Output file path for JSON Schema. Default is `./schema.json` |
+| --id     |         | `$id` to use in the JSON Schema                              |
+| --title  |         | Title for the JSON Schema                                    |
+
+### Example
+
+```bash
+arri export-schema ./AppDefinition.json --output ./schemas/api.schema.json --id "https://example.com/schemas/api.json" --title "My API Schema"
+```
+
+This will generate a JSON Schema file with all your type definitions in the `$defs` section, which can then be used for validation and editor support.

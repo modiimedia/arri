@@ -9,6 +9,8 @@ export { array } from './array';
 export { boolean } from './boolean';
 export { discriminator } from './discriminator';
 export { enumerator, stringEnum } from './enum';
+export type { JsonSchema, ToJsonSchemaOptions } from './jsonSchema';
+export { toJsonSchema } from './jsonSchema';
 export { clone, nullable, optional, undefinable } from './modifiers';
 export {
     float32,
