@@ -71,21 +71,10 @@ export interface JsonSchema {
 }
 
 export interface ToJsonSchemaOptions {
-    /** The $id to use for the root schema */
     $id?: string;
-    /** The title to use for the root schema */
     title?: string;
-    /** The description to use for the root schema */
     description?: string;
-    /**
-     * Whether to include $defs for named types (types with metadata.id)
-     * @default true
-     */
     definitions?: boolean;
-    /**
-     * The JSON Schema draft version to target
-     * @default "https://json-schema.org/draft/2020-12/schema"
-     */
     $schema?: string;
 }
 
@@ -95,107 +84,42 @@ export interface ToJsonSchemaOptions {
 
 /**
  * Convert an Arri schema to JSON Schema format
- *
- * @example
- * ```ts
- * const User = a.object({
- *   id: a.string(),
- *   name: a.string(),
- *   email: a.nullable(a.string()),
- * });
- *
- * const jsonSchema = toJsonSchema(User, {
- *   $id: 'https://example.com/schemas/user.json',
- *   title: 'User',
- * });
- * ```
  */
 export function toJsonSchema<T>(
     schema: ASchema<T>,
     options?: ToJsonSchemaOptions,
 ): JsonSchema {
-    const result = schemaToJsonSchema(schema as unknown as Schema);
-    return applyRootOptions(result, options);
+    return applyRootOptions(
+        schemaToJsonSchema(schema as unknown as Schema),
+        options,
+    );
 }
 
 /**
  * Convert a raw ATD Schema object to JSON Schema format.
- * This is useful when working with plain schema objects from AppDefinition.
  */
 export function schemaToJsonSchema(schema: Schema): JsonSchema {
     return convertSchema(schema);
 }
 
-/**
- * Apply root-level options to a JSON Schema
- */
 function applyRootOptions(
     schema: JsonSchema,
     options?: ToJsonSchemaOptions,
 ): JsonSchema {
-    const result = { ...schema };
-
-    result.$schema =
-        options?.$schema ?? 'https://json-schema.org/draft/2020-12/schema';
-
-    if (options?.$id) {
-        result.$id = options.$id;
-    }
-    if (options?.title) {
-        result.title = options.title;
-    }
-    if (options?.description) {
-        result.description = options.description;
-    }
-
-    return result;
+    return {
+        ...schema,
+        $schema:
+            options?.$schema ?? 'https://json-schema.org/draft/2020-12/schema',
+        ...(options?.$id && { $id: options.$id }),
+        ...(options?.title && { title: options.title }),
+        ...(options?.description && { description: options.description }),
+    };
 }
 
 // ============================================================================
 // Schema Converters
 // ============================================================================
 
-function convertSchema(schema: Schema): JsonSchema {
-    if (isSchemaFormEmpty(schema)) {
-        return withMetadata({}, schema);
-    }
-    if (isSchemaFormType(schema)) {
-        return convertScalar(schema as Schema & { type: string });
-    }
-    if (isSchemaFormEnum(schema)) {
-        return convertEnum(schema as Schema & { enum: string[] });
-    }
-    if (isSchemaFormElements(schema)) {
-        return convertArray(schema as Schema & { elements: Schema });
-    }
-    if (isSchemaFormProperties(schema)) {
-        return convertObject(schema as ObjectSchema);
-    }
-    if (isSchemaFormValues(schema)) {
-        return convertRecord(schema as Schema & { values: Schema });
-    }
-    if (isSchemaFormDiscriminator(schema)) {
-        return convertDiscriminator(schema as DiscriminatorSchema);
-    }
-    if (isSchemaFormRef(schema)) {
-        return convertRef(schema as Schema & { ref: string });
-    }
-    return withMetadata({}, schema);
-}
-
-// Type aliases for cleaner function signatures
-type ObjectSchema = Schema & {
-    properties?: Record<string, Schema>;
-    optionalProperties?: Record<string, Schema>;
-    isStrict?: boolean;
-};
-
-type DiscriminatorSchema = Schema & {
-    discriminator: string;
-    mapping: Record<string, Schema>;
-};
-
-// Scalar type mappings
 const SCALAR_MAPPINGS: Record<string, JsonSchema> = {
     string: { type: 'string' },
     boolean: { type: 'boolean' },
@@ -212,138 +136,136 @@ const SCALAR_MAPPINGS: Record<string, JsonSchema> = {
     uint64: { type: 'string', pattern: '^[0-9]+$' },
 };
 
-function convertScalar(schema: Schema & { type: string }): JsonSchema {
-    const mapping = SCALAR_MAPPINGS[schema.type];
-    const result = mapping ? { ...mapping } : {};
-    return withMetadata(result, schema);
+type ObjectSchema = Schema & {
+    properties?: Record<string, Schema>;
+    optionalProperties?: Record<string, Schema>;
+    isStrict?: boolean;
+};
+
+type DiscriminatorSchema = Schema & {
+    discriminator: string;
+    mapping: Record<string, Schema>;
+};
+
+function convertSchema(schema: Schema): JsonSchema {
+    const base = getBaseSchema(schema);
+    return schema.isNullable
+        ? makeNullable(base, schema)
+        : applyMetadata(base, schema);
 }
 
-function convertEnum(schema: Schema & { enum: string[] }): JsonSchema {
-    return withMetadata({ type: 'string', enum: [...schema.enum] }, schema);
-}
-
-function convertArray(schema: Schema & { elements: Schema }): JsonSchema {
-    return withMetadata(
-        { type: 'array', items: convertSchema(schema.elements) },
-        schema,
-    );
+function getBaseSchema(schema: Schema): JsonSchema {
+    if (isSchemaFormEmpty(schema)) return {};
+    if (isSchemaFormType(schema)) {
+        const mapping =
+            SCALAR_MAPPINGS[(schema as Schema & { type: string }).type];
+        return mapping ? { ...mapping } : {};
+    }
+    if (isSchemaFormEnum(schema)) {
+        return {
+            type: 'string',
+            enum: [...(schema as Schema & { enum: string[] }).enum],
+        };
+    }
+    if (isSchemaFormElements(schema)) {
+        return {
+            type: 'array',
+            items: convertSchema(
+                (schema as Schema & { elements: Schema }).elements,
+            ),
+        };
+    }
+    if (isSchemaFormProperties(schema)) {
+        return convertObject(schema as ObjectSchema);
+    }
+    if (isSchemaFormValues(schema)) {
+        return {
+            type: 'object',
+            additionalProperties: convertSchema(
+                (schema as Schema & { values: Schema }).values,
+            ),
+        };
+    }
+    if (isSchemaFormDiscriminator(schema)) {
+        return convertDiscriminator(schema as DiscriminatorSchema);
+    }
+    if (isSchemaFormRef(schema)) {
+        return { $ref: `#/$defs/${(schema as Schema & { ref: string }).ref}` };
+    }
+    return {};
 }
 
 function convertObject(schema: ObjectSchema): JsonSchema {
     const properties: Record<string, JsonSchema> = {};
     const required: string[] = [];
 
-    for (const [key, propSchema] of Object.entries(schema.properties ?? {})) {
-        properties[key] = convertSchema(propSchema);
+    for (const [key, prop] of Object.entries(schema.properties ?? {})) {
+        properties[key] = convertSchema(prop);
         required.push(key);
     }
-
-    for (const [key, propSchema] of Object.entries(
-        schema.optionalProperties ?? {},
-    )) {
-        properties[key] = convertSchema(propSchema);
+    for (const [key, prop] of Object.entries(schema.optionalProperties ?? {})) {
+        properties[key] = convertSchema(prop);
     }
 
-    const result: JsonSchema = { type: 'object', properties };
-
-    if (required.length > 0) {
-        result.required = required;
-    }
-    if (schema.isStrict) {
-        result.additionalProperties = false;
-    }
-
-    return withMetadata(result, schema);
-}
-
-function convertRecord(schema: Schema & { values: Schema }): JsonSchema {
-    return withMetadata(
-        { type: 'object', additionalProperties: convertSchema(schema.values) },
-        schema,
-    );
+    return {
+        type: 'object',
+        properties,
+        ...(required.length > 0 && { required }),
+        ...(schema.isStrict && { additionalProperties: false }),
+    };
 }
 
 function convertDiscriminator(schema: DiscriminatorSchema): JsonSchema {
-    const oneOf: JsonSchema[] = Object.entries(schema.mapping).map(
+    const oneOf = Object.entries(schema.mapping).map(
         ([value, mappingSchema]) => {
             const variant = convertObject(mappingSchema as ObjectSchema);
-
-            // Add discriminator property
             variant.properties = {
                 ...variant.properties,
                 [schema.discriminator]: { type: 'string', const: value },
             };
-
-            // Add to required
-            variant.required = variant.required ?? [];
-            if (!variant.required.includes(schema.discriminator)) {
-                variant.required.push(schema.discriminator);
-            }
-
+            variant.required = [
+                ...(variant.required ?? []),
+                schema.discriminator,
+            ];
             return variant;
         },
     );
-
-    return withMetadata({ oneOf }, schema);
-}
-
-function convertRef(schema: Schema & { ref: string }): JsonSchema {
-    return withMetadata({ $ref: `#/$defs/${schema.ref}` }, schema);
+    return { oneOf };
 }
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
-function withMetadata(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {
-    // Handle nullable
-    if (atdSchema.isNullable) {
-        return makeNullable(jsonSchema, atdSchema);
-    }
-    return applyMetadataFields(jsonSchema, atdSchema);
-}
-
 function makeNullable(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {
-    // For $ref or oneOf, wrap in anyOf
     if (jsonSchema.$ref || jsonSchema.oneOf) {
-        return applyMetadataFields(
+        return applyMetadata(
             { anyOf: [jsonSchema, { type: 'null' }] },
             atdSchema,
         );
     }
 
-    // For schemas with type, add null to the type array
     if (jsonSchema.type) {
         const types = Array.isArray(jsonSchema.type)
             ? jsonSchema.type
             : [jsonSchema.type];
-        if (!types.includes('null')) {
-            jsonSchema.type = [...types, 'null'];
-        }
+        jsonSchema.type = types.includes('null') ? types : [...types, 'null'];
     } else {
-        // Empty schema (any) - just mark as null type
         jsonSchema.type = 'null';
     }
 
-    return applyMetadataFields(jsonSchema, atdSchema);
+    return applyMetadata(jsonSchema, atdSchema);
 }
 
-function applyMetadataFields(
+function applyMetadata(
     jsonSchema: JsonSchema,
-    atdSchema: Schema,
+    { metadata }: Schema,
 ): JsonSchema {
-    const { metadata } = atdSchema;
     if (!metadata) return jsonSchema;
-
-    if (metadata.id) {
-        jsonSchema.title = metadata.id;
-    }
-    if (metadata.description) {
-        jsonSchema.description = metadata.description;
-    }
-    if (metadata.isDeprecated) {
-        jsonSchema.deprecated = true;
-    }
-
-    return jsonSchema;
+    return {
+        ...jsonSchema,
+        ...(metadata.id && { title: metadata.id }),
+        ...(metadata.description && { description: metadata.description }),
+        ...(metadata.isDeprecated && { deprecated: true }),
+    };
 }

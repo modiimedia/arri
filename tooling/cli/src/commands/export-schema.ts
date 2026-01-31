@@ -25,14 +25,8 @@ export default defineCommand({
             description: 'Output file path for JSON Schema',
             default: './schema.json',
         },
-        id: {
-            type: 'string',
-            description: '$id to use in the JSON Schema',
-        },
-        title: {
-            type: 'string',
-            description: 'Title for the JSON Schema',
-        },
+        id: { type: 'string', description: '$id to use in the JSON Schema' },
+        title: { type: 'string', description: 'Title for the JSON Schema' },
     },
     async run({ args }) {
         logger.info(`Loading AppDefinition from ${args.input}...`);
@@ -42,8 +36,10 @@ export default defineCommand({
             title: args.title,
         });
 
-        writeJsonSchema(args.output, jsonSchema);
-        logger.success(`JSON Schema exported to ${path.resolve(args.output)}`);
+        const outputPath = path.resolve(args.output);
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, JSON.stringify(jsonSchema, null, 2));
+        logger.success(`JSON Schema exported to ${outputPath}`);
     },
 });
 
@@ -56,40 +52,18 @@ export function appDefinitionToJsonSchema(
     def: AppDefinition,
     options?: ConvertOptions,
 ): JsonSchema {
-    const $defs: Record<string, JsonSchema> = {};
+    const $defs = Object.fromEntries(
+        Object.entries(def.definitions ?? {}).map(([name, schema]) => [
+            name,
+            schemaToJsonSchema(schema),
+        ]),
+    );
 
-    for (const [name, schema] of Object.entries(def.definitions ?? {})) {
-        $defs[name] = schemaToJsonSchema(schema);
-    }
-
-    const result: JsonSchema = {
+    return {
         $schema: 'https://json-schema.org/draft/2020-12/schema',
+        ...(options?.$id && { $id: options.$id }),
+        title: options?.title ?? def.info?.title,
+        ...(def.info?.description && { description: def.info.description }),
+        ...(Object.keys($defs).length > 0 && { $defs }),
     };
-
-    if (options?.$id) {
-        result.$id = options.$id;
-    }
-
-    result.title = options?.title ?? def.info?.title;
-
-    if (def.info?.description) {
-        result.description = def.info.description;
-    }
-
-    if (Object.keys($defs).length > 0) {
-        result.$defs = $defs;
-    }
-
-    return result;
-}
-
-function writeJsonSchema(outputPath: string, schema: JsonSchema): void {
-    const resolved = path.resolve(outputPath);
-    const dir = path.dirname(resolved);
-
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(resolved, JSON.stringify(schema, null, 2));
 }
