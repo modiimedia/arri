@@ -26,10 +26,6 @@ import {
     uint32Min,
 } from './numberConstants';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export type JsonSchemaType =
     | 'string'
     | 'number'
@@ -71,19 +67,32 @@ export interface JsonSchema {
 }
 
 export interface ToJsonSchemaOptions {
+    /** The $id to use for the root schema */
     $id?: string;
+    /** The title to use for the root schema */
     title?: string;
+    /** The description to use for the root schema */
     description?: string;
+    /** Whether to include $defs for named types (types with metadata.id) */
     definitions?: boolean;
+    /** The JSON Schema draft version to target */
     $schema?: string;
 }
 
-// ============================================================================
-// Main API
-// ============================================================================
-
 /**
  * Convert an Arri schema to JSON Schema format
+ *
+ * @example
+ * const User = a.object({
+ *   id: a.string(),
+ *   name: a.string(),
+ *   email: a.nullable(a.string()),
+ * });
+ *
+ * const jsonSchema = toJsonSchema(User, {
+ *   $id: 'https://example.com/schemas/user.json',
+ *   title: 'User',
+ * });
  */
 export function toJsonSchema<T>(
     schema: ASchema<T>,
@@ -97,6 +106,7 @@ export function toJsonSchema<T>(
 
 /**
  * Convert a raw ATD Schema object to JSON Schema format.
+ * This is useful when working with plain schema objects from AppDefinition.
  */
 export function schemaToJsonSchema(schema: Schema): JsonSchema {
     return convertSchema(schema);
@@ -115,10 +125,6 @@ function applyRootOptions(
         ...(options?.description && { description: options.description }),
     };
 }
-
-// ============================================================================
-// Schema Converters
-// ============================================================================
 
 const SCALAR_MAPPINGS: Record<string, JsonSchema> = {
     string: { type: 'string' },
@@ -232,10 +238,6 @@ function convertDiscriminator(schema: DiscriminatorSchema): JsonSchema {
     );
     return { oneOf };
 }
-
-// ============================================================================
-// Helpers
-// ============================================================================
 
 function makeNullable(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {
     if (jsonSchema.$ref || jsonSchema.oneOf) {

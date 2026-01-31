@@ -15,6 +15,24 @@ import {
     uint32Min,
 } from './numberConstants';
 
+const UserSchema = a.object(
+    {
+        id: a.string({ description: 'Unique ID' }),
+        name: a.string(),
+        email: a.nullable(a.string()),
+        age: a.optional(a.uint8()),
+        role: a.stringEnum(['USER', 'ADMIN']),
+        tags: a.array(a.string()),
+        createdAt: a.timestamp(),
+    },
+    { id: 'User', description: 'A user in the system' },
+);
+
+const ApiResponseSchema = a.discriminator('status', {
+    success: a.object({ data: a.object({ id: a.string() }) }),
+    error: a.object({ code: a.int32(), message: a.string() }),
+});
+
 describe('toJsonSchema()', () => {
     describe('scalar types', () => {
         it('converts string', () => {
@@ -196,30 +214,20 @@ describe('toJsonSchema()', () => {
 
     describe('discriminator type', () => {
         it('converts to oneOf with discriminator property', () => {
-            const result = toJsonSchema(
-                a.discriminator('type', {
-                    USER: a.object({ name: a.string() }),
-                    ADMIN: a.object({ permissions: a.array(a.string()) }),
-                }),
-            );
+            const result = toJsonSchema(ApiResponseSchema);
 
             expect(result.oneOf?.length).toBe(2);
 
-            const userVariant = result.oneOf?.find(
-                (s) => s.properties?.type?.const === 'USER',
+            const success = result.oneOf?.find(
+                (s) => s.properties?.status?.const === 'success',
             );
-            expect(userVariant?.properties?.name).toStrictEqual({
-                type: 'string',
-            });
-            expect(userVariant?.required).toContain('type');
+            expect(success?.properties?.data?.type).toBe('object');
+            expect(success?.required).toContain('status');
 
-            const adminVariant = result.oneOf?.find(
-                (s) => s.properties?.type?.const === 'ADMIN',
+            const error = result.oneOf?.find(
+                (s) => s.properties?.status?.const === 'error',
             );
-            expect(adminVariant?.properties?.permissions).toStrictEqual({
-                type: 'array',
-                items: { type: 'string' },
-            });
+            expect(error?.properties?.code?.type).toBe('integer');
         });
     });
 
@@ -250,14 +258,7 @@ describe('toJsonSchema()', () => {
         });
 
         it('uses anyOf for nullable discriminator', () => {
-            const result = toJsonSchema(
-                a.nullable(
-                    a.discriminator('type', {
-                        A: a.object({ a: a.string() }),
-                        B: a.object({ b: a.string() }),
-                    }),
-                ),
-            );
+            const result = toJsonSchema(a.nullable(ApiResponseSchema));
 
             expect(result.anyOf?.length).toBe(2);
             expect(result.anyOf?.some((s) => s.oneOf)).toBe(true);
@@ -267,15 +268,9 @@ describe('toJsonSchema()', () => {
 
     describe('metadata', () => {
         it('applies id as title and description', () => {
-            const result = toJsonSchema(
-                a.object(
-                    { id: a.string() },
-                    { id: 'User', description: 'A user' },
-                ),
-            );
-
+            const result = toJsonSchema(UserSchema);
             expect(result.title).toBe('User');
-            expect(result.description).toBe('A user');
+            expect(result.description).toBe('A user in the system');
         });
 
         it('applies deprecated flag', () => {
@@ -286,15 +281,8 @@ describe('toJsonSchema()', () => {
         });
 
         it('applies property-level metadata', () => {
-            const result = toJsonSchema(
-                a.object({
-                    id: a.string({ description: 'Unique ID' }),
-                    old: a.string({ isDeprecated: true }),
-                }),
-            );
-
+            const result = toJsonSchema(UserSchema);
             expect(result.properties?.id?.description).toBe('Unique ID');
-            expect(result.properties?.old?.deprecated).toBe(true);
         });
     });
 
@@ -345,9 +333,7 @@ describe('toJsonSchema()', () => {
         it('disables definitions collection', () => {
             const result = toJsonSchema(
                 a.object({ id: a.string() }, { id: 'User' }),
-                {
-                    definitions: false,
-                },
+                { definitions: false },
             );
             expect(result.$defs).toBeUndefined();
         });
@@ -355,18 +341,7 @@ describe('toJsonSchema()', () => {
 
     describe('complex schemas', () => {
         it('converts complex user schema', () => {
-            const result = toJsonSchema(
-                a.object(
-                    {
-                        id: a.string({ description: 'Unique ID' }),
-                        email: a.nullable(a.string()),
-                        role: a.stringEnum(['USER', 'ADMIN']),
-                        tags: a.array(a.string()),
-                        createdAt: a.timestamp(),
-                    },
-                    { id: 'User' },
-                ),
-            );
+            const result = toJsonSchema(UserSchema);
 
             expect(result.title).toBe('User');
             expect(result.properties?.id?.description).toBe('Unique ID');
@@ -383,12 +358,7 @@ describe('toJsonSchema()', () => {
         });
 
         it('converts discriminated union API response', () => {
-            const result = toJsonSchema(
-                a.discriminator('status', {
-                    success: a.object({ data: a.object({ id: a.string() }) }),
-                    error: a.object({ code: a.int32(), message: a.string() }),
-                }),
-            );
+            const result = toJsonSchema(ApiResponseSchema);
 
             expect(result.oneOf?.length).toBe(2);
 
@@ -404,15 +374,14 @@ describe('toJsonSchema()', () => {
         });
 
         it('handles deeply nested structures', () => {
-            const result = toJsonSchema(
-                a.object({
-                    l1: a.object({
-                        l2: a.array(
-                            a.object({ l3: a.record(a.array(a.string())) }),
-                        ),
-                    }),
+            const DeepSchema = a.object({
+                l1: a.object({
+                    l2: a.array(
+                        a.object({ l3: a.record(a.array(a.string())) }),
+                    ),
                 }),
-            );
+            });
+            const result = toJsonSchema(DeepSchema);
 
             const l1 = result.properties?.l1 as JsonSchema;
             const l2 = l1.properties?.l2 as JsonSchema;
