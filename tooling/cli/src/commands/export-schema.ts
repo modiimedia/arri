@@ -67,10 +67,12 @@ export function appDefinitionToJsonSchema(
 
     const description = options?.description ?? def.info?.description;
 
+    const title = options?.title ?? def.info?.title;
+
     return {
         $schema: 'https://json-schema.org/draft/2020-12/schema',
         ...(options?.$id && { $id: options.$id }),
-        title: options?.title ?? def.info?.title,
+        ...(title && { title }),
         ...(description && { description }),
         ...(Object.keys($defs).length > 0 && { $defs }),
     };

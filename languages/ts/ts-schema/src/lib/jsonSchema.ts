@@ -250,11 +250,11 @@ function makeNullable(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {
             ? jsonSchema.type
             : [jsonSchema.type];
         jsonSchema.type = types.includes('null') ? types : [...types, 'null'];
-    } else {
-        jsonSchema.type = 'null';
+        return applyMetadata(jsonSchema, atdSchema);
     }
 
-    return applyMetadata(jsonSchema, atdSchema);
+    // Empty schema (any) - use anyOf to allow any value or null
+    return applyMetadata({ anyOf: [jsonSchema, { type: 'null' }] }, atdSchema);
 }
 
 function applyMetadata(

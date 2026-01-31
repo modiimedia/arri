@@ -291,6 +291,11 @@ describe('toJsonSchema()', () => {
             expect(toJsonSchema(a.any()).type).toBeUndefined();
         });
 
+        it('converts nullable any to anyOf with null', () => {
+            const result = toJsonSchema(a.nullable(a.any()));
+            expect(result.anyOf).toStrictEqual([{}, { type: 'null' }]);
+        });
+
         it('converts recursive ref to $ref', () => {
             type Tree = { left: Tree | null; right: Tree | null };
             const Tree = a.recursive<Tree>('Tree', (self) =>

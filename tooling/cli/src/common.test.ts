@@ -52,7 +52,7 @@ describe('loadAppDefinition()', () => {
         fs.writeFileSync(filePath, JSON.stringify({ foo: 'bar' }));
 
         await expect(loadAppDefinition(filePath)).rejects.toThrow(
-            'Invalid AppDefinition',
+            'Invalid App Definition',
         );
     });
 

@@ -19,7 +19,7 @@ export async function loadAppDefinition(input: string): Promise<AppDefinition> {
     if (isUrl) {
         const result = await ofetch(input);
         if (!isAppDefinition(result)) {
-            throw new Error(`Invalid AppDefinition at ${input}`);
+            throw new Error(`Invalid App Definition at ${input}`);
         }
         return result;
     }
@@ -31,14 +31,14 @@ export async function loadAppDefinition(input: string): Promise<AppDefinition> {
     if (input.endsWith('.ts') || input.endsWith('.js')) {
         const { config } = await loadConfig({ configFile: input });
         if (!isAppDefinition(config)) {
-            throw new Error(`Invalid AppDefinition at ${input}`);
+            throw new Error(`Invalid App Definition at ${input}`);
         }
         return config;
     }
 
     const parsed = JSON.parse(fs.readFileSync(input, 'utf-8'));
     if (!isAppDefinition(parsed)) {
-        throw new Error(`Invalid AppDefinition at ${input}`);
+        throw new Error(`Invalid App Definition at ${input}`);
     }
     return parsed;
 }
