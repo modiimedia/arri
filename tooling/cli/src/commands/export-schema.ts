@@ -1,13 +1,11 @@
 import fs from 'node:fs';
 
-import { type AppDefinition, isAppDefinition } from '@arrirpc/codegen-utils';
+import { type AppDefinition } from '@arrirpc/codegen-utils';
 import { type JsonSchema, schemaToJsonSchema } from '@arrirpc/schema';
-import { loadConfig } from 'c12';
 import { defineCommand } from 'citty';
-import { ofetch } from 'ofetch';
 import path from 'pathe';
 
-import { logger } from '../common';
+import { loadAppDefinition, logger } from '../common';
 
 export default defineCommand({
     meta: {
@@ -37,6 +35,7 @@ export default defineCommand({
         },
     },
     async run({ args }) {
+        logger.info(`Loading AppDefinition from ${args.input}...`);
         const def = await loadAppDefinition(args.input);
         const jsonSchema = appDefinitionToJsonSchema(def, {
             $id: args.id,
@@ -48,46 +47,12 @@ export default defineCommand({
     },
 });
 
-async function loadAppDefinition(input: string): Promise<AppDefinition> {
-    const isUrl = input.startsWith('http://') || input.startsWith('https://');
-
-    if (isUrl) {
-        logger.info(`Fetching AppDefinition from ${input}...`);
-        const result = await ofetch(input);
-        if (!isAppDefinition(result)) {
-            logger.error(`Invalid AppDefinition at ${input}`);
-            process.exit(1);
-        }
-        return result;
-    }
-
-    logger.info(`Loading AppDefinition from ${input}...`);
-
-    if (!fs.existsSync(input)) {
-        throw new Error(`Unable to find ${input}`);
-    }
-
-    if (input.endsWith('.ts') || input.endsWith('.js')) {
-        const { config } = await loadConfig({ configFile: input });
-        if (!isAppDefinition(config)) {
-            throw new Error(`Invalid AppDefinition at ${input}`);
-        }
-        return config;
-    }
-
-    const parsed = JSON.parse(fs.readFileSync(input, 'utf-8'));
-    if (!isAppDefinition(parsed)) {
-        throw new Error(`Invalid AppDefinition at ${input}`);
-    }
-    return parsed;
-}
-
-interface ConvertOptions {
+export interface ConvertOptions {
     $id?: string;
     title?: string;
 }
 
-function appDefinitionToJsonSchema(
+export function appDefinitionToJsonSchema(
     def: AppDefinition,
     options?: ConvertOptions,
 ): JsonSchema {
