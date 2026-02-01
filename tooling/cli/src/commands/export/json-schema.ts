@@ -5,11 +5,11 @@ import { type JsonSchema, schemaToJsonSchema } from '@arrirpc/schema';
 import { defineCommand } from 'citty';
 import path from 'pathe';
 
-import { loadAppDefinition, logger } from '../common';
+import { loadAppDefinition, logger } from '../../common';
 
 export default defineCommand({
     meta: {
-        name: 'export-schema',
+        name: 'json-schema',
         description: 'Export AppDefinition types as JSON Schema',
     },
     args: {

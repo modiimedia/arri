@@ -8,6 +8,7 @@ import {
     isSchemaFormType,
     isSchemaFormValues,
     type Schema,
+    type Type,
 } from '@arrirpc/type-defs';
 
 import { type ASchema } from '../schemas';
@@ -124,7 +125,7 @@ function applyRootOptions(
     };
 }
 
-const SCALAR_MAPPINGS: Record<string, JsonSchema> = {
+const SCALAR_MAPPINGS: Record<Type, JsonSchema> = {
     string: { type: 'string' },
     boolean: { type: 'boolean' },
     timestamp: { type: 'string', format: 'date-time' },
@@ -159,24 +160,20 @@ function convertSchema(schema: Schema): JsonSchema {
 }
 
 function getBaseSchema(schema: Schema): JsonSchema {
-    if (isSchemaFormEmpty(schema)) return {};
     if (isSchemaFormType(schema)) {
-        const mapping =
-            SCALAR_MAPPINGS[(schema as Schema & { type: string }).type];
+        const mapping = SCALAR_MAPPINGS[schema.type];
         return mapping ? { ...mapping } : {};
     }
     if (isSchemaFormEnum(schema)) {
         return {
             type: 'string',
-            enum: [...(schema as Schema & { enum: string[] }).enum],
+            enum: [...schema.enum],
         };
     }
     if (isSchemaFormElements(schema)) {
         return {
             type: 'array',
-            items: convertSchema(
-                (schema as Schema & { elements: Schema }).elements,
-            ),
+            items: convertSchema(schema.elements),
         };
     }
     if (isSchemaFormProperties(schema)) {
@@ -185,17 +182,16 @@ function getBaseSchema(schema: Schema): JsonSchema {
     if (isSchemaFormValues(schema)) {
         return {
             type: 'object',
-            additionalProperties: convertSchema(
-                (schema as Schema & { values: Schema }).values,
-            ),
+            additionalProperties: convertSchema(schema.values),
         };
     }
     if (isSchemaFormDiscriminator(schema)) {
         return convertDiscriminator(schema as DiscriminatorSchema);
     }
     if (isSchemaFormRef(schema)) {
-        return { $ref: `#/$defs/${(schema as Schema & { ref: string }).ref}` };
+        return { $ref: `#/$defs/${schema.ref}` };
     }
+    if (isSchemaFormEmpty(schema)) return {};
     return {};
 }
 
