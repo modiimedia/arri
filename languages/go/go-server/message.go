@@ -354,9 +354,10 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 		currentLine = []byte{}
 		return nil
 	}
-
+	lastIndex := len(input) - 1
 	for i, char := range input {
-		if char == '\n' && input[i+1] == '\n' {
+
+		if char == '\n' && i != lastIndex && input[i+1] == '\n' {
 			err := processLine()
 			if err != nil {
 				return Message{}, err
