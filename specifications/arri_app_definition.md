@@ -129,7 +129,7 @@ The definitions object contains all of the types send and receive by the applica
 
 ```json
 {
-    "schemaVersion": "0.0.7",
+    "schemaVersion": "0.0.8",
     "info": {
         "name": "My Arri Server",
         "description": "This is a server I made using Arri RPC",

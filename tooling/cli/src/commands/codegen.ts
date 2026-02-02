@@ -1,13 +1,12 @@
 import fs from 'node:fs';
 
-import { type AppDefinition, isAppDefinition } from '@arrirpc/codegen-utils';
+import { SCHEMA_VERSION, type AppDefinition } from '@arrirpc/codegen-utils';
 import { loadConfig } from 'c12';
 import { watch } from 'chokidar';
 import { defineCommand } from 'citty';
-import { ofetch } from 'ofetch';
 import path from 'pathe';
 
-import { logger } from '../common';
+import { loadAppDefinition, logger } from '../common';
 import { ArriConfig, isArriConfig } from '../config';
 
 export default defineCommand({
@@ -56,24 +55,20 @@ export default defineCommand({
             args.schema.startsWith('http://') ||
             args.schema.startsWith('https://');
 
-        let def: AppDefinition | undefined;
-        if (isUrl) {
-            if (args.watch) throw new Error('Cannot watch a URL');
-            const result = await ofetch(args.schema);
-            if (!isAppDefinition(result)) {
-                throw new Error(`Invalid App Definition at ${args.schema}`);
-            }
-            def = result;
-        } else {
-            try {
-                def = await getAppDefinitionFromFile(args.schema);
-            } catch (err) {
-                if (!args.watch) {
-                    throw err;
-                }
-                logger.error(err);
-            }
+        if (isUrl && args.watch) {
+            throw new Error('Cannot watch a URL');
         }
+
+        let def: AppDefinition | undefined;
+        try {
+            def = await loadAppDefinition(args.schema);
+        } catch (err) {
+            if (!args.watch) {
+                throw err;
+            }
+            logger.error(err);
+        }
+
         if (!def && !args.watch) {
             throw new Error(`Unable to find App Definition at ${args.schema}`);
         }
@@ -92,7 +87,7 @@ export default defineCommand({
                 logger.info(`Change detected`);
                 const startTime = new Date();
                 await runGenerators(
-                    await getAppDefinitionFromFile(args.schema),
+                    await loadAppDefinition(args.schema),
                     config.generators ?? [],
                 );
                 logger.success(
@@ -107,7 +102,7 @@ export default defineCommand({
                 logger.info(`Change detected in AppDefinition file.`);
                 const startTime = new Date();
                 await runGenerators(
-                    await getAppDefinitionFromFile(args.schema),
+                    await loadAppDefinition(args.schema),
                     config.generators ?? [],
                 );
                 logger.success(
@@ -120,31 +115,6 @@ export default defineCommand({
     },
 });
 
-async function getAppDefinitionFromFile(file: string) {
-    if (!fs.existsSync(file)) {
-        throw new Error(`Unable to find ${file}`);
-    }
-    const isTs = file.endsWith('.ts');
-    const isJs = file.endsWith('.js');
-    if (isTs || isJs) {
-        const schemaResult = await loadConfig({
-            configFile: file,
-        });
-        if (!isAppDefinition(schemaResult.config)) {
-            throw new Error(`Invalid App Definition at ${file}`);
-        }
-        return schemaResult.config;
-    } else {
-        const parsingResult = JSON.parse(
-            fs.readFileSync(file, { encoding: 'utf-8' }),
-        );
-        if (!isAppDefinition(parsingResult)) {
-            throw new Error(`Invalid App Definition at ${file}`);
-        }
-        return parsingResult;
-    }
-}
-
 async function runGenerators(
     def: AppDefinition,
     generators: ArriConfig['generators'],
@@ -154,7 +124,7 @@ async function runGenerators(
         generators.map((gen) =>
             gen.run(
                 def ?? {
-                    schemaVersion: '0.0.7',
+                    schemaVersion: SCHEMA_VERSION,
                     procedures: {},
                     definitions: {},
                 },

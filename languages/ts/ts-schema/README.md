@@ -53,6 +53,7 @@ Originally this library was created as a way for building schemas for [Json Type
     - [Serialize](#serialize)
     - [Serialize Unsafe](#serialize-unsafe)
     - [Errors](#errors)
+    - [To JSON Schema](#to-json-schema)
 - [Metadata](#metadata)
 - [Compiled Validators](#compiled-validators)
 - [Benchmarks](#benchmarks)
@@ -988,6 +989,79 @@ a.errors(User, { id: 1, date: 'hello world' });
  *
  */
 ```
+
+### To JSON Schema
+
+Use `a.toJsonSchema()` to convert an Arri schema to [JSON Schema](https://json-schema.org/) format. This is useful for:
+
+- **Editor support** - YAML/JSON files using Arri-defined schemas can get autocomplete in VS Code, IntelliJ, etc.
+- **Interoperability** - Integration with tools that consume JSON Schema (OpenAPI, documentation generators, etc.)
+- **Configuration validation** - Users defining config files can reference a JSON Schema URL for validation
+
+```ts
+const User = a.object(
+    {
+        id: a.string(),
+        name: a.string(),
+        email: a.nullable(a.string()),
+        role: a.enumerator(['USER', 'ADMIN']),
+        createdAt: a.timestamp(),
+    },
+    { id: 'User', description: 'A user in the system' },
+);
+
+const jsonSchema = a.toJsonSchema(User, {
+    $id: 'https://example.com/schemas/user.json',
+    title: 'User Schema',
+});
+```
+
+**Result:**
+
+```json
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/user.json",
+    "title": "User Schema",
+    "type": "object",
+    "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": ["string", "null"] },
+        "role": { "type": "string", "enum": ["USER", "ADMIN"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+    },
+    "required": ["id", "name", "email", "role", "createdAt"]
+}
+```
+
+#### Options
+
+| Option        | Type   | Description                                                                             |
+| ------------- | ------ | --------------------------------------------------------------------------------------- |
+| `$id`         | string | The `$id` to use for the root schema                                                    |
+| `title`       | string | The title to use for the root schema                                                    |
+| `description` | string | The description to use for the root schema                                              |
+| `$schema`     | string | The JSON Schema draft version (default: `https://json-schema.org/draft/2020-12/schema`) |
+
+#### Type Mappings
+
+| Arri Schema         | JSON Schema Equivalent                                         |
+| ------------------- | -------------------------------------------------------------- |
+| `a.any()`           | `{}` (any)                                                     |
+| `a.string()`        | `{ "type": "string" }`                                         |
+| `a.boolean()`       | `{ "type": "boolean" }`                                        |
+| `a.timestamp()`     | `{ "type": "string", "format": "date-time" }`                  |
+| `a.float32/64()`    | `{ "type": "number" }`                                         |
+| `a.int8/16/32()`    | `{ "type": "integer", "minimum": X, "maximum": Y }`            |
+| `a.uint8/16/32()`   | `{ "type": "integer", "minimum": 0, "maximum": Y }`            |
+| `a.int64/uint64()`  | `{ "type": "string", "pattern": "^-?[0-9]+$" }`                |
+| `a.enumerator()`    | `{ "type": "string", "enum": [...] }`                          |
+| `a.array()`         | `{ "type": "array", "items": {...} }`                          |
+| `a.object()`        | `{ "type": "object", "properties": {...}, "required": [...] }` |
+| `a.record()`        | `{ "type": "object", "additionalProperties": {...} }`          |
+| `a.discriminator()` | `{ "oneOf": [...] }` with const discriminator                  |
+| `a.nullable()`      | Adds `"null"` to type array                                    |
 
 ## Metadata
 
