@@ -1,9 +1,47 @@
+import fs from 'node:fs';
+
+import { type AppDefinition, isAppDefinition } from '@arrirpc/codegen-utils';
 import { a, ValidationException } from '@arrirpc/schema';
+import { loadConfig } from 'c12';
 import { createConsola } from 'consola';
 import { ofetch } from 'ofetch';
 import path from 'pathe';
 
 export const logger = createConsola().withTag('arri');
+
+/**
+ * Load an AppDefinition from a file path or URL.
+ * Supports JSON, JS, and TS files, as well as HTTP/HTTPS URLs.
+ */
+export async function loadAppDefinition(input: string): Promise<AppDefinition> {
+    const isUrl = input.startsWith('http://') || input.startsWith('https://');
+
+    if (isUrl) {
+        const result = await ofetch(input);
+        if (!isAppDefinition(result)) {
+            throw new Error(`Invalid App Definition at ${input}`);
+        }
+        return result;
+    }
+
+    if (!fs.existsSync(input)) {
+        throw new Error(`Unable to find ${input}`);
+    }
+
+    if (input.endsWith('.ts') || input.endsWith('.js')) {
+        const { config } = await loadConfig({ configFile: input });
+        if (!isAppDefinition(config)) {
+            throw new Error(`Invalid App Definition at ${input}`);
+        }
+        return config;
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(input, 'utf-8'));
+    if (!isAppDefinition(parsed)) {
+        throw new Error(`Invalid App Definition at ${input}`);
+    }
+    return parsed;
+}
 
 export function isInsideDir(dir: string, parentDir: string) {
     if (path.resolve(dir).startsWith(path.resolve(parentDir))) {
