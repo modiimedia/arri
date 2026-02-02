@@ -243,6 +243,7 @@ type homePageInfo struct {
 func RegisterTransport[TMeta any](app *App[TMeta], transportAdapter TransportAdapter[TMeta]) {
 	transportId := transportAdapter.TransportId()
 	transportAdapter.SetGlobalOptions(app.options)
+	fmt.Println("REGISTERING TRANSPORT", transportId)
 	_, alreadySet := app.adapters[transportId]
 	if alreadySet {
 		fmt.Printf("WARNING a transport adapter has already been registered for \"%s\"\n", transportId)

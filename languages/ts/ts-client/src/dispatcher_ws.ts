@@ -7,9 +7,7 @@ import {
     StreamCancelMessage,
 } from '@arrirpc/core';
 import { HttpMethod } from 'event-source-plus';
-import { IncomingMessage } from 'http';
 import { randomUUID } from 'uncrypto';
-import ws from 'websocket';
 
 import {
     StreamController,
@@ -41,8 +39,7 @@ export interface WsDispatcherOptions extends RpcDispatcherOptions {
 
 export class WsDispatcher implements RpcDispatcher<'ws'> {
     transport = 'ws' as const;
-    private readonly client: ws.client;
-    private connection: ws.connection | undefined;
+    private connection: WebSocket | undefined;
     private reqCount = 0;
     private options: WsDispatcherOptions;
     private responseHandlers: Map<string, (msg: Message) => any> = new Map();
@@ -55,18 +52,17 @@ export class WsDispatcher implements RpcDispatcher<'ws'> {
     private connectionRetryInterval = 0;
     private connectionMaxRetryInterval = 30000;
     private closedByClient = false;
+    private maxReceivedFrameSize: number;
+    private fragmentationThreshold: number;
 
     constructor(options: WsDispatcherOptions) {
-        this.client = new ws.client({
-            assembleFragments: true,
-            maxReceivedFrameSize: options.maxReceivedFrameSize ?? 1096478,
-            fragmentationThreshold: options.fragmentationThreshold ?? 16384,
-        });
+        this.maxReceivedFrameSize = options.maxReceivedFrameSize ?? 1096478;
+        this.fragmentationThreshold = options.fragmentationThreshold ?? 16384;
         this.options = options;
     }
 
     terminateConnections(): void {
-        if (!this.connection?.connected) return;
+        if (!this.connection?.OPEN && !this.connection?.CONNECTING) return;
         this.cleanupTimeout();
         this.closedByClient = true;
         this.connection?.close();
@@ -91,127 +87,111 @@ export class WsDispatcher implements RpcDispatcher<'ws'> {
         initiatingReqId?: string;
     }): Promise<void> {
         const retryCount = options.retryCount ?? 0;
-        if (this.connection?.connected) {
-            if (!options?.forceReconnection) return;
+        if (this.connection?.OPEN) {
+            if (!options.forceReconnection) return;
             this.connection.close();
+            delete this.connection;
         }
-        const headers =
-            options?.prefetchedHeaders ??
-            (await getHeaders(this.options.headers));
-        this.client.connect(
-            this.options.wsConnectionUrl,
-            undefined,
-            undefined,
-            headers,
-            {
-                method: this.options.wsConnectionMethod?.toUpperCase(),
-            },
-        );
         const promise = new Promise<void>((res, rej) => {
-            const onConnection = (connection: ws.connection) => {
-                this.connection = connection;
+            let ws = new WebSocket(this.options.wsConnectionUrl);
+            ws.onopen = (_) => {
+                res();
+                this.connection = ws;
                 this.resetHeartbeatTimeout();
-                connection.on('error', (err) => {
-                    const openStreams = this.eventSources.values();
-                    for (const stream of openStreams) {
-                        stream.hooks.onError?.(err);
-                    }
-                });
-                connection.on('close', (code, desc) => {
-                    if (this.closedByClient) {
-                        this.cleanupTimeout();
-                        return;
-                    }
-                    if (![1000, 1001].includes(code)) {
-                        const openStreams = this.eventSources.values();
-                        for (const stream of openStreams) {
-                            stream.hooks.onError?.(
-                                new ArriError({ code: code, message: desc }),
-                            );
-                        }
-                    }
-                    this.setupConnection({});
-                });
-                connection.on('message', (msg) => {
-                    let parsedMsg: Message | undefined;
-                    switch (msg.type) {
-                        case 'utf8': {
-                            const result = parseMessage(msg.utf8Data);
-                            if (!result.ok) {
-                                // eslint-disable-next-line no-console
-                                console.warn(
-                                    `Error parsing response from server: ${result.error}`,
-                                );
-                                return;
-                            }
-                            parsedMsg = result.value;
-                            break;
-                        }
-                        case 'binary':
-                            // eslint-disable-next-line no-console
-                            console.warn(
-                                'Error parsing response from server: Expected string got binary.',
-                            );
-                            break;
-                    }
-                    if (!parsedMsg) {
-                        this.resetHeartbeatTimeout();
-                        return;
-                    }
-                    switch (parsedMsg.type) {
-                        case 'OK':
-                        case 'ERROR':
-                        case 'STREAM_CANCEL':
-                        case 'STREAM_END':
-                        case 'STREAM_DATA': {
-                            this.resetHeartbeatTimeout();
-                            if (!parsedMsg.reqId) return;
-                            const handler = this.responseHandlers.get(
-                                parsedMsg.reqId,
-                            );
-                            if (!handler) return;
-                            return handler(parsedMsg);
-                        }
-                        case 'CONNECTION_START':
-                        case 'HEARTBEAT':
-                            if (
-                                parsedMsg.heartbeatInterval &&
-                                this.serverHeartbeatInterval !==
-                                    parsedMsg.heartbeatInterval
-                            ) {
-                                this.serverHeartbeatInterval =
-                                    parsedMsg.heartbeatInterval;
-                            }
-                            this.resetHeartbeatTimeout();
-                            return;
-                    }
-                });
                 for (const [_, es] of this.eventSources.entries()) {
                     if (es.req.reqId === options.initiatingReqId) {
                         continue;
                     }
                     es.init();
                 }
-                this.client.removeListener('connect', onConnection);
-                this.client.removeListener('connectFailed', onConnectionFailed);
-                this.client.removeListener('httpResponse', onHttpResponse);
-                res();
             };
-
-            const onConnectionFailed = (err: Error) => {
-                this.client.removeListener('connect', onConnection);
-                this.client.removeListener('connectFailed', onConnectionFailed);
-                this.client.removeListener('httpResponse', onHttpResponse);
-                rej(err);
+            ws.onerror = (event) => {
+                if ('error' in event) {
+                    rej(event.error);
+                    return;
+                }
+                if ('description' in event) {
+                    rej(event.description);
+                    return;
+                }
+                rej(event);
             };
-            const onHttpResponse = (
-                _res: IncomingMessage,
-                _client: ws.client,
-            ) => {};
-            this.client
-                .on('connect', onConnection)
-                .on('connectFailed', onConnectionFailed)
-                .on('httpResponse', onHttpResponse);
+            ws.onclose = (event) => {
+                if (this.closedByClient) {
+                    this.cleanupTimeout();
+                    return;
+                }
+                if (![1000, 1001].includes(event.code)) {
+                    const openStreams = this.eventSources.values();
+                    for (const stream of openStreams) {
+                        stream.hooks.onError?.(
+                            new ArriError({
+                                code: event.code,
+                                message: event.reason,
+                            }),
+                        );
+                    }
+                }
+                this.setupConnection({});
+            };
+            ws.onmessage = (event) => {
+                let parsedMsg: Message | undefined;
+                if (typeof event.data === 'string') {
+                    const result = parseMessage(event.data);
+                    if (!result.ok) {
+                        // eslint-disable-next-line no-console
+                        console.warn(
+                            `Error parsing response from server: ${result.error}`,
+                        );
+                        return;
+                    }
+                    parsedMsg = result.value;
+                } else if (event.data instanceof ArrayBuffer) {
+                    console.warn(
+                        'Error parsing response from server: Binary payload not supported yet.',
+                    );
+                    return;
+                } else if (event.data instanceof Blob) {
+                    console.warn(
+                        'Error parsing response from server: Binary payload not supported yet.',
+                    );
+                    return;
+                } else {
+                    console.warn('Unsupported content type:', event.data);
+                    return;
+                }
+                if (!parsedMsg) {
+                    this.resetHeartbeatTimeout();
+                    return;
+                }
+                switch (parsedMsg.type) {
+                    case 'OK':
+                    case 'ERROR':
+                    case 'STREAM_CANCEL':
+                    case 'STREAM_END':
+                    case 'STREAM_DATA': {
+                        this.resetHeartbeatTimeout();
+                        if (!parsedMsg.reqId) return;
+                        const handler = this.responseHandlers.get(
+                            parsedMsg.reqId,
+                        );
+                        if (!handler) return;
+                        return handler(parsedMsg);
+                    }
+                    case 'CONNECTION_START':
+                    case 'HEARTBEAT':
+                        if (
+                            parsedMsg.heartbeatInterval &&
+                            this.serverHeartbeatInterval !==
+                                parsedMsg.heartbeatInterval
+                        ) {
+                            this.serverHeartbeatInterval =
+                                parsedMsg.heartbeatInterval;
+                        }
+                        this.resetHeartbeatTimeout();
+                        return;
+                }
+            };
         });
         try {
             await promise;
@@ -404,14 +384,14 @@ class WsEventSource<TParams, TOutput> implements StreamController {
     req: RpcRequest<TParams>;
     validator: RpcRequestValidator<TParams, TOutput>;
     hooks: StreamHooks<TOutput>;
-    getConnection: () => ws.connection | Promise<ws.connection>;
+    getConnection: () => WebSocket | Promise<WebSocket>;
     globalOnError: RpcDispatcherOptions['onError'];
 
     constructor(
         req: RpcRequest<TParams>,
         validator: RpcRequestValidator<TParams, TOutput>,
         hooks: StreamHooks<TOutput>,
-        getConnection: () => ws.connection | Promise<ws.connection>,
+        getConnection: () => WebSocket | Promise<WebSocket>,
         onError: RpcDispatcherOptions['onError'],
     ) {
         this.req = req;

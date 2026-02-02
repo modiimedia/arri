@@ -316,7 +316,7 @@ describe('standard rpcs', () => {
             },
         });
         try {
-            await customClient.tests.sendObject(input);
+            await customClient.tests.sendError({ code: 500, message: '' });
         } catch (_) {
             // do nothing
         }

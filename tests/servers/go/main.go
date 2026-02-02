@@ -35,7 +35,7 @@ func main() {
 	)
 	registerHeartbeatTestRoute(mux)
 	httpAdapter := arri.NewHttpAdapter(mux, arri.HttpAdapterOptions[CustomProps]{Port: 2020, AllowedOrigins: []string{"*"}})
-	wsAdapter := arri.NewWsAdapter(httpAdapter, arri.WsAdapterOptions[CustomProps]{ConnectionPath: "/ws"})
+	wsAdapter := arri.NewWsAdapter(httpAdapter, arri.WsAdapterOptions[CustomProps]{ConnectionPath: "/establish-connection"})
 	arri.RegisterTransport(&app, httpAdapter)
 	arri.RegisterTransport(&app, wsAdapter)
 	arri.RegisterMiddleware(&app, func(req *arri.Request[CustomProps]) arri.RpcError {

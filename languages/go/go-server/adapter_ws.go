@@ -29,12 +29,10 @@ type WsAdapterOptions[T any] struct {
 }
 
 func (w WsAdapter[T]) OnOpen(socket *gws.Conn) {
-	fmt.Println("OPENED", socket.RemoteAddr(), socket.Session())
 	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
 }
 
 func (w WsAdapter[T]) OnClose(socket *gws.Conn, err error) {
-	fmt.Println("CLOSED", socket.RemoteAddr(), socket.Session(), err)
 }
 
 func (w WsAdapter[T]) OnPing(socket *gws.Conn, payload []byte) {
@@ -42,7 +40,8 @@ func (w WsAdapter[T]) OnPing(socket *gws.Conn, payload []byte) {
 	_ = socket.WritePong(nil)
 }
 
-func (w WsAdapter[T]) OnPong(socket *gws.Conn, payload []byte) {}
+func (w WsAdapter[T]) OnPong(socket *gws.Conn, payload []byte) {
+}
 
 func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 	defer message.Close()
@@ -157,7 +156,8 @@ func (w *WsAdapter[T]) RegisterRpc(name string, def RpcDef, paramValidator Valid
 			if err != nil {
 				return []byte{}, Error(500, fmt.Sprintf("Error serializing response, %s", err))
 			}
-			return body, nil
+			response := NewOkMessage(msg.ReqId, ContentTypeJson, Headers{}, Some(body))
+			return response.EncodeBytes(), nil
 		},
 	}
 }
