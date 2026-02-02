@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-import { type AppDefinition } from '@arrirpc/codegen-utils';
+import { SCHEMA_VERSION, type AppDefinition } from '@arrirpc/codegen-utils';
 import { loadConfig } from 'c12';
 import { watch } from 'chokidar';
 import { defineCommand } from 'citty';
@@ -124,7 +124,7 @@ async function runGenerators(
         generators.map((gen) =>
             gen.run(
                 def ?? {
-                    schemaVersion: '0.0.7',
+                    schemaVersion: SCHEMA_VERSION,
                     procedures: {},
                     definitions: {},
                 },
