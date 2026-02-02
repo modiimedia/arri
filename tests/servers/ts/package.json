@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.34.41",
+    "@sinclair/typebox": "^0.34.48",
     "arri": "workspace:*"
   },
   "scripts": {
@@ -17,7 +17,7 @@
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
-    "@faker-js/faker": "^10.1.0",
+    "@faker-js/faker": "^10.2.0",
     "arri": "workspace:*"
   }
 }

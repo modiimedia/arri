@@ -3,17 +3,17 @@
   "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.34.41",
-    "arktype": "^2.1.28",
-    "prettier": "^3.7.4",
-    "typia": "^10.1.0",
+    "@sinclair/typebox": "^0.34.48",
+    "arktype": "^2.1.29",
+    "prettier": "^3.8.1",
+    "typia": "^11.0.3",
     "valibot": "1.2.0",
-    "zod": "^4.1.13"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@samchon/openapi": "^5.1.0",
+    "@samchon/openapi": "^6.0.1",
     "autocannon": "^8.0.0",
-    "citty": "^0.1.6"
+    "citty": "^0.2.0"
   },
   "version": "0.81.2"
 }

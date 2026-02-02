@@ -33,19 +33,19 @@
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "@joshmossas/listhen": "^1.11.1",
-    "c12": "^3.3.2",
+    "c12": "^3.3.3",
     "chokidar": "^4.0.3",
-    "citty": "^0.1.6",
+    "citty": "^0.2.0",
     "consola": "^3.4.2",
     "degit": "^2.8.4",
     "enquirer": "^2.4.1",
-    "esbuild": "^0.27.1",
+    "esbuild": "^0.27.2",
     "esbuild-plugin-replace": "^1.4.0",
-    "globby": "^16.0.0",
-    "h3": "^1.15.4",
+    "globby": "^16.1.0",
+    "h3": "^1.15.5",
     "ofetch": "^1.5.1",
     "pathe": "^2.0.3",
-    "prettier": "^3.7.4"
+    "prettier": "^3.8.1"
   },
   "devDependencies": {
     "@types/degit": "^2.8.6"
