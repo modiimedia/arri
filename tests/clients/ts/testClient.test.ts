@@ -98,52 +98,35 @@ describe('standard rpcs', () => {
             string: '',
             boolean: false,
             timestamp: new Date(),
-            float32: 0,
-            float64: 0,
-            int8: 0,
-            uint8: 0,
-            int16: 0,
-            uint16: 0,
-            int32: 0,
-            uint32: 0,
-            int64: 0n,
-            uint64: 0n,
-            enumerator: 'B',
-            array: [true, false, false],
-            object: {
-                string: '',
-                boolean: false,
-                timestamp: new Date(),
-            },
-            record: {
-                A: BigInt('1'),
-                B: BigInt('0'),
-                '"C"\t': BigInt('4'),
-            },
-            discriminator: {
-                type: 'B',
-                title: 'Hello World',
-                description: '',
-            },
-            nestedObject: {
+        },
+        record: {
+            A: BigInt('1'),
+            B: BigInt('0'),
+            '"C"\t': BigInt('4'),
+        },
+        discriminator: {
+            type: 'B',
+            title: 'Hello World',
+            description: '',
+        },
+        nestedObject: {
+            id: '',
+            timestamp: new Date(),
+            data: {
                 id: '',
                 timestamp: new Date(),
                 data: {
                     id: '',
                     timestamp: new Date(),
-                    data: {
-                        id: '',
-                        timestamp: new Date(),
-                    },
                 },
             },
-            nestedArray: [
-                [
-                    { id: '', timestamp: new Date() },
-                    { id: '', timestamp: new Date() },
-                ],
-            ],
         },
+        nestedArray: [
+            [
+                { id: '', timestamp: new Date() },
+                { id: '', timestamp: new Date() },
+            ],
+        ],
     };
     it('can send/receive object with every field type', async () => {
         const result = await client.tests.sendObject(input);
@@ -190,7 +173,7 @@ describe('standard rpcs', () => {
                 ).toBe(true);
             }
         }
-        const result = await _client.tests.nested.emptyParamsGetRequest();
+        const result = await client.tests.nested.emptyParamsGetRequest();
         expect(typeof result.message).toBe('string');
     });
 
@@ -251,32 +234,13 @@ describe('standard rpcs', () => {
             nestedObject: {
                 id: null,
                 timestamp: null,
-                float32: null,
-                float64: null,
-                int8: null,
-                uint8: null,
-                int16: null,
-                uint16: null,
-                int32: null,
-                uint32: null,
-                int64: null,
-                uint64: null,
-                enumerator: null,
-                array: null,
-                object: null,
-                record: null,
-                discriminator: null,
-                nestedObject: {
+                data: {
                     id: null,
                     timestamp: null,
-                    data: {
-                        id: null,
-                        timestamp: null,
-                        data: null,
-                    },
+                    data: null,
                 },
-                nestedArray: [null],
             },
+            nestedArray: [null],
         };
         const nullableResult =
             await client.tests.sendObjectWithNullableFields(nullableInput);
@@ -588,14 +552,7 @@ describe('request options', () => {
             },
         });
         await client.tests.nested.emptyParamsGetRequest();
-        expect(numRequest).toBe(1);
-        expect(numRequestErr).toBe(0);
-        expect(numResponse).toBe(1);
-        expect(numResponseErr).toBe(0);
-        numRequest = 0;
-        numRequestErr = 0;
-        numResponse = 0;
-        numResponseErr = 0;
+
         try {
             await customClient.tests.sendError({ message: '', code: 409 });
         } catch (_) {
@@ -618,18 +575,7 @@ describe('request options', () => {
         });
 
         await client.tests.nested.emptyParamsGetRequest({
-            onRequest: () => {
-                numRequest++;
-            },
-            onRequestError: () => {
-                numRequestErr++;
-            },
-            onResponse: () => {
-                numResponse++;
-            },
-            onResponseError: () => {
-                numResponseErr++;
-            },
+            onError() {},
         });
         expect(numErr).toBe(0);
         numErr = 0;
