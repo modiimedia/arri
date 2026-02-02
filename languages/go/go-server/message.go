@@ -271,6 +271,22 @@ func NewStreamDataMessage(reqId string, msgId Option[string], body []byte) Messa
 	}
 }
 
+func NewStreamEndMessage(reqId string, reason Option[string]) Message {
+	return Message{
+		Type:   StreamEndMessage,
+		ReqId:  reqId,
+		Reason: reason,
+	}
+}
+
+func NewStreamCancelMessage(reqId string, reason Option[string]) Message {
+	return Message{
+		Type:   StreamCancelMessage,
+		ReqId:  reqId,
+		Reason: reason,
+	}
+}
+
 func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 	msgType := None[MessageType]()
 	procedure := None[string]()

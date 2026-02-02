@@ -21,14 +21,15 @@ type HttpAdapter[T any] struct {
 }
 
 type HttpAdapterOptions[T any] struct {
-	Port             uint32
-	KeyFile          string
-	CertFile         string
-	AllowedOrigins   []string
-	AllowedMethods   []HttpMethod
-	AllowCredentials bool
-	AllowedHeaders   []string
-	OnRequest        func(req *Request[T], httpReq *http.Request) RpcError
+	Port                     uint32
+	KeyFile                  string
+	CertFile                 string
+	AllowedOrigins           []string
+	AllowedMethods           []HttpMethod
+	AllowCredentials         bool
+	AllowedHeaders           []string
+	TrustXForwardedForHeader bool
+	OnRequest                func(req *Request[T], httpReq *http.Request) RpcError
 }
 
 func NewHttpAdapter[T any](mux *http.ServeMux, options HttpAdapterOptions[T]) *HttpAdapter[T] {
@@ -57,7 +58,14 @@ func (a *HttpAdapter[T]) RegisterRpc(
 			return
 		}
 		headers := convertHttpHeaders(r.Header)
-		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
+		ipAddr := r.RemoteAddr
+		if a.options.TrustXForwardedForHeader {
+			xForwardedFor := r.Header.Get("X-Forwarded-For")
+			if len(xForwardedFor) > 0 {
+				ipAddr = xForwardedFor
+			}
+		}
+		req := NewRequest[T](r.Context(), name, a.TransportId(), ipAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
 			err := Error(404, "")
@@ -153,7 +161,14 @@ func (a *HttpAdapter[T]) RegisterOutputStreamRpc(
 			return
 		}
 		headers := convertHttpHeaders(r.Header)
-		req := NewRequest[T](r.Context(), name, a.TransportId(), r.RemoteAddr, headers["client-version"], headers)
+		ipAddr := r.RemoteAddr
+		if a.options.TrustXForwardedForHeader {
+			xForwardedFor := r.Header.Get("X-Forwarded-For")
+			if len(xForwardedFor) > 0 {
+				ipAddr = xForwardedFor
+			}
+		}
+		req := NewRequest[T](r.Context(), name, a.TransportId(), ipAddr, headers["client-version"], headers)
 		method := def.Method.UnwrapOr(HttpMethodPost)
 		if strings.ToLower(r.Method) != method {
 			err := Error(404, "")

@@ -7,32 +7,58 @@ import (
 	"time"
 
 	"github.com/lxzan/gws"
+	"github.com/oklog/ulid/v2"
 )
 
 type handleObj struct {
 	HandlerType         string // "STANDARD" | "OUTPUT_STREAM"
-	StandardHandler     func(Message) ([]byte, RpcError)
-	OutputStreamHandler func(Message) ([]byte, RpcError)
+	StandardHandler     func(*gws.Conn, Message) ([]byte, RpcError)
+	OutputStreamHandler func(*gws.Conn, Message) RpcError
 }
 
 type WsAdapter[T any] struct {
-	middlewares   [](func(req *Request[T]) RpcError)
-	globalOptions AppOptions[T]
-	httpRegister  HttpTransportAdapter[T]
-	options       WsAdapterOptions[T]
-	handlers      map[string]handleObj
+	middlewares     [](func(req *Request[T]) RpcError)
+	streams         map[string]map[string]*WsEventStream
+	globalOptions   AppOptions[T]
+	httpRegister    HttpTransportAdapter[T]
+	options         WsAdapterOptions[T]
+	handlers        map[string]handleObj
+	forwardedIpAddr map[string]string
 }
 
 type WsAdapterOptions[T any] struct {
-	OnUpgrade      func(r *http.Request, connection *gws.Conn) // TODO: type the ws connection
-	ConnectionPath string                                      // defaults to "/ws"
+	OnUpgrade                func(r *http.Request, connection *gws.Conn) // TODO: type the ws connection
+	ConnectionPath           string
+	TrustXForwardedForHeader bool // defaults to "/ws"
 }
 
-func (w WsAdapter[T]) OnOpen(socket *gws.Conn) {
+func (w *WsAdapter[T]) OnOpen(socket *gws.Conn) {
+	if w.streams == nil {
+		w.streams = map[string]map[string]*WsEventStream{}
+	}
+	connId := ulid.Make().String()
+	socket.Session().Store("internal-session-id", connId)
+	w.streams[connId] = map[string]*WsEventStream{}
 	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
+	fmt.Println("STREAMS", w.streams)
 }
 
-func (w WsAdapter[T]) OnClose(socket *gws.Conn, err error) {
+func (w *WsAdapter[T]) OnClose(socket *gws.Conn, err error) {
+	if w.streams == nil {
+		return
+	}
+	sessionId, exists := socket.Session().Load("internal-session-id")
+	sessionIdStr, ok := sessionId.(string)
+	if !exists || !ok {
+		return
+	}
+
+	streams := w.streams[sessionIdStr]
+	for _, val := range streams {
+		val.Close(false)
+	}
+	delete(w.streams, sessionIdStr)
+	fmt.Println("STREAMS", w.streams)
 }
 
 func (w WsAdapter[T]) OnPing(socket *gws.Conn, payload []byte) {
@@ -45,6 +71,7 @@ func (w WsAdapter[T]) OnPong(socket *gws.Conn, payload []byte) {
 
 func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 	defer message.Close()
+	sessionId := getWsSessionId(socket)
 	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
 	encodingOptions := EncodingOptions{KeyCasing: w.globalOptions.KeyCasing, MaxDepth: w.globalOptions.MaxDepth}
 	arriMsg, err := DecodeMessage(message.Bytes())
@@ -72,7 +99,7 @@ func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 			return
 		}
 		if handler.StandardHandler != nil {
-			response, err := handler.StandardHandler(arriMsg)
+			response, err := handler.StandardHandler(socket, arriMsg)
 			if err != nil {
 				errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
 				socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
@@ -83,9 +110,24 @@ func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 			return
 		}
 		if handler.OutputStreamHandler != nil {
-			// TODO
-			panic("Not yet implemented")
+			err := handler.OutputStreamHandler(socket, arriMsg)
+			if err != nil {
+				errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
+				socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
+				return
+			}
 		}
+	case StreamCancelMessage:
+		streams := w.streams[sessionId]
+		if streams == nil {
+			return
+		}
+		stream := streams[arriMsg.ReqId]
+		if stream == nil {
+			return
+		}
+		stream.Close(true)
+		delete(w.streams[sessionId], arriMsg.ReqId)
 	}
 	socket.WriteAsync(gws.OpcodeText, []byte("invalid message"), func(err error) {})
 	socket.WriteClose(1000, []byte("invalid message"))
@@ -96,6 +138,7 @@ func NewWsAdapter[T any](httpAdapter HttpTransportAdapter[T], options WsAdapterO
 		httpRegister: httpAdapter,
 		middlewares:  [](func(req *Request[T]) RpcError){},
 		options:      options,
+		streams:      map[string]map[string]*WsEventStream{},
 	}
 	setupWsConnectionHandler(adapter)
 	return adapter
@@ -138,7 +181,7 @@ func (w *WsAdapter[T]) RegisterRpc(name string, def RpcDef, paramValidator Valid
 	}
 	w.handlers[name] = handleObj{
 		HandlerType: "STANDARD",
-		StandardHandler: func(msg Message) ([]byte, RpcError) {
+		StandardHandler: func(conn *gws.Conn, msg Message) ([]byte, RpcError) {
 			if msg.Type != InvocationMessage {
 				return []byte{}, Error(400, fmt.Sprintf("Expected RPC invocation message. Got %s", msg.Type))
 			}
@@ -147,7 +190,11 @@ func (w *WsAdapter[T]) RegisterRpc(name string, def RpcDef, paramValidator Valid
 			if resErr != nil {
 				return []byte{}, resErr
 			}
-			req := NewRequest[T](ctx, name, w.TransportId(), "", "", map[string]string{})
+			ipAddr := conn.RemoteAddr().String()
+			if w.options.TrustXForwardedForHeader {
+				// TODO get the forwarded IP addr
+			}
+			req := NewRequest[T](ctx, name, w.TransportId(), ipAddr, msg.ClientVersion.UnwrapOr(""), map[string]string{})
 			res, resErr := handler(params, *req)
 			if resErr != nil {
 				return []byte{}, resErr
@@ -169,7 +216,46 @@ func (w *WsAdapter[T]) RegisterOutputStreamRpc(
 	responseValidator Validator,
 	handler func(any, UntypedStream, Request[T]) RpcError,
 ) {
-	// TODO
+	if w.handlers == nil {
+		w.handlers = map[string]handleObj{}
+	}
+	w.handlers[name] = handleObj{
+		HandlerType: "OUTPUT_STREAM",
+		OutputStreamHandler: func(conn *gws.Conn, msg Message) RpcError {
+			if msg.Type != InvocationMessage {
+				return Error(400, fmt.Sprintf("Expected RPC invocation message. Got %s", msg.Type))
+			}
+			params, resErr := paramValidator.DecodeJSON(msg.Body.UnwrapOr([]byte{}))
+			if resErr != nil {
+				return resErr
+			}
+			ipAddr := conn.RemoteAddr().String()
+			if w.options.TrustXForwardedForHeader {
+				// TODO
+			}
+			sessionId := getWsSessionId(conn)
+			if w.streams[sessionId] == nil {
+				w.streams[sessionId] = map[string]*WsEventStream{}
+			}
+			req := NewRequest[T](context.Background(), name, w.TransportId(), ipAddr, msg.ClientVersion.UnwrapOr(""), map[string]string{})
+			stream := NewWsEventStream[any](conn, msg.ReqId, msg.ContentType.UnwrapOr(ContentTypeJson), w.globalOptions.KeyCasing)
+			w.streams[sessionId][msg.ReqId] = stream
+			err := handler(params, stream, *req)
+			return err
+		},
+	}
+}
+
+func getWsSessionId(c *gws.Conn) string {
+	sessionId, exists := c.Session().Load("internal-session-id")
+	if !exists {
+		return ""
+	}
+	sessionIdStr, ok := sessionId.(string)
+	if !ok {
+		return ""
+	}
+	return sessionIdStr
 }
 
 func (w *WsAdapter[T]) SetGlobalOptions(options AppOptions[T]) {
@@ -206,5 +292,97 @@ func (w WsAdapter[T]) Close(ctx context.Context) error {
 		}
 	}
 	// shutdown all active ws connections
+	for _, val := range w.streams {
+		for _, stream := range val {
+			stream.Close(false)
+		}
+	}
 	return nil
+}
+
+type WsEventStream struct {
+	reqId             string
+	hasStarted        bool
+	contentType       ContentType
+	conn              *gws.Conn
+	doneChannel       chan struct{}
+	keyCasing         KeyCasing
+	heartbeatTicker   *time.Ticker
+	heartbeatInterval time.Duration
+	heartbeatEnabled  bool
+}
+
+func NewWsEventStream[T any](
+	conn *gws.Conn,
+	reqId string,
+	contentType ContentType,
+	keyCasing KeyCasing,
+) *WsEventStream {
+	controller := WsEventStream{
+		conn:              conn,
+		hasStarted:        false,
+		reqId:             reqId,
+		contentType:       contentType,
+		keyCasing:         keyCasing,
+		heartbeatInterval: time.Second * 20,
+		heartbeatEnabled:  true,
+		doneChannel:       make(chan struct{}),
+	}
+	return &controller
+}
+
+func (es *WsEventStream) Start() {
+	hbInterval := uint32(es.heartbeatInterval.Milliseconds())
+	msg := NewStreamStartMessage(es.reqId, es.contentType, Some(hbInterval), Headers{})
+	es.conn.WriteAsync(gws.OpcodeText, msg.EncodeBytes(), func(err error) {
+		fmt.Println("Error starting WS event stream:", err)
+	})
+	es.heartbeatTicker = time.NewTicker(es.heartbeatInterval)
+	es.hasStarted = true
+	go func() {
+		defer es.heartbeatTicker.Stop()
+		for {
+			select {
+			case <-es.heartbeatTicker.C:
+				msg := NewHeartbeatMessage(Some(hbInterval))
+				es.conn.WriteAsync(gws.OpcodeText, msg.EncodeBytes(), func(err error) {})
+			case <-es.Done():
+				fmt.Println("DONE in start()")
+				return
+			}
+		}
+	}()
+
+}
+
+func (es *WsEventStream) Send(message any) RpcError {
+	if !es.hasStarted {
+		es.Start()
+	}
+	body, err := EncodeJSON(message, EncodingOptions{KeyCasing: es.keyCasing})
+	if err != nil {
+		return Error(500, err.Error())
+	}
+	msg := NewStreamDataMessage(es.reqId, None[string](), body)
+	es.conn.WriteAsync(gws.OpcodeText, msg.EncodeBytes(), func(err error) {})
+	return nil
+}
+
+func (es *WsEventStream) Close(notifyClient bool) {
+	if notifyClient {
+		msg := NewStreamEndMessage(es.reqId, None[string]())
+		es.conn.WriteAsync(gws.OpcodeText, msg.EncodeBytes(), func(err error) {
+			fmt.Println("Error sending STREAM_END message to client:", err)
+
+		})
+	}
+	if es.heartbeatTicker != nil {
+		es.heartbeatTicker.Stop()
+		es.heartbeatTicker = nil
+	}
+	close(es.doneChannel)
+}
+
+func (es *WsEventStream) Done() <-chan struct{} {
+	return es.doneChannel
 }
