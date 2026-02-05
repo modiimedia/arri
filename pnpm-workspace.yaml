@@ -5,6 +5,9 @@ packages:
   - tests/**
 onlyBuiltDependencies:
   - '@parcel/watcher'
+  - bufferutil
+  - es5-ext
   - esbuild
   - nx
   - typia
+  - utf-8-validate

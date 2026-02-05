@@ -1,10 +1,20 @@
-use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, RwLock},
+};
+
+use arri_client::{
+    arri_core::headers::SharableHeaderMap,
+    chrono::DateTime,
+    dispatcher::EventStreamController,
+    dispatcher_http::{HttpDispatcher, HttpDispatcherOptions},
+    ArriClientConfig, ArriClientService,
+};
 use example_client::{Book, BookParams, ExampleClient};
-use std::collections::HashMap;
 
 mod example_client;
 
-fn get_headers() -> HashMap<&'static str, String> {
+fn get_headers() -> SharableHeaderMap {
     let mut headers = HashMap::new();
     headers.insert("Authorization", "Bearer 12345".to_string());
     headers
@@ -13,11 +23,20 @@ fn get_headers() -> HashMap<&'static str, String> {
 #[tokio::main]
 async fn main() {
     let client = ExampleClient::create(ArriClientConfig {
-        http_client: reqwest::Client::new(),
-        base_url: "http://localhost:2020".to_string(),
+        content_type: arri_client::arri_core::message::ContentType::Json,
+        dispatcher: HttpDispatcher::new(
+            None,
+            HttpDispatcherOptions {
+                base_url: "http://localhost:2020".to_string(),
+                timeout: None,
+                retry: None,
+                retry_delay: None,
+                retry_error_codes: None,
+            },
+        ),
         headers: get_headers(),
     });
-    let result = client
+    let _result = client
         .books
         .create_book(Book {
             id: "1".to_string(),
@@ -27,28 +46,41 @@ async fn main() {
         })
         .await;
 
+    let open_count = Arc::new(Mutex::new(0));
     tokio::spawn(async move {
-        client
+        let mut internal_open_count = 0;
+        let mut controller = EventStreamController::new();
+        let _ = client
             .books
             .watch_book(
                 BookParams {
                     book_id: "12345".to_string(),
                 },
                 &mut |event, controller| match event {
-                    arri_client::sse::SseEvent::Message(_) => {
+                    arri_client::arri_core::stream_event::StreamEvent::Data(data) => {
                         controller.abort();
-                        client.update_headers(HashMap::new());
                     }
-                    arri_client::sse::SseEvent::Error(_) => {}
-                    arri_client::sse::SseEvent::Open => {}
-                    arri_client::sse::SseEvent::Close => {}
+                    arri_client::arri_core::stream_event::StreamEvent::Error(arri_error) => {
+                        todo!()
+                    }
+                    arri_client::arri_core::stream_event::StreamEvent::Start => {
+                        internal_open_count += 1;
+                        let open_count_mut = open_count.lock();
+                        if open_count_mut.is_err() {
+                            return;
+                        }
+                        let mut open_count_mut = open_count_mut.unwrap();
+                        *open_count_mut += 1;
+                    }
+                    arri_client::arri_core::stream_event::StreamEvent::End => todo!(),
+                    arri_client::arri_core::stream_event::StreamEvent::Cancel => todo!(),
                 },
+                Some(&mut controller),
                 None,
                 None,
             )
             .await;
     });
-    println!("CREATE_BOOK_RESULT: {:?}", result);
 }
 
 #[cfg(test)]
@@ -59,8 +91,8 @@ mod parsing_and_serialization_tests {
     };
     use arri_client::{
         chrono::{DateTime, FixedOffset},
+        model::ArriClientModel,
         serde_json::{self, json},
-        ArriModel,
     };
     use std::{collections::BTreeMap, fs};
 

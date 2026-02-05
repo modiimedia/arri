@@ -1,0 +1,5 @@
+ARRIRPC/0.0.8 OK
+content-type: application/json
+req-id: 54321
+foo: foo
+

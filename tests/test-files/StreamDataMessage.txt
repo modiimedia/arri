@@ -1,0 +1,5 @@
+ARRIRPC/0.0.8 STREAM_DATA
+req-id: 1515
+msg-id: 1
+
+{"message":"hello world"}

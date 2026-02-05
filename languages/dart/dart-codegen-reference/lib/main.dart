@@ -8,6 +8,6 @@ main() {
   print(input1 == input2);
   final input3 = ObjectWithEveryType.empty();
   print(input3.hashCode);
-  final client = ExampleClient(baseUrl: "");
+  final client = ExampleClient(baseUrl: "", wsConnectionUrl: "");
   client.books.getBook(BookParams(bookId: ""));
 }

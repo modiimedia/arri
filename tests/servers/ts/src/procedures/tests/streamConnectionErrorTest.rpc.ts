@@ -1,19 +1,19 @@
-import { a } from "@arrirpc/schema";
-import { defineError, defineEventStreamRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineError, defineOutputStreamRpc } from '@arrirpc/server';
 
-export default defineEventStreamRpc({
+export default defineOutputStreamRpc({
     description:
-        "This route will always return an error. The client should automatically retry with exponential backoff.",
-    params: a.object("StreamConnectionErrorTestParams", {
+        'This route will always return an error. The client should automatically retry with exponential backoff.',
+    input: a.object('StreamConnectionErrorTestParams', {
         statusCode: a.int32(),
         statusMessage: a.string(),
     }),
-    response: a.object("StreamConnectionErrorTestResponse", {
+    output: a.object('StreamConnectionErrorTestResponse', {
         message: a.string(),
     }),
-    async handler({ params }) {
-        throw defineError(params.statusCode, {
-            message: params.statusMessage,
+    async handler({ input }) {
+        throw defineError(input.statusCode, {
+            message: input.statusMessage,
         });
     },
 });

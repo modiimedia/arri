@@ -1,49 +1,30 @@
 import { a } from '@arrirpc/schema';
-import {
-    ArriApp,
-    defineError,
-    defineMiddleware,
-    getHeader,
-    handleCors,
-} from '@arrirpc/server';
+import { ArriApp, defineError, HttpAdapter, WsAdapter } from '@arrirpc/server';
+import * as h3 from '@arrirpc/server/http';
 
-import { manualRouter, manualTestService } from './routes/other';
+import { registerHeartbeatTestRouteH3 } from './heartbeat-tests';
+import { manualTestService } from './routes/other';
 
 const app = new ArriApp({
-    rpcRoutePrefix: 'rpcs',
-    appInfo: {
-        version: '10',
-    },
-    onRequest(event) {
-        handleCors(event, {
-            origin: '*',
-        });
+    rpcRoutePrefix: '/rpcs',
+    version: '10',
+    defaultTransport: ['http', 'ws'],
+});
+const http = new HttpAdapter({
+    port: 2020,
+    debug: true,
+    cors: {
+        origin: '*',
     },
 });
-
-app.use(
-    defineMiddleware(async (event) => {
-        const authHeader = getHeader(event, 'x-test-header');
-        if (
-            !authHeader?.length &&
-            event.path !== '/' &&
-            event.path !== '/status' &&
-            event.path !== '/favicon.ico'
-        ) {
-            throw defineError(401, {
-                message: "Missing test auth header 'x-test-header'",
-            });
-        }
-    }),
-);
-
-app.route({
-    path: '/status',
-    method: 'get',
-    handler() {
-        return 'ok';
+const ws = new WsAdapter(http, {
+    connectionPath: '/establish-connection',
+    onRequest(peer, context) {
+        context.peer = peer;
     },
 });
+app.use(http);
+app.use(ws);
 
 app.registerDefinitions({
     ManuallyAddedModel: a.object({
@@ -51,7 +32,51 @@ app.registerDefinitions({
     }),
 });
 
-app.use(manualRouter);
 app.use(manualTestService);
+
+// auth middleware
+app.use(async (context) => {
+    const authHeader = context.headers['x-test-header'];
+    if (!authHeader?.length && context.rpcName.length) {
+        throw defineError(401, {
+            message: "Missing test auth header 'x-test-header'",
+        });
+    }
+});
+
+http.h3Router.get(
+    '/status',
+    h3.defineEventHandler((_) => 'ok'),
+);
+
+http.h3Router.use(
+    '/routes/hello-world',
+    h3.defineEventHandler((_) => {
+        return 'hello world';
+    }),
+    ['get', 'post'],
+);
+
+http.h3Router.get(
+    '/active-ws-connections',
+    h3.defineEventHandler((_) => {
+        const peerIds: string[] = [];
+        for (const val of ws.peers.values()) {
+            peerIds.push(val.id);
+        }
+        const streamIds: string[] = [];
+        for (const [key, val] of Object.entries(ws.outputStreams)) {
+            for (const [innerKey, _] of Object.entries(val)) {
+                streamIds.push(`${key}+${innerKey}`);
+            }
+        }
+        return {
+            peers: peerIds,
+            outputStreams: streamIds,
+        };
+    }),
+);
+
+registerHeartbeatTestRouteH3(http.h3Router);
 
 export default app;

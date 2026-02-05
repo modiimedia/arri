@@ -1,10 +1,8 @@
 import {
-    HttpRpcDefinition,
     isRpcDefinition,
     isServiceDefinition,
     RpcDefinition,
     ServiceDefinition,
-    WsRpcDefinition,
 } from '@arrirpc/codegen-utils';
 
 import {
@@ -32,7 +30,7 @@ export function swiftProcedureFromSchema(
 }
 
 export function swiftHttpProcedureFromSchema(
-    schema: HttpRpcDefinition,
+    schema: RpcDefinition,
     context: GeneratorContext,
 ): string {
     const rpcName = getRpcName(context.instancePath);
@@ -56,7 +54,7 @@ export function swiftHttpProcedureFromSchema(
         let task = Task {
             var eventSource = EventSource<${response ?? 'EmptyArriModel'}>(
                 url: "\\(self.baseURL)${schema.path}",
-                method: "${schema.method.toUpperCase()}",
+                method: "${schema.method?.toUpperCase() ?? 'POST'}",
                 headers: self.headers,
                 params: ${params ? 'params' : 'nil'},
                 delegate: self.delegate,
@@ -72,7 +70,7 @@ export function swiftHttpProcedureFromSchema(
         ${response ? `let result: ${response} = ` : 'let _: EmptyArriModel = '}try await parsedArriHttpRequest(
             delegate: self.delegate,
             url: "\\(self.baseURL)${schema.path}",
-            method: "${schema.method.toUpperCase()}",
+            method: "${schema.method?.toUpperCase() ?? 'POST'}",
             headers: self.headers,
             clientVersion: "${context.clientVersion}",
             ${params ? `params: params` : 'params: EmptyArriModel()'},
@@ -91,7 +89,7 @@ export function getRpcName(instancePath: string) {
 }
 
 export function swiftWsProcedureFromSchema(
-    schema: WsRpcDefinition,
+    schema: RpcDefinition,
     context: GeneratorContext,
 ): string {
     console.warn(

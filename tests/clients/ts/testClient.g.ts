@@ -6,10 +6,7 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
-    type ArriRequestOptions,
-    arriRequest,
-    arriSseRequest,
-    type EventSourceController,
+    UndefinedModelValidator,
     INT8_MAX,
     INT8_MIN,
     INT16_MAX,
@@ -20,578 +17,1216 @@ import {
     INT64_MIN,
     isObject,
     serializeString,
-    type SseOptions,
     UINT8_MAX,
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
     type Fetch,
-    type $Fetch,
-    createFetch,
+    type RpcDispatcher,
+    type RpcDispatcherOptions,
+    type RpcRequest,
+    type RpcRequestValidator,
+    HttpDispatcher,
+    WsDispatcher,
+    type StreamController,
+    type StreamHooks,
+    resolveDispatcherOptions,
+    resolveTransport,
+    generateRequestId,
 } from '@arrirpc/client';
 
-type HeaderMap = Record<string, string | undefined>;
+const __transportOptions__ = ['http', 'ws'] as const;
+type __TransportOption__ = (typeof __transportOptions__)[number];
+
+export interface TestClientOptions extends Omit<
+    RpcDispatcherOptions,
+    'signal'
+> {
+    transport?: __TransportOption__;
+    dispatchers?: Record<string, RpcDispatcher<__TransportOption__>>;
+    /**
+     * Override the default function to generate request ids.
+     * By default Arri uses ULIDs but you are free to use your own algorithm so long as each request has a unique id.
+     */
+    genReqId?: () => string;
+    // HTTP options
+    baseUrl: string;
+    fetch?: Fetch;
+    // WS options
+    wsConnectionUrl: string;
+    /**
+     * Max frame size in bytes
+     */
+    maxReceivedFrameSize?: number;
+    /**
+     * The max frame size in bytes before it is automatically fragmented
+     */
+    fragmentationThreshold?: number;
+}
+
+export interface RpcOptions<T extends string> extends RpcDispatcherOptions {
+    transport?: T;
+}
+
 export class TestClient {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly __dispatchers__: Record<
+        string,
+        RpcDispatcher<__TransportOption__>
+    >;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
     tests: TestClientTestsService;
     users: TestClientUsersService;
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    constructor(config: TestClientOptions) {
+        this.__options__ = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this.__dispatchers__ = config.dispatchers!;
         this.tests = new TestClientTestsService(config);
         this.users = new TestClientUsersService(config);
+    }
+
+    /**
+     * Close all active connections for a specific transport or for all transports.
+     */
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
+            dispatcher.terminateConnections();
+        }
     }
 }
 
 export class TestClientTestsService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly __dispatchers__: Record<
+        string,
+        RpcDispatcher<__TransportOption__>
+    >;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
     nested: TestClientTestsNestedService;
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    constructor(config: TestClientOptions) {
+        this.__options__ = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this.__dispatchers__ = config.dispatchers!;
         this.nested = new TestClientTestsNestedService(config);
     }
+
+    /**
+     * Close all active connections for a specific transport or for all transports.
+     */
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
+            dispatcher.terminateConnections();
+        }
+    }
+
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
      * @deprecated
      */
     async deprecatedRpc(
         params: DeprecatedRpcParams,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
-        return arriRequest<undefined, DeprecatedRpcParams>({
-            url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$DeprecatedRpcParams.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<DeprecatedRpcParams> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.deprecatedRpc',
+            path: '/rpcs/tests/deprecated-rpc',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<DeprecatedRpcParams, undefined> = {
+            params: $$DeprecatedRpcParams,
+            response: UndefinedModelValidator,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<DeprecatedRpcParams, undefined>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async sendDiscriminatorWithEmptyObject(
         params: DiscriminatorWithEmptyObject,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<DiscriminatorWithEmptyObject> {
-        return arriRequest<
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<DiscriminatorWithEmptyObject> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendDiscriminatorWithEmptyObject',
+            path: '/rpcs/tests/send-discriminator-with-empty-object',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<
             DiscriminatorWithEmptyObject,
             DiscriminatorWithEmptyObject
-        >({
-            url: `${this._baseUrl}/rpcs/tests/send-discriminator-with-empty-object`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$DiscriminatorWithEmptyObject.fromJson,
-            responseFromString: $$DiscriminatorWithEmptyObject.fromJsonString,
-            serializer: $$DiscriminatorWithEmptyObject.toJsonString,
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
+        > = {
+            params: $$DiscriminatorWithEmptyObject,
+            response: $$DiscriminatorWithEmptyObject,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<
+            DiscriminatorWithEmptyObject,
+            DiscriminatorWithEmptyObject
+        >(req, validator, finalOptions);
     }
     async sendError(
         params: SendErrorParams,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
-        return arriRequest<undefined, SendErrorParams>({
-            url: `${this._baseUrl}/rpcs/tests/send-error`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$SendErrorParams.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<SendErrorParams> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendError',
+            path: '/rpcs/tests/send-error',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<SendErrorParams, undefined> = {
+            params: $$SendErrorParams,
+            response: UndefinedModelValidator,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<SendErrorParams, undefined>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async sendObject(
         params: ObjectWithEveryType,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithEveryType> {
-        return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
-            url: `${this._baseUrl}/rpcs/tests/send-object`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$ObjectWithEveryType.fromJson,
-            responseFromString: $$ObjectWithEveryType.fromJsonString,
-            serializer: $$ObjectWithEveryType.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<ObjectWithEveryType> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendObject',
+            path: '/rpcs/tests/send-object',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<
+            ObjectWithEveryType,
+            ObjectWithEveryType
+        > = {
+            params: $$ObjectWithEveryType,
+            response: $$ObjectWithEveryType,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<ObjectWithEveryType, ObjectWithEveryType>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async sendObjectWithNullableFields(
         params: ObjectWithEveryNullableType,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithEveryNullableType> {
-        return arriRequest<
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<ObjectWithEveryNullableType> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendObjectWithNullableFields',
+            path: '/rpcs/tests/send-object-with-nullable-fields',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<
             ObjectWithEveryNullableType,
             ObjectWithEveryNullableType
-        >({
-            url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$ObjectWithEveryNullableType.fromJson,
-            responseFromString: $$ObjectWithEveryNullableType.fromJsonString,
-            serializer: $$ObjectWithEveryNullableType.toJsonString,
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
+        > = {
+            params: $$ObjectWithEveryNullableType,
+            response: $$ObjectWithEveryNullableType,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<
+            ObjectWithEveryNullableType,
+            ObjectWithEveryNullableType
+        >(req, validator, finalOptions);
     }
     async sendObjectWithPascalCaseKeys(
         params: ObjectWithPascalCaseKeys,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithPascalCaseKeys> {
-        return arriRequest<ObjectWithPascalCaseKeys, ObjectWithPascalCaseKeys>({
-            url: `${this._baseUrl}/rpcs/tests/send-object-with-pascal-case-keys`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$ObjectWithPascalCaseKeys.fromJson,
-            responseFromString: $$ObjectWithPascalCaseKeys.fromJsonString,
-            serializer: $$ObjectWithPascalCaseKeys.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<ObjectWithPascalCaseKeys> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendObjectWithPascalCaseKeys',
+            path: '/rpcs/tests/send-object-with-pascal-case-keys',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<
+            ObjectWithPascalCaseKeys,
+            ObjectWithPascalCaseKeys
+        > = {
+            params: $$ObjectWithPascalCaseKeys,
+            response: $$ObjectWithPascalCaseKeys,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<
+            ObjectWithPascalCaseKeys,
+            ObjectWithPascalCaseKeys
+        >(req, validator, finalOptions);
     }
     async sendObjectWithSnakeCaseKeys(
         params: ObjectWithSnakeCaseKeys,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithSnakeCaseKeys> {
-        return arriRequest<ObjectWithSnakeCaseKeys, ObjectWithSnakeCaseKeys>({
-            url: `${this._baseUrl}/rpcs/tests/send-object-with-snake-case-keys`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$ObjectWithSnakeCaseKeys.fromJson,
-            responseFromString: $$ObjectWithSnakeCaseKeys.fromJsonString,
-            serializer: $$ObjectWithSnakeCaseKeys.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<ObjectWithSnakeCaseKeys> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendObjectWithSnakeCaseKeys',
+            path: '/rpcs/tests/send-object-with-snake-case-keys',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<
+            ObjectWithSnakeCaseKeys,
+            ObjectWithSnakeCaseKeys
+        > = {
+            params: $$ObjectWithSnakeCaseKeys,
+            response: $$ObjectWithSnakeCaseKeys,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<
+            ObjectWithSnakeCaseKeys,
+            ObjectWithSnakeCaseKeys
+        >(req, validator, finalOptions);
     }
     async sendPartialObject(
         params: ObjectWithEveryOptionalType,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<ObjectWithEveryOptionalType> {
-        return arriRequest<
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<ObjectWithEveryOptionalType> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendPartialObject',
+            path: '/rpcs/tests/send-partial-object',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<
             ObjectWithEveryOptionalType,
             ObjectWithEveryOptionalType
-        >({
-            url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$ObjectWithEveryOptionalType.fromJson,
-            responseFromString: $$ObjectWithEveryOptionalType.fromJsonString,
-            serializer: $$ObjectWithEveryOptionalType.toJsonString,
-            clientVersion: '10',
-            options: options ?? this._options,
-        });
+        > = {
+            params: $$ObjectWithEveryOptionalType,
+            response: $$ObjectWithEveryOptionalType,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<
+            ObjectWithEveryOptionalType,
+            ObjectWithEveryOptionalType
+        >(req, validator, finalOptions);
     }
     async sendRecursiveObject(
         params: RecursiveObject,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<RecursiveObject> {
-        return arriRequest<RecursiveObject, RecursiveObject>({
-            url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$RecursiveObject.fromJson,
-            responseFromString: $$RecursiveObject.fromJsonString,
-            serializer: $$RecursiveObject.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<RecursiveObject> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendRecursiveObject',
+            path: '/rpcs/tests/send-recursive-object',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<RecursiveObject, RecursiveObject> =
+            {
+                params: $$RecursiveObject,
+                response: $$RecursiveObject,
+            };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<RecursiveObject, RecursiveObject>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async sendRecursiveUnion(
         params: RecursiveUnion,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<RecursiveUnion> {
-        return arriRequest<RecursiveUnion, RecursiveUnion>({
-            url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: $$RecursiveUnion.fromJson,
-            responseFromString: $$RecursiveUnion.fromJsonString,
-            serializer: $$RecursiveUnion.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<RecursiveUnion> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.sendRecursiveUnion',
+            path: '/rpcs/tests/send-recursive-union',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<RecursiveUnion, RecursiveUnion> = {
+            params: $$RecursiveUnion,
+            response: $$RecursiveUnion,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<RecursiveUnion, RecursiveUnion>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     streamAutoReconnect(
         params: AutoReconnectParams,
-        options: SseOptions<AutoReconnectResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$AutoReconnectResponse.fromJson,
-                responseFromString: $$AutoReconnectResponse.fromJsonString,
-                serializer: $$AutoReconnectParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<AutoReconnectResponse>,
+    ): StreamController {
+        const req: RpcRequest<AutoReconnectParams> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.streamAutoReconnect',
+            path: '/rpcs/tests/stream-auto-reconnect',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<
+            AutoReconnectParams,
+            AutoReconnectResponse
+        > = {
+            params: $$AutoReconnectParams,
+            response: $$AutoReconnectResponse,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
         );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<
+            AutoReconnectParams,
+            AutoReconnectResponse
+        >(req, validator, options ?? {});
     }
     /**
      * This route will always return an error. The client should automatically retry with exponential backoff.
      */
     streamConnectionErrorTest(
         params: StreamConnectionErrorTestParams,
-        options: SseOptions<StreamConnectionErrorTestResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            StreamConnectionErrorTestResponse,
-            StreamConnectionErrorTestParams
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$StreamConnectionErrorTestResponse.fromJson,
-                responseFromString:
-                    $$StreamConnectionErrorTestResponse.fromJsonString,
-                serializer: $$StreamConnectionErrorTestParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<StreamConnectionErrorTestResponse>,
+    ): StreamController {
+        const req: RpcRequest<StreamConnectionErrorTestParams> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.streamConnectionErrorTest',
+            path: '/rpcs/tests/stream-connection-error-test',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<
+            StreamConnectionErrorTestParams,
+            StreamConnectionErrorTestResponse
+        > = {
+            params: $$StreamConnectionErrorTestParams,
+            response: $$StreamConnectionErrorTestResponse,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
         );
-    }
-    /**
-     * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
-     * When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
-     * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-     */
-    streamHeartbeatDetectionTest(
-        params: StreamHeartbeatDetectionTestParams,
-        options: SseOptions<StreamHeartbeatDetectionTestResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            StreamHeartbeatDetectionTestResponse,
-            StreamHeartbeatDetectionTestParams
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-heartbeat-detection-test`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson:
-                    $$StreamHeartbeatDetectionTestResponse.fromJson,
-                responseFromString:
-                    $$StreamHeartbeatDetectionTestResponse.fromJsonString,
-                serializer: $$StreamHeartbeatDetectionTestParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
-        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<
+            StreamConnectionErrorTestParams,
+            StreamConnectionErrorTestResponse
+        >(req, validator, options ?? {});
     }
     /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
     streamLargeObjects(
-        options: SseOptions<StreamLargeObjectsResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<StreamLargeObjectsResponse, undefined>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson: $$StreamLargeObjectsResponse.fromJson,
-                responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
-                serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<StreamLargeObjectsResponse>,
+    ): StreamController {
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.streamLargeObjects',
+            path: '/rpcs/tests/stream-large-objects',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<
+            undefined,
+            StreamLargeObjectsResponse
+        > = {
+            params: UndefinedModelValidator,
+            response: $$StreamLargeObjectsResponse,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
         );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<
+            undefined,
+            StreamLargeObjectsResponse
+        >(req, validator, options ?? {});
     }
     streamMessages(
         params: ChatMessageParams,
-        options: SseOptions<ChatMessage> = {},
-    ): EventSourceController {
-        return arriSseRequest<ChatMessage, ChatMessageParams>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$ChatMessage.fromJson,
-                responseFromString: $$ChatMessage.fromJsonString,
-                serializer: $$ChatMessageParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<ChatMessage>,
+    ): StreamController {
+        const req: RpcRequest<ChatMessageParams> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.streamMessages',
+            path: '/rpcs/tests/stream-messages',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<ChatMessageParams, ChatMessage> = {
+            params: $$ChatMessageParams,
+            response: $$ChatMessage,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<ChatMessageParams, ChatMessage>(
+            req,
+            validator,
+            options ?? {},
         );
     }
     streamRetryWithNewCredentials(
-        options: SseOptions<TestsStreamRetryWithNewCredentialsResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<
-            TestsStreamRetryWithNewCredentialsResponse,
-            undefined
-        >(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson:
-                    $$TestsStreamRetryWithNewCredentialsResponse.fromJson,
-                responseFromString:
-                    $$TestsStreamRetryWithNewCredentialsResponse.fromJsonString,
-                serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<TestsStreamRetryWithNewCredentialsResponse>,
+    ): StreamController {
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.streamRetryWithNewCredentials',
+            path: '/rpcs/tests/stream-retry-with-new-credentials',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<
+            undefined,
+            TestsStreamRetryWithNewCredentialsResponse
+        > = {
+            params: UndefinedModelValidator,
+            response: $$TestsStreamRetryWithNewCredentialsResponse,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
         );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<
+            undefined,
+            TestsStreamRetryWithNewCredentialsResponse
+        >(req, validator, options ?? {});
     }
     /**
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
      */
     streamTenEventsThenEnd(
-        options: SseOptions<ChatMessage> = {},
-    ): EventSourceController {
-        return arriSseRequest<ChatMessage, undefined>(
-            {
-                url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-
-                responseFromJson: $$ChatMessage.fromJson,
-                responseFromString: $$ChatMessage.fromJsonString,
-                serializer: () => {},
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<ChatMessage>,
+    ): StreamController {
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.streamTenEventsThenEnd',
+            path: '/rpcs/tests/stream-ten-events-then-end',
+            method: undefined,
+            clientVersion: '10',
+            data: undefined,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<undefined, ChatMessage> = {
+            params: UndefinedModelValidator,
+            response: $$ChatMessage,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<undefined, ChatMessage>(
+            req,
+            validator,
+            options ?? {},
         );
     }
 }
 
 export class TestClientTestsNestedService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly __dispatchers__: Record<
+        string,
+        RpcDispatcher<__TransportOption__>
+    >;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
 
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    constructor(config: TestClientOptions) {
+        this.__options__ = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this.__dispatchers__ = config.dispatchers!;
     }
-    async emptyParamsGetRequest(
-        options?: ArriRequestOptions,
-    ): Promise<DefaultPayload> {
-        return arriRequest<DefaultPayload, undefined>({
-            url: `${this._baseUrl}/rpcs/tests/nested/empty-params-get-request`,
-            method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
 
-            responseFromJson: $$DefaultPayload.fromJson,
-            responseFromString: $$DefaultPayload.fromJsonString,
-            serializer: () => {},
+    /**
+     * Close all active connections for a specific transport or for all transports.
+     */
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
+            dispatcher.terminateConnections();
+        }
+    }
+
+    async emptyParamsGetRequest(
+        options?: RpcOptions<'http' | 'ws'>,
+    ): Promise<DefaultPayload> {
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyParamsGetRequest',
+            path: '/rpcs/tests/nested/empty-params-get-request',
+            method: 'get',
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: undefined,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<undefined, DefaultPayload> = {
+            params: UndefinedModelValidator,
+            response: $$DefaultPayload,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<undefined, DefaultPayload>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async emptyParamsPostRequest(
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<DefaultPayload> {
-        return arriRequest<DefaultPayload, undefined>({
-            url: `${this._baseUrl}/rpcs/tests/nested/empty-params-post-request`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-
-            responseFromJson: $$DefaultPayload.fromJson,
-            responseFromString: $$DefaultPayload.fromJsonString,
-            serializer: () => {},
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<undefined> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyParamsPostRequest',
+            path: '/rpcs/tests/nested/empty-params-post-request',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: undefined,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<undefined, DefaultPayload> = {
+            params: UndefinedModelValidator,
+            response: $$DefaultPayload,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<undefined, DefaultPayload>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async emptyResponseGetRequest(
         params: DefaultPayload,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
-        return arriRequest<undefined, DefaultPayload>({
-            url: `${this._baseUrl}/rpcs/tests/nested/empty-response-get-request`,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<DefaultPayload> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyResponseGetRequest',
+            path: '/rpcs/tests/nested/empty-response-get-request',
             method: 'get',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$DefaultPayload.toUrlQueryString,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<DefaultPayload, undefined> = {
+            params: $$DefaultPayload,
+            response: UndefinedModelValidator,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<DefaultPayload, undefined>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
     async emptyResponsePostRequest(
         params: DefaultPayload,
-        options?: ArriRequestOptions,
+        options?: RpcOptions<'http' | 'ws'>,
     ): Promise<undefined> {
-        return arriRequest<undefined, DefaultPayload>({
-            url: `${this._baseUrl}/rpcs/tests/nested/empty-response-post-request`,
-            method: 'post',
-            ofetch: this._fetch,
-            headers: this._headers,
-            onError: this._onError,
-            params: params,
-            responseFromJson: () => {},
-            responseFromString: () => {},
-            serializer: $$DefaultPayload.toJsonString,
+        const finalOptions = resolveDispatcherOptions(
+            options,
+            this.__options__,
+        );
+        const req: RpcRequest<DefaultPayload> = {
+            reqId: this.__genReqId__(),
+            procedure: 'tests.nested.emptyResponsePostRequest',
+            path: '/rpcs/tests/nested/empty-response-post-request',
+            method: undefined,
             clientVersion: '10',
-            options: options ?? this._options,
-        });
+            data: params,
+            customHeaders: finalOptions.headers,
+        };
+        const validator: RpcRequestValidator<DefaultPayload, undefined> = {
+            params: $$DefaultPayload,
+            response: UndefinedModelValidator,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
+        );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleRpc<DefaultPayload, undefined>(
+            req,
+            validator,
+            finalOptions,
+        );
     }
 }
 
 export class TestClientUsersService {
-    private readonly _baseUrl: string;
-    private readonly _fetch?: $Fetch;
-    private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
-    private readonly _onError?: (err: unknown) => void;
-    private readonly _options?: ArriRequestOptions;
+    private readonly __dispatchers__: Record<
+        string,
+        RpcDispatcher<__TransportOption__>
+    >;
+    private readonly __options__: RpcDispatcherOptions;
+    private readonly __defaultTransport__: __TransportOption__;
+    private readonly __genReqId__: () => string;
 
-    constructor(
-        config: {
-            baseUrl?: string;
-            fetch?: Fetch;
-            headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
-            onError?: (err: unknown) => void;
-            options?: ArriRequestOptions;
-        } = {},
-    ) {
-        this._baseUrl = config.baseUrl ?? '';
-        if (config.fetch) {
-            this._fetch = createFetch({ fetch: config.fetch });
+    constructor(config: TestClientOptions) {
+        this.__options__ = {
+            headers: config.headers,
+            onError: config.onError,
+            retry: config.retry,
+            retryDelay: config.retryDelay,
+            retryErrorCodes: config.retryErrorCodes,
+            timeout: config.timeout,
+        };
+        this.__genReqId__ = config.genReqId ?? (() => generateRequestId());
+        this.__defaultTransport__ = config.transport ?? 'http';
+        if (!config.dispatchers) config.dispatchers = {};
+        if (!config.dispatchers['http']) {
+            config.dispatchers['http'] = new HttpDispatcher(config);
         }
-        this._headers = config.headers ?? {};
-        this._onError = config.onError;
-        this._options = config.options;
+        if (!config.dispatchers['ws']) {
+            config.dispatchers['ws'] = new WsDispatcher(config);
+        }
+        this.__dispatchers__ = config.dispatchers!;
     }
+
+    /**
+     * Close all active connections for a specific transport or for all transports.
+     */
+    terminateConnections(transport?: __TransportOption__) {
+        for (const [key, dispatcher] of Object.entries(this.__dispatchers__)) {
+            if (transport && transport !== key) continue;
+            dispatcher.terminateConnections();
+        }
+    }
+
     watchUser(
         params: UsersWatchUserParams,
-        options: SseOptions<UsersWatchUserResponse> = {},
-    ): EventSourceController {
-        return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
-            {
-                url: `${this._baseUrl}/rpcs/users/watch-user`,
-                method: 'post',
-                ofetch: this._fetch,
-                headers: this._headers,
-                onError: this._onError,
-                params: params,
-                responseFromJson: $$UsersWatchUserResponse.fromJson,
-                responseFromString: $$UsersWatchUserResponse.fromJsonString,
-                serializer: $$UsersWatchUserParams.toJsonString,
-                clientVersion: '10',
-            },
-            options,
+        options?: StreamHooks<UsersWatchUserResponse>,
+    ): StreamController {
+        const req: RpcRequest<UsersWatchUserParams> = {
+            reqId: this.__genReqId__(),
+            procedure: 'users.watchUser',
+            path: '/rpcs/users/watch-user',
+            method: undefined,
+            clientVersion: '10',
+            data: params,
+            customHeaders: this.__options__.headers,
+        };
+        const validator: RpcRequestValidator<
+            UsersWatchUserParams,
+            UsersWatchUserResponse
+        > = {
+            params: $$UsersWatchUserParams,
+            response: $$UsersWatchUserResponse,
+        };
+        const transport = resolveTransport<__TransportOption__>(
+            ['http', 'ws'],
+            options?.transport,
+            this.__defaultTransport__,
         );
+        if (!transport) {
+            const err = new Error(
+                `Unable to resolve transport. Make sure at least one transport dispatcher is registered on the client and at least one transport adapter is registered on the server.`,
+            );
+            finalOptions.onError?.(req, err);
+            throw err;
+        }
+        const dispatcher = this.__dispatchers__[transport];
+        if (!dispatcher) {
+            const err = new Error(
+                `Missing dispatcher for transport "${transport}"`,
+            );
+            this.__options__.onError?.(req, err);
+            throw err;
+        }
+        return dispatcher.handleOutputStreamRpc<
+            UsersWatchUserParams,
+            UsersWatchUserResponse
+        >(req, validator, options ?? {});
     }
 }
 
@@ -5466,94 +6101,6 @@ export const $$StreamConnectionErrorTestResponse: ArriModelValidator<StreamConne
         },
         fromJsonString(input): StreamConnectionErrorTestResponse {
             return $$StreamConnectionErrorTestResponse.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"message":';
-            json += serializeString(input.message);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`message=${input.message}`);
-            return queryParts.join('&');
-        },
-    };
-
-export interface StreamHeartbeatDetectionTestParams {
-    heartbeatEnabled: boolean;
-}
-export const $$StreamHeartbeatDetectionTestParams: ArriModelValidator<StreamHeartbeatDetectionTestParams> =
-    {
-        new(): StreamHeartbeatDetectionTestParams {
-            return {
-                heartbeatEnabled: false,
-            };
-        },
-        validate(input): input is StreamHeartbeatDetectionTestParams {
-            return (
-                isObject(input) && typeof input.heartbeatEnabled === 'boolean'
-            );
-        },
-        fromJson(input): StreamHeartbeatDetectionTestParams {
-            let _heartbeatEnabled: boolean;
-            if (typeof input.heartbeatEnabled === 'boolean') {
-                _heartbeatEnabled = input.heartbeatEnabled;
-            } else {
-                _heartbeatEnabled = false;
-            }
-            return {
-                heartbeatEnabled: _heartbeatEnabled,
-            };
-        },
-        fromJsonString(input): StreamHeartbeatDetectionTestParams {
-            return $$StreamHeartbeatDetectionTestParams.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"heartbeatEnabled":';
-            json += `${input.heartbeatEnabled}`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`heartbeatEnabled=${input.heartbeatEnabled}`);
-            return queryParts.join('&');
-        },
-    };
-
-export interface StreamHeartbeatDetectionTestResponse {
-    message: string;
-}
-export const $$StreamHeartbeatDetectionTestResponse: ArriModelValidator<StreamHeartbeatDetectionTestResponse> =
-    {
-        new(): StreamHeartbeatDetectionTestResponse {
-            return {
-                message: '',
-            };
-        },
-        validate(input): input is StreamHeartbeatDetectionTestResponse {
-            return isObject(input) && typeof input.message === 'string';
-        },
-        fromJson(input): StreamHeartbeatDetectionTestResponse {
-            let _message: string;
-            if (typeof input.message === 'string') {
-                _message = input.message;
-            } else {
-                _message = '';
-            }
-            return {
-                message: _message,
-            };
-        },
-        fromJsonString(input): StreamHeartbeatDetectionTestResponse {
-            return $$StreamHeartbeatDetectionTestResponse.fromJson(
                 JSON.parse(input),
             );
         },

@@ -35,9 +35,6 @@ export function errorMessageFromErrors(errors: ValueError[]) {
     if (errors.length === 0) {
         return `Input failed validation`;
     }
-    if (errors.length === 1) {
-        return errors[0]!.message;
-    }
     let propStr = '[';
     for (let i = 0; i < errors.length; i++) {
         const err = errors[i]!;

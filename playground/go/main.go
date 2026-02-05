@@ -7,15 +7,16 @@ import (
 	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
+type ReqData struct {
+	UserId arri.Option[string]
+}
+
 func main() {
-	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultEvent]{
-		OnRequest: func(event *arri.DefaultEvent) arri.RpcError {
-			event.Writer().Header().Add("Access-Control-Allow-Origin", "*")
-			return nil
-		},
-	}, arri.CreateDefaultEvent)
-	arri.Rpc(&app, SayHello, arri.RpcOptions{})
-	app.Run(arri.RunOptions{})
+	app := arri.NewApp(arri.AppOptions[ReqData]{})
+	httpAdapter := arri.NewHttpAdapter(http.DefaultServeMux, arri.HttpAdapterOptions[ReqData]{AllowedOrigins: []string{"*"}})
+	arri.RegisterTransport(&app, httpAdapter)
+	arri.Rpc(&app, SayHello, arri.RpcOptions{Method: "GET"})
+	app.Start()
 }
 
 type SayHelloParams struct {
@@ -26,6 +27,6 @@ type SayHelloResponse struct {
 	Message string
 }
 
-func SayHello(params SayHelloParams, event arri.DefaultEvent) (SayHelloResponse, arri.RpcError) {
+func SayHello(params SayHelloParams, _ arri.Request[ReqData]) (SayHelloResponse, arri.RpcError) {
 	return SayHelloResponse{Message: fmt.Sprintf("Hello %s", params.Name)}, nil
 }

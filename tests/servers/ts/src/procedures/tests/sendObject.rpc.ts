@@ -1,7 +1,7 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
-export const ObjectWithEveryType = a.object("ObjectWithEveryType", {
+export const ObjectWithEveryType = a.object('ObjectWithEveryType', {
     any: a.any(),
     boolean: a.boolean(),
     string: a.string(),
@@ -16,7 +16,7 @@ export const ObjectWithEveryType = a.object("ObjectWithEveryType", {
     uint32: a.uint32(),
     int64: a.int64(),
     uint64: a.uint64(),
-    enumerator: a.enumerator(["A", "B", "C"]),
+    enumerator: a.enumerator(['A', 'B', 'C']),
     array: a.array(a.boolean()),
     object: a.object({
         string: a.string(),
@@ -24,7 +24,7 @@ export const ObjectWithEveryType = a.object("ObjectWithEveryType", {
         timestamp: a.timestamp(),
     }),
     record: a.record(a.uint64()),
-    discriminator: a.discriminator("type", {
+    discriminator: a.discriminator('type', {
         A: a.object({
             title: a.string(),
         }),
@@ -56,9 +56,9 @@ export const ObjectWithEveryType = a.object("ObjectWithEveryType", {
 });
 
 export default defineRpc({
-    params: ObjectWithEveryType,
-    response: ObjectWithEveryType,
-    handler({ params }) {
-        return params;
+    input: ObjectWithEveryType,
+    output: ObjectWithEveryType,
+    handler({ input }) {
+        return input;
     },
 });

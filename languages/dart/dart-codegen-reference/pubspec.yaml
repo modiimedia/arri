@@ -1,4 +1,5 @@
 name: arri_codegen_dart_reference
+resolution: workspace
 description:
 publish_to: none
 repository: https://github.com/modiimedia/arri/tree/master/packages/arri-client-dart-reference

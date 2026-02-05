@@ -1,0 +1,53 @@
+{
+  "name": "express-adapter",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/express-adapter/src",
+  "projectType": "library",
+  "targets": {
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jiti buildBenchmarks.ts && node benchmark/dist/main.cjs",
+        "cwd": "languages/ts/express-adapter"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "languages/ts/express-adapter"
+      }
+    },
+    "publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "languages/ts/express-adapter"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint languages/ts/express-adapter"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/src"],
+      "options": {
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/ts/express-adapter"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "languages/ts/express-adapter"
+      }
+    }
+  },
+  "tags": []
+}

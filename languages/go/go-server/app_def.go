@@ -13,6 +13,7 @@ import (
 type AppDef struct {
 	SchemaVersion string              `key:"schemaVersion" json:"schemaVersion" `
 	Info          Option[AppDefInfo]  `key:"info" json:"info,omitempty" `
+	Transports    []string            `key:"transports" json:"transports"`
 	Procedures    OrderedMap[RpcDef]  `key:"procedures" json:"procedures" `
 	Definitions   OrderedMap[TypeDef] `key:"definitions" json:"definitions"`
 }
@@ -21,11 +22,6 @@ type AppDefInfo struct {
 	Name        Option[string] `key:"name" json:"name,omitempty"`
 	Description Option[string] `key:"description" json:"description,omitempty"`
 	Version     Option[string] `key:"version" json:"version,omitempty"`
-}
-
-type RpcDef struct {
-	DiscriminatorKey `discriminatorKey:"transport"`
-	Http             *HttpRpcDef `discriminator:"http"`
 }
 
 const (
@@ -38,53 +34,57 @@ const (
 
 type HttpMethod = string
 
-type HttpRpcDef struct {
-	Path          string         `key:"path"`
-	Method        HttpMethod     `key:"method"`
-	IsEventStream Option[bool]   `key:"isEventStream"`
-	Params        Option[string] `key:"params"`
-	Response      Option[string] `key:"response"`
-	Description   Option[string] `key:"description"`
-	IsDeprecated  Option[bool]   `key:"isDeprecated"`
+type RpcDef struct {
+	Transports     []string           `key:"transports"`
+	Path           string             `key:"path"`
+	Method         Option[HttpMethod] `key:"method"`
+	Input          Option[string]     `key:"input"`
+	InputIsStream  Option[bool]       `key:"inputIsStream"`
+	Output         Option[string]     `key:"output"`
+	OutputIsStream Option[bool]       `key:"outputIsStream"`
+	Description    Option[string]     `key:"description"`
+	IsDeprecated   Option[bool]       `key:"isDeprecated"`
 }
 
-type ArriHttpRpcOptions struct {
-	Path          string
-	Method        HttpMethod
-	Description   string
-	IsDeprecated  bool
-	IsEventStream bool
+type RpcDefOptions struct {
+	Path           string
+	Method         HttpMethod
+	Description    string
+	IsDeprecated   bool
+	InputIsStream  bool
+	OutputIsStream bool
+	Transports     []string
 }
 
-func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
+func ToRpcDef(value interface{}, options RpcDefOptions, defaultTransports []string) (*RpcDef, error) {
 	fnName := rpcNameFromFunctionName(GetFunctionName(value))
 	valueType := reflect.TypeOf(value)
 	valueKind := valueType.Kind()
 	if valueKind != reflect.Func {
 		return nil, errors.ErrUnsupported
 	}
-	rawParams := valueType.In(0)
-	params := Some(rawParams.Name())
-	hasParam := !utils.IsEmptyMessage(rawParams)
-	if !hasParam {
-		params = None[string]()
+	rawInput := valueType.In(0)
+	input := Some(rawInput.Name())
+	hasInput := !utils.IsEmptyMessage(rawInput)
+	if !hasInput {
+		input = None[string]()
 	}
-	rawResponse := valueType.Out(0)
-	if rawResponse.Kind() == reflect.Pointer {
-		rawResponse = rawResponse.Elem()
+	rawOutput := valueType.Out(0)
+	if rawOutput.Kind() == reflect.Pointer {
+		rawOutput = rawOutput.Elem()
 	}
-	response := Some(rawResponse.Name())
-	hasResponse := !utils.IsEmptyMessage(rawResponse)
-	if !hasResponse {
-		response = None[string]()
+	output := Some(rawOutput.Name())
+	hasOutput := !utils.IsEmptyMessage(rawOutput)
+	if !hasOutput {
+		output = None[string]()
 	}
 	path := "/" + strcase.ToKebab(fnName)
 	if len(options.Path) > 0 {
 		path = options.Path
 	}
-	method := HttpMethodPost
+	method := None[HttpMethod]()
 	if len(options.Method) > 0 {
-		method = strings.ToLower(options.Method)
+		method = Some(strings.ToLower(options.Method))
 	}
 	var description = None[string]()
 	if len(options.Description) > 0 {
@@ -94,20 +94,33 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	if options.IsDeprecated {
 		isDeprecated = Some(options.IsDeprecated)
 	}
-	var isEventStream = None[bool]()
-	if options.IsEventStream {
-		isEventStream = Some(options.IsEventStream)
+	var inputIsStream = None[bool]()
+	if options.InputIsStream {
+		inputIsStream = Some(options.InputIsStream)
+	}
+	var outputIsStream = None[bool]()
+	if options.OutputIsStream {
+		outputIsStream = Some(options.OutputIsStream)
+	}
+
+	var transports []string
+	if options.Transports != nil {
+		transports = options.Transports
+	} else if defaultTransports != nil {
+		transports = defaultTransports
+	} else {
+		transports = []string{"http"}
 	}
 	return &RpcDef{
-			Http: &HttpRpcDef{
-				Path:          path,
-				Method:        method,
-				Params:        params,
-				Response:      response,
-				Description:   description,
-				IsEventStream: isEventStream,
-				IsDeprecated:  isDeprecated,
-			},
+			Path:           path,
+			Method:         method,
+			Input:          input,
+			InputIsStream:  inputIsStream,
+			Output:         output,
+			OutputIsStream: outputIsStream,
+			Description:    description,
+			IsDeprecated:   isDeprecated,
+			Transports:     transports,
 		},
 		nil
 }

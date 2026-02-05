@@ -33,7 +33,7 @@ export function rustStringFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            return `${target}.push_str(serialize_string(${input}).as_str())`;
+            return `${target}.push_str(utils::serialize_string(${input}).as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
             const innerKey = validRustIdentifier(`${key}_val`);
@@ -121,9 +121,9 @@ export function rustTimestampFromSchema(
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
-        ? 'Option<DateTime<FixedOffset>>'
-        : 'DateTime<FixedOffset>';
-    const defaultValue = isOptionType ? 'None' : 'DateTime::default()';
+        ? 'Option<chrono::DateTime<chrono::FixedOffset>>'
+        : 'chrono::DateTime<chrono::FixedOffset>';
+    const defaultValue = isOptionType ? 'None' : 'chrono::DateTime::default()';
     return {
         typeId: typeName,
         finalTypeName: typeName,
@@ -134,7 +134,7 @@ export function rustTimestampFromSchema(
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::String(${innerKey})) => {
-                        match DateTime::<FixedOffset>::parse_from_rfc3339(${innerKey}) {
+                        match chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(${innerKey}) {
                             Ok(${innerKey}_result) => Some(${innerKey}_result),
                             Err(_) => None,
                         }
@@ -144,14 +144,14 @@ export function rustTimestampFromSchema(
             }
             return `match ${input} {
                 Some(serde_json::Value::String(${innerKey})) => {
-                    DateTime::<FixedOffset>::parse_from_rfc3339(${innerKey})
-                        .unwrap_or(DateTime::default())
+                    chrono::DateTime::<chrono::FixedOffset>::parse_from_rfc3339(${innerKey})
+                        .unwrap_or(chrono::DateTime::default())
                 }
-                _ => DateTime::default(),
+                _ => chrono::DateTime::default(),
             }`;
         },
         toJsonTemplate(input, target) {
-            return `${target}.push_str(serialize_date_time(${input}, true).as_str())`;
+            return `${target}.push_str(utils::serialize_date_time(${input}, true).as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
             const innerKey = validRustIdentifier(`${key}_val`);
@@ -160,7 +160,7 @@ export function rustTimestampFromSchema(
                     Some(${innerKey}) => {
                         ${target}.push(format!(
                             "${key}={}",
-                            serialize_date_time(${innerKey}, false)
+                            utils::serialize_date_time(${innerKey}, false)
                         ));
                     }
                     _ => {}
@@ -171,7 +171,7 @@ export function rustTimestampFromSchema(
                     Some(${innerKey}) => {
                         ${target}.push(format!(
                             "${key}={}",
-                            serialize_date_time(${innerKey}, false)
+                            utils::serialize_date_time(${innerKey}, false)
                         ));
                     }
                     _ => {
@@ -181,7 +181,7 @@ export function rustTimestampFromSchema(
             }
             return `${target}.push(format!(
                 "${key}={}",
-                serialize_date_time(${input}, false)
+                utils::serialize_date_time(${input}, false)
             ))`;
         },
         content: '',

@@ -1,19 +1,26 @@
 package arri
 
 import (
-	"strconv"
+	"fmt"
+	"runtime"
 )
 
 type RpcError interface {
 	error
 	Code() uint32
 	Data() Option[any]
+	Trace() Option[[]string]
+}
+
+func IsRpcError(input RpcError) bool {
+	return true
 }
 
 type errorResponse struct {
 	code    uint32
 	message string
 	data    Option[any]
+	trace   Option[[]string]
 }
 
 func (e errorResponse) Error() string {
@@ -28,19 +35,52 @@ func (e errorResponse) Data() Option[any] {
 	return e.data
 }
 
-func RpcErrorToJSON(err RpcError) []byte {
-	output := []byte{}
-	output = append(output, "{\"code\":"+strconv.FormatUint(uint64(err.Code()), 10)...)
-	output = append(output, ",\"message\":"...)
-	AppendNormalizedString(&output, err.Error())
-	if err.Data().IsSome() {
-		dataResult, dataErr := EncodeJSON(err.Data().Unwrap(), EncodingOptions{})
-		if dataErr == nil {
-			output = append(output, ",\"data\":"...)
-			output = append(output, dataResult...)
+func (e errorResponse) Trace() Option[[]string] {
+	return e.trace
+}
+
+func (e errorResponse) ErrorMessage(reqId string, contentType ContentType, allowTrace bool, encodingOptions EncodingOptions) Message {
+	var body Option[[]byte] = None[[]byte]()
+	switch contentType {
+	case ContentTypeJson:
+		bodyBytes, err := EncodeJSON(e.data, encodingOptions)
+		if err == nil {
+			body.Set(bodyBytes)
 		}
 	}
-	output = append(output, "}"...)
+	return Message{
+		Type:        ErrorMessage,
+		ReqId:       reqId,
+		ContentType: Some(contentType),
+		ErrCode:     Some(e.code),
+		ErrMsg:      Some(e.message),
+		Body:        body,
+	}
+}
+
+func RpcErrorToJSON(err RpcError, encodingOption EncodingOptions) []byte {
+	output := []byte{}
+	output = append(output, '{')
+	data := err.Data()
+	trace := err.Trace()
+	output = append(output, "\"code\":"+fmt.Sprint(err.Code())...)
+	output = append(output, ",\"message\":"...)
+	AppendNormalizedString(&output, err.Error())
+	if data.IsSet {
+		dataJson, err := EncodeJSON(data.Value, encodingOption)
+		if err == nil {
+			output = append(output, ",\"data\":"...)
+			output = append(output, dataJson...)
+		}
+	}
+	if debugModeEnabled && trace.IsSet {
+		traceJson, err := EncodeJSON(trace.Value, encodingOption)
+		if err == nil {
+			output = append(output, ",\"trace\":"...)
+			output = append(output, traceJson...)
+		}
+	}
+	output = append(output, '}')
 	return output
 }
 
@@ -96,9 +136,13 @@ func Error(statusCode uint32, message string) errorResponse {
 			msg = "Unknown error"
 		}
 	}
+	trace := None[[]string]()
+	// TODO: make this configurable so that prod servers don't leak stack traces
+	trace.Set(traceFromCaller("RpcError", msg))
 	return errorResponse{
 		code:    statusCode,
 		message: msg,
+		trace:   trace,
 	}
 }
 
@@ -113,9 +157,42 @@ func ErrorWithData(statusCode uint32, message string, data Option[any]) errorRes
 			msg = "Unknown error"
 		}
 	}
+	trace := None[[]string]()
+	// TODO: make this configurable so that prod servers don't leak stack traces
+	trace.Set(traceFromCaller("RpcError", msg))
 	return errorResponse{
 		code:    statusCode,
 		message: msg,
 		data:    data,
+		trace:   trace,
 	}
+}
+
+func traceFromCaller(errorName string, errorMessage string) []string {
+	// pcs will store program counters
+	var pcs [10]uintptr
+	// skip 0: Callers, skip 1: bar, skip 2: foo, skip 3: main
+	n := runtime.Callers(2, pcs[:])
+	frames := runtime.CallersFrames(pcs[:n])
+	trace := []string{}
+	line1 := ""
+	if len(errorName) > 0 {
+		line1 += errorName
+		line1 += ""
+	} else {
+		line1 += "Error"
+	}
+	if len(errorMessage) > 0 {
+		line1 += ": "
+		line1 += errorMessage
+	}
+	trace = append(trace, line1)
+	for {
+		frame, more := frames.Next()
+		trace = append(trace, "at "+frame.Function+" ("+frame.File+":"+fmt.Sprint(frame.Line)+")")
+		if !more {
+			break
+		}
+	}
+	return trace
 }

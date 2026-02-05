@@ -102,9 +102,6 @@ public class ExampleClientBooksService {
         }
         return task
     }
-    public func createConnection(_ params: BookParams) async throws -> Book {
-        throw ArriRequestError.notImplemented
-    }
 }
 
 public struct EmptyObject: ArriClientModel {

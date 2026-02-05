@@ -25,6 +25,7 @@ export function dartSealedClassFromSchema(
         const subSchema = schema.mapping[key]!;
         const discriminatorValue = key;
         const subTypeResult = dartClassFromSchema(subSchema, {
+            transports: context.transports,
             clientName: context.clientName,
             modelPrefix: context.modelPrefix,
             generatedTypes: context.generatedTypes,

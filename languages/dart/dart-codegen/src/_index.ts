@@ -89,6 +89,7 @@ export function createDartClient(
     const context: CodegenContext = {
         clientName: options.clientName ?? 'Client',
         modelPrefix: options.typePrefix ?? '',
+        transports: def.transports,
         generatedTypes: [],
         instancePath: '',
         schemaPath: '',
@@ -102,6 +103,7 @@ export function createDartClient(
         const subSchema = services[key]!;
         if (isServiceDefinition(subSchema)) {
             const service = dartServiceFromSchema(subSchema, {
+                transports: def.transports,
                 clientName: context.clientName,
                 modelPrefix: context.modelPrefix,
                 generatedTypes: context.generatedTypes,
@@ -120,6 +122,7 @@ export function createDartClient(
         }
         if (isRpcDefinition(subSchema)) {
             const rpc = dartRpcFromSchema(subSchema, {
+                transports: def.transports,
                 clientName: context.clientName,
                 modelPrefix: context.modelPrefix,
                 generatedTypes: context.generatedTypes,
@@ -138,6 +141,7 @@ export function createDartClient(
     for (const key of Object.keys(def.definitions)) {
         const subDef = def.definitions[key]!;
         const result = dartTypeFromSchema(subDef, {
+            transports: def.transports,
             clientName: context.clientName,
             modelPrefix: context.modelPrefix,
             generatedTypes: context.generatedTypes,
@@ -168,26 +172,58 @@ import 'package:arri_client/arri_client.dart';
 import 'package:http/http.dart' as http;
     
 class ${clientName} {
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "${context.clientVersion ?? ''}";
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = ${context.clientVersion ? `"${context.clientVersion}"` : 'null'};
   final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  final int? _heartbeatTimeoutMultiplier;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
   final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
   ${clientName}({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-    int? heartbeatTimeoutMultiplier,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  }) : 
        _baseUrl = baseUrl,
+       _wsConnectionUrl = wsConnectionUrl,
+       _createHttpClient = createHttpClient,
        _headers = headers,
        _onError = onError,
+       _retry = retry,
+       _retryDelay = retryDelay,
        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+       _timeout = timeout,
+       _defaultTransport = defaultTransport ?? "${context.transports[0]}" {
+        _dispatchers = dispatchers ?? {};
+        if (_dispatchers["http"] == null) {
+            _dispatchers["http"] = HttpDispatcher(
+                baseUrl: baseUrl,
+                createHttpClient: _createHttpClient,
+            );
+        }
+        if (_dispatchers["ws"] == null) {
+            _dispatchers["ws"] = WsDispatcher(
+                connectionUrl: _wsConnectionUrl,
+                heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+            );
+        }
+       
+    }
   
   ${rpcParts.join('\n\n')}
 
@@ -195,11 +231,14 @@ ${subServices
     .map(
         (service) => `  ${service.name} get ${service.key} => ${service.name}(
           baseUrl: _baseUrl,
+          wsConnectionUrl: _wsConnectionUrl,
           headers: _headers,
-          httpClient: _httpClient,
+          createHttpClient: _createHttpClient,
           onError: _onError,
           heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
           timeout: _timeout,
+          dispatchers: _dispatchers,
+          defaultTransport: _defaultTransport,
         );`,
     )
     .join('\n\n')}

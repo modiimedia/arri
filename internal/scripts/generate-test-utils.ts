@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import path from 'pathe';
 import prettier from 'prettier';
 
+import { encodeMessage } from '../../languages/ts/ts-core/src/_index';
 import { a } from '../../languages/ts/ts-schema/src/_index';
 import { createAppDefinition } from '../../tooling/codegen-utils/src';
 
@@ -144,43 +145,43 @@ const def = createAppDefinition({
     procedures: {
         sendObject: {
             path: '/send-object',
-            transport: 'http',
+            transports: ['http'],
             method: 'post',
-            params: NestedObject,
-            response: NestedObject,
+            input: NestedObject,
+            output: NestedObject,
         },
         'books.getBook': {
             path: '/books/get-book',
-            transport: 'http',
+            transports: ['http', 'ws'],
             method: 'get',
-            params: BookParams,
-            response: Book,
+            input: BookParams,
+            output: Book,
             description: 'Get a book',
         },
         'books.createBook': {
             path: '/books/create-book',
-            transport: 'http',
+            transports: ['http', 'ws'],
             method: 'post',
-            params: Book,
-            response: Book,
+            input: Book,
+            output: Book,
             description: 'Create a book',
             isDeprecated: true,
         },
         'books.watchBook': {
             path: '/books/watch-book',
-            transport: 'http',
+            transports: ['http'],
             method: 'get',
-            params: BookParams,
-            response: Book,
-            isEventStream: true,
+            input: BookParams,
+            output: Book,
+            outputIsStream: true,
             isDeprecated: true,
         },
-        'books.createConnection': {
-            path: '/books/create-connection',
-            transport: 'ws',
-            params: BookParams,
-            response: Book,
-        },
+        // 'books.createConnection': {
+        //     path: '/books/create-connection',
+        //     transport: 'ws',
+        //     params: BookParams,
+        //     response: Book,
+        // },
     },
     definitions: {
         EmptyObject,
@@ -434,6 +435,178 @@ async function main() {
         content: a.serializeUnsafe(RecursiveObject, recursiveObject),
     });
 
+    files.push({
+        filename: 'InvocationMessage_WithBody.txt',
+        content: encodeMessage({
+            type: 'INVOCATION',
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'hello foo',
+            },
+            reqId: '12345',
+            clientVersion: '1.2.5',
+            body: `{"message":"hello world"}`,
+            lastMsgId: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'InvocationMessage_WithoutBody.txt',
+        content: encodeMessage({
+            type: 'INVOCATION',
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                foo: 'hello foo',
+                bar: 'hello bar',
+            },
+            reqId: '54321',
+            body: undefined,
+            clientVersion: undefined,
+            lastMsgId: undefined,
+        }),
+    });
+    files.push({
+        filename: 'InvocationMessage_WithoutBody2.txt',
+        content: encodeMessage({
+            type: 'INVOCATION',
+            rpcName: 'foo.fooFoo',
+            contentType: 'application/json',
+            customHeaders: {
+                bar: 'hello bar',
+                foo: 'hello foo',
+            },
+            reqId: '54321',
+            body: undefined,
+            clientVersion: undefined,
+            lastMsgId: undefined,
+        }),
+    });
+    files.push({
+        filename: 'CancelStreamMessage.txt',
+        content: encodeMessage({
+            type: 'STREAM_CANCEL',
+            reqId: '54321',
+            reason: 'no longer needed',
+        }),
+    });
+
+    files.push({
+        filename: 'OkMessage_WithBody.txt',
+        content: encodeMessage({
+            type: 'OK',
+            reqId: '12345',
+            contentType: 'application/json',
+            customHeaders: {},
+            heartbeatInterval: undefined,
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'OkMessage_WithoutBody.txt',
+        content: encodeMessage({
+            type: 'OK',
+            reqId: '54321',
+            contentType: 'application/json',
+            heartbeatInterval: undefined,
+            customHeaders: {
+                foo: 'foo',
+            },
+            body: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ErrorMessage_WithoutBody.txt',
+        content: encodeMessage({
+            type: 'ERROR',
+            contentType: 'application/json',
+            reqId: '12345',
+            customHeaders: {
+                foo: 'foo',
+            },
+            errorCode: 54321,
+            errorMessage: 'This is an error',
+            body: undefined,
+        }),
+    });
+    files.push({
+        filename: 'ErrorMessage_WithBody.txt',
+        content: encodeMessage({
+            type: 'ERROR',
+            contentType: 'application/json',
+            reqId: '12345',
+            customHeaders: {
+                foo: 'foo',
+            },
+            errorCode: 54321,
+            errorMessage: 'This is an error',
+            body: '{"data":[],"trace":["foo","bar","baz"]}',
+        }),
+    });
+
+    files.push({
+        filename: 'HeartbeatMessage_WithInterval.txt',
+        content: encodeMessage({
+            type: 'HEARTBEAT',
+            heartbeatInterval: 155,
+        }),
+    });
+
+    files.push({
+        filename: 'HeartbeatMessage_WithoutInterval.txt',
+        content: encodeMessage({
+            type: 'HEARTBEAT',
+            heartbeatInterval: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'ConnectionStartMessage_WithInterval.txt',
+        content: encodeMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: 255,
+        }),
+    });
+
+    files.push({
+        filename: 'ConnectionStartMessage_WithoutInterval.txt',
+        content: encodeMessage({
+            type: 'CONNECTION_START',
+            heartbeatInterval: undefined,
+        }),
+    });
+
+    files.push({
+        filename: 'StreamDataMessage.txt',
+        content: encodeMessage({
+            type: 'STREAM_DATA',
+            reqId: '1515',
+            msgId: '1',
+            body: `{"message":"hello world"}`,
+        }),
+    });
+
+    files.push({
+        filename: 'StreamEndMessage.txt',
+        content: encodeMessage({
+            type: 'STREAM_END',
+            reqId: '1515',
+            reason: 'no more events',
+        }),
+    });
+
+    files.push({
+        filename: 'StreamCancelMessage.txt',
+        content: encodeMessage({
+            type: 'STREAM_CANCEL',
+            reqId: '1515',
+            reason: 'no longer needed',
+        }),
+    });
+
     const mdParts: string[] = [
         'Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.',
         '',
@@ -441,7 +614,7 @@ async function main() {
     for (const file of files) {
         writeFileSync(path.resolve(outDir, file.filename), file.content);
         mdParts.push(`## ${file.filename}
-\`\`\`json
+\`\`\`${file.filename.endsWith('txt') ? 'txt' : 'json'}
 ${file.content}
 \`\`\`
 `);

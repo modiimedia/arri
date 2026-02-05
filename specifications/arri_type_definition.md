@@ -2,6 +2,8 @@ _This is a work in progress_
 
 # Arri Type Definition
 
+Version 0.0.8
+
 This documents defines the Arri Type Definition (ATD) specification for Arri RPC. Currently ATD's are a modified version of [JSON Typedef](https://jsontypedef.com).
 
 ## Table of Contents

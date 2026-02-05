@@ -42,7 +42,8 @@ export interface AppDefinition {
         description?: string;
         url: string;
     };
-    procedures: Record<string, RpcDefinition<string>>;
+    transports: string[];
+    procedures: Record<string, RpcDefinition>;
     definitions: Record<string, Schema>;
 }
 
@@ -60,87 +61,78 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
     if (typeof inputObj.definitions !== 'object') {
         return false;
     }
+    if (
+        !Array.isArray(inputObj.transports) ||
+        !inputObj.transports.every((val) => typeof val === 'string') ||
+        inputObj.transports.length === 0
+    ) {
+        return false;
+    }
     return true;
 }
 
-export interface RpcDefinitionBase<T = string> {
+export interface RpcDefinition<T = string> {
+    transports: string[];
     path: string;
-    params?: T;
-    response?: T;
+    method?: RpcHttpMethod;
+    input?: T;
+    inputIsStream?: boolean;
+    output?: T;
+    outputIsStream?: boolean;
     description?: string;
     isDeprecated?: boolean;
-    deprecatedNote?: string;
-    deprecatedSince?: string;
+    deprecationNote?: string;
+    // deprecatedSince?: string;
 }
 
-// procedures
-// channels
-
-export interface HttpRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-    transport: 'http';
-    method: RpcHttpMethod;
-    isEventStream?: boolean;
-}
-export interface WsRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-    transport: 'ws';
-}
-export interface CustomRpcDefinition<T = string> extends RpcDefinitionBase<T> {
-    transport: `custom:${string}`;
-    [key: string]: unknown;
-}
-export type RpcDefinition<T = string> =
-    | HttpRpcDefinition<T>
-    | WsRpcDefinition<T>
-    | CustomRpcDefinition<T>;
-
-export function isRpcDefinitionBase(
-    input: unknown,
-): input is RpcDefinitionBase {
+export function isRpcDefinition(input: unknown): input is RpcDefinition {
     if (typeof input !== 'object' || input === null) {
         return false;
     }
     if (
-        'params' in input &&
-        typeof input.params !== 'undefined' &&
-        typeof input.params !== 'string'
+        'input' in input &&
+        typeof input.input !== 'undefined' &&
+        typeof input.input !== 'string'
     ) {
         return false;
     }
     if (
-        'response' in input &&
-        typeof input.response !== 'undefined' &&
-        typeof input.response !== 'string'
+        'inputIsStream' in input &&
+        typeof input.inputIsStream !== 'undefined' &&
+        typeof input.inputIsStream !== 'boolean'
     ) {
         return false;
     }
-
+    if (
+        'output' in input &&
+        typeof input.output !== 'undefined' &&
+        typeof input.output !== 'string'
+    ) {
+        return false;
+    }
+    if (
+        'outputIsStream' in input &&
+        typeof input.outputIsStream !== 'undefined' &&
+        typeof input.outputIsStream !== 'boolean'
+    ) {
+        return false;
+    }
+    if (
+        'method' in input &&
+        typeof input.method !== 'undefined' &&
+        (typeof input.method !== 'string' || !isRpcHttpMethod(input.method))
+    ) {
+        return false;
+    }
     return (
-        'transport' in input &&
-        typeof input.transport === 'string' &&
-        input.transport.length > 0 &&
+        'transports' in input &&
+        Array.isArray(input.transports) &&
+        input.transports.every((val) => typeof val === 'string') &&
+        input.transports.length > 0 &&
         'path' in input &&
         typeof input.path === 'string' &&
         input.path.length > 0
     );
-}
-
-export function isRpcDefinition(input: unknown): input is RpcDefinition {
-    if (!isRpcDefinitionBase(input)) {
-        return false;
-    }
-    if (!('transport' in input) || typeof input.transport !== 'string') {
-        return false;
-    }
-    if (input.transport === 'http') {
-        return 'method' in input && isRpcHttpMethod(input.method);
-    }
-    if (input.transport === 'ws') {
-        return true;
-    }
-    if (input.transport.startsWith('custom:')) {
-        return true;
-    }
-    return false;
 }
 
 export interface ServiceDefinition {
@@ -180,42 +172,47 @@ type RpcDefinitionHelper = RpcDefinition<
 
 type AppDefinitionHelper = Omit<
     AppDefinition,
-    'procedures' | 'definitions' | 'schemaVersion'
+    'procedures' | 'definitions' | 'schemaVersion' | 'transports'
 > & {
-    procedures: Record<string, RpcDefinitionHelper>;
+    procedures?: Record<string, RpcDefinitionHelper>;
     definitions?: AppDefinition['definitions'];
 };
 
 export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
     const definitions = { ...input.definitions };
     const procedures: AppDefinition['procedures'] = {};
-    for (const key of Object.keys(input.procedures)) {
-        const def = input.procedures[key]!;
+    const transports: string[] = [];
+    for (const key of Object.keys(input.procedures ?? {})) {
+        const def = input.procedures![key]!;
+        for (const t of def.transports) {
+            if (!transports.includes(t)) transports.push(t);
+        }
         let paramName: string | undefined;
-        if (def.params) {
+        if (def.input) {
             paramName =
-                def.params.metadata?.id ??
+                def.input.metadata?.id ??
                 pascalCase(`${key.split('.').join('_')}Params`);
-            definitions[paramName] = def.params;
+            definitions[paramName] = def.input;
         }
         let responseName: string | undefined;
-        if (def.response) {
+        if (def.output) {
             responseName =
-                def.response.metadata?.id ??
+                def.output.metadata?.id ??
                 pascalCase(`${key.split('.').join('_')}Response`);
-            definitions[responseName] = def.response;
+            definitions[responseName] = def.output;
         }
-        delete def.params;
-        delete def.response;
+        delete def.input;
+        delete def.output;
         procedures[key] = {
             ...def,
-            params: paramName,
-            response: responseName,
+            input: paramName,
+            output: responseName,
         };
     }
     const result: AppDefinition = {
         schemaVersion: '0.0.8',
         ...input,
+        transports: transports,
         procedures,
         definitions,
     };

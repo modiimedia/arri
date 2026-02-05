@@ -31,68 +31,68 @@ describe('unflattenObject()', () => {
     test('Complex Unflatten', () => {
         const input: Record<string, RpcDefinition> = {
             'posts.getPost': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/posts/get-post',
-                params: 'PostsGetPostParams',
-                response: 'PostsGetPostResponse',
+                input: 'PostsGetPostInput',
+                output: 'PostsGetPostOutput',
             },
             'posts.updatePost': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'post',
                 path: '/posts/update-post',
-                params: 'PostsUpdatePostParams',
-                response: 'PostsUpdatePostResponse',
+                input: 'PostsUpdatePostInput',
+                output: 'PostsUpdatePostOutput',
             },
             'posts.comments.getComment': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/posts/comments/get-comment',
-                params: 'GetCommentParams',
-                response: 'GetCommentResponse',
+                input: 'GetCommentInput',
+                output: 'GetCommentOutput',
             },
             'users.getUser': {
-                transport: 'http',
+                transports: ['http'],
                 method: 'get',
                 path: '/users/getUser',
-                params: 'UserParams',
-                response: 'User',
+                input: 'UserInput',
+                output: 'User',
             },
         };
         expect(JSON.stringify(unflattenObject(input))).toEqual(
             JSON.stringify({
                 posts: {
                     getPost: {
-                        transport: 'http',
+                        transports: ['http'],
                         method: 'get',
                         path: '/posts/get-post',
-                        params: 'PostsGetPostParams',
-                        response: 'PostsGetPostResponse',
+                        input: 'PostsGetPostInput',
+                        output: 'PostsGetPostOutput',
                     },
                     updatePost: {
-                        transport: 'http',
+                        transports: ['http'],
                         method: 'post',
                         path: '/posts/update-post',
-                        params: 'PostsUpdatePostParams',
-                        response: 'PostsUpdatePostResponse',
+                        input: 'PostsUpdatePostInput',
+                        output: 'PostsUpdatePostOutput',
                     },
                     comments: {
                         getComment: {
-                            transport: 'http',
+                            transports: ['http'],
                             method: 'get',
                             path: '/posts/comments/get-comment',
-                            params: 'GetCommentParams',
-                            response: 'GetCommentResponse',
+                            input: 'GetCommentInput',
+                            output: 'GetCommentOutput',
                         },
                     },
                 },
                 users: {
                     getUser: {
-                        transport: 'http',
+                        transports: ['http'],
                         method: 'get',
                         path: '/users/getUser',
-                        params: 'UserParams',
-                        response: 'User',
+                        input: 'UserInput',
+                        output: 'User',
                     },
                 },
             }),
@@ -103,25 +103,25 @@ describe('unflattenObject()', () => {
 describe('unflatten procedures', () => {
     const procedures: AppDefinition['procedures'] = {
         'users.getUser': {
-            transport: 'http',
+            transports: ['http'],
             path: '/users/get-user',
             method: 'get',
-            params: 'GetUserParams',
-            response: 'User',
+            input: 'GetUserInput',
+            output: 'User',
         },
         'users.updateUser': {
-            transport: 'http',
+            transports: ['http'],
             path: '/users/update-user',
             method: 'post',
-            params: 'UpdateUserParams',
-            response: 'User',
+            input: 'UpdateUserInput',
+            output: 'User',
         },
         'posts.getPost': {
-            transport: 'http',
+            transports: ['http'],
             path: '/posts/get-posts',
             method: 'get',
-            params: 'GetPostParams',
-            response: 'Post',
+            input: 'GetPostInput',
+            output: 'Post',
         },
     };
     test('without root service', () => {
@@ -129,27 +129,27 @@ describe('unflatten procedures', () => {
         expect(result).toStrictEqual({
             users: {
                 getUser: {
-                    transport: 'http',
+                    transports: ['http'],
                     path: '/users/get-user',
                     method: 'get',
-                    params: 'GetUserParams',
-                    response: 'User',
+                    input: 'GetUserInput',
+                    output: 'User',
                 },
                 updateUser: {
-                    transport: 'http',
+                    transports: ['http'],
                     path: '/users/update-user',
                     method: 'post',
-                    params: 'UpdateUserParams',
-                    response: 'User',
+                    input: 'UpdateUserInput',
+                    output: 'User',
                 },
             },
             posts: {
                 getPost: {
-                    transport: 'http',
+                    transports: ['http'],
                     path: '/posts/get-posts',
                     method: 'get',
-                    params: 'GetPostParams',
-                    response: 'Post',
+                    input: 'GetPostInput',
+                    output: 'Post',
                 },
             },
         });
@@ -158,11 +158,11 @@ describe('unflatten procedures', () => {
         const result = unflattenProcedures(procedures, 'posts');
         expect(result).toStrictEqual({
             getPost: {
-                transport: 'http',
+                transports: ['http'],
                 path: '/posts/get-posts',
                 method: 'get',
-                params: 'GetPostParams',
-                response: 'Post',
+                input: 'GetPostInput',
+                output: 'Post',
             },
         });
     });

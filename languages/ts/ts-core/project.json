@@ -1,0 +1,56 @@
+{
+  "name": "ts-core",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/ts-core/src",
+  "projectType": "library",
+  "targets": {
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jiti buildBenchmarks.ts && node benchmark/dist/main.cjs",
+        "cwd": "languages/ts/ts-core"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "languages/ts/ts-core"
+      }
+    },
+    "publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "languages/ts/ts-core"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint languages/ts/ts-core"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*",
+        "{workspaceRoot}/tests/test-files/**/*"
+      ],
+      "options": {
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/ts/ts-core"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "languages/ts/ts-core"
+      }
+    }
+  },
+  "tags": []
+}

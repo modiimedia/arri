@@ -15,9 +15,9 @@ const DiscriminatorWithEmptyObject = a.discriminator(
 );
 
 export default defineRpc({
-    params: DiscriminatorWithEmptyObject,
-    response: DiscriminatorWithEmptyObject,
-    handler({ params }) {
-        return params;
+    input: DiscriminatorWithEmptyObject,
+    output: DiscriminatorWithEmptyObject,
+    handler({ input }) {
+        return input;
     },
 });

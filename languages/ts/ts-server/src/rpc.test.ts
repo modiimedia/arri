@@ -1,62 +1,137 @@
 import { a } from '@arrirpc/schema';
 
-import { defineEventStreamRpc } from './eventStreamRpc';
-import { createHttpRpcDefinition, defineRpc } from './rpc';
-describe('Type Inference', () => {
-    it('infers types properly', async () => {
-        const Params = a.object({
-            id: a.string(),
-        });
-        type Params = a.infer<typeof Params>;
-        const Response = a.object({
-            id: a.string(),
-            count: a.int32(),
-        });
-        type Response = a.infer<typeof Params>;
-        const rpc = defineRpc({
-            params: Params,
-            response: Response,
-            handler({ params }) {
-                assertType<Params>({ id: '' });
+import { defineRpc, RpcHandler } from './rpc';
+
+describe('Type inference', () => {
+    const Params = a.discriminator('type', {
+        FOO: a.object({ foo: a.string() }),
+        BAR: a.object({ bar: a.boolean() }),
+    });
+    type Params = a.infer<typeof Params>;
+    const Response = a.object({
+        foo: a.string(),
+        bar: a.boolean(),
+        baz: a.object({
+            foo: a.string(),
+        }),
+    });
+    type Response = a.infer<typeof Response>;
+    test('params and response present', () => {
+        defineRpc({
+            input: Params,
+            output: Response,
+            handler({ input: params }) {
+                assertType<Params>(params);
+                assertType<'FOO' | 'BAR'>(params.type);
                 return {
-                    id: params.id,
-                    count: 1245313,
+                    foo: '',
+                    bar: false,
+                    baz: {
+                        foo: '',
+                    },
                 };
             },
-        });
-        const result = await rpc.handler(
-            {
-                params: { id: '12314' },
-                rpcName: '',
+            postHandler({ input: params, output: response }) {
+                assertType<Params>(params);
+                assertType<Response>(response);
             },
+        });
+    });
+    test('params present', () => {
+        defineRpc({
+            input: Params,
+            handler({ input: params }) {
+                assertType<Params>(params);
+            },
+            postHandler({ input: params, output: response }) {
+                assertType<Params>(params);
+                assertType<undefined>(response);
+            },
+        });
+    });
+    test('response present', () => {
+        defineRpc({
+            output: Response,
+            handler({ input: params }) {
+                assertType<undefined>(params);
+                return {
+                    foo: '',
+                    bar: false,
+                    baz: {
+                        foo: '',
+                    },
+                };
+            },
+            postHandler({ input: params, output: response }) {
+                assertType<undefined>(params);
+                assertType<Response>(response);
+            },
+        });
+    });
+    test('Rpc Handler', () => {
+        type HandlerTypeNoResponse = RpcHandler<{ foo: 'foo' }, void>;
+        type HandlerTypeResponse = RpcHandler<undefined, { foo: 'foo' }>;
+        function voidFn() {}
+        assertType<ReturnType<HandlerTypeNoResponse>>(voidFn());
+        assertType<ReturnType<HandlerTypeResponse>>({ foo: 'foo' });
+    });
+    test('Recursive Unions', () => {
+        type RecursiveUnion =
+            | { type: 'CHILD'; data: RecursiveUnion }
+            | {
+                  type: 'CHILDREN';
+                  data: RecursiveUnion[];
+              }
+            | { type: 'TEXT'; data: string }
+            | {
+                  type: 'SHAPE';
+                  data: { width: number; height: number; color: string };
+              };
 
-            {} as any,
+        const RecursiveUnion = a.recursive<RecursiveUnion>(
+            'RecursiveUnion',
+            (self) =>
+                a.discriminator('type', {
+                    CHILD: a.object(
+                        {
+                            data: self,
+                        },
+                        { description: 'Child node' },
+                    ),
+                    CHILDREN: a.object(
+                        {
+                            data: a.array(self),
+                        },
+                        { description: 'List of children node' },
+                    ),
+                    TEXT: a.object(
+                        {
+                            data: a.string(),
+                        },
+                        {
+                            description: 'Text node',
+                        },
+                    ),
+                    SHAPE: a.object(
+                        {
+                            data: a.object({
+                                width: a.float64(),
+                                height: a.float64(),
+                                color: a.string(),
+                            }),
+                        },
+                        {
+                            description: 'Shape node',
+                        },
+                    ),
+                }),
         );
-        assertType<Response>(result);
+        defineRpc({
+            input: RecursiveUnion,
+            output: RecursiveUnion,
+            async handler({ input: params }) {
+                return params;
+            },
+        });
     });
-});
-
-test('create rpc definition', () => {
-    const rpc = defineRpc({
-        params: undefined,
-        response: undefined,
-        handler() {},
-    });
-    const rpcDef = createHttpRpcDefinition('hello.world', '/hello/world', rpc);
-    expect(rpcDef.method).toBe('post');
-    expect(rpcDef.isEventStream).toBe(undefined);
-    const eventStreamRpc = defineEventStreamRpc({
-        params: undefined,
-        response: a.object({
-            id: a.string(),
-        }),
-        handler() {},
-    });
-    const eventStreamDef = createHttpRpcDefinition(
-        'hello.world',
-        '/hello/world',
-        eventStreamRpc,
-    );
-    expect(eventStreamDef.method).toBe('post');
-    expect(eventStreamDef.isEventStream).toBe(true);
 });

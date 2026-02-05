@@ -55,6 +55,28 @@ const RecursiveUnion = a.recursive<RecursiveUnion>(
 );
 test('type inference', () => {
     // TODO: figure out how to infer recursive type without needing to pass in type parameter
+    const value: a.infer<typeof RecursiveUnion> = {
+        type: 'CHILD',
+        data: {
+            type: 'CHILDREN',
+            data: [
+                {
+                    type: 'TEXT',
+                    data: '',
+                },
+                {
+                    type: 'SHAPE',
+                    data: {
+                        width: 1,
+                        height: 1,
+                        color: '',
+                    },
+                },
+            ],
+        },
+    };
+    assertType<RecursiveUnion>(value);
+    assertType<a.infer<typeof RecursiveUnion>>(value);
 });
 
 describe('validation', () => {

@@ -4,42 +4,36 @@
   "procedures": {
     "sendObject": {
       "path": "/send-object",
-      "transport": "http",
+      "transports": ["http"],
       "method": "post",
-      "params": "NestedObject",
-      "response": "NestedObject"
+      "input": "NestedObject",
+      "output": "NestedObject"
     },
     "books.getBook": {
       "path": "/books/get-book",
-      "transport": "http",
+      "transports": ["http", "ws"],
       "method": "get",
       "description": "Get a book",
-      "params": "BookParams",
-      "response": "Book"
+      "input": "BookParams",
+      "output": "Book"
     },
     "books.createBook": {
       "path": "/books/create-book",
-      "transport": "http",
+      "transports": ["http", "ws"],
       "method": "post",
       "description": "Create a book",
       "isDeprecated": true,
-      "params": "Book",
-      "response": "Book"
+      "input": "Book",
+      "output": "Book"
     },
     "books.watchBook": {
       "path": "/books/watch-book",
-      "transport": "http",
+      "transports": ["http"],
       "method": "get",
-      "isEventStream": true,
+      "outputIsStream": true,
       "isDeprecated": true,
-      "params": "BookParams",
-      "response": "Book"
-    },
-    "books.createConnection": {
-      "path": "/books/create-connection",
-      "transport": "ws",
-      "params": "BookParams",
-      "response": "Book"
+      "input": "BookParams",
+      "output": "Book"
     }
   },
   "definitions": {
@@ -293,5 +287,6 @@
       },
       "metadata": { "id": "RecursiveObject" }
     }
-  }
+  },
+  "transports": ["http", "ws"]
 }

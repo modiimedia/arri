@@ -1,9 +1,9 @@
-import { a } from "@arrirpc/schema";
-import { defineEventStreamRpc } from "@arrirpc/server";
-import { faker } from "@faker-js/faker";
-import { randomUUID } from "crypto";
+import { a } from '@arrirpc/schema';
+import { defineOutputStreamRpc } from '@arrirpc/server';
+import { faker } from '@faker-js/faker';
+import { randomUUID } from 'crypto';
 
-export const ChatMessageParams = a.object("ChatMessageParams", {
+export const ChatMessageParams = a.object('ChatMessageParams', {
     channelId: a.string(),
 });
 
@@ -14,7 +14,7 @@ const ChatMessageBase = a.object({
     date: a.timestamp(),
 });
 
-export const ChatMessage = a.discriminator("ChatMessage", "messageType", {
+export const ChatMessage = a.discriminator('ChatMessage', 'messageType', {
     TEXT: a.extend(
         ChatMessageBase,
         a.object({
@@ -37,42 +37,42 @@ export const ChatMessage = a.discriminator("ChatMessage", "messageType", {
 
 export type ChatMessage = a.infer<typeof ChatMessage>;
 
-export default defineEventStreamRpc({
-    params: ChatMessageParams,
-    response: ChatMessage,
-    handler({ params, stream }) {
+export default defineOutputStreamRpc({
+    input: ChatMessageParams,
+    output: ChatMessage,
+    handler({ input, stream }) {
         const randomItem = (): ChatMessage => {
             const userId = randomUUID();
             const now = new Date();
             const type = faker.helpers.arrayElement([
-                "TEXT",
-                "IMAGE",
-                "URL",
+                'TEXT',
+                'IMAGE',
+                'URL',
             ] as const);
             switch (type) {
-                case "TEXT":
+                case 'TEXT':
                     return {
                         id: randomUUID(),
-                        messageType: "TEXT",
+                        messageType: 'TEXT',
                         userId,
-                        channelId: params.channelId,
+                        channelId: input.channelId,
                         date: now,
                         text: faker.lorem.words(),
                     };
-                case "IMAGE":
+                case 'IMAGE':
                     return {
                         id: randomUUID(),
-                        messageType: "IMAGE",
-                        channelId: params.channelId,
+                        messageType: 'IMAGE',
+                        channelId: input.channelId,
                         userId,
                         date: now,
                         image: faker.image.url(),
                     };
-                case "URL":
+                case 'URL':
                     return {
                         id: randomUUID(),
-                        messageType: "URL",
-                        channelId: params.channelId,
+                        messageType: 'URL',
+                        channelId: input.channelId,
                         userId,
                         date: now,
                         url: faker.internet.url(),
@@ -86,6 +86,6 @@ export default defineEventStreamRpc({
         stream.onClosed(async () => {
             clearInterval(interval);
         });
-        stream.send();
+        stream.start();
     },
 });
