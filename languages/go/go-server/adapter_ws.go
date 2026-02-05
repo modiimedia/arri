@@ -36,29 +36,34 @@ func (w *WsAdapter[T]) OnOpen(socket *gws.Conn) {
 	if w.streams == nil {
 		w.streams = map[string]map[string]*WsEventStream{}
 	}
-	connId := ulid.Make().String()
-	socket.Session().Store("internal-session-id", connId)
-	w.streams[connId] = map[string]*WsEventStream{}
+	sessionId := ulid.Make().String()
+	socket.Session().Store("internal-session-id", sessionId)
+	w.streams[sessionId] = map[string]*WsEventStream{}
+	fmt.Println("new session", sessionId)
 	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
-	fmt.Println("STREAMS", w.streams)
+	fmt.Println("[num streams] after open", w.streams)
 }
 
 func (w *WsAdapter[T]) OnClose(socket *gws.Conn, err error) {
+	fmt.Println("on close")
 	if w.streams == nil {
 		return
 	}
 	sessionId, exists := socket.Session().Load("internal-session-id")
 	sessionIdStr, ok := sessionId.(string)
+	fmt.Println("closing session:", sessionIdStr)
 	if !exists || !ok {
+		fmt.Println("session not found")
 		return
 	}
-
 	streams := w.streams[sessionIdStr]
 	for _, val := range streams {
-		val.Close(false)
+		go func() {
+			val.Close(false)
+		}()
 	}
 	delete(w.streams, sessionIdStr)
-	fmt.Println("STREAMS", w.streams)
+	fmt.Println("[num streams] after close:", w.streams)
 }
 
 func (w WsAdapter[T]) OnPing(socket *gws.Conn, payload []byte) {
@@ -75,6 +80,7 @@ func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 	_ = socket.SetDeadline(time.Now().Add(w.globalOptions.HeartbeatInterval + 10*time.Second))
 	encodingOptions := EncodingOptions{KeyCasing: w.globalOptions.KeyCasing, MaxDepth: w.globalOptions.MaxDepth}
 	arriMsg, err := DecodeMessage(message.Bytes())
+	fmt.Println("MESSAGE", arriMsg)
 	if err != nil {
 		msgStr := message.Data.String()
 		if msgStr == "ping" || msgStr == "PING" {
@@ -99,38 +105,50 @@ func (w WsAdapter[T]) OnMessage(socket *gws.Conn, message *gws.Message) {
 			return
 		}
 		if handler.StandardHandler != nil {
-			response, err := handler.StandardHandler(socket, arriMsg)
-			if err != nil {
-				errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
-				socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
-				return
-			}
-			okMsg := NewOkMessage(arriMsg.ReqId, contentType, Headers{}, Some(response))
-			socket.WriteAsync(gws.OpcodeText, okMsg.Body.UnwrapOr([]byte{}), func(err error) {})
+			go func() {
+				response, err := handler.StandardHandler(socket, arriMsg)
+				if err != nil {
+					errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
+					socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
+					return
+				}
+				okMsg := NewOkMessage(arriMsg.ReqId, contentType, Headers{}, Some(response))
+				socket.WriteAsync(gws.OpcodeText, okMsg.Body.UnwrapOr([]byte{}), func(err error) {})
+			}()
 			return
 		}
 		if handler.OutputStreamHandler != nil {
-			err := handler.OutputStreamHandler(socket, arriMsg)
-			if err != nil {
-				errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
-				socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
-				return
-			}
+			go func() {
+				err := handler.OutputStreamHandler(socket, arriMsg)
+				if err != nil {
+					fmt.Println("REQ_ID", arriMsg.ReqId, err)
+					errMsg := NewErrorMessage(arriMsg.ReqId, contentType, Headers{}, err)
+					socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
+					return
+				}
+			}()
+			return
 		}
 	case StreamCancelMessage:
-		streams := w.streams[sessionId]
-		if streams == nil {
-			return
-		}
-		stream := streams[arriMsg.ReqId]
-		if stream == nil {
-			return
-		}
-		stream.Close(true)
-		delete(w.streams[sessionId], arriMsg.ReqId)
+		go func() {
+			streams := w.streams[sessionId]
+			if streams == nil {
+				fmt.Println("No streams found for session:", sessionId)
+				return
+			}
+			stream := streams[arriMsg.ReqId]
+			if stream == nil {
+				fmt.Println("Couldn't find stream:", sessionId, arriMsg.ReqId)
+				return
+			}
+			stream.Close(true)
+			delete(w.streams[sessionId], arriMsg.ReqId)
+		}()
+		return
 	}
-	socket.WriteAsync(gws.OpcodeText, []byte("invalid message"), func(err error) {})
-	socket.WriteClose(1000, []byte("invalid message"))
+	errMsg := NewErrorMessage(arriMsg.ReqId, ContentTypeJson, Headers{}, Error(400, "invalid message"))
+	socket.WriteAsync(gws.OpcodeText, errMsg.EncodeBytes(), func(err error) {})
+	socket.WriteClose(1000, errMsg.EncodeBytes())
 }
 
 func NewWsAdapter[T any](httpAdapter HttpTransportAdapter[T], options WsAdapterOptions[T]) *WsAdapter[T] {
@@ -240,7 +258,9 @@ func (w *WsAdapter[T]) RegisterOutputStreamRpc(
 			req := NewRequest[T](context.Background(), name, w.TransportId(), ipAddr, msg.ClientVersion.UnwrapOr(""), map[string]string{})
 			stream := NewWsEventStream[any](conn, msg.ReqId, msg.ContentType.UnwrapOr(ContentTypeJson), w.globalOptions.KeyCasing)
 			w.streams[sessionId][msg.ReqId] = stream
+			fmt.Println("before ES handler")
 			err := handler(params, stream, *req)
+			fmt.Println("after ES handler")
 			return err
 		},
 	}
@@ -335,7 +355,9 @@ func (es *WsEventStream) Start() {
 	hbInterval := uint32(es.heartbeatInterval.Milliseconds())
 	msg := NewStreamStartMessage(es.reqId, es.contentType, Some(hbInterval), Headers{})
 	es.conn.WriteAsync(gws.OpcodeText, msg.EncodeBytes(), func(err error) {
-		fmt.Println("Error starting WS event stream:", err)
+		if err != nil {
+			fmt.Println("Error starting WS event stream:", err)
+		}
 	})
 	es.heartbeatTicker = time.NewTicker(es.heartbeatInterval)
 	es.hasStarted = true
@@ -380,7 +402,8 @@ func (es *WsEventStream) Close(notifyClient bool) {
 		es.heartbeatTicker.Stop()
 		es.heartbeatTicker = nil
 	}
-	close(es.doneChannel)
+
+	es.doneChannel <- struct{}{}
 }
 
 func (es *WsEventStream) Done() <-chan struct{} {

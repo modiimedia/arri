@@ -452,6 +452,7 @@ describe('event stream rpcs', () => {
             const controller =
                 dynamicClient.tests.streamRetryWithNewCredentials({
                     onData(_) {
+                        console.log('MESSAGE');
                         msgCount++;
                         if (msgCount >= 40) controller.abort();
                     },
@@ -459,6 +460,7 @@ describe('event stream rpcs', () => {
                         openCount++;
                     },
                     onError(error) {
+                        console.log('ERROR', error);
                         rej(error);
                     },
                     onClose() {
