@@ -13,7 +13,7 @@ var invocationMessageWithoutBody = arri.NewInvocationMessage("54321", "foo.fooFo
 var invocationMessageWithBodyFilePath = "../../../tests/test-files/InvocationMessage_WithBody.txt"
 var invocationMessageWithoutBodyFilePath = "../../../tests/test-files/InvocationMessage_WithoutBody.txt"
 
-func TestEncodeClientMessage(t *testing.T) {
+func TestEncodeInvocationMessage(t *testing.T) {
 	dat, err := os.ReadFile(invocationMessageWithBodyFilePath)
 	if err != nil {
 		t.Fatal(err)
@@ -66,28 +66,28 @@ func TestDecodeInvocationMessage(t *testing.T) {
 	}
 }
 
-var serverMessageWithBody = arri.NewOkMessage("12345", arri.ContentTypeJson, map[string]string{}, arri.Some([]byte("{\"message\":\"hello world\"}")))
-var serverMessageWithoutBody = arri.NewOkMessage("54321", arri.ContentTypeJson, map[string]string{"foo": "foo"}, arri.None[[]byte]())
-var serverMessageWithBodyFilePath = "../../../tests/test-files/OkMessage_WithBody.txt"
-var serverMessageWithoutBodyFilePath = "../../../tests/test-files/OkMessage_WithoutBody.txt"
+var okMessageWithBody = arri.NewOkMessage("12345", arri.ContentTypeJson, map[string]string{}, arri.Some([]byte("{\"message\":\"hello world\"}")))
+var okMessageWithoutBody = arri.NewOkMessage("54321", arri.ContentTypeJson, map[string]string{"foo": "foo"}, arri.None[[]byte]())
+var okMessageWithBodyFilePath = "../../../tests/test-files/OkMessage_WithBody.txt"
+var okMessageWithoutBodyFilePath = "../../../tests/test-files/OkMessage_WithoutBody.txt"
 
-func TestEncodeServerSuccessMessage(t *testing.T) {
-	dat, err := os.ReadFile(serverMessageWithBodyFilePath)
+func TestEncodeOkMessage(t *testing.T) {
+	dat, err := os.ReadFile(okMessageWithBodyFilePath)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-	result := serverMessageWithBody.EncodeBytes()
+	result := okMessageWithBody.EncodeBytes()
 	if !reflect.DeepEqual(result, dat) {
 		t.Fatal(deepEqualErrString(string(result), string(dat)))
 		return
 	}
-	dat, err = os.ReadFile(serverMessageWithoutBodyFilePath)
+	dat, err = os.ReadFile(okMessageWithoutBodyFilePath)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-	result = serverMessageWithoutBody.EncodeBytes()
+	result = okMessageWithoutBody.EncodeBytes()
 	if !reflect.DeepEqual(result, dat) {
 		t.Fatal(deepEqualErrString(string(result), string(dat)))
 		return
@@ -95,7 +95,7 @@ func TestEncodeServerSuccessMessage(t *testing.T) {
 }
 
 func TestDecodeServerSuccessMessage(t *testing.T) {
-	dat, err := os.ReadFile(serverMessageWithBodyFilePath)
+	dat, err := os.ReadFile(okMessageWithBodyFilePath)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -105,11 +105,11 @@ func TestDecodeServerSuccessMessage(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-	if !reflect.DeepEqual(result, serverMessageWithBody) {
-		t.Fatal(deepEqualErrString(result, serverMessageWithBody))
+	if !reflect.DeepEqual(result, okMessageWithBody) {
+		t.Fatal(deepEqualErrString(result, okMessageWithBody))
 		return
 	}
-	dat, err = os.ReadFile(serverMessageWithoutBodyFilePath)
+	dat, err = os.ReadFile(okMessageWithoutBodyFilePath)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -119,8 +119,8 @@ func TestDecodeServerSuccessMessage(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-	if !reflect.DeepEqual(result, serverMessageWithoutBody) {
-		t.Fatal(deepEqualErrString(result, serverMessageWithoutBody))
+	if !reflect.DeepEqual(result, okMessageWithoutBody) {
+		t.Fatal(deepEqualErrString(result, okMessageWithoutBody))
 		return
 	}
 }

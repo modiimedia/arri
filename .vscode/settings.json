@@ -3,7 +3,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
-  "dart.onlyAnalyzeProjectsWithOpenFiles": true,
+  // "dart.onlyAnalyzeProjectsWithOpenFiles": true,
   "dart.projectSearchDepth": 3,
   "dart.analysisExcludedFolders": [
     "**/node_modules",
