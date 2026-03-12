@@ -148,7 +148,14 @@ export function createRustClient(
         }
     }
     if (rpcParts.length === 0 && subServiceContent.length === 0) {
-        return `#![allow(dead_code, unused_imports, unused_variables, unconditional_recursion, deprecated)]
+        return `#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unconditional_recursion,
+    deprecated,
+    clippy::all
+)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},
@@ -165,7 +172,8 @@ ${modelParts.join('\n\n')}`;
     unused_imports,
     unused_variables,
     unconditional_recursion,
-    deprecated
+    deprecated,
+    clippy::all
 )]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
