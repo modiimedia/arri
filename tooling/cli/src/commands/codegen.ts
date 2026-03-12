@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-import { SCHEMA_VERSION, type AppDefinition } from '@arrirpc/codegen-utils';
+import { type AppDefinition, SCHEMA_VERSION } from '@arrirpc/codegen-utils';
 import { loadConfig } from 'c12';
 import { watch } from 'chokidar';
 import { defineCommand } from 'citty';

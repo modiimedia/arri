@@ -3,7 +3,8 @@
     unused_imports,
     unused_variables,
     unconditional_recursion,
-    deprecated
+    deprecated,
+    clippy::all
 )]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
