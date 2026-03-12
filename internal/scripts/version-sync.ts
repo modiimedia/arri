@@ -2,7 +2,9 @@ import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { globby } from 'globby';
+import { indexOf } from 'lodash';
 import prettier from 'prettier';
+import { updateCargoToml } from './version-sync-utils';
 
 async function main() {
     const packageJson = JSON.parse(
@@ -62,21 +64,19 @@ async function main() {
         stdio: 'inherit',
     });
 
-    // RUST client
-    const cargoTomlParts = readFileSync(
-        'languages/rust/rust-client/Cargo.toml',
-        { encoding: 'utf-8' },
-    ).split('\n');
-    for (let i = 0; i < cargoTomlParts.length; i++) {
-        const line = cargoTomlParts[i];
-        if (line?.startsWith('version = ')) {
-            cargoTomlParts[i] = `version = "${version}"`;
-        }
-    }
-    writeFileSync(
-        'languages/rust/rust-client/Cargo.toml',
-        cargoTomlParts.join('\n'),
-    );
+    // RUST Libs
+    const childCargoTomls = await globby([
+        'languages/**/Cargo.toml',
+        'tooling/**/Cargo.toml',
+        '!target',
+        '!node_modules',
+    ]);
+    const cargoTomlTasks = childCargoTomls.map(async (file) => {
+        const content = await readFile(file, { encoding: 'utf8' });
+        const newContent = updateCargoToml(content, version);
+        await writeFile(file, newContent, 'utf8');
+    });
+    await Promise.all(cargoTomlTasks);
     execSync(`nx run-many -t cargo -- check`, {
         stdio: 'inherit',
     });

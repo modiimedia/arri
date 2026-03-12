@@ -3,7 +3,10 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@arrirpc/express-adapter": "workspace:*",
     "@arrirpc/schema": "workspace:*",
+    "@types/express": "^5.0.1",
+    "express": "^5.1.0",
     "@sinclair/typebox": "^0.34.48",
     "arri": "workspace:*"
   },

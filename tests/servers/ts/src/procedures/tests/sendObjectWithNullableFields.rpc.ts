@@ -1,8 +1,8 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
 export const ObjectWithEveryNullableType = a.object(
-    "ObjectWithEveryNullableType",
+    'ObjectWithEveryNullableType',
     {
         any: a.nullable(a.any()),
         boolean: a.nullable(a.boolean()),
@@ -18,7 +18,7 @@ export const ObjectWithEveryNullableType = a.object(
         uint32: a.nullable(a.uint32()),
         int64: a.nullable(a.int64()),
         uint64: a.nullable(a.uint64()),
-        enumerator: a.nullable(a.enumerator(["A", "B", "C"])),
+        enumerator: a.nullable(a.enumerator(['A', 'B', 'C'])),
         array: a.nullable(a.array(a.nullable(a.boolean()))),
         object: a.nullable(
             a.object({
@@ -29,7 +29,7 @@ export const ObjectWithEveryNullableType = a.object(
         ),
         record: a.nullable(a.record(a.nullable(a.uint64()))),
         discriminator: a.nullable(
-            a.discriminator("type", {
+            a.discriminator('type', {
                 A: a.object({
                     title: a.nullable(a.string()),
                 }),
@@ -75,9 +75,9 @@ export const ObjectWithEveryNullableType = a.object(
 );
 
 export default defineRpc({
-    params: ObjectWithEveryNullableType,
-    response: ObjectWithEveryNullableType,
-    handler({ params }) {
-        return params;
+    input: ObjectWithEveryNullableType,
+    output: ObjectWithEveryNullableType,
+    handler({ input }) {
+        return input;
     },
 });

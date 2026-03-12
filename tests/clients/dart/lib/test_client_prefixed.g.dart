@@ -6,602 +6,803 @@ import 'package:arri_client/arri_client.dart';
 import 'package:http/http.dart' as http;
 
 class TestClientPrefixed {
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "10";
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = "10";
   final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  final int? _heartbeatTimeoutMultiplier;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
   final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
   TestClientPrefixed({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-    int? heartbeatTimeoutMultiplier,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  })  : _baseUrl = baseUrl,
+        _wsConnectionUrl = wsConnectionUrl,
+        _createHttpClient = createHttpClient,
         _headers = headers,
         _onError = onError,
+        _retry = retry,
+        _retryDelay = retryDelay,
         _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-        _timeout = timeout;
+        _timeout = timeout,
+        _defaultTransport = defaultTransport ?? "http" {
+    _dispatchers = dispatchers ?? {};
+    if (_dispatchers["http"] == null) {
+      _dispatchers["http"] = HttpDispatcher(
+        baseUrl: baseUrl,
+        createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
+    }
+  }
 
   /// If the target language supports it. Generated code should mark this procedure as deprecated.
   @deprecated
-  Future<void> deprecatedRpc(FooDeprecatedRpcParams params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/deprecated-rpc",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) {},
-      onError: _onError,
-      timeout: _timeout,
+  Future<void> deprecatedRpc(
+    FooDeprecatedRpcParams input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "deprecatedRpc",
+        path: "/rpcs/tests/deprecated-rpc",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (_) => {},
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooDiscriminatorWithEmptyObject> sendDiscriminatorWithEmptyObject(
-      FooDiscriminatorWithEmptyObject params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-discriminator-with-empty-object",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooDiscriminatorWithEmptyObject.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+    FooDiscriminatorWithEmptyObject input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendDiscriminatorWithEmptyObject",
+        path: "/rpcs/tests/send-discriminator-with-empty-object",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) =>
+          FooDiscriminatorWithEmptyObject.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
-  Future<void> sendError(FooSendErrorParams params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-error",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) {},
-      onError: _onError,
-      timeout: _timeout,
+  Future<void> sendError(
+    FooSendErrorParams input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendError",
+        path: "/rpcs/tests/send-error",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (_) => {},
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooObjectWithEveryType> sendObject(
-      FooObjectWithEveryType params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-object",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooObjectWithEveryType.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+    FooObjectWithEveryType input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendObject",
+        path: "/rpcs/tests/send-object",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooObjectWithEveryType.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooObjectWithEveryNullableType> sendObjectWithNullableFields(
-      FooObjectWithEveryNullableType params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-object-with-nullable-fields",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooObjectWithEveryNullableType.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+    FooObjectWithEveryNullableType input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendObjectWithNullableFields",
+        path: "/rpcs/tests/send-object-with-nullable-fields",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) =>
+          FooObjectWithEveryNullableType.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooObjectWithPascalCaseKeys> sendObjectWithPascalCaseKeys(
-      FooObjectWithPascalCaseKeys params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooObjectWithPascalCaseKeys.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+    FooObjectWithPascalCaseKeys input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendObjectWithPascalCaseKeys",
+        path: "/rpcs/tests/send-object-with-pascal-case-keys",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooObjectWithPascalCaseKeys.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooObjectWithSnakeCaseKeys> sendObjectWithSnakeCaseKeys(
-      FooObjectWithSnakeCaseKeys params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-object-with-snake-case-keys",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooObjectWithSnakeCaseKeys.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+    FooObjectWithSnakeCaseKeys input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendObjectWithSnakeCaseKeys",
+        path: "/rpcs/tests/send-object-with-snake-case-keys",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooObjectWithSnakeCaseKeys.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooObjectWithEveryOptionalType> sendPartialObject(
-      FooObjectWithEveryOptionalType params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-partial-object",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooObjectWithEveryOptionalType.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+    FooObjectWithEveryOptionalType input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendPartialObject",
+        path: "/rpcs/tests/send-partial-object",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) =>
+          FooObjectWithEveryOptionalType.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
   Future<FooRecursiveObject> sendRecursiveObject(
-      FooRecursiveObject params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-recursive-object",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooRecursiveObject.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
-    );
-  }
-
-  Future<FooRecursiveUnion> sendRecursiveUnion(FooRecursiveUnion params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-recursive-union",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) => FooRecursiveUnion.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
-    );
-  }
-
-  EventSource<FooAutoReconnectResponse> streamAutoReconnect(
-    FooAutoReconnectParams params, {
-    void Function(FooAutoReconnectResponse data,
-            EventSource<FooAutoReconnectResponse> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooAutoReconnectResponse> connection)?
-        onOpen,
-    void Function(EventSource<FooAutoReconnectResponse> connection)? onClose,
-    void Function(
-            ArriError error, EventSource<FooAutoReconnectResponse> connection)?
-        onError,
+    FooRecursiveObject input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
     Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendRecursiveObject",
+        path: "/rpcs/tests/send-recursive-object",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooRecursiveObject.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
+    );
+  }
+
+  Future<FooRecursiveUnion> sendRecursiveUnion(
+    FooRecursiveUnion input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "sendRecursiveUnion",
+        path: "/rpcs/tests/send-recursive-union",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooRecursiveUnion.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
+    );
+  }
+
+  ArriEventSource<FooAutoReconnectResponse> streamAutoReconnect(
+    FooAutoReconnectParams input, {
+    ArriEventSourceHookOnData<FooAutoReconnectResponse>? onData,
+    ArriEventSourceHookOnRawData<FooAutoReconnectResponse>? onRawData,
+    ArriEventSourceHookOnOpen<FooAutoReconnectResponse>? onOpen,
+    ArriEventSourceHookOnClose<FooAutoReconnectResponse>? onClose,
+    ArriEventSourceHookOnError<FooAutoReconnectResponse>? onError,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-auto-reconnect",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      params: params.toJson(),
-      parser: (body) => FooAutoReconnectResponse.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleOutputStreamRpc<FooAutoReconnectParams,
+        FooAutoReconnectResponse>(
+      req: RpcRequest(
+        procedure: "streamAutoReconnect",
+        path: "/rpcs/tests/stream-auto-reconnect",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooAutoReconnectResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 
   /// This route will always return an error. The client should automatically retry with exponential backoff.
-  EventSource<FooStreamConnectionErrorTestResponse> streamConnectionErrorTest(
-    FooStreamConnectionErrorTestParams params, {
-    void Function(FooStreamConnectionErrorTestResponse data,
-            EventSource<FooStreamConnectionErrorTestResponse> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooStreamConnectionErrorTestResponse> connection)?
-        onOpen,
-    void Function(EventSource<FooStreamConnectionErrorTestResponse> connection)?
-        onClose,
-    void Function(ArriError error,
-            EventSource<FooStreamConnectionErrorTestResponse> connection)?
-        onError,
-    Duration? retryDelay,
+  ArriEventSource<FooStreamConnectionErrorTestResponse>
+      streamConnectionErrorTest(
+    FooStreamConnectionErrorTestParams input, {
+    ArriEventSourceHookOnData<FooStreamConnectionErrorTestResponse>? onData,
+    ArriEventSourceHookOnRawData<FooStreamConnectionErrorTestResponse>?
+        onRawData,
+    ArriEventSourceHookOnOpen<FooStreamConnectionErrorTestResponse>? onOpen,
+    ArriEventSourceHookOnClose<FooStreamConnectionErrorTestResponse>? onClose,
+    ArriEventSourceHookOnError<FooStreamConnectionErrorTestResponse>? onError,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-connection-error-test",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      params: params.toJson(),
-      parser: (body) =>
-          FooStreamConnectionErrorTestResponse.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleOutputStreamRpc<FooStreamConnectionErrorTestParams,
+        FooStreamConnectionErrorTestResponse>(
+      req: RpcRequest(
+        procedure: "streamConnectionErrorTest",
+        path: "/rpcs/tests/stream-connection-error-test",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) =>
+          FooStreamConnectionErrorTestResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
-    );
-  }
-
-  /// Sends 5 messages quickly then starts sending messages slowly (1s) after that.
-  /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
-  /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-  EventSource<FooStreamHeartbeatDetectionTestResponse>
-      streamHeartbeatDetectionTest(
-    FooStreamHeartbeatDetectionTestParams params, {
-    void Function(FooStreamHeartbeatDetectionTestResponse data,
-            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
-        onOpen,
-    void Function(
-            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
-        onClose,
-    void Function(ArriError error,
-            EventSource<FooStreamHeartbeatDetectionTestResponse> connection)?
-        onError,
-    Duration? retryDelay,
-    int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
-  }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-heartbeat-detection-test",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
+      onError: onError,
+      timeout: timeout ?? _timeout,
       maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      params: params.toJson(),
-      parser: (body) =>
-          FooStreamHeartbeatDetectionTestResponse.fromJsonString(body),
-      onMessage: onMessage,
-      onOpen: onOpen,
-      onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 
   /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
-  EventSource<FooStreamLargeObjectsResponse> streamLargeObjects({
-    void Function(FooStreamLargeObjectsResponse data,
-            EventSource<FooStreamLargeObjectsResponse> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooStreamLargeObjectsResponse> connection)?
-        onOpen,
-    void Function(EventSource<FooStreamLargeObjectsResponse> connection)?
-        onClose,
-    void Function(ArriError error,
-            EventSource<FooStreamLargeObjectsResponse> connection)?
-        onError,
-    Duration? retryDelay,
+  ArriEventSource<FooStreamLargeObjectsResponse> streamLargeObjects({
+    ArriEventSourceHookOnData<FooStreamLargeObjectsResponse>? onData,
+    ArriEventSourceHookOnRawData<FooStreamLargeObjectsResponse>? onRawData,
+    ArriEventSourceHookOnOpen<FooStreamLargeObjectsResponse>? onOpen,
+    ArriEventSourceHookOnClose<FooStreamLargeObjectsResponse>? onClose,
+    ArriEventSourceHookOnError<FooStreamLargeObjectsResponse>? onError,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-large-objects",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      parser: (body) => FooStreamLargeObjectsResponse.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher
+        .handleOutputStreamRpc<Null, FooStreamLargeObjectsResponse>(
+      req: RpcRequest(
+        procedure: "streamLargeObjects",
+        path: "/rpcs/tests/stream-large-objects",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) => FooStreamLargeObjectsResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 
-  EventSource<FooChatMessage> streamMessages(
-    FooChatMessageParams params, {
-    void Function(FooChatMessage data, EventSource<FooChatMessage> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooChatMessage> connection)?
-        onOpen,
-    void Function(EventSource<FooChatMessage> connection)? onClose,
-    void Function(ArriError error, EventSource<FooChatMessage> connection)?
-        onError,
-    Duration? retryDelay,
+  ArriEventSource<FooChatMessage> streamMessages(
+    FooChatMessageParams input, {
+    ArriEventSourceHookOnData<FooChatMessage>? onData,
+    ArriEventSourceHookOnRawData<FooChatMessage>? onRawData,
+    ArriEventSourceHookOnOpen<FooChatMessage>? onOpen,
+    ArriEventSourceHookOnClose<FooChatMessage>? onClose,
+    ArriEventSourceHookOnError<FooChatMessage>? onError,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-messages",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      params: params.toJson(),
-      parser: (body) => FooChatMessage.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher
+        .handleOutputStreamRpc<FooChatMessageParams, FooChatMessage>(
+      req: RpcRequest(
+        procedure: "streamMessages",
+        path: "/rpcs/tests/stream-messages",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (data) => FooChatMessage.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 
-  EventSource<FooTestsStreamRetryWithNewCredentialsResponse>
+  ArriEventSource<FooTestsStreamRetryWithNewCredentialsResponse>
       streamRetryWithNewCredentials({
-    void Function(
-            FooTestsStreamRetryWithNewCredentialsResponse data,
-            EventSource<FooTestsStreamRetryWithNewCredentialsResponse>
-                connection)?
-        onMessage,
-    void Function(
-            http.StreamedResponse response,
-            EventSource<FooTestsStreamRetryWithNewCredentialsResponse>
-                connection)?
+    ArriEventSourceHookOnData<FooTestsStreamRetryWithNewCredentialsResponse>?
+        onData,
+    ArriEventSourceHookOnRawData<FooTestsStreamRetryWithNewCredentialsResponse>?
+        onRawData,
+    ArriEventSourceHookOnOpen<FooTestsStreamRetryWithNewCredentialsResponse>?
         onOpen,
-    void Function(
-            EventSource<FooTestsStreamRetryWithNewCredentialsResponse>
-                connection)?
+    ArriEventSourceHookOnClose<FooTestsStreamRetryWithNewCredentialsResponse>?
         onClose,
-    void Function(
-            ArriError error,
-            EventSource<FooTestsStreamRetryWithNewCredentialsResponse>
-                connection)?
+    ArriEventSourceHookOnError<FooTestsStreamRetryWithNewCredentialsResponse>?
         onError,
-    Duration? retryDelay,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      parser: (body) =>
-          FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleOutputStreamRpc<Null,
+        FooTestsStreamRetryWithNewCredentialsResponse>(
+      req: RpcRequest(
+        procedure: "streamRetryWithNewCredentials",
+        path: "/rpcs/tests/stream-retry-with-new-credentials",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) =>
+          FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 
   /// When the client receives the 'done' event, it should close the connection and NOT reconnect
-  EventSource<FooChatMessage> streamTenEventsThenEnd({
-    void Function(FooChatMessage data, EventSource<FooChatMessage> connection)?
-        onMessage,
-    void Function(http.StreamedResponse response,
-            EventSource<FooChatMessage> connection)?
-        onOpen,
-    void Function(EventSource<FooChatMessage> connection)? onClose,
-    void Function(ArriError error, EventSource<FooChatMessage> connection)?
-        onError,
-    Duration? retryDelay,
+  ArriEventSource<FooChatMessage> streamTenEventsThenEnd({
+    ArriEventSourceHookOnData<FooChatMessage>? onData,
+    ArriEventSourceHookOnRawData<FooChatMessage>? onRawData,
+    ArriEventSourceHookOnOpen<FooChatMessage>? onOpen,
+    ArriEventSourceHookOnClose<FooChatMessage>? onClose,
+    ArriEventSourceHookOnError<FooChatMessage>? onError,
+    Duration? timeout,
+    String? transport,
     int? maxRetryCount,
-    String? lastEventId,
-    int? heartbeatTimeoutMultiplier,
+    Duration? maxRetryInterval,
+    String? lastMsgId,
   }) {
-    return parsedArriSseRequest(
-      "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      retryDelay: retryDelay,
-      maxRetryCount: maxRetryCount,
-      lastEventId: lastEventId,
-      heartbeatTimeoutMultiplier:
-          heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
-      timeout: _timeout,
-      parser: (body) => FooChatMessage.fromJsonString(body),
-      onMessage: onMessage,
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleOutputStreamRpc<Null, FooChatMessage>(
+      req: RpcRequest(
+        procedure: "streamTenEventsThenEnd",
+        path: "/rpcs/tests/stream-ten-events-then-end",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) => FooChatMessage.fromJsonString(data),
+      lastMsgId: lastMsgId,
+      onData: onData,
+      onRawData: onRawData,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError != null && _onError != null
-          ? (err, es) {
-              _onError.call(onError);
-              return onError(err, es);
-            }
-          : onError != null
-              ? onError
-              : _onError != null
-                  ? (err, _) => _onError.call(err)
-                  : null,
+      onError: onError,
+      timeout: timeout ?? _timeout,
+      maxRetryCount: maxRetryCount,
+      maxRetryInterval: maxRetryInterval,
+      heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
     );
   }
 
   TestClientPrefixedNestedService get nested => TestClientPrefixedNestedService(
         baseUrl: _baseUrl,
+        wsConnectionUrl: _wsConnectionUrl,
         headers: _headers,
-        httpClient: _httpClient,
+        createHttpClient: _createHttpClient,
         onError: _onError,
         heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
         timeout: _timeout,
+        dispatchers: _dispatchers,
+        defaultTransport: _defaultTransport,
       );
 }
 
 class TestClientPrefixedNestedService {
-  final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "10";
+  final String _wsConnectionUrl;
+
+  final http.Client Function()? _createHttpClient;
+  final String? _clientVersion = "10";
   final FutureOr<Map<String, String>> Function()? _headers;
-  final Function(Object)? _onError;
-  final int? _heartbeatTimeoutMultiplier;
+  final OnErrorHook? _onError;
+  final int? _retry;
+  final Duration? _retryDelay;
+  final double? _heartbeatTimeoutMultiplier;
   final Duration? _timeout;
+  final String _defaultTransport;
+  late final Map<String, Dispatcher> _dispatchers;
+
   TestClientPrefixedNestedService({
-    http.Client? httpClient,
     required String baseUrl,
+    required String wsConnectionUrl,
+    http.Client Function()? createHttpClient,
     FutureOr<Map<String, String>> Function()? headers,
-    Function(Object)? onError,
-    int? heartbeatTimeoutMultiplier,
+    OnErrorHook? onError,
+    int? retry,
+    Duration? retryDelay,
+    double? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl,
+    String? defaultTransport,
+    Map<String, Dispatcher>? dispatchers,
+  })  : _baseUrl = baseUrl,
+        _wsConnectionUrl = wsConnectionUrl,
+        _createHttpClient = createHttpClient,
         _headers = headers,
         _onError = onError,
+        _retry = retry,
+        _retryDelay = retryDelay,
         _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-        _timeout = timeout;
+        _timeout = timeout,
+        _defaultTransport = defaultTransport ?? "http" {
+    _dispatchers = dispatchers ?? {};
+    if (_dispatchers["http"] == null) {
+      _dispatchers["http"] = HttpDispatcher(
+        baseUrl: baseUrl,
+        createHttpClient: _createHttpClient,
+      );
+    }
+    if (_dispatchers["ws"] == null) {
+      _dispatchers["ws"] = WsDispatcher(
+        connectionUrl: _wsConnectionUrl,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+      );
+    }
+  }
 
-  Future<FooDefaultPayload> emptyParamsGetRequest() async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/nested/empty-params-get-request",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      parser: (body) => FooDefaultPayload.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+  Future<FooDefaultPayload> emptyParamsGetRequest({
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyParamsGetRequest",
+        path: "/rpcs/tests/nested/empty-params-get-request",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) => FooDefaultPayload.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
-  Future<FooDefaultPayload> emptyParamsPostRequest() async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/nested/empty-params-post-request",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      parser: (body) => FooDefaultPayload.fromJsonString(body),
-      onError: _onError,
-      timeout: _timeout,
+  Future<FooDefaultPayload> emptyParamsPostRequest({
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyParamsPostRequest",
+        path: "/rpcs/tests/nested/empty-params-post-request",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: null,
+      ),
+      jsonDecoder: (data) => FooDefaultPayload.fromJsonString(data),
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
-  Future<void> emptyResponseGetRequest(FooDefaultPayload params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/nested/empty-response-get-request",
-      method: HttpMethod.get,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) {},
-      onError: _onError,
-      timeout: _timeout,
+  Future<void> emptyResponseGetRequest(
+    FooDefaultPayload input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyResponseGetRequest",
+        path: "/rpcs/tests/nested/empty-response-get-request",
+        reqId: getRequestId(),
+        method: HttpMethod.get,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (_) => {},
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 
-  Future<void> emptyResponsePostRequest(FooDefaultPayload params) async {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/nested/empty-response-post-request",
-      method: HttpMethod.post,
-      httpClient: _httpClient,
-      headers: _headers,
-      clientVersion: _clientVersion,
-      params: params.toJson(),
-      parser: (body) {},
-      onError: _onError,
-      timeout: _timeout,
+  Future<void> emptyResponsePostRequest(
+    FooDefaultPayload input, {
+    String? transport,
+    Duration? timeout,
+    int? retry,
+    Duration? retryDelay,
+    OnErrorHook? onError,
+  }) async {
+    final selectedTransport =
+        resolveTransport(["http", "ws"], transport ?? _defaultTransport);
+    final dispatcher = _dispatchers[selectedTransport];
+    if (dispatcher == null) throw MissingDispatcherError(selectedTransport);
+    return dispatcher.handleRpc(
+      req: RpcRequest(
+        procedure: "nested.emptyResponsePostRequest",
+        path: "/rpcs/tests/nested/empty-response-post-request",
+        reqId: getRequestId(),
+        method: null,
+        clientVersion: _clientVersion,
+        customHeaders: _headers,
+        data: input,
+      ),
+      jsonDecoder: (_) => {},
+      timeout: timeout ?? _timeout,
+      retry: retry ?? _retry,
+      retryDelay: retryDelay ?? _retryDelay,
+      onError: onError ?? _onError,
     );
   }
 }
@@ -650,7 +851,6 @@ class FooManuallyAddedModel implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooManuallyAddedModel copyWith({
     String? hello,
   }) {
@@ -722,7 +922,6 @@ class FooDefaultPayload implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooDefaultPayload copyWith({
     String? message,
   }) {
@@ -797,7 +996,6 @@ class FooDeprecatedRpcParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooDeprecatedRpcParams copyWith({
     String? deprecatedField,
   }) {
@@ -892,7 +1090,6 @@ class FooDiscriminatorWithEmptyObjectEmpty
     return _queryParts_.join("&");
   }
 
-  @override
   FooDiscriminatorWithEmptyObjectEmpty copyWith() {
     return FooDiscriminatorWithEmptyObjectEmpty();
   }
@@ -980,7 +1177,6 @@ class FooDiscriminatorWithEmptyObjectNotEmpty
     return _queryParts_.join("&");
   }
 
-  @override
   FooDiscriminatorWithEmptyObjectNotEmpty copyWith({
     String? foo,
     double? bar,
@@ -1066,7 +1262,6 @@ class FooSendErrorParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooSendErrorParams copyWith({
     int? code,
     String? message,
@@ -1325,7 +1520,6 @@ class FooObjectWithEveryType implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryType copyWith({
     dynamic any,
     bool? boolean,
@@ -1494,7 +1688,6 @@ class FooObjectWithEveryTypeObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeObject copyWith({
     String? string,
     bool? boolean,
@@ -1606,7 +1799,6 @@ class FooObjectWithEveryTypeDiscriminatorA
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeDiscriminatorA copyWith({
     String? title,
   }) {
@@ -1693,7 +1885,6 @@ class FooObjectWithEveryTypeDiscriminatorB
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeDiscriminatorB copyWith({
     String? title,
     String? description,
@@ -1787,7 +1978,6 @@ class FooObjectWithEveryTypeNestedObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeNestedObject copyWith({
     String? id,
     DateTime? timestamp,
@@ -1884,7 +2074,6 @@ class FooObjectWithEveryTypeNestedObjectData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeNestedObjectData copyWith({
     String? id,
     DateTime? timestamp,
@@ -1973,7 +2162,6 @@ class FooObjectWithEveryTypeNestedObjectDataData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeNestedObjectDataData copyWith({
     String? id,
     DateTime? timestamp,
@@ -2059,7 +2247,6 @@ class FooObjectWithEveryTypeNestedArrayElementElement implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryTypeNestedArrayElementElement copyWith({
     String? id,
     DateTime? timestamp,
@@ -2324,7 +2511,6 @@ class FooObjectWithEveryNullableType implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableType copyWith({
     dynamic Function()? any,
     bool? Function()? boolean,
@@ -2498,7 +2684,6 @@ class FooObjectWithEveryNullableTypeObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeObject copyWith({
     String? Function()? string,
     bool? Function()? boolean,
@@ -2614,7 +2799,6 @@ class FooObjectWithEveryNullableTypeDiscriminatorA
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeDiscriminatorA copyWith({
     String? Function()? title,
   }) {
@@ -2703,7 +2887,6 @@ class FooObjectWithEveryNullableTypeDiscriminatorB
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeDiscriminatorB copyWith({
     String? Function()? title,
     String? Function()? description,
@@ -2800,7 +2983,6 @@ class FooObjectWithEveryNullableTypeNestedObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeNestedObject copyWith({
     String? Function()? id,
     DateTime? Function()? timestamp,
@@ -2900,7 +3082,6 @@ class FooObjectWithEveryNullableTypeNestedObjectData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeNestedObjectData copyWith({
     String? Function()? id,
     DateTime? Function()? timestamp,
@@ -2989,7 +3170,6 @@ class FooObjectWithEveryNullableTypeNestedObjectDataData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeNestedObjectDataData copyWith({
     String? Function()? id,
     DateTime? Function()? timestamp,
@@ -3076,7 +3256,6 @@ class FooObjectWithEveryNullableTypeNestedArrayElementElement
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryNullableTypeNestedArrayElementElement copyWith({
     String? Function()? id,
     DateTime? Function()? timestamp,
@@ -3178,7 +3357,6 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithPascalCaseKeys copyWith({
     DateTime? createdAt,
     String? displayName,
@@ -3290,7 +3468,6 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithSnakeCaseKeys copyWith({
     DateTime? createdAt,
     String? displayName,
@@ -3547,7 +3724,6 @@ class FooObjectWithEveryOptionalType implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalType copyWith({
     dynamic Function()? any,
     bool? Function()? boolean,
@@ -3721,7 +3897,6 @@ class FooObjectWithEveryOptionalTypeObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeObject copyWith({
     String? string,
     bool? boolean,
@@ -3837,7 +4012,6 @@ class FooObjectWithEveryOptionalTypeDiscriminatorA
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeDiscriminatorA copyWith({
     String? title,
   }) {
@@ -3926,7 +4100,6 @@ class FooObjectWithEveryOptionalTypeDiscriminatorB
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeDiscriminatorB copyWith({
     String? title,
     String? description,
@@ -4023,7 +4196,6 @@ class FooObjectWithEveryOptionalTypeNestedObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeNestedObject copyWith({
     String? id,
     DateTime? timestamp,
@@ -4123,7 +4295,6 @@ class FooObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeNestedObjectData copyWith({
     String? id,
     DateTime? timestamp,
@@ -4212,7 +4383,6 @@ class FooObjectWithEveryOptionalTypeNestedObjectDataData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeNestedObjectDataData copyWith({
     String? id,
     DateTime? timestamp,
@@ -4299,7 +4469,6 @@ class FooObjectWithEveryOptionalTypeNestedArrayElementElement
     return _queryParts_.join("&");
   }
 
-  @override
   FooObjectWithEveryOptionalTypeNestedArrayElementElement copyWith({
     String? id,
     DateTime? timestamp,
@@ -4395,7 +4564,6 @@ class FooRecursiveObject implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooRecursiveObject copyWith({
     FooRecursiveObject? Function()? left,
     FooRecursiveObject? Function()? right,
@@ -4511,7 +4679,6 @@ class FooRecursiveUnionChild implements FooRecursiveUnion {
     return _queryParts_.join("&");
   }
 
-  @override
   FooRecursiveUnionChild copyWith({
     FooRecursiveUnion? data,
   }) {
@@ -4596,7 +4763,6 @@ class FooRecursiveUnionChildren implements FooRecursiveUnion {
     return _queryParts_.join("&");
   }
 
-  @override
   FooRecursiveUnionChildren copyWith({
     List<FooRecursiveUnion>? data,
   }) {
@@ -4675,7 +4841,6 @@ class FooRecursiveUnionText implements FooRecursiveUnion {
     return _queryParts_.join("&");
   }
 
-  @override
   FooRecursiveUnionText copyWith({
     String? data,
   }) {
@@ -4756,7 +4921,6 @@ class FooRecursiveUnionShape implements FooRecursiveUnion {
     return _queryParts_.join("&");
   }
 
-  @override
   FooRecursiveUnionShape copyWith({
     FooRecursiveUnionShapeData? data,
   }) {
@@ -4842,7 +5006,6 @@ class FooRecursiveUnionShapeData implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooRecursiveUnionShapeData copyWith({
     double? width,
     double? height,
@@ -4921,7 +5084,6 @@ class FooAutoReconnectParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooAutoReconnectParams copyWith({
     int? messageCount,
   }) {
@@ -5000,7 +5162,6 @@ class FooAutoReconnectResponse implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooAutoReconnectResponse copyWith({
     int? count,
     String? message,
@@ -5084,7 +5245,6 @@ class FooStreamConnectionErrorTestParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooStreamConnectionErrorTestParams copyWith({
     int? statusCode,
     String? statusMessage,
@@ -5161,7 +5321,6 @@ class FooStreamConnectionErrorTestResponse implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooStreamConnectionErrorTestResponse copyWith({
     String? message,
   }) {
@@ -5187,155 +5346,6 @@ class FooStreamConnectionErrorTestResponse implements ArriModel {
   @override
   String toString() {
     return "FooStreamConnectionErrorTestResponse ${toJsonString()}";
-  }
-}
-
-class FooStreamHeartbeatDetectionTestParams implements ArriModel {
-  final bool heartbeatEnabled;
-  const FooStreamHeartbeatDetectionTestParams({
-    required this.heartbeatEnabled,
-  });
-
-  factory FooStreamHeartbeatDetectionTestParams.empty() {
-    return FooStreamHeartbeatDetectionTestParams(
-      heartbeatEnabled: false,
-    );
-  }
-
-  factory FooStreamHeartbeatDetectionTestParams.fromJson(
-      Map<String, dynamic> _input_) {
-    final heartbeatEnabled =
-        typeFromDynamic<bool>(_input_["heartbeatEnabled"], false);
-    return FooStreamHeartbeatDetectionTestParams(
-      heartbeatEnabled: heartbeatEnabled,
-    );
-  }
-
-  factory FooStreamHeartbeatDetectionTestParams.fromJsonString(String input) {
-    return FooStreamHeartbeatDetectionTestParams.fromJson(json.decode(input));
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{
-      "heartbeatEnabled": heartbeatEnabled,
-    };
-
-    return _output_;
-  }
-
-  @override
-  String toJsonString() {
-    return json.encode(toJson());
-  }
-
-  @override
-  String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("heartbeatEnabled=$heartbeatEnabled");
-    return _queryParts_.join("&");
-  }
-
-  @override
-  FooStreamHeartbeatDetectionTestParams copyWith({
-    bool? heartbeatEnabled,
-  }) {
-    return FooStreamHeartbeatDetectionTestParams(
-      heartbeatEnabled: heartbeatEnabled ?? this.heartbeatEnabled,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-        heartbeatEnabled,
-      ];
-
-  @override
-  bool operator ==(Object other) {
-    return other is FooStreamHeartbeatDetectionTestParams &&
-        listsAreEqual(props, other.props);
-  }
-
-  @override
-  int get hashCode => listToHashCode(props);
-
-  @override
-  String toString() {
-    return "FooStreamHeartbeatDetectionTestParams ${toJsonString()}";
-  }
-}
-
-class FooStreamHeartbeatDetectionTestResponse implements ArriModel {
-  final String message;
-  const FooStreamHeartbeatDetectionTestResponse({
-    required this.message,
-  });
-
-  factory FooStreamHeartbeatDetectionTestResponse.empty() {
-    return FooStreamHeartbeatDetectionTestResponse(
-      message: "",
-    );
-  }
-
-  factory FooStreamHeartbeatDetectionTestResponse.fromJson(
-      Map<String, dynamic> _input_) {
-    final message = typeFromDynamic<String>(_input_["message"], "");
-    return FooStreamHeartbeatDetectionTestResponse(
-      message: message,
-    );
-  }
-
-  factory FooStreamHeartbeatDetectionTestResponse.fromJsonString(String input) {
-    return FooStreamHeartbeatDetectionTestResponse.fromJson(json.decode(input));
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{
-      "message": message,
-    };
-
-    return _output_;
-  }
-
-  @override
-  String toJsonString() {
-    return json.encode(toJson());
-  }
-
-  @override
-  String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("message=$message");
-    return _queryParts_.join("&");
-  }
-
-  @override
-  FooStreamHeartbeatDetectionTestResponse copyWith({
-    String? message,
-  }) {
-    return FooStreamHeartbeatDetectionTestResponse(
-      message: message ?? this.message,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-        message,
-      ];
-
-  @override
-  bool operator ==(Object other) {
-    return other is FooStreamHeartbeatDetectionTestResponse &&
-        listsAreEqual(props, other.props);
-  }
-
-  @override
-  int get hashCode => listToHashCode(props);
-
-  @override
-  String toString() {
-    return "FooStreamHeartbeatDetectionTestResponse ${toJsonString()}";
   }
 }
 
@@ -5402,7 +5412,6 @@ class FooStreamLargeObjectsResponse implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooStreamLargeObjectsResponse copyWith({
     List<double>? numbers,
     List<FooStreamLargeObjectsResponseObjectsElement>? objects,
@@ -5495,7 +5504,6 @@ class FooStreamLargeObjectsResponseObjectsElement implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooStreamLargeObjectsResponseObjectsElement copyWith({
     String? id,
     String? name,
@@ -5574,7 +5582,6 @@ class FooChatMessageParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooChatMessageParams copyWith({
     String? channelId,
   }) {
@@ -5706,7 +5713,6 @@ class FooChatMessageText implements FooChatMessage {
     return _queryParts_.join("&");
   }
 
-  @override
   FooChatMessageText copyWith({
     String? id,
     String? channelId,
@@ -5823,7 +5829,6 @@ class FooChatMessageImage implements FooChatMessage {
     return _queryParts_.join("&");
   }
 
-  @override
   FooChatMessageImage copyWith({
     String? id,
     String? channelId,
@@ -5940,7 +5945,6 @@ class FooChatMessageUrl implements FooChatMessage {
     return _queryParts_.join("&");
   }
 
-  @override
   FooChatMessageUrl copyWith({
     String? id,
     String? channelId,
@@ -6027,7 +6031,6 @@ class FooTestsStreamRetryWithNewCredentialsResponse implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooTestsStreamRetryWithNewCredentialsResponse copyWith({
     String? message,
   }) {
@@ -6100,7 +6103,6 @@ class FooUsersWatchUserParams implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooUsersWatchUserParams copyWith({
     String? userId,
   }) {
@@ -6291,7 +6293,6 @@ class FooUsersWatchUserResponse implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooUsersWatchUserResponse copyWith({
     String? id,
     FooUsersWatchUserResponseRole? role,
@@ -6448,7 +6449,6 @@ class FooUserPhoto implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooUserPhoto copyWith({
     String? url,
     double? width,
@@ -6541,7 +6541,6 @@ class FooUserSettings implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooUserSettings copyWith({
     bool? notificationsEnabled,
     FooUserSettingsPreferredTheme? preferredTheme,
@@ -6687,7 +6686,6 @@ class FooUsersWatchUserResponseRecentNotificationsElementPostLike
     return _queryParts_.join("&");
   }
 
-  @override
   FooUsersWatchUserResponseRecentNotificationsElementPostLike copyWith({
     String? postId,
     String? userId,
@@ -6787,7 +6785,6 @@ class FooUsersWatchUserResponseRecentNotificationsElementPostComment
     return _queryParts_.join("&");
   }
 
-  @override
   FooUsersWatchUserResponseRecentNotificationsElementPostComment copyWith({
     String? postId,
     String? userId,
@@ -6875,7 +6872,6 @@ class FooUsersWatchUserResponseBookmarksentry implements ArriModel {
     return _queryParts_.join("&");
   }
 
-  @override
   FooUsersWatchUserResponseBookmarksentry copyWith({
     String? postId,
     String? userId,

@@ -1,0 +1,66 @@
+{
+  "name": "dart-core",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/dart/dart-core/lib",
+  "targets": {
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub publish -f",
+        "cwd": "languages/dart/dart-core"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/lib/**/*.dart",
+        "{projectRoot}/test/**/*.dart",
+        "{projectRoot}/pubspec.yaml"
+      ],
+      "options": {
+        "command": "dart test",
+        "cwd": "languages/dart/dart-core"
+      }
+    },
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/lib/**/*.dart",
+        "{projectRoot}/integration_test/**/*.dart",
+        "{projectRoot}/pubspec.yaml"
+      ],
+      "options": {
+        "command": "dart test ./integration_test",
+        "cwd": "languages/dart/dart-core"
+      }
+    },
+    "pub": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub",
+        "cwd": "languages/dart/dart-core"
+      }
+    },
+    "dart": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart",
+        "cwd": "languages/dart/dart-core"
+      }
+    },
+    "pub-get": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub get",
+        "cwd": "languages/dart/dart-core"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart analyze",
+        "cwd": "languages/dart/dart-core"
+      }
+    }
+  }
+}

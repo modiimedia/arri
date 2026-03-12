@@ -267,3 +267,160 @@ Below are all of the contents of the test JSON files in an easier to read format
   "right": { "left": null, "right": null }
 }
 ```
+
+## InvocationMessage_WithBody.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 12345
+client-version: 1.2.5
+foo: hello foo
+
+{"message":"hello world"}
+```
+
+## InvocationMessage_WithoutBody.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 54321
+foo: hello foo
+bar: hello bar
+
+
+```
+
+## InvocationMessage_WithoutBody2.txt
+
+```txt
+ARRIRPC/0.0.8 foo.fooFoo
+content-type: application/json
+req-id: 54321
+bar: hello bar
+foo: hello foo
+
+
+```
+
+## CancelStreamMessage.txt
+
+```txt
+ARRIRPC/0.0.8 STREAM_CANCEL
+req-id: 54321
+reason: no longer needed
+
+
+```
+
+## OkMessage_WithBody.txt
+
+```txt
+ARRIRPC/0.0.8 OK
+content-type: application/json
+req-id: 12345
+
+{"message":"hello world"}
+```
+
+## OkMessage_WithoutBody.txt
+
+```txt
+ARRIRPC/0.0.8 OK
+content-type: application/json
+req-id: 54321
+foo: foo
+
+
+```
+
+## ErrorMessage_WithoutBody.txt
+
+```txt
+ARRIRPC/0.0.8 ERROR
+content-type: application/json
+req-id: 12345
+err-code: 54321
+err-msg: This is an error
+foo: foo
+
+
+```
+
+## ErrorMessage_WithBody.txt
+
+```txt
+ARRIRPC/0.0.8 ERROR
+content-type: application/json
+req-id: 12345
+err-code: 54321
+err-msg: This is an error
+foo: foo
+
+{"data":[],"trace":["foo","bar","baz"]}
+```
+
+## HeartbeatMessage_WithInterval.txt
+
+```txt
+ARRIRPC/0.0.8 HEARTBEAT
+heartbeat-interval: 155
+
+
+```
+
+## HeartbeatMessage_WithoutInterval.txt
+
+```txt
+ARRIRPC/0.0.8 HEARTBEAT
+
+
+```
+
+## ConnectionStartMessage_WithInterval.txt
+
+```txt
+ARRIRPC/0.0.8 CONNECTION_START
+heartbeat-interval: 255
+
+
+```
+
+## ConnectionStartMessage_WithoutInterval.txt
+
+```txt
+ARRIRPC/0.0.8 CONNECTION_START
+
+
+```
+
+## StreamDataMessage.txt
+
+```txt
+ARRIRPC/0.0.8 STREAM_DATA
+req-id: 1515
+msg-id: 1
+
+{"message":"hello world"}
+```
+
+## StreamEndMessage.txt
+
+```txt
+ARRIRPC/0.0.8 STREAM_END
+req-id: 1515
+reason: no more events
+
+
+```
+
+## StreamCancelMessage.txt
+
+```txt
+ARRIRPC/0.0.8 STREAM_CANCEL
+req-id: 1515
+reason: no longer needed
+
+
+```

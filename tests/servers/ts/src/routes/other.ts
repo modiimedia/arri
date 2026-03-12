@@ -1,24 +1,15 @@
 import { a } from '@arrirpc/schema';
-import { ArriRouter, defineRpc, defineService } from '@arrirpc/server';
+import { defineRpc, defineService } from '@arrirpc/server';
 
-export const manualRouter = new ArriRouter();
 const DefaultPayload = a.object('DefaultPayload', {
     message: a.string(),
-});
-
-manualRouter.route({
-    path: '/routes/hello-world',
-    method: ['get', 'post'],
-    handler(_) {
-        return `hello world`;
-    },
 });
 
 export const manualTestService = defineService('tests.nested', {
     emptyParamsGetRequest: defineRpc({
         method: 'get',
-        params: undefined,
-        response: DefaultPayload,
+        input: undefined,
+        output: DefaultPayload,
         handler() {
             return {
                 message: 'ok',
@@ -26,8 +17,8 @@ export const manualTestService = defineService('tests.nested', {
         },
     }),
     emptyParamsPostRequest: defineRpc({
-        params: undefined,
-        response: DefaultPayload,
+        input: undefined,
+        output: DefaultPayload,
         handler() {
             return {
                 message: 'ok',
@@ -36,13 +27,13 @@ export const manualTestService = defineService('tests.nested', {
     }),
     emptyResponseGetRequest: defineRpc({
         method: 'get',
-        params: DefaultPayload,
-        response: undefined,
+        input: DefaultPayload,
+        output: undefined,
         handler() {},
     }),
     emptyResponsePostRequest: defineRpc({
-        params: DefaultPayload,
-        response: undefined,
+        input: DefaultPayload,
+        output: undefined,
         handler() {},
     }),
 });

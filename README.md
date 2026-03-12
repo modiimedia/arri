@@ -56,15 +56,15 @@ Generators get run by the [Arri CLI](/tooling/cli/README.md) during `arri build`
 
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
-| Language                                            | HTTP | SSE    |
-| --------------------------------------------------- | ---- | ------ |
-| [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅     |
-| [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅     |
-| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅     |
-| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅     |
-| [Swift](languages/swift/swift-codegen/README.md)    | ✅   | ✅\*\* |
-| Go                                                  |      |        |
-| Python                                              |      |        |
+| Language                                            | HTTP | Websockets |
+| --------------------------------------------------- | ---- | ---------- |
+| [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅         |
+| [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅         |
+| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | 🚧         |
+| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   |            |
+| [Swift](languages/swift/swift-codegen/README.md)    | ✅   |            |
+| Go                                                  |      |            |
+| Python                                              |      |            |
 
 ✅ completed
 
