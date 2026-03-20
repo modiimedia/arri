@@ -59,7 +59,9 @@ export interface DartClientGeneratorOptions {
 export const dartClientGenerator = defineGeneratorPlugin(
     (options: DartClientGeneratorOptions) => {
         return {
+            name: 'DartClient',
             options,
+            check: undefined,
             async run(def) {
                 if (!options.outputFile) {
                     throw new Error(

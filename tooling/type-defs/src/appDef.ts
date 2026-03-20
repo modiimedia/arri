@@ -161,7 +161,14 @@ export function isServiceDefinition(input: any): input is ServiceDefinition {
 }
 
 export interface Generator<TOptions extends Record<string, any> | undefined> {
+    name: string;
     run: (def: AppDefinition, isDevServer?: boolean) => any;
+    /**
+     *
+     */
+    check?: (
+        def: AppDefinition,
+    ) => { hasChanges: true; diff: string } | { hasChanges: false };
     options: TOptions;
 }
 

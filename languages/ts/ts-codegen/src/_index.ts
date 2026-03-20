@@ -75,6 +75,7 @@ export interface TypescriptGeneratorOptions {
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
     (options: TypescriptGeneratorOptions) => ({
+        name: 'TypescriptClient',
         run: async (def) => {
             if (!options.clientName) {
                 throw new Error('Name is requires');
@@ -90,6 +91,8 @@ export const typescriptClientGenerator = defineGeneratorPlugin(
             const result = await createTypescriptClient(def, options);
             writeFileSync(options.outputFile, result);
         },
+        // todo
+        check: undefined,
         options,
     }),
 );

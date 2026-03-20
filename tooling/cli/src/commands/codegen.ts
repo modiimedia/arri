@@ -26,6 +26,10 @@ export default defineCommand({
             alias: ['c'],
             default: 'arri.config.ts',
         },
+        check: {
+            type: 'boolean',
+            default: false,
+        },
         watch: {
             type: 'boolean',
             alias: ['w'],
@@ -72,9 +76,10 @@ export default defineCommand({
         if (!def && !args.watch) {
             throw new Error(`Unable to find App Definition at ${args.schema}`);
         }
+        const mode = args.check ? 'check' : 'run';
         if (def) {
             const initialStartTime = new Date();
-            await runGenerators(def, config.generators ?? []);
+            await runGenerators(def, config.generators ?? [], mode);
             logger.success(
                 `Generators completed in ${new Date().getTime() - initialStartTime.getTime()}ms`,
             );
@@ -89,6 +94,7 @@ export default defineCommand({
                 await runGenerators(
                     await loadAppDefinition(args.schema),
                     config.generators ?? [],
+                    mode,
                 );
                 logger.success(
                     `Generators completed in ${new Date().getTime() - startTime.getTime()}ms`,
@@ -104,6 +110,7 @@ export default defineCommand({
                 await runGenerators(
                     await loadAppDefinition(args.schema),
                     config.generators ?? [],
+                    mode,
                 );
                 logger.success(
                     `Generators completed in ${new Date().getTime() - startTime.getTime()}ms`,
@@ -118,17 +125,47 @@ export default defineCommand({
 async function runGenerators(
     def: AppDefinition,
     generators: ArriConfig['generators'],
+    mode: 'run' | 'check',
 ) {
-    logger.info(`Generating ${generators?.length} client(s)`);
-    await Promise.allSettled(
-        generators.map((gen) =>
-            gen.run(
-                def ?? {
-                    schemaVersion: SCHEMA_VERSION,
-                    procedures: {},
-                    definitions: {},
-                },
-            ),
-        ),
-    );
+    switch (mode) {
+        case 'check':
+            logger.info(
+                `Check for changes to the output of ${generators.length} client(s)`,
+            );
+            const _results = await Promise.all(
+                generators.map((gen) => {
+                    if (typeof gen.check === 'undefined') {
+                        throw new Error(
+                            `[${gen.name}] the --check flag isn't supported in this generator`,
+                        );
+                    }
+                    return gen.check(
+                        def ?? {
+                            schemaVersion: SCHEMA_VERSION,
+                            procedures: {},
+                            definitions: {},
+                        },
+                    );
+                }),
+            );
+            break;
+        case 'run':
+            logger.info(`Generating ${generators?.length} client(s)`);
+            await Promise.allSettled(
+                generators.map((gen) =>
+                    gen.run(
+                        def ?? {
+                            schemaVersion: SCHEMA_VERSION,
+                            procedures: {},
+                            definitions: {},
+                        },
+                    ),
+                ),
+            );
+
+            break;
+        default:
+            mode satisfies never;
+            break;
+    }
 }
