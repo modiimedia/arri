@@ -12,15 +12,16 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 
 ## Table of Contents
 
-- [Server Implementations](#server-implementations)
-    - [Typescript](#typescript)
-    - [Go](#go)
-    - [Server Language Roadmap](#server-language-roadmap)
-- [Client Generators](#client-generators)
-- [Other Tooling](#other-tooling)
-- [How Arri RPC Works](#how-arri-rpc-works)
-- [Manually Creating An App Definition](#manually-creating-an-app-definition)
-- [How To Contribute](#how-to-contribute)
+-   [Server Implementations](#server-implementations)
+    -   [Typescript](#typescript)
+    -   [Go](#go)
+    -   [Server Language Roadmap](#server-language-roadmap)
+-   [Client Generators](#client-generators)
+-   [Other Tooling](#other-tooling)
+-   [Community Projects](#community-projects)
+-   [How Arri RPC Works](#how-arri-rpc-works)
+-   [Manually Creating An App Definition](#manually-creating-an-app-definition)
+-   [How To Contribute](#how-to-contribute)
 
 ## Server Implementations
 
@@ -44,11 +45,13 @@ Click [here](/languages/go/go-server/README.md) to get started with Go. Be aware
 
 I'm currently finishing up the Go server implementation. After that is stable I have the following languages on my shortlist for the next potential server implementation:
 
-- rust
-- dart
-- zig
+-   rust
+-   dart
+-   zig
 
 See this [guide](/docs/implementing-an-arri-server.md) for information on how to implement your own Arri server
+
+For those interested in Rust there is currently a [community-led](#community-projects) rust project for Arri schemas called [Ronky](https://github.com/arthurdw/ronky)
 
 ## Client Generators
 
@@ -74,14 +77,20 @@ Below are the language client generators that are planned to have first party su
 
 ## Other Tooling
 
-- [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
+-   [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
+
+## Community Projects
+
+Below are some community-led projects for the Arri ecosystem
+
+-   [Ronky](https://github.com/arthurdw/ronky) - Arri Schemas For Rust
 
 ## How Arri RPC Works
 
 Arri RPC requires two things:
 
-- The [Arri CLI](/tooling/cli/README.md)
-- A valid Arri RPC [server implementation](/docs/implementing-an-arri-server.md)
+-   The [Arri CLI](/tooling/cli/README.md)
+-   A valid Arri RPC [server implementation](/docs/implementing-an-arri-server.md)
 
 All official server implementations are able to create an [Arri App Definition](/specifications/arri_app_definition.md) based on the server defined types and procedures. It also is able to communicate with the Arri CLI via a server plugin (to be documented). Server plugins tell the CLI important information such as: "How to build the server", "How to start the server" and "How to get the server's app definition".
 
@@ -91,21 +100,21 @@ Once these things are in place the Arri CLI has everything it needs to grab up-t
 
 The Arri CLI will do the following:
 
-- Build the server
-- Have the compiled output generate an app definition
-- Take the app definition and pass to the client generators defined in the `arri.config.ts`
+-   Build the server
+-   Have the compiled output generate an app definition
+-   Take the app definition and pass to the client generators defined in the `arri.config.ts`
 
 ### What Happens When We Run `arri dev`
 
 The Arri CLI will do the following:
 
-- Build the server and start it
-- Request the server's app definition and pass it to the client generators
-- Start a file watcher to watch for file changes
-- When a file is changed:
-    - Do whatever logic is necessary to reload the server (hot-reload for Javascript and kill + restart for Go lang)
-    - Request the server's app definition
-    - If the app definition has changed then pass it to the client generators
+-   Build the server and start it
+-   Request the server's app definition and pass it to the client generators
+-   Start a file watcher to watch for file changes
+-   When a file is changed:
+    -   Do whatever logic is necessary to reload the server (hot-reload for Javascript and kill + restart for Go lang)
+    -   Request the server's app definition
+    -   If the app definition has changed then pass it to the client generators
 
 ## Manually Creating an App Definition
 
