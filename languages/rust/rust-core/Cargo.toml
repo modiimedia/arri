@@ -1,0 +1,12 @@
+[package]
+name = "arri"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+chrono = ["dep:chrono"]
+
+[dependencies]
+indexmap = { workspace = true }
+sonic-rs = { workspace = true }
+chrono = { workspace = true, optional = true }

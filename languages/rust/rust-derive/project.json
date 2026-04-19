@@ -1,0 +1,49 @@
+{
+  "name": "rust-derive",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/rust/rust-derive/src",
+  "projectType": "library",
+  "targets": {
+    "cargo": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo",
+        "cwd": "languages/rust/rust-derive"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src",
+        "{projectRoot}/Cargo.lock",
+        "{projectRoot}/Cargo.toml"
+      ],
+      "cache": false,
+      "options": {
+        "command": "cargo test -- --nocapture",
+        "cwd": "languages/rust/rust-derive"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo publish",
+        "cwd": "languages/rust/rust-derive"
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "cache": false,
+      "options": {
+        "command": "cargo build",
+        "cwd": "languages/rust/rust-derive"
+      }
+    }
+  },
+  "tags": []
+}

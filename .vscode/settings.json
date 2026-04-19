@@ -68,6 +68,7 @@
     "${workspaceFolder}/languages/rust/rust-codegen-reference/Cargo.toml",
     "${workspaceFolder}/tests/clients/rust/Cargo.toml"
   ],
+  "rust-analyzer.cargo.features": ["chrono"],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },

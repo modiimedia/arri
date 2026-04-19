@@ -1,10 +1,16 @@
 [workspace]
-members = ["rust-client", "rust-codegen-reference"]
+members = ["rust-core", "rust-client", "rust-codegen-reference", "rust-derive"]
 
 resolver = "2"
 
+[workspace.package]
+
+
 [workspace.dependencies]
 chrono = "0.4"
+heck = "0.5.0"
 reqwest = { version = "0.12", features = ["stream"] }
 serde_json = "1"
+sonic-rs = "0.3"
 tokio = { version = "1", features = ["full"] }
+indexmap = "2.14.0"
