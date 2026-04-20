@@ -64,8 +64,9 @@
     "websockets"
   ],
   "rust-analyzer.linkedProjects": [
-    "${workspaceFolder}/languages/rust/rust-client/Cargo.toml",
-    "${workspaceFolder}/languages/rust/rust-codegen-reference/Cargo.toml",
+    "${workspaceFolder}/langauges/rust/Cargo.toml",
+    // "${workspaceFolder}/languages/rust/rust-client/Cargo.toml",
+    // "${workspaceFolder}/languages/rust/rust-codegen-reference/Cargo.toml",
     "${workspaceFolder}/tests/clients/rust/Cargo.toml"
   ],
   "rust-analyzer.cargo.features": ["chrono", "serde"],
