@@ -5,8 +5,10 @@ edition = "2024"
 
 [features]
 chrono = ["dep:chrono"]
+serde = ["dep:serde_json"]
 
 [dependencies]
 indexmap = { workspace = true }
 sonic-rs = { workspace = true }
 chrono = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }

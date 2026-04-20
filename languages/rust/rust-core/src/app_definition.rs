@@ -20,6 +20,7 @@ pub struct AppDefinition {
 }
 
 pub struct RpcDefinition {
+    pub transport: Transport,
     pub transports: Vec<Transport>,
     pub path: String,
     pub method: Option<RpcHttpMethod>,
