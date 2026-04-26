@@ -209,7 +209,7 @@ mod test {
 
         use chrono::NaiveDateTime;
 
-        use crate::{any_type::AnyType, encoder_json::JsonEncoder, message::Message};
+        use crate::{any_type::AnyType, encoder::Encodable, encoder_json::JsonEncoder};
 
         enum TestEnum {
             Foo,
@@ -217,9 +217,9 @@ mod test {
             Baz,
         }
 
-        impl Message for TestEnum {
-            fn encode<T: super::Encoder>(encoder: &mut T, v: &Self) {
-                match v {
+        impl Encodable for TestEnum {
+            fn encode<T: super::Encoder>(&self, encoder: &mut T) {
+                match self {
                     TestEnum::Foo => encoder.encode_string("FOO"),
                     TestEnum::Bar => encoder.encode_string("BAR"),
                     TestEnum::Baz => encoder.encode_string("BAZ"),
@@ -251,47 +251,47 @@ mod test {
 
         // example manual implementation
         // the derive will auto implement this for us
-        impl Message for TestObject {
-            fn encode<T: super::Encoder>(encoder: &mut T, v: &Self) {
+        impl Encodable for TestObject {
+            fn encode<T: super::Encoder>(&self, encoder: &mut T) {
                 encoder.begin_object();
                 encoder.encode_field("string");
-                <String as Message>::encode(encoder, &v.string);
+                <String as Encodable>::encode(&self.string, encoder);
                 encoder.encode_field("boolean");
-                <bool as Message>::encode(encoder, &v.boolean);
+                <bool as Encodable>::encode(&self.boolean, encoder);
                 encoder.encode_field("timestamp");
-                <DateTime<Utc> as Message>::encode(encoder, &v.timestamp);
+                <DateTime<Utc> as Encodable>::encode(&self.timestamp, encoder);
                 encoder.encode_field("float32");
-                <f32 as Message>::encode(encoder, &v.float32);
+                <f32 as Encodable>::encode(&self.float32, encoder);
                 encoder.encode_field("float64");
-                <f64 as Message>::encode(encoder, &v.float64);
+                <f64 as Encodable>::encode(&self.float64, encoder);
                 encoder.encode_field("int8");
-                <i8 as Message>::encode(encoder, &v.int8);
+                <i8 as Encodable>::encode(&self.int8, encoder);
                 encoder.encode_field("uint8");
-                <u8 as Message>::encode(encoder, &v.uint8);
+                <u8 as Encodable>::encode(&self.uint8, encoder);
                 encoder.encode_field("int16");
-                <i16 as Message>::encode(encoder, &v.int16);
+                <i16 as Encodable>::encode(&self.int16, encoder);
                 encoder.encode_field("uint16");
-                <u16 as Message>::encode(encoder, &v.uint16);
+                <u16 as Encodable>::encode(&self.uint16, encoder);
                 encoder.encode_field("int32");
-                <i32 as Message>::encode(encoder, &v.int32);
+                <i32 as Encodable>::encode(&self.int32, encoder);
                 encoder.encode_field("uint32");
-                <u32 as Message>::encode(encoder, &v.uint32);
+                <u32 as Encodable>::encode(&self.uint32, encoder);
                 encoder.encode_field("int64");
-                <i64 as Message>::encode(encoder, &v.int64);
+                <i64 as Encodable>::encode(&self.int64, encoder);
                 encoder.encode_field("uint64");
-                <u64 as Message>::encode(encoder, &v.uint64);
+                <u64 as Encodable>::encode(&self.uint64, encoder);
                 encoder.encode_field("enum");
-                <TestEnum as Message>::encode(encoder, &v.r#enum);
+                <TestEnum as Encodable>::encode(&self.r#enum, encoder);
                 encoder.encode_field("object");
-                <TestNestedObject as Message>::encode(encoder, &v.object);
+                <TestNestedObject as Encodable>::encode(&self.object, encoder);
                 encoder.encode_field("array");
-                <Vec<bool> as Message>::encode(encoder, &v.array);
+                <Vec<bool> as Encodable>::encode(&self.array, encoder);
                 encoder.encode_field("record");
-                <HashMap<String, bool> as Message>::encode(encoder, &v.record);
+                <HashMap<String, bool> as Encodable>::encode(&self.record, encoder);
                 encoder.encode_field("discriminator");
-                <TestDiscriminator as Message>::encode(encoder, &v.discriminator);
+                <TestDiscriminator as Encodable>::encode(&self.discriminator, encoder);
                 encoder.encode_field("any");
-                <AnyType as Message>::encode(encoder, &v.any);
+                <AnyType as Encodable>::encode(&self.any, encoder);
                 encoder.end_object();
             }
         }
@@ -311,15 +311,15 @@ mod test {
             },
         }
 
-        impl Message for TestDiscriminator {
-            fn encode<T: super::Encoder>(encoder: &mut T, v: &Self) {
-                match v {
+        impl Encodable for TestDiscriminator {
+            fn encode<T: super::Encoder>(&self, encoder: &mut T) {
+                match &self {
                     TestDiscriminator::A { id } => {
                         encoder.begin_object();
                         encoder.encode_field("type");
                         encoder.encode_string("A");
                         encoder.encode_field("id");
-                        <String as Message>::encode(encoder, id);
+                        <String as Encodable>::encode(&id, encoder);
                         encoder.end_object();
                     }
                     TestDiscriminator::B { id, name } => {
@@ -327,9 +327,9 @@ mod test {
                         encoder.encode_field("type");
                         encoder.encode_string("B");
                         encoder.encode_field("id");
-                        <String as Message>::encode(encoder, id);
+                        <String as Encodable>::encode(&id, encoder);
                         encoder.encode_field("name");
-                        <String as Message>::encode(encoder, name);
+                        <String as Encodable>::encode(&name, encoder);
                         encoder.end_object();
                     }
                     TestDiscriminator::C { id, name, date } => {
@@ -337,11 +337,11 @@ mod test {
                         encoder.encode_field("type");
                         encoder.encode_string("B");
                         encoder.encode_field("id");
-                        <String as Message>::encode(encoder, id);
+                        <String as Encodable>::encode(&id, encoder);
                         encoder.encode_field("name");
-                        <String as Message>::encode(encoder, name);
+                        <String as Encodable>::encode(&name, encoder);
                         encoder.encode_field("date");
-                        <NaiveDateTime as Message>::encode(encoder, date);
+                        <NaiveDateTime as Encodable>::encode(&date, encoder);
                         encoder.end_object();
                     }
                 }
@@ -353,13 +353,13 @@ mod test {
             pub content: String,
         }
 
-        impl Message for TestNestedObject {
-            fn encode<T: super::Encoder>(encoder: &mut T, v: &Self) {
+        impl Encodable for TestNestedObject {
+            fn encode<T: super::Encoder>(&self, encoder: &mut T) {
                 encoder.begin_object();
                 encoder.encode_field("id");
-                encoder.encode_string(&v.id);
+                encoder.encode_string(&self.id);
                 encoder.encode_field("content");
-                encoder.encode_string(&v.content);
+                encoder.encode_string(&self.content);
                 encoder.end_object();
             }
         }
@@ -392,7 +392,7 @@ mod test {
             any: AnyType::List(Box::new(vec![AnyType::Boolean(true)])),
         };
         let mut encoder = JsonEncoder::new(input.size_hint());
-        TestObject::encode(&mut encoder, &input);
+        input.encode(&mut encoder);
         let result = encoder.bytes();
         let serde_result = serde_json::from_slice::<serde_json::Value>(result);
         assert!(serde_result.is_ok());
