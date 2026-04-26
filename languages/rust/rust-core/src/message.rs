@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ffi::c_float;
 use std::{num::ParseIntError, str::Utf8Error};
 
 use crate::any_type::AnyType;
@@ -183,7 +184,15 @@ impl Message for AnyType {
     fn encode<T: Encoder>(encoder: &mut T, v: &Self) {
         match v {
             AnyType::Boolean(val) => encoder.encode_boolean(*val),
-            AnyType::Number(val) => encoder.encode_float64(*val),
+            AnyType::Number(val) => match val {
+                crate::any_type::NumberType::Float(c_float) => encoder.encode_float64(*c_float),
+                crate::any_type::NumberType::Int(c_int) => encoder.encode_int32(*c_int),
+                crate::any_type::NumberType::Uint(c_uint) => encoder.encode_uint32(*c_uint),
+                crate::any_type::NumberType::BigInt(c_big_int) => encoder.encode_int64(*c_big_int),
+                crate::any_type::NumberType::BigUint(c_big_uint) => {
+                    encoder.encode_uint64(*c_big_uint)
+                }
+            },
             AnyType::String(val) => encoder.encode_string(&val),
             AnyType::Object(val) => {
                 encoder.begin_object();

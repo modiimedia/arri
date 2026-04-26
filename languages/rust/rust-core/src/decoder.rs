@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::Utf8Error};
 
-use crate::Nullable;
+use crate::{Nullable, any_type::AnyType};
 
 pub trait Decodable: Sized {
     fn decode<D: Decoder>(decoder: &mut D) -> Result<Self, DecodeError>;
@@ -21,6 +21,7 @@ pub trait Decoder {
     fn decode_int64(&mut self) -> Result<i64, DecodeError>;
     fn decode_uint64(&mut self) -> Result<u64, DecodeError>;
     fn decode_nullable<T: Decodable>(&mut self) -> Result<Nullable<T>, DecodeError>;
+    fn decode_any(&mut self) -> Result<AnyType, DecodeError>;
 
     fn begin_object(&mut self) -> Result<(), DecodeError>;
     fn end_object(&mut self) -> Result<(), DecodeError>;

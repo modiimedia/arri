@@ -83,6 +83,10 @@ impl<'a> Decoder for JsonDecoder<'a> {
         todo!()
     }
 
+    fn decode_any(&mut self) -> Result<crate::any_type::AnyType, DecodeError> {
+        todo!()
+    }
+
     fn begin_object(&mut self) -> Result<(), crate::decoder::DecodeError> {
         todo!()
     }
