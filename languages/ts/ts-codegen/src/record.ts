@@ -19,6 +19,7 @@ export function tsRecordFromSchema(
         versionNumber: context.versionNumber,
         usedFeatures: context.usedFeatures,
         rpcGenerators: context.rpcGenerators,
+        coerceBigInts: context.coerceBigInts,
     });
     const typeName = `Record<string, ${innerType.typeName}>`;
     const defaultValue = schema.isNullable ? 'null' : '{}';

@@ -222,7 +222,7 @@ export function tsIntFromSchema(
 export function tsBigIntFromSchema(
     schema: SchemaFormType,
     isUnsigned: boolean,
-    _context: CodegenContext,
+    context: CodegenContext,
 ): TsProperty {
     const typeName = schema.isNullable ? `bigint | null` : `bigint`;
     const defaultValue = schema.isNullable ? `null` : 'BigInt(0)';
@@ -241,21 +241,37 @@ export function tsBigIntFromSchema(
 
         fromJsonTemplate(input, target) {
             if (isUnsigned) {
-                return `if (typeof ${input} === 'string' && BigInt(${input}) >= BigInt(0)) {
+                let content = `if (typeof ${input} === 'string' && BigInt(${input}) >= BigInt(0)) {
                     ${target} = BigInt(${input});
                 } else if (typeof ${input} === 'bigint' && ${input} >= BigInt(0)) {
                     ${target} = ${input}; 
-                } else {
+                }`;
+                if (context.coerceBigInts) {
+                    content += `  else if (typeof ${input} === 'number' && ${input} >= BigInt(0)) {
+                    console.warn("[arri] Expected a BigInt string at ${context.instancePath} but got a raw number. This could lead to precision loss.")
+                    ${target} = BigInt(${input}); 
+                }`;
+                }
+                content += ` else {
                     ${target} = ${defaultValue}; 
                 }`;
+                return content;
             }
-            return `if (typeof ${input} === 'string') {
+            let content = `if (typeof ${input} === 'string') {
                 ${target} = BigInt(${input});
             } else if (typeof ${input} === 'bigint') {
                 ${target} = ${input}; 
-            } else {
+            }`;
+            if (context.coerceBigInts) {
+                content += `  else if (typeof ${input} === 'number') {
+                console.warn("[arri] Expected a BigInt string at ${context.instancePath} but got a raw number. This could lead to precision loss.")
+                ${target} = BigInt(${input});
+            } `;
+            }
+            content += `  else {
                 ${target} = ${defaultValue}; 
             }`;
+            return content;
         },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {

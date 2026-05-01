@@ -1136,6 +1136,11 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
                 _int64 = BigInt(input.int64);
             } else if (typeof input.int64 === 'bigint') {
                 _int64 = input.int64;
+            } else if (typeof input.int64 === 'number') {
+                console.warn(
+                    '[arri] Expected a BigInt string at /ObjectWithEveryType/int64 but got a raw number. This could lead to precision loss.',
+                );
+                _int64 = BigInt(input.int64);
             } else {
                 _int64 = BigInt(0);
             }
@@ -1150,6 +1155,14 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
                 input.uint64 >= BigInt(0)
             ) {
                 _uint64 = input.uint64;
+            } else if (
+                typeof input.uint64 === 'number' &&
+                input.uint64 >= BigInt(0)
+            ) {
+                console.warn(
+                    '[arri] Expected a BigInt string at /ObjectWithEveryType/uint64 but got a raw number. This could lead to precision loss.',
+                );
+                _uint64 = BigInt(input.uint64);
             } else {
                 _uint64 = BigInt(0);
             }
@@ -1198,6 +1211,14 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
                         _value >= BigInt(0)
                     ) {
                         _recordValue = _value;
+                    } else if (
+                        typeof _value === 'number' &&
+                        _value >= BigInt(0)
+                    ) {
+                        console.warn(
+                            '[arri] Expected a BigInt string at /ObjectWithEveryType/record/[value] but got a raw number. This could lead to precision loss.',
+                        );
+                        _recordValue = BigInt(_value);
                     } else {
                         _recordValue = BigInt(0);
                     }
@@ -2250,6 +2271,11 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
                 _int64 = BigInt(input.int64);
             } else if (typeof input.int64 === 'bigint') {
                 _int64 = input.int64;
+            } else if (typeof input.int64 === 'number') {
+                console.warn(
+                    '[arri] Expected a BigInt string at /ObjectWithEveryNullableType/int64 but got a raw number. This could lead to precision loss.',
+                );
+                _int64 = BigInt(input.int64);
             } else {
                 _int64 = null;
             }
@@ -2264,6 +2290,14 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
                 input.uint64 >= BigInt(0)
             ) {
                 _uint64 = input.uint64;
+            } else if (
+                typeof input.uint64 === 'number' &&
+                input.uint64 >= BigInt(0)
+            ) {
+                console.warn(
+                    '[arri] Expected a BigInt string at /ObjectWithEveryNullableType/uint64 but got a raw number. This could lead to precision loss.',
+                );
+                _uint64 = BigInt(input.uint64);
             } else {
                 _uint64 = null;
             }
@@ -2314,6 +2348,14 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
                         _value >= BigInt(0)
                     ) {
                         _recordValue = _value;
+                    } else if (
+                        typeof _value === 'number' &&
+                        _value >= BigInt(0)
+                    ) {
+                        console.warn(
+                            '[arri] Expected a BigInt string at /ObjectWithEveryNullableType/record/[value] but got a raw number. This could lead to precision loss.',
+                        );
+                        _recordValue = BigInt(_value);
                     } else {
                         _recordValue = null;
                     }
@@ -3752,6 +3794,11 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
                     _int64 = BigInt(input.int64);
                 } else if (typeof input.int64 === 'bigint') {
                     _int64 = input.int64;
+                } else if (typeof input.int64 === 'number') {
+                    console.warn(
+                        '[arri] Expected a BigInt string at /ObjectWithEveryOptionalType/int64 but got a raw number. This could lead to precision loss.',
+                    );
+                    _int64 = BigInt(input.int64);
                 } else {
                     _int64 = BigInt(0);
                 }
@@ -3768,6 +3815,14 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
                     input.uint64 >= BigInt(0)
                 ) {
                     _uint64 = input.uint64;
+                } else if (
+                    typeof input.uint64 === 'number' &&
+                    input.uint64 >= BigInt(0)
+                ) {
+                    console.warn(
+                        '[arri] Expected a BigInt string at /ObjectWithEveryOptionalType/uint64 but got a raw number. This could lead to precision loss.',
+                    );
+                    _uint64 = BigInt(input.uint64);
                 } else {
                     _uint64 = BigInt(0);
                 }
@@ -3829,6 +3884,14 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
                             _value >= BigInt(0)
                         ) {
                             _recordValue = _value;
+                        } else if (
+                            typeof _value === 'number' &&
+                            _value >= BigInt(0)
+                        ) {
+                            console.warn(
+                                '[arri] Expected a BigInt string at /ObjectWithEveryOptionalType/record/[value] but got a raw number. This could lead to precision loss.',
+                            );
+                            _recordValue = BigInt(_value);
                         } else {
                             _recordValue = BigInt(0);
                         }
@@ -6666,6 +6729,11 @@ export const $$FooUserPhoto: ArriModelValidator<FooUserPhoto> = {
             _bytes = BigInt(input.bytes);
         } else if (typeof input.bytes === 'bigint') {
             _bytes = input.bytes;
+        } else if (typeof input.bytes === 'number') {
+            console.warn(
+                '[arri] Expected a BigInt string at /UserPhoto/bytes but got a raw number. This could lead to precision loss.',
+            );
+            _bytes = BigInt(input.bytes);
         } else {
             _bytes = BigInt(0);
         }
@@ -6680,6 +6748,14 @@ export const $$FooUserPhoto: ArriModelValidator<FooUserPhoto> = {
             input.nanoseconds >= BigInt(0)
         ) {
             _nanoseconds = input.nanoseconds;
+        } else if (
+            typeof input.nanoseconds === 'number' &&
+            input.nanoseconds >= BigInt(0)
+        ) {
+            console.warn(
+                '[arri] Expected a BigInt string at /UserPhoto/nanoseconds but got a raw number. This could lead to precision loss.',
+            );
+            _nanoseconds = BigInt(input.nanoseconds);
         } else {
             _nanoseconds = BigInt(0);
         }

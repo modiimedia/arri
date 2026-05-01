@@ -36,6 +36,7 @@ export interface CodegenContext {
         ws: boolean;
     };
     rpcGenerators: Partial<Record<string, RpcGenerator>>;
+    coerceBigInts: boolean;
 }
 
 export function getJsDocComment(metadata: Schema['metadata']) {
