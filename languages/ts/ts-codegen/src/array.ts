@@ -19,6 +19,7 @@ export function tsArrayFromSchema(
         versionNumber: context.versionNumber,
         usedFeatures: context.usedFeatures,
         rpcGenerators: context.rpcGenerators,
+        coerceBigInts: context.coerceBigInts,
     });
     const typeName = `(${innerType.typeName})[]`;
     const defaultValue = schema.isNullable ? 'null' : '[]';
