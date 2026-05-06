@@ -1,6 +1,7 @@
 use sonic_rs::LazyValue;
 use sonic_rs::Read;
 
+use crate::decoder::Visitor;
 use crate::decoder::{DecodeError, Decoder};
 
 pub struct JsonDecoder<'a> {
@@ -24,56 +25,57 @@ impl<'a> JsonDecoder<'a> {
     }
 }
 
-impl<'a> Decoder for JsonDecoder<'a> {
-    fn decode_string(&mut self) -> Result<String, crate::decoder::DecodeError> {
+impl<'a, V: Visitor> Decoder<V> for JsonDecoder<'a> {
+    fn decode_string(&mut self, visitor: V) -> Result<String, crate::decoder::DecodeError> {
+        visitor.visit_str(_)
         todo!()
     }
 
-    fn decode_boolean(&mut self) -> Result<bool, crate::decoder::DecodeError> {
+    fn decode_boolean(&mut self, visitor: V) -> Result<bool, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_timestamp(&mut self) -> Result<String, crate::decoder::DecodeError> {
+    fn decode_timestamp(&mut self, visitor: V) -> Result<String, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_float32(&mut self) -> Result<f32, crate::decoder::DecodeError> {
+    fn decode_float32(&mut self, visitor: V) -> Result<f32, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_float64(&mut self) -> Result<f64, crate::decoder::DecodeError> {
+    fn decode_float64(&mut self, visitor: V) -> Result<f64, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_int8(&mut self) -> Result<i8, crate::decoder::DecodeError> {
+    fn decode_int8(&mut self, visitor: V) -> Result<i8, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_uint8(&mut self) -> Result<u8, crate::decoder::DecodeError> {
+    fn decode_uint8(&mut self, visitor: V) -> Result<u8, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_int16(&mut self) -> Result<i16, crate::decoder::DecodeError> {
+    fn decode_int16(&mut self, visitor: V) -> Result<i16, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_uint16(&mut self) -> Result<u16, crate::decoder::DecodeError> {
+    fn decode_uint16(&mut self, visitor: V) -> Result<u16, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_int32(&mut self) -> Result<i32, crate::decoder::DecodeError> {
+    fn decode_int32(&mut self, visitor: V) -> Result<i32, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_uint32(&mut self) -> Result<u32, crate::decoder::DecodeError> {
+    fn decode_uint32(&mut self, visitor: V) -> Result<u32, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_int64(&mut self) -> Result<i64, crate::decoder::DecodeError> {
+    fn decode_int64(&mut self, visitor: V) -> Result<i64, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn decode_uint64(&mut self) -> Result<u64, crate::decoder::DecodeError> {
+    fn decode_uint64(&mut self, visitor: V) -> Result<u64, crate::decoder::DecodeError> {
         todo!()
     }
 
@@ -83,35 +85,35 @@ impl<'a> Decoder for JsonDecoder<'a> {
         todo!()
     }
 
-    fn decode_any(&mut self) -> Result<crate::any_type::AnyType, DecodeError> {
+    fn decode_any(&mut self, visitor: V) -> Result<crate::any_type::AnyType, DecodeError> {
         todo!()
     }
 
-    fn begin_object(&mut self) -> Result<(), crate::decoder::DecodeError> {
+    fn begin_object(&mut self, visitor: V) -> Result<(), crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn end_object(&mut self) -> Result<(), crate::decoder::DecodeError> {
+    fn end_object(&mut self, visitor: V) -> Result<(), crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn next_field(&mut self) -> Result<Option<String>, crate::decoder::DecodeError> {
+    fn next_field(&mut self, visitor: V) -> Result<Option<String>, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn begin_list(&mut self) -> Result<(), crate::decoder::DecodeError> {
+    fn begin_list(&mut self, visitor: V) -> Result<(), crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn end_list(&mut self) -> Result<(), crate::decoder::DecodeError> {
+    fn end_list(&mut self, visitor: V) -> Result<(), crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn has_next_element(&mut self) -> Result<bool, crate::decoder::DecodeError> {
+    fn has_next_element(&mut self, visitor: V) -> Result<bool, crate::decoder::DecodeError> {
         todo!()
     }
 
-    fn skip_value(&mut self) -> Result<(), crate::decoder::DecodeError> {
+    fn skip_value(&mut self, visitor: V) -> Result<(), crate::decoder::DecodeError> {
         todo!()
     }
 }

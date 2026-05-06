@@ -8,6 +8,40 @@ pub enum Transport {
     Other(String),
 }
 
+impl From<&str> for Transport {
+    fn from(value: &str) -> Self {
+        match value {
+            "http" => Self::Http,
+            "ws" => Self::Ws,
+            other => Self::Other(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for Transport {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl std::str::FromStr for Transport {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
+impl std::fmt::Debug for Transport {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Http => write!(f, "http"),
+            Self::Ws => write!(f, "ws"),
+            Self::Other(arg0) => write!(f, "{}", arg0.to_lowercase()),
+        }
+    }
+}
+
 impl Encodable for Transport {
     fn encode<T: crate::encoder::Encoder>(&self, encoder: &mut T) {
         todo!()

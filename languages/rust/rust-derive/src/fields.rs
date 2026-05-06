@@ -45,8 +45,6 @@ use crate::{
     parsers::{attributes::fields, types::is_option_type},
 };
 
-use super::{FieldParser, ParsedField};
-
 /// A parser for processing fields in a struct or enum.
 ///
 /// The `BaseParser` is responsible for extracting metadata from fields,
