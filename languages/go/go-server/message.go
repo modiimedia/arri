@@ -241,7 +241,11 @@ func NewErrorMessage(
 }
 
 func NewConnectionStartMessage(heartbeatInterval Option[uint32]) Message {
-	return Message{Type: ConnectionStartMessage, HeartbeatInterval: heartbeatInterval}
+	return Message{
+		ArriRpcVersion:    ARRI_VERSION,
+		Type:              ConnectionStartMessage,
+		HeartbeatInterval: heartbeatInterval,
+	}
 }
 
 func NewHeartbeatMessage(heartbeatInterval Option[uint32]) Message {
@@ -407,6 +411,13 @@ func DecodeMessage(input []byte) (Message, DecodeMessageError) {
 	}
 
 	switch msgType.Value {
+	case ConnectionStartMessage:
+		return Message{
+			ArriRpcVersion:    ARRI_VERSION,
+			Type:              msgType.Value,
+			HeartbeatInterval: heartbeatInterval,
+			CustomHeaders:     customHeaders,
+		}, nil
 	case InvocationMessage:
 		if procedure.IsNone() {
 			return Message{}, NewDecodeMessageError(DMECode_MalformedMessage, Some("missing procedure name"))

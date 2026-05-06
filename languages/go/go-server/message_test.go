@@ -183,3 +183,39 @@ func TestDecodeHeartbeatMessage(t *testing.T) {
 		return
 	}
 }
+
+var connectionStartMessageWithInterval = arri.NewConnectionStartMessage(arri.Some[uint32](255))
+var connectionStartMessageWithoutInterval = arri.NewConnectionStartMessage(arri.None[uint32]())
+var connectionStartMessageWithIntervalFilePath = "../../../tests/test-files/ConnectionStartMessage_WithInterval.txt"
+var connectionStartMessageWithoutIntervalFilePath = "../../../tests/test-files/ConnectionStartMessage_WithoutInterval.txt"
+
+func TestEncodeConnectionStartMessage(t *testing.T) {
+	dat, err := os.ReadFile(connectionStartMessageWithIntervalFilePath)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	result, err := arri.DecodeMessage(dat)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !reflect.DeepEqual(result, connectionStartMessageWithInterval) {
+		t.Fatal(deepEqualErrString(result, connectionStartMessageWithInterval))
+		return
+	}
+	dat, err = os.ReadFile(connectionStartMessageWithoutIntervalFilePath)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	result, err = arri.DecodeMessage(dat)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !reflect.DeepEqual(result, connectionStartMessageWithoutInterval) {
+		t.Fatal(deepEqualErrString(result, connectionStartMessageWithoutInterval))
+		return
+	}
+}
