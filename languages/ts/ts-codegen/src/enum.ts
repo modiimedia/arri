@@ -1,10 +1,11 @@
-import { SchemaFormEnum } from '@arrirpc/codegen-utils';
+import { pascalCase, SchemaFormEnum } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
     TsProperty,
+    validVarName,
 } from './common';
 
 export function tsEnumFromSchema(
@@ -60,7 +61,17 @@ export function tsEnumFromSchema(
     const name = `${context.typePrefix}${enumName}`;
     const valuesName = `$$${name}Values`;
     result.content = `${getJsDocComment(schema.metadata)}export type ${name} = (typeof ${valuesName})[number];
-const ${valuesName} = [${schema.enum.map((val) => `"${val}"`).join(', ')}] as const;
+export const ${name} = {
+${schema.enum
+    .map((val) => {
+        let str = '    ';
+        str += `${pascalCase(validVarName(val), { normalize: true })}:`;
+        str += ` '${val}',`;
+        return str;
+    })
+    .join('\n')}
+} as const;
+const ${valuesName} = [${schema.enum.map((val) => `'${val}'`).join(', ')}] as const;
 export const $$${name}: ArriEnumValidator<${name}> = {
     new(): ${name} {
         return ${valuesName}[0];

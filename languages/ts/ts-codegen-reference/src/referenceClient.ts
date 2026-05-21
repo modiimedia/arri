@@ -803,6 +803,11 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
 };
 
 export type Enumerator = (typeof $$EnumeratorValues)[number];
+export const Enumerator = {
+    Foo: 'FOO',
+    Bar: 'BAR',
+    Baz: 'BAZ',
+} as const;
 const $$EnumeratorValues = ['FOO', 'BAR', 'BAZ'] as const;
 export const $$Enumerator: ArriEnumValidator<Enumerator> = {
     new(): Enumerator {
