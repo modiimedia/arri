@@ -11,13 +11,13 @@ import {
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
     Book,
+    Enumerator,
     ExampleClient,
     NestedObject,
     ObjectWithEveryType,
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
-    Enumerator,
 } from './referenceClient';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -349,6 +349,6 @@ describe('misc', () => {
         const val2 = Enumerator.Bar;
         assertType<Enumerator>(val);
         assertType<Enumerator>(val2);
-        assertType<Enumerator>("FOO")
+        assertType<Enumerator>('FOO');
     });
 });
