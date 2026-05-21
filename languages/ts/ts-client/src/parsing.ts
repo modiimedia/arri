@@ -76,31 +76,31 @@ export function parseNullableNumberInt(
 export function parseNumberBigInt(
     input: unknown,
     fallback = BigInt(0),
-): BigInt {
+): bigint {
     if (typeof input === 'bigint') {
         return input;
     }
     if (typeof input === 'string') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         return val;
     }
     if (typeof input === 'number') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         return val;
     }
     return fallback;
 }
 
-export function parseNullableNumberBigInt(input: unknown): BigInt | null {
+export function parseNullableNumberBigInt(input: unknown): bigint | null {
     if (typeof input === 'bigint') {
         return input;
     }
     if (typeof input === 'string') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         return val;
     }
     if (typeof input === 'number') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         return val;
     }
     return null;
@@ -109,7 +109,7 @@ export function parseNullableNumberBigInt(input: unknown): BigInt | null {
 export function parseNumberUnsignedBigInt(
     input: unknown,
     fallback = BigInt(0),
-): BigInt {
+): bigint {
     if (typeof input === 'bigint') {
         if (input < BigInt(0)) {
             return fallback;
@@ -117,14 +117,14 @@ export function parseNumberUnsignedBigInt(
         return input;
     }
     if (typeof input === 'string') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         if (val < BigInt(0)) {
             return fallback;
         }
         return val;
     }
     if (typeof input === 'number') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         if (val < BigInt(0)) {
             return fallback;
         }
@@ -135,7 +135,7 @@ export function parseNumberUnsignedBigInt(
 
 export function parseNullableNumberUnsignedBigInt(
     input: unknown,
-): BigInt | null {
+): bigint | null {
     if (typeof input === 'bigint') {
         if (input < BigInt(0)) {
             return null;
@@ -143,14 +143,14 @@ export function parseNullableNumberUnsignedBigInt(
         return input;
     }
     if (typeof input === 'string') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         if (val < BigInt(0)) {
             return null;
         }
         return val;
     }
     if (typeof input === 'number') {
-        let val = BigInt(input);
+        const val = BigInt(input);
         if (val < BigInt(0)) {
             return null;
         }
