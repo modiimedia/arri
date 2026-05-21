@@ -1450,6 +1450,11 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
 
 export type ObjectWithEveryTypeEnumerator =
     (typeof $$ObjectWithEveryTypeEnumeratorValues)[number];
+export const ObjectWithEveryTypeEnumerator = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
 const $$ObjectWithEveryTypeEnumeratorValues = ['A', 'B', 'C'] as const;
 export const $$ObjectWithEveryTypeEnumerator: ArriEnumValidator<ObjectWithEveryTypeEnumerator> =
     {
@@ -2616,6 +2621,11 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
 
 export type ObjectWithEveryNullableTypeEnumerator =
     (typeof $$ObjectWithEveryNullableTypeEnumeratorValues)[number];
+export const ObjectWithEveryNullableTypeEnumerator = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
 const $$ObjectWithEveryNullableTypeEnumeratorValues = ['A', 'B', 'C'] as const;
 export const $$ObjectWithEveryNullableTypeEnumerator: ArriEnumValidator<ObjectWithEveryNullableTypeEnumerator> =
     {
@@ -4193,6 +4203,11 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
 
 export type ObjectWithEveryOptionalTypeEnumerator =
     (typeof $$ObjectWithEveryOptionalTypeEnumeratorValues)[number];
+export const ObjectWithEveryOptionalTypeEnumerator = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
 const $$ObjectWithEveryOptionalTypeEnumeratorValues = ['A', 'B', 'C'] as const;
 export const $$ObjectWithEveryOptionalTypeEnumerator: ArriEnumValidator<ObjectWithEveryOptionalTypeEnumerator> =
     {
@@ -6551,6 +6566,10 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
 
 export type UsersWatchUserResponseRole =
     (typeof $$UsersWatchUserResponseRoleValues)[number];
+export const UsersWatchUserResponseRole = {
+    Standard: 'standard',
+    Admin: 'admin',
+} as const;
 const $$UsersWatchUserResponseRoleValues = ['standard', 'admin'] as const;
 export const $$UsersWatchUserResponseRole: ArriEnumValidator<UsersWatchUserResponseRole> =
     {
@@ -6761,6 +6780,11 @@ export const $$UserSettings: ArriModelValidator<UserSettings> = {
 
 export type UserSettingsPreferredTheme =
     (typeof $$UserSettingsPreferredThemeValues)[number];
+export const UserSettingsPreferredTheme = {
+    Darkmode: 'dark-mode',
+    Lightmode: 'light-mode',
+    System: 'system',
+} as const;
 const $$UserSettingsPreferredThemeValues = [
     'dark-mode',
     'light-mode',

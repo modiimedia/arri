@@ -1426,6 +1426,11 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
 
 export type FooObjectWithEveryTypeEnumerator =
     (typeof $$FooObjectWithEveryTypeEnumeratorValues)[number];
+export const FooObjectWithEveryTypeEnumerator = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
 const $$FooObjectWithEveryTypeEnumeratorValues = ['A', 'B', 'C'] as const;
 export const $$FooObjectWithEveryTypeEnumerator: ArriEnumValidator<FooObjectWithEveryTypeEnumerator> =
     {
@@ -2631,6 +2636,11 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
 
 export type FooObjectWithEveryNullableTypeEnumerator =
     (typeof $$FooObjectWithEveryNullableTypeEnumeratorValues)[number];
+export const FooObjectWithEveryNullableTypeEnumerator = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
 const $$FooObjectWithEveryNullableTypeEnumeratorValues = [
     'A',
     'B',
@@ -4247,6 +4257,11 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
 
 export type FooObjectWithEveryOptionalTypeEnumerator =
     (typeof $$FooObjectWithEveryOptionalTypeEnumeratorValues)[number];
+export const FooObjectWithEveryOptionalTypeEnumerator = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
 const $$FooObjectWithEveryOptionalTypeEnumeratorValues = [
     'A',
     'B',
@@ -6633,6 +6648,10 @@ export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserRe
 
 export type FooUsersWatchUserResponseRole =
     (typeof $$FooUsersWatchUserResponseRoleValues)[number];
+export const FooUsersWatchUserResponseRole = {
+    Standard: 'standard',
+    Admin: 'admin',
+} as const;
 const $$FooUsersWatchUserResponseRoleValues = ['standard', 'admin'] as const;
 export const $$FooUsersWatchUserResponseRole: ArriEnumValidator<FooUsersWatchUserResponseRole> =
     {
@@ -6856,6 +6875,11 @@ export const $$FooUserSettings: ArriModelValidator<FooUserSettings> = {
 
 export type FooUserSettingsPreferredTheme =
     (typeof $$FooUserSettingsPreferredThemeValues)[number];
+export const FooUserSettingsPreferredTheme = {
+    Darkmode: 'dark-mode',
+    Lightmode: 'light-mode',
+    System: 'system',
+} as const;
 const $$FooUserSettingsPreferredThemeValues = [
     'dark-mode',
     'light-mode',
