@@ -210,7 +210,7 @@ export function tsIntFromSchema(
 export function tsBigIntFromSchema(
     schema: SchemaFormType,
     isUnsigned: boolean,
-    context: CodegenContext,
+    _context: CodegenContext,
 ): TsProperty {
     const typeName = schema.isNullable ? `bigint | null` : `bigint`;
     const defaultValue = schema.isNullable ? `null` : 'BigInt(0)';

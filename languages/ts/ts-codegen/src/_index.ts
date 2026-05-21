@@ -118,7 +118,6 @@ export async function createTypescriptClient(
             ws: false,
         },
         rpcGenerators: options.rpcGenerators ?? {},
-        coerceBigInts: options.coerceBigInts ?? false,
     };
     const serviceDefinitions = unflattenProcedures(
         def.procedures,
@@ -139,7 +138,6 @@ export async function createTypescriptClient(
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
             rpcGenerators: context.rpcGenerators,
-            coerceBigInts: context.coerceBigInts,
         });
         if (result.content) {
             types.push(result.content);
