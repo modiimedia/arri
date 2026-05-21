@@ -20,17 +20,6 @@ import {
     INT64_MAX,
     INT64_MIN,
     isObject,
-    serializeString,
-    type SseOptions,
-    UINT8_MAX,
-    UINT16_MAX,
-    UINT32_MAX,
-    UINT64_MAX,
-    type Fetch,
-    type $Fetch,
-    createFetch,
-    type WsController,
-    type WsOptions,
     parseString,
     parseBoolean,
     parseNumber,
@@ -46,6 +35,17 @@ import {
     parseNullableNumberInt,
     parseNullableNumberBigInt,
     parseNullableNumberUnsignedBigInt,
+    serializeString,
+    type SseOptions,
+    UINT8_MAX,
+    UINT16_MAX,
+    UINT32_MAX,
+    UINT64_MAX,
+    type Fetch,
+    type $Fetch,
+    createFetch,
+    type WsController,
+    type WsOptions,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
@@ -503,9 +503,9 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         let _timestamp: Date;
         _timestamp = parseTimestamp(input.timestamp);
         let _float32: number;
-        _float32 = parseNumber(input.float32);
+        _float32 = parseNumberFloat(input.float32);
         let _float64: number;
-        _float64 = parseNumber(input.float64);
+        _float64 = parseNumberFloat(input.float64);
         let _int8: number;
         _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
         let _uint8: number;
