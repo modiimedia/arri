@@ -17,7 +17,9 @@ import {
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
+    Enumerator,
 } from './referenceClient';
+import { attest } from '@ark/attest';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
 const referenceDir = path.resolve(__dirname, '../../../../tests/test-files');
@@ -339,5 +341,28 @@ describe('HTTP options', () => {
         expect(didFireRequestError).toBe(true);
         expect(didFireResponse).toBe(false);
         expect(didFireResponseError).toBe(false);
+    });
+});
+
+describe('misc', () => {
+    test('enum type inference', () => {
+        const val: Enumerator = Enumerator.Foo;
+        const val2 = Enumerator.Bar;
+        assertType<Enumerator>(val);
+        assertType<Enumerator>(val2);
+    });
+    test('enum type instantiations', () => {
+        type _ArrayBasedEnum = (typeof _$$ArrayBasedEnumValues)[number];
+        const _$$ArrayBasedEnumValues = ['foo', 'bar', 'baz'] as const;
+        attest.instantiations([25, 'instantiations']);
+
+        type _ObjectBasedEnum =
+            (typeof _ObjectBasedEnum)[keyof typeof _ObjectBasedEnum];
+        const _ObjectBasedEnum = {
+            Foo: 'foo',
+            Bar: 'bar',
+            Baz: 'baz',
+        } as const;
+        attest.instantiations([25, 'instantiations']);
     });
 });

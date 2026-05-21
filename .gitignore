@@ -9,6 +9,7 @@ tmp
 /out-tsc
 **/.output
 **/target
+.attest
 
 # dependencies
 node_modules
