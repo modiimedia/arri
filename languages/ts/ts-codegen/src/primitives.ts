@@ -18,11 +18,10 @@ export function tsStringFromSchema(
             return `typeof ${input} === 'string'`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'string') {
-                ${target} = ${input};
-            } else {
-                ${target} = ${defaultValue};
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableString(${input});`;
+            }
+            return `${target} = parseString(${input});`;
         },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
@@ -57,11 +56,10 @@ export function tsBooleanFromSchema(
             return `typeof ${input} === 'boolean'`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'boolean') {
-                ${target} = ${input};
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableBoolean(${input});`;
+            }
+            return `${target} = parseBoolean(${input});`;
         },
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\`;`;
@@ -89,13 +87,10 @@ export function tsDateFromSchema(
             return `${input} instanceof Date`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'string') {
-                ${target} = new Date(${input});
-            } else if (${input} instanceof Date) {
-                ${target} = ${input}; 
-            } else {
-                ${target} = ${defaultValue} 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableTimestamp(${input});`;
+            }
+            return `${target} = parseTimestamp(${input});`;
         },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
@@ -133,11 +128,10 @@ export function tsFloatFromSchema(
             return `typeof ${input} === 'number'`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'number') {
-                ${target} = ${input};
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableNumberFloat(${input});`;
+            }
+            return `${target} = parseNumberFloat(${input});`;
         },
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
@@ -198,16 +192,10 @@ export function tsIntFromSchema(
             return mainPart;
         },
         fromJsonTemplate(input, target) {
-            return `if (
-                typeof ${input} === 'number' &&
-                Number.isInteger(${input}) &&
-                ${input} >= ${min} &&
-                ${input} <= ${max}
-            ) {
-                ${target} = ${input};    
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableNumberInt(${input});`;
+            }
+            return `${target} = parseNumberInt(${input});`;
         },
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;

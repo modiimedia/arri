@@ -39,6 +39,13 @@ import {
     parseNumberBigInt,
     parseNumberUnsignedBigInt,
     parseNumberFloat,
+    parseNullableString,
+    parseNullableBoolean,
+    parseNullableTimestamp,
+    parseNullableNumberFloat,
+    parseNullableNumberInt,
+    parseNullableNumberBigInt,
+    parseNullableNumberUnsignedBigInt,
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
@@ -268,10 +275,14 @@ export const $$Book: ArriModelValidator<Book> = {
         );
     },
     fromJson(input): Book {
-        let _id: string = parseString(input.id);
-        let _name: string = parseString(input.name);
-        let _createdAt: Date = parseTimestamp(input.createdAt);
-        let _updatedAt: Date = parseTimestamp(input.updatedAt);
+        let _id: string;
+        _id = parseString(input.id);
+        let _name: string;
+        _name = parseString(input.name);
+        let _createdAt: Date;
+        _createdAt = parseTimestamp(input.createdAt);
+        let _updatedAt: Date;
+        _updatedAt = parseTimestamp(input.updatedAt);
         return {
             id: _id,
             name: _name,
@@ -318,7 +329,8 @@ export const $$BookParams: ArriModelValidator<BookParams> = {
         return isObject(input) && typeof input.bookId === 'string';
     },
     fromJson(input): BookParams {
-        let _bookId: string = parseString(input.bookId);
+        let _bookId: string;
+        _bookId = parseString(input.bookId);
         return {
             bookId: _bookId,
         };
@@ -359,8 +371,10 @@ export const $$NestedObject: ArriModelValidator<NestedObject> = {
         );
     },
     fromJson(input): NestedObject {
-        let _id: string = parseString(input.id);
-        let _content: string = parseString(input.content);
+        let _id: string;
+        _id = parseString(input.id);
+        let _content: string;
+        _content = parseString(input.content);
         return {
             id: _id,
             content: _content,
@@ -482,19 +496,32 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         );
     },
     fromJson(input): ObjectWithEveryType {
-        let _string: string = parseString(input.string);
-        let _boolean: boolean = parseBoolean(input.boolean);
-        let _timestamp: Date = parseTimestamp(input.timestamp);
-        let _float32: number = parseNumber(input.float32);
-        let _float64: number = parseNumber(input.float64);
-        let _int8: number = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
-        let _uint8: number = parseNumberInt(input.uint8, 0, UINT8_MAX);
-        let _int16: number = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
-        let _uint16: number = parseNumberInt(input.uint16, 0, UINT16_MAX);
-        let _int32: number = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
-        let _uint32: number = parseNumberInt(input.uint32, 0, UINT32_MAX);
-        let _int64: bigint = parseNumberBigInt(input.int64);
-        let _uint64: bigint = parseNumberUnsignedBigInt(input.uint64);
+        let _string: string;
+        _string = parseString(input.string);
+        let _boolean: boolean;
+        _boolean = parseBoolean(input.boolean);
+        let _timestamp: Date;
+        _timestamp = parseTimestamp(input.timestamp);
+        let _float32: number;
+        _float32 = parseNumber(input.float32);
+        let _float64: number;
+        _float64 = parseNumber(input.float64);
+        let _int8: number;
+        _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
+        let _uint8: number;
+        _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
+        let _int16: number;
+        _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
+        let _uint16: number;
+        _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
+        let _int32: number;
+        _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
+        let _uint32: number;
+        _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
+        let _int64: bigint;
+        _int64 = parseNumberBigInt(input.int64);
+        let _uint64: bigint;
+        _uint64 = parseNumberUnsignedBigInt(input.uint64);
         let _enum: Enumerator;
         if (typeof input.enum === 'string') {
             _enum = $$Enumerator.fromSerialValue(input.enum);
@@ -511,7 +538,8 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         if (Array.isArray(input.array)) {
             _array = [];
             for (const _arrayEl of input.array) {
-                let _arrayElValue: boolean = parseBoolean(_arrayEl);
+                let _arrayElValue: boolean;
+                _arrayElValue = parseBoolean(_arrayEl);
                 _array.push(_arrayElValue);
             }
         } else {
@@ -521,7 +549,8 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         if (isObject(input.record)) {
             _record = {};
             for (const [_key, _value] of Object.entries(input.record)) {
-                let _recordValue: boolean = parseBoolean(_value);
+                let _recordValue: boolean;
+                _recordValue = parseBoolean(_value);
                 _record[_key] = _recordValue;
             }
         } else {
@@ -764,7 +793,8 @@ const $$DiscriminatorA: ArriModelValidator<DiscriminatorA> = {
     },
     fromJson(input): DiscriminatorA {
         const _typeName = 'A';
-        let _id: string = parseString(input.id);
+        let _id: string;
+        _id = parseString(input.id);
         return {
             typeName: _typeName,
             id: _id,
@@ -811,8 +841,10 @@ const $$DiscriminatorB: ArriModelValidator<DiscriminatorB> = {
     },
     fromJson(input): DiscriminatorB {
         const _typeName = 'B';
-        let _id: string = parseString(input.id);
-        let _name: string = parseString(input.name);
+        let _id: string;
+        _id = parseString(input.id);
+        let _name: string;
+        _name = parseString(input.name);
         return {
             typeName: _typeName,
             id: _id,
@@ -866,9 +898,12 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
     },
     fromJson(input): DiscriminatorC {
         const _typeName = 'C';
-        let _id: string = parseString(input.id);
-        let _name: string = parseString(input.name);
-        let _date: Date = parseTimestamp(input.date);
+        let _id: string;
+        _id = parseString(input.id);
+        let _name: string;
+        _name = parseString(input.name);
+        let _date: Date;
+        _date = parseTimestamp(input.date);
         return {
             typeName: _typeName,
             id: _id,
@@ -1071,7 +1106,8 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 if (Array.isArray(input.array)) {
                     _array = [];
                     for (const _arrayEl of input.array) {
-                        let _arrayElValue: boolean = parseBoolean(_arrayEl);
+                        let _arrayElValue: boolean;
+                        _arrayElValue = parseBoolean(_arrayEl);
                         _array.push(_arrayElValue);
                     }
                 } else {
@@ -1083,7 +1119,8 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 if (isObject(input.record)) {
                     _record = {};
                     for (const [_key, _value] of Object.entries(input.record)) {
-                        let _recordValue: boolean = parseBoolean(_value);
+                        let _recordValue: boolean;
+                        _recordValue = parseBoolean(_value);
                         _record[_key] = _recordValue;
                     }
                 } else {
@@ -1451,125 +1488,31 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
         },
         fromJson(input): ObjectWithNullableFields {
             let _string: string | null;
-            if (input.string === null) {
-                _string = input.string;
-            } else {
-                _string = parseString(input.string);
-            }
+            _string = parseNullableString(input.string);
             let _boolean: boolean | null;
-            if (typeof input.boolean === 'boolean') {
-                _boolean = input.boolean;
-            } else {
-                _boolean = null;
-            }
+            _boolean = parseNullableBoolean(input.boolean);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             let _float32: number | null;
-            if (typeof input.float32 === 'number') {
-                _float32 = input.float32;
-            } else {
-                _float32 = null;
-            }
+            _float32 = parseNullableNumberFloat(input.float32);
             let _float64: number | null;
-            if (typeof input.float64 === 'number') {
-                _float64 = input.float64;
-            } else {
-                _float64 = null;
-            }
+            _float64 = parseNullableNumberFloat(input.float64);
             let _int8: number | null;
-            if (
-                typeof input.int8 === 'number' &&
-                Number.isInteger(input.int8) &&
-                input.int8 >= INT8_MIN &&
-                input.int8 <= INT8_MAX
-            ) {
-                _int8 = input.int8;
-            } else {
-                _int8 = null;
-            }
+            _int8 = parseNullableNumberInt(input.int8, INT8_MIN, INT8_MAX);
             let _uint8: number | null;
-            if (
-                typeof input.uint8 === 'number' &&
-                Number.isInteger(input.uint8) &&
-                input.uint8 >= 0 &&
-                input.uint8 <= UINT8_MAX
-            ) {
-                _uint8 = input.uint8;
-            } else {
-                _uint8 = null;
-            }
+            _uint8 = parseNullableNumberInt(input.uint8, 0, UINT8_MAX);
             let _int16: number | null;
-            if (
-                typeof input.int16 === 'number' &&
-                Number.isInteger(input.int16) &&
-                input.int16 >= INT16_MIN &&
-                input.int16 <= INT16_MAX
-            ) {
-                _int16 = input.int16;
-            } else {
-                _int16 = null;
-            }
+            _int16 = parseNullableNumberInt(input.int16, INT16_MIN, INT16_MAX);
             let _uint16: number | null;
-            if (
-                typeof input.uint16 === 'number' &&
-                Number.isInteger(input.uint16) &&
-                input.uint16 >= 0 &&
-                input.uint16 <= UINT16_MAX
-            ) {
-                _uint16 = input.uint16;
-            } else {
-                _uint16 = null;
-            }
+            _uint16 = parseNullableNumberInt(input.uint16, 0, UINT16_MAX);
             let _int32: number | null;
-            if (
-                typeof input.int32 === 'number' &&
-                Number.isInteger(input.int32) &&
-                input.int32 >= INT32_MIN &&
-                input.int32 <= INT32_MAX
-            ) {
-                _int32 = input.int32;
-            } else {
-                _int32 = null;
-            }
+            _int32 = parseNullableNumberInt(input.int32, INT32_MIN, INT32_MAX);
             let _uint32: number | null;
-            if (
-                typeof input.uint32 === 'number' &&
-                Number.isInteger(input.uint32) &&
-                input.uint32 >= 0 &&
-                input.uint32 <= UINT32_MAX
-            ) {
-                _uint32 = input.uint32;
-            } else {
-                _uint32 = null;
-            }
+            _uint32 = parseNullableNumberInt(input.uint32, 0, UINT32_MAX);
             let _int64: bigint | null;
-            if (typeof input.int64 === 'string') {
-                _int64 = BigInt(input.int64);
-            } else if (typeof input.int64 === 'bigint') {
-                _int64 = input.int64;
-            } else {
-                _int64 = null;
-            }
+            _int64 = parseNullableNumberBigInt(input.int64);
             let _uint64: bigint | null;
-            if (
-                typeof input.uint64 === 'string' &&
-                BigInt(input.uint64) >= BigInt(0)
-            ) {
-                _uint64 = BigInt(input.uint64);
-            } else if (
-                typeof input.uint64 === 'bigint' &&
-                input.uint64 >= BigInt(0)
-            ) {
-                _uint64 = input.uint64;
-            } else {
-                _uint64 = null;
-            }
+            _uint64 = parseNullableNumberUnsignedBigInt(input.uint64);
             let _enum: Enumerator | null;
             if (typeof input.enum === 'string') {
                 _enum = $$Enumerator.fromSerialValue(input.enum);
@@ -1587,11 +1530,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _array = [];
                 for (const _arrayEl of input.array) {
                     let _arrayElValue: boolean;
-                    if (typeof _arrayEl === 'boolean') {
-                        _arrayElValue = _arrayEl;
-                    } else {
-                        _arrayElValue = false;
-                    }
+                    _arrayElValue = parseBoolean(_arrayEl);
                     _array.push(_arrayElValue);
                 }
             } else {
@@ -1602,11 +1541,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 _record = {};
                 for (const [_key, _value] of Object.entries(input.record)) {
                     let _recordValue: boolean;
-                    if (typeof _value === 'boolean') {
-                        _recordValue = _value;
-                    } else {
-                        _recordValue = false;
-                    }
+                    _recordValue = parseBoolean(_value);
                     _record[_key] = _recordValue;
                 }
             } else {
