@@ -11,6 +11,7 @@ import {
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
     Book,
+    Enumerator,
     ExampleClient,
     NestedObject,
     ObjectWithEveryType,
@@ -339,5 +340,15 @@ describe('HTTP options', () => {
         expect(didFireRequestError).toBe(true);
         expect(didFireResponse).toBe(false);
         expect(didFireResponseError).toBe(false);
+    });
+});
+
+describe('misc', () => {
+    test('enum type inference', () => {
+        const val: Enumerator = Enumerator.Foo;
+        const val2 = Enumerator.Bar;
+        assertType<Enumerator>(val);
+        assertType<Enumerator>(val2);
+        assertType<Enumerator>('FOO');
     });
 });

@@ -14,7 +14,7 @@ import {
  * Create a schema that accepts anything
  */
 export function any(options: ASchemaOptions = {}): ASchemaWithAdapters<any> {
-    const validate = (input: unknown): input is any => true;
+    const validate = (_: unknown): _ is any => true;
     const parse = (
         input: unknown,
         context: ValidationContext,
