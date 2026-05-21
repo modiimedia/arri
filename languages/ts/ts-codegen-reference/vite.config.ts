@@ -19,7 +19,6 @@ export default defineConfig({
     // },
 
     test: {
-        globalSetup: ['src/setupVitest.test.ts'],
         globals: true,
         reporters: ['default'],
         pool: 'threads',

@@ -60,7 +60,7 @@ export function tsEnumFromSchema(
     }
     const name = `${context.typePrefix}${enumName}`;
     const valuesName = `$$${name}Values`;
-    result.content = `${getJsDocComment(schema.metadata)}export type ${name} = (typeof ${valuesName})[number];
+    result.content = `${getJsDocComment(schema.metadata)}export type ${name} = ${schema.enum.map((val) => `'${val}'`).join(' | ')};
 export const ${name} = {
 ${schema.enum
     .map((val) => {

@@ -1448,8 +1448,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
     },
 };
 
-export type ObjectWithEveryTypeEnumerator =
-    (typeof $$ObjectWithEveryTypeEnumeratorValues)[number];
+export type ObjectWithEveryTypeEnumerator = 'A' | 'B' | 'C';
 export const ObjectWithEveryTypeEnumerator = {
     A: 'A',
     B: 'B',
@@ -2619,8 +2618,7 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
         },
     };
 
-export type ObjectWithEveryNullableTypeEnumerator =
-    (typeof $$ObjectWithEveryNullableTypeEnumeratorValues)[number];
+export type ObjectWithEveryNullableTypeEnumerator = 'A' | 'B' | 'C';
 export const ObjectWithEveryNullableTypeEnumerator = {
     A: 'A',
     B: 'B',
@@ -4201,8 +4199,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
         },
     };
 
-export type ObjectWithEveryOptionalTypeEnumerator =
-    (typeof $$ObjectWithEveryOptionalTypeEnumeratorValues)[number];
+export type ObjectWithEveryOptionalTypeEnumerator = 'A' | 'B' | 'C';
 export const ObjectWithEveryOptionalTypeEnumerator = {
     A: 'A',
     B: 'B',
@@ -6564,8 +6561,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
         },
     };
 
-export type UsersWatchUserResponseRole =
-    (typeof $$UsersWatchUserResponseRoleValues)[number];
+export type UsersWatchUserResponseRole = 'standard' | 'admin';
 export const UsersWatchUserResponseRole = {
     Standard: 'standard',
     Admin: 'admin',
@@ -6778,8 +6774,7 @@ export const $$UserSettings: ArriModelValidator<UserSettings> = {
     },
 };
 
-export type UserSettingsPreferredTheme =
-    (typeof $$UserSettingsPreferredThemeValues)[number];
+export type UserSettingsPreferredTheme = 'dark-mode' | 'light-mode' | 'system';
 export const UserSettingsPreferredTheme = {
     Darkmode: 'dark-mode',
     Lightmode: 'light-mode',

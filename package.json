@@ -49,9 +49,6 @@
     "prerelease-all": "pnpm run build && pnpm run compile && sh internal/scripts/prerelease-all.sh"
   },
   "private": true,
-  "dependencies": {
-    "@ark/attest": "^0.56.0"
-  },
   "devDependencies": {
     "@eslint/js": "9.39.2",
     "@types/lodash": "^4.17.23",

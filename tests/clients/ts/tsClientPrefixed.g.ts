@@ -1424,8 +1424,7 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
         },
     };
 
-export type FooObjectWithEveryTypeEnumerator =
-    (typeof $$FooObjectWithEveryTypeEnumeratorValues)[number];
+export type FooObjectWithEveryTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryTypeEnumerator = {
     A: 'A',
     B: 'B',
@@ -2634,8 +2633,7 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
         },
     };
 
-export type FooObjectWithEveryNullableTypeEnumerator =
-    (typeof $$FooObjectWithEveryNullableTypeEnumeratorValues)[number];
+export type FooObjectWithEveryNullableTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryNullableTypeEnumerator = {
     A: 'A',
     B: 'B',
@@ -4255,8 +4253,7 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
         },
     };
 
-export type FooObjectWithEveryOptionalTypeEnumerator =
-    (typeof $$FooObjectWithEveryOptionalTypeEnumeratorValues)[number];
+export type FooObjectWithEveryOptionalTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryOptionalTypeEnumerator = {
     A: 'A',
     B: 'B',
@@ -6646,8 +6643,7 @@ export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserRe
         },
     };
 
-export type FooUsersWatchUserResponseRole =
-    (typeof $$FooUsersWatchUserResponseRoleValues)[number];
+export type FooUsersWatchUserResponseRole = 'standard' | 'admin';
 export const FooUsersWatchUserResponseRole = {
     Standard: 'standard',
     Admin: 'admin',
@@ -6874,7 +6870,9 @@ export const $$FooUserSettings: ArriModelValidator<FooUserSettings> = {
 };
 
 export type FooUserSettingsPreferredTheme =
-    (typeof $$FooUserSettingsPreferredThemeValues)[number];
+    | 'dark-mode'
+    | 'light-mode'
+    | 'system';
 export const FooUserSettingsPreferredTheme = {
     Darkmode: 'dark-mode',
     Lightmode: 'light-mode',
