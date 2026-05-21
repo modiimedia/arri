@@ -19,6 +19,21 @@ import {
     INT64_MAX,
     INT64_MIN,
     isObject,
+    parseString,
+    parseBoolean,
+    parseNumber,
+    parseTimestamp,
+    parseNumberInt,
+    parseNumberBigInt,
+    parseNumberUnsignedBigInt,
+    parseNumberFloat,
+    parseNullableString,
+    parseNullableBoolean,
+    parseNullableTimestamp,
+    parseNullableNumberFloat,
+    parseNullableNumberInt,
+    parseNullableNumberBigInt,
+    parseNullableNumberUnsignedBigInt,
     serializeString,
     type SseOptions,
     UINT8_MAX,
@@ -541,11 +556,7 @@ export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> 
         },
         fromJson(input): FooManuallyAddedModel {
             let _hello: string;
-            if (typeof input.hello === 'string') {
-                _hello = input.hello;
-            } else {
-                _hello = '';
-            }
+            _hello = parseString(input.hello);
             return {
                 hello: _hello,
             };
@@ -581,11 +592,7 @@ export const $$FooDefaultPayload: ArriModelValidator<FooDefaultPayload> = {
     },
     fromJson(input): FooDefaultPayload {
         let _message: string;
-        if (typeof input.message === 'string') {
-            _message = input.message;
-        } else {
-            _message = '';
-        }
+        _message = parseString(input.message);
         return {
             message: _message,
         };
@@ -628,11 +635,7 @@ export const $$FooDeprecatedRpcParams: ArriModelValidator<FooDeprecatedRpcParams
         },
         fromJson(input): FooDeprecatedRpcParams {
             let _deprecatedField: string;
-            if (typeof input.deprecatedField === 'string') {
-                _deprecatedField = input.deprecatedField;
-            } else {
-                _deprecatedField = '';
-            }
+            _deprecatedField = parseString(input.deprecatedField);
             return {
                 deprecatedField: _deprecatedField,
             };
@@ -795,23 +798,11 @@ const $$FooDiscriminatorWithEmptyObjectNotEmpty: ArriModelValidator<FooDiscrimin
         fromJson(input): FooDiscriminatorWithEmptyObjectNotEmpty {
             const _type = 'NOT_EMPTY';
             let _foo: string;
-            if (typeof input.foo === 'string') {
-                _foo = input.foo;
-            } else {
-                _foo = '';
-            }
+            _foo = parseString(input.foo);
             let _bar: number;
-            if (typeof input.bar === 'number') {
-                _bar = input.bar;
-            } else {
-                _bar = 0;
-            }
+            _bar = parseNumberFloat(input.bar);
             let _baz: boolean;
-            if (typeof input.baz === 'boolean') {
-                _baz = input.baz;
-            } else {
-                _baz = false;
-            }
+            _baz = parseBoolean(input.baz);
             return {
                 type: _type,
                 foo: _foo,
@@ -869,22 +860,9 @@ export const $$FooSendErrorParams: ArriModelValidator<FooSendErrorParams> = {
     },
     fromJson(input): FooSendErrorParams {
         let _code: number;
-        if (
-            typeof input.code === 'number' &&
-            Number.isInteger(input.code) &&
-            input.code >= 0 &&
-            input.code <= UINT16_MAX
-        ) {
-            _code = input.code;
-        } else {
-            _code = 0;
-        }
+        _code = parseNumberInt(input.code, 0, UINT16_MAX);
         let _message: string;
-        if (typeof input.message === 'string') {
-            _message = input.message;
-        } else {
-            _message = '';
-        }
+        _message = parseString(input.message);
         return {
             code: _code,
             message: _message,
@@ -1034,138 +1012,31 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
             let _any: any;
             _any = input.any;
             let _boolean: boolean;
-            if (typeof input.boolean === 'boolean') {
-                _boolean = input.boolean;
-            } else {
-                _boolean = false;
-            }
+            _boolean = parseBoolean(input.boolean);
             let _string: string;
-            if (typeof input.string === 'string') {
-                _string = input.string;
-            } else {
-                _string = '';
-            }
+            _string = parseString(input.string);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             let _float32: number;
-            if (typeof input.float32 === 'number') {
-                _float32 = input.float32;
-            } else {
-                _float32 = 0;
-            }
+            _float32 = parseNumberFloat(input.float32);
             let _float64: number;
-            if (typeof input.float64 === 'number') {
-                _float64 = input.float64;
-            } else {
-                _float64 = 0;
-            }
+            _float64 = parseNumberFloat(input.float64);
             let _int8: number;
-            if (
-                typeof input.int8 === 'number' &&
-                Number.isInteger(input.int8) &&
-                input.int8 >= INT8_MIN &&
-                input.int8 <= INT8_MAX
-            ) {
-                _int8 = input.int8;
-            } else {
-                _int8 = 0;
-            }
+            _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
             let _uint8: number;
-            if (
-                typeof input.uint8 === 'number' &&
-                Number.isInteger(input.uint8) &&
-                input.uint8 >= 0 &&
-                input.uint8 <= UINT8_MAX
-            ) {
-                _uint8 = input.uint8;
-            } else {
-                _uint8 = 0;
-            }
+            _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
             let _int16: number;
-            if (
-                typeof input.int16 === 'number' &&
-                Number.isInteger(input.int16) &&
-                input.int16 >= INT16_MIN &&
-                input.int16 <= INT16_MAX
-            ) {
-                _int16 = input.int16;
-            } else {
-                _int16 = 0;
-            }
+            _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
             let _uint16: number;
-            if (
-                typeof input.uint16 === 'number' &&
-                Number.isInteger(input.uint16) &&
-                input.uint16 >= 0 &&
-                input.uint16 <= UINT16_MAX
-            ) {
-                _uint16 = input.uint16;
-            } else {
-                _uint16 = 0;
-            }
+            _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
             let _int32: number;
-            if (
-                typeof input.int32 === 'number' &&
-                Number.isInteger(input.int32) &&
-                input.int32 >= INT32_MIN &&
-                input.int32 <= INT32_MAX
-            ) {
-                _int32 = input.int32;
-            } else {
-                _int32 = 0;
-            }
+            _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
             let _uint32: number;
-            if (
-                typeof input.uint32 === 'number' &&
-                Number.isInteger(input.uint32) &&
-                input.uint32 >= 0 &&
-                input.uint32 <= UINT32_MAX
-            ) {
-                _uint32 = input.uint32;
-            } else {
-                _uint32 = 0;
-            }
+            _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
             let _int64: bigint;
-            if (typeof input.int64 === 'string') {
-                _int64 = BigInt(input.int64);
-            } else if (typeof input.int64 === 'bigint') {
-                _int64 = input.int64;
-            } else if (typeof input.int64 === 'number') {
-                console.warn(
-                    '[arri] Expected a BigInt string at /ObjectWithEveryType/int64 but got a raw number. This could lead to precision loss.',
-                );
-                _int64 = BigInt(input.int64);
-            } else {
-                _int64 = BigInt(0);
-            }
+            _int64 = parseNumberBigInt(input.int64);
             let _uint64: bigint;
-            if (
-                typeof input.uint64 === 'string' &&
-                BigInt(input.uint64) >= BigInt(0)
-            ) {
-                _uint64 = BigInt(input.uint64);
-            } else if (
-                typeof input.uint64 === 'bigint' &&
-                input.uint64 >= BigInt(0)
-            ) {
-                _uint64 = input.uint64;
-            } else if (
-                typeof input.uint64 === 'number' &&
-                input.uint64 >= BigInt(0)
-            ) {
-                console.warn(
-                    '[arri] Expected a BigInt string at /ObjectWithEveryType/uint64 but got a raw number. This could lead to precision loss.',
-                );
-                _uint64 = BigInt(input.uint64);
-            } else {
-                _uint64 = BigInt(0);
-            }
+            _uint64 = parseNumberUnsignedBigInt(input.uint64);
             let _enumerator: FooObjectWithEveryTypeEnumerator;
             if (typeof input.enumerator === 'string') {
                 _enumerator =
@@ -1180,11 +1051,7 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
                 _array = [];
                 for (const _arrayEl of input.array) {
                     let _arrayElValue: boolean;
-                    if (typeof _arrayEl === 'boolean') {
-                        _arrayElValue = _arrayEl;
-                    } else {
-                        _arrayElValue = false;
-                    }
+                    _arrayElValue = parseBoolean(_arrayEl);
                     _array.push(_arrayElValue);
                 }
             } else {
@@ -1201,27 +1068,7 @@ export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType
                 _record = {};
                 for (const [_key, _value] of Object.entries(input.record)) {
                     let _recordValue: bigint;
-                    if (
-                        typeof _value === 'string' &&
-                        BigInt(_value) >= BigInt(0)
-                    ) {
-                        _recordValue = BigInt(_value);
-                    } else if (
-                        typeof _value === 'bigint' &&
-                        _value >= BigInt(0)
-                    ) {
-                        _recordValue = _value;
-                    } else if (
-                        typeof _value === 'number' &&
-                        _value >= BigInt(0)
-                    ) {
-                        console.warn(
-                            '[arri] Expected a BigInt string at /ObjectWithEveryType/record/[value] but got a raw number. This could lead to precision loss.',
-                        );
-                        _recordValue = BigInt(_value);
-                    } else {
-                        _recordValue = BigInt(0);
-                    }
+                    _recordValue = parseNumberUnsignedBigInt(_value);
                     _record[_key] = _recordValue;
                 }
             } else {
@@ -1491,25 +1338,11 @@ export const $$FooObjectWithEveryTypeObject: ArriModelValidator<FooObjectWithEve
         },
         fromJson(input): FooObjectWithEveryTypeObject {
             let _string: string;
-            if (typeof input.string === 'string') {
-                _string = input.string;
-            } else {
-                _string = '';
-            }
+            _string = parseString(input.string);
             let _boolean: boolean;
-            if (typeof input.boolean === 'boolean') {
-                _boolean = input.boolean;
-            } else {
-                _boolean = false;
-            }
+            _boolean = parseBoolean(input.boolean);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             return {
                 string: _string,
                 boolean: _boolean,
@@ -1637,11 +1470,7 @@ const $$FooObjectWithEveryTypeDiscriminatorA: ArriModelValidator<FooObjectWithEv
         fromJson(input): FooObjectWithEveryTypeDiscriminatorA {
             const _type = 'A';
             let _title: string;
-            if (typeof input.title === 'string') {
-                _title = input.title;
-            } else {
-                _title = '';
-            }
+            _title = parseString(input.title);
             return {
                 type: _type,
                 title: _title,
@@ -1693,17 +1522,9 @@ const $$FooObjectWithEveryTypeDiscriminatorB: ArriModelValidator<FooObjectWithEv
         fromJson(input): FooObjectWithEveryTypeDiscriminatorB {
             const _type = 'B';
             let _title: string;
-            if (typeof input.title === 'string') {
-                _title = input.title;
-            } else {
-                _title = '';
-            }
+            _title = parseString(input.title);
             let _description: string;
-            if (typeof input.description === 'string') {
-                _description = input.description;
-            } else {
-                _description = '';
-            }
+            _description = parseString(input.description);
             return {
                 type: _type,
                 title: _title,
@@ -1758,19 +1579,9 @@ export const $$FooObjectWithEveryTypeNestedObject: ArriModelValidator<FooObjectW
         },
         fromJson(input): FooObjectWithEveryTypeNestedObject {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             let _data: FooObjectWithEveryTypeNestedObjectData;
             if (isObject(input.data)) {
                 _data = $$FooObjectWithEveryTypeNestedObjectData.fromJson(
@@ -1840,19 +1651,9 @@ export const $$FooObjectWithEveryTypeNestedObjectData: ArriModelValidator<FooObj
         },
         fromJson(input): FooObjectWithEveryTypeNestedObjectData {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             let _data: FooObjectWithEveryTypeNestedObjectDataData;
             if (isObject(input.data)) {
                 _data = $$FooObjectWithEveryTypeNestedObjectDataData.fromJson(
@@ -1917,19 +1718,9 @@ export const $$FooObjectWithEveryTypeNestedObjectDataData: ArriModelValidator<Fo
         },
         fromJson(input): FooObjectWithEveryTypeNestedObjectDataData {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             return {
                 id: _id,
                 timestamp: _timestamp,
@@ -1980,19 +1771,9 @@ export const $$FooObjectWithEveryTypeNestedArrayElementElement: ArriModelValidat
         },
         fromJson(input): FooObjectWithEveryTypeNestedArrayElementElement {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             return {
                 id: _id,
                 timestamp: _timestamp,
@@ -2173,138 +1954,31 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
             let _any: any;
             _any = input.any;
             let _boolean: boolean | null;
-            if (typeof input.boolean === 'boolean') {
-                _boolean = input.boolean;
-            } else {
-                _boolean = null;
-            }
+            _boolean = parseNullableBoolean(input.boolean);
             let _string: string | null;
-            if (typeof input.string === 'string') {
-                _string = input.string;
-            } else {
-                _string = null;
-            }
+            _string = parseNullableString(input.string);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             let _float32: number | null;
-            if (typeof input.float32 === 'number') {
-                _float32 = input.float32;
-            } else {
-                _float32 = null;
-            }
+            _float32 = parseNullableNumberFloat(input.float32);
             let _float64: number | null;
-            if (typeof input.float64 === 'number') {
-                _float64 = input.float64;
-            } else {
-                _float64 = null;
-            }
+            _float64 = parseNullableNumberFloat(input.float64);
             let _int8: number | null;
-            if (
-                typeof input.int8 === 'number' &&
-                Number.isInteger(input.int8) &&
-                input.int8 >= INT8_MIN &&
-                input.int8 <= INT8_MAX
-            ) {
-                _int8 = input.int8;
-            } else {
-                _int8 = null;
-            }
+            _int8 = parseNullableNumberInt(input.int8, INT8_MIN, INT8_MAX);
             let _uint8: number | null;
-            if (
-                typeof input.uint8 === 'number' &&
-                Number.isInteger(input.uint8) &&
-                input.uint8 >= 0 &&
-                input.uint8 <= UINT8_MAX
-            ) {
-                _uint8 = input.uint8;
-            } else {
-                _uint8 = null;
-            }
+            _uint8 = parseNullableNumberInt(input.uint8, 0, UINT8_MAX);
             let _int16: number | null;
-            if (
-                typeof input.int16 === 'number' &&
-                Number.isInteger(input.int16) &&
-                input.int16 >= INT16_MIN &&
-                input.int16 <= INT16_MAX
-            ) {
-                _int16 = input.int16;
-            } else {
-                _int16 = null;
-            }
+            _int16 = parseNullableNumberInt(input.int16, INT16_MIN, INT16_MAX);
             let _uint16: number | null;
-            if (
-                typeof input.uint16 === 'number' &&
-                Number.isInteger(input.uint16) &&
-                input.uint16 >= 0 &&
-                input.uint16 <= UINT16_MAX
-            ) {
-                _uint16 = input.uint16;
-            } else {
-                _uint16 = null;
-            }
+            _uint16 = parseNullableNumberInt(input.uint16, 0, UINT16_MAX);
             let _int32: number | null;
-            if (
-                typeof input.int32 === 'number' &&
-                Number.isInteger(input.int32) &&
-                input.int32 >= INT32_MIN &&
-                input.int32 <= INT32_MAX
-            ) {
-                _int32 = input.int32;
-            } else {
-                _int32 = null;
-            }
+            _int32 = parseNullableNumberInt(input.int32, INT32_MIN, INT32_MAX);
             let _uint32: number | null;
-            if (
-                typeof input.uint32 === 'number' &&
-                Number.isInteger(input.uint32) &&
-                input.uint32 >= 0 &&
-                input.uint32 <= UINT32_MAX
-            ) {
-                _uint32 = input.uint32;
-            } else {
-                _uint32 = null;
-            }
+            _uint32 = parseNullableNumberInt(input.uint32, 0, UINT32_MAX);
             let _int64: bigint | null;
-            if (typeof input.int64 === 'string') {
-                _int64 = BigInt(input.int64);
-            } else if (typeof input.int64 === 'bigint') {
-                _int64 = input.int64;
-            } else if (typeof input.int64 === 'number') {
-                console.warn(
-                    '[arri] Expected a BigInt string at /ObjectWithEveryNullableType/int64 but got a raw number. This could lead to precision loss.',
-                );
-                _int64 = BigInt(input.int64);
-            } else {
-                _int64 = null;
-            }
+            _int64 = parseNullableNumberBigInt(input.int64);
             let _uint64: bigint | null;
-            if (
-                typeof input.uint64 === 'string' &&
-                BigInt(input.uint64) >= BigInt(0)
-            ) {
-                _uint64 = BigInt(input.uint64);
-            } else if (
-                typeof input.uint64 === 'bigint' &&
-                input.uint64 >= BigInt(0)
-            ) {
-                _uint64 = input.uint64;
-            } else if (
-                typeof input.uint64 === 'number' &&
-                input.uint64 >= BigInt(0)
-            ) {
-                console.warn(
-                    '[arri] Expected a BigInt string at /ObjectWithEveryNullableType/uint64 but got a raw number. This could lead to precision loss.',
-                );
-                _uint64 = BigInt(input.uint64);
-            } else {
-                _uint64 = null;
-            }
+            _uint64 = parseNullableNumberUnsignedBigInt(input.uint64);
             let _enumerator: FooObjectWithEveryNullableTypeEnumerator | null;
             if (typeof input.enumerator === 'string') {
                 _enumerator =
@@ -2319,11 +1993,7 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
                 _array = [];
                 for (const _arrayEl of input.array) {
                     let _arrayElValue: boolean | null;
-                    if (typeof _arrayEl === 'boolean') {
-                        _arrayElValue = _arrayEl;
-                    } else {
-                        _arrayElValue = null;
-                    }
+                    _arrayElValue = parseNullableBoolean(_arrayEl);
                     _array.push(_arrayElValue);
                 }
             } else {
@@ -2342,27 +2012,7 @@ export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithE
                 _record = {};
                 for (const [_key, _value] of Object.entries(input.record)) {
                     let _recordValue: bigint | null;
-                    if (
-                        typeof _value === 'string' &&
-                        BigInt(_value) >= BigInt(0)
-                    ) {
-                        _recordValue = BigInt(_value);
-                    } else if (
-                        typeof _value === 'bigint' &&
-                        _value >= BigInt(0)
-                    ) {
-                        _recordValue = _value;
-                    } else if (
-                        typeof _value === 'number' &&
-                        _value >= BigInt(0)
-                    ) {
-                        console.warn(
-                            '[arri] Expected a BigInt string at /ObjectWithEveryNullableType/record/[value] but got a raw number. This could lead to precision loss.',
-                        );
-                        _recordValue = BigInt(_value);
-                    } else {
-                        _recordValue = null;
-                    }
+                    _recordValue = parseNullableNumberUnsignedBigInt(_value);
                     _record[_key] = _recordValue;
                 }
             } else {
@@ -2709,25 +2359,11 @@ export const $$FooObjectWithEveryNullableTypeObject: ArriModelValidator<FooObjec
         },
         fromJson(input): FooObjectWithEveryNullableTypeObject {
             let _string: string | null;
-            if (typeof input.string === 'string') {
-                _string = input.string;
-            } else {
-                _string = null;
-            }
+            _string = parseNullableString(input.string);
             let _boolean: boolean | null;
-            if (typeof input.boolean === 'boolean') {
-                _boolean = input.boolean;
-            } else {
-                _boolean = null;
-            }
+            _boolean = parseNullableBoolean(input.boolean);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             return {
                 string: _string,
                 boolean: _boolean,
@@ -2865,11 +2501,7 @@ const $$FooObjectWithEveryNullableTypeDiscriminatorA: ArriModelValidator<FooObje
         fromJson(input): FooObjectWithEveryNullableTypeDiscriminatorA {
             const _type = 'A';
             let _title: string | null;
-            if (typeof input.title === 'string') {
-                _title = input.title;
-            } else {
-                _title = null;
-            }
+            _title = parseNullableString(input.title);
             return {
                 type: _type,
                 title: _title,
@@ -2926,17 +2558,9 @@ const $$FooObjectWithEveryNullableTypeDiscriminatorB: ArriModelValidator<FooObje
         fromJson(input): FooObjectWithEveryNullableTypeDiscriminatorB {
             const _type = 'B';
             let _title: string | null;
-            if (typeof input.title === 'string') {
-                _title = input.title;
-            } else {
-                _title = null;
-            }
+            _title = parseNullableString(input.title);
             let _description: string | null;
-            if (typeof input.description === 'string') {
-                _description = input.description;
-            } else {
-                _description = null;
-            }
+            _description = parseNullableString(input.description);
             return {
                 type: _type,
                 title: _title,
@@ -3002,19 +2626,9 @@ export const $$FooObjectWithEveryNullableTypeNestedObject: ArriModelValidator<Fo
         },
         fromJson(input): FooObjectWithEveryNullableTypeNestedObject {
             let _id: string | null;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = null;
-            }
+            _id = parseNullableString(input.id);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             let _data: FooObjectWithEveryNullableTypeNestedObjectData | null;
             if (isObject(input.data)) {
                 _data =
@@ -3101,19 +2715,9 @@ export const $$FooObjectWithEveryNullableTypeNestedObjectData: ArriModelValidato
         },
         fromJson(input): FooObjectWithEveryNullableTypeNestedObjectData {
             let _id: string | null;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = null;
-            }
+            _id = parseNullableString(input.id);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             let _data: FooObjectWithEveryNullableTypeNestedObjectDataData | null;
             if (isObject(input.data)) {
                 _data =
@@ -3194,19 +2798,9 @@ export const $$FooObjectWithEveryNullableTypeNestedObjectDataData: ArriModelVali
         },
         fromJson(input): FooObjectWithEveryNullableTypeNestedObjectDataData {
             let _id: string | null;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = null;
-            }
+            _id = parseNullableString(input.id);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             return {
                 id: _id,
                 timestamp: _timestamp,
@@ -3269,19 +2863,9 @@ export const $$FooObjectWithEveryNullableTypeNestedArrayElementElement: ArriMode
             input,
         ): FooObjectWithEveryNullableTypeNestedArrayElementElement {
             let _id: string | null;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = null;
-            }
+            _id = parseNullableString(input.id);
             let _timestamp: Date | null;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = null;
-            }
+            _timestamp = parseNullableTimestamp(input.timestamp);
             return {
                 id: _id,
                 timestamp: _timestamp,
@@ -3350,40 +2934,18 @@ export const $$FooObjectWithPascalCaseKeys: ArriModelValidator<FooObjectWithPasc
         },
         fromJson(input): FooObjectWithPascalCaseKeys {
             let _CreatedAt: Date;
-            if (typeof input.CreatedAt === 'string') {
-                _CreatedAt = new Date(input.CreatedAt);
-            } else if (input.CreatedAt instanceof Date) {
-                _CreatedAt = input.CreatedAt;
-            } else {
-                _CreatedAt = new Date(0);
-            }
+            _CreatedAt = parseTimestamp(input.CreatedAt);
             let _DisplayName: string;
-            if (typeof input.DisplayName === 'string') {
-                _DisplayName = input.DisplayName;
-            } else {
-                _DisplayName = '';
-            }
+            _DisplayName = parseString(input.DisplayName);
             let _PhoneNumber: string | null;
-            if (typeof input.PhoneNumber === 'string') {
-                _PhoneNumber = input.PhoneNumber;
-            } else {
-                _PhoneNumber = null;
-            }
+            _PhoneNumber = parseNullableString(input.PhoneNumber);
             let _EmailAddress: string | undefined;
             if (typeof input.EmailAddress !== 'undefined') {
-                if (typeof input.EmailAddress === 'string') {
-                    _EmailAddress = input.EmailAddress;
-                } else {
-                    _EmailAddress = '';
-                }
+                _EmailAddress = parseString(input.EmailAddress);
             }
             let _IsAdmin: boolean | undefined;
             if (typeof input.IsAdmin !== 'undefined') {
-                if (typeof input.IsAdmin === 'boolean') {
-                    _IsAdmin = input.IsAdmin;
-                } else {
-                    _IsAdmin = false;
-                }
+                _IsAdmin = parseBoolean(input.IsAdmin);
             }
             return {
                 createdAt: _CreatedAt,
@@ -3465,40 +3027,18 @@ export const $$FooObjectWithSnakeCaseKeys: ArriModelValidator<FooObjectWithSnake
         },
         fromJson(input): FooObjectWithSnakeCaseKeys {
             let _created_at: Date;
-            if (typeof input.created_at === 'string') {
-                _created_at = new Date(input.created_at);
-            } else if (input.created_at instanceof Date) {
-                _created_at = input.created_at;
-            } else {
-                _created_at = new Date(0);
-            }
+            _created_at = parseTimestamp(input.created_at);
             let _display_name: string;
-            if (typeof input.display_name === 'string') {
-                _display_name = input.display_name;
-            } else {
-                _display_name = '';
-            }
+            _display_name = parseString(input.display_name);
             let _phone_number: string | null;
-            if (typeof input.phone_number === 'string') {
-                _phone_number = input.phone_number;
-            } else {
-                _phone_number = null;
-            }
+            _phone_number = parseNullableString(input.phone_number);
             let _email_address: string | undefined;
             if (typeof input.email_address !== 'undefined') {
-                if (typeof input.email_address === 'string') {
-                    _email_address = input.email_address;
-                } else {
-                    _email_address = '';
-                }
+                _email_address = parseString(input.email_address);
             }
             let _is_admin: boolean | undefined;
             if (typeof input.is_admin !== 'undefined') {
-                if (typeof input.is_admin === 'boolean') {
-                    _is_admin = input.is_admin;
-                } else {
-                    _is_admin = false;
-                }
+                _is_admin = parseBoolean(input.is_admin);
             }
             return {
                 createdAt: _created_at,
@@ -3678,162 +3218,55 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
             }
             let _boolean: boolean | undefined;
             if (typeof input.boolean !== 'undefined') {
-                if (typeof input.boolean === 'boolean') {
-                    _boolean = input.boolean;
-                } else {
-                    _boolean = false;
-                }
+                _boolean = parseBoolean(input.boolean);
             }
             let _string: string | undefined;
             if (typeof input.string !== 'undefined') {
-                if (typeof input.string === 'string') {
-                    _string = input.string;
-                } else {
-                    _string = '';
-                }
+                _string = parseString(input.string);
             }
             let _timestamp: Date | undefined;
             if (typeof input.timestamp !== 'undefined') {
-                if (typeof input.timestamp === 'string') {
-                    _timestamp = new Date(input.timestamp);
-                } else if (input.timestamp instanceof Date) {
-                    _timestamp = input.timestamp;
-                } else {
-                    _timestamp = new Date(0);
-                }
+                _timestamp = parseTimestamp(input.timestamp);
             }
             let _float32: number | undefined;
             if (typeof input.float32 !== 'undefined') {
-                if (typeof input.float32 === 'number') {
-                    _float32 = input.float32;
-                } else {
-                    _float32 = 0;
-                }
+                _float32 = parseNumberFloat(input.float32);
             }
             let _float64: number | undefined;
             if (typeof input.float64 !== 'undefined') {
-                if (typeof input.float64 === 'number') {
-                    _float64 = input.float64;
-                } else {
-                    _float64 = 0;
-                }
+                _float64 = parseNumberFloat(input.float64);
             }
             let _int8: number | undefined;
             if (typeof input.int8 !== 'undefined') {
-                if (
-                    typeof input.int8 === 'number' &&
-                    Number.isInteger(input.int8) &&
-                    input.int8 >= INT8_MIN &&
-                    input.int8 <= INT8_MAX
-                ) {
-                    _int8 = input.int8;
-                } else {
-                    _int8 = 0;
-                }
+                _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
             }
             let _uint8: number | undefined;
             if (typeof input.uint8 !== 'undefined') {
-                if (
-                    typeof input.uint8 === 'number' &&
-                    Number.isInteger(input.uint8) &&
-                    input.uint8 >= 0 &&
-                    input.uint8 <= UINT8_MAX
-                ) {
-                    _uint8 = input.uint8;
-                } else {
-                    _uint8 = 0;
-                }
+                _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
             }
             let _int16: number | undefined;
             if (typeof input.int16 !== 'undefined') {
-                if (
-                    typeof input.int16 === 'number' &&
-                    Number.isInteger(input.int16) &&
-                    input.int16 >= INT16_MIN &&
-                    input.int16 <= INT16_MAX
-                ) {
-                    _int16 = input.int16;
-                } else {
-                    _int16 = 0;
-                }
+                _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
             }
             let _uint16: number | undefined;
             if (typeof input.uint16 !== 'undefined') {
-                if (
-                    typeof input.uint16 === 'number' &&
-                    Number.isInteger(input.uint16) &&
-                    input.uint16 >= 0 &&
-                    input.uint16 <= UINT16_MAX
-                ) {
-                    _uint16 = input.uint16;
-                } else {
-                    _uint16 = 0;
-                }
+                _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
             }
             let _int32: number | undefined;
             if (typeof input.int32 !== 'undefined') {
-                if (
-                    typeof input.int32 === 'number' &&
-                    Number.isInteger(input.int32) &&
-                    input.int32 >= INT32_MIN &&
-                    input.int32 <= INT32_MAX
-                ) {
-                    _int32 = input.int32;
-                } else {
-                    _int32 = 0;
-                }
+                _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
             }
             let _uint32: number | undefined;
             if (typeof input.uint32 !== 'undefined') {
-                if (
-                    typeof input.uint32 === 'number' &&
-                    Number.isInteger(input.uint32) &&
-                    input.uint32 >= 0 &&
-                    input.uint32 <= UINT32_MAX
-                ) {
-                    _uint32 = input.uint32;
-                } else {
-                    _uint32 = 0;
-                }
+                _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
             }
             let _int64: bigint | undefined;
             if (typeof input.int64 !== 'undefined') {
-                if (typeof input.int64 === 'string') {
-                    _int64 = BigInt(input.int64);
-                } else if (typeof input.int64 === 'bigint') {
-                    _int64 = input.int64;
-                } else if (typeof input.int64 === 'number') {
-                    console.warn(
-                        '[arri] Expected a BigInt string at /ObjectWithEveryOptionalType/int64 but got a raw number. This could lead to precision loss.',
-                    );
-                    _int64 = BigInt(input.int64);
-                } else {
-                    _int64 = BigInt(0);
-                }
+                _int64 = parseNumberBigInt(input.int64);
             }
             let _uint64: bigint | undefined;
             if (typeof input.uint64 !== 'undefined') {
-                if (
-                    typeof input.uint64 === 'string' &&
-                    BigInt(input.uint64) >= BigInt(0)
-                ) {
-                    _uint64 = BigInt(input.uint64);
-                } else if (
-                    typeof input.uint64 === 'bigint' &&
-                    input.uint64 >= BigInt(0)
-                ) {
-                    _uint64 = input.uint64;
-                } else if (
-                    typeof input.uint64 === 'number' &&
-                    input.uint64 >= BigInt(0)
-                ) {
-                    console.warn(
-                        '[arri] Expected a BigInt string at /ObjectWithEveryOptionalType/uint64 but got a raw number. This could lead to precision loss.',
-                    );
-                    _uint64 = BigInt(input.uint64);
-                } else {
-                    _uint64 = BigInt(0);
-                }
+                _uint64 = parseNumberUnsignedBigInt(input.uint64);
             }
             let _enumerator:
                 | FooObjectWithEveryOptionalTypeEnumerator
@@ -3855,11 +3288,7 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
                     _array = [];
                     for (const _arrayEl of input.array) {
                         let _arrayElValue: boolean;
-                        if (typeof _arrayEl === 'boolean') {
-                            _arrayElValue = _arrayEl;
-                        } else {
-                            _arrayElValue = false;
-                        }
+                        _arrayElValue = parseBoolean(_arrayEl);
                         _array.push(_arrayElValue);
                     }
                 } else {
@@ -3882,27 +3311,7 @@ export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithE
                     _record = {};
                     for (const [_key, _value] of Object.entries(input.record)) {
                         let _recordValue: bigint;
-                        if (
-                            typeof _value === 'string' &&
-                            BigInt(_value) >= BigInt(0)
-                        ) {
-                            _recordValue = BigInt(_value);
-                        } else if (
-                            typeof _value === 'bigint' &&
-                            _value >= BigInt(0)
-                        ) {
-                            _recordValue = _value;
-                        } else if (
-                            typeof _value === 'number' &&
-                            _value >= BigInt(0)
-                        ) {
-                            console.warn(
-                                '[arri] Expected a BigInt string at /ObjectWithEveryOptionalType/record/[value] but got a raw number. This could lead to precision loss.',
-                            );
-                            _recordValue = BigInt(_value);
-                        } else {
-                            _recordValue = BigInt(0);
-                        }
+                        _recordValue = parseNumberUnsignedBigInt(_value);
                         _record[_key] = _recordValue;
                     }
                 } else {
@@ -4328,25 +3737,11 @@ export const $$FooObjectWithEveryOptionalTypeObject: ArriModelValidator<FooObjec
         },
         fromJson(input): FooObjectWithEveryOptionalTypeObject {
             let _string: string;
-            if (typeof input.string === 'string') {
-                _string = input.string;
-            } else {
-                _string = '';
-            }
+            _string = parseString(input.string);
             let _boolean: boolean;
-            if (typeof input.boolean === 'boolean') {
-                _boolean = input.boolean;
-            } else {
-                _boolean = false;
-            }
+            _boolean = parseBoolean(input.boolean);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             return {
                 string: _string,
                 boolean: _boolean,
@@ -4476,11 +3871,7 @@ const $$FooObjectWithEveryOptionalTypeDiscriminatorA: ArriModelValidator<FooObje
         fromJson(input): FooObjectWithEveryOptionalTypeDiscriminatorA {
             const _type = 'A';
             let _title: string;
-            if (typeof input.title === 'string') {
-                _title = input.title;
-            } else {
-                _title = '';
-            }
+            _title = parseString(input.title);
             return {
                 type: _type,
                 title: _title,
@@ -4532,17 +3923,9 @@ const $$FooObjectWithEveryOptionalTypeDiscriminatorB: ArriModelValidator<FooObje
         fromJson(input): FooObjectWithEveryOptionalTypeDiscriminatorB {
             const _type = 'B';
             let _title: string;
-            if (typeof input.title === 'string') {
-                _title = input.title;
-            } else {
-                _title = '';
-            }
+            _title = parseString(input.title);
             let _description: string;
-            if (typeof input.description === 'string') {
-                _description = input.description;
-            } else {
-                _description = '';
-            }
+            _description = parseString(input.description);
             return {
                 type: _type,
                 title: _title,
@@ -4599,19 +3982,9 @@ export const $$FooObjectWithEveryOptionalTypeNestedObject: ArriModelValidator<Fo
         },
         fromJson(input): FooObjectWithEveryOptionalTypeNestedObject {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             let _data: FooObjectWithEveryOptionalTypeNestedObjectData;
             if (isObject(input.data)) {
                 _data =
@@ -4685,19 +4058,9 @@ export const $$FooObjectWithEveryOptionalTypeNestedObjectData: ArriModelValidato
         },
         fromJson(input): FooObjectWithEveryOptionalTypeNestedObjectData {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             let _data: FooObjectWithEveryOptionalTypeNestedObjectDataData;
             if (isObject(input.data)) {
                 _data =
@@ -4767,19 +4130,9 @@ export const $$FooObjectWithEveryOptionalTypeNestedObjectDataData: ArriModelVali
         },
         fromJson(input): FooObjectWithEveryOptionalTypeNestedObjectDataData {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             return {
                 id: _id,
                 timestamp: _timestamp,
@@ -4834,19 +4187,9 @@ export const $$FooObjectWithEveryOptionalTypeNestedArrayElementElement: ArriMode
             input,
         ): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _timestamp: Date;
-            if (typeof input.timestamp === 'string') {
-                _timestamp = new Date(input.timestamp);
-            } else if (input.timestamp instanceof Date) {
-                _timestamp = input.timestamp;
-            } else {
-                _timestamp = new Date(0);
-            }
+            _timestamp = parseTimestamp(input.timestamp);
             return {
                 id: _id,
                 timestamp: _timestamp,
@@ -4913,11 +4256,7 @@ export const $$FooRecursiveObject: ArriModelValidator<FooRecursiveObject> = {
             _right = null;
         }
         let _value: string;
-        if (typeof input.value === 'string') {
-            _value = input.value;
-        } else {
-            _value = '';
-        }
+        _value = parseString(input.value);
         return {
             left: _left,
             right: _right,
@@ -5187,11 +4526,7 @@ const $$FooRecursiveUnionText: ArriModelValidator<FooRecursiveUnionText> = {
     fromJson(input): FooRecursiveUnionText {
         const _type = 'TEXT';
         let _data: string;
-        if (typeof input.data === 'string') {
-            _data = input.data;
-        } else {
-            _data = '';
-        }
+        _data = parseString(input.data);
         return {
             type: _type,
             data: _data,
@@ -5295,23 +4630,11 @@ export const $$FooRecursiveUnionShapeData: ArriModelValidator<FooRecursiveUnionS
         },
         fromJson(input): FooRecursiveUnionShapeData {
             let _width: number;
-            if (typeof input.width === 'number') {
-                _width = input.width;
-            } else {
-                _width = 0;
-            }
+            _width = parseNumberFloat(input.width);
             let _height: number;
-            if (typeof input.height === 'number') {
-                _height = input.height;
-            } else {
-                _height = 0;
-            }
+            _height = parseNumberFloat(input.height);
             let _color: string;
-            if (typeof input.color === 'string') {
-                _color = input.color;
-            } else {
-                _color = '';
-            }
+            _color = parseString(input.color);
             return {
                 width: _width,
                 height: _height,
@@ -5362,16 +4685,7 @@ export const $$FooAutoReconnectParams: ArriModelValidator<FooAutoReconnectParams
         },
         fromJson(input): FooAutoReconnectParams {
             let _messageCount: number;
-            if (
-                typeof input.messageCount === 'number' &&
-                Number.isInteger(input.messageCount) &&
-                input.messageCount >= 0 &&
-                input.messageCount <= UINT8_MAX
-            ) {
-                _messageCount = input.messageCount;
-            } else {
-                _messageCount = 0;
-            }
+            _messageCount = parseNumberInt(input.messageCount, 0, UINT8_MAX);
             return {
                 messageCount: _messageCount,
             };
@@ -5417,22 +4731,9 @@ export const $$FooAutoReconnectResponse: ArriModelValidator<FooAutoReconnectResp
         },
         fromJson(input): FooAutoReconnectResponse {
             let _count: number;
-            if (
-                typeof input.count === 'number' &&
-                Number.isInteger(input.count) &&
-                input.count >= 0 &&
-                input.count <= UINT8_MAX
-            ) {
-                _count = input.count;
-            } else {
-                _count = 0;
-            }
+            _count = parseNumberInt(input.count, 0, UINT8_MAX);
             let _message: string;
-            if (typeof input.message === 'string') {
-                _message = input.message;
-            } else {
-                _message = '';
-            }
+            _message = parseString(input.message);
             return {
                 count: _count,
                 message: _message,
@@ -5482,22 +4783,13 @@ export const $$FooStreamConnectionErrorTestParams: ArriModelValidator<FooStreamC
         },
         fromJson(input): FooStreamConnectionErrorTestParams {
             let _statusCode: number;
-            if (
-                typeof input.statusCode === 'number' &&
-                Number.isInteger(input.statusCode) &&
-                input.statusCode >= INT32_MIN &&
-                input.statusCode <= INT32_MAX
-            ) {
-                _statusCode = input.statusCode;
-            } else {
-                _statusCode = 0;
-            }
+            _statusCode = parseNumberInt(
+                input.statusCode,
+                INT32_MIN,
+                INT32_MAX,
+            );
             let _statusMessage: string;
-            if (typeof input.statusMessage === 'string') {
-                _statusMessage = input.statusMessage;
-            } else {
-                _statusMessage = '';
-            }
+            _statusMessage = parseString(input.statusMessage);
             return {
                 statusCode: _statusCode,
                 statusMessage: _statusMessage,
@@ -5540,11 +4832,7 @@ export const $$FooStreamConnectionErrorTestResponse: ArriModelValidator<FooStrea
         },
         fromJson(input): FooStreamConnectionErrorTestResponse {
             let _message: string;
-            if (typeof input.message === 'string') {
-                _message = input.message;
-            } else {
-                _message = '';
-            }
+            _message = parseString(input.message);
             return {
                 message: _message,
             };
@@ -5585,11 +4873,7 @@ export const $$FooStreamHeartbeatDetectionTestParams: ArriModelValidator<FooStre
         },
         fromJson(input): FooStreamHeartbeatDetectionTestParams {
             let _heartbeatEnabled: boolean;
-            if (typeof input.heartbeatEnabled === 'boolean') {
-                _heartbeatEnabled = input.heartbeatEnabled;
-            } else {
-                _heartbeatEnabled = false;
-            }
+            _heartbeatEnabled = parseBoolean(input.heartbeatEnabled);
             return {
                 heartbeatEnabled: _heartbeatEnabled,
             };
@@ -5628,11 +4912,7 @@ export const $$FooStreamHeartbeatDetectionTestResponse: ArriModelValidator<FooSt
         },
         fromJson(input): FooStreamHeartbeatDetectionTestResponse {
             let _message: string;
-            if (typeof input.message === 'string') {
-                _message = input.message;
-            } else {
-                _message = '';
-            }
+            _message = parseString(input.message);
             return {
                 message: _message,
             };
@@ -5689,11 +4969,7 @@ export const $$FooStreamLargeObjectsResponse: ArriModelValidator<FooStreamLargeO
                 _numbers = [];
                 for (const _numbersEl of input.numbers) {
                     let _numbersElValue: number;
-                    if (typeof _numbersEl === 'number') {
-                        _numbersElValue = _numbersEl;
-                    } else {
-                        _numbersElValue = 0;
-                    }
+                    _numbersElValue = parseNumberFloat(_numbersEl);
                     _numbers.push(_numbersElValue);
                 }
             } else {
@@ -5786,23 +5062,11 @@ export const $$FooStreamLargeObjectsResponseObjectsElement: ArriModelValidator<F
         },
         fromJson(input): FooStreamLargeObjectsResponseObjectsElement {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _name: string;
-            if (typeof input.name === 'string') {
-                _name = input.name;
-            } else {
-                _name = '';
-            }
+            _name = parseString(input.name);
             let _email: string;
-            if (typeof input.email === 'string') {
-                _email = input.email;
-            } else {
-                _email = '';
-            }
+            _email = parseString(input.email);
             return {
                 id: _id,
                 name: _name,
@@ -5849,11 +5113,7 @@ export const $$FooChatMessageParams: ArriModelValidator<FooChatMessageParams> =
         },
         fromJson(input): FooChatMessageParams {
             let _channelId: string;
-            if (typeof input.channelId === 'string') {
-                _channelId = input.channelId;
-            } else {
-                _channelId = '';
-            }
+            _channelId = parseString(input.channelId);
             return {
                 channelId: _channelId,
             };
@@ -5976,37 +5236,15 @@ const $$FooChatMessageText: ArriModelValidator<FooChatMessageText> = {
     fromJson(input): FooChatMessageText {
         const _messageType = 'TEXT';
         let _id: string;
-        if (typeof input.id === 'string') {
-            _id = input.id;
-        } else {
-            _id = '';
-        }
+        _id = parseString(input.id);
         let _channelId: string;
-        if (typeof input.channelId === 'string') {
-            _channelId = input.channelId;
-        } else {
-            _channelId = '';
-        }
+        _channelId = parseString(input.channelId);
         let _userId: string;
-        if (typeof input.userId === 'string') {
-            _userId = input.userId;
-        } else {
-            _userId = '';
-        }
+        _userId = parseString(input.userId);
         let _date: Date;
-        if (typeof input.date === 'string') {
-            _date = new Date(input.date);
-        } else if (input.date instanceof Date) {
-            _date = input.date;
-        } else {
-            _date = new Date(0);
-        }
+        _date = parseTimestamp(input.date);
         let _text: string;
-        if (typeof input.text === 'string') {
-            _text = input.text;
-        } else {
-            _text = '';
-        }
+        _text = parseString(input.text);
         return {
             messageType: _messageType,
             id: _id,
@@ -6080,37 +5318,15 @@ const $$FooChatMessageImage: ArriModelValidator<FooChatMessageImage> = {
     fromJson(input): FooChatMessageImage {
         const _messageType = 'IMAGE';
         let _id: string;
-        if (typeof input.id === 'string') {
-            _id = input.id;
-        } else {
-            _id = '';
-        }
+        _id = parseString(input.id);
         let _channelId: string;
-        if (typeof input.channelId === 'string') {
-            _channelId = input.channelId;
-        } else {
-            _channelId = '';
-        }
+        _channelId = parseString(input.channelId);
         let _userId: string;
-        if (typeof input.userId === 'string') {
-            _userId = input.userId;
-        } else {
-            _userId = '';
-        }
+        _userId = parseString(input.userId);
         let _date: Date;
-        if (typeof input.date === 'string') {
-            _date = new Date(input.date);
-        } else if (input.date instanceof Date) {
-            _date = input.date;
-        } else {
-            _date = new Date(0);
-        }
+        _date = parseTimestamp(input.date);
         let _image: string;
-        if (typeof input.image === 'string') {
-            _image = input.image;
-        } else {
-            _image = '';
-        }
+        _image = parseString(input.image);
         return {
             messageType: _messageType,
             id: _id,
@@ -6184,37 +5400,15 @@ const $$FooChatMessageUrl: ArriModelValidator<FooChatMessageUrl> = {
     fromJson(input): FooChatMessageUrl {
         const _messageType = 'URL';
         let _id: string;
-        if (typeof input.id === 'string') {
-            _id = input.id;
-        } else {
-            _id = '';
-        }
+        _id = parseString(input.id);
         let _channelId: string;
-        if (typeof input.channelId === 'string') {
-            _channelId = input.channelId;
-        } else {
-            _channelId = '';
-        }
+        _channelId = parseString(input.channelId);
         let _userId: string;
-        if (typeof input.userId === 'string') {
-            _userId = input.userId;
-        } else {
-            _userId = '';
-        }
+        _userId = parseString(input.userId);
         let _date: Date;
-        if (typeof input.date === 'string') {
-            _date = new Date(input.date);
-        } else if (input.date instanceof Date) {
-            _date = input.date;
-        } else {
-            _date = new Date(0);
-        }
+        _date = parseTimestamp(input.date);
         let _url: string;
-        if (typeof input.url === 'string') {
-            _url = input.url;
-        } else {
-            _url = '';
-        }
+        _url = parseString(input.url);
         return {
             messageType: _messageType,
             id: _id,
@@ -6272,11 +5466,7 @@ export const $$FooTestsStreamRetryWithNewCredentialsResponse: ArriModelValidator
         },
         fromJson(input): FooTestsStreamRetryWithNewCredentialsResponse {
             let _message: string;
-            if (typeof input.message === 'string') {
-                _message = input.message;
-            } else {
-                _message = '';
-            }
+            _message = parseString(input.message);
             return {
                 message: _message,
             };
@@ -6315,11 +5505,7 @@ export const $$FooUsersWatchUserParams: ArriModelValidator<FooUsersWatchUserPara
         },
         fromJson(input): FooUsersWatchUserParams {
             let _userId: string;
-            if (typeof input.userId === 'string') {
-                _userId = input.userId;
-            } else {
-                _userId = '';
-            }
+            _userId = parseString(input.userId);
             return {
                 userId: _userId,
             };
@@ -6406,11 +5592,7 @@ export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserRe
         },
         fromJson(input): FooUsersWatchUserResponse {
             let _id: string;
-            if (typeof input.id === 'string') {
-                _id = input.id;
-            } else {
-                _id = '';
-            }
+            _id = parseString(input.id);
             let _role: FooUsersWatchUserResponseRole;
             if (typeof input.role === 'string') {
                 _role = $$FooUsersWatchUserResponseRole.fromSerialValue(
@@ -6426,24 +5608,13 @@ export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserRe
                 _photo = null;
             }
             let _createdAt: Date;
-            if (typeof input.createdAt === 'string') {
-                _createdAt = new Date(input.createdAt);
-            } else if (input.createdAt instanceof Date) {
-                _createdAt = input.createdAt;
-            } else {
-                _createdAt = new Date(0);
-            }
+            _createdAt = parseTimestamp(input.createdAt);
             let _numFollowers: number;
-            if (
-                typeof input.numFollowers === 'number' &&
-                Number.isInteger(input.numFollowers) &&
-                input.numFollowers >= INT32_MIN &&
-                input.numFollowers <= INT32_MAX
-            ) {
-                _numFollowers = input.numFollowers;
-            } else {
-                _numFollowers = 0;
-            }
+            _numFollowers = parseNumberInt(
+                input.numFollowers,
+                INT32_MIN,
+                INT32_MAX,
+            );
             let _settings: FooUserSettings;
             if (isObject(input.settings)) {
                 _settings = $$FooUserSettings.fromJson(input.settings);
@@ -6515,11 +5686,7 @@ export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserRe
             }
             let _bio: string | undefined;
             if (typeof input.bio !== 'undefined') {
-                if (typeof input.bio === 'string') {
-                    _bio = input.bio;
-                } else {
-                    _bio = '';
-                }
+                _bio = parseString(input.bio);
             }
             return {
                 id: _id,
@@ -6722,58 +5889,15 @@ export const $$FooUserPhoto: ArriModelValidator<FooUserPhoto> = {
     },
     fromJson(input): FooUserPhoto {
         let _url: string;
-        if (typeof input.url === 'string') {
-            _url = input.url;
-        } else {
-            _url = '';
-        }
+        _url = parseString(input.url);
         let _width: number;
-        if (typeof input.width === 'number') {
-            _width = input.width;
-        } else {
-            _width = 0;
-        }
+        _width = parseNumberFloat(input.width);
         let _height: number;
-        if (typeof input.height === 'number') {
-            _height = input.height;
-        } else {
-            _height = 0;
-        }
+        _height = parseNumberFloat(input.height);
         let _bytes: bigint;
-        if (typeof input.bytes === 'string') {
-            _bytes = BigInt(input.bytes);
-        } else if (typeof input.bytes === 'bigint') {
-            _bytes = input.bytes;
-        } else if (typeof input.bytes === 'number') {
-            console.warn(
-                '[arri] Expected a BigInt string at /UserPhoto/bytes but got a raw number. This could lead to precision loss.',
-            );
-            _bytes = BigInt(input.bytes);
-        } else {
-            _bytes = BigInt(0);
-        }
+        _bytes = parseNumberBigInt(input.bytes);
         let _nanoseconds: bigint;
-        if (
-            typeof input.nanoseconds === 'string' &&
-            BigInt(input.nanoseconds) >= BigInt(0)
-        ) {
-            _nanoseconds = BigInt(input.nanoseconds);
-        } else if (
-            typeof input.nanoseconds === 'bigint' &&
-            input.nanoseconds >= BigInt(0)
-        ) {
-            _nanoseconds = input.nanoseconds;
-        } else if (
-            typeof input.nanoseconds === 'number' &&
-            input.nanoseconds >= BigInt(0)
-        ) {
-            console.warn(
-                '[arri] Expected a BigInt string at /UserPhoto/nanoseconds but got a raw number. This could lead to precision loss.',
-            );
-            _nanoseconds = BigInt(input.nanoseconds);
-        } else {
-            _nanoseconds = BigInt(0);
-        }
+        _nanoseconds = parseNumberUnsignedBigInt(input.nanoseconds);
         return {
             url: _url,
             width: _width,
@@ -6831,11 +5955,7 @@ export const $$FooUserSettings: ArriModelValidator<FooUserSettings> = {
     },
     fromJson(input): FooUserSettings {
         let _notificationsEnabled: boolean;
-        if (typeof input.notificationsEnabled === 'boolean') {
-            _notificationsEnabled = input.notificationsEnabled;
-        } else {
-            _notificationsEnabled = false;
-        }
+        _notificationsEnabled = parseBoolean(input.notificationsEnabled);
         let _preferredTheme: FooUserSettingsPreferredTheme;
         if (typeof input.preferredTheme === 'string') {
             _preferredTheme = $$FooUserSettingsPreferredTheme.fromSerialValue(
@@ -7028,17 +6148,9 @@ const $$FooUsersWatchUserResponseRecentNotificationsElementPostLike: ArriModelVa
         ): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
             const _notificationType = 'POST_LIKE';
             let _postId: string;
-            if (typeof input.postId === 'string') {
-                _postId = input.postId;
-            } else {
-                _postId = '';
-            }
+            _postId = parseString(input.postId);
             let _userId: string;
-            if (typeof input.userId === 'string') {
-                _userId = input.userId;
-            } else {
-                _userId = '';
-            }
+            _userId = parseString(input.userId);
             return {
                 notificationType: _notificationType,
                 postId: _postId,
@@ -7103,23 +6215,11 @@ const $$FooUsersWatchUserResponseRecentNotificationsElementPostComment: ArriMode
         ): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
             const _notificationType = 'POST_COMMENT';
             let _postId: string;
-            if (typeof input.postId === 'string') {
-                _postId = input.postId;
-            } else {
-                _postId = '';
-            }
+            _postId = parseString(input.postId);
             let _userId: string;
-            if (typeof input.userId === 'string') {
-                _userId = input.userId;
-            } else {
-                _userId = '';
-            }
+            _userId = parseString(input.userId);
             let _commentText: string;
-            if (typeof input.commentText === 'string') {
-                _commentText = input.commentText;
-            } else {
-                _commentText = '';
-            }
+            _commentText = parseString(input.commentText);
             return {
                 notificationType: _notificationType,
                 postId: _postId,
@@ -7177,17 +6277,9 @@ export const $$FooUsersWatchUserResponseBookmarksValue: ArriModelValidator<FooUs
         },
         fromJson(input): FooUsersWatchUserResponseBookmarksValue {
             let _postId: string;
-            if (typeof input.postId === 'string') {
-                _postId = input.postId;
-            } else {
-                _postId = '';
-            }
+            _postId = parseString(input.postId);
             let _userId: string;
-            if (typeof input.userId === 'string') {
-                _userId = input.userId;
-            } else {
-                _userId = '';
-            }
+            _userId = parseString(input.userId);
             return {
                 postId: _postId,
                 userId: _userId,

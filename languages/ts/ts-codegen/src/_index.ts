@@ -118,7 +118,6 @@ export async function createTypescriptClient(
             ws: false,
         },
         rpcGenerators: options.rpcGenerators ?? {},
-        coerceBigInts: options.coerceBigInts ?? false,
     };
     const serviceDefinitions = unflattenProcedures(
         def.procedures,
@@ -139,7 +138,6 @@ export async function createTypescriptClient(
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
             rpcGenerators: context.rpcGenerators,
-            coerceBigInts: context.coerceBigInts,
         });
         if (result.content) {
             types.push(result.content);
@@ -167,6 +165,21 @@ import {
     INT64_MAX,
     INT64_MIN,
     isObject,
+    parseString,
+    parseBoolean,
+    parseNumber,
+    parseTimestamp,
+    parseNumberInt,
+    parseNumberBigInt,
+    parseNumberUnsignedBigInt,
+    parseNumberFloat,
+    parseNullableString,
+    parseNullableBoolean,
+    parseNullableTimestamp,
+    parseNullableNumberFloat,
+    parseNullableNumberInt,
+    parseNullableNumberBigInt,
+    parseNullableNumberUnsignedBigInt,
     serializeString,
     ${context.usedFeatures.sse ? 'type SseOptions,' : ''}
     UINT8_MAX,

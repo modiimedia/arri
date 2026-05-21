@@ -69,7 +69,6 @@ export function tsTaggedUnionFromSchema(
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
             rpcGenerators: context.rpcGenerators,
-            coerceBigInts: context.coerceBigInts,
         });
         subTypes.push({ value: key, data: subType });
     }

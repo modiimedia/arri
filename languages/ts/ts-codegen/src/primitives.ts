@@ -18,11 +18,10 @@ export function tsStringFromSchema(
             return `typeof ${input} === 'string'`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'string') {
-                ${target} = ${input};
-            } else {
-                ${target} = ${defaultValue};
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableString(${input});`;
+            }
+            return `${target} = parseString(${input});`;
         },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
@@ -57,11 +56,10 @@ export function tsBooleanFromSchema(
             return `typeof ${input} === 'boolean'`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'boolean') {
-                ${target} = ${input};
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableBoolean(${input});`;
+            }
+            return `${target} = parseBoolean(${input});`;
         },
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\`;`;
@@ -89,13 +87,10 @@ export function tsDateFromSchema(
             return `${input} instanceof Date`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'string') {
-                ${target} = new Date(${input});
-            } else if (${input} instanceof Date) {
-                ${target} = ${input}; 
-            } else {
-                ${target} = ${defaultValue} 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableTimestamp(${input});`;
+            }
+            return `${target} = parseTimestamp(${input});`;
         },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
@@ -133,11 +128,10 @@ export function tsFloatFromSchema(
             return `typeof ${input} === 'number'`;
         },
         fromJsonTemplate(input, target) {
-            return `if (typeof ${input} === 'number') {
-                ${target} = ${input};
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableNumberFloat(${input});`;
+            }
+            return `${target} = parseNumberFloat(${input});`;
         },
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
@@ -198,16 +192,10 @@ export function tsIntFromSchema(
             return mainPart;
         },
         fromJsonTemplate(input, target) {
-            return `if (
-                typeof ${input} === 'number' &&
-                Number.isInteger(${input}) &&
-                ${input} >= ${min} &&
-                ${input} <= ${max}
-            ) {
-                ${target} = ${input};    
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
+            if (schema.isNullable) {
+                return `${target} = parseNullableNumberInt(${input}, ${min}, ${max});`;
+            }
+            return `${target} = parseNumberInt(${input}, ${min}, ${max});`;
         },
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
@@ -222,7 +210,7 @@ export function tsIntFromSchema(
 export function tsBigIntFromSchema(
     schema: SchemaFormType,
     isUnsigned: boolean,
-    context: CodegenContext,
+    _context: CodegenContext,
 ): TsProperty {
     const typeName = schema.isNullable ? `bigint | null` : `bigint`;
     const defaultValue = schema.isNullable ? `null` : 'BigInt(0)';
@@ -241,37 +229,15 @@ export function tsBigIntFromSchema(
 
         fromJsonTemplate(input, target) {
             if (isUnsigned) {
-                let content = `if (typeof ${input} === 'string' && BigInt(${input}) >= BigInt(0)) {
-                    ${target} = BigInt(${input});
-                } else if (typeof ${input} === 'bigint' && ${input} >= BigInt(0)) {
-                    ${target} = ${input}; 
-                }`;
-                if (context.coerceBigInts) {
-                    content += `  else if (typeof ${input} === 'number' && ${input} >= BigInt(0)) {
-                    console.warn("[arri] Expected a BigInt string at ${context.instancePath} but got a raw number. This could lead to precision loss.")
-                    ${target} = BigInt(${input}); 
-                }`;
+                if (schema.isNullable) {
+                    return `${target} = parseNullableNumberUnsignedBigInt(${input});`;
                 }
-                content += ` else {
-                    ${target} = ${defaultValue}; 
-                }`;
-                return content;
+                return `${target} = parseNumberUnsignedBigInt(${input});`;
             }
-            let content = `if (typeof ${input} === 'string') {
-                ${target} = BigInt(${input});
-            } else if (typeof ${input} === 'bigint') {
-                ${target} = ${input}; 
-            }`;
-            if (context.coerceBigInts) {
-                content += `  else if (typeof ${input} === 'number') {
-                console.warn("[arri] Expected a BigInt string at ${context.instancePath} but got a raw number. This could lead to precision loss.")
-                ${target} = BigInt(${input});
-            } `;
+            if (schema.isNullable) {
+                return `${target} = parseNullableNumberBigInt(${input});`;
             }
-            content += `  else {
-                ${target} = ${defaultValue}; 
-            }`;
-            return content;
+            return `${target} = parseNumberBigInt(${input});`;
         },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
