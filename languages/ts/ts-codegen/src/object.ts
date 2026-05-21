@@ -98,7 +98,6 @@ export function tsObjectFromSchema(
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
             rpcGenerators: context.rpcGenerators,
-            coerceBigInts: context.coerceBigInts,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key, { normalize: true }));
@@ -142,7 +141,6 @@ export function tsObjectFromSchema(
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
             rpcGenerators: context.rpcGenerators,
-            coerceBigInts: context.coerceBigInts,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key, { normalize: true }));

@@ -31,7 +31,6 @@ export function tsServiceFromDefinition(
                 versionNumber: context.versionNumber,
                 usedFeatures: context.usedFeatures,
                 rpcGenerators: context.rpcGenerators,
-                coerceBigInts: context.coerceBigInts,
             });
             if (subService.content) {
                 subServices.push(subService);
@@ -51,7 +50,6 @@ export function tsServiceFromDefinition(
                 versionNumber: context.versionNumber,
                 usedFeatures: context.usedFeatures,
                 rpcGenerators: context.rpcGenerators,
-                coerceBigInts: context.coerceBigInts,
             });
             if (rpc) {
                 rpcParts.push(rpc);
