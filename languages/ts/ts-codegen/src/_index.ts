@@ -71,6 +71,10 @@ export interface TypescriptGeneratorOptions {
      * Override the default functions used for creating procedures
      */
     rpcGenerators?: Partial<Record<RpcDefinition['transport'], RpcGenerator>>;
+    /**
+     * Coerces JSON numbers into BigInts when parsing. Can lead to precision loss.
+     */
+    coerceBigInts?: boolean;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
@@ -161,6 +165,21 @@ import {
     INT64_MAX,
     INT64_MIN,
     isObject,
+    parseString,
+    parseBoolean,
+    parseNumber,
+    parseTimestamp,
+    parseNumberInt,
+    parseNumberBigInt,
+    parseNumberUnsignedBigInt,
+    parseNumberFloat,
+    parseNullableString,
+    parseNullableBoolean,
+    parseNullableTimestamp,
+    parseNullableNumberFloat,
+    parseNullableNumberInt,
+    parseNullableNumberBigInt,
+    parseNullableNumberUnsignedBigInt,
     serializeString,
     ${context.usedFeatures.sse ? 'type SseOptions,' : ''}
     UINT8_MAX,

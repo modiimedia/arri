@@ -78,6 +78,5 @@
     "editor.insertSpaces": true,
     "editor.defaultFormatter": "golang.go"
   },
-  "eslint.validate": ["json"],
-  "eslint.useFlatConfig": true
+  "eslint.validate": ["json"]
 }
