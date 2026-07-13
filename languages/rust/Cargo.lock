@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "arri_client"
-version = "0.83.0"
+version = "0.83.1"
 dependencies = [
  "chrono",
  "reqwest",
