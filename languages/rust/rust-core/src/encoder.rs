@@ -426,7 +426,7 @@ impl Encodable for Schema {
                     encoder.end_object();
                 }
                 maybe_encode_field(encoder, "metadata", metadata);
-                maybe_encode_field(encoder, "isStrict", metadata);
+                maybe_encode_field(encoder, "isStrict", is_strict);
                 encoder.end_object();
             }
             Schema::Values { values, metadata } => {

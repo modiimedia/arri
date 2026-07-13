@@ -71,7 +71,11 @@
   ],
   "rust-analyzer.cargo.features": ["chrono", "serde"],
   "[rust]": {
-    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    }
   },
   "[go]": {
     "editor.formatOnSave": true,

@@ -199,7 +199,18 @@ impl Encoder for JsonEncoder {
 
 #[cfg(test)]
 mod test {
+    use std::{
+        fs::{self, File},
+        path::Path,
+    };
+
     use chrono::{DateTime, Utc};
+
+    use crate::{
+        encoder::Encodable,
+        encoder_json::JsonEncoder,
+        type_definition::{Schema, Type},
+    };
 
     #[cfg(feature = "chrono")]
     #[cfg(feature = "serde")]
@@ -394,7 +405,20 @@ mod test {
         let mut encoder = JsonEncoder::new(input.size_hint());
         input.encode(&mut encoder);
         let result = encoder.bytes();
+        println!("{:?}", String::from_utf8(result.to_vec()).unwrap());
         let serde_result = serde_json::from_slice::<serde_json::Value>(result);
         assert!(serde_result.is_ok());
+    }
+
+    fn test_encode_type_definition() {
+        let manifest_dir = env!("CARGO_MANIFEST_DIR");
+        let schema = Schema::Type {
+            r#type: Type::String,
+            metadata: None,
+        };
+        let mut json_encoder = JsonEncoder::new(schema.size_hint());
+        schema.encode(&mut json_encoder);
+        let result = json_encoder.bytes();
+        let expected_result = fs::read_to_string("../../../tests/test-files/AppDefinition.json");
     }
 }

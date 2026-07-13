@@ -83,7 +83,11 @@ impl Encodable for AppDefinition {
     }
 }
 
-pub struct AppDefinitionInfo {}
+pub struct AppDefinitionInfo {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub version: Option<String>,
+}
 
 impl Encodable for AppDefinitionInfo {
     fn encode<T: crate::encoder::Encoder>(&self, encoder: &mut T) {}

@@ -1,6 +1,3 @@
-use sonic_rs::LazyValue;
-use sonic_rs::Read;
-
 use crate::decoder::Visitor;
 use crate::decoder::{DecodeError, Decoder};
 
@@ -27,7 +24,7 @@ impl<'a> JsonDecoder<'a> {
 
 impl<'a, V: Visitor> Decoder<V> for JsonDecoder<'a> {
     fn decode_string(&mut self, visitor: V) -> Result<String, crate::decoder::DecodeError> {
-        visitor.visit_str(_)
+        // visitor.visit_str(_)
         todo!()
     }
 
@@ -81,6 +78,7 @@ impl<'a, V: Visitor> Decoder<V> for JsonDecoder<'a> {
 
     fn decode_nullable<T: crate::decoder::Decodable>(
         &mut self,
+        visitor: V,
     ) -> Result<crate::Nullable<T>, crate::decoder::DecodeError> {
         todo!()
     }
