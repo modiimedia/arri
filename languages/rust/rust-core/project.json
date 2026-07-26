@@ -1,0 +1,51 @@
+{
+  "name": "rust-core",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/rust/rust-core/src",
+  "projectType": "library",
+  "targets": {
+    "cargo": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo",
+        "cwd": "languages/rust/rust-core"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src",
+        "{projectRoot}/Cargo.lock",
+        "{projectRoot}/Cargo.toml"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "cache": false,
+      "options": {
+        "command": "cargo test --all-features --all-targets -- --nocapture",
+        "cwd": "languages/rust/rust-core"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo publish",
+        "cwd": "languages/rust/rust-core"
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "cache": false,
+      "options": {
+        "command": "cargo build",
+        "cwd": "languages/rust/rust-core"
+      }
+    }
+  },
+  "tags": []
+}

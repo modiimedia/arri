@@ -189,7 +189,7 @@ impl<M: Encodable> Encodable for Vec<M> {
 #[cfg(feature = "chrono")]
 impl<Tz: chrono::TimeZone> Encodable for chrono::DateTime<Tz> {
     fn encode<T: Encoder>(&self, encoder: &mut T) {
-        encoder.encode_timestamp(&self.to_rfc3339());
+        encoder.encode_timestamp(&&self.to_rfc3339_opts(chrono::SecondsFormat::Millis, true));
     }
 
     fn size_hint(&self) -> usize {

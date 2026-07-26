@@ -212,6 +212,12 @@ mod test {
         type_definition::{Schema, Type},
     };
 
+    fn get_test_date() -> DateTime<Utc> {
+        DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z")
+            .unwrap()
+            .to_utc()
+    }
+
     #[cfg(feature = "chrono")]
     #[cfg(feature = "serde")]
     #[test]
@@ -219,6 +225,7 @@ mod test {
         use std::collections::HashMap;
 
         use chrono::NaiveDateTime;
+        use indexmap::IndexMap;
 
         use crate::{any_type::AnyType, encoder::Encodable, encoder_json::JsonEncoder};
 
@@ -255,7 +262,7 @@ mod test {
             pub r#enum: TestEnum,
             pub object: TestNestedObject,
             pub array: Vec<bool>,
-            pub record: HashMap<String, bool>,
+            pub record: IndexMap<String, bool>,
             pub discriminator: TestDiscriminator,
             pub any: AnyType,
         }
@@ -298,7 +305,7 @@ mod test {
                 encoder.encode_field("array");
                 <Vec<bool> as Encodable>::encode(&self.array, encoder);
                 encoder.encode_field("record");
-                <HashMap<String, bool> as Encodable>::encode(&self.record, encoder);
+                <IndexMap<String, bool> as Encodable>::encode(&self.record, encoder);
                 encoder.encode_field("discriminator");
                 <TestDiscriminator as Encodable>::encode(&self.discriminator, encoder);
                 encoder.encode_field("any");
@@ -318,7 +325,7 @@ mod test {
             C {
                 id: String,
                 name: String,
-                date: NaiveDateTime,
+                date: DateTime<Utc>,
             },
         }
 
@@ -327,7 +334,7 @@ mod test {
                 match &self {
                     TestDiscriminator::A { id } => {
                         encoder.begin_object();
-                        encoder.encode_field("type");
+                        encoder.encode_field("typeName");
                         encoder.encode_string("A");
                         encoder.encode_field("id");
                         <String as Encodable>::encode(&id, encoder);
@@ -335,7 +342,7 @@ mod test {
                     }
                     TestDiscriminator::B { id, name } => {
                         encoder.begin_object();
-                        encoder.encode_field("type");
+                        encoder.encode_field("typeName");
                         encoder.encode_string("B");
                         encoder.encode_field("id");
                         <String as Encodable>::encode(&id, encoder);
@@ -345,14 +352,14 @@ mod test {
                     }
                     TestDiscriminator::C { id, name, date } => {
                         encoder.begin_object();
-                        encoder.encode_field("type");
+                        encoder.encode_field("typeName");
                         encoder.encode_string("B");
                         encoder.encode_field("id");
                         <String as Encodable>::encode(&id, encoder);
                         encoder.encode_field("name");
                         <String as Encodable>::encode(&name, encoder);
                         encoder.encode_field("date");
-                        <NaiveDateTime as Encodable>::encode(&date, encoder);
+                        <DateTime<Utc> as Encodable>::encode(&date, encoder);
                         encoder.end_object();
                     }
                 }
@@ -376,38 +383,47 @@ mod test {
         }
 
         let input = TestObject {
-            string: String::from("foo"),
-            boolean: true,
-            timestamp: Utc::now(),
+            string: String::from(""),
+            boolean: false,
+            timestamp: DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z")
+                .unwrap()
+                .to_utc(),
             float32: 1.5,
             float64: 1.5,
-            int8: 15,
-            uint8: 15,
-            int16: 155,
-            uint16: 155,
-            int32: 1555,
-            uint32: 1555,
-            int64: 15555,
-            uint64: 15555,
+            int8: 1,
+            uint8: 1,
+            int16: 10,
+            uint16: 10,
+            int32: 100,
+            uint32: 100,
+            int64: 1000,
+            uint64: 1000,
             r#enum: TestEnum::Baz,
             object: TestNestedObject {
                 id: String::from("1"),
-                content: String::from("hello\nworld"),
+                content: String::from("hello world"),
             },
-            array: vec![true, false],
-            record: HashMap::new(),
-            discriminator: TestDiscriminator::B {
+            array: vec![true, false, false],
+            record: IndexMap::from([(String::from("A"), true), (String::from("B"), false)]),
+            discriminator: TestDiscriminator::C {
                 id: String::from("foo"),
                 name: String::from("bar"),
+                date: get_test_date(),
             },
-            any: AnyType::List(Box::new(vec![AnyType::Boolean(true)])),
+            any: AnyType::String(String::from("hello world")),
         };
         let mut encoder = JsonEncoder::new(input.size_hint());
         input.encode(&mut encoder);
         let result = encoder.bytes();
-        println!("{:?}", String::from_utf8(result.to_vec()).unwrap());
+        // check if json is valid
         let serde_result = serde_json::from_slice::<serde_json::Value>(result);
         assert!(serde_result.is_ok());
+
+        // check if json matches test file
+        let test_file =
+            fs::read_to_string("../../../tests/test-files/ObjectWithEveryType.json").unwrap();
+
+        assert_eq!(String::from_utf8(result.to_vec()).unwrap(), test_file);
     }
 
     fn test_encode_type_definition() {
