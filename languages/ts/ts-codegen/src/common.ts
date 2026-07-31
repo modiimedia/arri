@@ -13,7 +13,7 @@ export interface TsProperty {
     validationTemplate: (input: string) => string;
     fromJsonTemplate: (input: string, target: string) => string;
     toJsonTemplate: (input: string, target: string, key: string) => string;
-    toQueryStringTemplate: (
+    setSearchParamTemplate: (
         input: string,
         target: string,
         key: string,
@@ -31,11 +31,15 @@ export interface CodegenContext {
     discriminatorKey: string;
     discriminatorValue: string;
     versionNumber: string;
-    usedFeatures: {
+    useRpcTypes: {
         sse: boolean;
         ws: boolean;
     };
     rpcGenerators: Partial<Record<string, RpcGenerator>>;
+    features: {
+        validateFn: boolean;
+        validatorObj: boolean;
+    };
 }
 
 export function getJsDocComment(metadata: Schema['metadata']) {

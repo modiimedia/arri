@@ -33,8 +33,11 @@ export function tsStringFromSchema(
             }
             return `${target} += serializeString(${input});`;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`);`;
+        setSearchParamTemplate(input, target, key) {
+            if (schema.isNullable) {
+                return `${target}.set('${key}', \`\${${input}}\`);`;
+            }
+            return `${target}.set('${key}', ${input});`;
         },
         content: '',
     };
@@ -64,8 +67,8 @@ export function tsBooleanFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\`;`;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`);`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };
@@ -102,11 +105,11 @@ export function tsDateFromSchema(
             }
             return `${target} += \`"\${${input}.toISOString()}"\``;
         },
-        toQueryStringTemplate(input, target, key) {
+        setSearchParamTemplate(input, target, key) {
             if (schema.isNullable) {
-                return `${target}.push(\`${key}=\${${input}?.toISOString()}\`)`;
+                return `${target}.set('${key}', \`\${${input}?.toISOString()}\`);`;
             }
-            return `${target}.push(\`${key}=\${${input}.toISOString()}\`)`;
+            return `${target}.set('${key}', ${input}.toISOString());`;
         },
         content: '',
     };
@@ -136,8 +139,8 @@ export function tsFloatFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };
@@ -200,8 +203,8 @@ export function tsIntFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };
@@ -249,8 +252,8 @@ export function tsBigIntFromSchema(
             }
             return `${target} += \`"\${${input}}"\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };

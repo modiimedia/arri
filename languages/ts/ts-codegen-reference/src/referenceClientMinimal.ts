@@ -50,21 +50,6 @@ import {
 
 type HeaderMap = Record<string, string | undefined>;
 
-export type ExampleClientValidator<T> = ArriModelValidator<
-    T,
-    | 'new'
-    | 'validate'
-    | 'fromJson'
-    | 'fromJsonString'
-    | 'toJsonString'
-    | 'toUrlSearchParams'
-    | 'toUrlSearchParamsString'
->;
-export type ExampleClientEnumValidator<T> = ArriEnumValidator<
-    T,
-    'new' | 'validate' | 'values' | 'fromSerialValue'
->;
-
 export class ExampleClient {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
@@ -227,9 +212,6 @@ export interface EmptyObject {}
 export function EmptyObjectNew(): EmptyObject {
     return {};
 }
-export function EmptyObjectValidate(input: unknown): input is EmptyObject {
-    return isObject(input);
-}
 export function EmptyObjectFromJson(
     input: Record<string, unknown>,
 ): EmptyObject {
@@ -253,15 +235,6 @@ export function EmptyObjectToUrlSearchParams(
 export function EmptyObjectToUrlSearchParamsString(input: EmptyObject): string {
     return EmptyObjectToUrlSearchParams(input).toString();
 }
-export const $$EmptyObject: ExampleClientValidator<EmptyObject> = {
-    new: EmptyObjectNew,
-    validate: EmptyObjectValidate,
-    fromJson: EmptyObjectFromJson,
-    fromJsonString: EmptyObjectFromJsonString,
-    toJsonString: EmptyObjectToJsonString,
-    toUrlSearchParams: EmptyObjectToUrlSearchParams,
-    toUrlSearchParamsString: EmptyObjectToUrlSearchParamsString,
-};
 
 /**
  * This is a book
@@ -292,15 +265,6 @@ export function BookNew(): Book {
         createdAt: new Date(0),
         updatedAt: new Date(0),
     };
-}
-export function BookValidate(input: unknown): input is Book {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        typeof input.name === 'string' &&
-        input.createdAt instanceof Date &&
-        input.updatedAt instanceof Date
-    );
 }
 export function BookFromJson(input: Record<string, unknown>): Book {
     let _id: string;
@@ -345,15 +309,6 @@ export function BookToUrlSearchParams(input: Book): URLSearchParams {
 export function BookToUrlSearchParamsString(input: Book): string {
     return BookToUrlSearchParams(input).toString();
 }
-export const $$Book: ExampleClientValidator<Book> = {
-    new: BookNew,
-    validate: BookValidate,
-    fromJson: BookFromJson,
-    fromJsonString: BookFromJsonString,
-    toJsonString: BookToJsonString,
-    toUrlSearchParams: BookToUrlSearchParams,
-    toUrlSearchParamsString: BookToUrlSearchParamsString,
-};
 
 export interface BookParams {
     bookId: string;
@@ -362,9 +317,6 @@ export function BookParamsNew(): BookParams {
     return {
         bookId: '',
     };
-}
-export function BookParamsValidate(input: unknown): input is BookParams {
-    return isObject(input) && typeof input.bookId === 'string';
 }
 export function BookParamsFromJson(input: Record<string, unknown>): BookParams {
     let _bookId: string;
@@ -393,16 +345,6 @@ export function BookParamsToUrlSearchParams(
 export function BookParamsToUrlSearchParamsString(input: BookParams): string {
     return BookParamsToUrlSearchParams(input).toString();
 }
-export const $$BookParams: ExampleClientValidator<BookParams> = {
-    new: BookParamsNew,
-    validate: BookParamsValidate,
-    fromJson: BookParamsFromJson,
-    fromJsonString: BookParamsFromJsonString,
-    toJsonString: BookParamsToJsonString,
-    toUrlSearchParams: BookParamsToUrlSearchParams,
-    toUrlSearchParamsString: BookParamsToUrlSearchParamsString,
-};
-
 export interface NestedObject {
     id: string;
     content: string;
@@ -412,13 +354,6 @@ export function NestedObjectNew(): NestedObject {
         id: '',
         content: '',
     };
-}
-export function NestedObjectValidate(input: unknown): input is NestedObject {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        typeof input.content === 'string'
-    );
 }
 export function NestedObjectFromJson(
     input: Record<string, unknown>,
@@ -457,15 +392,6 @@ export function NestedObjectToUrlSearchParamsString(
 ): string {
     return NestedObjectToUrlSearchParams(input).toString();
 }
-export const $$NestedObject: ExampleClientValidator<NestedObject> = {
-    new: NestedObjectNew,
-    validate: NestedObjectValidate,
-    fromJson: NestedObjectFromJson,
-    fromJsonString: NestedObjectFromJsonString,
-    toJsonString: NestedObjectToJsonString,
-    toUrlSearchParams: NestedObjectToUrlSearchParams,
-    toUrlSearchParamsString: NestedObjectToUrlSearchParamsString,
-};
 
 export interface ObjectWithEveryType {
     string: string;
@@ -488,6 +414,7 @@ export interface ObjectWithEveryType {
     discriminator: Discriminator;
     any: any;
 }
+
 export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
     return {
         string: '',
@@ -510,58 +437,6 @@ export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
         discriminator: DiscriminatorNew(),
         any: undefined,
     };
-}
-export function ObjectWithEveryTypeValidate(
-    input: unknown,
-): input is ObjectWithEveryType {
-    return (
-        isObject(input) &&
-        typeof input.string === 'string' &&
-        typeof input.boolean === 'boolean' &&
-        input.timestamp instanceof Date &&
-        typeof input.float32 === 'number' &&
-        typeof input.float64 === 'number' &&
-        typeof input.int8 === 'number' &&
-        Number.isInteger(input.int8) &&
-        input.int8 >= INT8_MIN &&
-        input.int8 <= INT8_MAX &&
-        typeof input.uint8 === 'number' &&
-        Number.isInteger(input.uint8) &&
-        input.uint8 >= 0 &&
-        input.uint8 <= UINT8_MAX &&
-        typeof input.int16 === 'number' &&
-        Number.isInteger(input.int16) &&
-        input.int16 >= INT16_MIN &&
-        input.int16 <= INT16_MAX &&
-        typeof input.uint16 === 'number' &&
-        Number.isInteger(input.uint16) &&
-        input.uint16 >= 0 &&
-        input.uint16 <= UINT16_MAX &&
-        typeof input.int32 === 'number' &&
-        Number.isInteger(input.int32) &&
-        input.int32 >= INT32_MIN &&
-        input.int32 <= INT32_MAX &&
-        typeof input.uint32 === 'number' &&
-        Number.isInteger(input.uint32) &&
-        input.uint32 >= 0 &&
-        input.uint32 <= UINT32_MAX &&
-        typeof input.int64 === 'bigint' &&
-        input.int64 >= INT64_MIN &&
-        input.int64 <= INT64_MAX &&
-        typeof input.uint64 === 'bigint' &&
-        input.uint64 >= BigInt(0) &&
-        input.uint64 <= UINT64_MAX &&
-        EnumeratorValidate(input.enum) &&
-        NestedObjectValidate(input.object) &&
-        Array.isArray(input.array) &&
-        input.array.every((_element) => typeof _element === 'boolean') &&
-        isObject(input.record) &&
-        Object.values(input.record).every(
-            (_value) => typeof _value === 'boolean',
-        ) &&
-        DiscriminatorValidate(input.discriminator) &&
-        true
-    );
 }
 export function ObjectWithEveryTypeFromJson(
     input: Record<string, unknown>,
@@ -762,16 +637,6 @@ export function ObjectWithEveryTypeToUrlSearchParamsString(
 ): string {
     return ObjectWithEveryTypeToUrlSearchParams(input).toString();
 }
-export const $$ObjectWithEveryType: ExampleClientValidator<ObjectWithEveryType> =
-    {
-        new: ObjectWithEveryTypeNew,
-        validate: ObjectWithEveryTypeValidate,
-        fromJson: ObjectWithEveryTypeFromJson,
-        fromJsonString: ObjectWithEveryTypeFromJsonString,
-        toJsonString: ObjectWithEveryTypeToJsonString,
-        toUrlSearchParams: ObjectWithEveryTypeToUrlSearchParams,
-        toUrlSearchParamsString: ObjectWithEveryTypeToUrlSearchParamsString,
-    };
 
 export type Enumerator = 'FOO' | 'BAR' | 'BAZ';
 export const Enumerator = {
@@ -782,9 +647,6 @@ export const Enumerator = {
 export const EnumeratorValues = ['FOO', 'BAR', 'BAZ'] as const;
 export function EnumeratorNew(): Enumerator {
     return EnumeratorValues[0];
-}
-export function EnumeratorValidate(input: unknown): input is Enumerator {
-    return typeof input === 'string' && EnumeratorValues.includes(input as any);
 }
 export function EnumeratorFromSerialValue(input: string): Enumerator {
     if (EnumeratorValues.includes(input as any)) {
@@ -798,34 +660,10 @@ export function EnumeratorFromSerialValue(input: string): Enumerator {
     }
     return 'FOO';
 }
-export const $$Enumerator: ExampleClientEnumValidator<Enumerator> = {
-    new: EnumeratorNew,
-    validate: EnumeratorValidate,
-    values: EnumeratorValues,
-    fromSerialValue: EnumeratorFromSerialValue,
-};
 
 export type Discriminator = DiscriminatorA | DiscriminatorB | DiscriminatorC;
 export function DiscriminatorNew(): Discriminator {
     return DiscriminatorANew();
-}
-export function DiscriminatorValidate(input: unknown): input is Discriminator {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.typeName !== 'string') {
-        return false;
-    }
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAValidate(input);
-        case 'B':
-            return DiscriminatorBValidate(input);
-        case 'C':
-            return DiscriminatorCValidate(input);
-        default:
-            return false;
-    }
 }
 export function DiscriminatorFromJson(
     input: Record<string, unknown>,
@@ -875,15 +713,7 @@ export function DiscriminatorToUrlSearchParamsString(
 ): string {
     return DiscriminatorToUrlSearchParams(input).toString();
 }
-export const $$Discriminator: ExampleClientValidator<Discriminator> = {
-    new: DiscriminatorNew,
-    validate: DiscriminatorValidate,
-    fromJson: DiscriminatorFromJson,
-    fromJsonString: DiscriminatorFromJsonString,
-    toJsonString: DiscriminatorToJsonString,
-    toUrlSearchParams: DiscriminatorToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorToUrlSearchParamsString,
-};
+
 export interface DiscriminatorA {
     typeName: 'A';
     id: string;
@@ -893,15 +723,6 @@ export function DiscriminatorANew(): DiscriminatorA {
         typeName: 'A',
         id: '',
     };
-}
-export function DiscriminatorAValidate(
-    input: unknown,
-): input is DiscriminatorA {
-    return (
-        isObject(input) &&
-        input.typeName === 'A' &&
-        typeof input.id === 'string'
-    );
 }
 export function DiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -938,15 +759,6 @@ export function DiscriminatorAToUrlSearchParamsString(
 ): string {
     return DiscriminatorAToUrlSearchParams(input).toString();
 }
-const $$DiscriminatorA: ExampleClientValidator<DiscriminatorA> = {
-    new: DiscriminatorANew,
-    validate: DiscriminatorAValidate,
-    fromJson: DiscriminatorAFromJson,
-    fromJsonString: DiscriminatorAFromJsonString,
-    toJsonString: DiscriminatorAToJsonString,
-    toUrlSearchParams: DiscriminatorAToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorAToUrlSearchParamsString,
-};
 export interface DiscriminatorB {
     typeName: 'B';
     id: string;
@@ -958,16 +770,6 @@ export function DiscriminatorBNew(): DiscriminatorB {
         id: '',
         name: '',
     };
-}
-export function DiscriminatorBValidate(
-    input: unknown,
-): input is DiscriminatorB {
-    return (
-        isObject(input) &&
-        input.typeName === 'B' &&
-        typeof input.id === 'string' &&
-        typeof input.name === 'string'
-    );
 }
 export function DiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -1010,15 +812,6 @@ export function DiscriminatorBToUrlSearchParamsString(
 ): string {
     return DiscriminatorBToUrlSearchParams(input).toString();
 }
-const $$DiscriminatorB: ExampleClientValidator<DiscriminatorB> = {
-    new: DiscriminatorBNew,
-    validate: DiscriminatorBValidate,
-    fromJson: DiscriminatorBFromJson,
-    fromJsonString: DiscriminatorBFromJsonString,
-    toJsonString: DiscriminatorBToJsonString,
-    toUrlSearchParams: DiscriminatorBToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorBToUrlSearchParamsString,
-};
 export interface DiscriminatorC {
     typeName: 'C';
     id: string;
@@ -1032,17 +825,6 @@ export function DiscriminatorCNew(): DiscriminatorC {
         name: '',
         date: new Date(0),
     };
-}
-export function DiscriminatorCValidate(
-    input: unknown,
-): input is DiscriminatorC {
-    return (
-        isObject(input) &&
-        input.typeName === 'C' &&
-        typeof input.id === 'string' &&
-        typeof input.name === 'string' &&
-        input.date instanceof Date
-    );
 }
 export function DiscriminatorCFromJson(
     input: Record<string, unknown>,
@@ -1091,15 +873,6 @@ export function DiscriminatorCToUrlSearchParamsString(
 ): string {
     return DiscriminatorCToUrlSearchParams(input).toString();
 }
-const $$DiscriminatorC: ExampleClientValidator<DiscriminatorC> = {
-    new: DiscriminatorCNew,
-    validate: DiscriminatorCValidate,
-    fromJson: DiscriminatorCFromJson,
-    fromJsonString: DiscriminatorCFromJsonString,
-    toJsonString: DiscriminatorCToJsonString,
-    toUrlSearchParams: DiscriminatorCToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorCToUrlSearchParamsString,
-};
 
 export interface ObjectWithOptionalFields {
     string?: string;
@@ -1124,75 +897,6 @@ export interface ObjectWithOptionalFields {
 }
 export function ObjectWithOptionalFieldsNew(): ObjectWithOptionalFields {
     return {};
-}
-export function ObjectWithOptionalFieldsValidate(
-    input: unknown,
-): input is ObjectWithOptionalFields {
-    return (
-        isObject(input) &&
-        (typeof input.string === 'string' ||
-            typeof input.string === 'undefined') &&
-        (typeof input.boolean === 'boolean' ||
-            typeof input.boolean === 'undefined') &&
-        (input.timestamp instanceof Date ||
-            typeof input.timestamp === 'undefined') &&
-        (typeof input.float32 === 'number' ||
-            typeof input.float32 === 'undefined') &&
-        (typeof input.float64 === 'number' ||
-            typeof input.float64 === 'undefined') &&
-        ((typeof input.int8 === 'number' &&
-            Number.isInteger(input.int8) &&
-            input.int8 >= INT8_MIN &&
-            input.int8 <= INT8_MAX) ||
-            typeof input.int8 === 'undefined') &&
-        ((typeof input.uint8 === 'number' &&
-            Number.isInteger(input.uint8) &&
-            input.uint8 >= 0 &&
-            input.uint8 <= UINT8_MAX) ||
-            typeof input.uint8 === 'undefined') &&
-        ((typeof input.int16 === 'number' &&
-            Number.isInteger(input.int16) &&
-            input.int16 >= INT16_MIN &&
-            input.int16 <= INT16_MAX) ||
-            typeof input.int16 === 'undefined') &&
-        ((typeof input.uint16 === 'number' &&
-            Number.isInteger(input.uint16) &&
-            input.uint16 >= 0 &&
-            input.uint16 <= UINT16_MAX) ||
-            typeof input.uint16 === 'undefined') &&
-        ((typeof input.int32 === 'number' &&
-            Number.isInteger(input.int32) &&
-            input.int32 >= INT32_MIN &&
-            input.int32 <= INT32_MAX) ||
-            typeof input.int32 === 'undefined') &&
-        ((typeof input.uint32 === 'number' &&
-            Number.isInteger(input.uint32) &&
-            input.uint32 >= 0 &&
-            input.uint32 <= UINT32_MAX) ||
-            typeof input.uint32 === 'undefined') &&
-        ((typeof input.int64 === 'bigint' &&
-            input.int64 >= INT64_MIN &&
-            input.int64 <= INT64_MAX) ||
-            typeof input.int64 === 'undefined') &&
-        ((typeof input.uint64 === 'bigint' &&
-            input.uint64 >= BigInt(0) &&
-            input.uint64 <= UINT64_MAX) ||
-            typeof input.uint64 === 'undefined') &&
-        (EnumeratorValidate(input.enum) || typeof input.enum === 'undefined') &&
-        (NestedObjectValidate(input.object) ||
-            typeof input.object === 'undefined') &&
-        ((Array.isArray(input.array) &&
-            input.array.every((_element) => typeof _element === 'boolean')) ||
-            typeof input.array === 'undefined') &&
-        ((isObject(input.record) &&
-            Object.values(input.record).every(
-                (_value) => typeof _value === 'boolean',
-            )) ||
-            typeof input.record === 'undefined') &&
-        (DiscriminatorValidate(input.discriminator) ||
-            typeof input.discriminator === 'undefined') &&
-        (true || typeof input.any === 'undefined')
-    );
 }
 export function ObjectWithOptionalFieldsFromJson(
     input: Record<string, unknown>,
@@ -1546,17 +1250,6 @@ export function ObjectWithOptionalFieldsToUrlSearchParamsString(
 ): string {
     return ObjectWithOptionalFieldsToUrlSearchParams(input).toString();
 }
-export const $$ObjectWithOptionalFields: ExampleClientValidator<ObjectWithOptionalFields> =
-    {
-        new: ObjectWithOptionalFieldsNew,
-        validate: ObjectWithOptionalFieldsValidate,
-        fromJson: ObjectWithOptionalFieldsFromJson,
-        fromJsonString: ObjectWithOptionalFieldsFromJsonString,
-        toJsonString: ObjectWithOptionalFieldsToJsonString,
-        toUrlSearchParams: ObjectWithOptionalFieldsToUrlSearchParams,
-        toUrlSearchParamsString:
-            ObjectWithOptionalFieldsToUrlSearchParamsString,
-    };
 
 export interface ObjectWithNullableFields {
     string: string | null;
@@ -1579,6 +1272,7 @@ export interface ObjectWithNullableFields {
     discriminator: Discriminator | null;
     any: any;
 }
+
 export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
     return {
         string: null,
@@ -1601,69 +1295,6 @@ export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
         discriminator: null,
         any: null,
     };
-}
-export function ObjectWithNullableFieldsValidate(
-    input: unknown,
-): input is ObjectWithNullableFields {
-    return (
-        isObject(input) &&
-        (typeof input.string === 'string' || input.string === null) &&
-        (typeof input.boolean === 'boolean' || input.boolean === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
-        (typeof input.float32 === 'number' || input.float32 === null) &&
-        (typeof input.float64 === 'number' || input.float64 === null) &&
-        ((typeof input.int8 === 'number' &&
-            Number.isInteger(input.int8) &&
-            input.int8 >= INT8_MIN &&
-            input.int8 <= INT8_MAX) ||
-            input.int8 === null) &&
-        ((typeof input.uint8 === 'number' &&
-            Number.isInteger(input.uint8) &&
-            input.uint8 >= 0 &&
-            input.uint8 <= UINT8_MAX) ||
-            input.uint8 === null) &&
-        ((typeof input.int16 === 'number' &&
-            Number.isInteger(input.int16) &&
-            input.int16 >= INT16_MIN &&
-            input.int16 <= INT16_MAX) ||
-            input.int16 === null) &&
-        ((typeof input.uint16 === 'number' &&
-            Number.isInteger(input.uint16) &&
-            input.uint16 >= 0 &&
-            input.uint16 <= UINT16_MAX) ||
-            input.uint16 === null) &&
-        ((typeof input.int32 === 'number' &&
-            Number.isInteger(input.int32) &&
-            input.int32 >= INT32_MIN &&
-            input.int32 <= INT32_MAX) ||
-            input.int32 === null) &&
-        ((typeof input.uint32 === 'number' &&
-            Number.isInteger(input.uint32) &&
-            input.uint32 >= 0 &&
-            input.uint32 <= UINT32_MAX) ||
-            input.uint32 === null) &&
-        ((typeof input.int64 === 'bigint' &&
-            input.int64 >= INT64_MIN &&
-            input.int64 <= INT64_MAX) ||
-            input.int64 === null) &&
-        ((typeof input.uint64 === 'bigint' &&
-            input.uint64 >= BigInt(0) &&
-            input.uint64 <= UINT64_MAX) ||
-            input.uint64 === null) &&
-        (EnumeratorValidate(input.enum) || input.enum === null) &&
-        (NestedObjectValidate(input.object) || input.object === null) &&
-        ((Array.isArray(input.array) &&
-            input.array.every((_element) => typeof _element === 'boolean')) ||
-            input.array === null) &&
-        ((isObject(input.record) &&
-            Object.values(input.record).every(
-                (_value) => typeof _value === 'boolean',
-            )) ||
-            input.record === null) &&
-        (DiscriminatorValidate(input.discriminator) ||
-            input.discriminator === null) &&
-        true
-    );
 }
 export function ObjectWithNullableFieldsFromJson(
     input: Record<string, unknown>,
@@ -1900,17 +1531,6 @@ export function ObjectWithNullableFieldsToUrlSearchParamsString(
 ): string {
     return ObjectWithNullableFieldsToUrlSearchParams(input).toString();
 }
-export const $$ObjectWithNullableFields: ExampleClientValidator<ObjectWithNullableFields> =
-    {
-        new: ObjectWithNullableFieldsNew,
-        validate: ObjectWithNullableFieldsValidate,
-        fromJson: ObjectWithNullableFieldsFromJson,
-        fromJsonString: ObjectWithNullableFieldsFromJsonString,
-        toJsonString: ObjectWithNullableFieldsToJsonString,
-        toUrlSearchParams: ObjectWithNullableFieldsToUrlSearchParams,
-        toUrlSearchParamsString:
-            ObjectWithNullableFieldsToUrlSearchParamsString,
-    };
 
 export interface RecursiveObject {
     left: RecursiveObject | null;
@@ -1921,15 +1541,6 @@ export function RecursiveObjectNew(): RecursiveObject {
         left: null,
         right: null,
     };
-}
-export function RecursiveObjectValidate(
-    input: unknown,
-): input is RecursiveObject {
-    return (
-        isObject(input) &&
-        (RecursiveObjectValidate(input.left) || input.left === null) &&
-        (RecursiveObjectValidate(input.right) || input.right === null)
-    );
 }
 export function RecursiveObjectFromJson(
     input: Record<string, unknown>,
@@ -1988,12 +1599,3 @@ export function RecursiveObjectToUrlSearchParamsString(
 ): string {
     return RecursiveObjectToUrlSearchParams(input).toString();
 }
-export const $$RecursiveObject: ExampleClientValidator<RecursiveObject> = {
-    new: RecursiveObjectNew,
-    validate: RecursiveObjectValidate,
-    fromJson: RecursiveObjectFromJson,
-    fromJsonString: RecursiveObjectFromJsonString,
-    toJsonString: RecursiveObjectToJsonString,
-    toUrlSearchParams: RecursiveObjectToUrlSearchParams,
-    toUrlSearchParamsString: RecursiveObjectToUrlSearchParamsString,
-};

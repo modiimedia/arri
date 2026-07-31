@@ -23,19 +23,19 @@ export function tsEnumFromSchema(
         : prefixedEnumName;
     const defaultValue = schema.isNullable
         ? 'null'
-        : `$$${prefixedEnumName}.new()`;
+        : `${prefixedEnumName}New()`;
     const result: TsProperty = {
         typeName,
         defaultValue,
         validationTemplate(input) {
             if (schema.isNullable) {
-                return `($$${prefixedEnumName}.validate(${input}) || ${input} === null)`;
+                return `(${prefixedEnumName}Validate(${input}) || ${input} === null)`;
             }
-            return `$$${prefixedEnumName}.validate(${input})`;
+            return `${prefixedEnumName}Validate(${input})`;
         },
         fromJsonTemplate(input, target) {
             return `if (typeof ${input} === 'string') {
-                ${target} = $$${prefixedEnumName}.fromSerialValue(${input});
+                ${target} = ${prefixedEnumName}FromSerialValue(${input});
             } else {
                 ${target} = ${defaultValue}; 
             }`;
@@ -50,8 +50,11 @@ export function tsEnumFromSchema(
             }
             return `${target} += \`"\${${input}}"\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            if (schema.isNullable) {
+                return `${target}.set('${key}', \`\${${input}}\`);`;
+            }
+            return `${target}.set('${key}', ${input})`;
         },
         content: '',
     };
@@ -59,7 +62,7 @@ export function tsEnumFromSchema(
         return result;
     }
     const name = `${context.typePrefix}${enumName}`;
-    const valuesName = `$$${name}Values`;
+    const valuesName = `${name}Values`;
     result.content = `${getJsDocComment(schema.metadata)}export type ${name} = ${schema.enum.map((val) => `'${val}'`).join(' | ')};
 export const ${name} = {
 ${schema.enum
@@ -71,32 +74,39 @@ ${schema.enum
     })
     .join('\n')}
 } as const;
-const ${valuesName} = [${schema.enum.map((val) => `'${val}'`).join(', ')}] as const;
-export const $$${name}: ArriEnumValidator<${name}> = {
-    new(): ${name} {
-        return ${valuesName}[0];
-    },
-    validate(input): input is ${enumName} {
-        return (
-            typeof input === 'string' &&
-            ${valuesName}.includes(input as any)
-        );
-    },
-    values: ${valuesName},
-    fromSerialValue(input): ${name} {
-        if (${valuesName}.includes(input as any)) {
-            return input as ${name};
-        }
-        if (${valuesName}.includes(input.toLowerCase() as any)) {
-            return input.toLowerCase() as ${name};
-        }
-        if (${valuesName}.includes(input.toUpperCase() as any)) {
-            return input.toUpperCase() as ${name};
-        }
-        return "${schema.enum[0]}";
+export const ${valuesName} = [${schema.enum.map((val) => `'${val}'`).join(', ')}] as const;`;
+    result.content += `
+export function ${name}New(): ${name} {
+    return ${valuesName}[0];
+}`;
+    if (context.features.validateFn) {
+        result.content += `
+export function ${name}Validate(input: unknown): input is ${name} {
+    return typeof input === 'string' && ${valuesName}.includes(input as any);
+}`;
     }
-}    
-`;
+    result.content += `
+export function ${name}FromSerialValue(input: string): ${name} {
+    if (${valuesName}.includes(input as any)) {
+        return input as ${name};
+    }
+    if (${valuesName}.includes(input.toLowerCase() as any)) {
+        return input.toLowerCase() as ${name};
+    }
+    if (${valuesName}.includes(input.toUpperCase() as any)) {
+        return input.toUpperCase() as ${name};
+    }
+    return "${schema.enum[0]}";
+}`;
+    if (context.features.validatorObj) {
+        result.content += `
+export const $$${name}: ${context.clientName}EnumValidator<${name} > = {
+    new: ${name}New,
+    ${context.features.validateFn ? `validate: ${name}Validate,` : ''} 
+    values: ${valuesName},
+    fromSerialValue: ${name}FromSerialValue,
+}`;
+    }
     context.generatedTypes.push(enumName);
     return result;
 }

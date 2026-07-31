@@ -4,21 +4,29 @@ import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
-    $$Book,
-    $$NestedObject,
-    $$ObjectWithEveryType,
-    $$ObjectWithNullableFields,
-    $$ObjectWithOptionalFields,
-    $$RecursiveObject,
     Book,
+    BookFromJsonString,
+    BookToJsonString,
+    BookToUrlSearchParamsString,
     Enumerator,
     ExampleClient,
     NestedObject,
+    NestedObjectFromJsonString,
+    NestedObjectToJsonString,
     ObjectWithEveryType,
+    ObjectWithEveryTypeFromJsonString,
+    ObjectWithEveryTypeNew,
+    ObjectWithEveryTypeToJsonString,
     ObjectWithNullableFields,
+    ObjectWithNullableFieldsFromJsonString,
+    ObjectWithNullableFieldsToJsonString,
     ObjectWithOptionalFields,
+    ObjectWithOptionalFieldsFromJsonString,
+    ObjectWithOptionalFieldsToJsonString,
     RecursiveObject,
-} from './referenceClient';
+    RecursiveObjectFromJsonString,
+    RecursiveObjectToJsonString,
+} from './referenceClientMinimal';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
 const referenceDir = path.resolve(__dirname, '../../../../tests/test-files');
@@ -34,14 +42,14 @@ describe('Book', () => {
     };
     const jsonReference = testFile('Book.json');
     test('JSON Parsing', () => {
-        const result = $$Book.fromJsonString(jsonReference);
+        const result = BookFromJsonString(jsonReference);
         expect(result).toStrictEqual(targetValue);
     });
     test('JSON Output', () => {
-        expect($$Book.toJsonString(targetValue)).toEqual(jsonReference);
+        expect(BookToJsonString(targetValue)).toEqual(jsonReference);
     });
     test('URL Query String Output', () => {
-        expect($$Book.toUrlSearchParamsString(targetValue)).toEqual(
+        expect(BookToUrlSearchParamsString(targetValue)).toEqual(
             `id=1&name=The+Adventures+of+Tom+Sawyer&createdAt=2001-01-01T16%3A00%3A00.000Z&updatedAt=2001-01-01T16%3A00%3A00.000Z`,
         );
     });
@@ -60,18 +68,18 @@ describe('NestedObject', () => {
     };
     const specialCharsJson = testFile('NestedObject_SpecialChars.json');
     test('JSON Parsing', () => {
-        expect($$NestedObject.fromJsonString(noSpecialCharsJson)).toStrictEqual(
+        expect(NestedObjectFromJsonString(noSpecialCharsJson)).toStrictEqual(
             noSpecialCharsTargetValue,
         );
-        expect($$NestedObject.fromJsonString(specialCharsJson)).toStrictEqual(
+        expect(NestedObjectFromJsonString(specialCharsJson)).toStrictEqual(
             specialCharsTargetValue,
         );
     });
     test('JSON Output', () => {
-        expect($$NestedObject.toJsonString(noSpecialCharsTargetValue)).toEqual(
+        expect(NestedObjectToJsonString(noSpecialCharsTargetValue)).toEqual(
             noSpecialCharsJson,
         );
-        expect($$NestedObject.toJsonString(specialCharsTargetValue)).toEqual(
+        expect(NestedObjectToJsonString(specialCharsTargetValue)).toEqual(
             specialCharsJson,
         );
     });
@@ -115,15 +123,15 @@ describe('ObjectWithEveryType', () => {
         'ObjectWithOptionalFields_AllUndefined.json',
     );
     test('JSON parsing', () => {
-        const result = $$ObjectWithEveryType.fromJsonString(jsonReference);
+        const result = ObjectWithEveryTypeFromJsonString(jsonReference);
         expect(result).toStrictEqual(targetValue);
 
         const emptyJsonResult =
-            $$ObjectWithEveryType.fromJsonString(emptyJsonReference);
-        expect(emptyJsonResult).toStrictEqual($$ObjectWithEveryType.new());
+            ObjectWithEveryTypeFromJsonString(emptyJsonReference);
+        expect(emptyJsonResult).toStrictEqual(ObjectWithEveryTypeNew());
     });
     test('JSON output', () => {
-        expect($$ObjectWithEveryType.toJsonString(targetValue)).toEqual(
+        expect(ObjectWithEveryTypeToJsonString(targetValue)).toEqual(
             jsonReference,
         );
     });
@@ -191,18 +199,18 @@ describe('ObjectWithOptionalFields', () => {
     );
     test('JSON parsing', () => {
         expect(
-            $$ObjectWithOptionalFields.fromJsonString(allUndefinedJson),
+            ObjectWithOptionalFieldsFromJsonString(allUndefinedJson),
         ).toStrictEqual(allUndefinedTargetValue);
         expect(
-            $$ObjectWithOptionalFields.fromJsonString(noUndefinedJson),
+            ObjectWithOptionalFieldsFromJsonString(noUndefinedJson),
         ).toStrictEqual(noUndefinedTargetValue);
     });
     test('JSON output', () => {
         expect(
-            $$ObjectWithOptionalFields.toJsonString(allUndefinedTargetValue),
+            ObjectWithOptionalFieldsToJsonString(allUndefinedTargetValue),
         ).toEqual(allUndefinedJson);
         expect(
-            $$ObjectWithOptionalFields.toJsonString(noUndefinedTargetValue),
+            ObjectWithOptionalFieldsToJsonString(noUndefinedTargetValue),
         ).toEqual(noUndefinedJson);
     });
 });
@@ -269,19 +277,19 @@ describe('ObjectWithNullableFields', () => {
     );
     test('JSON parsing', () => {
         const allNullResult =
-            $$ObjectWithNullableFields.fromJsonString(allNullJsonReference);
+            ObjectWithNullableFieldsFromJsonString(allNullJsonReference);
         const noNullResult =
-            $$ObjectWithNullableFields.fromJsonString(noNullJsonReference);
+            ObjectWithNullableFieldsFromJsonString(noNullJsonReference);
         expect(allNullResult).toStrictEqual(allNullTargetValue);
         expect(noNullResult).toStrictEqual(noNullTargetValue);
     });
     test('JSON output', () => {
         expect(
-            $$ObjectWithNullableFields.toJsonString(allNullTargetValue),
+            ObjectWithNullableFieldsToJsonString(allNullTargetValue),
         ).toEqual(allNullJsonReference);
-        expect(
-            $$ObjectWithNullableFields.toJsonString(noNullTargetValue),
-        ).toEqual(noNullJsonReference);
+        expect(ObjectWithNullableFieldsToJsonString(noNullTargetValue)).toEqual(
+            noNullJsonReference,
+        );
     });
 });
 
@@ -295,13 +303,11 @@ describe('RecursiveObject', () => {
     };
     const jsonReference = testFile('RecursiveObject.json');
     test('JSON parsing', () => {
-        const result = $$RecursiveObject.fromJsonString(jsonReference);
+        const result = RecursiveObjectFromJsonString(jsonReference);
         expect(result).toStrictEqual(targetValue);
     });
     test('JSON output', () => {
-        expect($$RecursiveObject.toJsonString(targetValue)).toEqual(
-            jsonReference,
-        );
+        expect(RecursiveObjectToJsonString(targetValue)).toEqual(jsonReference);
     });
 });
 

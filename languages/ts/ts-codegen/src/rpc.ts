@@ -47,9 +47,9 @@ export function httpRpcFromDefinition(
         ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
         : undefined;
     const serializerMethod =
-        def.method === 'get' ? 'toUrlQueryString' : 'toJsonString';
+        def.method === 'get' ? 'ToUrlSearchParamsString' : 'ToJsonString';
     if (def.isEventStream) {
-        context.usedFeatures.sse = true;
+        context.useRpcTypes.sse = true;
         return `${getJsDocComment({
             description: def.description,
             isDeprecated: def.isDeprecated,
@@ -62,9 +62,9 @@ export function httpRpcFromDefinition(
                 headers: this._headers,
                 onError: this._onError,
                 ${params ? 'params: params,' : ''}
-                responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-                responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-                serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
+                responseFromJson: ${response ? `${response}FromJson` : '() => {}'},
+                responseFromString: ${response ? `${response}FromJsonString` : '() => {}'},
+                serializer: ${params ? `${params}${serializerMethod}` : '() => {}'},
                 clientVersion: "${context.versionNumber}",
             },
             options,
@@ -82,9 +82,9 @@ export function httpRpcFromDefinition(
             headers: this._headers,
             onError: this._onError,
             ${params ? 'params: params,' : ''}
-            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-            serializer: ${params ? `$$${params}.${serializerMethod}` : '() => {}'},
+            responseFromJson: ${response ? `${response}FromJson` : '() => {}'},
+            responseFromString: ${response ? `${response}FromJsonString` : '() => {}'},
+            serializer: ${params ? `${params}${serializerMethod}` : '() => {}'},
             clientVersion: "${context.versionNumber}",
             options: options ?? this._options,
         });
@@ -95,7 +95,7 @@ export function wsRpcFromDefinition(
     def: WsRpcDefinition,
     context: CodegenContext,
 ): string {
-    context.usedFeatures.ws = true;
+    context.useRpcTypes.ws = true;
     const key = getRpcKey(context);
     const params = def.params
         ? `${context.typePrefix}${pascalCase(validVarName(def.params))}`
@@ -110,9 +110,9 @@ export function wsRpcFromDefinition(
         return arriWsRequest<${params ?? 'undefined'}, ${response ?? 'undefined'}>({
             url: \`\${this._baseUrl}${def.path}\`,
             headers: this._headers,
-            responseFromJson: ${response ? `$$${response}.fromJson` : '() => {}'},
-            responseFromString: ${response ? `$$${response}.fromJsonString` : '() => {}'},
-            serializer: ${params ? `$$${params}.toJsonString` : '() => {}'},
+            responseFromJson: ${response ? `${response}FromJson` : '() => {}'},
+            responseFromString: ${response ? `${response}FromJsonString` : '() => {}'},
+            serializer: ${params ? `${params}ToJsonString` : '() => {}'},
             onOpen: options.onOpen,
             onClose: options.onClose,
             onError: options.onError,
