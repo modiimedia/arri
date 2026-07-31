@@ -227,7 +227,7 @@ export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedType
         result.content += `
 ${context.discriminatorParent && context.discriminatorValue ? '' : 'export '}const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,
-    ${context.features.validateFn && `validate: ${prefixedTypeName}Validate,`} 
+    ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''} 
     fromJson: ${prefixedTypeName}FromJson,
     fromJsonString: ${prefixedTypeName}FromJsonString,
     toJsonString: ${prefixedTypeName}ToJsonString,

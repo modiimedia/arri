@@ -32,7 +32,9 @@ export default defineConfig({
             typePrefix: 'Foo',
             prettierOptions: prettierConfig,
             rootService: 'tests',
-            coerceBigInts: true,
+            features: {
+                validateFn: false,
+            },
         }),
         generators.dartClient({
             clientName: 'TestClient',

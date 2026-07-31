@@ -49,7 +49,6 @@ type HeaderMap = Record<string, string | undefined>;
 export type TestClientPrefixedValidator<T> = ArriModelValidator<
     T,
     | 'new'
-    | 'validate'
     | 'fromJson'
     | 'fromJsonString'
     | 'toJsonString'
@@ -58,7 +57,7 @@ export type TestClientPrefixedValidator<T> = ArriModelValidator<
 >;
 export type ExampleClientEnumValidator<T> = ArriEnumValidator<
     T,
-    'new' | 'validate' | 'values' | 'fromSerialValue'
+    'new' | 'values' | 'fromSerialValue'
 >;
 export class TestClientPrefixed {
     private readonly _baseUrl: string;
@@ -559,11 +558,6 @@ export function FooManuallyAddedModelNew(): FooManuallyAddedModel {
         hello: '',
     };
 }
-export function FooManuallyAddedModelValidate(
-    input: unknown,
-): input is FooManuallyAddedModel {
-    return isObject(input) && typeof input.hello === 'string';
-}
 export function FooManuallyAddedModelFromJson(
     input: Record<string, unknown>,
 ): FooManuallyAddedModel {
@@ -603,7 +597,7 @@ export function FooManuallyAddedModelToUrlSearchParamsString(
 export const $$FooManuallyAddedModel: TestClientPrefixedValidator<FooManuallyAddedModel> =
     {
         new: FooManuallyAddedModelNew,
-        validate: FooManuallyAddedModelValidate,
+
         fromJson: FooManuallyAddedModelFromJson,
         fromJsonString: FooManuallyAddedModelFromJsonString,
         toJsonString: FooManuallyAddedModelToJsonString,
@@ -618,11 +612,6 @@ export function FooDefaultPayloadNew(): FooDefaultPayload {
     return {
         message: '',
     };
-}
-export function FooDefaultPayloadValidate(
-    input: unknown,
-): input is FooDefaultPayload {
-    return isObject(input) && typeof input.message === 'string';
 }
 export function FooDefaultPayloadFromJson(
     input: Record<string, unknown>,
@@ -663,7 +652,7 @@ export function FooDefaultPayloadToUrlSearchParamsString(
 export const $$FooDefaultPayload: TestClientPrefixedValidator<FooDefaultPayload> =
     {
         new: FooDefaultPayloadNew,
-        validate: FooDefaultPayloadValidate,
+
         fromJson: FooDefaultPayloadFromJson,
         fromJsonString: FooDefaultPayloadFromJsonString,
         toJsonString: FooDefaultPayloadToJsonString,
@@ -684,11 +673,6 @@ export function FooDeprecatedRpcParamsNew(): FooDeprecatedRpcParams {
     return {
         deprecatedField: '',
     };
-}
-export function FooDeprecatedRpcParamsValidate(
-    input: unknown,
-): input is FooDeprecatedRpcParams {
-    return isObject(input) && typeof input.deprecatedField === 'string';
 }
 export function FooDeprecatedRpcParamsFromJson(
     input: Record<string, unknown>,
@@ -729,7 +713,7 @@ export function FooDeprecatedRpcParamsToUrlSearchParamsString(
 export const $$FooDeprecatedRpcParams: TestClientPrefixedValidator<FooDeprecatedRpcParams> =
     {
         new: FooDeprecatedRpcParamsNew,
-        validate: FooDeprecatedRpcParamsValidate,
+
         fromJson: FooDeprecatedRpcParamsFromJson,
         fromJsonString: FooDeprecatedRpcParamsFromJsonString,
         toJsonString: FooDeprecatedRpcParamsToJsonString,
@@ -742,24 +726,6 @@ export type FooDiscriminatorWithEmptyObject =
     | FooDiscriminatorWithEmptyObjectNotEmpty;
 export function FooDiscriminatorWithEmptyObjectNew(): FooDiscriminatorWithEmptyObject {
     return FooDiscriminatorWithEmptyObjectEmptyNew();
-}
-export function FooDiscriminatorWithEmptyObjectValidate(
-    input: unknown,
-): input is FooDiscriminatorWithEmptyObject {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.type !== 'string') {
-        return false;
-    }
-    switch (input.type) {
-        case 'EMPTY':
-            return FooDiscriminatorWithEmptyObjectEmptyValidate(input);
-        case 'NOT_EMPTY':
-            return FooDiscriminatorWithEmptyObjectNotEmptyValidate(input);
-        default:
-            return false;
-    }
 }
 export function FooDiscriminatorWithEmptyObjectFromJson(
     input: Record<string, unknown>,
@@ -812,7 +778,7 @@ export function FooDiscriminatorWithEmptyObjectToUrlSearchParamsString(
 export const $$FooDiscriminatorWithEmptyObject: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObject> =
     {
         new: FooDiscriminatorWithEmptyObjectNew,
-        validate: FooDiscriminatorWithEmptyObjectValidate,
+
         fromJson: FooDiscriminatorWithEmptyObjectFromJson,
         fromJsonString: FooDiscriminatorWithEmptyObjectFromJsonString,
         toJsonString: FooDiscriminatorWithEmptyObjectToJsonString,
@@ -827,11 +793,6 @@ export function FooDiscriminatorWithEmptyObjectEmptyNew(): FooDiscriminatorWithE
     return {
         type: 'EMPTY',
     };
-}
-export function FooDiscriminatorWithEmptyObjectEmptyValidate(
-    input: unknown,
-): input is FooDiscriminatorWithEmptyObjectEmpty {
-    return isObject(input) && input.type === 'EMPTY';
 }
 export function FooDiscriminatorWithEmptyObjectEmptyFromJson(
     input: Record<string, unknown>,
@@ -872,7 +833,7 @@ export function FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParamsString(
 const $$FooDiscriminatorWithEmptyObjectEmpty: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObjectEmpty> =
     {
         new: FooDiscriminatorWithEmptyObjectEmptyNew,
-        validate: FooDiscriminatorWithEmptyObjectEmptyValidate,
+
         fromJson: FooDiscriminatorWithEmptyObjectEmptyFromJson,
         fromJsonString: FooDiscriminatorWithEmptyObjectEmptyFromJsonString,
         toJsonString: FooDiscriminatorWithEmptyObjectEmptyToJsonString,
@@ -895,17 +856,6 @@ export function FooDiscriminatorWithEmptyObjectNotEmptyNew(): FooDiscriminatorWi
         bar: 0,
         baz: false,
     };
-}
-export function FooDiscriminatorWithEmptyObjectNotEmptyValidate(
-    input: unknown,
-): input is FooDiscriminatorWithEmptyObjectNotEmpty {
-    return (
-        isObject(input) &&
-        input.type === 'NOT_EMPTY' &&
-        typeof input.foo === 'string' &&
-        typeof input.bar === 'number' &&
-        typeof input.baz === 'boolean'
-    );
 }
 export function FooDiscriminatorWithEmptyObjectNotEmptyFromJson(
     input: Record<string, unknown>,
@@ -964,7 +914,7 @@ export function FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParamsString(
 const $$FooDiscriminatorWithEmptyObjectNotEmpty: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObjectNotEmpty> =
     {
         new: FooDiscriminatorWithEmptyObjectNotEmptyNew,
-        validate: FooDiscriminatorWithEmptyObjectNotEmptyValidate,
+
         fromJson: FooDiscriminatorWithEmptyObjectNotEmptyFromJson,
         fromJsonString: FooDiscriminatorWithEmptyObjectNotEmptyFromJsonString,
         toJsonString: FooDiscriminatorWithEmptyObjectNotEmptyToJsonString,
@@ -983,18 +933,6 @@ export function FooSendErrorParamsNew(): FooSendErrorParams {
         code: 0,
         message: '',
     };
-}
-export function FooSendErrorParamsValidate(
-    input: unknown,
-): input is FooSendErrorParams {
-    return (
-        isObject(input) &&
-        typeof input.code === 'number' &&
-        Number.isInteger(input.code) &&
-        input.code >= 0 &&
-        input.code <= UINT16_MAX &&
-        typeof input.message === 'string'
-    );
 }
 export function FooSendErrorParamsFromJson(
     input: Record<string, unknown>,
@@ -1041,7 +979,7 @@ export function FooSendErrorParamsToUrlSearchParamsString(
 export const $$FooSendErrorParams: TestClientPrefixedValidator<FooSendErrorParams> =
     {
         new: FooSendErrorParamsNew,
-        validate: FooSendErrorParamsValidate,
+
         fromJson: FooSendErrorParamsFromJson,
         fromJsonString: FooSendErrorParamsFromJsonString,
         toJsonString: FooSendErrorParamsToJsonString,
@@ -1096,72 +1034,6 @@ export function FooObjectWithEveryTypeNew(): FooObjectWithEveryType {
         nestedObject: FooObjectWithEveryTypeNestedObjectNew(),
         nestedArray: [],
     };
-}
-export function FooObjectWithEveryTypeValidate(
-    input: unknown,
-): input is FooObjectWithEveryType {
-    return (
-        isObject(input) &&
-        true &&
-        typeof input.boolean === 'boolean' &&
-        typeof input.string === 'string' &&
-        input.timestamp instanceof Date &&
-        typeof input.float32 === 'number' &&
-        typeof input.float64 === 'number' &&
-        typeof input.int8 === 'number' &&
-        Number.isInteger(input.int8) &&
-        input.int8 >= INT8_MIN &&
-        input.int8 <= INT8_MAX &&
-        typeof input.uint8 === 'number' &&
-        Number.isInteger(input.uint8) &&
-        input.uint8 >= 0 &&
-        input.uint8 <= UINT8_MAX &&
-        typeof input.int16 === 'number' &&
-        Number.isInteger(input.int16) &&
-        input.int16 >= INT16_MIN &&
-        input.int16 <= INT16_MAX &&
-        typeof input.uint16 === 'number' &&
-        Number.isInteger(input.uint16) &&
-        input.uint16 >= 0 &&
-        input.uint16 <= UINT16_MAX &&
-        typeof input.int32 === 'number' &&
-        Number.isInteger(input.int32) &&
-        input.int32 >= INT32_MIN &&
-        input.int32 <= INT32_MAX &&
-        typeof input.uint32 === 'number' &&
-        Number.isInteger(input.uint32) &&
-        input.uint32 >= 0 &&
-        input.uint32 <= UINT32_MAX &&
-        typeof input.int64 === 'bigint' &&
-        input.int64 >= INT64_MIN &&
-        input.int64 <= INT64_MAX &&
-        typeof input.uint64 === 'bigint' &&
-        input.uint64 >= BigInt(0) &&
-        input.uint64 <= UINT64_MAX &&
-        FooObjectWithEveryTypeEnumeratorValidate(input.enumerator) &&
-        Array.isArray(input.array) &&
-        input.array.every((_element) => typeof _element === 'boolean') &&
-        FooObjectWithEveryTypeObjectValidate(input.object) &&
-        isObject(input.record) &&
-        Object.values(input.record).every(
-            (_value) =>
-                typeof _value === 'bigint' &&
-                _value >= BigInt(0) &&
-                _value <= UINT64_MAX,
-        ) &&
-        FooObjectWithEveryTypeDiscriminatorValidate(input.discriminator) &&
-        FooObjectWithEveryTypeNestedObjectValidate(input.nestedObject) &&
-        Array.isArray(input.nestedArray) &&
-        input.nestedArray.every(
-            (_element) =>
-                Array.isArray(_element) &&
-                _element.every((_element) =>
-                    FooObjectWithEveryTypeNestedArrayElementElementValidate(
-                        _element,
-                    ),
-                ),
-        )
-    );
 }
 export function FooObjectWithEveryTypeFromJson(
     input: Record<string, unknown>,
@@ -1435,7 +1307,7 @@ export function FooObjectWithEveryTypeToUrlSearchParamsString(
 export const $$FooObjectWithEveryType: TestClientPrefixedValidator<FooObjectWithEveryType> =
     {
         new: FooObjectWithEveryTypeNew,
-        validate: FooObjectWithEveryTypeValidate,
+
         fromJson: FooObjectWithEveryTypeFromJson,
         fromJsonString: FooObjectWithEveryTypeFromJsonString,
         toJsonString: FooObjectWithEveryTypeToJsonString,
@@ -1451,14 +1323,6 @@ export const FooObjectWithEveryTypeEnumerator = {
 export const FooObjectWithEveryTypeEnumeratorValues = ['A', 'B', 'C'] as const;
 export function FooObjectWithEveryTypeEnumeratorNew(): FooObjectWithEveryTypeEnumerator {
     return FooObjectWithEveryTypeEnumeratorValues[0];
-}
-export function FooObjectWithEveryTypeEnumeratorValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeEnumerator {
-    return (
-        typeof input === 'string' &&
-        FooObjectWithEveryTypeEnumeratorValues.includes(input as any)
-    );
 }
 export function FooObjectWithEveryTypeEnumeratorFromSerialValue(
     input: string,
@@ -1485,7 +1349,7 @@ export function FooObjectWithEveryTypeEnumeratorFromSerialValue(
 export const $$FooObjectWithEveryTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryTypeEnumerator> =
     {
         new: FooObjectWithEveryTypeEnumeratorNew,
-        validate: FooObjectWithEveryTypeEnumeratorValidate,
+
         values: FooObjectWithEveryTypeEnumeratorValues,
         fromSerialValue: FooObjectWithEveryTypeEnumeratorFromSerialValue,
     };
@@ -1500,16 +1364,6 @@ export function FooObjectWithEveryTypeObjectNew(): FooObjectWithEveryTypeObject 
         boolean: false,
         timestamp: new Date(0),
     };
-}
-export function FooObjectWithEveryTypeObjectValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeObject {
-    return (
-        isObject(input) &&
-        typeof input.string === 'string' &&
-        typeof input.boolean === 'boolean' &&
-        input.timestamp instanceof Date
-    );
 }
 export function FooObjectWithEveryTypeObjectFromJson(
     input: Record<string, unknown>,
@@ -1562,7 +1416,7 @@ export function FooObjectWithEveryTypeObjectToUrlSearchParamsString(
 export const $$FooObjectWithEveryTypeObject: TestClientPrefixedValidator<FooObjectWithEveryTypeObject> =
     {
         new: FooObjectWithEveryTypeObjectNew,
-        validate: FooObjectWithEveryTypeObjectValidate,
+
         fromJson: FooObjectWithEveryTypeObjectFromJson,
         fromJsonString: FooObjectWithEveryTypeObjectFromJsonString,
         toJsonString: FooObjectWithEveryTypeObjectToJsonString,
@@ -1576,24 +1430,6 @@ export type FooObjectWithEveryTypeDiscriminator =
     | FooObjectWithEveryTypeDiscriminatorB;
 export function FooObjectWithEveryTypeDiscriminatorNew(): FooObjectWithEveryTypeDiscriminator {
     return FooObjectWithEveryTypeDiscriminatorANew();
-}
-export function FooObjectWithEveryTypeDiscriminatorValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeDiscriminator {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.type !== 'string') {
-        return false;
-    }
-    switch (input.type) {
-        case 'A':
-            return FooObjectWithEveryTypeDiscriminatorAValidate(input);
-        case 'B':
-            return FooObjectWithEveryTypeDiscriminatorBValidate(input);
-        default:
-            return false;
-    }
 }
 export function FooObjectWithEveryTypeDiscriminatorFromJson(
     input: Record<string, unknown>,
@@ -1646,7 +1482,7 @@ export function FooObjectWithEveryTypeDiscriminatorToUrlSearchParamsString(
 export const $$FooObjectWithEveryTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminator> =
     {
         new: FooObjectWithEveryTypeDiscriminatorNew,
-        validate: FooObjectWithEveryTypeDiscriminatorValidate,
+
         fromJson: FooObjectWithEveryTypeDiscriminatorFromJson,
         fromJsonString: FooObjectWithEveryTypeDiscriminatorFromJsonString,
         toJsonString: FooObjectWithEveryTypeDiscriminatorToJsonString,
@@ -1663,13 +1499,6 @@ export function FooObjectWithEveryTypeDiscriminatorANew(): FooObjectWithEveryTyp
         type: 'A',
         title: '',
     };
-}
-export function FooObjectWithEveryTypeDiscriminatorAValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeDiscriminatorA {
-    return (
-        isObject(input) && input.type === 'A' && typeof input.title === 'string'
-    );
 }
 export function FooObjectWithEveryTypeDiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -1716,7 +1545,7 @@ export function FooObjectWithEveryTypeDiscriminatorAToUrlSearchParamsString(
 const $$FooObjectWithEveryTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminatorA> =
     {
         new: FooObjectWithEveryTypeDiscriminatorANew,
-        validate: FooObjectWithEveryTypeDiscriminatorAValidate,
+
         fromJson: FooObjectWithEveryTypeDiscriminatorAFromJson,
         fromJsonString: FooObjectWithEveryTypeDiscriminatorAFromJsonString,
         toJsonString: FooObjectWithEveryTypeDiscriminatorAToJsonString,
@@ -1737,16 +1566,6 @@ export function FooObjectWithEveryTypeDiscriminatorBNew(): FooObjectWithEveryTyp
         title: '',
         description: '',
     };
-}
-export function FooObjectWithEveryTypeDiscriminatorBValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeDiscriminatorB {
-    return (
-        isObject(input) &&
-        input.type === 'B' &&
-        typeof input.title === 'string' &&
-        typeof input.description === 'string'
-    );
 }
 export function FooObjectWithEveryTypeDiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -1799,7 +1618,7 @@ export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString(
 const $$FooObjectWithEveryTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminatorB> =
     {
         new: FooObjectWithEveryTypeDiscriminatorBNew,
-        validate: FooObjectWithEveryTypeDiscriminatorBValidate,
+
         fromJson: FooObjectWithEveryTypeDiscriminatorBFromJson,
         fromJsonString: FooObjectWithEveryTypeDiscriminatorBFromJsonString,
         toJsonString: FooObjectWithEveryTypeDiscriminatorBToJsonString,
@@ -1820,16 +1639,6 @@ export function FooObjectWithEveryTypeNestedObjectNew(): FooObjectWithEveryTypeN
         timestamp: new Date(0),
         data: FooObjectWithEveryTypeNestedObjectDataNew(),
     };
-}
-export function FooObjectWithEveryTypeNestedObjectValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeNestedObject {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date &&
-        FooObjectWithEveryTypeNestedObjectDataValidate(input.data)
-    );
 }
 export function FooObjectWithEveryTypeNestedObjectFromJson(
     input: Record<string, unknown>,
@@ -1890,7 +1699,7 @@ export function FooObjectWithEveryTypeNestedObjectToUrlSearchParamsString(
 export const $$FooObjectWithEveryTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObject> =
     {
         new: FooObjectWithEveryTypeNestedObjectNew,
-        validate: FooObjectWithEveryTypeNestedObjectValidate,
+
         fromJson: FooObjectWithEveryTypeNestedObjectFromJson,
         fromJsonString: FooObjectWithEveryTypeNestedObjectFromJsonString,
         toJsonString: FooObjectWithEveryTypeNestedObjectToJsonString,
@@ -1909,16 +1718,6 @@ export function FooObjectWithEveryTypeNestedObjectDataNew(): FooObjectWithEveryT
         timestamp: new Date(0),
         data: FooObjectWithEveryTypeNestedObjectDataDataNew(),
     };
-}
-export function FooObjectWithEveryTypeNestedObjectDataValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeNestedObjectData {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date &&
-        FooObjectWithEveryTypeNestedObjectDataDataValidate(input.data)
-    );
 }
 export function FooObjectWithEveryTypeNestedObjectDataFromJson(
     input: Record<string, unknown>,
@@ -1979,7 +1778,7 @@ export function FooObjectWithEveryTypeNestedObjectDataToUrlSearchParamsString(
 export const $$FooObjectWithEveryTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObjectData> =
     {
         new: FooObjectWithEveryTypeNestedObjectDataNew,
-        validate: FooObjectWithEveryTypeNestedObjectDataValidate,
+
         fromJson: FooObjectWithEveryTypeNestedObjectDataFromJson,
         fromJsonString: FooObjectWithEveryTypeNestedObjectDataFromJsonString,
         toJsonString: FooObjectWithEveryTypeNestedObjectDataToJsonString,
@@ -1997,15 +1796,6 @@ export function FooObjectWithEveryTypeNestedObjectDataDataNew(): FooObjectWithEv
         id: '',
         timestamp: new Date(0),
     };
-}
-export function FooObjectWithEveryTypeNestedObjectDataDataValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeNestedObjectDataData {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date
-    );
 }
 export function FooObjectWithEveryTypeNestedObjectDataDataFromJson(
     input: Record<string, unknown>,
@@ -2056,7 +1846,7 @@ export function FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParamsStrin
 export const $$FooObjectWithEveryTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObjectDataData> =
     {
         new: FooObjectWithEveryTypeNestedObjectDataDataNew,
-        validate: FooObjectWithEveryTypeNestedObjectDataDataValidate,
+
         fromJson: FooObjectWithEveryTypeNestedObjectDataDataFromJson,
         fromJsonString:
             FooObjectWithEveryTypeNestedObjectDataDataFromJsonString,
@@ -2076,15 +1866,6 @@ export function FooObjectWithEveryTypeNestedArrayElementElementNew(): FooObjectW
         id: '',
         timestamp: new Date(0),
     };
-}
-export function FooObjectWithEveryTypeNestedArrayElementElementValidate(
-    input: unknown,
-): input is FooObjectWithEveryTypeNestedArrayElementElement {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date
-    );
 }
 export function FooObjectWithEveryTypeNestedArrayElementElementFromJson(
     input: Record<string, unknown>,
@@ -2135,7 +1916,7 @@ export function FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams
 export const $$FooObjectWithEveryTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedArrayElementElement> =
     {
         new: FooObjectWithEveryTypeNestedArrayElementElementNew,
-        validate: FooObjectWithEveryTypeNestedArrayElementElementValidate,
+
         fromJson: FooObjectWithEveryTypeNestedArrayElementElementFromJson,
         fromJsonString:
             FooObjectWithEveryTypeNestedArrayElementElementFromJsonString,
@@ -2199,97 +1980,6 @@ export function FooObjectWithEveryNullableTypeNew(): FooObjectWithEveryNullableT
         nestedObject: null,
         nestedArray: null,
     };
-}
-export function FooObjectWithEveryNullableTypeValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableType {
-    return (
-        isObject(input) &&
-        true &&
-        (typeof input.boolean === 'boolean' || input.boolean === null) &&
-        (typeof input.string === 'string' || input.string === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
-        (typeof input.float32 === 'number' || input.float32 === null) &&
-        (typeof input.float64 === 'number' || input.float64 === null) &&
-        ((typeof input.int8 === 'number' &&
-            Number.isInteger(input.int8) &&
-            input.int8 >= INT8_MIN &&
-            input.int8 <= INT8_MAX) ||
-            input.int8 === null) &&
-        ((typeof input.uint8 === 'number' &&
-            Number.isInteger(input.uint8) &&
-            input.uint8 >= 0 &&
-            input.uint8 <= UINT8_MAX) ||
-            input.uint8 === null) &&
-        ((typeof input.int16 === 'number' &&
-            Number.isInteger(input.int16) &&
-            input.int16 >= INT16_MIN &&
-            input.int16 <= INT16_MAX) ||
-            input.int16 === null) &&
-        ((typeof input.uint16 === 'number' &&
-            Number.isInteger(input.uint16) &&
-            input.uint16 >= 0 &&
-            input.uint16 <= UINT16_MAX) ||
-            input.uint16 === null) &&
-        ((typeof input.int32 === 'number' &&
-            Number.isInteger(input.int32) &&
-            input.int32 >= INT32_MIN &&
-            input.int32 <= INT32_MAX) ||
-            input.int32 === null) &&
-        ((typeof input.uint32 === 'number' &&
-            Number.isInteger(input.uint32) &&
-            input.uint32 >= 0 &&
-            input.uint32 <= UINT32_MAX) ||
-            input.uint32 === null) &&
-        ((typeof input.int64 === 'bigint' &&
-            input.int64 >= INT64_MIN &&
-            input.int64 <= INT64_MAX) ||
-            input.int64 === null) &&
-        ((typeof input.uint64 === 'bigint' &&
-            input.uint64 >= BigInt(0) &&
-            input.uint64 <= UINT64_MAX) ||
-            input.uint64 === null) &&
-        (FooObjectWithEveryNullableTypeEnumeratorValidate(input.enumerator) ||
-            input.enumerator === null) &&
-        ((Array.isArray(input.array) &&
-            input.array.every(
-                (_element) =>
-                    typeof _element === 'boolean' || _element === null,
-            )) ||
-            input.array === null) &&
-        (FooObjectWithEveryNullableTypeObjectValidate(input.object) ||
-            input.object === null) &&
-        ((isObject(input.record) &&
-            Object.values(input.record).every(
-                (_value) =>
-                    (typeof _value === 'bigint' &&
-                        _value >= BigInt(0) &&
-                        _value <= UINT64_MAX) ||
-                    _value === null,
-            )) ||
-            input.record === null) &&
-        (FooObjectWithEveryNullableTypeDiscriminatorValidate(
-            input.discriminator,
-        ) ||
-            input.discriminator === null) &&
-        (FooObjectWithEveryNullableTypeNestedObjectValidate(
-            input.nestedObject,
-        ) ||
-            input.nestedObject === null) &&
-        ((Array.isArray(input.nestedArray) &&
-            input.nestedArray.every(
-                (_element) =>
-                    (Array.isArray(_element) &&
-                        _element.every(
-                            (_element) =>
-                                FooObjectWithEveryNullableTypeNestedArrayElementElementValidate(
-                                    _element,
-                                ) || _element === null,
-                        )) ||
-                    _element === null,
-            )) ||
-            input.nestedArray === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeFromJson(
     input: Record<string, unknown>,
@@ -2627,7 +2317,7 @@ export function FooObjectWithEveryNullableTypeToUrlSearchParamsString(
 export const $$FooObjectWithEveryNullableType: TestClientPrefixedValidator<FooObjectWithEveryNullableType> =
     {
         new: FooObjectWithEveryNullableTypeNew,
-        validate: FooObjectWithEveryNullableTypeValidate,
+
         fromJson: FooObjectWithEveryNullableTypeFromJson,
         fromJsonString: FooObjectWithEveryNullableTypeFromJsonString,
         toJsonString: FooObjectWithEveryNullableTypeToJsonString,
@@ -2648,14 +2338,6 @@ export const FooObjectWithEveryNullableTypeEnumeratorValues = [
 ] as const;
 export function FooObjectWithEveryNullableTypeEnumeratorNew(): FooObjectWithEveryNullableTypeEnumerator {
     return FooObjectWithEveryNullableTypeEnumeratorValues[0];
-}
-export function FooObjectWithEveryNullableTypeEnumeratorValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeEnumerator {
-    return (
-        typeof input === 'string' &&
-        FooObjectWithEveryNullableTypeEnumeratorValues.includes(input as any)
-    );
 }
 export function FooObjectWithEveryNullableTypeEnumeratorFromSerialValue(
     input: string,
@@ -2682,7 +2364,7 @@ export function FooObjectWithEveryNullableTypeEnumeratorFromSerialValue(
 export const $$FooObjectWithEveryNullableTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryNullableTypeEnumerator> =
     {
         new: FooObjectWithEveryNullableTypeEnumeratorNew,
-        validate: FooObjectWithEveryNullableTypeEnumeratorValidate,
+
         values: FooObjectWithEveryNullableTypeEnumeratorValues,
         fromSerialValue:
             FooObjectWithEveryNullableTypeEnumeratorFromSerialValue,
@@ -2698,16 +2380,6 @@ export function FooObjectWithEveryNullableTypeObjectNew(): FooObjectWithEveryNul
         boolean: null,
         timestamp: null,
     };
-}
-export function FooObjectWithEveryNullableTypeObjectValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeObject {
-    return (
-        isObject(input) &&
-        (typeof input.string === 'string' || input.string === null) &&
-        (typeof input.boolean === 'boolean' || input.boolean === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeObjectFromJson(
     input: Record<string, unknown>,
@@ -2770,7 +2442,7 @@ export function FooObjectWithEveryNullableTypeObjectToUrlSearchParamsString(
 export const $$FooObjectWithEveryNullableTypeObject: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeObject> =
     {
         new: FooObjectWithEveryNullableTypeObjectNew,
-        validate: FooObjectWithEveryNullableTypeObjectValidate,
+
         fromJson: FooObjectWithEveryNullableTypeObjectFromJson,
         fromJsonString: FooObjectWithEveryNullableTypeObjectFromJsonString,
         toJsonString: FooObjectWithEveryNullableTypeObjectToJsonString,
@@ -2785,24 +2457,6 @@ export type FooObjectWithEveryNullableTypeDiscriminator =
     | FooObjectWithEveryNullableTypeDiscriminatorB;
 export function FooObjectWithEveryNullableTypeDiscriminatorNew(): FooObjectWithEveryNullableTypeDiscriminator {
     return FooObjectWithEveryNullableTypeDiscriminatorANew();
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeDiscriminator {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.type !== 'string') {
-        return false;
-    }
-    switch (input.type) {
-        case 'A':
-            return FooObjectWithEveryNullableTypeDiscriminatorAValidate(input);
-        case 'B':
-            return FooObjectWithEveryNullableTypeDiscriminatorBValidate(input);
-        default:
-            return false;
-    }
 }
 export function FooObjectWithEveryNullableTypeDiscriminatorFromJson(
     input: Record<string, unknown>,
@@ -2865,7 +2519,7 @@ export function FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParamsStri
 export const $$FooObjectWithEveryNullableTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminator> =
     {
         new: FooObjectWithEveryNullableTypeDiscriminatorNew,
-        validate: FooObjectWithEveryNullableTypeDiscriminatorValidate,
+
         fromJson: FooObjectWithEveryNullableTypeDiscriminatorFromJson,
         fromJsonString:
             FooObjectWithEveryNullableTypeDiscriminatorFromJsonString,
@@ -2884,15 +2538,6 @@ export function FooObjectWithEveryNullableTypeDiscriminatorANew(): FooObjectWith
         type: 'A',
         title: null,
     };
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorAValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeDiscriminatorA {
-    return (
-        isObject(input) &&
-        input.type === 'A' &&
-        (typeof input.title === 'string' || input.title === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeDiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -2945,7 +2590,7 @@ export function FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParamsStr
 const $$FooObjectWithEveryNullableTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminatorA> =
     {
         new: FooObjectWithEveryNullableTypeDiscriminatorANew,
-        validate: FooObjectWithEveryNullableTypeDiscriminatorAValidate,
+
         fromJson: FooObjectWithEveryNullableTypeDiscriminatorAFromJson,
         fromJsonString:
             FooObjectWithEveryNullableTypeDiscriminatorAFromJsonString,
@@ -2967,16 +2612,6 @@ export function FooObjectWithEveryNullableTypeDiscriminatorBNew(): FooObjectWith
         title: null,
         description: null,
     };
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeDiscriminatorB {
-    return (
-        isObject(input) &&
-        input.type === 'B' &&
-        (typeof input.title === 'string' || input.title === null) &&
-        (typeof input.description === 'string' || input.description === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeDiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -3039,7 +2674,7 @@ export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsStr
 const $$FooObjectWithEveryNullableTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminatorB> =
     {
         new: FooObjectWithEveryNullableTypeDiscriminatorBNew,
-        validate: FooObjectWithEveryNullableTypeDiscriminatorBValidate,
+
         fromJson: FooObjectWithEveryNullableTypeDiscriminatorBFromJson,
         fromJsonString:
             FooObjectWithEveryNullableTypeDiscriminatorBFromJsonString,
@@ -3061,17 +2696,6 @@ export function FooObjectWithEveryNullableTypeNestedObjectNew(): FooObjectWithEv
         timestamp: null,
         data: null,
     };
-}
-export function FooObjectWithEveryNullableTypeNestedObjectValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeNestedObject {
-    return (
-        isObject(input) &&
-        (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
-        (FooObjectWithEveryNullableTypeNestedObjectDataValidate(input.data) ||
-            input.data === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeNestedObjectFromJson(
     input: Record<string, unknown>,
@@ -3150,7 +2774,7 @@ export function FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParamsStrin
 export const $$FooObjectWithEveryNullableTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObject> =
     {
         new: FooObjectWithEveryNullableTypeNestedObjectNew,
-        validate: FooObjectWithEveryNullableTypeNestedObjectValidate,
+
         fromJson: FooObjectWithEveryNullableTypeNestedObjectFromJson,
         fromJsonString:
             FooObjectWithEveryNullableTypeNestedObjectFromJsonString,
@@ -3171,19 +2795,6 @@ export function FooObjectWithEveryNullableTypeNestedObjectDataNew(): FooObjectWi
         timestamp: null,
         data: null,
     };
-}
-export function FooObjectWithEveryNullableTypeNestedObjectDataValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeNestedObjectData {
-    return (
-        isObject(input) &&
-        (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
-        (FooObjectWithEveryNullableTypeNestedObjectDataDataValidate(
-            input.data,
-        ) ||
-            input.data === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeNestedObjectDataFromJson(
     input: Record<string, unknown>,
@@ -3262,7 +2873,7 @@ export function FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParamsS
 export const $$FooObjectWithEveryNullableTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObjectData> =
     {
         new: FooObjectWithEveryNullableTypeNestedObjectDataNew,
-        validate: FooObjectWithEveryNullableTypeNestedObjectDataValidate,
+
         fromJson: FooObjectWithEveryNullableTypeNestedObjectDataFromJson,
         fromJsonString:
             FooObjectWithEveryNullableTypeNestedObjectDataFromJsonString,
@@ -3282,15 +2893,6 @@ export function FooObjectWithEveryNullableTypeNestedObjectDataDataNew(): FooObje
         id: null,
         timestamp: null,
     };
-}
-export function FooObjectWithEveryNullableTypeNestedObjectDataDataValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeNestedObjectDataData {
-    return (
-        isObject(input) &&
-        (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson(
     input: Record<string, unknown>,
@@ -3349,7 +2951,7 @@ export function FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchPar
 export const $$FooObjectWithEveryNullableTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObjectDataData> =
     {
         new: FooObjectWithEveryNullableTypeNestedObjectDataDataNew,
-        validate: FooObjectWithEveryNullableTypeNestedObjectDataDataValidate,
+
         fromJson: FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson,
         fromJsonString:
             FooObjectWithEveryNullableTypeNestedObjectDataDataFromJsonString,
@@ -3370,15 +2972,6 @@ export function FooObjectWithEveryNullableTypeNestedArrayElementElementNew(): Fo
         id: null,
         timestamp: null,
     };
-}
-export function FooObjectWithEveryNullableTypeNestedArrayElementElementValidate(
-    input: unknown,
-): input is FooObjectWithEveryNullableTypeNestedArrayElementElement {
-    return (
-        isObject(input) &&
-        (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null)
-    );
 }
 export function FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson(
     input: Record<string, unknown>,
@@ -3437,8 +3030,7 @@ export function FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSear
 export const $$FooObjectWithEveryNullableTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedArrayElementElement> =
     {
         new: FooObjectWithEveryNullableTypeNestedArrayElementElementNew,
-        validate:
-            FooObjectWithEveryNullableTypeNestedArrayElementElementValidate,
+
         fromJson:
             FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson,
         fromJsonString:
@@ -3464,20 +3056,6 @@ export function FooObjectWithPascalCaseKeysNew(): FooObjectWithPascalCaseKeys {
         displayName: '',
         phoneNumber: null,
     };
-}
-export function FooObjectWithPascalCaseKeysValidate(
-    input: unknown,
-): input is FooObjectWithPascalCaseKeys {
-    return (
-        isObject(input) &&
-        input.createdAt instanceof Date &&
-        typeof input.displayName === 'string' &&
-        (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
-        (typeof input.emailAddress === 'string' ||
-            typeof input.emailAddress === 'undefined') &&
-        (typeof input.isAdmin === 'boolean' ||
-            typeof input.isAdmin === 'undefined')
-    );
 }
 export function FooObjectWithPascalCaseKeysFromJson(
     input: Record<string, unknown>,
@@ -3558,7 +3136,7 @@ export function FooObjectWithPascalCaseKeysToUrlSearchParamsString(
 export const $$FooObjectWithPascalCaseKeys: TestClientPrefixedValidator<FooObjectWithPascalCaseKeys> =
     {
         new: FooObjectWithPascalCaseKeysNew,
-        validate: FooObjectWithPascalCaseKeysValidate,
+
         fromJson: FooObjectWithPascalCaseKeysFromJson,
         fromJsonString: FooObjectWithPascalCaseKeysFromJsonString,
         toJsonString: FooObjectWithPascalCaseKeysToJsonString,
@@ -3580,20 +3158,6 @@ export function FooObjectWithSnakeCaseKeysNew(): FooObjectWithSnakeCaseKeys {
         displayName: '',
         phoneNumber: null,
     };
-}
-export function FooObjectWithSnakeCaseKeysValidate(
-    input: unknown,
-): input is FooObjectWithSnakeCaseKeys {
-    return (
-        isObject(input) &&
-        input.createdAt instanceof Date &&
-        typeof input.displayName === 'string' &&
-        (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
-        (typeof input.emailAddress === 'string' ||
-            typeof input.emailAddress === 'undefined') &&
-        (typeof input.isAdmin === 'boolean' ||
-            typeof input.isAdmin === 'undefined')
-    );
 }
 export function FooObjectWithSnakeCaseKeysFromJson(
     input: Record<string, unknown>,
@@ -3674,7 +3238,7 @@ export function FooObjectWithSnakeCaseKeysToUrlSearchParamsString(
 export const $$FooObjectWithSnakeCaseKeys: TestClientPrefixedValidator<FooObjectWithSnakeCaseKeys> =
     {
         new: FooObjectWithSnakeCaseKeysNew,
-        validate: FooObjectWithSnakeCaseKeysValidate,
+
         fromJson: FooObjectWithSnakeCaseKeysFromJson,
         fromJsonString: FooObjectWithSnakeCaseKeysFromJsonString,
         toJsonString: FooObjectWithSnakeCaseKeysToJsonString,
@@ -3708,96 +3272,6 @@ export interface FooObjectWithEveryOptionalType {
 }
 export function FooObjectWithEveryOptionalTypeNew(): FooObjectWithEveryOptionalType {
     return {};
-}
-export function FooObjectWithEveryOptionalTypeValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalType {
-    return (
-        isObject(input) &&
-        (true || typeof input.any === 'undefined') &&
-        (typeof input.boolean === 'boolean' ||
-            typeof input.boolean === 'undefined') &&
-        (typeof input.string === 'string' ||
-            typeof input.string === 'undefined') &&
-        (input.timestamp instanceof Date ||
-            typeof input.timestamp === 'undefined') &&
-        (typeof input.float32 === 'number' ||
-            typeof input.float32 === 'undefined') &&
-        (typeof input.float64 === 'number' ||
-            typeof input.float64 === 'undefined') &&
-        ((typeof input.int8 === 'number' &&
-            Number.isInteger(input.int8) &&
-            input.int8 >= INT8_MIN &&
-            input.int8 <= INT8_MAX) ||
-            typeof input.int8 === 'undefined') &&
-        ((typeof input.uint8 === 'number' &&
-            Number.isInteger(input.uint8) &&
-            input.uint8 >= 0 &&
-            input.uint8 <= UINT8_MAX) ||
-            typeof input.uint8 === 'undefined') &&
-        ((typeof input.int16 === 'number' &&
-            Number.isInteger(input.int16) &&
-            input.int16 >= INT16_MIN &&
-            input.int16 <= INT16_MAX) ||
-            typeof input.int16 === 'undefined') &&
-        ((typeof input.uint16 === 'number' &&
-            Number.isInteger(input.uint16) &&
-            input.uint16 >= 0 &&
-            input.uint16 <= UINT16_MAX) ||
-            typeof input.uint16 === 'undefined') &&
-        ((typeof input.int32 === 'number' &&
-            Number.isInteger(input.int32) &&
-            input.int32 >= INT32_MIN &&
-            input.int32 <= INT32_MAX) ||
-            typeof input.int32 === 'undefined') &&
-        ((typeof input.uint32 === 'number' &&
-            Number.isInteger(input.uint32) &&
-            input.uint32 >= 0 &&
-            input.uint32 <= UINT32_MAX) ||
-            typeof input.uint32 === 'undefined') &&
-        ((typeof input.int64 === 'bigint' &&
-            input.int64 >= INT64_MIN &&
-            input.int64 <= INT64_MAX) ||
-            typeof input.int64 === 'undefined') &&
-        ((typeof input.uint64 === 'bigint' &&
-            input.uint64 >= BigInt(0) &&
-            input.uint64 <= UINT64_MAX) ||
-            typeof input.uint64 === 'undefined') &&
-        (FooObjectWithEveryOptionalTypeEnumeratorValidate(input.enumerator) ||
-            typeof input.enumerator === 'undefined') &&
-        ((Array.isArray(input.array) &&
-            input.array.every((_element) => typeof _element === 'boolean')) ||
-            typeof input.array === 'undefined') &&
-        (FooObjectWithEveryOptionalTypeObjectValidate(input.object) ||
-            typeof input.object === 'undefined') &&
-        ((isObject(input.record) &&
-            Object.values(input.record).every(
-                (_value) =>
-                    typeof _value === 'bigint' &&
-                    _value >= BigInt(0) &&
-                    _value <= UINT64_MAX,
-            )) ||
-            typeof input.record === 'undefined') &&
-        (FooObjectWithEveryOptionalTypeDiscriminatorValidate(
-            input.discriminator,
-        ) ||
-            typeof input.discriminator === 'undefined') &&
-        (FooObjectWithEveryOptionalTypeNestedObjectValidate(
-            input.nestedObject,
-        ) ||
-            typeof input.nestedObject === 'undefined') &&
-        ((Array.isArray(input.nestedArray) &&
-            input.nestedArray.every(
-                (_element) =>
-                    Array.isArray(_element) &&
-                    _element.every((_element) =>
-                        FooObjectWithEveryOptionalTypeNestedArrayElementElementValidate(
-                            _element,
-                        ),
-                    ),
-            )) ||
-            typeof input.nestedArray === 'undefined')
-    );
 }
 export function FooObjectWithEveryOptionalTypeFromJson(
     input: Record<string, unknown>,
@@ -4249,7 +3723,7 @@ export function FooObjectWithEveryOptionalTypeToUrlSearchParamsString(
 export const $$FooObjectWithEveryOptionalType: TestClientPrefixedValidator<FooObjectWithEveryOptionalType> =
     {
         new: FooObjectWithEveryOptionalTypeNew,
-        validate: FooObjectWithEveryOptionalTypeValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeFromJson,
         fromJsonString: FooObjectWithEveryOptionalTypeFromJsonString,
         toJsonString: FooObjectWithEveryOptionalTypeToJsonString,
@@ -4270,14 +3744,6 @@ export const FooObjectWithEveryOptionalTypeEnumeratorValues = [
 ] as const;
 export function FooObjectWithEveryOptionalTypeEnumeratorNew(): FooObjectWithEveryOptionalTypeEnumerator {
     return FooObjectWithEveryOptionalTypeEnumeratorValues[0];
-}
-export function FooObjectWithEveryOptionalTypeEnumeratorValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeEnumerator {
-    return (
-        typeof input === 'string' &&
-        FooObjectWithEveryOptionalTypeEnumeratorValues.includes(input as any)
-    );
 }
 export function FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue(
     input: string,
@@ -4304,7 +3770,7 @@ export function FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue(
 export const $$FooObjectWithEveryOptionalTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryOptionalTypeEnumerator> =
     {
         new: FooObjectWithEveryOptionalTypeEnumeratorNew,
-        validate: FooObjectWithEveryOptionalTypeEnumeratorValidate,
+
         values: FooObjectWithEveryOptionalTypeEnumeratorValues,
         fromSerialValue:
             FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue,
@@ -4320,16 +3786,6 @@ export function FooObjectWithEveryOptionalTypeObjectNew(): FooObjectWithEveryOpt
         boolean: false,
         timestamp: new Date(0),
     };
-}
-export function FooObjectWithEveryOptionalTypeObjectValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeObject {
-    return (
-        isObject(input) &&
-        typeof input.string === 'string' &&
-        typeof input.boolean === 'boolean' &&
-        input.timestamp instanceof Date
-    );
 }
 export function FooObjectWithEveryOptionalTypeObjectFromJson(
     input: Record<string, unknown>,
@@ -4384,7 +3840,7 @@ export function FooObjectWithEveryOptionalTypeObjectToUrlSearchParamsString(
 export const $$FooObjectWithEveryOptionalTypeObject: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeObject> =
     {
         new: FooObjectWithEveryOptionalTypeObjectNew,
-        validate: FooObjectWithEveryOptionalTypeObjectValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeObjectFromJson,
         fromJsonString: FooObjectWithEveryOptionalTypeObjectFromJsonString,
         toJsonString: FooObjectWithEveryOptionalTypeObjectToJsonString,
@@ -4399,24 +3855,6 @@ export type FooObjectWithEveryOptionalTypeDiscriminator =
     | FooObjectWithEveryOptionalTypeDiscriminatorB;
 export function FooObjectWithEveryOptionalTypeDiscriminatorNew(): FooObjectWithEveryOptionalTypeDiscriminator {
     return FooObjectWithEveryOptionalTypeDiscriminatorANew();
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeDiscriminator {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.type !== 'string') {
-        return false;
-    }
-    switch (input.type) {
-        case 'A':
-            return FooObjectWithEveryOptionalTypeDiscriminatorAValidate(input);
-        case 'B':
-            return FooObjectWithEveryOptionalTypeDiscriminatorBValidate(input);
-        default:
-            return false;
-    }
 }
 export function FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
     input: Record<string, unknown>,
@@ -4479,7 +3917,7 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParamsStri
 export const $$FooObjectWithEveryOptionalTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminator> =
     {
         new: FooObjectWithEveryOptionalTypeDiscriminatorNew,
-        validate: FooObjectWithEveryOptionalTypeDiscriminatorValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeDiscriminatorFromJson,
         fromJsonString:
             FooObjectWithEveryOptionalTypeDiscriminatorFromJsonString,
@@ -4498,13 +3936,6 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorANew(): FooObjectWith
         type: 'A',
         title: '',
     };
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorAValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeDiscriminatorA {
-    return (
-        isObject(input) && input.type === 'A' && typeof input.title === 'string'
-    );
 }
 export function FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -4553,7 +3984,7 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParamsStr
 const $$FooObjectWithEveryOptionalTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminatorA> =
     {
         new: FooObjectWithEveryOptionalTypeDiscriminatorANew,
-        validate: FooObjectWithEveryOptionalTypeDiscriminatorAValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeDiscriminatorAFromJson,
         fromJsonString:
             FooObjectWithEveryOptionalTypeDiscriminatorAFromJsonString,
@@ -4575,16 +4006,6 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorBNew(): FooObjectWith
         title: '',
         description: '',
     };
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeDiscriminatorB {
-    return (
-        isObject(input) &&
-        input.type === 'B' &&
-        typeof input.title === 'string' &&
-        typeof input.description === 'string'
-    );
 }
 export function FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -4639,7 +4060,7 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsStr
 const $$FooObjectWithEveryOptionalTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminatorB> =
     {
         new: FooObjectWithEveryOptionalTypeDiscriminatorBNew,
-        validate: FooObjectWithEveryOptionalTypeDiscriminatorBValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeDiscriminatorBFromJson,
         fromJsonString:
             FooObjectWithEveryOptionalTypeDiscriminatorBFromJsonString,
@@ -4661,16 +4082,6 @@ export function FooObjectWithEveryOptionalTypeNestedObjectNew(): FooObjectWithEv
         timestamp: new Date(0),
         data: FooObjectWithEveryOptionalTypeNestedObjectDataNew(),
     };
-}
-export function FooObjectWithEveryOptionalTypeNestedObjectValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeNestedObject {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date &&
-        FooObjectWithEveryOptionalTypeNestedObjectDataValidate(input.data)
-    );
 }
 export function FooObjectWithEveryOptionalTypeNestedObjectFromJson(
     input: Record<string, unknown>,
@@ -4737,7 +4148,7 @@ export function FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParamsStrin
 export const $$FooObjectWithEveryOptionalTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObject> =
     {
         new: FooObjectWithEveryOptionalTypeNestedObjectNew,
-        validate: FooObjectWithEveryOptionalTypeNestedObjectValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeNestedObjectFromJson,
         fromJsonString:
             FooObjectWithEveryOptionalTypeNestedObjectFromJsonString,
@@ -4758,16 +4169,6 @@ export function FooObjectWithEveryOptionalTypeNestedObjectDataNew(): FooObjectWi
         timestamp: new Date(0),
         data: FooObjectWithEveryOptionalTypeNestedObjectDataDataNew(),
     };
-}
-export function FooObjectWithEveryOptionalTypeNestedObjectDataValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeNestedObjectData {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date &&
-        FooObjectWithEveryOptionalTypeNestedObjectDataDataValidate(input.data)
-    );
 }
 export function FooObjectWithEveryOptionalTypeNestedObjectDataFromJson(
     input: Record<string, unknown>,
@@ -4834,7 +4235,7 @@ export function FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParamsS
 export const $$FooObjectWithEveryOptionalTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObjectData> =
     {
         new: FooObjectWithEveryOptionalTypeNestedObjectDataNew,
-        validate: FooObjectWithEveryOptionalTypeNestedObjectDataValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeNestedObjectDataFromJson,
         fromJsonString:
             FooObjectWithEveryOptionalTypeNestedObjectDataFromJsonString,
@@ -4854,15 +4255,6 @@ export function FooObjectWithEveryOptionalTypeNestedObjectDataDataNew(): FooObje
         id: '',
         timestamp: new Date(0),
     };
-}
-export function FooObjectWithEveryOptionalTypeNestedObjectDataDataValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeNestedObjectDataData {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date
-    );
 }
 export function FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson(
     input: Record<string, unknown>,
@@ -4913,7 +4305,7 @@ export function FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchPar
 export const $$FooObjectWithEveryOptionalTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObjectDataData> =
     {
         new: FooObjectWithEveryOptionalTypeNestedObjectDataDataNew,
-        validate: FooObjectWithEveryOptionalTypeNestedObjectDataDataValidate,
+
         fromJson: FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson,
         fromJsonString:
             FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJsonString,
@@ -4934,15 +4326,6 @@ export function FooObjectWithEveryOptionalTypeNestedArrayElementElementNew(): Fo
         id: '',
         timestamp: new Date(0),
     };
-}
-export function FooObjectWithEveryOptionalTypeNestedArrayElementElementValidate(
-    input: unknown,
-): input is FooObjectWithEveryOptionalTypeNestedArrayElementElement {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        input.timestamp instanceof Date
-    );
 }
 export function FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson(
     input: Record<string, unknown>,
@@ -4993,8 +4376,7 @@ export function FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSear
 export const $$FooObjectWithEveryOptionalTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedArrayElementElement> =
     {
         new: FooObjectWithEveryOptionalTypeNestedArrayElementElementNew,
-        validate:
-            FooObjectWithEveryOptionalTypeNestedArrayElementElementValidate,
+
         fromJson:
             FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson,
         fromJsonString:
@@ -5018,16 +4400,6 @@ export function FooRecursiveObjectNew(): FooRecursiveObject {
         right: null,
         value: '',
     };
-}
-export function FooRecursiveObjectValidate(
-    input: unknown,
-): input is FooRecursiveObject {
-    return (
-        isObject(input) &&
-        (FooRecursiveObjectValidate(input.left) || input.left === null) &&
-        (FooRecursiveObjectValidate(input.right) || input.right === null) &&
-        typeof input.value === 'string'
-    );
 }
 export function FooRecursiveObjectFromJson(
     input: Record<string, unknown>,
@@ -5100,7 +4472,7 @@ export function FooRecursiveObjectToUrlSearchParamsString(
 export const $$FooRecursiveObject: TestClientPrefixedValidator<FooRecursiveObject> =
     {
         new: FooRecursiveObjectNew,
-        validate: FooRecursiveObjectValidate,
+
         fromJson: FooRecursiveObjectFromJson,
         fromJsonString: FooRecursiveObjectFromJsonString,
         toJsonString: FooRecursiveObjectToJsonString,
@@ -5115,28 +4487,6 @@ export type FooRecursiveUnion =
     | FooRecursiveUnionShape;
 export function FooRecursiveUnionNew(): FooRecursiveUnion {
     return FooRecursiveUnionChildNew();
-}
-export function FooRecursiveUnionValidate(
-    input: unknown,
-): input is FooRecursiveUnion {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.type !== 'string') {
-        return false;
-    }
-    switch (input.type) {
-        case 'CHILD':
-            return FooRecursiveUnionChildValidate(input);
-        case 'CHILDREN':
-            return FooRecursiveUnionChildrenValidate(input);
-        case 'TEXT':
-            return FooRecursiveUnionTextValidate(input);
-        case 'SHAPE':
-            return FooRecursiveUnionShapeValidate(input);
-        default:
-            return false;
-    }
 }
 export function FooRecursiveUnionFromJson(
     input: Record<string, unknown>,
@@ -5199,7 +4549,7 @@ export function FooRecursiveUnionToUrlSearchParamsString(
 export const $$FooRecursiveUnion: TestClientPrefixedValidator<FooRecursiveUnion> =
     {
         new: FooRecursiveUnionNew,
-        validate: FooRecursiveUnionValidate,
+
         fromJson: FooRecursiveUnionFromJson,
         fromJsonString: FooRecursiveUnionFromJsonString,
         toJsonString: FooRecursiveUnionToJsonString,
@@ -5218,15 +4568,6 @@ export function FooRecursiveUnionChildNew(): FooRecursiveUnionChild {
         type: 'CHILD',
         data: FooRecursiveUnionNew(),
     };
-}
-export function FooRecursiveUnionChildValidate(
-    input: unknown,
-): input is FooRecursiveUnionChild {
-    return (
-        isObject(input) &&
-        input.type === 'CHILD' &&
-        FooRecursiveUnionValidate(input.data)
-    );
 }
 export function FooRecursiveUnionChildFromJson(
     input: Record<string, unknown>,
@@ -5277,7 +4618,7 @@ export function FooRecursiveUnionChildToUrlSearchParamsString(
 const $$FooRecursiveUnionChild: TestClientPrefixedValidator<FooRecursiveUnionChild> =
     {
         new: FooRecursiveUnionChildNew,
-        validate: FooRecursiveUnionChildValidate,
+
         fromJson: FooRecursiveUnionChildFromJson,
         fromJsonString: FooRecursiveUnionChildFromJsonString,
         toJsonString: FooRecursiveUnionChildToJsonString,
@@ -5297,16 +4638,6 @@ export function FooRecursiveUnionChildrenNew(): FooRecursiveUnionChildren {
         type: 'CHILDREN',
         data: [],
     };
-}
-export function FooRecursiveUnionChildrenValidate(
-    input: unknown,
-): input is FooRecursiveUnionChildren {
-    return (
-        isObject(input) &&
-        input.type === 'CHILDREN' &&
-        Array.isArray(input.data) &&
-        input.data.every((_element) => FooRecursiveUnionValidate(_element))
-    );
 }
 export function FooRecursiveUnionChildrenFromJson(
     input: Record<string, unknown>,
@@ -5372,7 +4703,7 @@ export function FooRecursiveUnionChildrenToUrlSearchParamsString(
 const $$FooRecursiveUnionChildren: TestClientPrefixedValidator<FooRecursiveUnionChildren> =
     {
         new: FooRecursiveUnionChildrenNew,
-        validate: FooRecursiveUnionChildrenValidate,
+
         fromJson: FooRecursiveUnionChildrenFromJson,
         fromJsonString: FooRecursiveUnionChildrenFromJsonString,
         toJsonString: FooRecursiveUnionChildrenToJsonString,
@@ -5393,15 +4724,6 @@ export function FooRecursiveUnionTextNew(): FooRecursiveUnionText {
         type: 'TEXT',
         data: '',
     };
-}
-export function FooRecursiveUnionTextValidate(
-    input: unknown,
-): input is FooRecursiveUnionText {
-    return (
-        isObject(input) &&
-        input.type === 'TEXT' &&
-        typeof input.data === 'string'
-    );
 }
 export function FooRecursiveUnionTextFromJson(
     input: Record<string, unknown>,
@@ -5446,7 +4768,7 @@ export function FooRecursiveUnionTextToUrlSearchParamsString(
 const $$FooRecursiveUnionText: TestClientPrefixedValidator<FooRecursiveUnionText> =
     {
         new: FooRecursiveUnionTextNew,
-        validate: FooRecursiveUnionTextValidate,
+
         fromJson: FooRecursiveUnionTextFromJson,
         fromJsonString: FooRecursiveUnionTextFromJsonString,
         toJsonString: FooRecursiveUnionTextToJsonString,
@@ -5466,15 +4788,6 @@ export function FooRecursiveUnionShapeNew(): FooRecursiveUnionShape {
         type: 'SHAPE',
         data: FooRecursiveUnionShapeDataNew(),
     };
-}
-export function FooRecursiveUnionShapeValidate(
-    input: unknown,
-): input is FooRecursiveUnionShape {
-    return (
-        isObject(input) &&
-        input.type === 'SHAPE' &&
-        FooRecursiveUnionShapeDataValidate(input.data)
-    );
 }
 export function FooRecursiveUnionShapeFromJson(
     input: Record<string, unknown>,
@@ -5525,7 +4838,7 @@ export function FooRecursiveUnionShapeToUrlSearchParamsString(
 const $$FooRecursiveUnionShape: TestClientPrefixedValidator<FooRecursiveUnionShape> =
     {
         new: FooRecursiveUnionShapeNew,
-        validate: FooRecursiveUnionShapeValidate,
+
         fromJson: FooRecursiveUnionShapeFromJson,
         fromJsonString: FooRecursiveUnionShapeFromJsonString,
         toJsonString: FooRecursiveUnionShapeToJsonString,
@@ -5543,16 +4856,6 @@ export function FooRecursiveUnionShapeDataNew(): FooRecursiveUnionShapeData {
         height: 0,
         color: '',
     };
-}
-export function FooRecursiveUnionShapeDataValidate(
-    input: unknown,
-): input is FooRecursiveUnionShapeData {
-    return (
-        isObject(input) &&
-        typeof input.width === 'number' &&
-        typeof input.height === 'number' &&
-        typeof input.color === 'string'
-    );
 }
 export function FooRecursiveUnionShapeDataFromJson(
     input: Record<string, unknown>,
@@ -5605,7 +4908,7 @@ export function FooRecursiveUnionShapeDataToUrlSearchParamsString(
 export const $$FooRecursiveUnionShapeData: TestClientPrefixedValidator<FooRecursiveUnionShapeData> =
     {
         new: FooRecursiveUnionShapeDataNew,
-        validate: FooRecursiveUnionShapeDataValidate,
+
         fromJson: FooRecursiveUnionShapeDataFromJson,
         fromJsonString: FooRecursiveUnionShapeDataFromJsonString,
         toJsonString: FooRecursiveUnionShapeDataToJsonString,
@@ -5621,17 +4924,6 @@ export function FooAutoReconnectParamsNew(): FooAutoReconnectParams {
     return {
         messageCount: 0,
     };
-}
-export function FooAutoReconnectParamsValidate(
-    input: unknown,
-): input is FooAutoReconnectParams {
-    return (
-        isObject(input) &&
-        typeof input.messageCount === 'number' &&
-        Number.isInteger(input.messageCount) &&
-        input.messageCount >= 0 &&
-        input.messageCount <= UINT8_MAX
-    );
 }
 export function FooAutoReconnectParamsFromJson(
     input: Record<string, unknown>,
@@ -5672,7 +4964,7 @@ export function FooAutoReconnectParamsToUrlSearchParamsString(
 export const $$FooAutoReconnectParams: TestClientPrefixedValidator<FooAutoReconnectParams> =
     {
         new: FooAutoReconnectParamsNew,
-        validate: FooAutoReconnectParamsValidate,
+
         fromJson: FooAutoReconnectParamsFromJson,
         fromJsonString: FooAutoReconnectParamsFromJsonString,
         toJsonString: FooAutoReconnectParamsToJsonString,
@@ -5689,18 +4981,6 @@ export function FooAutoReconnectResponseNew(): FooAutoReconnectResponse {
         count: 0,
         message: '',
     };
-}
-export function FooAutoReconnectResponseValidate(
-    input: unknown,
-): input is FooAutoReconnectResponse {
-    return (
-        isObject(input) &&
-        typeof input.count === 'number' &&
-        Number.isInteger(input.count) &&
-        input.count >= 0 &&
-        input.count <= UINT8_MAX &&
-        typeof input.message === 'string'
-    );
 }
 export function FooAutoReconnectResponseFromJson(
     input: Record<string, unknown>,
@@ -5747,7 +5027,7 @@ export function FooAutoReconnectResponseToUrlSearchParamsString(
 export const $$FooAutoReconnectResponse: TestClientPrefixedValidator<FooAutoReconnectResponse> =
     {
         new: FooAutoReconnectResponseNew,
-        validate: FooAutoReconnectResponseValidate,
+
         fromJson: FooAutoReconnectResponseFromJson,
         fromJsonString: FooAutoReconnectResponseFromJsonString,
         toJsonString: FooAutoReconnectResponseToJsonString,
@@ -5765,18 +5045,6 @@ export function FooStreamConnectionErrorTestParamsNew(): FooStreamConnectionErro
         statusCode: 0,
         statusMessage: '',
     };
-}
-export function FooStreamConnectionErrorTestParamsValidate(
-    input: unknown,
-): input is FooStreamConnectionErrorTestParams {
-    return (
-        isObject(input) &&
-        typeof input.statusCode === 'number' &&
-        Number.isInteger(input.statusCode) &&
-        input.statusCode >= INT32_MIN &&
-        input.statusCode <= INT32_MAX &&
-        typeof input.statusMessage === 'string'
-    );
 }
 export function FooStreamConnectionErrorTestParamsFromJson(
     input: Record<string, unknown>,
@@ -5825,7 +5093,7 @@ export function FooStreamConnectionErrorTestParamsToUrlSearchParamsString(
 export const $$FooStreamConnectionErrorTestParams: TestClientPrefixedValidator<FooStreamConnectionErrorTestParams> =
     {
         new: FooStreamConnectionErrorTestParamsNew,
-        validate: FooStreamConnectionErrorTestParamsValidate,
+
         fromJson: FooStreamConnectionErrorTestParamsFromJson,
         fromJsonString: FooStreamConnectionErrorTestParamsFromJsonString,
         toJsonString: FooStreamConnectionErrorTestParamsToJsonString,
@@ -5841,11 +5109,6 @@ export function FooStreamConnectionErrorTestResponseNew(): FooStreamConnectionEr
     return {
         message: '',
     };
-}
-export function FooStreamConnectionErrorTestResponseValidate(
-    input: unknown,
-): input is FooStreamConnectionErrorTestResponse {
-    return isObject(input) && typeof input.message === 'string';
 }
 export function FooStreamConnectionErrorTestResponseFromJson(
     input: Record<string, unknown>,
@@ -5888,7 +5151,7 @@ export function FooStreamConnectionErrorTestResponseToUrlSearchParamsString(
 export const $$FooStreamConnectionErrorTestResponse: TestClientPrefixedValidator<FooStreamConnectionErrorTestResponse> =
     {
         new: FooStreamConnectionErrorTestResponseNew,
-        validate: FooStreamConnectionErrorTestResponseValidate,
+
         fromJson: FooStreamConnectionErrorTestResponseFromJson,
         fromJsonString: FooStreamConnectionErrorTestResponseFromJsonString,
         toJsonString: FooStreamConnectionErrorTestResponseToJsonString,
@@ -5905,11 +5168,6 @@ export function FooStreamHeartbeatDetectionTestParamsNew(): FooStreamHeartbeatDe
     return {
         heartbeatEnabled: false,
     };
-}
-export function FooStreamHeartbeatDetectionTestParamsValidate(
-    input: unknown,
-): input is FooStreamHeartbeatDetectionTestParams {
-    return isObject(input) && typeof input.heartbeatEnabled === 'boolean';
 }
 export function FooStreamHeartbeatDetectionTestParamsFromJson(
     input: Record<string, unknown>,
@@ -5952,7 +5210,7 @@ export function FooStreamHeartbeatDetectionTestParamsToUrlSearchParamsString(
 export const $$FooStreamHeartbeatDetectionTestParams: TestClientPrefixedValidator<FooStreamHeartbeatDetectionTestParams> =
     {
         new: FooStreamHeartbeatDetectionTestParamsNew,
-        validate: FooStreamHeartbeatDetectionTestParamsValidate,
+
         fromJson: FooStreamHeartbeatDetectionTestParamsFromJson,
         fromJsonString: FooStreamHeartbeatDetectionTestParamsFromJsonString,
         toJsonString: FooStreamHeartbeatDetectionTestParamsToJsonString,
@@ -5969,11 +5227,6 @@ export function FooStreamHeartbeatDetectionTestResponseNew(): FooStreamHeartbeat
     return {
         message: '',
     };
-}
-export function FooStreamHeartbeatDetectionTestResponseValidate(
-    input: unknown,
-): input is FooStreamHeartbeatDetectionTestResponse {
-    return isObject(input) && typeof input.message === 'string';
 }
 export function FooStreamHeartbeatDetectionTestResponseFromJson(
     input: Record<string, unknown>,
@@ -6016,7 +5269,7 @@ export function FooStreamHeartbeatDetectionTestResponseToUrlSearchParamsString(
 export const $$FooStreamHeartbeatDetectionTestResponse: TestClientPrefixedValidator<FooStreamHeartbeatDetectionTestResponse> =
     {
         new: FooStreamHeartbeatDetectionTestResponseNew,
-        validate: FooStreamHeartbeatDetectionTestResponseValidate,
+
         fromJson: FooStreamHeartbeatDetectionTestResponseFromJson,
         fromJsonString: FooStreamHeartbeatDetectionTestResponseFromJsonString,
         toJsonString: FooStreamHeartbeatDetectionTestResponseToJsonString,
@@ -6035,19 +5288,6 @@ export function FooStreamLargeObjectsResponseNew(): FooStreamLargeObjectsRespons
         numbers: [],
         objects: [],
     };
-}
-export function FooStreamLargeObjectsResponseValidate(
-    input: unknown,
-): input is FooStreamLargeObjectsResponse {
-    return (
-        isObject(input) &&
-        Array.isArray(input.numbers) &&
-        input.numbers.every((_element) => typeof _element === 'number') &&
-        Array.isArray(input.objects) &&
-        input.objects.every((_element) =>
-            FooStreamLargeObjectsResponseObjectsElementValidate(_element),
-        )
-    );
 }
 export function FooStreamLargeObjectsResponseFromJson(
     input: Record<string, unknown>,
@@ -6139,7 +5379,7 @@ export function FooStreamLargeObjectsResponseToUrlSearchParamsString(
 export const $$FooStreamLargeObjectsResponse: TestClientPrefixedValidator<FooStreamLargeObjectsResponse> =
     {
         new: FooStreamLargeObjectsResponseNew,
-        validate: FooStreamLargeObjectsResponseValidate,
+
         fromJson: FooStreamLargeObjectsResponseFromJson,
         fromJsonString: FooStreamLargeObjectsResponseFromJsonString,
         toJsonString: FooStreamLargeObjectsResponseToJsonString,
@@ -6158,16 +5398,6 @@ export function FooStreamLargeObjectsResponseObjectsElementNew(): FooStreamLarge
         name: '',
         email: '',
     };
-}
-export function FooStreamLargeObjectsResponseObjectsElementValidate(
-    input: unknown,
-): input is FooStreamLargeObjectsResponseObjectsElement {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        typeof input.name === 'string' &&
-        typeof input.email === 'string'
-    );
 }
 export function FooStreamLargeObjectsResponseObjectsElementFromJson(
     input: Record<string, unknown>,
@@ -6224,7 +5454,7 @@ export function FooStreamLargeObjectsResponseObjectsElementToUrlSearchParamsStri
 export const $$FooStreamLargeObjectsResponseObjectsElement: TestClientPrefixedValidator<FooStreamLargeObjectsResponseObjectsElement> =
     {
         new: FooStreamLargeObjectsResponseObjectsElementNew,
-        validate: FooStreamLargeObjectsResponseObjectsElementValidate,
+
         fromJson: FooStreamLargeObjectsResponseObjectsElementFromJson,
         fromJsonString:
             FooStreamLargeObjectsResponseObjectsElementFromJsonString,
@@ -6242,11 +5472,6 @@ export function FooChatMessageParamsNew(): FooChatMessageParams {
     return {
         channelId: '',
     };
-}
-export function FooChatMessageParamsValidate(
-    input: unknown,
-): input is FooChatMessageParams {
-    return isObject(input) && typeof input.channelId === 'string';
 }
 export function FooChatMessageParamsFromJson(
     input: Record<string, unknown>,
@@ -6287,7 +5512,7 @@ export function FooChatMessageParamsToUrlSearchParamsString(
 export const $$FooChatMessageParams: TestClientPrefixedValidator<FooChatMessageParams> =
     {
         new: FooChatMessageParamsNew,
-        validate: FooChatMessageParamsValidate,
+
         fromJson: FooChatMessageParamsFromJson,
         fromJsonString: FooChatMessageParamsFromJsonString,
         toJsonString: FooChatMessageParamsToJsonString,
@@ -6301,26 +5526,6 @@ export type FooChatMessage =
     | FooChatMessageUrl;
 export function FooChatMessageNew(): FooChatMessage {
     return FooChatMessageTextNew();
-}
-export function FooChatMessageValidate(
-    input: unknown,
-): input is FooChatMessage {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.messageType !== 'string') {
-        return false;
-    }
-    switch (input.messageType) {
-        case 'TEXT':
-            return FooChatMessageTextValidate(input);
-        case 'IMAGE':
-            return FooChatMessageImageValidate(input);
-        case 'URL':
-            return FooChatMessageUrlValidate(input);
-        default:
-            return false;
-    }
 }
 export function FooChatMessageFromJson(
     input: Record<string, unknown>,
@@ -6372,7 +5577,7 @@ export function FooChatMessageToUrlSearchParamsString(
 }
 export const $$FooChatMessage: TestClientPrefixedValidator<FooChatMessage> = {
     new: FooChatMessageNew,
-    validate: FooChatMessageValidate,
+
     fromJson: FooChatMessageFromJson,
     fromJsonString: FooChatMessageFromJsonString,
     toJsonString: FooChatMessageToJsonString,
@@ -6396,19 +5601,6 @@ export function FooChatMessageTextNew(): FooChatMessageText {
         date: new Date(0),
         text: '',
     };
-}
-export function FooChatMessageTextValidate(
-    input: unknown,
-): input is FooChatMessageText {
-    return (
-        isObject(input) &&
-        input.messageType === 'TEXT' &&
-        typeof input.id === 'string' &&
-        typeof input.channelId === 'string' &&
-        typeof input.userId === 'string' &&
-        input.date instanceof Date &&
-        typeof input.text === 'string'
-    );
 }
 export function FooChatMessageTextFromJson(
     input: Record<string, unknown>,
@@ -6476,7 +5668,7 @@ export function FooChatMessageTextToUrlSearchParamsString(
 
 const $$FooChatMessageText: TestClientPrefixedValidator<FooChatMessageText> = {
     new: FooChatMessageTextNew,
-    validate: FooChatMessageTextValidate,
+
     fromJson: FooChatMessageTextFromJson,
     fromJsonString: FooChatMessageTextFromJsonString,
     toJsonString: FooChatMessageTextToJsonString,
@@ -6501,19 +5693,6 @@ export function FooChatMessageImageNew(): FooChatMessageImage {
         date: new Date(0),
         image: '',
     };
-}
-export function FooChatMessageImageValidate(
-    input: unknown,
-): input is FooChatMessageImage {
-    return (
-        isObject(input) &&
-        input.messageType === 'IMAGE' &&
-        typeof input.id === 'string' &&
-        typeof input.channelId === 'string' &&
-        typeof input.userId === 'string' &&
-        input.date instanceof Date &&
-        typeof input.image === 'string'
-    );
 }
 export function FooChatMessageImageFromJson(
     input: Record<string, unknown>,
@@ -6582,7 +5761,7 @@ export function FooChatMessageImageToUrlSearchParamsString(
 const $$FooChatMessageImage: TestClientPrefixedValidator<FooChatMessageImage> =
     {
         new: FooChatMessageImageNew,
-        validate: FooChatMessageImageValidate,
+
         fromJson: FooChatMessageImageFromJson,
         fromJsonString: FooChatMessageImageFromJsonString,
         toJsonString: FooChatMessageImageToJsonString,
@@ -6607,19 +5786,6 @@ export function FooChatMessageUrlNew(): FooChatMessageUrl {
         date: new Date(0),
         url: '',
     };
-}
-export function FooChatMessageUrlValidate(
-    input: unknown,
-): input is FooChatMessageUrl {
-    return (
-        isObject(input) &&
-        input.messageType === 'URL' &&
-        typeof input.id === 'string' &&
-        typeof input.channelId === 'string' &&
-        typeof input.userId === 'string' &&
-        input.date instanceof Date &&
-        typeof input.url === 'string'
-    );
 }
 export function FooChatMessageUrlFromJson(
     input: Record<string, unknown>,
@@ -6687,7 +5853,7 @@ export function FooChatMessageUrlToUrlSearchParamsString(
 
 const $$FooChatMessageUrl: TestClientPrefixedValidator<FooChatMessageUrl> = {
     new: FooChatMessageUrlNew,
-    validate: FooChatMessageUrlValidate,
+
     fromJson: FooChatMessageUrlFromJson,
     fromJsonString: FooChatMessageUrlFromJsonString,
     toJsonString: FooChatMessageUrlToJsonString,
@@ -6702,11 +5868,6 @@ export function FooTestsStreamRetryWithNewCredentialsResponseNew(): FooTestsStre
     return {
         message: '',
     };
-}
-export function FooTestsStreamRetryWithNewCredentialsResponseValidate(
-    input: unknown,
-): input is FooTestsStreamRetryWithNewCredentialsResponse {
-    return isObject(input) && typeof input.message === 'string';
 }
 export function FooTestsStreamRetryWithNewCredentialsResponseFromJson(
     input: Record<string, unknown>,
@@ -6751,7 +5912,7 @@ export function FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParamsSt
 export const $$FooTestsStreamRetryWithNewCredentialsResponse: TestClientPrefixedValidator<FooTestsStreamRetryWithNewCredentialsResponse> =
     {
         new: FooTestsStreamRetryWithNewCredentialsResponseNew,
-        validate: FooTestsStreamRetryWithNewCredentialsResponseValidate,
+
         fromJson: FooTestsStreamRetryWithNewCredentialsResponseFromJson,
         fromJsonString:
             FooTestsStreamRetryWithNewCredentialsResponseFromJsonString,
@@ -6769,11 +5930,6 @@ export function FooUsersWatchUserParamsNew(): FooUsersWatchUserParams {
     return {
         userId: '',
     };
-}
-export function FooUsersWatchUserParamsValidate(
-    input: unknown,
-): input is FooUsersWatchUserParams {
-    return isObject(input) && typeof input.userId === 'string';
 }
 export function FooUsersWatchUserParamsFromJson(
     input: Record<string, unknown>,
@@ -6814,7 +5970,7 @@ export function FooUsersWatchUserParamsToUrlSearchParamsString(
 export const $$FooUsersWatchUserParams: TestClientPrefixedValidator<FooUsersWatchUserParams> =
     {
         new: FooUsersWatchUserParamsNew,
-        validate: FooUsersWatchUserParamsValidate,
+
         fromJson: FooUsersWatchUserParamsFromJson,
         fromJsonString: FooUsersWatchUserParamsFromJsonString,
         toJsonString: FooUsersWatchUserParamsToJsonString,
@@ -6851,37 +6007,6 @@ export function FooUsersWatchUserResponseNew(): FooUsersWatchUserResponse {
         metadata: {},
         randomList: [],
     };
-}
-export function FooUsersWatchUserResponseValidate(
-    input: unknown,
-): input is FooUsersWatchUserResponse {
-    return (
-        isObject(input) &&
-        typeof input.id === 'string' &&
-        FooUsersWatchUserResponseRoleValidate(input.role) &&
-        (FooUserPhotoValidate(input.photo) || input.photo === null) &&
-        input.createdAt instanceof Date &&
-        typeof input.numFollowers === 'number' &&
-        Number.isInteger(input.numFollowers) &&
-        input.numFollowers >= INT32_MIN &&
-        input.numFollowers <= INT32_MAX &&
-        FooUserSettingsValidate(input.settings) &&
-        Array.isArray(input.recentNotifications) &&
-        input.recentNotifications.every((_element) =>
-            FooUsersWatchUserResponseRecentNotificationsElementValidate(
-                _element,
-            ),
-        ) &&
-        isObject(input.bookmarks) &&
-        Object.values(input.bookmarks).every((_value) =>
-            FooUsersWatchUserResponseBookmarksValueValidate(_value),
-        ) &&
-        isObject(input.metadata) &&
-        Object.values(input.metadata).every((_value) => true) &&
-        Array.isArray(input.randomList) &&
-        input.randomList.every((_element) => true) &&
-        (typeof input.bio === 'string' || typeof input.bio === 'undefined')
-    );
 }
 export function FooUsersWatchUserResponseFromJson(
     input: Record<string, unknown>,
@@ -7101,7 +6226,7 @@ export function FooUsersWatchUserResponseToUrlSearchParamsString(
 export const $$FooUsersWatchUserResponse: TestClientPrefixedValidator<FooUsersWatchUserResponse> =
     {
         new: FooUsersWatchUserResponseNew,
-        validate: FooUsersWatchUserResponseValidate,
+
         fromJson: FooUsersWatchUserResponseFromJson,
         fromJsonString: FooUsersWatchUserResponseFromJsonString,
         toJsonString: FooUsersWatchUserResponseToJsonString,
@@ -7120,14 +6245,6 @@ export const FooUsersWatchUserResponseRoleValues = [
 ] as const;
 export function FooUsersWatchUserResponseRoleNew(): FooUsersWatchUserResponseRole {
     return FooUsersWatchUserResponseRoleValues[0];
-}
-export function FooUsersWatchUserResponseRoleValidate(
-    input: unknown,
-): input is FooUsersWatchUserResponseRole {
-    return (
-        typeof input === 'string' &&
-        FooUsersWatchUserResponseRoleValues.includes(input as any)
-    );
 }
 export function FooUsersWatchUserResponseRoleFromSerialValue(
     input: string,
@@ -7150,7 +6267,7 @@ export function FooUsersWatchUserResponseRoleFromSerialValue(
 export const $$FooUsersWatchUserResponseRole: TestClientPrefixedEnumValidator<FooUsersWatchUserResponseRole> =
     {
         new: FooUsersWatchUserResponseRoleNew,
-        validate: FooUsersWatchUserResponseRoleValidate,
+
         values: FooUsersWatchUserResponseRoleValues,
         fromSerialValue: FooUsersWatchUserResponseRoleFromSerialValue,
     };
@@ -7175,20 +6292,6 @@ export function FooUserPhotoNew(): FooUserPhoto {
         bytes: BigInt(0),
         nanoseconds: BigInt(0),
     };
-}
-export function FooUserPhotoValidate(input: unknown): input is FooUserPhoto {
-    return (
-        isObject(input) &&
-        typeof input.url === 'string' &&
-        typeof input.width === 'number' &&
-        typeof input.height === 'number' &&
-        typeof input.bytes === 'bigint' &&
-        input.bytes >= INT64_MIN &&
-        input.bytes <= INT64_MAX &&
-        typeof input.nanoseconds === 'bigint' &&
-        input.nanoseconds >= BigInt(0) &&
-        input.nanoseconds <= UINT64_MAX
-    );
 }
 export function FooUserPhotoFromJson(
     input: Record<string, unknown>,
@@ -7248,7 +6351,7 @@ export function FooUserPhotoToUrlSearchParamsString(
 
 export const $$FooUserPhoto: TestClientPrefixedValidator<FooUserPhoto> = {
     new: FooUserPhotoNew,
-    validate: FooUserPhotoValidate,
+
     fromJson: FooUserPhotoFromJson,
     fromJsonString: FooUserPhotoFromJsonString,
     toJsonString: FooUserPhotoToJsonString,
@@ -7265,15 +6368,6 @@ export function FooUserSettingsNew(): FooUserSettings {
         notificationsEnabled: false,
         preferredTheme: FooUserSettingsPreferredThemeNew(),
     };
-}
-export function FooUserSettingsValidate(
-    input: unknown,
-): input is FooUserSettings {
-    return (
-        isObject(input) &&
-        typeof input.notificationsEnabled === 'boolean' &&
-        FooUserSettingsPreferredThemeValidate(input.preferredTheme)
-    );
 }
 export function FooUserSettingsFromJson(
     input: Record<string, unknown>,
@@ -7321,7 +6415,7 @@ export function FooUserSettingsToUrlSearchParamsString(
 
 export const $$FooUserSettings: TestClientPrefixedValidator<FooUserSettings> = {
     new: FooUserSettingsNew,
-    validate: FooUserSettingsValidate,
+
     fromJson: FooUserSettingsFromJson,
     fromJsonString: FooUserSettingsFromJsonString,
     toJsonString: FooUserSettingsToJsonString,
@@ -7345,14 +6439,6 @@ export const FooUserSettingsPreferredThemeValues = [
 export function FooUserSettingsPreferredThemeNew(): FooUserSettingsPreferredTheme {
     return FooUserSettingsPreferredThemeValues[0];
 }
-export function FooUserSettingsPreferredThemeValidate(
-    input: unknown,
-): input is FooUserSettingsPreferredTheme {
-    return (
-        typeof input === 'string' &&
-        FooUserSettingsPreferredThemeValues.includes(input as any)
-    );
-}
 export function FooUserSettingsPreferredThemeFromSerialValue(
     input: string,
 ): FooUserSettingsPreferredTheme {
@@ -7374,7 +6460,7 @@ export function FooUserSettingsPreferredThemeFromSerialValue(
 export const $$FooUserSettingsPreferredTheme: TestClientPrefixedEnumValidator<FooUserSettingsPreferredTheme> =
     {
         new: FooUserSettingsPreferredThemeNew,
-        validate: FooUserSettingsPreferredThemeValidate,
+
         values: FooUserSettingsPreferredThemeValues,
         fromSerialValue: FooUserSettingsPreferredThemeFromSerialValue,
     };
@@ -7383,28 +6469,6 @@ export type FooUsersWatchUserResponseRecentNotificationsElement =
     | FooUsersWatchUserResponseRecentNotificationsElementPostComment;
 export function FooUsersWatchUserResponseRecentNotificationsElementNew(): FooUsersWatchUserResponseRecentNotificationsElement {
     return FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew();
-}
-export function FooUsersWatchUserResponseRecentNotificationsElementValidate(
-    input: unknown,
-): input is FooUsersWatchUserResponseRecentNotificationsElement {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.notificationType !== 'string') {
-        return false;
-    }
-    switch (input.notificationType) {
-        case 'POST_LIKE':
-            return FooUsersWatchUserResponseRecentNotificationsElementPostLikeValidate(
-                input,
-            );
-        case 'POST_COMMENT':
-            return FooUsersWatchUserResponseRecentNotificationsElementPostCommentValidate(
-                input,
-            );
-        default:
-            return false;
-    }
 }
 export function FooUsersWatchUserResponseRecentNotificationsElementFromJson(
     input: Record<string, unknown>,
@@ -7473,7 +6537,7 @@ export function FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchPa
 export const $$FooUsersWatchUserResponseRecentNotificationsElement: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElement> =
     {
         new: FooUsersWatchUserResponseRecentNotificationsElementNew,
-        validate: FooUsersWatchUserResponseRecentNotificationsElementValidate,
+
         fromJson: FooUsersWatchUserResponseRecentNotificationsElementFromJson,
         fromJsonString:
             FooUsersWatchUserResponseRecentNotificationsElementFromJsonString,
@@ -7495,16 +6559,6 @@ export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew()
         postId: '',
         userId: '',
     };
-}
-export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeValidate(
-    input: unknown,
-): input is FooUsersWatchUserResponseRecentNotificationsElementPostLike {
-    return (
-        isObject(input) &&
-        input.notificationType === 'POST_LIKE' &&
-        typeof input.postId === 'string' &&
-        typeof input.userId === 'string'
-    );
 }
 export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson(
     input: Record<string, unknown>,
@@ -7559,8 +6613,7 @@ export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrl
 const $$FooUsersWatchUserResponseRecentNotificationsElementPostLike: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElementPostLike> =
     {
         new: FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew,
-        validate:
-            FooUsersWatchUserResponseRecentNotificationsElementPostLikeValidate,
+
         fromJson:
             FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson,
         fromJsonString:
@@ -7586,17 +6639,6 @@ export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentNe
         userId: '',
         commentText: '',
     };
-}
-export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentValidate(
-    input: unknown,
-): input is FooUsersWatchUserResponseRecentNotificationsElementPostComment {
-    return (
-        isObject(input) &&
-        input.notificationType === 'POST_COMMENT' &&
-        typeof input.postId === 'string' &&
-        typeof input.userId === 'string' &&
-        typeof input.commentText === 'string'
-    );
 }
 export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson(
     input: Record<string, unknown>,
@@ -7657,8 +6699,7 @@ export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentTo
 const $$FooUsersWatchUserResponseRecentNotificationsElementPostComment: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElementPostComment> =
     {
         new: FooUsersWatchUserResponseRecentNotificationsElementPostCommentNew,
-        validate:
-            FooUsersWatchUserResponseRecentNotificationsElementPostCommentValidate,
+
         fromJson:
             FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson,
         fromJsonString:
@@ -7680,15 +6721,6 @@ export function FooUsersWatchUserResponseBookmarksValueNew(): FooUsersWatchUserR
         postId: '',
         userId: '',
     };
-}
-export function FooUsersWatchUserResponseBookmarksValueValidate(
-    input: unknown,
-): input is FooUsersWatchUserResponseBookmarksValue {
-    return (
-        isObject(input) &&
-        typeof input.postId === 'string' &&
-        typeof input.userId === 'string'
-    );
 }
 export function FooUsersWatchUserResponseBookmarksValueFromJson(
     input: Record<string, unknown>,
@@ -7737,7 +6769,7 @@ export function FooUsersWatchUserResponseBookmarksValueToUrlSearchParamsString(
 export const $$FooUsersWatchUserResponseBookmarksValue: TestClientPrefixedValidator<FooUsersWatchUserResponseBookmarksValue> =
     {
         new: FooUsersWatchUserResponseBookmarksValueNew,
-        validate: FooUsersWatchUserResponseBookmarksValueValidate,
+
         fromJson: FooUsersWatchUserResponseBookmarksValueFromJson,
         fromJsonString: FooUsersWatchUserResponseBookmarksValueFromJsonString,
         toJsonString: FooUsersWatchUserResponseBookmarksValueToJsonString,

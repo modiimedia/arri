@@ -74,7 +74,7 @@ export interface TypescriptGeneratorOptions {
     /**
      * Enable or disable additional features
      */
-    features: {
+    features?: {
         /**
          * When enabled the generator will output a "validate()" function that acts as a type guard for the type
          * (Default false)
@@ -87,7 +87,6 @@ export interface TypescriptGeneratorOptions {
          */
         validatorObj?: boolean;
     };
-    outputUtilities?: {};
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
