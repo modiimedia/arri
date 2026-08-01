@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { readFileSync, rmdirSync, rmSync } from 'fs';
+import { readFileSync, rmSync } from 'fs';
 import path from 'path';
 import { test } from 'vitest';
 
