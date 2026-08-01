@@ -191,7 +191,6 @@ import {
     type ArriRequestOptions,
     arriRequest,
     ${context.useRpcTypes.sse ? 'arriSseRequest,' : ''}
-    ${context.useRpcTypes.ws ? 'arriWsRequest,' : ''}
     ${context.useRpcTypes.sse ? 'type EventSourceController,' : ''}
     INT8_MAX,
     INT8_MIN,

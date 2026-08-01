@@ -107,19 +107,7 @@ export function wsRpcFromDefinition(
         description: def.description,
         isDeprecated: def.isDeprecated,
     })}    async ${key}(options: WsOptions<${response ?? 'undefined'}> = {}): Promise<WsController<${params ?? 'undefined'},${response ?? 'undefined'}>> {
-        return arriWsRequest<${params ?? 'undefined'}, ${response ?? 'undefined'}>({
-            url: \`\${this._baseUrl}${def.path}\`,
-            headers: this._headers,
-            responseFromJson: ${response ? `${response}FromJson` : '() => {}'},
-            responseFromString: ${response ? `${response}FromJsonString` : '() => {}'},
-            serializer: ${params ? `${params}ToJsonString` : '() => {}'},
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: "${context.versionNumber}",
-        });
+        throw new Error('not implemented');
     }`;
 }
 

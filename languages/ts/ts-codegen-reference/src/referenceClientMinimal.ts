@@ -9,7 +9,6 @@ import {
     type ArriRequestOptions,
     arriRequest,
     arriSseRequest,
-    arriWsRequest,
     type EventSourceController,
     INT8_MAX,
     INT8_MIN,
@@ -192,19 +191,7 @@ export class ExampleClientBooksService {
     async createConnection(
         options: WsOptions<Book> = {},
     ): Promise<WsController<BookParams, Book>> {
-        return arriWsRequest<BookParams, Book>({
-            url: `${this._baseUrl}/books/create-connection`,
-            headers: this._headers,
-            responseFromJson: BookFromJson,
-            responseFromString: BookFromJsonString,
-            serializer: BookParamsToJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: '20',
-        });
+        throw new Error('not implemented');
     }
 }
 
