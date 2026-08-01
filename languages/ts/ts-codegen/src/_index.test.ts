@@ -16,6 +16,13 @@ const referenceFile = fs.readFileSync(
     ),
     'utf8',
 );
+const minimalReferenceFile = fs.readFileSync(
+    path.resolve(
+        __dirname,
+        '../../ts-codegen-reference/src/referenceClientMinimal.ts',
+    ),
+    'utf8',
+);
 test('Output matches reference file', async () => {
     const prettierConfig = JSON.parse(
         fs.readFileSync(path.resolve('../../../.prettierrc'), 'utf8'),
@@ -24,8 +31,30 @@ test('Output matches reference file', async () => {
         clientName: 'ExampleClient',
         outputFile: '',
         prettierOptions: prettierConfig,
+        features: {
+            validateFn: true,
+            validatorObj: true,
+        },
     });
     expect(normalizeWhitespace(result)).toEqual(
         normalizeWhitespace(referenceFile),
+    );
+});
+
+test('Minimal output matches reference file', async () => {
+    const prettierConfig = JSON.parse(
+        fs.readFileSync(path.resolve('../../../.prettierrc'), 'utf8'),
+    );
+    const result = await createTypescriptClient(appDef, {
+        clientName: 'ExampleClient',
+        outputFile: '',
+        prettierOptions: prettierConfig,
+        features: {
+            validateFn: false,
+            validatorObj: false,
+        },
+    });
+    expect(normalizeWhitespace(result)).toEqual(
+        normalizeWhitespace(minimalReferenceFile),
     );
 });

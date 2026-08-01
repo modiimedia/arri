@@ -148,20 +148,33 @@ export type SafeResponse<T> =
       }
     | { success: false; error: ArriErrorInstance };
 
-export interface ArriModelValidator<T> {
+export interface ArriModelValidatorFull<T> {
     new: () => T;
     validate: (input: unknown) => input is T;
     fromJson: (input: Record<string, unknown>) => T;
     fromJsonString: (input: string) => T;
     toJsonString: (input: T) => string;
-    toUrlQueryString: (input: T) => string;
+    toUrlSearchParams: (input: T) => URLSearchParams;
+    toUrlSearchParamsString: (input: T) => string;
 }
-export interface ArriEnumValidator<T> {
+
+export type ArriModelValidator<
+    T,
+    K extends keyof ArriModelValidatorFull<T>,
+> = Pick<ArriModelValidatorFull<T>, K>;
+
+export interface ArriEnumValidatorFull<T> {
     new: () => T;
     values: readonly T[];
     validate: (input: unknown) => input is T;
     fromSerialValue: (input: string) => T;
 }
+
+export type ArriEnumValidator<
+    T,
+    K extends keyof ArriEnumValidatorFull<T>,
+> = Pick<ArriEnumValidatorFull<T>, K>;
+
 const STR_ESCAPE =
     // eslint-disable-next-line no-control-regex
     /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;

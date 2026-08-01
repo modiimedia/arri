@@ -20,7 +20,7 @@ export function tsAnyFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += JSON.stringify(${input})`;
         },
-        toQueryStringTemplate(_input, _target, _key) {
+        setSearchParamTemplate(_input, _target, _key) {
             return `console.warn('[WARNING] Cannot serialize any\\'s to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: '',

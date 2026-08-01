@@ -17,8 +17,9 @@ export function tsRecordFromSchema(
         discriminatorKey: '',
         discriminatorValue: '',
         versionNumber: context.versionNumber,
-        usedFeatures: context.usedFeatures,
+        useRpcTypes: context.useRpcTypes,
         rpcGenerators: context.rpcGenerators,
+        features: context.features,
     });
     const typeName = `Record<string, ${innerType.typeName}>`;
     const defaultValue = schema.isNullable ? 'null' : '{}';
@@ -78,7 +79,7 @@ export function tsRecordFromSchema(
             ${target} += '}';
             `;
         },
-        toQueryStringTemplate(_, __, ___) {
+        setSearchParamTemplate(_, __, ___) {
             return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: innerType.content,

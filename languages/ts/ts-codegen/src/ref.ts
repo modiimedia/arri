@@ -10,7 +10,7 @@ export function tsRefFromSchema(
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
     const defaultValue = schema.isNullable
         ? 'null'
-        : `${prefixedTypeName}.new()`;
+        : `${prefixedTypeName}New()`;
     return {
         typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
@@ -18,13 +18,13 @@ export function tsRefFromSchema(
         defaultValue,
         validationTemplate(input) {
             if (schema.isNullable) {
-                return `($$${prefixedTypeName}.validate(${input}) || ${input} === null)`;
+                return `(${prefixedTypeName}Validate(${input}) || ${input} === null)`;
             }
-            return `$$${prefixedTypeName}.validate(${input})`;
+            return `${prefixedTypeName}Validate(${input})`;
         },
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
-                    ${target} = $$${prefixedTypeName}.fromJson(${input});
+                    ${target} = ${prefixedTypeName}FromJson(${input});
                 } else {
                     ${target} = ${defaultValue}; 
                 }`;
@@ -32,14 +32,14 @@ export function tsRefFromSchema(
         toJsonTemplate(input, target, _key) {
             if (schema.isNullable) {
                 return `if (${input} !== null) {
-                    ${target} += $$${prefixedTypeName}.toJsonString(${input});
+                    ${target} += ${prefixedTypeName}ToJsonString(${input});
                 } else {
                     ${target} += 'null';
                 }`;
             }
-            return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
+            return `${target} += ${prefixedTypeName}ToJsonString(${input});`;
         },
-        toQueryStringTemplate(_, __, ___) {
+        setSearchParamTemplate(_, __, ___) {
             return `console.warn('[WARNING] Nested objects cannot be serialized to query string. Ignoring property at ${context.instancePath}.');`;
         },
         content: '',

@@ -17,7 +17,7 @@ export function tsObjectFromSchema(
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
     const defaultValue = schema.isNullable
         ? 'null'
-        : `$$${prefixedTypeName}.new()`;
+        : `${prefixedTypeName}New()`;
     const result: TsProperty = {
         typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
@@ -25,13 +25,13 @@ export function tsObjectFromSchema(
         defaultValue,
         validationTemplate(input) {
             if (schema.isNullable) {
-                return `($$${prefixedTypeName}.validate(${input}) || ${input} === null)`;
+                return `(${prefixedTypeName}Validate(${input}) || ${input} === null)`;
             }
-            return `$$${prefixedTypeName}.validate(${input})`;
+            return `${prefixedTypeName}Validate(${input})`;
         },
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
-                ${target} = $$${prefixedTypeName}.fromJson(${input});
+                ${target} = ${prefixedTypeName}FromJson(${input});
             } else {
                 ${target} = ${defaultValue}; 
             }`;
@@ -39,14 +39,14 @@ export function tsObjectFromSchema(
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `if (${input} !== null) {
-                    ${target} += $$${prefixedTypeName}.toJsonString(${input}); 
+                    ${target} += ${prefixedTypeName}ToJsonString(${input}); 
                 } else {
                     ${target} += 'null';
                 }`;
             }
-            return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
+            return `${target} += ${prefixedTypeName}ToJsonString(${input});`;
         },
-        toQueryStringTemplate(_input, _target) {
+        setSearchParamTemplate(_input, _target) {
             return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: '',
@@ -59,7 +59,7 @@ export function tsObjectFromSchema(
     const fromJsonParts: string[] = [];
     const constructionParts: string[] = [];
     const toJsonParts: string[] = [];
-    const toQueryParts: string[] = [];
+    const setSearchParamParts: string[] = [];
     const validationParts: string[] = ['isObject(input)'];
     const subContentParts: string[] = [];
     let hasKey = false;
@@ -75,8 +75,8 @@ export function tsObjectFromSchema(
         fieldParts.push(`${key}: "${context.discriminatorValue}",`);
         fromJsonParts.push(`const _${key} = "${context.discriminatorValue}"`);
         toJsonParts.push(`json += '"${key}":"${context.discriminatorValue}"'`);
-        toQueryParts.push(
-            `queryParts.push('${context.discriminatorKey}=${context.discriminatorValue}');`,
+        setSearchParamParts.push(
+            `params.set('${context.discriminatorKey}', '${context.discriminatorValue}');`,
         );
         validationParts.push(
             `input.${key} === '${context.discriminatorValue}'`,
@@ -96,8 +96,9 @@ export function tsObjectFromSchema(
             discriminatorKey: '',
             discriminatorValue: '',
             versionNumber: context.versionNumber,
-            usedFeatures: context.usedFeatures,
+            useRpcTypes: context.useRpcTypes,
             rpcGenerators: context.rpcGenerators,
+            features: context.features,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key, { normalize: true }));
@@ -116,8 +117,8 @@ export function tsObjectFromSchema(
         toJsonParts.push(
             prop.toJsonTemplate(`input.${fieldName}`, 'json', key),
         );
-        toQueryParts.push(
-            prop.toQueryStringTemplate(`input.${fieldName}`, 'queryParts', key),
+        setSearchParamParts.push(
+            prop.setSearchParamTemplate(`input.${fieldName}`, 'params', key),
         );
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
         validationParts.push(validationPart);
@@ -139,8 +140,9 @@ export function tsObjectFromSchema(
             discriminatorKey: '',
             discriminatorValue: '',
             versionNumber: context.versionNumber,
-            usedFeatures: context.usedFeatures,
+            useRpcTypes: context.useRpcTypes,
             rpcGenerators: context.rpcGenerators,
+            features: context.features,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key, { normalize: true }));
@@ -165,8 +167,8 @@ export function tsObjectFromSchema(
             _hasKey = true;
         }`);
         }
-        toQueryParts.push(`if (typeof input.${fieldName} !== 'undefined') {
-            ${prop.toQueryStringTemplate(`input.${fieldName}`, 'queryParts', key)}    
+        setSearchParamParts.push(`if (typeof input.${fieldName} !== 'undefined') {
+            ${prop.setSearchParamTemplate(`input.${fieldName}`, 'params', key)}    
         }`);
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
         validationParts.push(
@@ -177,40 +179,64 @@ export function tsObjectFromSchema(
 
     result.content = `${getJsDocComment(schema.metadata)}export interface ${prefixedTypeName} {
 ${fieldParts.map((part) => `    ${part}`).join('\n')}
-}
-${context.discriminatorParent && context.discriminatorValue ? '' : 'export '}const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
-    new(): ${prefixedTypeName} {
-        return {
-${newParts.map((part) => `            ${part}`).join('\n')}        
-        };
-    },
-    validate(input): input is ${prefixedTypeName} {
-        return (
-${validationParts.map((part) => `            ${part}`).join('&& \n')}
-        )
-    },
-    fromJson(input): ${prefixedTypeName} {
-${fromJsonParts.map((part) => `        ${part}`).join('\n')}
-        return {
-${constructionParts.map((part) => `            ${part}`).join('\n')}
-        }
-    },
-    fromJsonString(input): ${prefixedTypeName} {
-        return $$${prefixedTypeName}.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = "{";
-${toJsonParts.map((part) => `        ${part}`).join('\n')}
-        json += "}";
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-${toQueryParts.map((part) => `        ${part}`).join('\n')}
-        return queryParts.join("&");
+}`;
+    result.content += `
+export function ${prefixedTypeName}New(): ${prefixedTypeName} {
+    return {
+${newParts.map((part) => `        ${part}`).join('\n')}        
+    };
+}`;
+    if (context.features.validateFn) {
+        result.content += `
+export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixedTypeName} {
+    return (
+${validationParts.map((part) => `        ${part}`).join('&& \n')}
+    )
+}`;
     }
+    result.content += `
+export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
+${fromJsonParts.map((part) => `    ${part}`).join('\n')}
+    return {
+${constructionParts.map((part) => `        ${part}`).join('\n')}
+    }
+}`;
+    result.content += `
+export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedTypeName} {
+    return ${prefixedTypeName}FromJson(JSON.parse(input));
+}`;
+    result.content += `
+export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
+    let json = "{";
+${toJsonParts.map((part) => `    ${part}`).join('\n')}
+    json += "}";
+    return json;
+}`;
+    result.content += `
+export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
+    const params = new URLSearchParams();
+    ${setSearchParamParts.map((part) => `        ${part}`).join('\n')}
+    return params;
+}`;
+    result.content += `
+export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedTypeName}): string {
+    return ${prefixedTypeName}ToUrlSearchParams(input).toString();
 }
-    
+`;
+    if (context.features.validatorObj) {
+        result.content += `
+${context.discriminatorParent && context.discriminatorValue ? '' : 'export '}const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
+    new: ${prefixedTypeName}New,
+    ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''} 
+    fromJson: ${prefixedTypeName}FromJson,
+    fromJsonString: ${prefixedTypeName}FromJsonString,
+    toJsonString: ${prefixedTypeName}ToJsonString,
+    toUrlSearchParams: ${prefixedTypeName}ToUrlSearchParams,
+    toUrlSearchParamsString: ${prefixedTypeName}ToUrlSearchParamsString,
+}`;
+    }
+
+    result.content += `  
 ${subContentParts.join('\n')}`;
     context.generatedTypes.push(typeName);
     return result;

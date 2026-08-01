@@ -17,8 +17,9 @@ export function tsArrayFromSchema(
         discriminatorKey: '',
         discriminatorValue: '',
         versionNumber: context.versionNumber,
-        usedFeatures: context.usedFeatures,
+        useRpcTypes: context.useRpcTypes,
         rpcGenerators: context.rpcGenerators,
+        features: context.features,
     });
     const typeName = `(${innerType.typeName})[]`;
     const defaultValue = schema.isNullable ? 'null' : '[]';
@@ -72,7 +73,7 @@ export function tsArrayFromSchema(
             }
             ${target} += ']';`;
         },
-        toQueryStringTemplate(_input, _target, _key) {
+        setSearchParamTemplate(_input, _target, _key) {
             return `console.warn('[WARNING] Cannot serialize arrays to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: innerType.content,

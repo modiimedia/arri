@@ -46,6 +46,19 @@ import {
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
+export type TestClientPrefixedValidator<T> = ArriModelValidator<
+    T,
+    | 'new'
+    | 'fromJson'
+    | 'fromJsonString'
+    | 'toJsonString'
+    | 'toUrlSearchParams'
+    | 'toUrlSearchParamsString'
+>;
+export type ExampleClientEnumValidator<T> = ArriEnumValidator<
+    T,
+    'new' | 'values' | 'fromSerialValue'
+>;
 export class TestClientPrefixed {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
@@ -90,7 +103,7 @@ export class TestClientPrefixed {
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
-            serializer: $$FooDeprecatedRpcParams.toJsonString,
+            serializer: FooDeprecatedRpcParamsToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -109,10 +122,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooDiscriminatorWithEmptyObject.fromJson,
-            responseFromString:
-                $$FooDiscriminatorWithEmptyObject.fromJsonString,
-            serializer: $$FooDiscriminatorWithEmptyObject.toJsonString,
+            responseFromJson: FooDiscriminatorWithEmptyObjectFromJson,
+            responseFromString: FooDiscriminatorWithEmptyObjectFromJsonString,
+            serializer: FooDiscriminatorWithEmptyObjectToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -130,7 +142,7 @@ export class TestClientPrefixed {
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
-            serializer: $$FooSendErrorParams.toJsonString,
+            serializer: FooSendErrorParamsToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -146,9 +158,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooObjectWithEveryType.fromJson,
-            responseFromString: $$FooObjectWithEveryType.fromJsonString,
-            serializer: $$FooObjectWithEveryType.toJsonString,
+            responseFromJson: FooObjectWithEveryTypeFromJson,
+            responseFromString: FooObjectWithEveryTypeFromJsonString,
+            serializer: FooObjectWithEveryTypeToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -167,9 +179,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooObjectWithEveryNullableType.fromJson,
-            responseFromString: $$FooObjectWithEveryNullableType.fromJsonString,
-            serializer: $$FooObjectWithEveryNullableType.toJsonString,
+            responseFromJson: FooObjectWithEveryNullableTypeFromJson,
+            responseFromString: FooObjectWithEveryNullableTypeFromJsonString,
+            serializer: FooObjectWithEveryNullableTypeToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -188,9 +200,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooObjectWithPascalCaseKeys.fromJson,
-            responseFromString: $$FooObjectWithPascalCaseKeys.fromJsonString,
-            serializer: $$FooObjectWithPascalCaseKeys.toJsonString,
+            responseFromJson: FooObjectWithPascalCaseKeysFromJson,
+            responseFromString: FooObjectWithPascalCaseKeysFromJsonString,
+            serializer: FooObjectWithPascalCaseKeysToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -209,9 +221,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooObjectWithSnakeCaseKeys.fromJson,
-            responseFromString: $$FooObjectWithSnakeCaseKeys.fromJsonString,
-            serializer: $$FooObjectWithSnakeCaseKeys.toJsonString,
+            responseFromJson: FooObjectWithSnakeCaseKeysFromJson,
+            responseFromString: FooObjectWithSnakeCaseKeysFromJsonString,
+            serializer: FooObjectWithSnakeCaseKeysToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -230,9 +242,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooObjectWithEveryOptionalType.fromJson,
-            responseFromString: $$FooObjectWithEveryOptionalType.fromJsonString,
-            serializer: $$FooObjectWithEveryOptionalType.toJsonString,
+            responseFromJson: FooObjectWithEveryOptionalTypeFromJson,
+            responseFromString: FooObjectWithEveryOptionalTypeFromJsonString,
+            serializer: FooObjectWithEveryOptionalTypeToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -248,9 +260,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooRecursiveObject.fromJson,
-            responseFromString: $$FooRecursiveObject.fromJsonString,
-            serializer: $$FooRecursiveObject.toJsonString,
+            responseFromJson: FooRecursiveObjectFromJson,
+            responseFromString: FooRecursiveObjectFromJsonString,
+            serializer: FooRecursiveObjectToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -266,9 +278,9 @@ export class TestClientPrefixed {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$FooRecursiveUnion.fromJson,
-            responseFromString: $$FooRecursiveUnion.fromJsonString,
-            serializer: $$FooRecursiveUnion.toJsonString,
+            responseFromJson: FooRecursiveUnionFromJson,
+            responseFromString: FooRecursiveUnionFromJsonString,
+            serializer: FooRecursiveUnionToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -285,9 +297,9 @@ export class TestClientPrefixed {
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
-                responseFromJson: $$FooAutoReconnectResponse.fromJson,
-                responseFromString: $$FooAutoReconnectResponse.fromJsonString,
-                serializer: $$FooAutoReconnectParams.toJsonString,
+                responseFromJson: FooAutoReconnectResponseFromJson,
+                responseFromString: FooAutoReconnectResponseFromJsonString,
+                serializer: FooAutoReconnectParamsToJsonString,
                 clientVersion: '10',
             },
             options,
@@ -311,11 +323,10 @@ export class TestClientPrefixed {
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
-                responseFromJson:
-                    $$FooStreamConnectionErrorTestResponse.fromJson,
+                responseFromJson: FooStreamConnectionErrorTestResponseFromJson,
                 responseFromString:
-                    $$FooStreamConnectionErrorTestResponse.fromJsonString,
-                serializer: $$FooStreamConnectionErrorTestParams.toJsonString,
+                    FooStreamConnectionErrorTestResponseFromJsonString,
+                serializer: FooStreamConnectionErrorTestParamsToJsonString,
                 clientVersion: '10',
             },
             options,
@@ -342,11 +353,10 @@ export class TestClientPrefixed {
                 onError: this._onError,
                 params: params,
                 responseFromJson:
-                    $$FooStreamHeartbeatDetectionTestResponse.fromJson,
+                    FooStreamHeartbeatDetectionTestResponseFromJson,
                 responseFromString:
-                    $$FooStreamHeartbeatDetectionTestResponse.fromJsonString,
-                serializer:
-                    $$FooStreamHeartbeatDetectionTestParams.toJsonString,
+                    FooStreamHeartbeatDetectionTestResponseFromJsonString,
+                serializer: FooStreamHeartbeatDetectionTestParamsToJsonString,
                 clientVersion: '10',
             },
             options,
@@ -366,9 +376,8 @@ export class TestClientPrefixed {
                 headers: this._headers,
                 onError: this._onError,
 
-                responseFromJson: $$FooStreamLargeObjectsResponse.fromJson,
-                responseFromString:
-                    $$FooStreamLargeObjectsResponse.fromJsonString,
+                responseFromJson: FooStreamLargeObjectsResponseFromJson,
+                responseFromString: FooStreamLargeObjectsResponseFromJsonString,
                 serializer: () => {},
                 clientVersion: '10',
             },
@@ -387,9 +396,9 @@ export class TestClientPrefixed {
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
-                responseFromJson: $$FooChatMessage.fromJson,
-                responseFromString: $$FooChatMessage.fromJsonString,
-                serializer: $$FooChatMessageParams.toJsonString,
+                responseFromJson: FooChatMessageFromJson,
+                responseFromString: FooChatMessageFromJsonString,
+                serializer: FooChatMessageParamsToJsonString,
                 clientVersion: '10',
             },
             options,
@@ -410,9 +419,9 @@ export class TestClientPrefixed {
                 onError: this._onError,
 
                 responseFromJson:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse.fromJson,
+                    FooTestsStreamRetryWithNewCredentialsResponseFromJson,
                 responseFromString:
-                    $$FooTestsStreamRetryWithNewCredentialsResponse.fromJsonString,
+                    FooTestsStreamRetryWithNewCredentialsResponseFromJsonString,
                 serializer: () => {},
                 clientVersion: '10',
             },
@@ -433,8 +442,8 @@ export class TestClientPrefixed {
                 headers: this._headers,
                 onError: this._onError,
 
-                responseFromJson: $$FooChatMessage.fromJson,
-                responseFromString: $$FooChatMessage.fromJsonString,
+                responseFromJson: FooChatMessageFromJson,
+                responseFromString: FooChatMessageFromJsonString,
                 serializer: () => {},
                 clientVersion: '10',
             },
@@ -479,8 +488,8 @@ export class TestClientPrefixedNestedService {
             headers: this._headers,
             onError: this._onError,
 
-            responseFromJson: $$FooDefaultPayload.fromJson,
-            responseFromString: $$FooDefaultPayload.fromJsonString,
+            responseFromJson: FooDefaultPayloadFromJson,
+            responseFromString: FooDefaultPayloadFromJsonString,
             serializer: () => {},
             clientVersion: '10',
             options: options ?? this._options,
@@ -496,8 +505,8 @@ export class TestClientPrefixedNestedService {
             headers: this._headers,
             onError: this._onError,
 
-            responseFromJson: $$FooDefaultPayload.fromJson,
-            responseFromString: $$FooDefaultPayload.fromJsonString,
+            responseFromJson: FooDefaultPayloadFromJson,
+            responseFromString: FooDefaultPayloadFromJsonString,
             serializer: () => {},
             clientVersion: '10',
             options: options ?? this._options,
@@ -516,7 +525,7 @@ export class TestClientPrefixedNestedService {
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
-            serializer: $$FooDefaultPayload.toUrlQueryString,
+            serializer: FooDefaultPayloadToUrlSearchParamsString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -534,7 +543,7 @@ export class TestClientPrefixedNestedService {
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
-            serializer: $$FooDefaultPayload.toJsonString,
+            serializer: FooDefaultPayloadToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -544,75 +553,112 @@ export class TestClientPrefixedNestedService {
 export interface FooManuallyAddedModel {
     hello: string;
 }
-export const $$FooManuallyAddedModel: ArriModelValidator<FooManuallyAddedModel> =
+export function FooManuallyAddedModelNew(): FooManuallyAddedModel {
+    return {
+        hello: '',
+    };
+}
+export function FooManuallyAddedModelFromJson(
+    input: Record<string, unknown>,
+): FooManuallyAddedModel {
+    let _hello: string;
+    _hello = parseString(input.hello);
+    return {
+        hello: _hello,
+    };
+}
+export function FooManuallyAddedModelFromJsonString(
+    input: string,
+): FooManuallyAddedModel {
+    return FooManuallyAddedModelFromJson(JSON.parse(input));
+}
+export function FooManuallyAddedModelToJsonString(
+    input: FooManuallyAddedModel,
+): string {
+    let json = '{';
+    json += '"hello":';
+    json += serializeString(input.hello);
+    json += '}';
+    return json;
+}
+export function FooManuallyAddedModelToUrlSearchParams(
+    input: FooManuallyAddedModel,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('hello', input.hello);
+    return params;
+}
+export function FooManuallyAddedModelToUrlSearchParamsString(
+    input: FooManuallyAddedModel,
+): string {
+    return FooManuallyAddedModelToUrlSearchParams(input).toString();
+}
+
+export const $$FooManuallyAddedModel: TestClientPrefixedValidator<FooManuallyAddedModel> =
     {
-        new(): FooManuallyAddedModel {
-            return {
-                hello: '',
-            };
-        },
-        validate(input): input is FooManuallyAddedModel {
-            return isObject(input) && typeof input.hello === 'string';
-        },
-        fromJson(input): FooManuallyAddedModel {
-            let _hello: string;
-            _hello = parseString(input.hello);
-            return {
-                hello: _hello,
-            };
-        },
-        fromJsonString(input): FooManuallyAddedModel {
-            return $$FooManuallyAddedModel.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"hello":';
-            json += serializeString(input.hello);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`hello=${input.hello}`);
-            return queryParts.join('&');
-        },
+        new: FooManuallyAddedModelNew,
+
+        fromJson: FooManuallyAddedModelFromJson,
+        fromJsonString: FooManuallyAddedModelFromJsonString,
+        toJsonString: FooManuallyAddedModelToJsonString,
+        toUrlSearchParams: FooManuallyAddedModelToUrlSearchParams,
+        toUrlSearchParamsString: FooManuallyAddedModelToUrlSearchParamsString,
     };
 
 export interface FooDefaultPayload {
     message: string;
 }
-export const $$FooDefaultPayload: ArriModelValidator<FooDefaultPayload> = {
-    new(): FooDefaultPayload {
-        return {
-            message: '',
-        };
-    },
-    validate(input): input is FooDefaultPayload {
-        return isObject(input) && typeof input.message === 'string';
-    },
-    fromJson(input): FooDefaultPayload {
-        let _message: string;
-        _message = parseString(input.message);
-        return {
-            message: _message,
-        };
-    },
-    fromJsonString(input): FooDefaultPayload {
-        return $$FooDefaultPayload.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"message":';
-        json += serializeString(input.message);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`message=${input.message}`);
-        return queryParts.join('&');
-    },
-};
+export function FooDefaultPayloadNew(): FooDefaultPayload {
+    return {
+        message: '',
+    };
+}
+export function FooDefaultPayloadFromJson(
+    input: Record<string, unknown>,
+): FooDefaultPayload {
+    let _message: string;
+    _message = parseString(input.message);
+    return {
+        message: _message,
+    };
+}
+export function FooDefaultPayloadFromJsonString(
+    input: string,
+): FooDefaultPayload {
+    return FooDefaultPayloadFromJson(JSON.parse(input));
+}
+export function FooDefaultPayloadToJsonString(
+    input: FooDefaultPayload,
+): string {
+    let json = '{';
+    json += '"message":';
+    json += serializeString(input.message);
+    json += '}';
+    return json;
+}
+export function FooDefaultPayloadToUrlSearchParams(
+    input: FooDefaultPayload,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('message', input.message);
+    return params;
+}
+export function FooDefaultPayloadToUrlSearchParamsString(
+    input: FooDefaultPayload,
+): string {
+    return FooDefaultPayloadToUrlSearchParams(input).toString();
+}
+
+export const $$FooDefaultPayload: TestClientPrefixedValidator<FooDefaultPayload> =
+    {
+        new: FooDefaultPayloadNew,
+
+        fromJson: FooDefaultPayloadFromJson,
+        fromJsonString: FooDefaultPayloadFromJsonString,
+        toJsonString: FooDefaultPayloadToJsonString,
+        toUrlSearchParams: FooDefaultPayloadToUrlSearchParams,
+        toUrlSearchParamsString: FooDefaultPayloadToUrlSearchParamsString,
+    };
 
 /**
  * @deprecated
@@ -623,151 +669,178 @@ export interface FooDeprecatedRpcParams {
      */
     deprecatedField: string;
 }
-export const $$FooDeprecatedRpcParams: ArriModelValidator<FooDeprecatedRpcParams> =
+export function FooDeprecatedRpcParamsNew(): FooDeprecatedRpcParams {
+    return {
+        deprecatedField: '',
+    };
+}
+export function FooDeprecatedRpcParamsFromJson(
+    input: Record<string, unknown>,
+): FooDeprecatedRpcParams {
+    let _deprecatedField: string;
+    _deprecatedField = parseString(input.deprecatedField);
+    return {
+        deprecatedField: _deprecatedField,
+    };
+}
+export function FooDeprecatedRpcParamsFromJsonString(
+    input: string,
+): FooDeprecatedRpcParams {
+    return FooDeprecatedRpcParamsFromJson(JSON.parse(input));
+}
+export function FooDeprecatedRpcParamsToJsonString(
+    input: FooDeprecatedRpcParams,
+): string {
+    let json = '{';
+    json += '"deprecatedField":';
+    json += serializeString(input.deprecatedField);
+    json += '}';
+    return json;
+}
+export function FooDeprecatedRpcParamsToUrlSearchParams(
+    input: FooDeprecatedRpcParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('deprecatedField', input.deprecatedField);
+    return params;
+}
+export function FooDeprecatedRpcParamsToUrlSearchParamsString(
+    input: FooDeprecatedRpcParams,
+): string {
+    return FooDeprecatedRpcParamsToUrlSearchParams(input).toString();
+}
+
+export const $$FooDeprecatedRpcParams: TestClientPrefixedValidator<FooDeprecatedRpcParams> =
     {
-        new(): FooDeprecatedRpcParams {
-            return {
-                deprecatedField: '',
-            };
-        },
-        validate(input): input is FooDeprecatedRpcParams {
-            return isObject(input) && typeof input.deprecatedField === 'string';
-        },
-        fromJson(input): FooDeprecatedRpcParams {
-            let _deprecatedField: string;
-            _deprecatedField = parseString(input.deprecatedField);
-            return {
-                deprecatedField: _deprecatedField,
-            };
-        },
-        fromJsonString(input): FooDeprecatedRpcParams {
-            return $$FooDeprecatedRpcParams.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"deprecatedField":';
-            json += serializeString(input.deprecatedField);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`deprecatedField=${input.deprecatedField}`);
-            return queryParts.join('&');
-        },
+        new: FooDeprecatedRpcParamsNew,
+
+        fromJson: FooDeprecatedRpcParamsFromJson,
+        fromJsonString: FooDeprecatedRpcParamsFromJsonString,
+        toJsonString: FooDeprecatedRpcParamsToJsonString,
+        toUrlSearchParams: FooDeprecatedRpcParamsToUrlSearchParams,
+        toUrlSearchParamsString: FooDeprecatedRpcParamsToUrlSearchParamsString,
     };
 
 export type FooDiscriminatorWithEmptyObject =
     | FooDiscriminatorWithEmptyObjectEmpty
     | FooDiscriminatorWithEmptyObjectNotEmpty;
-export const $$FooDiscriminatorWithEmptyObject: ArriModelValidator<FooDiscriminatorWithEmptyObject> =
-    {
-        new(): FooDiscriminatorWithEmptyObject {
-            return $$FooDiscriminatorWithEmptyObjectEmpty.new();
-        },
-        validate(input): input is FooDiscriminatorWithEmptyObject {
-            if (!isObject(input)) {
-                return false;
-            }
-            if (typeof input.type !== 'string') {
-                return false;
-            }
-            switch (input.type) {
-                case 'EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectEmpty.validate(
-                        input,
-                    );
-                case 'NOT_EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectNotEmpty.validate(
-                        input,
-                    );
-                default:
-                    return false;
-            }
-        },
-        fromJson(input): FooDiscriminatorWithEmptyObject {
-            switch (input.type) {
-                case 'EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectEmpty.fromJson(
-                        input,
-                    );
-                case 'NOT_EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(
-                        input,
-                    );
-                default:
-                    return $$FooDiscriminatorWithEmptyObjectEmpty.new();
-            }
-        },
-        fromJsonString(input): FooDiscriminatorWithEmptyObject {
-            return $$FooDiscriminatorWithEmptyObject.fromJson(
-                JSON.parse(input),
+export function FooDiscriminatorWithEmptyObjectNew(): FooDiscriminatorWithEmptyObject {
+    return FooDiscriminatorWithEmptyObjectEmptyNew();
+}
+export function FooDiscriminatorWithEmptyObjectFromJson(
+    input: Record<string, unknown>,
+): FooDiscriminatorWithEmptyObject {
+    switch (input.type) {
+        case 'EMPTY':
+            return FooDiscriminatorWithEmptyObjectEmptyFromJson(input);
+        case 'NOT_EMPTY':
+            return FooDiscriminatorWithEmptyObjectNotEmptyFromJson(input);
+        default:
+            return FooDiscriminatorWithEmptyObjectEmptyNew();
+    }
+}
+export function FooDiscriminatorWithEmptyObjectFromJsonString(
+    input: string,
+): FooDiscriminatorWithEmptyObject {
+    return FooDiscriminatorWithEmptyObjectFromJson(JSON.parse(input));
+}
+export function FooDiscriminatorWithEmptyObjectToJsonString(
+    input: FooDiscriminatorWithEmptyObject,
+): string {
+    switch (input.type) {
+        case 'EMPTY':
+            return FooDiscriminatorWithEmptyObjectEmptyToJsonString(input);
+        case 'NOT_EMPTY':
+            return FooDiscriminatorWithEmptyObjectNotEmptyToJsonString(input);
+        default:
+            throw new Error(`Unhandled case "${(input as any).type}"`);
+    }
+}
+export function FooDiscriminatorWithEmptyObjectToUrlSearchParams(
+    input: FooDiscriminatorWithEmptyObject,
+): URLSearchParams {
+    switch (input.type) {
+        case 'EMPTY':
+            return FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParams(input);
+        case 'NOT_EMPTY':
+            return FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParams(
+                input,
             );
-        },
-        toJsonString(input): string {
-            switch (input.type) {
-                case 'EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectEmpty.toJsonString(
-                        input,
-                    );
-                case 'NOT_EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectNotEmpty.toJsonString(
-                        input,
-                    );
-                default:
-                    throw new Error(`Unhandled case "${(input as any).type}"`);
-            }
-        },
-        toUrlQueryString(input): string {
-            switch (input.type) {
-                case 'EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectEmpty.toUrlQueryString(
-                        input,
-                    );
-                case 'NOT_EMPTY':
-                    return $$FooDiscriminatorWithEmptyObjectNotEmpty.toUrlQueryString(
-                        input,
-                    );
-                default:
-                    throw new Error('Unhandled case');
-            }
-        },
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooDiscriminatorWithEmptyObjectToUrlSearchParamsString(
+    input: FooDiscriminatorWithEmptyObject,
+): string {
+    return FooDiscriminatorWithEmptyObjectToUrlSearchParams(input).toString();
+}
+export const $$FooDiscriminatorWithEmptyObject: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObject> =
+    {
+        new: FooDiscriminatorWithEmptyObjectNew,
+
+        fromJson: FooDiscriminatorWithEmptyObjectFromJson,
+        fromJsonString: FooDiscriminatorWithEmptyObjectFromJsonString,
+        toJsonString: FooDiscriminatorWithEmptyObjectToJsonString,
+        toUrlSearchParams: FooDiscriminatorWithEmptyObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooDiscriminatorWithEmptyObjectToUrlSearchParamsString,
     };
 export interface FooDiscriminatorWithEmptyObjectEmpty {
     type: 'EMPTY';
 }
-const $$FooDiscriminatorWithEmptyObjectEmpty: ArriModelValidator<FooDiscriminatorWithEmptyObjectEmpty> =
+export function FooDiscriminatorWithEmptyObjectEmptyNew(): FooDiscriminatorWithEmptyObjectEmpty {
+    return {
+        type: 'EMPTY',
+    };
+}
+export function FooDiscriminatorWithEmptyObjectEmptyFromJson(
+    input: Record<string, unknown>,
+): FooDiscriminatorWithEmptyObjectEmpty {
+    const _type = 'EMPTY';
+    return {
+        type: _type,
+    };
+}
+export function FooDiscriminatorWithEmptyObjectEmptyFromJsonString(
+    input: string,
+): FooDiscriminatorWithEmptyObjectEmpty {
+    return FooDiscriminatorWithEmptyObjectEmptyFromJson(JSON.parse(input));
+}
+export function FooDiscriminatorWithEmptyObjectEmptyToJsonString(
+    input: FooDiscriminatorWithEmptyObjectEmpty,
+): string {
+    let json = '{';
+    json += '"type":"EMPTY"';
+    json += '}';
+    return json;
+}
+export function FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParams(
+    input: FooDiscriminatorWithEmptyObjectEmpty,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'EMPTY');
+    return params;
+}
+export function FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParamsString(
+    input: FooDiscriminatorWithEmptyObjectEmpty,
+): string {
+    return FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooDiscriminatorWithEmptyObjectEmpty: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObjectEmpty> =
     {
-        new(): FooDiscriminatorWithEmptyObjectEmpty {
-            return {
-                type: 'EMPTY',
-            };
-        },
-        validate(input): input is FooDiscriminatorWithEmptyObjectEmpty {
-            return isObject(input) && input.type === 'EMPTY';
-        },
-        fromJson(input): FooDiscriminatorWithEmptyObjectEmpty {
-            const _type = 'EMPTY';
-            return {
-                type: _type,
-            };
-        },
-        fromJsonString(input): FooDiscriminatorWithEmptyObjectEmpty {
-            return $$FooDiscriminatorWithEmptyObjectEmpty.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"EMPTY"';
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=EMPTY');
-            return queryParts.join('&');
-        },
+        new: FooDiscriminatorWithEmptyObjectEmptyNew,
+
+        fromJson: FooDiscriminatorWithEmptyObjectEmptyFromJson,
+        fromJsonString: FooDiscriminatorWithEmptyObjectEmptyFromJsonString,
+        toJsonString: FooDiscriminatorWithEmptyObjectEmptyToJsonString,
+        toUrlSearchParams:
+            FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParamsString,
     };
 
 export interface FooDiscriminatorWithEmptyObjectNotEmpty {
@@ -776,117 +849,143 @@ export interface FooDiscriminatorWithEmptyObjectNotEmpty {
     bar: number;
     baz: boolean;
 }
-const $$FooDiscriminatorWithEmptyObjectNotEmpty: ArriModelValidator<FooDiscriminatorWithEmptyObjectNotEmpty> =
+export function FooDiscriminatorWithEmptyObjectNotEmptyNew(): FooDiscriminatorWithEmptyObjectNotEmpty {
+    return {
+        type: 'NOT_EMPTY',
+        foo: '',
+        bar: 0,
+        baz: false,
+    };
+}
+export function FooDiscriminatorWithEmptyObjectNotEmptyFromJson(
+    input: Record<string, unknown>,
+): FooDiscriminatorWithEmptyObjectNotEmpty {
+    const _type = 'NOT_EMPTY';
+    let _foo: string;
+    _foo = parseString(input.foo);
+    let _bar: number;
+    _bar = parseNumberFloat(input.bar);
+    let _baz: boolean;
+    _baz = parseBoolean(input.baz);
+    return {
+        type: _type,
+        foo: _foo,
+        bar: _bar,
+        baz: _baz,
+    };
+}
+export function FooDiscriminatorWithEmptyObjectNotEmptyFromJsonString(
+    input: string,
+): FooDiscriminatorWithEmptyObjectNotEmpty {
+    return FooDiscriminatorWithEmptyObjectNotEmptyFromJson(JSON.parse(input));
+}
+export function FooDiscriminatorWithEmptyObjectNotEmptyToJsonString(
+    input: FooDiscriminatorWithEmptyObjectNotEmpty,
+): string {
+    let json = '{';
+    json += '"type":"NOT_EMPTY"';
+    json += ',"foo":';
+    json += serializeString(input.foo);
+    json += ',"bar":';
+    json += `${input.bar}`;
+    json += ',"baz":';
+    json += `${input.baz}`;
+    json += '}';
+    return json;
+}
+export function FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParams(
+    input: FooDiscriminatorWithEmptyObjectNotEmpty,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'NOT_EMPTY');
+    params.set('foo', input.foo);
+    params.set('bar', `${input.bar}`);
+    params.set('baz', `${input.baz}`);
+    return params;
+}
+export function FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParamsString(
+    input: FooDiscriminatorWithEmptyObjectNotEmpty,
+): string {
+    return FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooDiscriminatorWithEmptyObjectNotEmpty: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObjectNotEmpty> =
     {
-        new(): FooDiscriminatorWithEmptyObjectNotEmpty {
-            return {
-                type: 'NOT_EMPTY',
-                foo: '',
-                bar: 0,
-                baz: false,
-            };
-        },
-        validate(input): input is FooDiscriminatorWithEmptyObjectNotEmpty {
-            return (
-                isObject(input) &&
-                input.type === 'NOT_EMPTY' &&
-                typeof input.foo === 'string' &&
-                typeof input.bar === 'number' &&
-                typeof input.baz === 'boolean'
-            );
-        },
-        fromJson(input): FooDiscriminatorWithEmptyObjectNotEmpty {
-            const _type = 'NOT_EMPTY';
-            let _foo: string;
-            _foo = parseString(input.foo);
-            let _bar: number;
-            _bar = parseNumberFloat(input.bar);
-            let _baz: boolean;
-            _baz = parseBoolean(input.baz);
-            return {
-                type: _type,
-                foo: _foo,
-                bar: _bar,
-                baz: _baz,
-            };
-        },
-        fromJsonString(input): FooDiscriminatorWithEmptyObjectNotEmpty {
-            return $$FooDiscriminatorWithEmptyObjectNotEmpty.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"NOT_EMPTY"';
-            json += ',"foo":';
-            json += serializeString(input.foo);
-            json += ',"bar":';
-            json += `${input.bar}`;
-            json += ',"baz":';
-            json += `${input.baz}`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=NOT_EMPTY');
-            queryParts.push(`foo=${input.foo}`);
-            queryParts.push(`bar=${input.bar}`);
-            queryParts.push(`baz=${input.baz}`);
-            return queryParts.join('&');
-        },
+        new: FooDiscriminatorWithEmptyObjectNotEmptyNew,
+
+        fromJson: FooDiscriminatorWithEmptyObjectNotEmptyFromJson,
+        fromJsonString: FooDiscriminatorWithEmptyObjectNotEmptyFromJsonString,
+        toJsonString: FooDiscriminatorWithEmptyObjectNotEmptyToJsonString,
+        toUrlSearchParams:
+            FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParamsString,
     };
 
 export interface FooSendErrorParams {
     code: number;
     message: string;
 }
-export const $$FooSendErrorParams: ArriModelValidator<FooSendErrorParams> = {
-    new(): FooSendErrorParams {
-        return {
-            code: 0,
-            message: '',
-        };
-    },
-    validate(input): input is FooSendErrorParams {
-        return (
-            isObject(input) &&
-            typeof input.code === 'number' &&
-            Number.isInteger(input.code) &&
-            input.code >= 0 &&
-            input.code <= UINT16_MAX &&
-            typeof input.message === 'string'
-        );
-    },
-    fromJson(input): FooSendErrorParams {
-        let _code: number;
-        _code = parseNumberInt(input.code, 0, UINT16_MAX);
-        let _message: string;
-        _message = parseString(input.message);
-        return {
-            code: _code,
-            message: _message,
-        };
-    },
-    fromJsonString(input): FooSendErrorParams {
-        return $$FooSendErrorParams.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"code":';
-        json += `${input.code}`;
-        json += ',"message":';
-        json += serializeString(input.message);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`code=${input.code}`);
-        queryParts.push(`message=${input.message}`);
-        return queryParts.join('&');
-    },
-};
+export function FooSendErrorParamsNew(): FooSendErrorParams {
+    return {
+        code: 0,
+        message: '',
+    };
+}
+export function FooSendErrorParamsFromJson(
+    input: Record<string, unknown>,
+): FooSendErrorParams {
+    let _code: number;
+    _code = parseNumberInt(input.code, 0, UINT16_MAX);
+    let _message: string;
+    _message = parseString(input.message);
+    return {
+        code: _code,
+        message: _message,
+    };
+}
+export function FooSendErrorParamsFromJsonString(
+    input: string,
+): FooSendErrorParams {
+    return FooSendErrorParamsFromJson(JSON.parse(input));
+}
+export function FooSendErrorParamsToJsonString(
+    input: FooSendErrorParams,
+): string {
+    let json = '{';
+    json += '"code":';
+    json += `${input.code}`;
+    json += ',"message":';
+    json += serializeString(input.message);
+    json += '}';
+    return json;
+}
+export function FooSendErrorParamsToUrlSearchParams(
+    input: FooSendErrorParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('code', `${input.code}`);
+    params.set('message', input.message);
+    return params;
+}
+export function FooSendErrorParamsToUrlSearchParamsString(
+    input: FooSendErrorParams,
+): string {
+    return FooSendErrorParamsToUrlSearchParams(input).toString();
+}
+
+export const $$FooSendErrorParams: TestClientPrefixedValidator<FooSendErrorParams> =
+    {
+        new: FooSendErrorParamsNew,
+
+        fromJson: FooSendErrorParamsFromJson,
+        fromJsonString: FooSendErrorParamsFromJsonString,
+        toJsonString: FooSendErrorParamsToJsonString,
+        toUrlSearchParams: FooSendErrorParamsToUrlSearchParams,
+        toUrlSearchParamsString: FooSendErrorParamsToUrlSearchParamsString,
+    };
 
 export interface FooObjectWithEveryType {
     any: any;
@@ -911,590 +1010,549 @@ export interface FooObjectWithEveryType {
     nestedObject: FooObjectWithEveryTypeNestedObject;
     nestedArray: FooObjectWithEveryTypeNestedArrayElementElement[][];
 }
-export const $$FooObjectWithEveryType: ArriModelValidator<FooObjectWithEveryType> =
-    {
-        new(): FooObjectWithEveryType {
-            return {
-                any: undefined,
-                boolean: false,
-                string: '',
-                timestamp: new Date(0),
-                float32: 0,
-                float64: 0,
-                int8: 0,
-                uint8: 0,
-                int16: 0,
-                uint16: 0,
-                int32: 0,
-                uint32: 0,
-                int64: BigInt(0),
-                uint64: BigInt(0),
-                enumerator: $$FooObjectWithEveryTypeEnumerator.new(),
-                array: [],
-                object: $$FooObjectWithEveryTypeObject.new(),
-                record: {},
-                discriminator: $$FooObjectWithEveryTypeDiscriminator.new(),
-                nestedObject: $$FooObjectWithEveryTypeNestedObject.new(),
-                nestedArray: [],
-            };
-        },
-        validate(input): input is FooObjectWithEveryType {
-            return (
-                isObject(input) &&
-                true &&
-                typeof input.boolean === 'boolean' &&
-                typeof input.string === 'string' &&
-                input.timestamp instanceof Date &&
-                typeof input.float32 === 'number' &&
-                typeof input.float64 === 'number' &&
-                typeof input.int8 === 'number' &&
-                Number.isInteger(input.int8) &&
-                input.int8 >= INT8_MIN &&
-                input.int8 <= INT8_MAX &&
-                typeof input.uint8 === 'number' &&
-                Number.isInteger(input.uint8) &&
-                input.uint8 >= 0 &&
-                input.uint8 <= UINT8_MAX &&
-                typeof input.int16 === 'number' &&
-                Number.isInteger(input.int16) &&
-                input.int16 >= INT16_MIN &&
-                input.int16 <= INT16_MAX &&
-                typeof input.uint16 === 'number' &&
-                Number.isInteger(input.uint16) &&
-                input.uint16 >= 0 &&
-                input.uint16 <= UINT16_MAX &&
-                typeof input.int32 === 'number' &&
-                Number.isInteger(input.int32) &&
-                input.int32 >= INT32_MIN &&
-                input.int32 <= INT32_MAX &&
-                typeof input.uint32 === 'number' &&
-                Number.isInteger(input.uint32) &&
-                input.uint32 >= 0 &&
-                input.uint32 <= UINT32_MAX &&
-                typeof input.int64 === 'bigint' &&
-                input.int64 >= INT64_MIN &&
-                input.int64 <= INT64_MAX &&
-                typeof input.uint64 === 'bigint' &&
-                input.uint64 >= BigInt(0) &&
-                input.uint64 <= UINT64_MAX &&
-                $$FooObjectWithEveryTypeEnumerator.validate(input.enumerator) &&
-                Array.isArray(input.array) &&
-                input.array.every(
-                    (_element) => typeof _element === 'boolean',
-                ) &&
-                $$FooObjectWithEveryTypeObject.validate(input.object) &&
-                isObject(input.record) &&
-                Object.values(input.record).every(
-                    (_value) =>
-                        typeof _value === 'bigint' &&
-                        _value >= BigInt(0) &&
-                        _value <= UINT64_MAX,
-                ) &&
-                $$FooObjectWithEveryTypeDiscriminator.validate(
-                    input.discriminator,
-                ) &&
-                $$FooObjectWithEveryTypeNestedObject.validate(
-                    input.nestedObject,
-                ) &&
-                Array.isArray(input.nestedArray) &&
-                input.nestedArray.every(
-                    (_element) =>
-                        Array.isArray(_element) &&
-                        _element.every((_element) =>
-                            $$FooObjectWithEveryTypeNestedArrayElementElement.validate(
-                                _element,
-                            ),
-                        ),
-                )
-            );
-        },
-        fromJson(input): FooObjectWithEveryType {
-            let _any: any;
-            _any = input.any;
-            let _boolean: boolean;
-            _boolean = parseBoolean(input.boolean);
-            let _string: string;
-            _string = parseString(input.string);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            let _float32: number;
-            _float32 = parseNumberFloat(input.float32);
-            let _float64: number;
-            _float64 = parseNumberFloat(input.float64);
-            let _int8: number;
-            _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
-            let _uint8: number;
-            _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
-            let _int16: number;
-            _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
-            let _uint16: number;
-            _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
-            let _int32: number;
-            _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
-            let _uint32: number;
-            _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
-            let _int64: bigint;
-            _int64 = parseNumberBigInt(input.int64);
-            let _uint64: bigint;
-            _uint64 = parseNumberUnsignedBigInt(input.uint64);
-            let _enumerator: FooObjectWithEveryTypeEnumerator;
-            if (typeof input.enumerator === 'string') {
-                _enumerator =
-                    $$FooObjectWithEveryTypeEnumerator.fromSerialValue(
-                        input.enumerator,
-                    );
-            } else {
-                _enumerator = $$FooObjectWithEveryTypeEnumerator.new();
-            }
-            let _array: boolean[];
-            if (Array.isArray(input.array)) {
-                _array = [];
-                for (const _arrayEl of input.array) {
-                    let _arrayElValue: boolean;
-                    _arrayElValue = parseBoolean(_arrayEl);
-                    _array.push(_arrayElValue);
-                }
-            } else {
-                _array = [];
-            }
-            let _object: FooObjectWithEveryTypeObject;
-            if (isObject(input.object)) {
-                _object = $$FooObjectWithEveryTypeObject.fromJson(input.object);
-            } else {
-                _object = $$FooObjectWithEveryTypeObject.new();
-            }
-            let _record: Record<string, bigint>;
-            if (isObject(input.record)) {
-                _record = {};
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    let _recordValue: bigint;
-                    _recordValue = parseNumberUnsignedBigInt(_value);
-                    _record[_key] = _recordValue;
-                }
-            } else {
-                _record = {};
-            }
-            let _discriminator: FooObjectWithEveryTypeDiscriminator;
-            if (isObject(input.discriminator)) {
-                _discriminator = $$FooObjectWithEveryTypeDiscriminator.fromJson(
-                    input.discriminator,
-                );
-            } else {
-                _discriminator = $$FooObjectWithEveryTypeDiscriminator.new();
-            }
-            let _nestedObject: FooObjectWithEveryTypeNestedObject;
-            if (isObject(input.nestedObject)) {
-                _nestedObject = $$FooObjectWithEveryTypeNestedObject.fromJson(
-                    input.nestedObject,
-                );
-            } else {
-                _nestedObject = $$FooObjectWithEveryTypeNestedObject.new();
-            }
-            let _nestedArray: FooObjectWithEveryTypeNestedArrayElementElement[][];
-            if (Array.isArray(input.nestedArray)) {
-                _nestedArray = [];
-                for (const _nestedArrayEl of input.nestedArray) {
-                    let _nestedArrayElValue: FooObjectWithEveryTypeNestedArrayElementElement[];
-                    if (Array.isArray(_nestedArrayEl)) {
-                        _nestedArrayElValue = [];
-                        for (const _nestedArrayElValueEl of _nestedArrayEl) {
-                            let _nestedArrayElValueElValue: FooObjectWithEveryTypeNestedArrayElementElement;
-                            if (isObject(_nestedArrayElValueEl)) {
-                                _nestedArrayElValueElValue =
-                                    $$FooObjectWithEveryTypeNestedArrayElementElement.fromJson(
-                                        _nestedArrayElValueEl,
-                                    );
-                            } else {
-                                _nestedArrayElValueElValue =
-                                    $$FooObjectWithEveryTypeNestedArrayElementElement.new();
-                            }
-                            _nestedArrayElValue.push(
-                                _nestedArrayElValueElValue,
-                            );
-                        }
-                    } else {
-                        _nestedArrayElValue = [];
-                    }
-                    _nestedArray.push(_nestedArrayElValue);
-                }
-            } else {
-                _nestedArray = [];
-            }
-            return {
-                any: _any,
-                boolean: _boolean,
-                string: _string,
-                timestamp: _timestamp,
-                float32: _float32,
-                float64: _float64,
-                int8: _int8,
-                uint8: _uint8,
-                int16: _int16,
-                uint16: _uint16,
-                int32: _int32,
-                uint32: _uint32,
-                int64: _int64,
-                uint64: _uint64,
-                enumerator: _enumerator,
-                array: _array,
-                object: _object,
-                record: _record,
-                discriminator: _discriminator,
-                nestedObject: _nestedObject,
-                nestedArray: _nestedArray,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryType {
-            return $$FooObjectWithEveryType.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"any":';
-            json += JSON.stringify(input.any);
-            json += ',"boolean":';
-            json += `${input.boolean}`;
-            json += ',"string":';
-            json += serializeString(input.string);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += ',"float32":';
-            json += `${input.float32}`;
-            json += ',"float64":';
-            json += `${input.float64}`;
-            json += ',"int8":';
-            json += `${input.int8}`;
-            json += ',"uint8":';
-            json += `${input.uint8}`;
-            json += ',"int16":';
-            json += `${input.int16}`;
-            json += ',"uint16":';
-            json += `${input.uint16}`;
-            json += ',"int32":';
-            json += `${input.int32}`;
-            json += ',"uint32":';
-            json += `${input.uint32}`;
-            json += ',"int64":';
-            json += `"${input.int64}"`;
-            json += ',"uint64":';
-            json += `"${input.uint64}"`;
-            json += ',"enumerator":';
-            json += `"${input.enumerator}"`;
-            json += ',"array":';
-            json += '[';
-            for (let i = 0; i < input.array.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputArrayEl = input.array[i];
-                json += `${_inputArrayEl}`;
-            }
-            json += ']';
-            json += ',"object":';
-            json += $$FooObjectWithEveryTypeObject.toJsonString(input.object);
-            json += ',"record":';
-            json += '{';
-            let _recordPropertyCount = 0;
-            for (const [_key, _value] of Object.entries(input.record)) {
-                if (_recordPropertyCount !== 0) {
-                    json += ',';
-                }
-                json += `${serializeString(_key)}:`;
-                json += `"${_value}"`;
-                _recordPropertyCount++;
-            }
-            json += '}';
-
-            json += ',"discriminator":';
-            json += $$FooObjectWithEveryTypeDiscriminator.toJsonString(
-                input.discriminator,
-            );
-            json += ',"nestedObject":';
-            json += $$FooObjectWithEveryTypeNestedObject.toJsonString(
-                input.nestedObject,
-            );
-            json += ',"nestedArray":';
-            json += '[';
-            for (let i = 0; i < input.nestedArray.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputNestedArrayEl = input.nestedArray[i];
-                json += '[';
-                for (let i = 0; i < _inputNestedArrayEl.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputNestedArrayElEl = _inputNestedArrayEl[i];
-                    json +=
-                        $$FooObjectWithEveryTypeNestedArrayElementElement.toJsonString(
-                            _inputNestedArrayElEl,
-                        );
-                }
-                json += ']';
-            }
-            json += ']';
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            console.warn(
-                "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
-            );
-            queryParts.push(`boolean=${input.boolean}`);
-            queryParts.push(`string=${input.string}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            queryParts.push(`float32=${input.float32}`);
-            queryParts.push(`float64=${input.float64}`);
-            queryParts.push(`int8=${input.int8}`);
-            queryParts.push(`uint8=${input.uint8}`);
-            queryParts.push(`int16=${input.int16}`);
-            queryParts.push(`uint16=${input.uint16}`);
-            queryParts.push(`int32=${input.int32}`);
-            queryParts.push(`uint32=${input.uint32}`);
-            queryParts.push(`int64=${input.int64}`);
-            queryParts.push(`uint64=${input.uint64}`);
-            queryParts.push(`enumerator=${input.enumerator}`);
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/nestedObject.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/nestedArray.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryTypeNew(): FooObjectWithEveryType {
+    return {
+        any: undefined,
+        boolean: false,
+        string: '',
+        timestamp: new Date(0),
+        float32: 0,
+        float64: 0,
+        int8: 0,
+        uint8: 0,
+        int16: 0,
+        uint16: 0,
+        int32: 0,
+        uint32: 0,
+        int64: BigInt(0),
+        uint64: BigInt(0),
+        enumerator: FooObjectWithEveryTypeEnumeratorNew(),
+        array: [],
+        object: FooObjectWithEveryTypeObjectNew(),
+        record: {},
+        discriminator: FooObjectWithEveryTypeDiscriminatorNew(),
+        nestedObject: FooObjectWithEveryTypeNestedObjectNew(),
+        nestedArray: [],
     };
+}
+export function FooObjectWithEveryTypeFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryType {
+    let _any: any;
+    _any = input.any;
+    let _boolean: boolean;
+    _boolean = parseBoolean(input.boolean);
+    let _string: string;
+    _string = parseString(input.string);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _float32: number;
+    _float32 = parseNumberFloat(input.float32);
+    let _float64: number;
+    _float64 = parseNumberFloat(input.float64);
+    let _int8: number;
+    _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
+    let _uint8: number;
+    _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
+    let _int16: number;
+    _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
+    let _uint16: number;
+    _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
+    let _int32: number;
+    _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
+    let _uint32: number;
+    _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
+    let _int64: bigint;
+    _int64 = parseNumberBigInt(input.int64);
+    let _uint64: bigint;
+    _uint64 = parseNumberUnsignedBigInt(input.uint64);
+    let _enumerator: FooObjectWithEveryTypeEnumerator;
+    if (typeof input.enumerator === 'string') {
+        _enumerator = FooObjectWithEveryTypeEnumeratorFromSerialValue(
+            input.enumerator,
+        );
+    } else {
+        _enumerator = FooObjectWithEveryTypeEnumeratorNew();
+    }
+    let _array: boolean[];
+    if (Array.isArray(input.array)) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = parseBoolean(_arrayEl);
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = [];
+    }
+    let _object: FooObjectWithEveryTypeObject;
+    if (isObject(input.object)) {
+        _object = FooObjectWithEveryTypeObjectFromJson(input.object);
+    } else {
+        _object = FooObjectWithEveryTypeObjectNew();
+    }
+    let _record: Record<string, bigint>;
+    if (isObject(input.record)) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: bigint;
+            _recordValue = parseNumberUnsignedBigInt(_value);
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = {};
+    }
+    let _discriminator: FooObjectWithEveryTypeDiscriminator;
+    if (isObject(input.discriminator)) {
+        _discriminator = FooObjectWithEveryTypeDiscriminatorFromJson(
+            input.discriminator,
+        );
+    } else {
+        _discriminator = FooObjectWithEveryTypeDiscriminatorNew();
+    }
+    let _nestedObject: FooObjectWithEveryTypeNestedObject;
+    if (isObject(input.nestedObject)) {
+        _nestedObject = FooObjectWithEveryTypeNestedObjectFromJson(
+            input.nestedObject,
+        );
+    } else {
+        _nestedObject = FooObjectWithEveryTypeNestedObjectNew();
+    }
+    let _nestedArray: FooObjectWithEveryTypeNestedArrayElementElement[][];
+    if (Array.isArray(input.nestedArray)) {
+        _nestedArray = [];
+        for (const _nestedArrayEl of input.nestedArray) {
+            let _nestedArrayElValue: FooObjectWithEveryTypeNestedArrayElementElement[];
+            if (Array.isArray(_nestedArrayEl)) {
+                _nestedArrayElValue = [];
+                for (const _nestedArrayElValueEl of _nestedArrayEl) {
+                    let _nestedArrayElValueElValue: FooObjectWithEveryTypeNestedArrayElementElement;
+                    if (isObject(_nestedArrayElValueEl)) {
+                        _nestedArrayElValueElValue =
+                            FooObjectWithEveryTypeNestedArrayElementElementFromJson(
+                                _nestedArrayElValueEl,
+                            );
+                    } else {
+                        _nestedArrayElValueElValue =
+                            FooObjectWithEveryTypeNestedArrayElementElementNew();
+                    }
+                    _nestedArrayElValue.push(_nestedArrayElValueElValue);
+                }
+            } else {
+                _nestedArrayElValue = [];
+            }
+            _nestedArray.push(_nestedArrayElValue);
+        }
+    } else {
+        _nestedArray = [];
+    }
+    return {
+        any: _any,
+        boolean: _boolean,
+        string: _string,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enumerator: _enumerator,
+        array: _array,
+        object: _object,
+        record: _record,
+        discriminator: _discriminator,
+        nestedObject: _nestedObject,
+        nestedArray: _nestedArray,
+    };
+}
+export function FooObjectWithEveryTypeFromJsonString(
+    input: string,
+): FooObjectWithEveryType {
+    return FooObjectWithEveryTypeFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeToJsonString(
+    input: FooObjectWithEveryType,
+): string {
+    let json = '{';
+    json += '"any":';
+    json += JSON.stringify(input.any);
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"string":';
+    json += serializeString(input.string);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"float32":';
+    json += `${input.float32}`;
+    json += ',"float64":';
+    json += `${input.float64}`;
+    json += ',"int8":';
+    json += `${input.int8}`;
+    json += ',"uint8":';
+    json += `${input.uint8}`;
+    json += ',"int16":';
+    json += `${input.int16}`;
+    json += ',"uint16":';
+    json += `${input.uint16}`;
+    json += ',"int32":';
+    json += `${input.int32}`;
+    json += ',"uint32":';
+    json += `${input.uint32}`;
+    json += ',"int64":';
+    json += `"${input.int64}"`;
+    json += ',"uint64":';
+    json += `"${input.uint64}"`;
+    json += ',"enumerator":';
+    json += `"${input.enumerator}"`;
+    json += ',"array":';
+    json += '[';
+    for (let i = 0; i < input.array.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputArrayEl = input.array[i];
+        json += `${_inputArrayEl}`;
+    }
+    json += ']';
+    json += ',"object":';
+    json += FooObjectWithEveryTypeObjectToJsonString(input.object);
+    json += ',"record":';
+    json += '{';
+    let _recordPropertyCount = 0;
+    for (const [_key, _value] of Object.entries(input.record)) {
+        if (_recordPropertyCount !== 0) {
+            json += ',';
+        }
+        json += `${serializeString(_key)}:`;
+        json += `"${_value}"`;
+        _recordPropertyCount++;
+    }
+    json += '}';
 
+    json += ',"discriminator":';
+    json += FooObjectWithEveryTypeDiscriminatorToJsonString(
+        input.discriminator,
+    );
+    json += ',"nestedObject":';
+    json += FooObjectWithEveryTypeNestedObjectToJsonString(input.nestedObject);
+    json += ',"nestedArray":';
+    json += '[';
+    for (let i = 0; i < input.nestedArray.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputNestedArrayEl = input.nestedArray[i];
+        json += '[';
+        for (let i = 0; i < _inputNestedArrayEl.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputNestedArrayElEl = _inputNestedArrayEl[i];
+            json += FooObjectWithEveryTypeNestedArrayElementElementToJsonString(
+                _inputNestedArrayElEl,
+            );
+        }
+        json += ']';
+    }
+    json += ']';
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeToUrlSearchParams(
+    input: FooObjectWithEveryType,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
+    );
+    params.set('boolean', `${input.boolean}`);
+    params.set('string', input.string);
+    params.set('timestamp', input.timestamp.toISOString());
+    params.set('float32', `${input.float32}`);
+    params.set('float64', `${input.float64}`);
+    params.set('int8', `${input.int8}`);
+    params.set('uint8', `${input.uint8}`);
+    params.set('int16', `${input.int16}`);
+    params.set('uint16', `${input.uint16}`);
+    params.set('int32', `${input.int32}`);
+    params.set('uint32', `${input.uint32}`);
+    params.set('int64', `${input.int64}`);
+    params.set('uint64', `${input.uint64}`);
+    params.set('enumerator', input.enumerator);
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/nestedObject.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/nestedArray.',
+    );
+    return params;
+}
+export function FooObjectWithEveryTypeToUrlSearchParamsString(
+    input: FooObjectWithEveryType,
+): string {
+    return FooObjectWithEveryTypeToUrlSearchParams(input).toString();
+}
+
+export const $$FooObjectWithEveryType: TestClientPrefixedValidator<FooObjectWithEveryType> =
+    {
+        new: FooObjectWithEveryTypeNew,
+
+        fromJson: FooObjectWithEveryTypeFromJson,
+        fromJsonString: FooObjectWithEveryTypeFromJsonString,
+        toJsonString: FooObjectWithEveryTypeToJsonString,
+        toUrlSearchParams: FooObjectWithEveryTypeToUrlSearchParams,
+        toUrlSearchParamsString: FooObjectWithEveryTypeToUrlSearchParamsString,
+    };
 export type FooObjectWithEveryTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryTypeEnumerator = {
     A: 'A',
     B: 'B',
     C: 'C',
 } as const;
-const $$FooObjectWithEveryTypeEnumeratorValues = ['A', 'B', 'C'] as const;
-export const $$FooObjectWithEveryTypeEnumerator: ArriEnumValidator<FooObjectWithEveryTypeEnumerator> =
+export const FooObjectWithEveryTypeEnumeratorValues = ['A', 'B', 'C'] as const;
+export function FooObjectWithEveryTypeEnumeratorNew(): FooObjectWithEveryTypeEnumerator {
+    return FooObjectWithEveryTypeEnumeratorValues[0];
+}
+export function FooObjectWithEveryTypeEnumeratorFromSerialValue(
+    input: string,
+): FooObjectWithEveryTypeEnumerator {
+    if (FooObjectWithEveryTypeEnumeratorValues.includes(input as any)) {
+        return input as FooObjectWithEveryTypeEnumerator;
+    }
+    if (
+        FooObjectWithEveryTypeEnumeratorValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as FooObjectWithEveryTypeEnumerator;
+    }
+    if (
+        FooObjectWithEveryTypeEnumeratorValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as FooObjectWithEveryTypeEnumerator;
+    }
+    return 'A';
+}
+export const $$FooObjectWithEveryTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryTypeEnumerator> =
     {
-        new(): FooObjectWithEveryTypeEnumerator {
-            return $$FooObjectWithEveryTypeEnumeratorValues[0];
-        },
-        validate(input): input is ObjectWithEveryTypeEnumerator {
-            return (
-                typeof input === 'string' &&
-                $$FooObjectWithEveryTypeEnumeratorValues.includes(input as any)
-            );
-        },
-        values: $$FooObjectWithEveryTypeEnumeratorValues,
-        fromSerialValue(input): FooObjectWithEveryTypeEnumerator {
-            if (
-                $$FooObjectWithEveryTypeEnumeratorValues.includes(input as any)
-            ) {
-                return input as FooObjectWithEveryTypeEnumerator;
-            }
-            if (
-                $$FooObjectWithEveryTypeEnumeratorValues.includes(
-                    input.toLowerCase() as any,
-                )
-            ) {
-                return input.toLowerCase() as FooObjectWithEveryTypeEnumerator;
-            }
-            if (
-                $$FooObjectWithEveryTypeEnumeratorValues.includes(
-                    input.toUpperCase() as any,
-                )
-            ) {
-                return input.toUpperCase() as FooObjectWithEveryTypeEnumerator;
-            }
-            return 'A';
-        },
-    };
+        new: FooObjectWithEveryTypeEnumeratorNew,
 
+        values: FooObjectWithEveryTypeEnumeratorValues,
+        fromSerialValue: FooObjectWithEveryTypeEnumeratorFromSerialValue,
+    };
 export interface FooObjectWithEveryTypeObject {
     string: string;
     boolean: boolean;
     timestamp: Date;
 }
-export const $$FooObjectWithEveryTypeObject: ArriModelValidator<FooObjectWithEveryTypeObject> =
+export function FooObjectWithEveryTypeObjectNew(): FooObjectWithEveryTypeObject {
+    return {
+        string: '',
+        boolean: false,
+        timestamp: new Date(0),
+    };
+}
+export function FooObjectWithEveryTypeObjectFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeObject {
+    let _string: string;
+    _string = parseString(input.string);
+    let _boolean: boolean;
+    _boolean = parseBoolean(input.boolean);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryTypeObjectFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeObject {
+    return FooObjectWithEveryTypeObjectFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeObjectToJsonString(
+    input: FooObjectWithEveryTypeObject,
+): string {
+    let json = '{';
+    json += '"string":';
+    json += serializeString(input.string);
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeObjectToUrlSearchParams(
+    input: FooObjectWithEveryTypeObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('string', input.string);
+    params.set('boolean', `${input.boolean}`);
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function FooObjectWithEveryTypeObjectToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeObject,
+): string {
+    return FooObjectWithEveryTypeObjectToUrlSearchParams(input).toString();
+}
+
+export const $$FooObjectWithEveryTypeObject: TestClientPrefixedValidator<FooObjectWithEveryTypeObject> =
     {
-        new(): FooObjectWithEveryTypeObject {
-            return {
-                string: '',
-                boolean: false,
-                timestamp: new Date(0),
-            };
-        },
-        validate(input): input is FooObjectWithEveryTypeObject {
-            return (
-                isObject(input) &&
-                typeof input.string === 'string' &&
-                typeof input.boolean === 'boolean' &&
-                input.timestamp instanceof Date
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeObject {
-            let _string: string;
-            _string = parseString(input.string);
-            let _boolean: boolean;
-            _boolean = parseBoolean(input.boolean);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            return {
-                string: _string,
-                boolean: _boolean,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeObject {
-            return $$FooObjectWithEveryTypeObject.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"string":';
-            json += serializeString(input.string);
-            json += ',"boolean":';
-            json += `${input.boolean}`;
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`string=${input.string}`);
-            queryParts.push(`boolean=${input.boolean}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryTypeObjectNew,
+
+        fromJson: FooObjectWithEveryTypeObjectFromJson,
+        fromJsonString: FooObjectWithEveryTypeObjectFromJsonString,
+        toJsonString: FooObjectWithEveryTypeObjectToJsonString,
+        toUrlSearchParams: FooObjectWithEveryTypeObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeObjectToUrlSearchParamsString,
     };
 
 export type FooObjectWithEveryTypeDiscriminator =
     | FooObjectWithEveryTypeDiscriminatorA
     | FooObjectWithEveryTypeDiscriminatorB;
-export const $$FooObjectWithEveryTypeDiscriminator: ArriModelValidator<FooObjectWithEveryTypeDiscriminator> =
+export function FooObjectWithEveryTypeDiscriminatorNew(): FooObjectWithEveryTypeDiscriminator {
+    return FooObjectWithEveryTypeDiscriminatorANew();
+}
+export function FooObjectWithEveryTypeDiscriminatorFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeDiscriminator {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryTypeDiscriminatorAFromJson(input);
+        case 'B':
+            return FooObjectWithEveryTypeDiscriminatorBFromJson(input);
+        default:
+            return FooObjectWithEveryTypeDiscriminatorANew();
+    }
+}
+export function FooObjectWithEveryTypeDiscriminatorFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeDiscriminator {
+    return FooObjectWithEveryTypeDiscriminatorFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeDiscriminatorToJsonString(
+    input: FooObjectWithEveryTypeDiscriminator,
+): string {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryTypeDiscriminatorAToJsonString(input);
+        case 'B':
+            return FooObjectWithEveryTypeDiscriminatorBToJsonString(input);
+        default:
+            throw new Error(`Unhandled case "${(input as any).type}"`);
+    }
+}
+export function FooObjectWithEveryTypeDiscriminatorToUrlSearchParams(
+    input: FooObjectWithEveryTypeDiscriminator,
+): URLSearchParams {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams(input);
+        case 'B':
+            return FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams(input);
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooObjectWithEveryTypeDiscriminatorToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeDiscriminator,
+): string {
+    return FooObjectWithEveryTypeDiscriminatorToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$FooObjectWithEveryTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminator> =
     {
-        new(): FooObjectWithEveryTypeDiscriminator {
-            return $$FooObjectWithEveryTypeDiscriminatorA.new();
-        },
-        validate(input): input is FooObjectWithEveryTypeDiscriminator {
-            if (!isObject(input)) {
-                return false;
-            }
-            if (typeof input.type !== 'string') {
-                return false;
-            }
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryTypeDiscriminatorA.validate(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryTypeDiscriminatorB.validate(
-                        input,
-                    );
-                default:
-                    return false;
-            }
-        },
-        fromJson(input): FooObjectWithEveryTypeDiscriminator {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryTypeDiscriminatorA.fromJson(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryTypeDiscriminatorB.fromJson(
-                        input,
-                    );
-                default:
-                    return $$FooObjectWithEveryTypeDiscriminatorA.new();
-            }
-        },
-        fromJsonString(input): FooObjectWithEveryTypeDiscriminator {
-            return $$FooObjectWithEveryTypeDiscriminator.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryTypeDiscriminatorA.toJsonString(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryTypeDiscriminatorB.toJsonString(
-                        input,
-                    );
-                default:
-                    throw new Error(`Unhandled case "${(input as any).type}"`);
-            }
-        },
-        toUrlQueryString(input): string {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryTypeDiscriminatorA.toUrlQueryString(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryTypeDiscriminatorB.toUrlQueryString(
-                        input,
-                    );
-                default:
-                    throw new Error('Unhandled case');
-            }
-        },
+        new: FooObjectWithEveryTypeDiscriminatorNew,
+
+        fromJson: FooObjectWithEveryTypeDiscriminatorFromJson,
+        fromJsonString: FooObjectWithEveryTypeDiscriminatorFromJsonString,
+        toJsonString: FooObjectWithEveryTypeDiscriminatorToJsonString,
+        toUrlSearchParams: FooObjectWithEveryTypeDiscriminatorToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeDiscriminatorToUrlSearchParamsString,
     };
 export interface FooObjectWithEveryTypeDiscriminatorA {
     type: 'A';
     title: string;
 }
-const $$FooObjectWithEveryTypeDiscriminatorA: ArriModelValidator<FooObjectWithEveryTypeDiscriminatorA> =
+export function FooObjectWithEveryTypeDiscriminatorANew(): FooObjectWithEveryTypeDiscriminatorA {
+    return {
+        type: 'A',
+        title: '',
+    };
+}
+export function FooObjectWithEveryTypeDiscriminatorAFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeDiscriminatorA {
+    const _type = 'A';
+    let _title: string;
+    _title = parseString(input.title);
+    return {
+        type: _type,
+        title: _title,
+    };
+}
+export function FooObjectWithEveryTypeDiscriminatorAFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeDiscriminatorA {
+    return FooObjectWithEveryTypeDiscriminatorAFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeDiscriminatorAToJsonString(
+    input: FooObjectWithEveryTypeDiscriminatorA,
+): string {
+    let json = '{';
+    json += '"type":"A"';
+    json += ',"title":';
+    json += serializeString(input.title);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams(
+    input: FooObjectWithEveryTypeDiscriminatorA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'A');
+    params.set('title', input.title);
+    return params;
+}
+export function FooObjectWithEveryTypeDiscriminatorAToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeDiscriminatorA,
+): string {
+    return FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooObjectWithEveryTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminatorA> =
     {
-        new(): FooObjectWithEveryTypeDiscriminatorA {
-            return {
-                type: 'A',
-                title: '',
-            };
-        },
-        validate(input): input is FooObjectWithEveryTypeDiscriminatorA {
-            return (
-                isObject(input) &&
-                input.type === 'A' &&
-                typeof input.title === 'string'
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeDiscriminatorA {
-            const _type = 'A';
-            let _title: string;
-            _title = parseString(input.title);
-            return {
-                type: _type,
-                title: _title,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeDiscriminatorA {
-            return $$FooObjectWithEveryTypeDiscriminatorA.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"A"';
-            json += ',"title":';
-            json += serializeString(input.title);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=A');
-            queryParts.push(`title=${input.title}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryTypeDiscriminatorANew,
+
+        fromJson: FooObjectWithEveryTypeDiscriminatorAFromJson,
+        fromJsonString: FooObjectWithEveryTypeDiscriminatorAFromJsonString,
+        toJsonString: FooObjectWithEveryTypeDiscriminatorAToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeDiscriminatorAToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryTypeDiscriminatorB {
@@ -1502,57 +1560,72 @@ export interface FooObjectWithEveryTypeDiscriminatorB {
     title: string;
     description: string;
 }
-const $$FooObjectWithEveryTypeDiscriminatorB: ArriModelValidator<FooObjectWithEveryTypeDiscriminatorB> =
+export function FooObjectWithEveryTypeDiscriminatorBNew(): FooObjectWithEveryTypeDiscriminatorB {
+    return {
+        type: 'B',
+        title: '',
+        description: '',
+    };
+}
+export function FooObjectWithEveryTypeDiscriminatorBFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeDiscriminatorB {
+    const _type = 'B';
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        type: _type,
+        title: _title,
+        description: _description,
+    };
+}
+export function FooObjectWithEveryTypeDiscriminatorBFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeDiscriminatorB {
+    return FooObjectWithEveryTypeDiscriminatorBFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeDiscriminatorBToJsonString(
+    input: FooObjectWithEveryTypeDiscriminatorB,
+): string {
+    let json = '{';
+    json += '"type":"B"';
+    json += ',"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams(
+    input: FooObjectWithEveryTypeDiscriminatorB,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'B');
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeDiscriminatorB,
+): string {
+    return FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooObjectWithEveryTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminatorB> =
     {
-        new(): FooObjectWithEveryTypeDiscriminatorB {
-            return {
-                type: 'B',
-                title: '',
-                description: '',
-            };
-        },
-        validate(input): input is FooObjectWithEveryTypeDiscriminatorB {
-            return (
-                isObject(input) &&
-                input.type === 'B' &&
-                typeof input.title === 'string' &&
-                typeof input.description === 'string'
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeDiscriminatorB {
-            const _type = 'B';
-            let _title: string;
-            _title = parseString(input.title);
-            let _description: string;
-            _description = parseString(input.description);
-            return {
-                type: _type,
-                title: _title,
-                description: _description,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeDiscriminatorB {
-            return $$FooObjectWithEveryTypeDiscriminatorB.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"B"';
-            json += ',"title":';
-            json += serializeString(input.title);
-            json += ',"description":';
-            json += serializeString(input.description);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=B');
-            queryParts.push(`title=${input.title}`);
-            queryParts.push(`description=${input.description}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryTypeDiscriminatorBNew,
+
+        fromJson: FooObjectWithEveryTypeDiscriminatorBFromJson,
+        fromJsonString: FooObjectWithEveryTypeDiscriminatorBFromJsonString,
+        toJsonString: FooObjectWithEveryTypeDiscriminatorBToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryTypeNestedObject {
@@ -1560,245 +1633,299 @@ export interface FooObjectWithEveryTypeNestedObject {
     timestamp: Date;
     data: FooObjectWithEveryTypeNestedObjectData;
 }
-export const $$FooObjectWithEveryTypeNestedObject: ArriModelValidator<FooObjectWithEveryTypeNestedObject> =
-    {
-        new(): FooObjectWithEveryTypeNestedObject {
-            return {
-                id: '',
-                timestamp: new Date(0),
-                data: $$FooObjectWithEveryTypeNestedObjectData.new(),
-            };
-        },
-        validate(input): input is FooObjectWithEveryTypeNestedObject {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date &&
-                $$FooObjectWithEveryTypeNestedObjectData.validate(input.data)
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeNestedObject {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            let _data: FooObjectWithEveryTypeNestedObjectData;
-            if (isObject(input.data)) {
-                _data = $$FooObjectWithEveryTypeNestedObjectData.fromJson(
-                    input.data,
-                );
-            } else {
-                _data = $$FooObjectWithEveryTypeNestedObjectData.new();
-            }
-            return {
-                id: _id,
-                timestamp: _timestamp,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeNestedObject {
-            return $$FooObjectWithEveryTypeNestedObject.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += ',"data":';
-            json += $$FooObjectWithEveryTypeNestedObjectData.toJsonString(
-                input.data,
-            );
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryTypeNestedObject/data.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryTypeNestedObjectNew(): FooObjectWithEveryTypeNestedObject {
+    return {
+        id: '',
+        timestamp: new Date(0),
+        data: FooObjectWithEveryTypeNestedObjectDataNew(),
     };
+}
+export function FooObjectWithEveryTypeNestedObjectFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeNestedObject {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _data: FooObjectWithEveryTypeNestedObjectData;
+    if (isObject(input.data)) {
+        _data = FooObjectWithEveryTypeNestedObjectDataFromJson(input.data);
+    } else {
+        _data = FooObjectWithEveryTypeNestedObjectDataNew();
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
+}
+export function FooObjectWithEveryTypeNestedObjectFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeNestedObject {
+    return FooObjectWithEveryTypeNestedObjectFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeNestedObjectToJsonString(
+    input: FooObjectWithEveryTypeNestedObject,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"data":';
+    json += FooObjectWithEveryTypeNestedObjectDataToJsonString(input.data);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeNestedObjectToUrlSearchParams(
+    input: FooObjectWithEveryTypeNestedObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryTypeNestedObject/data.',
+    );
+    return params;
+}
+export function FooObjectWithEveryTypeNestedObjectToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeNestedObject,
+): string {
+    return FooObjectWithEveryTypeNestedObjectToUrlSearchParams(
+        input,
+    ).toString();
+}
 
+export const $$FooObjectWithEveryTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObject> =
+    {
+        new: FooObjectWithEveryTypeNestedObjectNew,
+
+        fromJson: FooObjectWithEveryTypeNestedObjectFromJson,
+        fromJsonString: FooObjectWithEveryTypeNestedObjectFromJsonString,
+        toJsonString: FooObjectWithEveryTypeNestedObjectToJsonString,
+        toUrlSearchParams: FooObjectWithEveryTypeNestedObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeNestedObjectToUrlSearchParamsString,
+    };
 export interface FooObjectWithEveryTypeNestedObjectData {
     id: string;
     timestamp: Date;
     data: FooObjectWithEveryTypeNestedObjectDataData;
 }
-export const $$FooObjectWithEveryTypeNestedObjectData: ArriModelValidator<FooObjectWithEveryTypeNestedObjectData> =
-    {
-        new(): FooObjectWithEveryTypeNestedObjectData {
-            return {
-                id: '',
-                timestamp: new Date(0),
-                data: $$FooObjectWithEveryTypeNestedObjectDataData.new(),
-            };
-        },
-        validate(input): input is FooObjectWithEveryTypeNestedObjectData {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date &&
-                $$FooObjectWithEveryTypeNestedObjectDataData.validate(
-                    input.data,
-                )
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeNestedObjectData {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            let _data: FooObjectWithEveryTypeNestedObjectDataData;
-            if (isObject(input.data)) {
-                _data = $$FooObjectWithEveryTypeNestedObjectDataData.fromJson(
-                    input.data,
-                );
-            } else {
-                _data = $$FooObjectWithEveryTypeNestedObjectDataData.new();
-            }
-            return {
-                id: _id,
-                timestamp: _timestamp,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeNestedObjectData {
-            return $$FooObjectWithEveryTypeNestedObjectData.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += ',"data":';
-            json += $$FooObjectWithEveryTypeNestedObjectDataData.toJsonString(
-                input.data,
-            );
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryTypeNestedObjectData/data.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryTypeNestedObjectDataNew(): FooObjectWithEveryTypeNestedObjectData {
+    return {
+        id: '',
+        timestamp: new Date(0),
+        data: FooObjectWithEveryTypeNestedObjectDataDataNew(),
     };
+}
+export function FooObjectWithEveryTypeNestedObjectDataFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeNestedObjectData {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _data: FooObjectWithEveryTypeNestedObjectDataData;
+    if (isObject(input.data)) {
+        _data = FooObjectWithEveryTypeNestedObjectDataDataFromJson(input.data);
+    } else {
+        _data = FooObjectWithEveryTypeNestedObjectDataDataNew();
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
+}
+export function FooObjectWithEveryTypeNestedObjectDataFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeNestedObjectData {
+    return FooObjectWithEveryTypeNestedObjectDataFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeNestedObjectDataToJsonString(
+    input: FooObjectWithEveryTypeNestedObjectData,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"data":';
+    json += FooObjectWithEveryTypeNestedObjectDataDataToJsonString(input.data);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeNestedObjectDataToUrlSearchParams(
+    input: FooObjectWithEveryTypeNestedObjectData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryTypeNestedObjectData/data.',
+    );
+    return params;
+}
+export function FooObjectWithEveryTypeNestedObjectDataToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeNestedObjectData,
+): string {
+    return FooObjectWithEveryTypeNestedObjectDataToUrlSearchParams(
+        input,
+    ).toString();
+}
 
+export const $$FooObjectWithEveryTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObjectData> =
+    {
+        new: FooObjectWithEveryTypeNestedObjectDataNew,
+
+        fromJson: FooObjectWithEveryTypeNestedObjectDataFromJson,
+        fromJsonString: FooObjectWithEveryTypeNestedObjectDataFromJsonString,
+        toJsonString: FooObjectWithEveryTypeNestedObjectDataToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryTypeNestedObjectDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeNestedObjectDataToUrlSearchParamsString,
+    };
 export interface FooObjectWithEveryTypeNestedObjectDataData {
     id: string;
     timestamp: Date;
 }
-export const $$FooObjectWithEveryTypeNestedObjectDataData: ArriModelValidator<FooObjectWithEveryTypeNestedObjectDataData> =
+export function FooObjectWithEveryTypeNestedObjectDataDataNew(): FooObjectWithEveryTypeNestedObjectDataData {
+    return {
+        id: '',
+        timestamp: new Date(0),
+    };
+}
+export function FooObjectWithEveryTypeNestedObjectDataDataFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeNestedObjectDataData {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryTypeNestedObjectDataDataFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeNestedObjectDataData {
+    return FooObjectWithEveryTypeNestedObjectDataDataFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryTypeNestedObjectDataDataToJsonString(
+    input: FooObjectWithEveryTypeNestedObjectDataData,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParams(
+    input: FooObjectWithEveryTypeNestedObjectDataData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeNestedObjectDataData,
+): string {
+    return FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObjectDataData> =
     {
-        new(): FooObjectWithEveryTypeNestedObjectDataData {
-            return {
-                id: '',
-                timestamp: new Date(0),
-            };
-        },
-        validate(input): input is FooObjectWithEveryTypeNestedObjectDataData {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeNestedObjectDataData {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            return {
-                id: _id,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeNestedObjectDataData {
-            return $$FooObjectWithEveryTypeNestedObjectDataData.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryTypeNestedObjectDataDataNew,
+
+        fromJson: FooObjectWithEveryTypeNestedObjectDataDataFromJson,
+        fromJsonString:
+            FooObjectWithEveryTypeNestedObjectDataDataFromJsonString,
+        toJsonString: FooObjectWithEveryTypeNestedObjectDataDataToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryTypeNestedArrayElementElement {
     id: string;
     timestamp: Date;
 }
-export const $$FooObjectWithEveryTypeNestedArrayElementElement: ArriModelValidator<FooObjectWithEveryTypeNestedArrayElementElement> =
+export function FooObjectWithEveryTypeNestedArrayElementElementNew(): FooObjectWithEveryTypeNestedArrayElementElement {
+    return {
+        id: '',
+        timestamp: new Date(0),
+    };
+}
+export function FooObjectWithEveryTypeNestedArrayElementElementFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeNestedArrayElementElement {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryTypeNestedArrayElementElementFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeNestedArrayElementElement {
+    return FooObjectWithEveryTypeNestedArrayElementElementFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryTypeNestedArrayElementElementToJsonString(
+    input: FooObjectWithEveryTypeNestedArrayElementElement,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams(
+    input: FooObjectWithEveryTypeNestedArrayElementElement,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeNestedArrayElementElement,
+): string {
+    return FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedArrayElementElement> =
     {
-        new(): FooObjectWithEveryTypeNestedArrayElementElement {
-            return {
-                id: '',
-                timestamp: new Date(0),
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryTypeNestedArrayElementElement {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date
-            );
-        },
-        fromJson(input): FooObjectWithEveryTypeNestedArrayElementElement {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            return {
-                id: _id,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryTypeNestedArrayElementElement {
-            return $$FooObjectWithEveryTypeNestedArrayElementElement.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryTypeNestedArrayElementElementNew,
+
+        fromJson: FooObjectWithEveryTypeNestedArrayElementElementFromJson,
+        fromJsonString:
+            FooObjectWithEveryTypeNestedArrayElementElementFromJsonString,
+        toJsonString:
+            FooObjectWithEveryTypeNestedArrayElementElementToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryNullableType {
@@ -1829,707 +1956,649 @@ export interface FooObjectWithEveryNullableType {
           )[]
         | null;
 }
-export const $$FooObjectWithEveryNullableType: ArriModelValidator<FooObjectWithEveryNullableType> =
-    {
-        new(): FooObjectWithEveryNullableType {
-            return {
-                any: null,
-                boolean: null,
-                string: null,
-                timestamp: null,
-                float32: null,
-                float64: null,
-                int8: null,
-                uint8: null,
-                int16: null,
-                uint16: null,
-                int32: null,
-                uint32: null,
-                int64: null,
-                uint64: null,
-                enumerator: null,
-                array: null,
-                object: null,
-                record: null,
-                discriminator: null,
-                nestedObject: null,
-                nestedArray: null,
-            };
-        },
-        validate(input): input is FooObjectWithEveryNullableType {
-            return (
-                isObject(input) &&
-                true &&
-                (typeof input.boolean === 'boolean' ||
-                    input.boolean === null) &&
-                (typeof input.string === 'string' || input.string === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null) &&
-                (typeof input.float32 === 'number' || input.float32 === null) &&
-                (typeof input.float64 === 'number' || input.float64 === null) &&
-                ((typeof input.int8 === 'number' &&
-                    Number.isInteger(input.int8) &&
-                    input.int8 >= INT8_MIN &&
-                    input.int8 <= INT8_MAX) ||
-                    input.int8 === null) &&
-                ((typeof input.uint8 === 'number' &&
-                    Number.isInteger(input.uint8) &&
-                    input.uint8 >= 0 &&
-                    input.uint8 <= UINT8_MAX) ||
-                    input.uint8 === null) &&
-                ((typeof input.int16 === 'number' &&
-                    Number.isInteger(input.int16) &&
-                    input.int16 >= INT16_MIN &&
-                    input.int16 <= INT16_MAX) ||
-                    input.int16 === null) &&
-                ((typeof input.uint16 === 'number' &&
-                    Number.isInteger(input.uint16) &&
-                    input.uint16 >= 0 &&
-                    input.uint16 <= UINT16_MAX) ||
-                    input.uint16 === null) &&
-                ((typeof input.int32 === 'number' &&
-                    Number.isInteger(input.int32) &&
-                    input.int32 >= INT32_MIN &&
-                    input.int32 <= INT32_MAX) ||
-                    input.int32 === null) &&
-                ((typeof input.uint32 === 'number' &&
-                    Number.isInteger(input.uint32) &&
-                    input.uint32 >= 0 &&
-                    input.uint32 <= UINT32_MAX) ||
-                    input.uint32 === null) &&
-                ((typeof input.int64 === 'bigint' &&
-                    input.int64 >= INT64_MIN &&
-                    input.int64 <= INT64_MAX) ||
-                    input.int64 === null) &&
-                ((typeof input.uint64 === 'bigint' &&
-                    input.uint64 >= BigInt(0) &&
-                    input.uint64 <= UINT64_MAX) ||
-                    input.uint64 === null) &&
-                ($$FooObjectWithEveryNullableTypeEnumerator.validate(
-                    input.enumerator,
-                ) ||
-                    input.enumerator === null) &&
-                ((Array.isArray(input.array) &&
-                    input.array.every(
-                        (_element) =>
-                            typeof _element === 'boolean' || _element === null,
-                    )) ||
-                    input.array === null) &&
-                ($$FooObjectWithEveryNullableTypeObject.validate(
-                    input.object,
-                ) ||
-                    input.object === null) &&
-                ((isObject(input.record) &&
-                    Object.values(input.record).every(
-                        (_value) =>
-                            (typeof _value === 'bigint' &&
-                                _value >= BigInt(0) &&
-                                _value <= UINT64_MAX) ||
-                            _value === null,
-                    )) ||
-                    input.record === null) &&
-                ($$FooObjectWithEveryNullableTypeDiscriminator.validate(
-                    input.discriminator,
-                ) ||
-                    input.discriminator === null) &&
-                ($$FooObjectWithEveryNullableTypeNestedObject.validate(
-                    input.nestedObject,
-                ) ||
-                    input.nestedObject === null) &&
-                ((Array.isArray(input.nestedArray) &&
-                    input.nestedArray.every(
-                        (_element) =>
-                            (Array.isArray(_element) &&
-                                _element.every(
-                                    (_element) =>
-                                        $$FooObjectWithEveryNullableTypeNestedArrayElementElement.validate(
-                                            _element,
-                                        ) || _element === null,
-                                )) ||
-                            _element === null,
-                    )) ||
-                    input.nestedArray === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableType {
-            let _any: any;
-            _any = input.any;
-            let _boolean: boolean | null;
-            _boolean = parseNullableBoolean(input.boolean);
-            let _string: string | null;
-            _string = parseNullableString(input.string);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            let _float32: number | null;
-            _float32 = parseNullableNumberFloat(input.float32);
-            let _float64: number | null;
-            _float64 = parseNullableNumberFloat(input.float64);
-            let _int8: number | null;
-            _int8 = parseNullableNumberInt(input.int8, INT8_MIN, INT8_MAX);
-            let _uint8: number | null;
-            _uint8 = parseNullableNumberInt(input.uint8, 0, UINT8_MAX);
-            let _int16: number | null;
-            _int16 = parseNullableNumberInt(input.int16, INT16_MIN, INT16_MAX);
-            let _uint16: number | null;
-            _uint16 = parseNullableNumberInt(input.uint16, 0, UINT16_MAX);
-            let _int32: number | null;
-            _int32 = parseNullableNumberInt(input.int32, INT32_MIN, INT32_MAX);
-            let _uint32: number | null;
-            _uint32 = parseNullableNumberInt(input.uint32, 0, UINT32_MAX);
-            let _int64: bigint | null;
-            _int64 = parseNullableNumberBigInt(input.int64);
-            let _uint64: bigint | null;
-            _uint64 = parseNullableNumberUnsignedBigInt(input.uint64);
-            let _enumerator: FooObjectWithEveryNullableTypeEnumerator | null;
-            if (typeof input.enumerator === 'string') {
-                _enumerator =
-                    $$FooObjectWithEveryNullableTypeEnumerator.fromSerialValue(
-                        input.enumerator,
-                    );
-            } else {
-                _enumerator = null;
-            }
-            let _array: (boolean | null)[] | null;
-            if (Array.isArray(input.array)) {
-                _array = [];
-                for (const _arrayEl of input.array) {
-                    let _arrayElValue: boolean | null;
-                    _arrayElValue = parseNullableBoolean(_arrayEl);
-                    _array.push(_arrayElValue);
-                }
-            } else {
-                _array = null;
-            }
-            let _object: FooObjectWithEveryNullableTypeObject | null;
-            if (isObject(input.object)) {
-                _object = $$FooObjectWithEveryNullableTypeObject.fromJson(
-                    input.object,
-                );
-            } else {
-                _object = null;
-            }
-            let _record: Record<string, bigint | null> | null;
-            if (isObject(input.record)) {
-                _record = {};
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    let _recordValue: bigint | null;
-                    _recordValue = parseNullableNumberUnsignedBigInt(_value);
-                    _record[_key] = _recordValue;
-                }
-            } else {
-                _record = null;
-            }
-            let _discriminator: FooObjectWithEveryNullableTypeDiscriminator | null;
-            if (isObject(input.discriminator)) {
-                _discriminator =
-                    $$FooObjectWithEveryNullableTypeDiscriminator.fromJson(
-                        input.discriminator,
-                    );
-            } else {
-                _discriminator = null;
-            }
-            let _nestedObject: FooObjectWithEveryNullableTypeNestedObject | null;
-            if (isObject(input.nestedObject)) {
-                _nestedObject =
-                    $$FooObjectWithEveryNullableTypeNestedObject.fromJson(
-                        input.nestedObject,
-                    );
-            } else {
-                _nestedObject = null;
-            }
-            let _nestedArray:
-                | (
-                      | (FooObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
-                      | null
-                  )[]
-                | null;
-            if (Array.isArray(input.nestedArray)) {
-                _nestedArray = [];
-                for (const _nestedArrayEl of input.nestedArray) {
-                    let _nestedArrayElValue:
-                        | (FooObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
-                        | null;
-                    if (Array.isArray(_nestedArrayEl)) {
-                        _nestedArrayElValue = [];
-                        for (const _nestedArrayElValueEl of _nestedArrayEl) {
-                            let _nestedArrayElValueElValue: FooObjectWithEveryNullableTypeNestedArrayElementElement | null;
-                            if (isObject(_nestedArrayElValueEl)) {
-                                _nestedArrayElValueElValue =
-                                    $$FooObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
-                                        _nestedArrayElValueEl,
-                                    );
-                            } else {
-                                _nestedArrayElValueElValue = null;
-                            }
-                            _nestedArrayElValue.push(
-                                _nestedArrayElValueElValue,
-                            );
-                        }
-                    } else {
-                        _nestedArrayElValue = null;
-                    }
-                    _nestedArray.push(_nestedArrayElValue);
-                }
-            } else {
-                _nestedArray = null;
-            }
-            return {
-                any: _any,
-                boolean: _boolean,
-                string: _string,
-                timestamp: _timestamp,
-                float32: _float32,
-                float64: _float64,
-                int8: _int8,
-                uint8: _uint8,
-                int16: _int16,
-                uint16: _uint16,
-                int32: _int32,
-                uint32: _uint32,
-                int64: _int64,
-                uint64: _uint64,
-                enumerator: _enumerator,
-                array: _array,
-                object: _object,
-                record: _record,
-                discriminator: _discriminator,
-                nestedObject: _nestedObject,
-                nestedArray: _nestedArray,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryNullableType {
-            return $$FooObjectWithEveryNullableType.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"any":';
-            json += JSON.stringify(input.any);
-            json += ',"boolean":';
-            json += `${input.boolean}`;
-            json += ',"string":';
-            if (typeof input.string === 'string') {
-                json += serializeString(input.string);
-            } else {
-                json += 'null';
-            }
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"float32":';
-            json += `${input.float32}`;
-            json += ',"float64":';
-            json += `${input.float64}`;
-            json += ',"int8":';
-            json += `${input.int8}`;
-            json += ',"uint8":';
-            json += `${input.uint8}`;
-            json += ',"int16":';
-            json += `${input.int16}`;
-            json += ',"uint16":';
-            json += `${input.uint16}`;
-            json += ',"int32":';
-            json += `${input.int32}`;
-            json += ',"uint32":';
-            json += `${input.uint32}`;
-            json += ',"int64":';
-            if (typeof input.int64 === 'bigint') {
-                json += `"${input.int64}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"uint64":';
-            if (typeof input.uint64 === 'bigint') {
-                json += `"${input.uint64}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"enumerator":';
-            if (typeof input.enumerator === 'string') {
-                json += `"${input.enumerator}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"array":';
-            if (input.array !== null) {
-                json += '[';
-                for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputArrayEl = input.array[i];
-                    json += `${_inputArrayEl}`;
-                }
-                json += ']';
-            } else {
-                json += 'null';
-            }
-            json += ',"object":';
-            if (input.object !== null) {
-                json += $$FooObjectWithEveryNullableTypeObject.toJsonString(
-                    input.object,
-                );
-            } else {
-                json += 'null';
-            }
-            json += ',"record":';
-            if (input.record !== null) {
-                json += '{';
-                let _recordPropertyCount = 0;
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    if (_recordPropertyCount !== 0) {
-                        json += ',';
-                    }
-                    json += `${serializeString(_key)}:`;
-                    if (typeof _value === 'bigint') {
-                        json += `"${_value}"`;
-                    } else {
-                        json += 'null';
-                    }
-                    _recordPropertyCount++;
-                }
-                json += '}';
-            } else {
-                json += 'null';
-            }
-            json += ',"discriminator":';
-            if (input.discriminator != null) {
-                json +=
-                    $$FooObjectWithEveryNullableTypeDiscriminator.toJsonString(
-                        input.discriminator,
-                    );
-            } else {
-                json += 'null';
-            }
-            json += ',"nestedObject":';
-            if (input.nestedObject !== null) {
-                json +=
-                    $$FooObjectWithEveryNullableTypeNestedObject.toJsonString(
-                        input.nestedObject,
-                    );
-            } else {
-                json += 'null';
-            }
-            json += ',"nestedArray":';
-            if (input.nestedArray !== null) {
-                json += '[';
-                for (let i = 0; i < input.nestedArray.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputNestedArrayEl = input.nestedArray[i];
-                    if (_inputNestedArrayEl !== null) {
-                        json += '[';
-                        for (let i = 0; i < _inputNestedArrayEl.length; i++) {
-                            if (i !== 0) json += ',';
-                            const _inputNestedArrayElEl =
-                                _inputNestedArrayEl[i];
-                            if (_inputNestedArrayElEl !== null) {
-                                json +=
-                                    $$FooObjectWithEveryNullableTypeNestedArrayElementElement.toJsonString(
-                                        _inputNestedArrayElEl,
-                                    );
-                            } else {
-                                json += 'null';
-                            }
-                        }
-                        json += ']';
-                    } else {
-                        json += 'null';
-                    }
-                }
-                json += ']';
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            console.warn(
-                "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryNullableType/any.",
-            );
-            queryParts.push(`boolean=${input.boolean}`);
-            queryParts.push(`string=${input.string}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            queryParts.push(`float32=${input.float32}`);
-            queryParts.push(`float64=${input.float64}`);
-            queryParts.push(`int8=${input.int8}`);
-            queryParts.push(`uint8=${input.uint8}`);
-            queryParts.push(`int16=${input.int16}`);
-            queryParts.push(`uint16=${input.uint16}`);
-            queryParts.push(`int32=${input.int32}`);
-            queryParts.push(`uint32=${input.uint32}`);
-            queryParts.push(`int64=${input.int64}`);
-            queryParts.push(`uint64=${input.uint64}`);
-            queryParts.push(`enumerator=${input.enumerator}`);
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryNullableType/array.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/object.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/record.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/discriminator.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/nestedObject.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryNullableType/nestedArray.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryNullableTypeNew(): FooObjectWithEveryNullableType {
+    return {
+        any: null,
+        boolean: null,
+        string: null,
+        timestamp: null,
+        float32: null,
+        float64: null,
+        int8: null,
+        uint8: null,
+        int16: null,
+        uint16: null,
+        int32: null,
+        uint32: null,
+        int64: null,
+        uint64: null,
+        enumerator: null,
+        array: null,
+        object: null,
+        record: null,
+        discriminator: null,
+        nestedObject: null,
+        nestedArray: null,
     };
+}
+export function FooObjectWithEveryNullableTypeFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableType {
+    let _any: any;
+    _any = input.any;
+    let _boolean: boolean | null;
+    _boolean = parseNullableBoolean(input.boolean);
+    let _string: string | null;
+    _string = parseNullableString(input.string);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    let _float32: number | null;
+    _float32 = parseNullableNumberFloat(input.float32);
+    let _float64: number | null;
+    _float64 = parseNullableNumberFloat(input.float64);
+    let _int8: number | null;
+    _int8 = parseNullableNumberInt(input.int8, INT8_MIN, INT8_MAX);
+    let _uint8: number | null;
+    _uint8 = parseNullableNumberInt(input.uint8, 0, UINT8_MAX);
+    let _int16: number | null;
+    _int16 = parseNullableNumberInt(input.int16, INT16_MIN, INT16_MAX);
+    let _uint16: number | null;
+    _uint16 = parseNullableNumberInt(input.uint16, 0, UINT16_MAX);
+    let _int32: number | null;
+    _int32 = parseNullableNumberInt(input.int32, INT32_MIN, INT32_MAX);
+    let _uint32: number | null;
+    _uint32 = parseNullableNumberInt(input.uint32, 0, UINT32_MAX);
+    let _int64: bigint | null;
+    _int64 = parseNullableNumberBigInt(input.int64);
+    let _uint64: bigint | null;
+    _uint64 = parseNullableNumberUnsignedBigInt(input.uint64);
+    let _enumerator: FooObjectWithEveryNullableTypeEnumerator | null;
+    if (typeof input.enumerator === 'string') {
+        _enumerator = FooObjectWithEveryNullableTypeEnumeratorFromSerialValue(
+            input.enumerator,
+        );
+    } else {
+        _enumerator = null;
+    }
+    let _array: (boolean | null)[] | null;
+    if (Array.isArray(input.array)) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean | null;
+            _arrayElValue = parseNullableBoolean(_arrayEl);
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = null;
+    }
+    let _object: FooObjectWithEveryNullableTypeObject | null;
+    if (isObject(input.object)) {
+        _object = FooObjectWithEveryNullableTypeObjectFromJson(input.object);
+    } else {
+        _object = null;
+    }
+    let _record: Record<string, bigint | null> | null;
+    if (isObject(input.record)) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: bigint | null;
+            _recordValue = parseNullableNumberUnsignedBigInt(_value);
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = null;
+    }
+    let _discriminator: FooObjectWithEveryNullableTypeDiscriminator | null;
+    if (isObject(input.discriminator)) {
+        _discriminator = FooObjectWithEveryNullableTypeDiscriminatorFromJson(
+            input.discriminator,
+        );
+    } else {
+        _discriminator = null;
+    }
+    let _nestedObject: FooObjectWithEveryNullableTypeNestedObject | null;
+    if (isObject(input.nestedObject)) {
+        _nestedObject = FooObjectWithEveryNullableTypeNestedObjectFromJson(
+            input.nestedObject,
+        );
+    } else {
+        _nestedObject = null;
+    }
+    let _nestedArray:
+        | (
+              | (FooObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
+              | null
+          )[]
+        | null;
+    if (Array.isArray(input.nestedArray)) {
+        _nestedArray = [];
+        for (const _nestedArrayEl of input.nestedArray) {
+            let _nestedArrayElValue:
+                | (FooObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
+                | null;
+            if (Array.isArray(_nestedArrayEl)) {
+                _nestedArrayElValue = [];
+                for (const _nestedArrayElValueEl of _nestedArrayEl) {
+                    let _nestedArrayElValueElValue: FooObjectWithEveryNullableTypeNestedArrayElementElement | null;
+                    if (isObject(_nestedArrayElValueEl)) {
+                        _nestedArrayElValueElValue =
+                            FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson(
+                                _nestedArrayElValueEl,
+                            );
+                    } else {
+                        _nestedArrayElValueElValue = null;
+                    }
+                    _nestedArrayElValue.push(_nestedArrayElValueElValue);
+                }
+            } else {
+                _nestedArrayElValue = null;
+            }
+            _nestedArray.push(_nestedArrayElValue);
+        }
+    } else {
+        _nestedArray = null;
+    }
+    return {
+        any: _any,
+        boolean: _boolean,
+        string: _string,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enumerator: _enumerator,
+        array: _array,
+        object: _object,
+        record: _record,
+        discriminator: _discriminator,
+        nestedObject: _nestedObject,
+        nestedArray: _nestedArray,
+    };
+}
+export function FooObjectWithEveryNullableTypeFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableType {
+    return FooObjectWithEveryNullableTypeFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryNullableTypeToJsonString(
+    input: FooObjectWithEveryNullableType,
+): string {
+    let json = '{';
+    json += '"any":';
+    json += JSON.stringify(input.any);
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"string":';
+    if (typeof input.string === 'string') {
+        json += serializeString(input.string);
+    } else {
+        json += 'null';
+    }
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"float32":';
+    json += `${input.float32}`;
+    json += ',"float64":';
+    json += `${input.float64}`;
+    json += ',"int8":';
+    json += `${input.int8}`;
+    json += ',"uint8":';
+    json += `${input.uint8}`;
+    json += ',"int16":';
+    json += `${input.int16}`;
+    json += ',"uint16":';
+    json += `${input.uint16}`;
+    json += ',"int32":';
+    json += `${input.int32}`;
+    json += ',"uint32":';
+    json += `${input.uint32}`;
+    json += ',"int64":';
+    if (typeof input.int64 === 'bigint') {
+        json += `"${input.int64}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"uint64":';
+    if (typeof input.uint64 === 'bigint') {
+        json += `"${input.uint64}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"enumerator":';
+    if (typeof input.enumerator === 'string') {
+        json += `"${input.enumerator}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"array":';
+    if (input.array !== null) {
+        json += '[';
+        for (let i = 0; i < input.array.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputArrayEl = input.array[i];
+            json += `${_inputArrayEl}`;
+        }
+        json += ']';
+    } else {
+        json += 'null';
+    }
+    json += ',"object":';
+    if (input.object !== null) {
+        json += FooObjectWithEveryNullableTypeObjectToJsonString(input.object);
+    } else {
+        json += 'null';
+    }
+    json += ',"record":';
+    if (input.record !== null) {
+        json += '{';
+        let _recordPropertyCount = 0;
+        for (const [_key, _value] of Object.entries(input.record)) {
+            if (_recordPropertyCount !== 0) {
+                json += ',';
+            }
+            json += `${serializeString(_key)}:`;
+            if (typeof _value === 'bigint') {
+                json += `"${_value}"`;
+            } else {
+                json += 'null';
+            }
+            _recordPropertyCount++;
+        }
+        json += '}';
+    } else {
+        json += 'null';
+    }
+    json += ',"discriminator":';
+    if (input.discriminator != null) {
+        json += FooObjectWithEveryNullableTypeDiscriminatorToJsonString(
+            input.discriminator,
+        );
+    } else {
+        json += 'null';
+    }
+    json += ',"nestedObject":';
+    if (input.nestedObject !== null) {
+        json += FooObjectWithEveryNullableTypeNestedObjectToJsonString(
+            input.nestedObject,
+        );
+    } else {
+        json += 'null';
+    }
+    json += ',"nestedArray":';
+    if (input.nestedArray !== null) {
+        json += '[';
+        for (let i = 0; i < input.nestedArray.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputNestedArrayEl = input.nestedArray[i];
+            if (_inputNestedArrayEl !== null) {
+                json += '[';
+                for (let i = 0; i < _inputNestedArrayEl.length; i++) {
+                    if (i !== 0) json += ',';
+                    const _inputNestedArrayElEl = _inputNestedArrayEl[i];
+                    if (_inputNestedArrayElEl !== null) {
+                        json +=
+                            FooObjectWithEveryNullableTypeNestedArrayElementElementToJsonString(
+                                _inputNestedArrayElEl,
+                            );
+                    } else {
+                        json += 'null';
+                    }
+                }
+                json += ']';
+            } else {
+                json += 'null';
+            }
+        }
+        json += ']';
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeToUrlSearchParams(
+    input: FooObjectWithEveryNullableType,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryNullableType/any.",
+    );
+    params.set('boolean', `${input.boolean}`);
+    params.set('string', `${input.string}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    params.set('float32', `${input.float32}`);
+    params.set('float64', `${input.float64}`);
+    params.set('int8', `${input.int8}`);
+    params.set('uint8', `${input.uint8}`);
+    params.set('int16', `${input.int16}`);
+    params.set('uint16', `${input.uint16}`);
+    params.set('int32', `${input.int32}`);
+    params.set('uint32', `${input.uint32}`);
+    params.set('int64', `${input.int64}`);
+    params.set('uint64', `${input.uint64}`);
+    params.set('enumerator', `${input.enumerator}`);
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryNullableType/array.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/object.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/record.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/discriminator.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/nestedObject.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryNullableType/nestedArray.',
+    );
+    return params;
+}
+export function FooObjectWithEveryNullableTypeToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableType,
+): string {
+    return FooObjectWithEveryNullableTypeToUrlSearchParams(input).toString();
+}
 
+export const $$FooObjectWithEveryNullableType: TestClientPrefixedValidator<FooObjectWithEveryNullableType> =
+    {
+        new: FooObjectWithEveryNullableTypeNew,
+
+        fromJson: FooObjectWithEveryNullableTypeFromJson,
+        fromJsonString: FooObjectWithEveryNullableTypeFromJsonString,
+        toJsonString: FooObjectWithEveryNullableTypeToJsonString,
+        toUrlSearchParams: FooObjectWithEveryNullableTypeToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeToUrlSearchParamsString,
+    };
 export type FooObjectWithEveryNullableTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryNullableTypeEnumerator = {
     A: 'A',
     B: 'B',
     C: 'C',
 } as const;
-const $$FooObjectWithEveryNullableTypeEnumeratorValues = [
+export const FooObjectWithEveryNullableTypeEnumeratorValues = [
     'A',
     'B',
     'C',
 ] as const;
-export const $$FooObjectWithEveryNullableTypeEnumerator: ArriEnumValidator<FooObjectWithEveryNullableTypeEnumerator> =
+export function FooObjectWithEveryNullableTypeEnumeratorNew(): FooObjectWithEveryNullableTypeEnumerator {
+    return FooObjectWithEveryNullableTypeEnumeratorValues[0];
+}
+export function FooObjectWithEveryNullableTypeEnumeratorFromSerialValue(
+    input: string,
+): FooObjectWithEveryNullableTypeEnumerator {
+    if (FooObjectWithEveryNullableTypeEnumeratorValues.includes(input as any)) {
+        return input as FooObjectWithEveryNullableTypeEnumerator;
+    }
+    if (
+        FooObjectWithEveryNullableTypeEnumeratorValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as FooObjectWithEveryNullableTypeEnumerator;
+    }
+    if (
+        FooObjectWithEveryNullableTypeEnumeratorValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as FooObjectWithEveryNullableTypeEnumerator;
+    }
+    return 'A';
+}
+export const $$FooObjectWithEveryNullableTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryNullableTypeEnumerator> =
     {
-        new(): FooObjectWithEveryNullableTypeEnumerator {
-            return $$FooObjectWithEveryNullableTypeEnumeratorValues[0];
-        },
-        validate(input): input is ObjectWithEveryNullableTypeEnumerator {
-            return (
-                typeof input === 'string' &&
-                $$FooObjectWithEveryNullableTypeEnumeratorValues.includes(
-                    input as any,
-                )
-            );
-        },
-        values: $$FooObjectWithEveryNullableTypeEnumeratorValues,
-        fromSerialValue(input): FooObjectWithEveryNullableTypeEnumerator {
-            if (
-                $$FooObjectWithEveryNullableTypeEnumeratorValues.includes(
-                    input as any,
-                )
-            ) {
-                return input as FooObjectWithEveryNullableTypeEnumerator;
-            }
-            if (
-                $$FooObjectWithEveryNullableTypeEnumeratorValues.includes(
-                    input.toLowerCase() as any,
-                )
-            ) {
-                return input.toLowerCase() as FooObjectWithEveryNullableTypeEnumerator;
-            }
-            if (
-                $$FooObjectWithEveryNullableTypeEnumeratorValues.includes(
-                    input.toUpperCase() as any,
-                )
-            ) {
-                return input.toUpperCase() as FooObjectWithEveryNullableTypeEnumerator;
-            }
-            return 'A';
-        },
-    };
+        new: FooObjectWithEveryNullableTypeEnumeratorNew,
 
+        values: FooObjectWithEveryNullableTypeEnumeratorValues,
+        fromSerialValue:
+            FooObjectWithEveryNullableTypeEnumeratorFromSerialValue,
+    };
 export interface FooObjectWithEveryNullableTypeObject {
     string: string | null;
     boolean: boolean | null;
     timestamp: Date | null;
 }
-export const $$FooObjectWithEveryNullableTypeObject: ArriModelValidator<FooObjectWithEveryNullableTypeObject> =
+export function FooObjectWithEveryNullableTypeObjectNew(): FooObjectWithEveryNullableTypeObject {
+    return {
+        string: null,
+        boolean: null,
+        timestamp: null,
+    };
+}
+export function FooObjectWithEveryNullableTypeObjectFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeObject {
+    let _string: string | null;
+    _string = parseNullableString(input.string);
+    let _boolean: boolean | null;
+    _boolean = parseNullableBoolean(input.boolean);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryNullableTypeObjectFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeObject {
+    return FooObjectWithEveryNullableTypeObjectFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryNullableTypeObjectToJsonString(
+    input: FooObjectWithEveryNullableTypeObject,
+): string {
+    let json = '{';
+    json += '"string":';
+    if (typeof input.string === 'string') {
+        json += serializeString(input.string);
+    } else {
+        json += 'null';
+    }
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeObjectToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('string', `${input.string}`);
+    params.set('boolean', `${input.boolean}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    return params;
+}
+export function FooObjectWithEveryNullableTypeObjectToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeObject,
+): string {
+    return FooObjectWithEveryNullableTypeObjectToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryNullableTypeObject: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeObject> =
     {
-        new(): FooObjectWithEveryNullableTypeObject {
-            return {
-                string: null,
-                boolean: null,
-                timestamp: null,
-            };
-        },
-        validate(input): input is FooObjectWithEveryNullableTypeObject {
-            return (
-                isObject(input) &&
-                (typeof input.string === 'string' || input.string === null) &&
-                (typeof input.boolean === 'boolean' ||
-                    input.boolean === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeObject {
-            let _string: string | null;
-            _string = parseNullableString(input.string);
-            let _boolean: boolean | null;
-            _boolean = parseNullableBoolean(input.boolean);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            return {
-                string: _string,
-                boolean: _boolean,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryNullableTypeObject {
-            return $$FooObjectWithEveryNullableTypeObject.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"string":';
-            if (typeof input.string === 'string') {
-                json += serializeString(input.string);
-            } else {
-                json += 'null';
-            }
-            json += ',"boolean":';
-            json += `${input.boolean}`;
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`string=${input.string}`);
-            queryParts.push(`boolean=${input.boolean}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryNullableTypeObjectNew,
+
+        fromJson: FooObjectWithEveryNullableTypeObjectFromJson,
+        fromJsonString: FooObjectWithEveryNullableTypeObjectFromJsonString,
+        toJsonString: FooObjectWithEveryNullableTypeObjectToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeObjectToUrlSearchParamsString,
     };
 
 export type FooObjectWithEveryNullableTypeDiscriminator =
     | FooObjectWithEveryNullableTypeDiscriminatorA
     | FooObjectWithEveryNullableTypeDiscriminatorB;
-export const $$FooObjectWithEveryNullableTypeDiscriminator: ArriModelValidator<FooObjectWithEveryNullableTypeDiscriminator> =
-    {
-        new(): FooObjectWithEveryNullableTypeDiscriminator {
-            return $$FooObjectWithEveryNullableTypeDiscriminatorA.new();
-        },
-        validate(input): input is FooObjectWithEveryNullableTypeDiscriminator {
-            if (!isObject(input)) {
-                return false;
-            }
-            if (typeof input.type !== 'string') {
-                return false;
-            }
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorA.validate(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorB.validate(
-                        input,
-                    );
-                default:
-                    return false;
-            }
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeDiscriminator {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorA.fromJson(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorB.fromJson(
-                        input,
-                    );
-                default:
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorA.new();
-            }
-        },
-        fromJsonString(input): FooObjectWithEveryNullableTypeDiscriminator {
-            return $$FooObjectWithEveryNullableTypeDiscriminator.fromJson(
-                JSON.parse(input),
+export function FooObjectWithEveryNullableTypeDiscriminatorNew(): FooObjectWithEveryNullableTypeDiscriminator {
+    return FooObjectWithEveryNullableTypeDiscriminatorANew();
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeDiscriminator {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryNullableTypeDiscriminatorAFromJson(input);
+        case 'B':
+            return FooObjectWithEveryNullableTypeDiscriminatorBFromJson(input);
+        default:
+            return FooObjectWithEveryNullableTypeDiscriminatorANew();
+    }
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeDiscriminator {
+    return FooObjectWithEveryNullableTypeDiscriminatorFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorToJsonString(
+    input: FooObjectWithEveryNullableTypeDiscriminator,
+): string {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryNullableTypeDiscriminatorAToJsonString(
+                input,
             );
-        },
-        toJsonString(input): string {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorA.toJsonString(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorB.toJsonString(
-                        input,
-                    );
-                default:
-                    throw new Error(`Unhandled case "${(input as any).type}"`);
-            }
-        },
-        toUrlQueryString(input): string {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorA.toUrlQueryString(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryNullableTypeDiscriminatorB.toUrlQueryString(
-                        input,
-                    );
-                default:
-                    throw new Error('Unhandled case');
-            }
-        },
+        case 'B':
+            return FooObjectWithEveryNullableTypeDiscriminatorBToJsonString(
+                input,
+            );
+        default:
+            throw new Error(`Unhandled case "${(input as any).type}"`);
+    }
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeDiscriminator,
+): URLSearchParams {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams(
+                input,
+            );
+        case 'B':
+            return FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
+                input,
+            );
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeDiscriminator,
+): string {
+    return FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$FooObjectWithEveryNullableTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminator> =
+    {
+        new: FooObjectWithEveryNullableTypeDiscriminatorNew,
+
+        fromJson: FooObjectWithEveryNullableTypeDiscriminatorFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeDiscriminatorFromJsonString,
+        toJsonString: FooObjectWithEveryNullableTypeDiscriminatorToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParamsString,
     };
 export interface FooObjectWithEveryNullableTypeDiscriminatorA {
     type: 'A';
     title: string | null;
 }
-const $$FooObjectWithEveryNullableTypeDiscriminatorA: ArriModelValidator<FooObjectWithEveryNullableTypeDiscriminatorA> =
+export function FooObjectWithEveryNullableTypeDiscriminatorANew(): FooObjectWithEveryNullableTypeDiscriminatorA {
+    return {
+        type: 'A',
+        title: null,
+    };
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorAFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeDiscriminatorA {
+    const _type = 'A';
+    let _title: string | null;
+    _title = parseNullableString(input.title);
+    return {
+        type: _type,
+        title: _title,
+    };
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorAFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeDiscriminatorA {
+    return FooObjectWithEveryNullableTypeDiscriminatorAFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorAToJsonString(
+    input: FooObjectWithEveryNullableTypeDiscriminatorA,
+): string {
+    let json = '{';
+    json += '"type":"A"';
+    json += ',"title":';
+    if (typeof input.title === 'string') {
+        json += serializeString(input.title);
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeDiscriminatorA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'A');
+    params.set('title', `${input.title}`);
+    return params;
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeDiscriminatorA,
+): string {
+    return FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooObjectWithEveryNullableTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminatorA> =
     {
-        new(): FooObjectWithEveryNullableTypeDiscriminatorA {
-            return {
-                type: 'A',
-                title: null,
-            };
-        },
-        validate(input): input is FooObjectWithEveryNullableTypeDiscriminatorA {
-            return (
-                isObject(input) &&
-                input.type === 'A' &&
-                (typeof input.title === 'string' || input.title === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeDiscriminatorA {
-            const _type = 'A';
-            let _title: string | null;
-            _title = parseNullableString(input.title);
-            return {
-                type: _type,
-                title: _title,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryNullableTypeDiscriminatorA {
-            return $$FooObjectWithEveryNullableTypeDiscriminatorA.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"A"';
-            json += ',"title":';
-            if (typeof input.title === 'string') {
-                json += serializeString(input.title);
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=A');
-            queryParts.push(`title=${input.title}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryNullableTypeDiscriminatorANew,
+
+        fromJson: FooObjectWithEveryNullableTypeDiscriminatorAFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeDiscriminatorAFromJsonString,
+        toJsonString: FooObjectWithEveryNullableTypeDiscriminatorAToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryNullableTypeDiscriminatorB {
@@ -2537,66 +2606,83 @@ export interface FooObjectWithEveryNullableTypeDiscriminatorB {
     title: string | null;
     description: string | null;
 }
-const $$FooObjectWithEveryNullableTypeDiscriminatorB: ArriModelValidator<FooObjectWithEveryNullableTypeDiscriminatorB> =
+export function FooObjectWithEveryNullableTypeDiscriminatorBNew(): FooObjectWithEveryNullableTypeDiscriminatorB {
+    return {
+        type: 'B',
+        title: null,
+        description: null,
+    };
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorBFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeDiscriminatorB {
+    const _type = 'B';
+    let _title: string | null;
+    _title = parseNullableString(input.title);
+    let _description: string | null;
+    _description = parseNullableString(input.description);
+    return {
+        type: _type,
+        title: _title,
+        description: _description,
+    };
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorBFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeDiscriminatorB {
+    return FooObjectWithEveryNullableTypeDiscriminatorBFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorBToJsonString(
+    input: FooObjectWithEveryNullableTypeDiscriminatorB,
+): string {
+    let json = '{';
+    json += '"type":"B"';
+    json += ',"title":';
+    if (typeof input.title === 'string') {
+        json += serializeString(input.title);
+    } else {
+        json += 'null';
+    }
+    json += ',"description":';
+    if (typeof input.description === 'string') {
+        json += serializeString(input.description);
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeDiscriminatorB,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'B');
+    params.set('title', `${input.title}`);
+    params.set('description', `${input.description}`);
+    return params;
+}
+export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeDiscriminatorB,
+): string {
+    return FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooObjectWithEveryNullableTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminatorB> =
     {
-        new(): FooObjectWithEveryNullableTypeDiscriminatorB {
-            return {
-                type: 'B',
-                title: null,
-                description: null,
-            };
-        },
-        validate(input): input is FooObjectWithEveryNullableTypeDiscriminatorB {
-            return (
-                isObject(input) &&
-                input.type === 'B' &&
-                (typeof input.title === 'string' || input.title === null) &&
-                (typeof input.description === 'string' ||
-                    input.description === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeDiscriminatorB {
-            const _type = 'B';
-            let _title: string | null;
-            _title = parseNullableString(input.title);
-            let _description: string | null;
-            _description = parseNullableString(input.description);
-            return {
-                type: _type,
-                title: _title,
-                description: _description,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryNullableTypeDiscriminatorB {
-            return $$FooObjectWithEveryNullableTypeDiscriminatorB.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"B"';
-            json += ',"title":';
-            if (typeof input.title === 'string') {
-                json += serializeString(input.title);
-            } else {
-                json += 'null';
-            }
-            json += ',"description":';
-            if (typeof input.description === 'string') {
-                json += serializeString(input.description);
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=B');
-            queryParts.push(`title=${input.title}`);
-            queryParts.push(`description=${input.description}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryNullableTypeDiscriminatorBNew,
+
+        fromJson: FooObjectWithEveryNullableTypeDiscriminatorBFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeDiscriminatorBFromJsonString,
+        toJsonString: FooObjectWithEveryNullableTypeDiscriminatorBToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryNullableTypeNestedObject {
@@ -2604,303 +2690,357 @@ export interface FooObjectWithEveryNullableTypeNestedObject {
     timestamp: Date | null;
     data: FooObjectWithEveryNullableTypeNestedObjectData | null;
 }
-export const $$FooObjectWithEveryNullableTypeNestedObject: ArriModelValidator<FooObjectWithEveryNullableTypeNestedObject> =
-    {
-        new(): FooObjectWithEveryNullableTypeNestedObject {
-            return {
-                id: null,
-                timestamp: null,
-                data: null,
-            };
-        },
-        validate(input): input is FooObjectWithEveryNullableTypeNestedObject {
-            return (
-                isObject(input) &&
-                (typeof input.id === 'string' || input.id === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null) &&
-                ($$FooObjectWithEveryNullableTypeNestedObjectData.validate(
-                    input.data,
-                ) ||
-                    input.data === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeNestedObject {
-            let _id: string | null;
-            _id = parseNullableString(input.id);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            let _data: FooObjectWithEveryNullableTypeNestedObjectData | null;
-            if (isObject(input.data)) {
-                _data =
-                    $$FooObjectWithEveryNullableTypeNestedObjectData.fromJson(
-                        input.data,
-                    );
-            } else {
-                _data = null;
-            }
-            return {
-                id: _id,
-                timestamp: _timestamp,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryNullableTypeNestedObject {
-            return $$FooObjectWithEveryNullableTypeNestedObject.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            if (typeof input.id === 'string') {
-                json += serializeString(input.id);
-            } else {
-                json += 'null';
-            }
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"data":';
-            if (input.data !== null) {
-                json +=
-                    $$FooObjectWithEveryNullableTypeNestedObjectData.toJsonString(
-                        input.data,
-                    );
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableTypeNestedObject/data.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryNullableTypeNestedObjectNew(): FooObjectWithEveryNullableTypeNestedObject {
+    return {
+        id: null,
+        timestamp: null,
+        data: null,
     };
+}
+export function FooObjectWithEveryNullableTypeNestedObjectFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeNestedObject {
+    let _id: string | null;
+    _id = parseNullableString(input.id);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    let _data: FooObjectWithEveryNullableTypeNestedObjectData | null;
+    if (isObject(input.data)) {
+        _data = FooObjectWithEveryNullableTypeNestedObjectDataFromJson(
+            input.data,
+        );
+    } else {
+        _data = null;
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
+}
+export function FooObjectWithEveryNullableTypeNestedObjectFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeNestedObject {
+    return FooObjectWithEveryNullableTypeNestedObjectFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeNestedObjectToJsonString(
+    input: FooObjectWithEveryNullableTypeNestedObject,
+): string {
+    let json = '{';
+    json += '"id":';
+    if (typeof input.id === 'string') {
+        json += serializeString(input.id);
+    } else {
+        json += 'null';
+    }
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"data":';
+    if (input.data !== null) {
+        json += FooObjectWithEveryNullableTypeNestedObjectDataToJsonString(
+            input.data,
+        );
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeNestedObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', `${input.id}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableTypeNestedObject/data.',
+    );
+    return params;
+}
+export function FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeNestedObject,
+): string {
+    return FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParams(
+        input,
+    ).toString();
+}
 
+export const $$FooObjectWithEveryNullableTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObject> =
+    {
+        new: FooObjectWithEveryNullableTypeNestedObjectNew,
+
+        fromJson: FooObjectWithEveryNullableTypeNestedObjectFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeNestedObjectFromJsonString,
+        toJsonString: FooObjectWithEveryNullableTypeNestedObjectToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParamsString,
+    };
 export interface FooObjectWithEveryNullableTypeNestedObjectData {
     id: string | null;
     timestamp: Date | null;
     data: FooObjectWithEveryNullableTypeNestedObjectDataData | null;
 }
-export const $$FooObjectWithEveryNullableTypeNestedObjectData: ArriModelValidator<FooObjectWithEveryNullableTypeNestedObjectData> =
-    {
-        new(): FooObjectWithEveryNullableTypeNestedObjectData {
-            return {
-                id: null,
-                timestamp: null,
-                data: null,
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryNullableTypeNestedObjectData {
-            return (
-                isObject(input) &&
-                (typeof input.id === 'string' || input.id === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null) &&
-                ($$FooObjectWithEveryNullableTypeNestedObjectDataData.validate(
-                    input.data,
-                ) ||
-                    input.data === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeNestedObjectData {
-            let _id: string | null;
-            _id = parseNullableString(input.id);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            let _data: FooObjectWithEveryNullableTypeNestedObjectDataData | null;
-            if (isObject(input.data)) {
-                _data =
-                    $$FooObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
-                        input.data,
-                    );
-            } else {
-                _data = null;
-            }
-            return {
-                id: _id,
-                timestamp: _timestamp,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryNullableTypeNestedObjectData {
-            return $$FooObjectWithEveryNullableTypeNestedObjectData.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            if (typeof input.id === 'string') {
-                json += serializeString(input.id);
-            } else {
-                json += 'null';
-            }
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"data":';
-            if (input.data !== null) {
-                json +=
-                    $$FooObjectWithEveryNullableTypeNestedObjectDataData.toJsonString(
-                        input.data,
-                    );
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableTypeNestedObjectData/data.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryNullableTypeNestedObjectDataNew(): FooObjectWithEveryNullableTypeNestedObjectData {
+    return {
+        id: null,
+        timestamp: null,
+        data: null,
     };
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeNestedObjectData {
+    let _id: string | null;
+    _id = parseNullableString(input.id);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    let _data: FooObjectWithEveryNullableTypeNestedObjectDataData | null;
+    if (isObject(input.data)) {
+        _data = FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson(
+            input.data,
+        );
+    } else {
+        _data = null;
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeNestedObjectData {
+    return FooObjectWithEveryNullableTypeNestedObjectDataFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataToJsonString(
+    input: FooObjectWithEveryNullableTypeNestedObjectData,
+): string {
+    let json = '{';
+    json += '"id":';
+    if (typeof input.id === 'string') {
+        json += serializeString(input.id);
+    } else {
+        json += 'null';
+    }
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"data":';
+    if (input.data !== null) {
+        json += FooObjectWithEveryNullableTypeNestedObjectDataDataToJsonString(
+            input.data,
+        );
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeNestedObjectData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', `${input.id}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableTypeNestedObjectData/data.',
+    );
+    return params;
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeNestedObjectData,
+): string {
+    return FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParams(
+        input,
+    ).toString();
+}
 
+export const $$FooObjectWithEveryNullableTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObjectData> =
+    {
+        new: FooObjectWithEveryNullableTypeNestedObjectDataNew,
+
+        fromJson: FooObjectWithEveryNullableTypeNestedObjectDataFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeNestedObjectDataFromJsonString,
+        toJsonString:
+            FooObjectWithEveryNullableTypeNestedObjectDataToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParamsString,
+    };
 export interface FooObjectWithEveryNullableTypeNestedObjectDataData {
     id: string | null;
     timestamp: Date | null;
 }
-export const $$FooObjectWithEveryNullableTypeNestedObjectDataData: ArriModelValidator<FooObjectWithEveryNullableTypeNestedObjectDataData> =
+export function FooObjectWithEveryNullableTypeNestedObjectDataDataNew(): FooObjectWithEveryNullableTypeNestedObjectDataData {
+    return {
+        id: null,
+        timestamp: null,
+    };
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeNestedObjectDataData {
+    let _id: string | null;
+    _id = parseNullableString(input.id);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataDataFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeNestedObjectDataData {
+    return FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataDataToJsonString(
+    input: FooObjectWithEveryNullableTypeNestedObjectDataData,
+): string {
+    let json = '{';
+    json += '"id":';
+    if (typeof input.id === 'string') {
+        json += serializeString(input.id);
+    } else {
+        json += 'null';
+    }
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeNestedObjectDataData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', `${input.id}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    return params;
+}
+export function FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeNestedObjectDataData,
+): string {
+    return FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryNullableTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObjectDataData> =
     {
-        new(): FooObjectWithEveryNullableTypeNestedObjectDataData {
-            return {
-                id: null,
-                timestamp: null,
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryNullableTypeNestedObjectDataData {
-            return (
-                isObject(input) &&
-                (typeof input.id === 'string' || input.id === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null)
-            );
-        },
-        fromJson(input): FooObjectWithEveryNullableTypeNestedObjectDataData {
-            let _id: string | null;
-            _id = parseNullableString(input.id);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            return {
-                id: _id,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(
-            input,
-        ): FooObjectWithEveryNullableTypeNestedObjectDataData {
-            return $$FooObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            if (typeof input.id === 'string') {
-                json += serializeString(input.id);
-            } else {
-                json += 'null';
-            }
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryNullableTypeNestedObjectDataDataNew,
+
+        fromJson: FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeNestedObjectDataDataFromJsonString,
+        toJsonString:
+            FooObjectWithEveryNullableTypeNestedObjectDataDataToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryNullableTypeNestedArrayElementElement {
     id: string | null;
     timestamp: Date | null;
 }
-export const $$FooObjectWithEveryNullableTypeNestedArrayElementElement: ArriModelValidator<FooObjectWithEveryNullableTypeNestedArrayElementElement> =
+export function FooObjectWithEveryNullableTypeNestedArrayElementElementNew(): FooObjectWithEveryNullableTypeNestedArrayElementElement {
+    return {
+        id: null,
+        timestamp: null,
+    };
+}
+export function FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeNestedArrayElementElement {
+    let _id: string | null;
+    _id = parseNullableString(input.id);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryNullableTypeNestedArrayElementElementFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeNestedArrayElementElement {
+    return FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryNullableTypeNestedArrayElementElementToJsonString(
+    input: FooObjectWithEveryNullableTypeNestedArrayElementElement,
+): string {
+    let json = '{';
+    json += '"id":';
+    if (typeof input.id === 'string') {
+        json += serializeString(input.id);
+    } else {
+        json += 'null';
+    }
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeNestedArrayElementElement,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', `${input.id}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    return params;
+}
+export function FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeNestedArrayElementElement,
+): string {
+    return FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryNullableTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedArrayElementElement> =
     {
-        new(): FooObjectWithEveryNullableTypeNestedArrayElementElement {
-            return {
-                id: null,
-                timestamp: null,
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryNullableTypeNestedArrayElementElement {
-            return (
-                isObject(input) &&
-                (typeof input.id === 'string' || input.id === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null)
-            );
-        },
-        fromJson(
-            input,
-        ): FooObjectWithEveryNullableTypeNestedArrayElementElement {
-            let _id: string | null;
-            _id = parseNullableString(input.id);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            return {
-                id: _id,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(
-            input,
-        ): FooObjectWithEveryNullableTypeNestedArrayElementElement {
-            return $$FooObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            if (typeof input.id === 'string') {
-                json += serializeString(input.id);
-            } else {
-                json += 'null';
-            }
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryNullableTypeNestedArrayElementElementNew,
+
+        fromJson:
+            FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson,
+        fromJsonString:
+            FooObjectWithEveryNullableTypeNestedArrayElementElementFromJsonString,
+        toJsonString:
+            FooObjectWithEveryNullableTypeNestedArrayElementElementToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParamsString,
     };
 
 export interface FooObjectWithPascalCaseKeys {
@@ -2910,90 +3050,99 @@ export interface FooObjectWithPascalCaseKeys {
     emailAddress?: string;
     isAdmin?: boolean;
 }
-export const $$FooObjectWithPascalCaseKeys: ArriModelValidator<FooObjectWithPascalCaseKeys> =
+export function FooObjectWithPascalCaseKeysNew(): FooObjectWithPascalCaseKeys {
+    return {
+        createdAt: new Date(0),
+        displayName: '',
+        phoneNumber: null,
+    };
+}
+export function FooObjectWithPascalCaseKeysFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithPascalCaseKeys {
+    let _CreatedAt: Date;
+    _CreatedAt = parseTimestamp(input.CreatedAt);
+    let _DisplayName: string;
+    _DisplayName = parseString(input.DisplayName);
+    let _PhoneNumber: string | null;
+    _PhoneNumber = parseNullableString(input.PhoneNumber);
+    let _EmailAddress: string | undefined;
+    if (typeof input.EmailAddress !== 'undefined') {
+        _EmailAddress = parseString(input.EmailAddress);
+    }
+    let _IsAdmin: boolean | undefined;
+    if (typeof input.IsAdmin !== 'undefined') {
+        _IsAdmin = parseBoolean(input.IsAdmin);
+    }
+    return {
+        createdAt: _CreatedAt,
+        displayName: _DisplayName,
+        phoneNumber: _PhoneNumber,
+        emailAddress: _EmailAddress,
+        isAdmin: _IsAdmin,
+    };
+}
+export function FooObjectWithPascalCaseKeysFromJsonString(
+    input: string,
+): FooObjectWithPascalCaseKeys {
+    return FooObjectWithPascalCaseKeysFromJson(JSON.parse(input));
+}
+export function FooObjectWithPascalCaseKeysToJsonString(
+    input: FooObjectWithPascalCaseKeys,
+): string {
+    let json = '{';
+    json += '"CreatedAt":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"DisplayName":';
+    json += serializeString(input.displayName);
+    json += ',"PhoneNumber":';
+    if (typeof input.phoneNumber === 'string') {
+        json += serializeString(input.phoneNumber);
+    } else {
+        json += 'null';
+    }
+    if (typeof input.emailAddress !== 'undefined') {
+        json += `,"EmailAddress":`;
+        json += serializeString(input.emailAddress);
+    }
+    if (typeof input.isAdmin !== 'undefined') {
+        json += `,"IsAdmin":`;
+        json += `${input.isAdmin}`;
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithPascalCaseKeysToUrlSearchParams(
+    input: FooObjectWithPascalCaseKeys,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('CreatedAt', input.createdAt.toISOString());
+    params.set('DisplayName', input.displayName);
+    params.set('PhoneNumber', `${input.phoneNumber}`);
+    if (typeof input.emailAddress !== 'undefined') {
+        params.set('EmailAddress', input.emailAddress);
+    }
+    if (typeof input.isAdmin !== 'undefined') {
+        params.set('IsAdmin', `${input.isAdmin}`);
+    }
+    return params;
+}
+export function FooObjectWithPascalCaseKeysToUrlSearchParamsString(
+    input: FooObjectWithPascalCaseKeys,
+): string {
+    return FooObjectWithPascalCaseKeysToUrlSearchParams(input).toString();
+}
+
+export const $$FooObjectWithPascalCaseKeys: TestClientPrefixedValidator<FooObjectWithPascalCaseKeys> =
     {
-        new(): FooObjectWithPascalCaseKeys {
-            return {
-                createdAt: new Date(0),
-                displayName: '',
-                phoneNumber: null,
-            };
-        },
-        validate(input): input is FooObjectWithPascalCaseKeys {
-            return (
-                isObject(input) &&
-                input.createdAt instanceof Date &&
-                typeof input.displayName === 'string' &&
-                (typeof input.phoneNumber === 'string' ||
-                    input.phoneNumber === null) &&
-                (typeof input.emailAddress === 'string' ||
-                    typeof input.emailAddress === 'undefined') &&
-                (typeof input.isAdmin === 'boolean' ||
-                    typeof input.isAdmin === 'undefined')
-            );
-        },
-        fromJson(input): FooObjectWithPascalCaseKeys {
-            let _CreatedAt: Date;
-            _CreatedAt = parseTimestamp(input.CreatedAt);
-            let _DisplayName: string;
-            _DisplayName = parseString(input.DisplayName);
-            let _PhoneNumber: string | null;
-            _PhoneNumber = parseNullableString(input.PhoneNumber);
-            let _EmailAddress: string | undefined;
-            if (typeof input.EmailAddress !== 'undefined') {
-                _EmailAddress = parseString(input.EmailAddress);
-            }
-            let _IsAdmin: boolean | undefined;
-            if (typeof input.IsAdmin !== 'undefined') {
-                _IsAdmin = parseBoolean(input.IsAdmin);
-            }
-            return {
-                createdAt: _CreatedAt,
-                displayName: _DisplayName,
-                phoneNumber: _PhoneNumber,
-                emailAddress: _EmailAddress,
-                isAdmin: _IsAdmin,
-            };
-        },
-        fromJsonString(input): FooObjectWithPascalCaseKeys {
-            return $$FooObjectWithPascalCaseKeys.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"CreatedAt":';
-            json += `"${input.createdAt.toISOString()}"`;
-            json += ',"DisplayName":';
-            json += serializeString(input.displayName);
-            json += ',"PhoneNumber":';
-            if (typeof input.phoneNumber === 'string') {
-                json += serializeString(input.phoneNumber);
-            } else {
-                json += 'null';
-            }
-            if (typeof input.emailAddress !== 'undefined') {
-                json += `,"EmailAddress":`;
-                json += serializeString(input.emailAddress);
-            }
-            if (typeof input.isAdmin !== 'undefined') {
-                json += `,"IsAdmin":`;
-                json += `${input.isAdmin}`;
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`CreatedAt=${input.createdAt.toISOString()}`);
-            queryParts.push(`DisplayName=${input.displayName}`);
-            queryParts.push(`PhoneNumber=${input.phoneNumber}`);
-            if (typeof input.emailAddress !== 'undefined') {
-                queryParts.push(`EmailAddress=${input.emailAddress}`);
-            }
-            if (typeof input.isAdmin !== 'undefined') {
-                queryParts.push(`IsAdmin=${input.isAdmin}`);
-            }
-            return queryParts.join('&');
-        },
+        new: FooObjectWithPascalCaseKeysNew,
+
+        fromJson: FooObjectWithPascalCaseKeysFromJson,
+        fromJsonString: FooObjectWithPascalCaseKeysFromJsonString,
+        toJsonString: FooObjectWithPascalCaseKeysToJsonString,
+        toUrlSearchParams: FooObjectWithPascalCaseKeysToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithPascalCaseKeysToUrlSearchParamsString,
     };
 
 export interface FooObjectWithSnakeCaseKeys {
@@ -3003,90 +3152,99 @@ export interface FooObjectWithSnakeCaseKeys {
     emailAddress?: string;
     isAdmin?: boolean;
 }
-export const $$FooObjectWithSnakeCaseKeys: ArriModelValidator<FooObjectWithSnakeCaseKeys> =
+export function FooObjectWithSnakeCaseKeysNew(): FooObjectWithSnakeCaseKeys {
+    return {
+        createdAt: new Date(0),
+        displayName: '',
+        phoneNumber: null,
+    };
+}
+export function FooObjectWithSnakeCaseKeysFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithSnakeCaseKeys {
+    let _created_at: Date;
+    _created_at = parseTimestamp(input.created_at);
+    let _display_name: string;
+    _display_name = parseString(input.display_name);
+    let _phone_number: string | null;
+    _phone_number = parseNullableString(input.phone_number);
+    let _email_address: string | undefined;
+    if (typeof input.email_address !== 'undefined') {
+        _email_address = parseString(input.email_address);
+    }
+    let _is_admin: boolean | undefined;
+    if (typeof input.is_admin !== 'undefined') {
+        _is_admin = parseBoolean(input.is_admin);
+    }
+    return {
+        createdAt: _created_at,
+        displayName: _display_name,
+        phoneNumber: _phone_number,
+        emailAddress: _email_address,
+        isAdmin: _is_admin,
+    };
+}
+export function FooObjectWithSnakeCaseKeysFromJsonString(
+    input: string,
+): FooObjectWithSnakeCaseKeys {
+    return FooObjectWithSnakeCaseKeysFromJson(JSON.parse(input));
+}
+export function FooObjectWithSnakeCaseKeysToJsonString(
+    input: FooObjectWithSnakeCaseKeys,
+): string {
+    let json = '{';
+    json += '"created_at":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"display_name":';
+    json += serializeString(input.displayName);
+    json += ',"phone_number":';
+    if (typeof input.phoneNumber === 'string') {
+        json += serializeString(input.phoneNumber);
+    } else {
+        json += 'null';
+    }
+    if (typeof input.emailAddress !== 'undefined') {
+        json += `,"email_address":`;
+        json += serializeString(input.emailAddress);
+    }
+    if (typeof input.isAdmin !== 'undefined') {
+        json += `,"is_admin":`;
+        json += `${input.isAdmin}`;
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithSnakeCaseKeysToUrlSearchParams(
+    input: FooObjectWithSnakeCaseKeys,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('created_at', input.createdAt.toISOString());
+    params.set('display_name', input.displayName);
+    params.set('phone_number', `${input.phoneNumber}`);
+    if (typeof input.emailAddress !== 'undefined') {
+        params.set('email_address', input.emailAddress);
+    }
+    if (typeof input.isAdmin !== 'undefined') {
+        params.set('is_admin', `${input.isAdmin}`);
+    }
+    return params;
+}
+export function FooObjectWithSnakeCaseKeysToUrlSearchParamsString(
+    input: FooObjectWithSnakeCaseKeys,
+): string {
+    return FooObjectWithSnakeCaseKeysToUrlSearchParams(input).toString();
+}
+
+export const $$FooObjectWithSnakeCaseKeys: TestClientPrefixedValidator<FooObjectWithSnakeCaseKeys> =
     {
-        new(): FooObjectWithSnakeCaseKeys {
-            return {
-                createdAt: new Date(0),
-                displayName: '',
-                phoneNumber: null,
-            };
-        },
-        validate(input): input is FooObjectWithSnakeCaseKeys {
-            return (
-                isObject(input) &&
-                input.createdAt instanceof Date &&
-                typeof input.displayName === 'string' &&
-                (typeof input.phoneNumber === 'string' ||
-                    input.phoneNumber === null) &&
-                (typeof input.emailAddress === 'string' ||
-                    typeof input.emailAddress === 'undefined') &&
-                (typeof input.isAdmin === 'boolean' ||
-                    typeof input.isAdmin === 'undefined')
-            );
-        },
-        fromJson(input): FooObjectWithSnakeCaseKeys {
-            let _created_at: Date;
-            _created_at = parseTimestamp(input.created_at);
-            let _display_name: string;
-            _display_name = parseString(input.display_name);
-            let _phone_number: string | null;
-            _phone_number = parseNullableString(input.phone_number);
-            let _email_address: string | undefined;
-            if (typeof input.email_address !== 'undefined') {
-                _email_address = parseString(input.email_address);
-            }
-            let _is_admin: boolean | undefined;
-            if (typeof input.is_admin !== 'undefined') {
-                _is_admin = parseBoolean(input.is_admin);
-            }
-            return {
-                createdAt: _created_at,
-                displayName: _display_name,
-                phoneNumber: _phone_number,
-                emailAddress: _email_address,
-                isAdmin: _is_admin,
-            };
-        },
-        fromJsonString(input): FooObjectWithSnakeCaseKeys {
-            return $$FooObjectWithSnakeCaseKeys.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"created_at":';
-            json += `"${input.createdAt.toISOString()}"`;
-            json += ',"display_name":';
-            json += serializeString(input.displayName);
-            json += ',"phone_number":';
-            if (typeof input.phoneNumber === 'string') {
-                json += serializeString(input.phoneNumber);
-            } else {
-                json += 'null';
-            }
-            if (typeof input.emailAddress !== 'undefined') {
-                json += `,"email_address":`;
-                json += serializeString(input.emailAddress);
-            }
-            if (typeof input.isAdmin !== 'undefined') {
-                json += `,"is_admin":`;
-                json += `${input.isAdmin}`;
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`created_at=${input.createdAt.toISOString()}`);
-            queryParts.push(`display_name=${input.displayName}`);
-            queryParts.push(`phone_number=${input.phoneNumber}`);
-            if (typeof input.emailAddress !== 'undefined') {
-                queryParts.push(`email_address=${input.emailAddress}`);
-            }
-            if (typeof input.isAdmin !== 'undefined') {
-                queryParts.push(`is_admin=${input.isAdmin}`);
-            }
-            return queryParts.join('&');
-        },
+        new: FooObjectWithSnakeCaseKeysNew,
+
+        fromJson: FooObjectWithSnakeCaseKeysFromJson,
+        fromJsonString: FooObjectWithSnakeCaseKeysFromJsonString,
+        toJsonString: FooObjectWithSnakeCaseKeysToJsonString,
+        toUrlSearchParams: FooObjectWithSnakeCaseKeysToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithSnakeCaseKeysToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryOptionalType {
@@ -3112,790 +3270,729 @@ export interface FooObjectWithEveryOptionalType {
     nestedObject?: FooObjectWithEveryOptionalTypeNestedObject;
     nestedArray?: FooObjectWithEveryOptionalTypeNestedArrayElementElement[][];
 }
-export const $$FooObjectWithEveryOptionalType: ArriModelValidator<FooObjectWithEveryOptionalType> =
-    {
-        new(): FooObjectWithEveryOptionalType {
-            return {};
-        },
-        validate(input): input is FooObjectWithEveryOptionalType {
-            return (
-                isObject(input) &&
-                (true || typeof input.any === 'undefined') &&
-                (typeof input.boolean === 'boolean' ||
-                    typeof input.boolean === 'undefined') &&
-                (typeof input.string === 'string' ||
-                    typeof input.string === 'undefined') &&
-                (input.timestamp instanceof Date ||
-                    typeof input.timestamp === 'undefined') &&
-                (typeof input.float32 === 'number' ||
-                    typeof input.float32 === 'undefined') &&
-                (typeof input.float64 === 'number' ||
-                    typeof input.float64 === 'undefined') &&
-                ((typeof input.int8 === 'number' &&
-                    Number.isInteger(input.int8) &&
-                    input.int8 >= INT8_MIN &&
-                    input.int8 <= INT8_MAX) ||
-                    typeof input.int8 === 'undefined') &&
-                ((typeof input.uint8 === 'number' &&
-                    Number.isInteger(input.uint8) &&
-                    input.uint8 >= 0 &&
-                    input.uint8 <= UINT8_MAX) ||
-                    typeof input.uint8 === 'undefined') &&
-                ((typeof input.int16 === 'number' &&
-                    Number.isInteger(input.int16) &&
-                    input.int16 >= INT16_MIN &&
-                    input.int16 <= INT16_MAX) ||
-                    typeof input.int16 === 'undefined') &&
-                ((typeof input.uint16 === 'number' &&
-                    Number.isInteger(input.uint16) &&
-                    input.uint16 >= 0 &&
-                    input.uint16 <= UINT16_MAX) ||
-                    typeof input.uint16 === 'undefined') &&
-                ((typeof input.int32 === 'number' &&
-                    Number.isInteger(input.int32) &&
-                    input.int32 >= INT32_MIN &&
-                    input.int32 <= INT32_MAX) ||
-                    typeof input.int32 === 'undefined') &&
-                ((typeof input.uint32 === 'number' &&
-                    Number.isInteger(input.uint32) &&
-                    input.uint32 >= 0 &&
-                    input.uint32 <= UINT32_MAX) ||
-                    typeof input.uint32 === 'undefined') &&
-                ((typeof input.int64 === 'bigint' &&
-                    input.int64 >= INT64_MIN &&
-                    input.int64 <= INT64_MAX) ||
-                    typeof input.int64 === 'undefined') &&
-                ((typeof input.uint64 === 'bigint' &&
-                    input.uint64 >= BigInt(0) &&
-                    input.uint64 <= UINT64_MAX) ||
-                    typeof input.uint64 === 'undefined') &&
-                ($$FooObjectWithEveryOptionalTypeEnumerator.validate(
+export function FooObjectWithEveryOptionalTypeNew(): FooObjectWithEveryOptionalType {
+    return {};
+}
+export function FooObjectWithEveryOptionalTypeFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalType {
+    let _any: any | undefined;
+    if (typeof input.any !== 'undefined') {
+        _any = input.any;
+    }
+    let _boolean: boolean | undefined;
+    if (typeof input.boolean !== 'undefined') {
+        _boolean = parseBoolean(input.boolean);
+    }
+    let _string: string | undefined;
+    if (typeof input.string !== 'undefined') {
+        _string = parseString(input.string);
+    }
+    let _timestamp: Date | undefined;
+    if (typeof input.timestamp !== 'undefined') {
+        _timestamp = parseTimestamp(input.timestamp);
+    }
+    let _float32: number | undefined;
+    if (typeof input.float32 !== 'undefined') {
+        _float32 = parseNumberFloat(input.float32);
+    }
+    let _float64: number | undefined;
+    if (typeof input.float64 !== 'undefined') {
+        _float64 = parseNumberFloat(input.float64);
+    }
+    let _int8: number | undefined;
+    if (typeof input.int8 !== 'undefined') {
+        _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
+    }
+    let _uint8: number | undefined;
+    if (typeof input.uint8 !== 'undefined') {
+        _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
+    }
+    let _int16: number | undefined;
+    if (typeof input.int16 !== 'undefined') {
+        _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
+    }
+    let _uint16: number | undefined;
+    if (typeof input.uint16 !== 'undefined') {
+        _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
+    }
+    let _int32: number | undefined;
+    if (typeof input.int32 !== 'undefined') {
+        _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
+    }
+    let _uint32: number | undefined;
+    if (typeof input.uint32 !== 'undefined') {
+        _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
+    }
+    let _int64: bigint | undefined;
+    if (typeof input.int64 !== 'undefined') {
+        _int64 = parseNumberBigInt(input.int64);
+    }
+    let _uint64: bigint | undefined;
+    if (typeof input.uint64 !== 'undefined') {
+        _uint64 = parseNumberUnsignedBigInt(input.uint64);
+    }
+    let _enumerator: FooObjectWithEveryOptionalTypeEnumerator | undefined;
+    if (typeof input.enumerator !== 'undefined') {
+        if (typeof input.enumerator === 'string') {
+            _enumerator =
+                FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue(
                     input.enumerator,
-                ) ||
-                    typeof input.enumerator === 'undefined') &&
-                ((Array.isArray(input.array) &&
-                    input.array.every(
-                        (_element) => typeof _element === 'boolean',
-                    )) ||
-                    typeof input.array === 'undefined') &&
-                ($$FooObjectWithEveryOptionalTypeObject.validate(
-                    input.object,
-                ) ||
-                    typeof input.object === 'undefined') &&
-                ((isObject(input.record) &&
-                    Object.values(input.record).every(
-                        (_value) =>
-                            typeof _value === 'bigint' &&
-                            _value >= BigInt(0) &&
-                            _value <= UINT64_MAX,
-                    )) ||
-                    typeof input.record === 'undefined') &&
-                ($$FooObjectWithEveryOptionalTypeDiscriminator.validate(
-                    input.discriminator,
-                ) ||
-                    typeof input.discriminator === 'undefined') &&
-                ($$FooObjectWithEveryOptionalTypeNestedObject.validate(
-                    input.nestedObject,
-                ) ||
-                    typeof input.nestedObject === 'undefined') &&
-                ((Array.isArray(input.nestedArray) &&
-                    input.nestedArray.every(
-                        (_element) =>
-                            Array.isArray(_element) &&
-                            _element.every((_element) =>
-                                $$FooObjectWithEveryOptionalTypeNestedArrayElementElement.validate(
-                                    _element,
-                                ),
-                            ),
-                    )) ||
-                    typeof input.nestedArray === 'undefined')
+                );
+        } else {
+            _enumerator = FooObjectWithEveryOptionalTypeEnumeratorNew();
+        }
+    }
+    let _array: boolean[] | undefined;
+    if (typeof input.array !== 'undefined') {
+        if (Array.isArray(input.array)) {
+            _array = [];
+            for (const _arrayEl of input.array) {
+                let _arrayElValue: boolean;
+                _arrayElValue = parseBoolean(_arrayEl);
+                _array.push(_arrayElValue);
+            }
+        } else {
+            _array = [];
+        }
+    }
+    let _object: FooObjectWithEveryOptionalTypeObject | undefined;
+    if (typeof input.object !== 'undefined') {
+        if (isObject(input.object)) {
+            _object = FooObjectWithEveryOptionalTypeObjectFromJson(
+                input.object,
             );
-        },
-        fromJson(input): FooObjectWithEveryOptionalType {
-            let _any: any | undefined;
-            if (typeof input.any !== 'undefined') {
-                _any = input.any;
+        } else {
+            _object = FooObjectWithEveryOptionalTypeObjectNew();
+        }
+    }
+    let _record: Record<string, bigint> | undefined;
+    if (typeof input.record !== 'undefined') {
+        if (isObject(input.record)) {
+            _record = {};
+            for (const [_key, _value] of Object.entries(input.record)) {
+                let _recordValue: bigint;
+                _recordValue = parseNumberUnsignedBigInt(_value);
+                _record[_key] = _recordValue;
             }
-            let _boolean: boolean | undefined;
-            if (typeof input.boolean !== 'undefined') {
-                _boolean = parseBoolean(input.boolean);
-            }
-            let _string: string | undefined;
-            if (typeof input.string !== 'undefined') {
-                _string = parseString(input.string);
-            }
-            let _timestamp: Date | undefined;
-            if (typeof input.timestamp !== 'undefined') {
-                _timestamp = parseTimestamp(input.timestamp);
-            }
-            let _float32: number | undefined;
-            if (typeof input.float32 !== 'undefined') {
-                _float32 = parseNumberFloat(input.float32);
-            }
-            let _float64: number | undefined;
-            if (typeof input.float64 !== 'undefined') {
-                _float64 = parseNumberFloat(input.float64);
-            }
-            let _int8: number | undefined;
-            if (typeof input.int8 !== 'undefined') {
-                _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
-            }
-            let _uint8: number | undefined;
-            if (typeof input.uint8 !== 'undefined') {
-                _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
-            }
-            let _int16: number | undefined;
-            if (typeof input.int16 !== 'undefined') {
-                _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
-            }
-            let _uint16: number | undefined;
-            if (typeof input.uint16 !== 'undefined') {
-                _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
-            }
-            let _int32: number | undefined;
-            if (typeof input.int32 !== 'undefined') {
-                _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
-            }
-            let _uint32: number | undefined;
-            if (typeof input.uint32 !== 'undefined') {
-                _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
-            }
-            let _int64: bigint | undefined;
-            if (typeof input.int64 !== 'undefined') {
-                _int64 = parseNumberBigInt(input.int64);
-            }
-            let _uint64: bigint | undefined;
-            if (typeof input.uint64 !== 'undefined') {
-                _uint64 = parseNumberUnsignedBigInt(input.uint64);
-            }
-            let _enumerator:
-                | FooObjectWithEveryOptionalTypeEnumerator
-                | undefined;
-            if (typeof input.enumerator !== 'undefined') {
-                if (typeof input.enumerator === 'string') {
-                    _enumerator =
-                        $$FooObjectWithEveryOptionalTypeEnumerator.fromSerialValue(
-                            input.enumerator,
-                        );
-                } else {
-                    _enumerator =
-                        $$FooObjectWithEveryOptionalTypeEnumerator.new();
-                }
-            }
-            let _array: boolean[] | undefined;
-            if (typeof input.array !== 'undefined') {
-                if (Array.isArray(input.array)) {
-                    _array = [];
-                    for (const _arrayEl of input.array) {
-                        let _arrayElValue: boolean;
-                        _arrayElValue = parseBoolean(_arrayEl);
-                        _array.push(_arrayElValue);
-                    }
-                } else {
-                    _array = [];
-                }
-            }
-            let _object: FooObjectWithEveryOptionalTypeObject | undefined;
-            if (typeof input.object !== 'undefined') {
-                if (isObject(input.object)) {
-                    _object = $$FooObjectWithEveryOptionalTypeObject.fromJson(
-                        input.object,
-                    );
-                } else {
-                    _object = $$FooObjectWithEveryOptionalTypeObject.new();
-                }
-            }
-            let _record: Record<string, bigint> | undefined;
-            if (typeof input.record !== 'undefined') {
-                if (isObject(input.record)) {
-                    _record = {};
-                    for (const [_key, _value] of Object.entries(input.record)) {
-                        let _recordValue: bigint;
-                        _recordValue = parseNumberUnsignedBigInt(_value);
-                        _record[_key] = _recordValue;
-                    }
-                } else {
-                    _record = {};
-                }
-            }
-            let _discriminator:
-                | FooObjectWithEveryOptionalTypeDiscriminator
-                | undefined;
-            if (typeof input.discriminator !== 'undefined') {
-                if (isObject(input.discriminator)) {
-                    _discriminator =
-                        $$FooObjectWithEveryOptionalTypeDiscriminator.fromJson(
-                            input.discriminator,
-                        );
-                } else {
-                    _discriminator =
-                        $$FooObjectWithEveryOptionalTypeDiscriminator.new();
-                }
-            }
-            let _nestedObject:
-                | FooObjectWithEveryOptionalTypeNestedObject
-                | undefined;
-            if (typeof input.nestedObject !== 'undefined') {
-                if (isObject(input.nestedObject)) {
-                    _nestedObject =
-                        $$FooObjectWithEveryOptionalTypeNestedObject.fromJson(
-                            input.nestedObject,
-                        );
-                } else {
-                    _nestedObject =
-                        $$FooObjectWithEveryOptionalTypeNestedObject.new();
-                }
-            }
-            let _nestedArray:
-                | FooObjectWithEveryOptionalTypeNestedArrayElementElement[][]
-                | undefined;
-            if (typeof input.nestedArray !== 'undefined') {
-                if (Array.isArray(input.nestedArray)) {
-                    _nestedArray = [];
-                    for (const _nestedArrayEl of input.nestedArray) {
-                        let _nestedArrayElValue: FooObjectWithEveryOptionalTypeNestedArrayElementElement[];
-                        if (Array.isArray(_nestedArrayEl)) {
-                            _nestedArrayElValue = [];
-                            for (const _nestedArrayElValueEl of _nestedArrayEl) {
-                                let _nestedArrayElValueElValue: FooObjectWithEveryOptionalTypeNestedArrayElementElement;
-                                if (isObject(_nestedArrayElValueEl)) {
-                                    _nestedArrayElValueElValue =
-                                        $$FooObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
-                                            _nestedArrayElValueEl,
-                                        );
-                                } else {
-                                    _nestedArrayElValueElValue =
-                                        $$FooObjectWithEveryOptionalTypeNestedArrayElementElement.new();
-                                }
-                                _nestedArrayElValue.push(
-                                    _nestedArrayElValueElValue,
+        } else {
+            _record = {};
+        }
+    }
+    let _discriminator: FooObjectWithEveryOptionalTypeDiscriminator | undefined;
+    if (typeof input.discriminator !== 'undefined') {
+        if (isObject(input.discriminator)) {
+            _discriminator =
+                FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
+                    input.discriminator,
+                );
+        } else {
+            _discriminator = FooObjectWithEveryOptionalTypeDiscriminatorNew();
+        }
+    }
+    let _nestedObject: FooObjectWithEveryOptionalTypeNestedObject | undefined;
+    if (typeof input.nestedObject !== 'undefined') {
+        if (isObject(input.nestedObject)) {
+            _nestedObject = FooObjectWithEveryOptionalTypeNestedObjectFromJson(
+                input.nestedObject,
+            );
+        } else {
+            _nestedObject = FooObjectWithEveryOptionalTypeNestedObjectNew();
+        }
+    }
+    let _nestedArray:
+        | FooObjectWithEveryOptionalTypeNestedArrayElementElement[][]
+        | undefined;
+    if (typeof input.nestedArray !== 'undefined') {
+        if (Array.isArray(input.nestedArray)) {
+            _nestedArray = [];
+            for (const _nestedArrayEl of input.nestedArray) {
+                let _nestedArrayElValue: FooObjectWithEveryOptionalTypeNestedArrayElementElement[];
+                if (Array.isArray(_nestedArrayEl)) {
+                    _nestedArrayElValue = [];
+                    for (const _nestedArrayElValueEl of _nestedArrayEl) {
+                        let _nestedArrayElValueElValue: FooObjectWithEveryOptionalTypeNestedArrayElementElement;
+                        if (isObject(_nestedArrayElValueEl)) {
+                            _nestedArrayElValueElValue =
+                                FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson(
+                                    _nestedArrayElValueEl,
                                 );
-                            }
                         } else {
-                            _nestedArrayElValue = [];
+                            _nestedArrayElValueElValue =
+                                FooObjectWithEveryOptionalTypeNestedArrayElementElementNew();
                         }
-                        _nestedArray.push(_nestedArrayElValue);
+                        _nestedArrayElValue.push(_nestedArrayElValueElValue);
                     }
                 } else {
-                    _nestedArray = [];
+                    _nestedArrayElValue = [];
                 }
+                _nestedArray.push(_nestedArrayElValue);
             }
-            return {
-                any: _any,
-                boolean: _boolean,
-                string: _string,
-                timestamp: _timestamp,
-                float32: _float32,
-                float64: _float64,
-                int8: _int8,
-                uint8: _uint8,
-                int16: _int16,
-                uint16: _uint16,
-                int32: _int32,
-                uint32: _uint32,
-                int64: _int64,
-                uint64: _uint64,
-                enumerator: _enumerator,
-                array: _array,
-                object: _object,
-                record: _record,
-                discriminator: _discriminator,
-                nestedObject: _nestedObject,
-                nestedArray: _nestedArray,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalType {
-            return $$FooObjectWithEveryOptionalType.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            let _hasKey = false;
-            if (typeof input.any !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"any":';
-                json += JSON.stringify(input.any);
-                _hasKey = true;
-            }
-            if (typeof input.boolean !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"boolean":';
-                json += `${input.boolean}`;
-                _hasKey = true;
-            }
-            if (typeof input.string !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"string":';
-                json += serializeString(input.string);
-                _hasKey = true;
-            }
-            if (typeof input.timestamp !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"timestamp":';
-                json += `"${input.timestamp.toISOString()}"`;
-                _hasKey = true;
-            }
-            if (typeof input.float32 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"float32":';
-                json += `${input.float32}`;
-                _hasKey = true;
-            }
-            if (typeof input.float64 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"float64":';
-                json += `${input.float64}`;
-                _hasKey = true;
-            }
-            if (typeof input.int8 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int8":';
-                json += `${input.int8}`;
-                _hasKey = true;
-            }
-            if (typeof input.uint8 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint8":';
-                json += `${input.uint8}`;
-                _hasKey = true;
-            }
-            if (typeof input.int16 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int16":';
-                json += `${input.int16}`;
-                _hasKey = true;
-            }
-            if (typeof input.uint16 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint16":';
-                json += `${input.uint16}`;
-                _hasKey = true;
-            }
-            if (typeof input.int32 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int32":';
-                json += `${input.int32}`;
-                _hasKey = true;
-            }
-            if (typeof input.uint32 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint32":';
-                json += `${input.uint32}`;
-                _hasKey = true;
-            }
-            if (typeof input.int64 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int64":';
-                json += `"${input.int64}"`;
-                _hasKey = true;
-            }
-            if (typeof input.uint64 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint64":';
-                json += `"${input.uint64}"`;
-                _hasKey = true;
-            }
-            if (typeof input.enumerator !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"enumerator":';
-                json += `"${input.enumerator}"`;
-                _hasKey = true;
-            }
-            if (typeof input.array !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"array":';
-                json += '[';
-                for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputArrayEl = input.array[i];
-                    json += `${_inputArrayEl}`;
-                }
-                json += ']';
-                _hasKey = true;
-            }
-            if (typeof input.object !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"object":';
-                json += $$FooObjectWithEveryOptionalTypeObject.toJsonString(
-                    input.object,
-                );
-                _hasKey = true;
-            }
-            if (typeof input.record !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"record":';
-                json += '{';
-                let _recordPropertyCount = 0;
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    if (_recordPropertyCount !== 0) {
-                        json += ',';
-                    }
-                    json += `${serializeString(_key)}:`;
-                    json += `"${_value}"`;
-                    _recordPropertyCount++;
-                }
-                json += '}';
-
-                _hasKey = true;
-            }
-            if (typeof input.discriminator !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"discriminator":';
-                json +=
-                    $$FooObjectWithEveryOptionalTypeDiscriminator.toJsonString(
-                        input.discriminator,
-                    );
-                _hasKey = true;
-            }
-            if (typeof input.nestedObject !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"nestedObject":';
-                json +=
-                    $$FooObjectWithEveryOptionalTypeNestedObject.toJsonString(
-                        input.nestedObject,
-                    );
-                _hasKey = true;
-            }
-            if (typeof input.nestedArray !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"nestedArray":';
-                json += '[';
-                for (let i = 0; i < input.nestedArray.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputNestedArrayEl = input.nestedArray[i];
-                    json += '[';
-                    for (let i = 0; i < _inputNestedArrayEl.length; i++) {
-                        if (i !== 0) json += ',';
-                        const _inputNestedArrayElEl = _inputNestedArrayEl[i];
-                        json +=
-                            $$FooObjectWithEveryOptionalTypeNestedArrayElementElement.toJsonString(
-                                _inputNestedArrayElEl,
-                            );
-                    }
-                    json += ']';
-                }
-                json += ']';
-                _hasKey = true;
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            if (typeof input.any !== 'undefined') {
-                console.warn(
-                    "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryOptionalType/any.",
-                );
-            }
-            if (typeof input.boolean !== 'undefined') {
-                queryParts.push(`boolean=${input.boolean}`);
-            }
-            if (typeof input.string !== 'undefined') {
-                queryParts.push(`string=${input.string}`);
-            }
-            if (typeof input.timestamp !== 'undefined') {
-                queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            }
-            if (typeof input.float32 !== 'undefined') {
-                queryParts.push(`float32=${input.float32}`);
-            }
-            if (typeof input.float64 !== 'undefined') {
-                queryParts.push(`float64=${input.float64}`);
-            }
-            if (typeof input.int8 !== 'undefined') {
-                queryParts.push(`int8=${input.int8}`);
-            }
-            if (typeof input.uint8 !== 'undefined') {
-                queryParts.push(`uint8=${input.uint8}`);
-            }
-            if (typeof input.int16 !== 'undefined') {
-                queryParts.push(`int16=${input.int16}`);
-            }
-            if (typeof input.uint16 !== 'undefined') {
-                queryParts.push(`uint16=${input.uint16}`);
-            }
-            if (typeof input.int32 !== 'undefined') {
-                queryParts.push(`int32=${input.int32}`);
-            }
-            if (typeof input.uint32 !== 'undefined') {
-                queryParts.push(`uint32=${input.uint32}`);
-            }
-            if (typeof input.int64 !== 'undefined') {
-                queryParts.push(`int64=${input.int64}`);
-            }
-            if (typeof input.uint64 !== 'undefined') {
-                queryParts.push(`uint64=${input.uint64}`);
-            }
-            if (typeof input.enumerator !== 'undefined') {
-                queryParts.push(`enumerator=${input.enumerator}`);
-            }
-            if (typeof input.array !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryOptionalType/array.',
-                );
-            }
-            if (typeof input.object !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/object.',
-                );
-            }
-            if (typeof input.record !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/record.',
-                );
-            }
-            if (typeof input.discriminator !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/discriminator.',
-                );
-            }
-            if (typeof input.nestedObject !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/nestedObject.',
-                );
-            }
-            if (typeof input.nestedArray !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryOptionalType/nestedArray.',
-                );
-            }
-            return queryParts.join('&');
-        },
+        } else {
+            _nestedArray = [];
+        }
+    }
+    return {
+        any: _any,
+        boolean: _boolean,
+        string: _string,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enumerator: _enumerator,
+        array: _array,
+        object: _object,
+        record: _record,
+        discriminator: _discriminator,
+        nestedObject: _nestedObject,
+        nestedArray: _nestedArray,
     };
+}
+export function FooObjectWithEveryOptionalTypeFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalType {
+    return FooObjectWithEveryOptionalTypeFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryOptionalTypeToJsonString(
+    input: FooObjectWithEveryOptionalType,
+): string {
+    let json = '{';
+    let _hasKey = false;
+    if (typeof input.any !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"any":';
+        json += JSON.stringify(input.any);
+        _hasKey = true;
+    }
+    if (typeof input.boolean !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"boolean":';
+        json += `${input.boolean}`;
+        _hasKey = true;
+    }
+    if (typeof input.string !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"string":';
+        json += serializeString(input.string);
+        _hasKey = true;
+    }
+    if (typeof input.timestamp !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"timestamp":';
+        json += `"${input.timestamp.toISOString()}"`;
+        _hasKey = true;
+    }
+    if (typeof input.float32 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"float32":';
+        json += `${input.float32}`;
+        _hasKey = true;
+    }
+    if (typeof input.float64 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"float64":';
+        json += `${input.float64}`;
+        _hasKey = true;
+    }
+    if (typeof input.int8 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int8":';
+        json += `${input.int8}`;
+        _hasKey = true;
+    }
+    if (typeof input.uint8 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint8":';
+        json += `${input.uint8}`;
+        _hasKey = true;
+    }
+    if (typeof input.int16 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int16":';
+        json += `${input.int16}`;
+        _hasKey = true;
+    }
+    if (typeof input.uint16 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint16":';
+        json += `${input.uint16}`;
+        _hasKey = true;
+    }
+    if (typeof input.int32 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int32":';
+        json += `${input.int32}`;
+        _hasKey = true;
+    }
+    if (typeof input.uint32 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint32":';
+        json += `${input.uint32}`;
+        _hasKey = true;
+    }
+    if (typeof input.int64 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int64":';
+        json += `"${input.int64}"`;
+        _hasKey = true;
+    }
+    if (typeof input.uint64 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint64":';
+        json += `"${input.uint64}"`;
+        _hasKey = true;
+    }
+    if (typeof input.enumerator !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"enumerator":';
+        json += `"${input.enumerator}"`;
+        _hasKey = true;
+    }
+    if (typeof input.array !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"array":';
+        json += '[';
+        for (let i = 0; i < input.array.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputArrayEl = input.array[i];
+            json += `${_inputArrayEl}`;
+        }
+        json += ']';
+        _hasKey = true;
+    }
+    if (typeof input.object !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"object":';
+        json += FooObjectWithEveryOptionalTypeObjectToJsonString(input.object);
+        _hasKey = true;
+    }
+    if (typeof input.record !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"record":';
+        json += '{';
+        let _recordPropertyCount = 0;
+        for (const [_key, _value] of Object.entries(input.record)) {
+            if (_recordPropertyCount !== 0) {
+                json += ',';
+            }
+            json += `${serializeString(_key)}:`;
+            json += `"${_value}"`;
+            _recordPropertyCount++;
+        }
+        json += '}';
 
+        _hasKey = true;
+    }
+    if (typeof input.discriminator !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"discriminator":';
+        json += FooObjectWithEveryOptionalTypeDiscriminatorToJsonString(
+            input.discriminator,
+        );
+        _hasKey = true;
+    }
+    if (typeof input.nestedObject !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"nestedObject":';
+        json += FooObjectWithEveryOptionalTypeNestedObjectToJsonString(
+            input.nestedObject,
+        );
+        _hasKey = true;
+    }
+    if (typeof input.nestedArray !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"nestedArray":';
+        json += '[';
+        for (let i = 0; i < input.nestedArray.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputNestedArrayEl = input.nestedArray[i];
+            json += '[';
+            for (let i = 0; i < _inputNestedArrayEl.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputNestedArrayElEl = _inputNestedArrayEl[i];
+                json +=
+                    FooObjectWithEveryOptionalTypeNestedArrayElementElementToJsonString(
+                        _inputNestedArrayElEl,
+                    );
+            }
+            json += ']';
+        }
+        json += ']';
+        _hasKey = true;
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeToUrlSearchParams(
+    input: FooObjectWithEveryOptionalType,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    if (typeof input.any !== 'undefined') {
+        console.warn(
+            "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryOptionalType/any.",
+        );
+    }
+    if (typeof input.boolean !== 'undefined') {
+        params.set('boolean', `${input.boolean}`);
+    }
+    if (typeof input.string !== 'undefined') {
+        params.set('string', input.string);
+    }
+    if (typeof input.timestamp !== 'undefined') {
+        params.set('timestamp', input.timestamp.toISOString());
+    }
+    if (typeof input.float32 !== 'undefined') {
+        params.set('float32', `${input.float32}`);
+    }
+    if (typeof input.float64 !== 'undefined') {
+        params.set('float64', `${input.float64}`);
+    }
+    if (typeof input.int8 !== 'undefined') {
+        params.set('int8', `${input.int8}`);
+    }
+    if (typeof input.uint8 !== 'undefined') {
+        params.set('uint8', `${input.uint8}`);
+    }
+    if (typeof input.int16 !== 'undefined') {
+        params.set('int16', `${input.int16}`);
+    }
+    if (typeof input.uint16 !== 'undefined') {
+        params.set('uint16', `${input.uint16}`);
+    }
+    if (typeof input.int32 !== 'undefined') {
+        params.set('int32', `${input.int32}`);
+    }
+    if (typeof input.uint32 !== 'undefined') {
+        params.set('uint32', `${input.uint32}`);
+    }
+    if (typeof input.int64 !== 'undefined') {
+        params.set('int64', `${input.int64}`);
+    }
+    if (typeof input.uint64 !== 'undefined') {
+        params.set('uint64', `${input.uint64}`);
+    }
+    if (typeof input.enumerator !== 'undefined') {
+        params.set('enumerator', input.enumerator);
+    }
+    if (typeof input.array !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryOptionalType/array.',
+        );
+    }
+    if (typeof input.object !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/object.',
+        );
+    }
+    if (typeof input.record !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/record.',
+        );
+    }
+    if (typeof input.discriminator !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/discriminator.',
+        );
+    }
+    if (typeof input.nestedObject !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/nestedObject.',
+        );
+    }
+    if (typeof input.nestedArray !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryOptionalType/nestedArray.',
+        );
+    }
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalType,
+): string {
+    return FooObjectWithEveryOptionalTypeToUrlSearchParams(input).toString();
+}
+
+export const $$FooObjectWithEveryOptionalType: TestClientPrefixedValidator<FooObjectWithEveryOptionalType> =
+    {
+        new: FooObjectWithEveryOptionalTypeNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeFromJson,
+        fromJsonString: FooObjectWithEveryOptionalTypeFromJsonString,
+        toJsonString: FooObjectWithEveryOptionalTypeToJsonString,
+        toUrlSearchParams: FooObjectWithEveryOptionalTypeToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeToUrlSearchParamsString,
+    };
 export type FooObjectWithEveryOptionalTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryOptionalTypeEnumerator = {
     A: 'A',
     B: 'B',
     C: 'C',
 } as const;
-const $$FooObjectWithEveryOptionalTypeEnumeratorValues = [
+export const FooObjectWithEveryOptionalTypeEnumeratorValues = [
     'A',
     'B',
     'C',
 ] as const;
-export const $$FooObjectWithEveryOptionalTypeEnumerator: ArriEnumValidator<FooObjectWithEveryOptionalTypeEnumerator> =
+export function FooObjectWithEveryOptionalTypeEnumeratorNew(): FooObjectWithEveryOptionalTypeEnumerator {
+    return FooObjectWithEveryOptionalTypeEnumeratorValues[0];
+}
+export function FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue(
+    input: string,
+): FooObjectWithEveryOptionalTypeEnumerator {
+    if (FooObjectWithEveryOptionalTypeEnumeratorValues.includes(input as any)) {
+        return input as FooObjectWithEveryOptionalTypeEnumerator;
+    }
+    if (
+        FooObjectWithEveryOptionalTypeEnumeratorValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as FooObjectWithEveryOptionalTypeEnumerator;
+    }
+    if (
+        FooObjectWithEveryOptionalTypeEnumeratorValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as FooObjectWithEveryOptionalTypeEnumerator;
+    }
+    return 'A';
+}
+export const $$FooObjectWithEveryOptionalTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryOptionalTypeEnumerator> =
     {
-        new(): FooObjectWithEveryOptionalTypeEnumerator {
-            return $$FooObjectWithEveryOptionalTypeEnumeratorValues[0];
-        },
-        validate(input): input is ObjectWithEveryOptionalTypeEnumerator {
-            return (
-                typeof input === 'string' &&
-                $$FooObjectWithEveryOptionalTypeEnumeratorValues.includes(
-                    input as any,
-                )
-            );
-        },
-        values: $$FooObjectWithEveryOptionalTypeEnumeratorValues,
-        fromSerialValue(input): FooObjectWithEveryOptionalTypeEnumerator {
-            if (
-                $$FooObjectWithEveryOptionalTypeEnumeratorValues.includes(
-                    input as any,
-                )
-            ) {
-                return input as FooObjectWithEveryOptionalTypeEnumerator;
-            }
-            if (
-                $$FooObjectWithEveryOptionalTypeEnumeratorValues.includes(
-                    input.toLowerCase() as any,
-                )
-            ) {
-                return input.toLowerCase() as FooObjectWithEveryOptionalTypeEnumerator;
-            }
-            if (
-                $$FooObjectWithEveryOptionalTypeEnumeratorValues.includes(
-                    input.toUpperCase() as any,
-                )
-            ) {
-                return input.toUpperCase() as FooObjectWithEveryOptionalTypeEnumerator;
-            }
-            return 'A';
-        },
-    };
+        new: FooObjectWithEveryOptionalTypeEnumeratorNew,
 
+        values: FooObjectWithEveryOptionalTypeEnumeratorValues,
+        fromSerialValue:
+            FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue,
+    };
 export interface FooObjectWithEveryOptionalTypeObject {
     string: string;
     boolean: boolean;
     timestamp: Date;
 }
-export const $$FooObjectWithEveryOptionalTypeObject: ArriModelValidator<FooObjectWithEveryOptionalTypeObject> =
+export function FooObjectWithEveryOptionalTypeObjectNew(): FooObjectWithEveryOptionalTypeObject {
+    return {
+        string: '',
+        boolean: false,
+        timestamp: new Date(0),
+    };
+}
+export function FooObjectWithEveryOptionalTypeObjectFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeObject {
+    let _string: string;
+    _string = parseString(input.string);
+    let _boolean: boolean;
+    _boolean = parseBoolean(input.boolean);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryOptionalTypeObjectFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeObject {
+    return FooObjectWithEveryOptionalTypeObjectFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryOptionalTypeObjectToJsonString(
+    input: FooObjectWithEveryOptionalTypeObject,
+): string {
+    let json = '{';
+    json += '"string":';
+    json += serializeString(input.string);
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeObjectToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('string', input.string);
+    params.set('boolean', `${input.boolean}`);
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeObjectToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeObject,
+): string {
+    return FooObjectWithEveryOptionalTypeObjectToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryOptionalTypeObject: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeObject> =
     {
-        new(): FooObjectWithEveryOptionalTypeObject {
-            return {
-                string: '',
-                boolean: false,
-                timestamp: new Date(0),
-            };
-        },
-        validate(input): input is FooObjectWithEveryOptionalTypeObject {
-            return (
-                isObject(input) &&
-                typeof input.string === 'string' &&
-                typeof input.boolean === 'boolean' &&
-                input.timestamp instanceof Date
-            );
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeObject {
-            let _string: string;
-            _string = parseString(input.string);
-            let _boolean: boolean;
-            _boolean = parseBoolean(input.boolean);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            return {
-                string: _string,
-                boolean: _boolean,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalTypeObject {
-            return $$FooObjectWithEveryOptionalTypeObject.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"string":';
-            json += serializeString(input.string);
-            json += ',"boolean":';
-            json += `${input.boolean}`;
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`string=${input.string}`);
-            queryParts.push(`boolean=${input.boolean}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryOptionalTypeObjectNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeObjectFromJson,
+        fromJsonString: FooObjectWithEveryOptionalTypeObjectFromJsonString,
+        toJsonString: FooObjectWithEveryOptionalTypeObjectToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeObjectToUrlSearchParamsString,
     };
 
 export type FooObjectWithEveryOptionalTypeDiscriminator =
     | FooObjectWithEveryOptionalTypeDiscriminatorA
     | FooObjectWithEveryOptionalTypeDiscriminatorB;
-export const $$FooObjectWithEveryOptionalTypeDiscriminator: ArriModelValidator<FooObjectWithEveryOptionalTypeDiscriminator> =
-    {
-        new(): FooObjectWithEveryOptionalTypeDiscriminator {
-            return $$FooObjectWithEveryOptionalTypeDiscriminatorA.new();
-        },
-        validate(input): input is FooObjectWithEveryOptionalTypeDiscriminator {
-            if (!isObject(input)) {
-                return false;
-            }
-            if (typeof input.type !== 'string') {
-                return false;
-            }
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorA.validate(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorB.validate(
-                        input,
-                    );
-                default:
-                    return false;
-            }
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeDiscriminator {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorA.fromJson(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorB.fromJson(
-                        input,
-                    );
-                default:
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorA.new();
-            }
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalTypeDiscriminator {
-            return $$FooObjectWithEveryOptionalTypeDiscriminator.fromJson(
-                JSON.parse(input),
+export function FooObjectWithEveryOptionalTypeDiscriminatorNew(): FooObjectWithEveryOptionalTypeDiscriminator {
+    return FooObjectWithEveryOptionalTypeDiscriminatorANew();
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeDiscriminator {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(input);
+        case 'B':
+            return FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(input);
+        default:
+            return FooObjectWithEveryOptionalTypeDiscriminatorANew();
+    }
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeDiscriminator {
+    return FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorToJsonString(
+    input: FooObjectWithEveryOptionalTypeDiscriminator,
+): string {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryOptionalTypeDiscriminatorAToJsonString(
+                input,
             );
-        },
-        toJsonString(input): string {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorA.toJsonString(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorB.toJsonString(
-                        input,
-                    );
-                default:
-                    throw new Error(`Unhandled case "${(input as any).type}"`);
-            }
-        },
-        toUrlQueryString(input): string {
-            switch (input.type) {
-                case 'A':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorA.toUrlQueryString(
-                        input,
-                    );
-                case 'B':
-                    return $$FooObjectWithEveryOptionalTypeDiscriminatorB.toUrlQueryString(
-                        input,
-                    );
-                default:
-                    throw new Error('Unhandled case');
-            }
-        },
+        case 'B':
+            return FooObjectWithEveryOptionalTypeDiscriminatorBToJsonString(
+                input,
+            );
+        default:
+            throw new Error(`Unhandled case "${(input as any).type}"`);
+    }
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeDiscriminator,
+): URLSearchParams {
+    switch (input.type) {
+        case 'A':
+            return FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams(
+                input,
+            );
+        case 'B':
+            return FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
+                input,
+            );
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeDiscriminator,
+): string {
+    return FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$FooObjectWithEveryOptionalTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminator> =
+    {
+        new: FooObjectWithEveryOptionalTypeDiscriminatorNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeDiscriminatorFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeDiscriminatorFromJsonString,
+        toJsonString: FooObjectWithEveryOptionalTypeDiscriminatorToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParamsString,
     };
 export interface FooObjectWithEveryOptionalTypeDiscriminatorA {
     type: 'A';
     title: string;
 }
-const $$FooObjectWithEveryOptionalTypeDiscriminatorA: ArriModelValidator<FooObjectWithEveryOptionalTypeDiscriminatorA> =
+export function FooObjectWithEveryOptionalTypeDiscriminatorANew(): FooObjectWithEveryOptionalTypeDiscriminatorA {
+    return {
+        type: 'A',
+        title: '',
+    };
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeDiscriminatorA {
+    const _type = 'A';
+    let _title: string;
+    _title = parseString(input.title);
+    return {
+        type: _type,
+        title: _title,
+    };
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorAFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeDiscriminatorA {
+    return FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorAToJsonString(
+    input: FooObjectWithEveryOptionalTypeDiscriminatorA,
+): string {
+    let json = '{';
+    json += '"type":"A"';
+    json += ',"title":';
+    json += serializeString(input.title);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeDiscriminatorA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'A');
+    params.set('title', input.title);
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeDiscriminatorA,
+): string {
+    return FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooObjectWithEveryOptionalTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminatorA> =
     {
-        new(): FooObjectWithEveryOptionalTypeDiscriminatorA {
-            return {
-                type: 'A',
-                title: '',
-            };
-        },
-        validate(input): input is FooObjectWithEveryOptionalTypeDiscriminatorA {
-            return (
-                isObject(input) &&
-                input.type === 'A' &&
-                typeof input.title === 'string'
-            );
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeDiscriminatorA {
-            const _type = 'A';
-            let _title: string;
-            _title = parseString(input.title);
-            return {
-                type: _type,
-                title: _title,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalTypeDiscriminatorA {
-            return $$FooObjectWithEveryOptionalTypeDiscriminatorA.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"A"';
-            json += ',"title":';
-            json += serializeString(input.title);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=A');
-            queryParts.push(`title=${input.title}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryOptionalTypeDiscriminatorANew,
+
+        fromJson: FooObjectWithEveryOptionalTypeDiscriminatorAFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeDiscriminatorAFromJsonString,
+        toJsonString: FooObjectWithEveryOptionalTypeDiscriminatorAToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryOptionalTypeDiscriminatorB {
@@ -3903,57 +4000,75 @@ export interface FooObjectWithEveryOptionalTypeDiscriminatorB {
     title: string;
     description: string;
 }
-const $$FooObjectWithEveryOptionalTypeDiscriminatorB: ArriModelValidator<FooObjectWithEveryOptionalTypeDiscriminatorB> =
+export function FooObjectWithEveryOptionalTypeDiscriminatorBNew(): FooObjectWithEveryOptionalTypeDiscriminatorB {
+    return {
+        type: 'B',
+        title: '',
+        description: '',
+    };
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeDiscriminatorB {
+    const _type = 'B';
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        type: _type,
+        title: _title,
+        description: _description,
+    };
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorBFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeDiscriminatorB {
+    return FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorBToJsonString(
+    input: FooObjectWithEveryOptionalTypeDiscriminatorB,
+): string {
+    let json = '{';
+    json += '"type":"B"';
+    json += ',"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeDiscriminatorB,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'B');
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeDiscriminatorB,
+): string {
+    return FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooObjectWithEveryOptionalTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminatorB> =
     {
-        new(): FooObjectWithEveryOptionalTypeDiscriminatorB {
-            return {
-                type: 'B',
-                title: '',
-                description: '',
-            };
-        },
-        validate(input): input is FooObjectWithEveryOptionalTypeDiscriminatorB {
-            return (
-                isObject(input) &&
-                input.type === 'B' &&
-                typeof input.title === 'string' &&
-                typeof input.description === 'string'
-            );
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeDiscriminatorB {
-            const _type = 'B';
-            let _title: string;
-            _title = parseString(input.title);
-            let _description: string;
-            _description = parseString(input.description);
-            return {
-                type: _type,
-                title: _title,
-                description: _description,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalTypeDiscriminatorB {
-            return $$FooObjectWithEveryOptionalTypeDiscriminatorB.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"B"';
-            json += ',"title":';
-            json += serializeString(input.title);
-            json += ',"description":';
-            json += serializeString(input.description);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=B');
-            queryParts.push(`title=${input.title}`);
-            queryParts.push(`description=${input.description}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryOptionalTypeDiscriminatorBNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeDiscriminatorBFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeDiscriminatorBFromJsonString,
+        toJsonString: FooObjectWithEveryOptionalTypeDiscriminatorBToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryOptionalTypeNestedObject {
@@ -3961,262 +4076,317 @@ export interface FooObjectWithEveryOptionalTypeNestedObject {
     timestamp: Date;
     data: FooObjectWithEveryOptionalTypeNestedObjectData;
 }
-export const $$FooObjectWithEveryOptionalTypeNestedObject: ArriModelValidator<FooObjectWithEveryOptionalTypeNestedObject> =
-    {
-        new(): FooObjectWithEveryOptionalTypeNestedObject {
-            return {
-                id: '',
-                timestamp: new Date(0),
-                data: $$FooObjectWithEveryOptionalTypeNestedObjectData.new(),
-            };
-        },
-        validate(input): input is FooObjectWithEveryOptionalTypeNestedObject {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date &&
-                $$FooObjectWithEveryOptionalTypeNestedObjectData.validate(
-                    input.data,
-                )
-            );
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeNestedObject {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            let _data: FooObjectWithEveryOptionalTypeNestedObjectData;
-            if (isObject(input.data)) {
-                _data =
-                    $$FooObjectWithEveryOptionalTypeNestedObjectData.fromJson(
-                        input.data,
-                    );
-            } else {
-                _data = $$FooObjectWithEveryOptionalTypeNestedObjectData.new();
-            }
-            return {
-                id: _id,
-                timestamp: _timestamp,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalTypeNestedObject {
-            return $$FooObjectWithEveryOptionalTypeNestedObject.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += ',"data":';
-            json +=
-                $$FooObjectWithEveryOptionalTypeNestedObjectData.toJsonString(
-                    input.data,
-                );
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalTypeNestedObject/data.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryOptionalTypeNestedObjectNew(): FooObjectWithEveryOptionalTypeNestedObject {
+    return {
+        id: '',
+        timestamp: new Date(0),
+        data: FooObjectWithEveryOptionalTypeNestedObjectDataNew(),
     };
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeNestedObject {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _data: FooObjectWithEveryOptionalTypeNestedObjectData;
+    if (isObject(input.data)) {
+        _data = FooObjectWithEveryOptionalTypeNestedObjectDataFromJson(
+            input.data,
+        );
+    } else {
+        _data = FooObjectWithEveryOptionalTypeNestedObjectDataNew();
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeNestedObject {
+    return FooObjectWithEveryOptionalTypeNestedObjectFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectToJsonString(
+    input: FooObjectWithEveryOptionalTypeNestedObject,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"data":';
+    json += FooObjectWithEveryOptionalTypeNestedObjectDataToJsonString(
+        input.data,
+    );
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeNestedObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalTypeNestedObject/data.',
+    );
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeNestedObject,
+): string {
+    return FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParams(
+        input,
+    ).toString();
+}
 
+export const $$FooObjectWithEveryOptionalTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObject> =
+    {
+        new: FooObjectWithEveryOptionalTypeNestedObjectNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeNestedObjectFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeNestedObjectFromJsonString,
+        toJsonString: FooObjectWithEveryOptionalTypeNestedObjectToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParamsString,
+    };
 export interface FooObjectWithEveryOptionalTypeNestedObjectData {
     id: string;
     timestamp: Date;
     data: FooObjectWithEveryOptionalTypeNestedObjectDataData;
 }
-export const $$FooObjectWithEveryOptionalTypeNestedObjectData: ArriModelValidator<FooObjectWithEveryOptionalTypeNestedObjectData> =
-    {
-        new(): FooObjectWithEveryOptionalTypeNestedObjectData {
-            return {
-                id: '',
-                timestamp: new Date(0),
-                data: $$FooObjectWithEveryOptionalTypeNestedObjectDataData.new(),
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryOptionalTypeNestedObjectData {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date &&
-                $$FooObjectWithEveryOptionalTypeNestedObjectDataData.validate(
-                    input.data,
-                )
-            );
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeNestedObjectData {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            let _data: FooObjectWithEveryOptionalTypeNestedObjectDataData;
-            if (isObject(input.data)) {
-                _data =
-                    $$FooObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
-                        input.data,
-                    );
-            } else {
-                _data =
-                    $$FooObjectWithEveryOptionalTypeNestedObjectDataData.new();
-            }
-            return {
-                id: _id,
-                timestamp: _timestamp,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooObjectWithEveryOptionalTypeNestedObjectData {
-            return $$FooObjectWithEveryOptionalTypeNestedObjectData.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += ',"data":';
-            json +=
-                $$FooObjectWithEveryOptionalTypeNestedObjectDataData.toJsonString(
-                    input.data,
-                );
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalTypeNestedObjectData/data.',
-            );
-            return queryParts.join('&');
-        },
+export function FooObjectWithEveryOptionalTypeNestedObjectDataNew(): FooObjectWithEveryOptionalTypeNestedObjectData {
+    return {
+        id: '',
+        timestamp: new Date(0),
+        data: FooObjectWithEveryOptionalTypeNestedObjectDataDataNew(),
     };
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeNestedObjectData {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _data: FooObjectWithEveryOptionalTypeNestedObjectDataData;
+    if (isObject(input.data)) {
+        _data = FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson(
+            input.data,
+        );
+    } else {
+        _data = FooObjectWithEveryOptionalTypeNestedObjectDataDataNew();
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeNestedObjectData {
+    return FooObjectWithEveryOptionalTypeNestedObjectDataFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataToJsonString(
+    input: FooObjectWithEveryOptionalTypeNestedObjectData,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"data":';
+    json += FooObjectWithEveryOptionalTypeNestedObjectDataDataToJsonString(
+        input.data,
+    );
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeNestedObjectData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalTypeNestedObjectData/data.',
+    );
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeNestedObjectData,
+): string {
+    return FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParams(
+        input,
+    ).toString();
+}
 
+export const $$FooObjectWithEveryOptionalTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObjectData> =
+    {
+        new: FooObjectWithEveryOptionalTypeNestedObjectDataNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeNestedObjectDataFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeNestedObjectDataFromJsonString,
+        toJsonString:
+            FooObjectWithEveryOptionalTypeNestedObjectDataToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParamsString,
+    };
 export interface FooObjectWithEveryOptionalTypeNestedObjectDataData {
     id: string;
     timestamp: Date;
 }
-export const $$FooObjectWithEveryOptionalTypeNestedObjectDataData: ArriModelValidator<FooObjectWithEveryOptionalTypeNestedObjectDataData> =
+export function FooObjectWithEveryOptionalTypeNestedObjectDataDataNew(): FooObjectWithEveryOptionalTypeNestedObjectDataData {
+    return {
+        id: '',
+        timestamp: new Date(0),
+    };
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeNestedObjectDataData {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeNestedObjectDataData {
+    return FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataDataToJsonString(
+    input: FooObjectWithEveryOptionalTypeNestedObjectDataData,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeNestedObjectDataData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeNestedObjectDataData,
+): string {
+    return FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryOptionalTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObjectDataData> =
     {
-        new(): FooObjectWithEveryOptionalTypeNestedObjectDataData {
-            return {
-                id: '',
-                timestamp: new Date(0),
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryOptionalTypeNestedObjectDataData {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date
-            );
-        },
-        fromJson(input): FooObjectWithEveryOptionalTypeNestedObjectDataData {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            return {
-                id: _id,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(
-            input,
-        ): FooObjectWithEveryOptionalTypeNestedObjectDataData {
-            return $$FooObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryOptionalTypeNestedObjectDataDataNew,
+
+        fromJson: FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJsonString,
+        toJsonString:
+            FooObjectWithEveryOptionalTypeNestedObjectDataDataToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParamsString,
     };
 
 export interface FooObjectWithEveryOptionalTypeNestedArrayElementElement {
     id: string;
     timestamp: Date;
 }
-export const $$FooObjectWithEveryOptionalTypeNestedArrayElementElement: ArriModelValidator<FooObjectWithEveryOptionalTypeNestedArrayElementElement> =
+export function FooObjectWithEveryOptionalTypeNestedArrayElementElementNew(): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
+    return {
+        id: '',
+        timestamp: new Date(0),
+    };
+}
+export function FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
+    let _id: string;
+    _id = parseString(input.id);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
+}
+export function FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
+    return FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithEveryOptionalTypeNestedArrayElementElementToJsonString(
+    input: FooObjectWithEveryOptionalTypeNestedArrayElementElement,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeNestedArrayElementElement,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeNestedArrayElementElement,
+): string {
+    return FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooObjectWithEveryOptionalTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedArrayElementElement> =
     {
-        new(): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
-            return {
-                id: '',
-                timestamp: new Date(0),
-            };
-        },
-        validate(
-            input,
-        ): input is FooObjectWithEveryOptionalTypeNestedArrayElementElement {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                input.timestamp instanceof Date
-            );
-        },
-        fromJson(
-            input,
-        ): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
-            let _id: string;
-            _id = parseString(input.id);
-            let _timestamp: Date;
-            _timestamp = parseTimestamp(input.timestamp);
-            return {
-                id: _id,
-                timestamp: _timestamp,
-            };
-        },
-        fromJsonString(
-            input,
-        ): FooObjectWithEveryOptionalTypeNestedArrayElementElement {
-            return $$FooObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"timestamp":';
-            json += `"${input.timestamp.toISOString()}"`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            return queryParts.join('&');
-        },
+        new: FooObjectWithEveryOptionalTypeNestedArrayElementElementNew,
+
+        fromJson:
+            FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson,
+        fromJsonString:
+            FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJsonString,
+        toJsonString:
+            FooObjectWithEveryOptionalTypeNestedArrayElementElementToJsonString,
+        toUrlSearchParams:
+            FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParamsString,
     };
 
 export interface FooRecursiveObject {
@@ -4224,155 +4394,168 @@ export interface FooRecursiveObject {
     right: FooRecursiveObject | null;
     value: string;
 }
-export const $$FooRecursiveObject: ArriModelValidator<FooRecursiveObject> = {
-    new(): FooRecursiveObject {
-        return {
-            left: null,
-            right: null,
-            value: '',
-        };
-    },
-    validate(input): input is FooRecursiveObject {
-        return (
-            isObject(input) &&
-            ($$FooRecursiveObject.validate(input.left) ||
-                input.left === null) &&
-            ($$FooRecursiveObject.validate(input.right) ||
-                input.right === null) &&
-            typeof input.value === 'string'
-        );
-    },
-    fromJson(input): FooRecursiveObject {
-        let _left: FooRecursiveObject | null;
-        if (isObject(input.left)) {
-            _left = $$FooRecursiveObject.fromJson(input.left);
-        } else {
-            _left = null;
-        }
-        let _right: FooRecursiveObject | null;
-        if (isObject(input.right)) {
-            _right = $$FooRecursiveObject.fromJson(input.right);
-        } else {
-            _right = null;
-        }
-        let _value: string;
-        _value = parseString(input.value);
-        return {
-            left: _left,
-            right: _right,
-            value: _value,
-        };
-    },
-    fromJsonString(input): FooRecursiveObject {
-        return $$FooRecursiveObject.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"left":';
-        if (input.left !== null) {
-            json += $$FooRecursiveObject.toJsonString(input.left);
-        } else {
-            json += 'null';
-        }
-        json += ',"right":';
-        if (input.right !== null) {
-            json += $$FooRecursiveObject.toJsonString(input.right);
-        } else {
-            json += 'null';
-        }
-        json += ',"value":';
-        json += serializeString(input.value);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        console.warn(
-            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.',
-        );
-        console.warn(
-            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.',
-        );
-        queryParts.push(`value=${input.value}`);
-        return queryParts.join('&');
-    },
-};
+export function FooRecursiveObjectNew(): FooRecursiveObject {
+    return {
+        left: null,
+        right: null,
+        value: '',
+    };
+}
+export function FooRecursiveObjectFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveObject {
+    let _left: FooRecursiveObject | null;
+    if (isObject(input.left)) {
+        _left = FooRecursiveObjectFromJson(input.left);
+    } else {
+        _left = null;
+    }
+    let _right: FooRecursiveObject | null;
+    if (isObject(input.right)) {
+        _right = FooRecursiveObjectFromJson(input.right);
+    } else {
+        _right = null;
+    }
+    let _value: string;
+    _value = parseString(input.value);
+    return {
+        left: _left,
+        right: _right,
+        value: _value,
+    };
+}
+export function FooRecursiveObjectFromJsonString(
+    input: string,
+): FooRecursiveObject {
+    return FooRecursiveObjectFromJson(JSON.parse(input));
+}
+export function FooRecursiveObjectToJsonString(
+    input: FooRecursiveObject,
+): string {
+    let json = '{';
+    json += '"left":';
+    if (input.left !== null) {
+        json += FooRecursiveObjectToJsonString(input.left);
+    } else {
+        json += 'null';
+    }
+    json += ',"right":';
+    if (input.right !== null) {
+        json += FooRecursiveObjectToJsonString(input.right);
+    } else {
+        json += 'null';
+    }
+    json += ',"value":';
+    json += serializeString(input.value);
+    json += '}';
+    return json;
+}
+export function FooRecursiveObjectToUrlSearchParams(
+    input: FooRecursiveObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.',
+    );
+    console.warn(
+        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.',
+    );
+    params.set('value', input.value);
+    return params;
+}
+export function FooRecursiveObjectToUrlSearchParamsString(
+    input: FooRecursiveObject,
+): string {
+    return FooRecursiveObjectToUrlSearchParams(input).toString();
+}
+
+export const $$FooRecursiveObject: TestClientPrefixedValidator<FooRecursiveObject> =
+    {
+        new: FooRecursiveObjectNew,
+
+        fromJson: FooRecursiveObjectFromJson,
+        fromJsonString: FooRecursiveObjectFromJsonString,
+        toJsonString: FooRecursiveObjectToJsonString,
+        toUrlSearchParams: FooRecursiveObjectToUrlSearchParams,
+        toUrlSearchParamsString: FooRecursiveObjectToUrlSearchParamsString,
+    };
 
 export type FooRecursiveUnion =
     | FooRecursiveUnionChild
     | FooRecursiveUnionChildren
     | FooRecursiveUnionText
     | FooRecursiveUnionShape;
-export const $$FooRecursiveUnion: ArriModelValidator<FooRecursiveUnion> = {
-    new(): FooRecursiveUnion {
-        return $$FooRecursiveUnionChild.new();
-    },
-    validate(input): input is FooRecursiveUnion {
-        if (!isObject(input)) {
-            return false;
-        }
-        if (typeof input.type !== 'string') {
-            return false;
-        }
-        switch (input.type) {
-            case 'CHILD':
-                return $$FooRecursiveUnionChild.validate(input);
-            case 'CHILDREN':
-                return $$FooRecursiveUnionChildren.validate(input);
-            case 'TEXT':
-                return $$FooRecursiveUnionText.validate(input);
-            case 'SHAPE':
-                return $$FooRecursiveUnionShape.validate(input);
-            default:
-                return false;
-        }
-    },
-    fromJson(input): FooRecursiveUnion {
-        switch (input.type) {
-            case 'CHILD':
-                return $$FooRecursiveUnionChild.fromJson(input);
-            case 'CHILDREN':
-                return $$FooRecursiveUnionChildren.fromJson(input);
-            case 'TEXT':
-                return $$FooRecursiveUnionText.fromJson(input);
-            case 'SHAPE':
-                return $$FooRecursiveUnionShape.fromJson(input);
-            default:
-                return $$FooRecursiveUnionChild.new();
-        }
-    },
-    fromJsonString(input): FooRecursiveUnion {
-        return $$FooRecursiveUnion.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        switch (input.type) {
-            case 'CHILD':
-                return $$FooRecursiveUnionChild.toJsonString(input);
-            case 'CHILDREN':
-                return $$FooRecursiveUnionChildren.toJsonString(input);
-            case 'TEXT':
-                return $$FooRecursiveUnionText.toJsonString(input);
-            case 'SHAPE':
-                return $$FooRecursiveUnionShape.toJsonString(input);
-            default:
-                throw new Error(`Unhandled case "${(input as any).type}"`);
-        }
-    },
-    toUrlQueryString(input): string {
-        switch (input.type) {
-            case 'CHILD':
-                return $$FooRecursiveUnionChild.toUrlQueryString(input);
-            case 'CHILDREN':
-                return $$FooRecursiveUnionChildren.toUrlQueryString(input);
-            case 'TEXT':
-                return $$FooRecursiveUnionText.toUrlQueryString(input);
-            case 'SHAPE':
-                return $$FooRecursiveUnionShape.toUrlQueryString(input);
-            default:
-                throw new Error('Unhandled case');
-        }
-    },
-};
+export function FooRecursiveUnionNew(): FooRecursiveUnion {
+    return FooRecursiveUnionChildNew();
+}
+export function FooRecursiveUnionFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnion {
+    switch (input.type) {
+        case 'CHILD':
+            return FooRecursiveUnionChildFromJson(input);
+        case 'CHILDREN':
+            return FooRecursiveUnionChildrenFromJson(input);
+        case 'TEXT':
+            return FooRecursiveUnionTextFromJson(input);
+        case 'SHAPE':
+            return FooRecursiveUnionShapeFromJson(input);
+        default:
+            return FooRecursiveUnionChildNew();
+    }
+}
+export function FooRecursiveUnionFromJsonString(
+    input: string,
+): FooRecursiveUnion {
+    return FooRecursiveUnionFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionToJsonString(
+    input: FooRecursiveUnion,
+): string {
+    switch (input.type) {
+        case 'CHILD':
+            return FooRecursiveUnionChildToJsonString(input);
+        case 'CHILDREN':
+            return FooRecursiveUnionChildrenToJsonString(input);
+        case 'TEXT':
+            return FooRecursiveUnionTextToJsonString(input);
+        case 'SHAPE':
+            return FooRecursiveUnionShapeToJsonString(input);
+        default:
+            throw new Error(`Unhandled case "${(input as any).type}"`);
+    }
+}
+export function FooRecursiveUnionToUrlSearchParams(
+    input: FooRecursiveUnion,
+): URLSearchParams {
+    switch (input.type) {
+        case 'CHILD':
+            return FooRecursiveUnionChildToUrlSearchParams(input);
+        case 'CHILDREN':
+            return FooRecursiveUnionChildrenToUrlSearchParams(input);
+        case 'TEXT':
+            return FooRecursiveUnionTextToUrlSearchParams(input);
+        case 'SHAPE':
+            return FooRecursiveUnionShapeToUrlSearchParams(input);
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooRecursiveUnionToUrlSearchParamsString(
+    input: FooRecursiveUnion,
+): string {
+    return FooRecursiveUnionToUrlSearchParams(input).toString();
+}
+export const $$FooRecursiveUnion: TestClientPrefixedValidator<FooRecursiveUnion> =
+    {
+        new: FooRecursiveUnionNew,
+
+        fromJson: FooRecursiveUnionFromJson,
+        fromJsonString: FooRecursiveUnionFromJsonString,
+        toJsonString: FooRecursiveUnionToJsonString,
+        toUrlSearchParams: FooRecursiveUnionToUrlSearchParams,
+        toUrlSearchParamsString: FooRecursiveUnionToUrlSearchParamsString,
+    };
 /**
  * Child node
  */
@@ -4380,53 +4563,68 @@ export interface FooRecursiveUnionChild {
     type: 'CHILD';
     data: FooRecursiveUnion;
 }
-const $$FooRecursiveUnionChild: ArriModelValidator<FooRecursiveUnionChild> = {
-    new(): FooRecursiveUnionChild {
-        return {
-            type: 'CHILD',
-            data: FooRecursiveUnion.new(),
-        };
-    },
-    validate(input): input is FooRecursiveUnionChild {
-        return (
-            isObject(input) &&
-            input.type === 'CHILD' &&
-            $$FooRecursiveUnion.validate(input.data)
-        );
-    },
-    fromJson(input): FooRecursiveUnionChild {
-        const _type = 'CHILD';
-        let _data: FooRecursiveUnion;
-        if (isObject(input.data)) {
-            _data = $$FooRecursiveUnion.fromJson(input.data);
-        } else {
-            _data = FooRecursiveUnion.new();
-        }
-        return {
-            type: _type,
-            data: _data,
-        };
-    },
-    fromJsonString(input): FooRecursiveUnionChild {
-        return $$FooRecursiveUnionChild.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"type":"CHILD"';
-        json += ',"data":';
-        json += $$FooRecursiveUnion.toJsonString(input.data);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('type=CHILD');
-        console.warn(
-            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveUnionChild/data.',
-        );
-        return queryParts.join('&');
-    },
-};
+export function FooRecursiveUnionChildNew(): FooRecursiveUnionChild {
+    return {
+        type: 'CHILD',
+        data: FooRecursiveUnionNew(),
+    };
+}
+export function FooRecursiveUnionChildFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionChild {
+    const _type = 'CHILD';
+    let _data: FooRecursiveUnion;
+    if (isObject(input.data)) {
+        _data = FooRecursiveUnionFromJson(input.data);
+    } else {
+        _data = FooRecursiveUnionNew();
+    }
+    return {
+        type: _type,
+        data: _data,
+    };
+}
+export function FooRecursiveUnionChildFromJsonString(
+    input: string,
+): FooRecursiveUnionChild {
+    return FooRecursiveUnionChildFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionChildToJsonString(
+    input: FooRecursiveUnionChild,
+): string {
+    let json = '{';
+    json += '"type":"CHILD"';
+    json += ',"data":';
+    json += FooRecursiveUnionToJsonString(input.data);
+    json += '}';
+    return json;
+}
+export function FooRecursiveUnionChildToUrlSearchParams(
+    input: FooRecursiveUnionChild,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'CHILD');
+    console.warn(
+        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveUnionChild/data.',
+    );
+    return params;
+}
+export function FooRecursiveUnionChildToUrlSearchParamsString(
+    input: FooRecursiveUnionChild,
+): string {
+    return FooRecursiveUnionChildToUrlSearchParams(input).toString();
+}
+
+const $$FooRecursiveUnionChild: TestClientPrefixedValidator<FooRecursiveUnionChild> =
+    {
+        new: FooRecursiveUnionChildNew,
+
+        fromJson: FooRecursiveUnionChildFromJson,
+        fromJsonString: FooRecursiveUnionChildFromJsonString,
+        toJsonString: FooRecursiveUnionChildToJsonString,
+        toUrlSearchParams: FooRecursiveUnionChildToUrlSearchParams,
+        toUrlSearchParamsString: FooRecursiveUnionChildToUrlSearchParamsString,
+    };
 
 /**
  * List of children node
@@ -4435,71 +4633,83 @@ export interface FooRecursiveUnionChildren {
     type: 'CHILDREN';
     data: FooRecursiveUnion[];
 }
-const $$FooRecursiveUnionChildren: ArriModelValidator<FooRecursiveUnionChildren> =
-    {
-        new(): FooRecursiveUnionChildren {
-            return {
-                type: 'CHILDREN',
-                data: [],
-            };
-        },
-        validate(input): input is FooRecursiveUnionChildren {
-            return (
-                isObject(input) &&
-                input.type === 'CHILDREN' &&
-                Array.isArray(input.data) &&
-                input.data.every((_element) =>
-                    $$FooRecursiveUnion.validate(_element),
-                )
-            );
-        },
-        fromJson(input): FooRecursiveUnionChildren {
-            const _type = 'CHILDREN';
-            let _data: FooRecursiveUnion[];
-            if (Array.isArray(input.data)) {
-                _data = [];
-                for (const _dataEl of input.data) {
-                    let _dataElValue: FooRecursiveUnion;
-                    if (isObject(_dataEl)) {
-                        _dataElValue = $$FooRecursiveUnion.fromJson(_dataEl);
-                    } else {
-                        _dataElValue = FooRecursiveUnion.new();
-                    }
-                    _data.push(_dataElValue);
-                }
+export function FooRecursiveUnionChildrenNew(): FooRecursiveUnionChildren {
+    return {
+        type: 'CHILDREN',
+        data: [],
+    };
+}
+export function FooRecursiveUnionChildrenFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionChildren {
+    const _type = 'CHILDREN';
+    let _data: FooRecursiveUnion[];
+    if (Array.isArray(input.data)) {
+        _data = [];
+        for (const _dataEl of input.data) {
+            let _dataElValue: FooRecursiveUnion;
+            if (isObject(_dataEl)) {
+                _dataElValue = FooRecursiveUnionFromJson(_dataEl);
             } else {
-                _data = [];
+                _dataElValue = FooRecursiveUnionNew();
             }
-            return {
-                type: _type,
-                data: _data,
-            };
-        },
-        fromJsonString(input): FooRecursiveUnionChildren {
-            return $$FooRecursiveUnionChildren.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"type":"CHILDREN"';
-            json += ',"data":';
-            json += '[';
-            for (let i = 0; i < input.data.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputDataEl = input.data[i];
-                json += $$FooRecursiveUnion.toJsonString(_inputDataEl);
-            }
-            json += ']';
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('type=CHILDREN');
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /RecursiveUnionChildren/data.',
-            );
-            return queryParts.join('&');
-        },
+            _data.push(_dataElValue);
+        }
+    } else {
+        _data = [];
+    }
+    return {
+        type: _type,
+        data: _data,
+    };
+}
+export function FooRecursiveUnionChildrenFromJsonString(
+    input: string,
+): FooRecursiveUnionChildren {
+    return FooRecursiveUnionChildrenFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionChildrenToJsonString(
+    input: FooRecursiveUnionChildren,
+): string {
+    let json = '{';
+    json += '"type":"CHILDREN"';
+    json += ',"data":';
+    json += '[';
+    for (let i = 0; i < input.data.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputDataEl = input.data[i];
+        json += FooRecursiveUnionToJsonString(_inputDataEl);
+    }
+    json += ']';
+    json += '}';
+    return json;
+}
+export function FooRecursiveUnionChildrenToUrlSearchParams(
+    input: FooRecursiveUnionChildren,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'CHILDREN');
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /RecursiveUnionChildren/data.',
+    );
+    return params;
+}
+export function FooRecursiveUnionChildrenToUrlSearchParamsString(
+    input: FooRecursiveUnionChildren,
+): string {
+    return FooRecursiveUnionChildrenToUrlSearchParams(input).toString();
+}
+
+const $$FooRecursiveUnionChildren: TestClientPrefixedValidator<FooRecursiveUnionChildren> =
+    {
+        new: FooRecursiveUnionChildrenNew,
+
+        fromJson: FooRecursiveUnionChildrenFromJson,
+        fromJsonString: FooRecursiveUnionChildrenFromJsonString,
+        toJsonString: FooRecursiveUnionChildrenToJsonString,
+        toUrlSearchParams: FooRecursiveUnionChildrenToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooRecursiveUnionChildrenToUrlSearchParamsString,
     };
 
 /**
@@ -4509,47 +4719,62 @@ export interface FooRecursiveUnionText {
     type: 'TEXT';
     data: string;
 }
-const $$FooRecursiveUnionText: ArriModelValidator<FooRecursiveUnionText> = {
-    new(): FooRecursiveUnionText {
-        return {
-            type: 'TEXT',
-            data: '',
-        };
-    },
-    validate(input): input is FooRecursiveUnionText {
-        return (
-            isObject(input) &&
-            input.type === 'TEXT' &&
-            typeof input.data === 'string'
-        );
-    },
-    fromJson(input): FooRecursiveUnionText {
-        const _type = 'TEXT';
-        let _data: string;
-        _data = parseString(input.data);
-        return {
-            type: _type,
-            data: _data,
-        };
-    },
-    fromJsonString(input): FooRecursiveUnionText {
-        return $$FooRecursiveUnionText.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"type":"TEXT"';
-        json += ',"data":';
-        json += serializeString(input.data);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('type=TEXT');
-        queryParts.push(`data=${input.data}`);
-        return queryParts.join('&');
-    },
-};
+export function FooRecursiveUnionTextNew(): FooRecursiveUnionText {
+    return {
+        type: 'TEXT',
+        data: '',
+    };
+}
+export function FooRecursiveUnionTextFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionText {
+    const _type = 'TEXT';
+    let _data: string;
+    _data = parseString(input.data);
+    return {
+        type: _type,
+        data: _data,
+    };
+}
+export function FooRecursiveUnionTextFromJsonString(
+    input: string,
+): FooRecursiveUnionText {
+    return FooRecursiveUnionTextFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionTextToJsonString(
+    input: FooRecursiveUnionText,
+): string {
+    let json = '{';
+    json += '"type":"TEXT"';
+    json += ',"data":';
+    json += serializeString(input.data);
+    json += '}';
+    return json;
+}
+export function FooRecursiveUnionTextToUrlSearchParams(
+    input: FooRecursiveUnionText,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'TEXT');
+    params.set('data', input.data);
+    return params;
+}
+export function FooRecursiveUnionTextToUrlSearchParamsString(
+    input: FooRecursiveUnionText,
+): string {
+    return FooRecursiveUnionTextToUrlSearchParams(input).toString();
+}
+
+const $$FooRecursiveUnionText: TestClientPrefixedValidator<FooRecursiveUnionText> =
+    {
+        new: FooRecursiveUnionTextNew,
+
+        fromJson: FooRecursiveUnionTextFromJson,
+        fromJsonString: FooRecursiveUnionTextFromJsonString,
+        toJsonString: FooRecursiveUnionTextToJsonString,
+        toUrlSearchParams: FooRecursiveUnionTextToUrlSearchParams,
+        toUrlSearchParamsString: FooRecursiveUnionTextToUrlSearchParamsString,
+    };
 
 /**
  * Shape node
@@ -4558,650 +4783,806 @@ export interface FooRecursiveUnionShape {
     type: 'SHAPE';
     data: FooRecursiveUnionShapeData;
 }
-const $$FooRecursiveUnionShape: ArriModelValidator<FooRecursiveUnionShape> = {
-    new(): FooRecursiveUnionShape {
-        return {
-            type: 'SHAPE',
-            data: $$FooRecursiveUnionShapeData.new(),
-        };
-    },
-    validate(input): input is FooRecursiveUnionShape {
-        return (
-            isObject(input) &&
-            input.type === 'SHAPE' &&
-            $$FooRecursiveUnionShapeData.validate(input.data)
-        );
-    },
-    fromJson(input): FooRecursiveUnionShape {
-        const _type = 'SHAPE';
-        let _data: FooRecursiveUnionShapeData;
-        if (isObject(input.data)) {
-            _data = $$FooRecursiveUnionShapeData.fromJson(input.data);
-        } else {
-            _data = $$FooRecursiveUnionShapeData.new();
-        }
-        return {
-            type: _type,
-            data: _data,
-        };
-    },
-    fromJsonString(input): FooRecursiveUnionShape {
-        return $$FooRecursiveUnionShape.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"type":"SHAPE"';
-        json += ',"data":';
-        json += $$FooRecursiveUnionShapeData.toJsonString(input.data);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('type=SHAPE');
-        console.warn(
-            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /RecursiveUnionShape/data.',
-        );
-        return queryParts.join('&');
-    },
-};
+export function FooRecursiveUnionShapeNew(): FooRecursiveUnionShape {
+    return {
+        type: 'SHAPE',
+        data: FooRecursiveUnionShapeDataNew(),
+    };
+}
+export function FooRecursiveUnionShapeFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionShape {
+    const _type = 'SHAPE';
+    let _data: FooRecursiveUnionShapeData;
+    if (isObject(input.data)) {
+        _data = FooRecursiveUnionShapeDataFromJson(input.data);
+    } else {
+        _data = FooRecursiveUnionShapeDataNew();
+    }
+    return {
+        type: _type,
+        data: _data,
+    };
+}
+export function FooRecursiveUnionShapeFromJsonString(
+    input: string,
+): FooRecursiveUnionShape {
+    return FooRecursiveUnionShapeFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionShapeToJsonString(
+    input: FooRecursiveUnionShape,
+): string {
+    let json = '{';
+    json += '"type":"SHAPE"';
+    json += ',"data":';
+    json += FooRecursiveUnionShapeDataToJsonString(input.data);
+    json += '}';
+    return json;
+}
+export function FooRecursiveUnionShapeToUrlSearchParams(
+    input: FooRecursiveUnionShape,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('type', 'SHAPE');
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /RecursiveUnionShape/data.',
+    );
+    return params;
+}
+export function FooRecursiveUnionShapeToUrlSearchParamsString(
+    input: FooRecursiveUnionShape,
+): string {
+    return FooRecursiveUnionShapeToUrlSearchParams(input).toString();
+}
 
+const $$FooRecursiveUnionShape: TestClientPrefixedValidator<FooRecursiveUnionShape> =
+    {
+        new: FooRecursiveUnionShapeNew,
+
+        fromJson: FooRecursiveUnionShapeFromJson,
+        fromJsonString: FooRecursiveUnionShapeFromJsonString,
+        toJsonString: FooRecursiveUnionShapeToJsonString,
+        toUrlSearchParams: FooRecursiveUnionShapeToUrlSearchParams,
+        toUrlSearchParamsString: FooRecursiveUnionShapeToUrlSearchParamsString,
+    };
 export interface FooRecursiveUnionShapeData {
     width: number;
     height: number;
     color: string;
 }
-export const $$FooRecursiveUnionShapeData: ArriModelValidator<FooRecursiveUnionShapeData> =
+export function FooRecursiveUnionShapeDataNew(): FooRecursiveUnionShapeData {
+    return {
+        width: 0,
+        height: 0,
+        color: '',
+    };
+}
+export function FooRecursiveUnionShapeDataFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionShapeData {
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    let _color: string;
+    _color = parseString(input.color);
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
+}
+export function FooRecursiveUnionShapeDataFromJsonString(
+    input: string,
+): FooRecursiveUnionShapeData {
+    return FooRecursiveUnionShapeDataFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionShapeDataToJsonString(
+    input: FooRecursiveUnionShapeData,
+): string {
+    let json = '{';
+    json += '"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += ',"color":';
+    json += serializeString(input.color);
+    json += '}';
+    return json;
+}
+export function FooRecursiveUnionShapeDataToUrlSearchParams(
+    input: FooRecursiveUnionShapeData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    params.set('color', input.color);
+    return params;
+}
+export function FooRecursiveUnionShapeDataToUrlSearchParamsString(
+    input: FooRecursiveUnionShapeData,
+): string {
+    return FooRecursiveUnionShapeDataToUrlSearchParams(input).toString();
+}
+
+export const $$FooRecursiveUnionShapeData: TestClientPrefixedValidator<FooRecursiveUnionShapeData> =
     {
-        new(): FooRecursiveUnionShapeData {
-            return {
-                width: 0,
-                height: 0,
-                color: '',
-            };
-        },
-        validate(input): input is FooRecursiveUnionShapeData {
-            return (
-                isObject(input) &&
-                typeof input.width === 'number' &&
-                typeof input.height === 'number' &&
-                typeof input.color === 'string'
-            );
-        },
-        fromJson(input): FooRecursiveUnionShapeData {
-            let _width: number;
-            _width = parseNumberFloat(input.width);
-            let _height: number;
-            _height = parseNumberFloat(input.height);
-            let _color: string;
-            _color = parseString(input.color);
-            return {
-                width: _width,
-                height: _height,
-                color: _color,
-            };
-        },
-        fromJsonString(input): FooRecursiveUnionShapeData {
-            return $$FooRecursiveUnionShapeData.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"width":';
-            json += `${input.width}`;
-            json += ',"height":';
-            json += `${input.height}`;
-            json += ',"color":';
-            json += serializeString(input.color);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`width=${input.width}`);
-            queryParts.push(`height=${input.height}`);
-            queryParts.push(`color=${input.color}`);
-            return queryParts.join('&');
-        },
+        new: FooRecursiveUnionShapeDataNew,
+
+        fromJson: FooRecursiveUnionShapeDataFromJson,
+        fromJsonString: FooRecursiveUnionShapeDataFromJsonString,
+        toJsonString: FooRecursiveUnionShapeDataToJsonString,
+        toUrlSearchParams: FooRecursiveUnionShapeDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooRecursiveUnionShapeDataToUrlSearchParamsString,
     };
 
 export interface FooAutoReconnectParams {
     messageCount: number;
 }
-export const $$FooAutoReconnectParams: ArriModelValidator<FooAutoReconnectParams> =
+export function FooAutoReconnectParamsNew(): FooAutoReconnectParams {
+    return {
+        messageCount: 0,
+    };
+}
+export function FooAutoReconnectParamsFromJson(
+    input: Record<string, unknown>,
+): FooAutoReconnectParams {
+    let _messageCount: number;
+    _messageCount = parseNumberInt(input.messageCount, 0, UINT8_MAX);
+    return {
+        messageCount: _messageCount,
+    };
+}
+export function FooAutoReconnectParamsFromJsonString(
+    input: string,
+): FooAutoReconnectParams {
+    return FooAutoReconnectParamsFromJson(JSON.parse(input));
+}
+export function FooAutoReconnectParamsToJsonString(
+    input: FooAutoReconnectParams,
+): string {
+    let json = '{';
+    json += '"messageCount":';
+    json += `${input.messageCount}`;
+    json += '}';
+    return json;
+}
+export function FooAutoReconnectParamsToUrlSearchParams(
+    input: FooAutoReconnectParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('messageCount', `${input.messageCount}`);
+    return params;
+}
+export function FooAutoReconnectParamsToUrlSearchParamsString(
+    input: FooAutoReconnectParams,
+): string {
+    return FooAutoReconnectParamsToUrlSearchParams(input).toString();
+}
+
+export const $$FooAutoReconnectParams: TestClientPrefixedValidator<FooAutoReconnectParams> =
     {
-        new(): FooAutoReconnectParams {
-            return {
-                messageCount: 0,
-            };
-        },
-        validate(input): input is FooAutoReconnectParams {
-            return (
-                isObject(input) &&
-                typeof input.messageCount === 'number' &&
-                Number.isInteger(input.messageCount) &&
-                input.messageCount >= 0 &&
-                input.messageCount <= UINT8_MAX
-            );
-        },
-        fromJson(input): FooAutoReconnectParams {
-            let _messageCount: number;
-            _messageCount = parseNumberInt(input.messageCount, 0, UINT8_MAX);
-            return {
-                messageCount: _messageCount,
-            };
-        },
-        fromJsonString(input): FooAutoReconnectParams {
-            return $$FooAutoReconnectParams.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"messageCount":';
-            json += `${input.messageCount}`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`messageCount=${input.messageCount}`);
-            return queryParts.join('&');
-        },
+        new: FooAutoReconnectParamsNew,
+
+        fromJson: FooAutoReconnectParamsFromJson,
+        fromJsonString: FooAutoReconnectParamsFromJsonString,
+        toJsonString: FooAutoReconnectParamsToJsonString,
+        toUrlSearchParams: FooAutoReconnectParamsToUrlSearchParams,
+        toUrlSearchParamsString: FooAutoReconnectParamsToUrlSearchParamsString,
     };
 
 export interface FooAutoReconnectResponse {
     count: number;
     message: string;
 }
-export const $$FooAutoReconnectResponse: ArriModelValidator<FooAutoReconnectResponse> =
+export function FooAutoReconnectResponseNew(): FooAutoReconnectResponse {
+    return {
+        count: 0,
+        message: '',
+    };
+}
+export function FooAutoReconnectResponseFromJson(
+    input: Record<string, unknown>,
+): FooAutoReconnectResponse {
+    let _count: number;
+    _count = parseNumberInt(input.count, 0, UINT8_MAX);
+    let _message: string;
+    _message = parseString(input.message);
+    return {
+        count: _count,
+        message: _message,
+    };
+}
+export function FooAutoReconnectResponseFromJsonString(
+    input: string,
+): FooAutoReconnectResponse {
+    return FooAutoReconnectResponseFromJson(JSON.parse(input));
+}
+export function FooAutoReconnectResponseToJsonString(
+    input: FooAutoReconnectResponse,
+): string {
+    let json = '{';
+    json += '"count":';
+    json += `${input.count}`;
+    json += ',"message":';
+    json += serializeString(input.message);
+    json += '}';
+    return json;
+}
+export function FooAutoReconnectResponseToUrlSearchParams(
+    input: FooAutoReconnectResponse,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('count', `${input.count}`);
+    params.set('message', input.message);
+    return params;
+}
+export function FooAutoReconnectResponseToUrlSearchParamsString(
+    input: FooAutoReconnectResponse,
+): string {
+    return FooAutoReconnectResponseToUrlSearchParams(input).toString();
+}
+
+export const $$FooAutoReconnectResponse: TestClientPrefixedValidator<FooAutoReconnectResponse> =
     {
-        new(): FooAutoReconnectResponse {
-            return {
-                count: 0,
-                message: '',
-            };
-        },
-        validate(input): input is FooAutoReconnectResponse {
-            return (
-                isObject(input) &&
-                typeof input.count === 'number' &&
-                Number.isInteger(input.count) &&
-                input.count >= 0 &&
-                input.count <= UINT8_MAX &&
-                typeof input.message === 'string'
-            );
-        },
-        fromJson(input): FooAutoReconnectResponse {
-            let _count: number;
-            _count = parseNumberInt(input.count, 0, UINT8_MAX);
-            let _message: string;
-            _message = parseString(input.message);
-            return {
-                count: _count,
-                message: _message,
-            };
-        },
-        fromJsonString(input): FooAutoReconnectResponse {
-            return $$FooAutoReconnectResponse.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"count":';
-            json += `${input.count}`;
-            json += ',"message":';
-            json += serializeString(input.message);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`count=${input.count}`);
-            queryParts.push(`message=${input.message}`);
-            return queryParts.join('&');
-        },
+        new: FooAutoReconnectResponseNew,
+
+        fromJson: FooAutoReconnectResponseFromJson,
+        fromJsonString: FooAutoReconnectResponseFromJsonString,
+        toJsonString: FooAutoReconnectResponseToJsonString,
+        toUrlSearchParams: FooAutoReconnectResponseToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooAutoReconnectResponseToUrlSearchParamsString,
     };
 
 export interface FooStreamConnectionErrorTestParams {
     statusCode: number;
     statusMessage: string;
 }
-export const $$FooStreamConnectionErrorTestParams: ArriModelValidator<FooStreamConnectionErrorTestParams> =
+export function FooStreamConnectionErrorTestParamsNew(): FooStreamConnectionErrorTestParams {
+    return {
+        statusCode: 0,
+        statusMessage: '',
+    };
+}
+export function FooStreamConnectionErrorTestParamsFromJson(
+    input: Record<string, unknown>,
+): FooStreamConnectionErrorTestParams {
+    let _statusCode: number;
+    _statusCode = parseNumberInt(input.statusCode, INT32_MIN, INT32_MAX);
+    let _statusMessage: string;
+    _statusMessage = parseString(input.statusMessage);
+    return {
+        statusCode: _statusCode,
+        statusMessage: _statusMessage,
+    };
+}
+export function FooStreamConnectionErrorTestParamsFromJsonString(
+    input: string,
+): FooStreamConnectionErrorTestParams {
+    return FooStreamConnectionErrorTestParamsFromJson(JSON.parse(input));
+}
+export function FooStreamConnectionErrorTestParamsToJsonString(
+    input: FooStreamConnectionErrorTestParams,
+): string {
+    let json = '{';
+    json += '"statusCode":';
+    json += `${input.statusCode}`;
+    json += ',"statusMessage":';
+    json += serializeString(input.statusMessage);
+    json += '}';
+    return json;
+}
+export function FooStreamConnectionErrorTestParamsToUrlSearchParams(
+    input: FooStreamConnectionErrorTestParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('statusCode', `${input.statusCode}`);
+    params.set('statusMessage', input.statusMessage);
+    return params;
+}
+export function FooStreamConnectionErrorTestParamsToUrlSearchParamsString(
+    input: FooStreamConnectionErrorTestParams,
+): string {
+    return FooStreamConnectionErrorTestParamsToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooStreamConnectionErrorTestParams: TestClientPrefixedValidator<FooStreamConnectionErrorTestParams> =
     {
-        new(): FooStreamConnectionErrorTestParams {
-            return {
-                statusCode: 0,
-                statusMessage: '',
-            };
-        },
-        validate(input): input is FooStreamConnectionErrorTestParams {
-            return (
-                isObject(input) &&
-                typeof input.statusCode === 'number' &&
-                Number.isInteger(input.statusCode) &&
-                input.statusCode >= INT32_MIN &&
-                input.statusCode <= INT32_MAX &&
-                typeof input.statusMessage === 'string'
-            );
-        },
-        fromJson(input): FooStreamConnectionErrorTestParams {
-            let _statusCode: number;
-            _statusCode = parseNumberInt(
-                input.statusCode,
-                INT32_MIN,
-                INT32_MAX,
-            );
-            let _statusMessage: string;
-            _statusMessage = parseString(input.statusMessage);
-            return {
-                statusCode: _statusCode,
-                statusMessage: _statusMessage,
-            };
-        },
-        fromJsonString(input): FooStreamConnectionErrorTestParams {
-            return $$FooStreamConnectionErrorTestParams.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"statusCode":';
-            json += `${input.statusCode}`;
-            json += ',"statusMessage":';
-            json += serializeString(input.statusMessage);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`statusCode=${input.statusCode}`);
-            queryParts.push(`statusMessage=${input.statusMessage}`);
-            return queryParts.join('&');
-        },
+        new: FooStreamConnectionErrorTestParamsNew,
+
+        fromJson: FooStreamConnectionErrorTestParamsFromJson,
+        fromJsonString: FooStreamConnectionErrorTestParamsFromJsonString,
+        toJsonString: FooStreamConnectionErrorTestParamsToJsonString,
+        toUrlSearchParams: FooStreamConnectionErrorTestParamsToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooStreamConnectionErrorTestParamsToUrlSearchParamsString,
     };
 
 export interface FooStreamConnectionErrorTestResponse {
     message: string;
 }
-export const $$FooStreamConnectionErrorTestResponse: ArriModelValidator<FooStreamConnectionErrorTestResponse> =
+export function FooStreamConnectionErrorTestResponseNew(): FooStreamConnectionErrorTestResponse {
+    return {
+        message: '',
+    };
+}
+export function FooStreamConnectionErrorTestResponseFromJson(
+    input: Record<string, unknown>,
+): FooStreamConnectionErrorTestResponse {
+    let _message: string;
+    _message = parseString(input.message);
+    return {
+        message: _message,
+    };
+}
+export function FooStreamConnectionErrorTestResponseFromJsonString(
+    input: string,
+): FooStreamConnectionErrorTestResponse {
+    return FooStreamConnectionErrorTestResponseFromJson(JSON.parse(input));
+}
+export function FooStreamConnectionErrorTestResponseToJsonString(
+    input: FooStreamConnectionErrorTestResponse,
+): string {
+    let json = '{';
+    json += '"message":';
+    json += serializeString(input.message);
+    json += '}';
+    return json;
+}
+export function FooStreamConnectionErrorTestResponseToUrlSearchParams(
+    input: FooStreamConnectionErrorTestResponse,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('message', input.message);
+    return params;
+}
+export function FooStreamConnectionErrorTestResponseToUrlSearchParamsString(
+    input: FooStreamConnectionErrorTestResponse,
+): string {
+    return FooStreamConnectionErrorTestResponseToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooStreamConnectionErrorTestResponse: TestClientPrefixedValidator<FooStreamConnectionErrorTestResponse> =
     {
-        new(): FooStreamConnectionErrorTestResponse {
-            return {
-                message: '',
-            };
-        },
-        validate(input): input is FooStreamConnectionErrorTestResponse {
-            return isObject(input) && typeof input.message === 'string';
-        },
-        fromJson(input): FooStreamConnectionErrorTestResponse {
-            let _message: string;
-            _message = parseString(input.message);
-            return {
-                message: _message,
-            };
-        },
-        fromJsonString(input): FooStreamConnectionErrorTestResponse {
-            return $$FooStreamConnectionErrorTestResponse.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"message":';
-            json += serializeString(input.message);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`message=${input.message}`);
-            return queryParts.join('&');
-        },
+        new: FooStreamConnectionErrorTestResponseNew,
+
+        fromJson: FooStreamConnectionErrorTestResponseFromJson,
+        fromJsonString: FooStreamConnectionErrorTestResponseFromJsonString,
+        toJsonString: FooStreamConnectionErrorTestResponseToJsonString,
+        toUrlSearchParams:
+            FooStreamConnectionErrorTestResponseToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooStreamConnectionErrorTestResponseToUrlSearchParamsString,
     };
 
 export interface FooStreamHeartbeatDetectionTestParams {
     heartbeatEnabled: boolean;
 }
-export const $$FooStreamHeartbeatDetectionTestParams: ArriModelValidator<FooStreamHeartbeatDetectionTestParams> =
+export function FooStreamHeartbeatDetectionTestParamsNew(): FooStreamHeartbeatDetectionTestParams {
+    return {
+        heartbeatEnabled: false,
+    };
+}
+export function FooStreamHeartbeatDetectionTestParamsFromJson(
+    input: Record<string, unknown>,
+): FooStreamHeartbeatDetectionTestParams {
+    let _heartbeatEnabled: boolean;
+    _heartbeatEnabled = parseBoolean(input.heartbeatEnabled);
+    return {
+        heartbeatEnabled: _heartbeatEnabled,
+    };
+}
+export function FooStreamHeartbeatDetectionTestParamsFromJsonString(
+    input: string,
+): FooStreamHeartbeatDetectionTestParams {
+    return FooStreamHeartbeatDetectionTestParamsFromJson(JSON.parse(input));
+}
+export function FooStreamHeartbeatDetectionTestParamsToJsonString(
+    input: FooStreamHeartbeatDetectionTestParams,
+): string {
+    let json = '{';
+    json += '"heartbeatEnabled":';
+    json += `${input.heartbeatEnabled}`;
+    json += '}';
+    return json;
+}
+export function FooStreamHeartbeatDetectionTestParamsToUrlSearchParams(
+    input: FooStreamHeartbeatDetectionTestParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('heartbeatEnabled', `${input.heartbeatEnabled}`);
+    return params;
+}
+export function FooStreamHeartbeatDetectionTestParamsToUrlSearchParamsString(
+    input: FooStreamHeartbeatDetectionTestParams,
+): string {
+    return FooStreamHeartbeatDetectionTestParamsToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooStreamHeartbeatDetectionTestParams: TestClientPrefixedValidator<FooStreamHeartbeatDetectionTestParams> =
     {
-        new(): FooStreamHeartbeatDetectionTestParams {
-            return {
-                heartbeatEnabled: false,
-            };
-        },
-        validate(input): input is FooStreamHeartbeatDetectionTestParams {
-            return (
-                isObject(input) && typeof input.heartbeatEnabled === 'boolean'
-            );
-        },
-        fromJson(input): FooStreamHeartbeatDetectionTestParams {
-            let _heartbeatEnabled: boolean;
-            _heartbeatEnabled = parseBoolean(input.heartbeatEnabled);
-            return {
-                heartbeatEnabled: _heartbeatEnabled,
-            };
-        },
-        fromJsonString(input): FooStreamHeartbeatDetectionTestParams {
-            return $$FooStreamHeartbeatDetectionTestParams.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"heartbeatEnabled":';
-            json += `${input.heartbeatEnabled}`;
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`heartbeatEnabled=${input.heartbeatEnabled}`);
-            return queryParts.join('&');
-        },
+        new: FooStreamHeartbeatDetectionTestParamsNew,
+
+        fromJson: FooStreamHeartbeatDetectionTestParamsFromJson,
+        fromJsonString: FooStreamHeartbeatDetectionTestParamsFromJsonString,
+        toJsonString: FooStreamHeartbeatDetectionTestParamsToJsonString,
+        toUrlSearchParams:
+            FooStreamHeartbeatDetectionTestParamsToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooStreamHeartbeatDetectionTestParamsToUrlSearchParamsString,
     };
 
 export interface FooStreamHeartbeatDetectionTestResponse {
     message: string;
 }
-export const $$FooStreamHeartbeatDetectionTestResponse: ArriModelValidator<FooStreamHeartbeatDetectionTestResponse> =
+export function FooStreamHeartbeatDetectionTestResponseNew(): FooStreamHeartbeatDetectionTestResponse {
+    return {
+        message: '',
+    };
+}
+export function FooStreamHeartbeatDetectionTestResponseFromJson(
+    input: Record<string, unknown>,
+): FooStreamHeartbeatDetectionTestResponse {
+    let _message: string;
+    _message = parseString(input.message);
+    return {
+        message: _message,
+    };
+}
+export function FooStreamHeartbeatDetectionTestResponseFromJsonString(
+    input: string,
+): FooStreamHeartbeatDetectionTestResponse {
+    return FooStreamHeartbeatDetectionTestResponseFromJson(JSON.parse(input));
+}
+export function FooStreamHeartbeatDetectionTestResponseToJsonString(
+    input: FooStreamHeartbeatDetectionTestResponse,
+): string {
+    let json = '{';
+    json += '"message":';
+    json += serializeString(input.message);
+    json += '}';
+    return json;
+}
+export function FooStreamHeartbeatDetectionTestResponseToUrlSearchParams(
+    input: FooStreamHeartbeatDetectionTestResponse,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('message', input.message);
+    return params;
+}
+export function FooStreamHeartbeatDetectionTestResponseToUrlSearchParamsString(
+    input: FooStreamHeartbeatDetectionTestResponse,
+): string {
+    return FooStreamHeartbeatDetectionTestResponseToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooStreamHeartbeatDetectionTestResponse: TestClientPrefixedValidator<FooStreamHeartbeatDetectionTestResponse> =
     {
-        new(): FooStreamHeartbeatDetectionTestResponse {
-            return {
-                message: '',
-            };
-        },
-        validate(input): input is FooStreamHeartbeatDetectionTestResponse {
-            return isObject(input) && typeof input.message === 'string';
-        },
-        fromJson(input): FooStreamHeartbeatDetectionTestResponse {
-            let _message: string;
-            _message = parseString(input.message);
-            return {
-                message: _message,
-            };
-        },
-        fromJsonString(input): FooStreamHeartbeatDetectionTestResponse {
-            return $$FooStreamHeartbeatDetectionTestResponse.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"message":';
-            json += serializeString(input.message);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`message=${input.message}`);
-            return queryParts.join('&');
-        },
+        new: FooStreamHeartbeatDetectionTestResponseNew,
+
+        fromJson: FooStreamHeartbeatDetectionTestResponseFromJson,
+        fromJsonString: FooStreamHeartbeatDetectionTestResponseFromJsonString,
+        toJsonString: FooStreamHeartbeatDetectionTestResponseToJsonString,
+        toUrlSearchParams:
+            FooStreamHeartbeatDetectionTestResponseToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooStreamHeartbeatDetectionTestResponseToUrlSearchParamsString,
     };
 
 export interface FooStreamLargeObjectsResponse {
     numbers: number[];
     objects: FooStreamLargeObjectsResponseObjectsElement[];
 }
-export const $$FooStreamLargeObjectsResponse: ArriModelValidator<FooStreamLargeObjectsResponse> =
-    {
-        new(): FooStreamLargeObjectsResponse {
-            return {
-                numbers: [],
-                objects: [],
-            };
-        },
-        validate(input): input is FooStreamLargeObjectsResponse {
-            return (
-                isObject(input) &&
-                Array.isArray(input.numbers) &&
-                input.numbers.every(
-                    (_element) => typeof _element === 'number',
-                ) &&
-                Array.isArray(input.objects) &&
-                input.objects.every((_element) =>
-                    $$FooStreamLargeObjectsResponseObjectsElement.validate(
-                        _element,
-                    ),
-                )
-            );
-        },
-        fromJson(input): FooStreamLargeObjectsResponse {
-            let _numbers: number[];
-            if (Array.isArray(input.numbers)) {
-                _numbers = [];
-                for (const _numbersEl of input.numbers) {
-                    let _numbersElValue: number;
-                    _numbersElValue = parseNumberFloat(_numbersEl);
-                    _numbers.push(_numbersElValue);
-                }
-            } else {
-                _numbers = [];
-            }
-            let _objects: FooStreamLargeObjectsResponseObjectsElement[];
-            if (Array.isArray(input.objects)) {
-                _objects = [];
-                for (const _objectsEl of input.objects) {
-                    let _objectsElValue: FooStreamLargeObjectsResponseObjectsElement;
-                    if (isObject(_objectsEl)) {
-                        _objectsElValue =
-                            $$FooStreamLargeObjectsResponseObjectsElement.fromJson(
-                                _objectsEl,
-                            );
-                    } else {
-                        _objectsElValue =
-                            $$FooStreamLargeObjectsResponseObjectsElement.new();
-                    }
-                    _objects.push(_objectsElValue);
-                }
-            } else {
-                _objects = [];
-            }
-            return {
-                numbers: _numbers,
-                objects: _objects,
-            };
-        },
-        fromJsonString(input): FooStreamLargeObjectsResponse {
-            return $$FooStreamLargeObjectsResponse.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"numbers":';
-            json += '[';
-            for (let i = 0; i < input.numbers.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputNumbersEl = input.numbers[i];
-                json += `${_inputNumbersEl}`;
-            }
-            json += ']';
-            json += ',"objects":';
-            json += '[';
-            for (let i = 0; i < input.objects.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputObjectsEl = input.objects[i];
-                json +=
-                    $$FooStreamLargeObjectsResponseObjectsElement.toJsonString(
-                        _inputObjectsEl,
-                    );
-            }
-            json += ']';
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /StreamLargeObjectsResponse/numbers.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /StreamLargeObjectsResponse/objects.',
-            );
-            return queryParts.join('&');
-        },
+export function FooStreamLargeObjectsResponseNew(): FooStreamLargeObjectsResponse {
+    return {
+        numbers: [],
+        objects: [],
     };
+}
+export function FooStreamLargeObjectsResponseFromJson(
+    input: Record<string, unknown>,
+): FooStreamLargeObjectsResponse {
+    let _numbers: number[];
+    if (Array.isArray(input.numbers)) {
+        _numbers = [];
+        for (const _numbersEl of input.numbers) {
+            let _numbersElValue: number;
+            _numbersElValue = parseNumberFloat(_numbersEl);
+            _numbers.push(_numbersElValue);
+        }
+    } else {
+        _numbers = [];
+    }
+    let _objects: FooStreamLargeObjectsResponseObjectsElement[];
+    if (Array.isArray(input.objects)) {
+        _objects = [];
+        for (const _objectsEl of input.objects) {
+            let _objectsElValue: FooStreamLargeObjectsResponseObjectsElement;
+            if (isObject(_objectsEl)) {
+                _objectsElValue =
+                    FooStreamLargeObjectsResponseObjectsElementFromJson(
+                        _objectsEl,
+                    );
+            } else {
+                _objectsElValue =
+                    FooStreamLargeObjectsResponseObjectsElementNew();
+            }
+            _objects.push(_objectsElValue);
+        }
+    } else {
+        _objects = [];
+    }
+    return {
+        numbers: _numbers,
+        objects: _objects,
+    };
+}
+export function FooStreamLargeObjectsResponseFromJsonString(
+    input: string,
+): FooStreamLargeObjectsResponse {
+    return FooStreamLargeObjectsResponseFromJson(JSON.parse(input));
+}
+export function FooStreamLargeObjectsResponseToJsonString(
+    input: FooStreamLargeObjectsResponse,
+): string {
+    let json = '{';
+    json += '"numbers":';
+    json += '[';
+    for (let i = 0; i < input.numbers.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputNumbersEl = input.numbers[i];
+        json += `${_inputNumbersEl}`;
+    }
+    json += ']';
+    json += ',"objects":';
+    json += '[';
+    for (let i = 0; i < input.objects.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputObjectsEl = input.objects[i];
+        json +=
+            FooStreamLargeObjectsResponseObjectsElementToJsonString(
+                _inputObjectsEl,
+            );
+    }
+    json += ']';
+    json += '}';
+    return json;
+}
+export function FooStreamLargeObjectsResponseToUrlSearchParams(
+    input: FooStreamLargeObjectsResponse,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /StreamLargeObjectsResponse/numbers.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /StreamLargeObjectsResponse/objects.',
+    );
+    return params;
+}
+export function FooStreamLargeObjectsResponseToUrlSearchParamsString(
+    input: FooStreamLargeObjectsResponse,
+): string {
+    return FooStreamLargeObjectsResponseToUrlSearchParams(input).toString();
+}
 
+export const $$FooStreamLargeObjectsResponse: TestClientPrefixedValidator<FooStreamLargeObjectsResponse> =
+    {
+        new: FooStreamLargeObjectsResponseNew,
+
+        fromJson: FooStreamLargeObjectsResponseFromJson,
+        fromJsonString: FooStreamLargeObjectsResponseFromJsonString,
+        toJsonString: FooStreamLargeObjectsResponseToJsonString,
+        toUrlSearchParams: FooStreamLargeObjectsResponseToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooStreamLargeObjectsResponseToUrlSearchParamsString,
+    };
 export interface FooStreamLargeObjectsResponseObjectsElement {
     id: string;
     name: string;
     email: string;
 }
-export const $$FooStreamLargeObjectsResponseObjectsElement: ArriModelValidator<FooStreamLargeObjectsResponseObjectsElement> =
+export function FooStreamLargeObjectsResponseObjectsElementNew(): FooStreamLargeObjectsResponseObjectsElement {
+    return {
+        id: '',
+        name: '',
+        email: '',
+    };
+}
+export function FooStreamLargeObjectsResponseObjectsElementFromJson(
+    input: Record<string, unknown>,
+): FooStreamLargeObjectsResponseObjectsElement {
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    let _email: string;
+    _email = parseString(input.email);
+    return {
+        id: _id,
+        name: _name,
+        email: _email,
+    };
+}
+export function FooStreamLargeObjectsResponseObjectsElementFromJsonString(
+    input: string,
+): FooStreamLargeObjectsResponseObjectsElement {
+    return FooStreamLargeObjectsResponseObjectsElementFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooStreamLargeObjectsResponseObjectsElementToJsonString(
+    input: FooStreamLargeObjectsResponseObjectsElement,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"email":';
+    json += serializeString(input.email);
+    json += '}';
+    return json;
+}
+export function FooStreamLargeObjectsResponseObjectsElementToUrlSearchParams(
+    input: FooStreamLargeObjectsResponseObjectsElement,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('name', input.name);
+    params.set('email', input.email);
+    return params;
+}
+export function FooStreamLargeObjectsResponseObjectsElementToUrlSearchParamsString(
+    input: FooStreamLargeObjectsResponseObjectsElement,
+): string {
+    return FooStreamLargeObjectsResponseObjectsElementToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooStreamLargeObjectsResponseObjectsElement: TestClientPrefixedValidator<FooStreamLargeObjectsResponseObjectsElement> =
     {
-        new(): FooStreamLargeObjectsResponseObjectsElement {
-            return {
-                id: '',
-                name: '',
-                email: '',
-            };
-        },
-        validate(input): input is FooStreamLargeObjectsResponseObjectsElement {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                typeof input.name === 'string' &&
-                typeof input.email === 'string'
-            );
-        },
-        fromJson(input): FooStreamLargeObjectsResponseObjectsElement {
-            let _id: string;
-            _id = parseString(input.id);
-            let _name: string;
-            _name = parseString(input.name);
-            let _email: string;
-            _email = parseString(input.email);
-            return {
-                id: _id,
-                name: _name,
-                email: _email,
-            };
-        },
-        fromJsonString(input): FooStreamLargeObjectsResponseObjectsElement {
-            return $$FooStreamLargeObjectsResponseObjectsElement.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"name":';
-            json += serializeString(input.name);
-            json += ',"email":';
-            json += serializeString(input.email);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`name=${input.name}`);
-            queryParts.push(`email=${input.email}`);
-            return queryParts.join('&');
-        },
+        new: FooStreamLargeObjectsResponseObjectsElementNew,
+
+        fromJson: FooStreamLargeObjectsResponseObjectsElementFromJson,
+        fromJsonString:
+            FooStreamLargeObjectsResponseObjectsElementFromJsonString,
+        toJsonString: FooStreamLargeObjectsResponseObjectsElementToJsonString,
+        toUrlSearchParams:
+            FooStreamLargeObjectsResponseObjectsElementToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooStreamLargeObjectsResponseObjectsElementToUrlSearchParamsString,
     };
 
 export interface FooChatMessageParams {
     channelId: string;
 }
-export const $$FooChatMessageParams: ArriModelValidator<FooChatMessageParams> =
+export function FooChatMessageParamsNew(): FooChatMessageParams {
+    return {
+        channelId: '',
+    };
+}
+export function FooChatMessageParamsFromJson(
+    input: Record<string, unknown>,
+): FooChatMessageParams {
+    let _channelId: string;
+    _channelId = parseString(input.channelId);
+    return {
+        channelId: _channelId,
+    };
+}
+export function FooChatMessageParamsFromJsonString(
+    input: string,
+): FooChatMessageParams {
+    return FooChatMessageParamsFromJson(JSON.parse(input));
+}
+export function FooChatMessageParamsToJsonString(
+    input: FooChatMessageParams,
+): string {
+    let json = '{';
+    json += '"channelId":';
+    json += serializeString(input.channelId);
+    json += '}';
+    return json;
+}
+export function FooChatMessageParamsToUrlSearchParams(
+    input: FooChatMessageParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('channelId', input.channelId);
+    return params;
+}
+export function FooChatMessageParamsToUrlSearchParamsString(
+    input: FooChatMessageParams,
+): string {
+    return FooChatMessageParamsToUrlSearchParams(input).toString();
+}
+
+export const $$FooChatMessageParams: TestClientPrefixedValidator<FooChatMessageParams> =
     {
-        new(): FooChatMessageParams {
-            return {
-                channelId: '',
-            };
-        },
-        validate(input): input is FooChatMessageParams {
-            return isObject(input) && typeof input.channelId === 'string';
-        },
-        fromJson(input): FooChatMessageParams {
-            let _channelId: string;
-            _channelId = parseString(input.channelId);
-            return {
-                channelId: _channelId,
-            };
-        },
-        fromJsonString(input): FooChatMessageParams {
-            return $$FooChatMessageParams.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"channelId":';
-            json += serializeString(input.channelId);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`channelId=${input.channelId}`);
-            return queryParts.join('&');
-        },
+        new: FooChatMessageParamsNew,
+
+        fromJson: FooChatMessageParamsFromJson,
+        fromJsonString: FooChatMessageParamsFromJsonString,
+        toJsonString: FooChatMessageParamsToJsonString,
+        toUrlSearchParams: FooChatMessageParamsToUrlSearchParams,
+        toUrlSearchParamsString: FooChatMessageParamsToUrlSearchParamsString,
     };
 
 export type FooChatMessage =
     | FooChatMessageText
     | FooChatMessageImage
     | FooChatMessageUrl;
-export const $$FooChatMessage: ArriModelValidator<FooChatMessage> = {
-    new(): FooChatMessage {
-        return $$FooChatMessageText.new();
-    },
-    validate(input): input is FooChatMessage {
-        if (!isObject(input)) {
-            return false;
-        }
-        if (typeof input.messageType !== 'string') {
-            return false;
-        }
-        switch (input.messageType) {
-            case 'TEXT':
-                return $$FooChatMessageText.validate(input);
-            case 'IMAGE':
-                return $$FooChatMessageImage.validate(input);
-            case 'URL':
-                return $$FooChatMessageUrl.validate(input);
-            default:
-                return false;
-        }
-    },
-    fromJson(input): FooChatMessage {
-        switch (input.messageType) {
-            case 'TEXT':
-                return $$FooChatMessageText.fromJson(input);
-            case 'IMAGE':
-                return $$FooChatMessageImage.fromJson(input);
-            case 'URL':
-                return $$FooChatMessageUrl.fromJson(input);
-            default:
-                return $$FooChatMessageText.new();
-        }
-    },
-    fromJsonString(input): FooChatMessage {
-        return $$FooChatMessage.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        switch (input.messageType) {
-            case 'TEXT':
-                return $$FooChatMessageText.toJsonString(input);
-            case 'IMAGE':
-                return $$FooChatMessageImage.toJsonString(input);
-            case 'URL':
-                return $$FooChatMessageUrl.toJsonString(input);
-            default:
-                throw new Error(
-                    `Unhandled case "${(input as any).messageType}"`,
-                );
-        }
-    },
-    toUrlQueryString(input): string {
-        switch (input.messageType) {
-            case 'TEXT':
-                return $$FooChatMessageText.toUrlQueryString(input);
-            case 'IMAGE':
-                return $$FooChatMessageImage.toUrlQueryString(input);
-            case 'URL':
-                return $$FooChatMessageUrl.toUrlQueryString(input);
-            default:
-                throw new Error('Unhandled case');
-        }
-    },
+export function FooChatMessageNew(): FooChatMessage {
+    return FooChatMessageTextNew();
+}
+export function FooChatMessageFromJson(
+    input: Record<string, unknown>,
+): FooChatMessage {
+    switch (input.messageType) {
+        case 'TEXT':
+            return FooChatMessageTextFromJson(input);
+        case 'IMAGE':
+            return FooChatMessageImageFromJson(input);
+        case 'URL':
+            return FooChatMessageUrlFromJson(input);
+        default:
+            return FooChatMessageTextNew();
+    }
+}
+export function FooChatMessageFromJsonString(input: string): FooChatMessage {
+    return FooChatMessageFromJson(JSON.parse(input));
+}
+export function FooChatMessageToJsonString(input: FooChatMessage): string {
+    switch (input.messageType) {
+        case 'TEXT':
+            return FooChatMessageTextToJsonString(input);
+        case 'IMAGE':
+            return FooChatMessageImageToJsonString(input);
+        case 'URL':
+            return FooChatMessageUrlToJsonString(input);
+        default:
+            throw new Error(`Unhandled case "${(input as any).messageType}"`);
+    }
+}
+export function FooChatMessageToUrlSearchParams(
+    input: FooChatMessage,
+): URLSearchParams {
+    switch (input.messageType) {
+        case 'TEXT':
+            return FooChatMessageTextToUrlSearchParams(input);
+        case 'IMAGE':
+            return FooChatMessageImageToUrlSearchParams(input);
+        case 'URL':
+            return FooChatMessageUrlToUrlSearchParams(input);
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooChatMessageToUrlSearchParamsString(
+    input: FooChatMessage,
+): string {
+    return FooChatMessageToUrlSearchParams(input).toString();
+}
+export const $$FooChatMessage: TestClientPrefixedValidator<FooChatMessage> = {
+    new: FooChatMessageNew,
+
+    fromJson: FooChatMessageFromJson,
+    fromJsonString: FooChatMessageFromJsonString,
+    toJsonString: FooChatMessageToJsonString,
+    toUrlSearchParams: FooChatMessageToUrlSearchParams,
+    toUrlSearchParamsString: FooChatMessageToUrlSearchParamsString,
 };
 export interface FooChatMessageText {
     messageType: 'TEXT';
@@ -5211,78 +5592,88 @@ export interface FooChatMessageText {
     date: Date;
     text: string;
 }
-const $$FooChatMessageText: ArriModelValidator<FooChatMessageText> = {
-    new(): FooChatMessageText {
-        return {
-            messageType: 'TEXT',
-            id: '',
-            channelId: '',
-            userId: '',
-            date: new Date(0),
-            text: '',
-        };
-    },
-    validate(input): input is FooChatMessageText {
-        return (
-            isObject(input) &&
-            input.messageType === 'TEXT' &&
-            typeof input.id === 'string' &&
-            typeof input.channelId === 'string' &&
-            typeof input.userId === 'string' &&
-            input.date instanceof Date &&
-            typeof input.text === 'string'
-        );
-    },
-    fromJson(input): FooChatMessageText {
-        const _messageType = 'TEXT';
-        let _id: string;
-        _id = parseString(input.id);
-        let _channelId: string;
-        _channelId = parseString(input.channelId);
-        let _userId: string;
-        _userId = parseString(input.userId);
-        let _date: Date;
-        _date = parseTimestamp(input.date);
-        let _text: string;
-        _text = parseString(input.text);
-        return {
-            messageType: _messageType,
-            id: _id,
-            channelId: _channelId,
-            userId: _userId,
-            date: _date,
-            text: _text,
-        };
-    },
-    fromJsonString(input): FooChatMessageText {
-        return $$FooChatMessageText.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"messageType":"TEXT"';
-        json += ',"id":';
-        json += serializeString(input.id);
-        json += ',"channelId":';
-        json += serializeString(input.channelId);
-        json += ',"userId":';
-        json += serializeString(input.userId);
-        json += ',"date":';
-        json += `"${input.date.toISOString()}"`;
-        json += ',"text":';
-        json += serializeString(input.text);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('messageType=TEXT');
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`channelId=${input.channelId}`);
-        queryParts.push(`userId=${input.userId}`);
-        queryParts.push(`date=${input.date.toISOString()}`);
-        queryParts.push(`text=${input.text}`);
-        return queryParts.join('&');
-    },
+export function FooChatMessageTextNew(): FooChatMessageText {
+    return {
+        messageType: 'TEXT',
+        id: '',
+        channelId: '',
+        userId: '',
+        date: new Date(0),
+        text: '',
+    };
+}
+export function FooChatMessageTextFromJson(
+    input: Record<string, unknown>,
+): FooChatMessageText {
+    const _messageType = 'TEXT';
+    let _id: string;
+    _id = parseString(input.id);
+    let _channelId: string;
+    _channelId = parseString(input.channelId);
+    let _userId: string;
+    _userId = parseString(input.userId);
+    let _date: Date;
+    _date = parseTimestamp(input.date);
+    let _text: string;
+    _text = parseString(input.text);
+    return {
+        messageType: _messageType,
+        id: _id,
+        channelId: _channelId,
+        userId: _userId,
+        date: _date,
+        text: _text,
+    };
+}
+export function FooChatMessageTextFromJsonString(
+    input: string,
+): FooChatMessageText {
+    return FooChatMessageTextFromJson(JSON.parse(input));
+}
+export function FooChatMessageTextToJsonString(
+    input: FooChatMessageText,
+): string {
+    let json = '{';
+    json += '"messageType":"TEXT"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"channelId":';
+    json += serializeString(input.channelId);
+    json += ',"userId":';
+    json += serializeString(input.userId);
+    json += ',"date":';
+    json += `"${input.date.toISOString()}"`;
+    json += ',"text":';
+    json += serializeString(input.text);
+    json += '}';
+    return json;
+}
+export function FooChatMessageTextToUrlSearchParams(
+    input: FooChatMessageText,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('messageType', 'TEXT');
+    params.set('id', input.id);
+    params.set('channelId', input.channelId);
+    params.set('userId', input.userId);
+    params.set('date', input.date.toISOString());
+    params.set('text', input.text);
+    return params;
+}
+export function FooChatMessageTextToUrlSearchParamsString(
+    input: FooChatMessageText,
+): string {
+    return FooChatMessageTextToUrlSearchParams(input).toString();
+}
+
+const $$FooChatMessageText: TestClientPrefixedValidator<FooChatMessageText> = {
+    new: FooChatMessageTextNew,
+
+    fromJson: FooChatMessageTextFromJson,
+    fromJsonString: FooChatMessageTextFromJsonString,
+    toJsonString: FooChatMessageTextToJsonString,
+    toUrlSearchParams: FooChatMessageTextToUrlSearchParams,
+    toUrlSearchParamsString: FooChatMessageTextToUrlSearchParamsString,
 };
 
 export interface FooChatMessageImage {
@@ -5293,79 +5684,90 @@ export interface FooChatMessageImage {
     date: Date;
     image: string;
 }
-const $$FooChatMessageImage: ArriModelValidator<FooChatMessageImage> = {
-    new(): FooChatMessageImage {
-        return {
-            messageType: 'IMAGE',
-            id: '',
-            channelId: '',
-            userId: '',
-            date: new Date(0),
-            image: '',
-        };
-    },
-    validate(input): input is FooChatMessageImage {
-        return (
-            isObject(input) &&
-            input.messageType === 'IMAGE' &&
-            typeof input.id === 'string' &&
-            typeof input.channelId === 'string' &&
-            typeof input.userId === 'string' &&
-            input.date instanceof Date &&
-            typeof input.image === 'string'
-        );
-    },
-    fromJson(input): FooChatMessageImage {
-        const _messageType = 'IMAGE';
-        let _id: string;
-        _id = parseString(input.id);
-        let _channelId: string;
-        _channelId = parseString(input.channelId);
-        let _userId: string;
-        _userId = parseString(input.userId);
-        let _date: Date;
-        _date = parseTimestamp(input.date);
-        let _image: string;
-        _image = parseString(input.image);
-        return {
-            messageType: _messageType,
-            id: _id,
-            channelId: _channelId,
-            userId: _userId,
-            date: _date,
-            image: _image,
-        };
-    },
-    fromJsonString(input): FooChatMessageImage {
-        return $$FooChatMessageImage.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"messageType":"IMAGE"';
-        json += ',"id":';
-        json += serializeString(input.id);
-        json += ',"channelId":';
-        json += serializeString(input.channelId);
-        json += ',"userId":';
-        json += serializeString(input.userId);
-        json += ',"date":';
-        json += `"${input.date.toISOString()}"`;
-        json += ',"image":';
-        json += serializeString(input.image);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('messageType=IMAGE');
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`channelId=${input.channelId}`);
-        queryParts.push(`userId=${input.userId}`);
-        queryParts.push(`date=${input.date.toISOString()}`);
-        queryParts.push(`image=${input.image}`);
-        return queryParts.join('&');
-    },
-};
+export function FooChatMessageImageNew(): FooChatMessageImage {
+    return {
+        messageType: 'IMAGE',
+        id: '',
+        channelId: '',
+        userId: '',
+        date: new Date(0),
+        image: '',
+    };
+}
+export function FooChatMessageImageFromJson(
+    input: Record<string, unknown>,
+): FooChatMessageImage {
+    const _messageType = 'IMAGE';
+    let _id: string;
+    _id = parseString(input.id);
+    let _channelId: string;
+    _channelId = parseString(input.channelId);
+    let _userId: string;
+    _userId = parseString(input.userId);
+    let _date: Date;
+    _date = parseTimestamp(input.date);
+    let _image: string;
+    _image = parseString(input.image);
+    return {
+        messageType: _messageType,
+        id: _id,
+        channelId: _channelId,
+        userId: _userId,
+        date: _date,
+        image: _image,
+    };
+}
+export function FooChatMessageImageFromJsonString(
+    input: string,
+): FooChatMessageImage {
+    return FooChatMessageImageFromJson(JSON.parse(input));
+}
+export function FooChatMessageImageToJsonString(
+    input: FooChatMessageImage,
+): string {
+    let json = '{';
+    json += '"messageType":"IMAGE"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"channelId":';
+    json += serializeString(input.channelId);
+    json += ',"userId":';
+    json += serializeString(input.userId);
+    json += ',"date":';
+    json += `"${input.date.toISOString()}"`;
+    json += ',"image":';
+    json += serializeString(input.image);
+    json += '}';
+    return json;
+}
+export function FooChatMessageImageToUrlSearchParams(
+    input: FooChatMessageImage,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('messageType', 'IMAGE');
+    params.set('id', input.id);
+    params.set('channelId', input.channelId);
+    params.set('userId', input.userId);
+    params.set('date', input.date.toISOString());
+    params.set('image', input.image);
+    return params;
+}
+export function FooChatMessageImageToUrlSearchParamsString(
+    input: FooChatMessageImage,
+): string {
+    return FooChatMessageImageToUrlSearchParams(input).toString();
+}
+
+const $$FooChatMessageImage: TestClientPrefixedValidator<FooChatMessageImage> =
+    {
+        new: FooChatMessageImageNew,
+
+        fromJson: FooChatMessageImageFromJson,
+        fromJsonString: FooChatMessageImageFromJsonString,
+        toJsonString: FooChatMessageImageToJsonString,
+        toUrlSearchParams: FooChatMessageImageToUrlSearchParams,
+        toUrlSearchParamsString: FooChatMessageImageToUrlSearchParamsString,
+    };
 
 export interface FooChatMessageUrl {
     messageType: 'URL';
@@ -5375,156 +5777,205 @@ export interface FooChatMessageUrl {
     date: Date;
     url: string;
 }
-const $$FooChatMessageUrl: ArriModelValidator<FooChatMessageUrl> = {
-    new(): FooChatMessageUrl {
-        return {
-            messageType: 'URL',
-            id: '',
-            channelId: '',
-            userId: '',
-            date: new Date(0),
-            url: '',
-        };
-    },
-    validate(input): input is FooChatMessageUrl {
-        return (
-            isObject(input) &&
-            input.messageType === 'URL' &&
-            typeof input.id === 'string' &&
-            typeof input.channelId === 'string' &&
-            typeof input.userId === 'string' &&
-            input.date instanceof Date &&
-            typeof input.url === 'string'
-        );
-    },
-    fromJson(input): FooChatMessageUrl {
-        const _messageType = 'URL';
-        let _id: string;
-        _id = parseString(input.id);
-        let _channelId: string;
-        _channelId = parseString(input.channelId);
-        let _userId: string;
-        _userId = parseString(input.userId);
-        let _date: Date;
-        _date = parseTimestamp(input.date);
-        let _url: string;
-        _url = parseString(input.url);
-        return {
-            messageType: _messageType,
-            id: _id,
-            channelId: _channelId,
-            userId: _userId,
-            date: _date,
-            url: _url,
-        };
-    },
-    fromJsonString(input): FooChatMessageUrl {
-        return $$FooChatMessageUrl.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"messageType":"URL"';
-        json += ',"id":';
-        json += serializeString(input.id);
-        json += ',"channelId":';
-        json += serializeString(input.channelId);
-        json += ',"userId":';
-        json += serializeString(input.userId);
-        json += ',"date":';
-        json += `"${input.date.toISOString()}"`;
-        json += ',"url":';
-        json += serializeString(input.url);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('messageType=URL');
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`channelId=${input.channelId}`);
-        queryParts.push(`userId=${input.userId}`);
-        queryParts.push(`date=${input.date.toISOString()}`);
-        queryParts.push(`url=${input.url}`);
-        return queryParts.join('&');
-    },
+export function FooChatMessageUrlNew(): FooChatMessageUrl {
+    return {
+        messageType: 'URL',
+        id: '',
+        channelId: '',
+        userId: '',
+        date: new Date(0),
+        url: '',
+    };
+}
+export function FooChatMessageUrlFromJson(
+    input: Record<string, unknown>,
+): FooChatMessageUrl {
+    const _messageType = 'URL';
+    let _id: string;
+    _id = parseString(input.id);
+    let _channelId: string;
+    _channelId = parseString(input.channelId);
+    let _userId: string;
+    _userId = parseString(input.userId);
+    let _date: Date;
+    _date = parseTimestamp(input.date);
+    let _url: string;
+    _url = parseString(input.url);
+    return {
+        messageType: _messageType,
+        id: _id,
+        channelId: _channelId,
+        userId: _userId,
+        date: _date,
+        url: _url,
+    };
+}
+export function FooChatMessageUrlFromJsonString(
+    input: string,
+): FooChatMessageUrl {
+    return FooChatMessageUrlFromJson(JSON.parse(input));
+}
+export function FooChatMessageUrlToJsonString(
+    input: FooChatMessageUrl,
+): string {
+    let json = '{';
+    json += '"messageType":"URL"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"channelId":';
+    json += serializeString(input.channelId);
+    json += ',"userId":';
+    json += serializeString(input.userId);
+    json += ',"date":';
+    json += `"${input.date.toISOString()}"`;
+    json += ',"url":';
+    json += serializeString(input.url);
+    json += '}';
+    return json;
+}
+export function FooChatMessageUrlToUrlSearchParams(
+    input: FooChatMessageUrl,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('messageType', 'URL');
+    params.set('id', input.id);
+    params.set('channelId', input.channelId);
+    params.set('userId', input.userId);
+    params.set('date', input.date.toISOString());
+    params.set('url', input.url);
+    return params;
+}
+export function FooChatMessageUrlToUrlSearchParamsString(
+    input: FooChatMessageUrl,
+): string {
+    return FooChatMessageUrlToUrlSearchParams(input).toString();
+}
+
+const $$FooChatMessageUrl: TestClientPrefixedValidator<FooChatMessageUrl> = {
+    new: FooChatMessageUrlNew,
+
+    fromJson: FooChatMessageUrlFromJson,
+    fromJsonString: FooChatMessageUrlFromJsonString,
+    toJsonString: FooChatMessageUrlToJsonString,
+    toUrlSearchParams: FooChatMessageUrlToUrlSearchParams,
+    toUrlSearchParamsString: FooChatMessageUrlToUrlSearchParamsString,
 };
 
 export interface FooTestsStreamRetryWithNewCredentialsResponse {
     message: string;
 }
-export const $$FooTestsStreamRetryWithNewCredentialsResponse: ArriModelValidator<FooTestsStreamRetryWithNewCredentialsResponse> =
+export function FooTestsStreamRetryWithNewCredentialsResponseNew(): FooTestsStreamRetryWithNewCredentialsResponse {
+    return {
+        message: '',
+    };
+}
+export function FooTestsStreamRetryWithNewCredentialsResponseFromJson(
+    input: Record<string, unknown>,
+): FooTestsStreamRetryWithNewCredentialsResponse {
+    let _message: string;
+    _message = parseString(input.message);
+    return {
+        message: _message,
+    };
+}
+export function FooTestsStreamRetryWithNewCredentialsResponseFromJsonString(
+    input: string,
+): FooTestsStreamRetryWithNewCredentialsResponse {
+    return FooTestsStreamRetryWithNewCredentialsResponseFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooTestsStreamRetryWithNewCredentialsResponseToJsonString(
+    input: FooTestsStreamRetryWithNewCredentialsResponse,
+): string {
+    let json = '{';
+    json += '"message":';
+    json += serializeString(input.message);
+    json += '}';
+    return json;
+}
+export function FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParams(
+    input: FooTestsStreamRetryWithNewCredentialsResponse,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('message', input.message);
+    return params;
+}
+export function FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParamsString(
+    input: FooTestsStreamRetryWithNewCredentialsResponse,
+): string {
+    return FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooTestsStreamRetryWithNewCredentialsResponse: TestClientPrefixedValidator<FooTestsStreamRetryWithNewCredentialsResponse> =
     {
-        new(): FooTestsStreamRetryWithNewCredentialsResponse {
-            return {
-                message: '',
-            };
-        },
-        validate(
-            input,
-        ): input is FooTestsStreamRetryWithNewCredentialsResponse {
-            return isObject(input) && typeof input.message === 'string';
-        },
-        fromJson(input): FooTestsStreamRetryWithNewCredentialsResponse {
-            let _message: string;
-            _message = parseString(input.message);
-            return {
-                message: _message,
-            };
-        },
-        fromJsonString(input): FooTestsStreamRetryWithNewCredentialsResponse {
-            return $$FooTestsStreamRetryWithNewCredentialsResponse.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"message":';
-            json += serializeString(input.message);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`message=${input.message}`);
-            return queryParts.join('&');
-        },
+        new: FooTestsStreamRetryWithNewCredentialsResponseNew,
+
+        fromJson: FooTestsStreamRetryWithNewCredentialsResponseFromJson,
+        fromJsonString:
+            FooTestsStreamRetryWithNewCredentialsResponseFromJsonString,
+        toJsonString: FooTestsStreamRetryWithNewCredentialsResponseToJsonString,
+        toUrlSearchParams:
+            FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParamsString,
     };
 
 export interface FooUsersWatchUserParams {
     userId: string;
 }
-export const $$FooUsersWatchUserParams: ArriModelValidator<FooUsersWatchUserParams> =
+export function FooUsersWatchUserParamsNew(): FooUsersWatchUserParams {
+    return {
+        userId: '',
+    };
+}
+export function FooUsersWatchUserParamsFromJson(
+    input: Record<string, unknown>,
+): FooUsersWatchUserParams {
+    let _userId: string;
+    _userId = parseString(input.userId);
+    return {
+        userId: _userId,
+    };
+}
+export function FooUsersWatchUserParamsFromJsonString(
+    input: string,
+): FooUsersWatchUserParams {
+    return FooUsersWatchUserParamsFromJson(JSON.parse(input));
+}
+export function FooUsersWatchUserParamsToJsonString(
+    input: FooUsersWatchUserParams,
+): string {
+    let json = '{';
+    json += '"userId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooUsersWatchUserParamsToUrlSearchParams(
+    input: FooUsersWatchUserParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('userId', input.userId);
+    return params;
+}
+export function FooUsersWatchUserParamsToUrlSearchParamsString(
+    input: FooUsersWatchUserParams,
+): string {
+    return FooUsersWatchUserParamsToUrlSearchParams(input).toString();
+}
+
+export const $$FooUsersWatchUserParams: TestClientPrefixedValidator<FooUsersWatchUserParams> =
     {
-        new(): FooUsersWatchUserParams {
-            return {
-                userId: '',
-            };
-        },
-        validate(input): input is FooUsersWatchUserParams {
-            return isObject(input) && typeof input.userId === 'string';
-        },
-        fromJson(input): FooUsersWatchUserParams {
-            let _userId: string;
-            _userId = parseString(input.userId);
-            return {
-                userId: _userId,
-            };
-        },
-        fromJsonString(input): FooUsersWatchUserParams {
-            return $$FooUsersWatchUserParams.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"userId":';
-            json += serializeString(input.userId);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`userId=${input.userId}`);
-            return queryParts.join('&');
-        },
+        new: FooUsersWatchUserParamsNew,
+
+        fromJson: FooUsersWatchUserParamsFromJson,
+        fromJsonString: FooUsersWatchUserParamsFromJsonString,
+        toJsonString: FooUsersWatchUserParamsToJsonString,
+        toUrlSearchParams: FooUsersWatchUserParamsToUrlSearchParams,
+        toUrlSearchParamsString: FooUsersWatchUserParamsToUrlSearchParamsString,
     };
 
 export interface FooUsersWatchUserResponse {
@@ -5543,313 +5994,283 @@ export interface FooUsersWatchUserResponse {
     randomList: any[];
     bio?: string;
 }
-export const $$FooUsersWatchUserResponse: ArriModelValidator<FooUsersWatchUserResponse> =
-    {
-        new(): FooUsersWatchUserResponse {
-            return {
-                id: '',
-                role: $$FooUsersWatchUserResponseRole.new(),
-                photo: null,
-                createdAt: new Date(0),
-                numFollowers: 0,
-                settings: $$FooUserSettings.new(),
-                recentNotifications: [],
-                bookmarks: {},
-                metadata: {},
-                randomList: [],
-            };
-        },
-        validate(input): input is FooUsersWatchUserResponse {
-            return (
-                isObject(input) &&
-                typeof input.id === 'string' &&
-                $$FooUsersWatchUserResponseRole.validate(input.role) &&
-                ($$FooUserPhoto.validate(input.photo) ||
-                    input.photo === null) &&
-                input.createdAt instanceof Date &&
-                typeof input.numFollowers === 'number' &&
-                Number.isInteger(input.numFollowers) &&
-                input.numFollowers >= INT32_MIN &&
-                input.numFollowers <= INT32_MAX &&
-                $$FooUserSettings.validate(input.settings) &&
-                Array.isArray(input.recentNotifications) &&
-                input.recentNotifications.every((_element) =>
-                    $$FooUsersWatchUserResponseRecentNotificationsElement.validate(
-                        _element,
-                    ),
-                ) &&
-                isObject(input.bookmarks) &&
-                Object.values(input.bookmarks).every((_value) =>
-                    $$FooUsersWatchUserResponseBookmarksValue.validate(_value),
-                ) &&
-                isObject(input.metadata) &&
-                Object.values(input.metadata).every((_value) => true) &&
-                Array.isArray(input.randomList) &&
-                input.randomList.every((_element) => true) &&
-                (typeof input.bio === 'string' ||
-                    typeof input.bio === 'undefined')
-            );
-        },
-        fromJson(input): FooUsersWatchUserResponse {
-            let _id: string;
-            _id = parseString(input.id);
-            let _role: FooUsersWatchUserResponseRole;
-            if (typeof input.role === 'string') {
-                _role = $$FooUsersWatchUserResponseRole.fromSerialValue(
-                    input.role,
-                );
-            } else {
-                _role = $$FooUsersWatchUserResponseRole.new();
-            }
-            let _photo: FooUserPhoto | null;
-            if (isObject(input.photo)) {
-                _photo = $$FooUserPhoto.fromJson(input.photo);
-            } else {
-                _photo = null;
-            }
-            let _createdAt: Date;
-            _createdAt = parseTimestamp(input.createdAt);
-            let _numFollowers: number;
-            _numFollowers = parseNumberInt(
-                input.numFollowers,
-                INT32_MIN,
-                INT32_MAX,
-            );
-            let _settings: FooUserSettings;
-            if (isObject(input.settings)) {
-                _settings = $$FooUserSettings.fromJson(input.settings);
-            } else {
-                _settings = $$FooUserSettings.new();
-            }
-            let _recentNotifications: FooUsersWatchUserResponseRecentNotificationsElement[];
-            if (Array.isArray(input.recentNotifications)) {
-                _recentNotifications = [];
-                for (const _recentNotificationsEl of input.recentNotifications) {
-                    let _recentNotificationsElValue: FooUsersWatchUserResponseRecentNotificationsElement;
-                    if (isObject(_recentNotificationsEl)) {
-                        _recentNotificationsElValue =
-                            $$FooUsersWatchUserResponseRecentNotificationsElement.fromJson(
-                                _recentNotificationsEl,
-                            );
-                    } else {
-                        _recentNotificationsElValue =
-                            $$FooUsersWatchUserResponseRecentNotificationsElement.new();
-                    }
-                    _recentNotifications.push(_recentNotificationsElValue);
-                }
-            } else {
-                _recentNotifications = [];
-            }
-            let _bookmarks: Record<
-                string,
-                FooUsersWatchUserResponseBookmarksValue
-            >;
-            if (isObject(input.bookmarks)) {
-                _bookmarks = {};
-                for (const [_key, _value] of Object.entries(input.bookmarks)) {
-                    let _bookmarksValue: FooUsersWatchUserResponseBookmarksValue;
-                    if (isObject(_value)) {
-                        _bookmarksValue =
-                            $$FooUsersWatchUserResponseBookmarksValue.fromJson(
-                                _value,
-                            );
-                    } else {
-                        _bookmarksValue =
-                            $$FooUsersWatchUserResponseBookmarksValue.new();
-                    }
-                    _bookmarks[_key] = _bookmarksValue;
-                }
-            } else {
-                _bookmarks = {};
-            }
-            let _metadata: Record<string, any>;
-            if (isObject(input.metadata)) {
-                _metadata = {};
-                for (const [_key, _value] of Object.entries(input.metadata)) {
-                    let _metadataValue: any;
-                    _metadataValue = _value;
-                    _metadata[_key] = _metadataValue;
-                }
-            } else {
-                _metadata = {};
-            }
-            let _randomList: any[];
-            if (Array.isArray(input.randomList)) {
-                _randomList = [];
-                for (const _randomListEl of input.randomList) {
-                    let _randomListElValue: any;
-                    _randomListElValue = _randomListEl;
-                    _randomList.push(_randomListElValue);
-                }
-            } else {
-                _randomList = [];
-            }
-            let _bio: string | undefined;
-            if (typeof input.bio !== 'undefined') {
-                _bio = parseString(input.bio);
-            }
-            return {
-                id: _id,
-                role: _role,
-                photo: _photo,
-                createdAt: _createdAt,
-                numFollowers: _numFollowers,
-                settings: _settings,
-                recentNotifications: _recentNotifications,
-                bookmarks: _bookmarks,
-                metadata: _metadata,
-                randomList: _randomList,
-                bio: _bio,
-            };
-        },
-        fromJsonString(input): FooUsersWatchUserResponse {
-            return $$FooUsersWatchUserResponse.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"id":';
-            json += serializeString(input.id);
-            json += ',"role":';
-            json += `"${input.role}"`;
-            json += ',"photo":';
-            if (input.photo !== null) {
-                json += $$FooUserPhoto.toJsonString(input.photo);
-            } else {
-                json += 'null';
-            }
-            json += ',"createdAt":';
-            json += `"${input.createdAt.toISOString()}"`;
-            json += ',"numFollowers":';
-            json += `${input.numFollowers}`;
-            json += ',"settings":';
-            json += $$FooUserSettings.toJsonString(input.settings);
-            json += ',"recentNotifications":';
-            json += '[';
-            for (let i = 0; i < input.recentNotifications.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputRecentNotificationsEl =
-                    input.recentNotifications[i];
-                json +=
-                    $$FooUsersWatchUserResponseRecentNotificationsElement.toJsonString(
-                        _inputRecentNotificationsEl,
-                    );
-            }
-            json += ']';
-            json += ',"bookmarks":';
-            json += '{';
-            let _bookmarksPropertyCount = 0;
-            for (const [_key, _value] of Object.entries(input.bookmarks)) {
-                if (_bookmarksPropertyCount !== 0) {
-                    json += ',';
-                }
-                json += `${serializeString(_key)}:`;
-                json +=
-                    $$FooUsersWatchUserResponseBookmarksValue.toJsonString(
-                        _value,
-                    );
-                _bookmarksPropertyCount++;
-            }
-            json += '}';
-
-            json += ',"metadata":';
-            json += '{';
-            let _metadataPropertyCount = 0;
-            for (const [_key, _value] of Object.entries(input.metadata)) {
-                if (_metadataPropertyCount !== 0) {
-                    json += ',';
-                }
-                json += `${serializeString(_key)}:`;
-                json += JSON.stringify(_value);
-                _metadataPropertyCount++;
-            }
-            json += '}';
-
-            json += ',"randomList":';
-            json += '[';
-            for (let i = 0; i < input.randomList.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputRandomListEl = input.randomList[i];
-                json += JSON.stringify(_inputRandomListEl);
-            }
-            json += ']';
-            if (typeof input.bio !== 'undefined') {
-                json += `,"bio":`;
-                json += serializeString(input.bio);
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`id=${input.id}`);
-            queryParts.push(`role=${input.role}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/photo.',
-            );
-            queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
-            queryParts.push(`numFollowers=${input.numFollowers}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/settings.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /UsersWatchUserResponse/recentNotifications.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/bookmarks.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/metadata.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /UsersWatchUserResponse/randomList.',
-            );
-            if (typeof input.bio !== 'undefined') {
-                queryParts.push(`bio=${input.bio}`);
-            }
-            return queryParts.join('&');
-        },
+export function FooUsersWatchUserResponseNew(): FooUsersWatchUserResponse {
+    return {
+        id: '',
+        role: FooUsersWatchUserResponseRoleNew(),
+        photo: null,
+        createdAt: new Date(0),
+        numFollowers: 0,
+        settings: FooUserSettingsNew(),
+        recentNotifications: [],
+        bookmarks: {},
+        metadata: {},
+        randomList: [],
     };
+}
+export function FooUsersWatchUserResponseFromJson(
+    input: Record<string, unknown>,
+): FooUsersWatchUserResponse {
+    let _id: string;
+    _id = parseString(input.id);
+    let _role: FooUsersWatchUserResponseRole;
+    if (typeof input.role === 'string') {
+        _role = FooUsersWatchUserResponseRoleFromSerialValue(input.role);
+    } else {
+        _role = FooUsersWatchUserResponseRoleNew();
+    }
+    let _photo: FooUserPhoto | null;
+    if (isObject(input.photo)) {
+        _photo = FooUserPhotoFromJson(input.photo);
+    } else {
+        _photo = null;
+    }
+    let _createdAt: Date;
+    _createdAt = parseTimestamp(input.createdAt);
+    let _numFollowers: number;
+    _numFollowers = parseNumberInt(input.numFollowers, INT32_MIN, INT32_MAX);
+    let _settings: FooUserSettings;
+    if (isObject(input.settings)) {
+        _settings = FooUserSettingsFromJson(input.settings);
+    } else {
+        _settings = FooUserSettingsNew();
+    }
+    let _recentNotifications: FooUsersWatchUserResponseRecentNotificationsElement[];
+    if (Array.isArray(input.recentNotifications)) {
+        _recentNotifications = [];
+        for (const _recentNotificationsEl of input.recentNotifications) {
+            let _recentNotificationsElValue: FooUsersWatchUserResponseRecentNotificationsElement;
+            if (isObject(_recentNotificationsEl)) {
+                _recentNotificationsElValue =
+                    FooUsersWatchUserResponseRecentNotificationsElementFromJson(
+                        _recentNotificationsEl,
+                    );
+            } else {
+                _recentNotificationsElValue =
+                    FooUsersWatchUserResponseRecentNotificationsElementNew();
+            }
+            _recentNotifications.push(_recentNotificationsElValue);
+        }
+    } else {
+        _recentNotifications = [];
+    }
+    let _bookmarks: Record<string, FooUsersWatchUserResponseBookmarksValue>;
+    if (isObject(input.bookmarks)) {
+        _bookmarks = {};
+        for (const [_key, _value] of Object.entries(input.bookmarks)) {
+            let _bookmarksValue: FooUsersWatchUserResponseBookmarksValue;
+            if (isObject(_value)) {
+                _bookmarksValue =
+                    FooUsersWatchUserResponseBookmarksValueFromJson(_value);
+            } else {
+                _bookmarksValue = FooUsersWatchUserResponseBookmarksValueNew();
+            }
+            _bookmarks[_key] = _bookmarksValue;
+        }
+    } else {
+        _bookmarks = {};
+    }
+    let _metadata: Record<string, any>;
+    if (isObject(input.metadata)) {
+        _metadata = {};
+        for (const [_key, _value] of Object.entries(input.metadata)) {
+            let _metadataValue: any;
+            _metadataValue = _value;
+            _metadata[_key] = _metadataValue;
+        }
+    } else {
+        _metadata = {};
+    }
+    let _randomList: any[];
+    if (Array.isArray(input.randomList)) {
+        _randomList = [];
+        for (const _randomListEl of input.randomList) {
+            let _randomListElValue: any;
+            _randomListElValue = _randomListEl;
+            _randomList.push(_randomListElValue);
+        }
+    } else {
+        _randomList = [];
+    }
+    let _bio: string | undefined;
+    if (typeof input.bio !== 'undefined') {
+        _bio = parseString(input.bio);
+    }
+    return {
+        id: _id,
+        role: _role,
+        photo: _photo,
+        createdAt: _createdAt,
+        numFollowers: _numFollowers,
+        settings: _settings,
+        recentNotifications: _recentNotifications,
+        bookmarks: _bookmarks,
+        metadata: _metadata,
+        randomList: _randomList,
+        bio: _bio,
+    };
+}
+export function FooUsersWatchUserResponseFromJsonString(
+    input: string,
+): FooUsersWatchUserResponse {
+    return FooUsersWatchUserResponseFromJson(JSON.parse(input));
+}
+export function FooUsersWatchUserResponseToJsonString(
+    input: FooUsersWatchUserResponse,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"role":';
+    json += `"${input.role}"`;
+    json += ',"photo":';
+    if (input.photo !== null) {
+        json += FooUserPhotoToJsonString(input.photo);
+    } else {
+        json += 'null';
+    }
+    json += ',"createdAt":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"numFollowers":';
+    json += `${input.numFollowers}`;
+    json += ',"settings":';
+    json += FooUserSettingsToJsonString(input.settings);
+    json += ',"recentNotifications":';
+    json += '[';
+    for (let i = 0; i < input.recentNotifications.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputRecentNotificationsEl = input.recentNotifications[i];
+        json += FooUsersWatchUserResponseRecentNotificationsElementToJsonString(
+            _inputRecentNotificationsEl,
+        );
+    }
+    json += ']';
+    json += ',"bookmarks":';
+    json += '{';
+    let _bookmarksPropertyCount = 0;
+    for (const [_key, _value] of Object.entries(input.bookmarks)) {
+        if (_bookmarksPropertyCount !== 0) {
+            json += ',';
+        }
+        json += `${serializeString(_key)}:`;
+        json += FooUsersWatchUserResponseBookmarksValueToJsonString(_value);
+        _bookmarksPropertyCount++;
+    }
+    json += '}';
 
+    json += ',"metadata":';
+    json += '{';
+    let _metadataPropertyCount = 0;
+    for (const [_key, _value] of Object.entries(input.metadata)) {
+        if (_metadataPropertyCount !== 0) {
+            json += ',';
+        }
+        json += `${serializeString(_key)}:`;
+        json += JSON.stringify(_value);
+        _metadataPropertyCount++;
+    }
+    json += '}';
+
+    json += ',"randomList":';
+    json += '[';
+    for (let i = 0; i < input.randomList.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputRandomListEl = input.randomList[i];
+        json += JSON.stringify(_inputRandomListEl);
+    }
+    json += ']';
+    if (typeof input.bio !== 'undefined') {
+        json += `,"bio":`;
+        json += serializeString(input.bio);
+    }
+    json += '}';
+    return json;
+}
+export function FooUsersWatchUserResponseToUrlSearchParams(
+    input: FooUsersWatchUserResponse,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('role', input.role);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/photo.',
+    );
+    params.set('createdAt', input.createdAt.toISOString());
+    params.set('numFollowers', `${input.numFollowers}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/settings.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /UsersWatchUserResponse/recentNotifications.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/bookmarks.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UsersWatchUserResponse/metadata.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /UsersWatchUserResponse/randomList.',
+    );
+    if (typeof input.bio !== 'undefined') {
+        params.set('bio', input.bio);
+    }
+    return params;
+}
+export function FooUsersWatchUserResponseToUrlSearchParamsString(
+    input: FooUsersWatchUserResponse,
+): string {
+    return FooUsersWatchUserResponseToUrlSearchParams(input).toString();
+}
+
+export const $$FooUsersWatchUserResponse: TestClientPrefixedValidator<FooUsersWatchUserResponse> =
+    {
+        new: FooUsersWatchUserResponseNew,
+
+        fromJson: FooUsersWatchUserResponseFromJson,
+        fromJsonString: FooUsersWatchUserResponseFromJsonString,
+        toJsonString: FooUsersWatchUserResponseToJsonString,
+        toUrlSearchParams: FooUsersWatchUserResponseToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooUsersWatchUserResponseToUrlSearchParamsString,
+    };
 export type FooUsersWatchUserResponseRole = 'standard' | 'admin';
 export const FooUsersWatchUserResponseRole = {
     Standard: 'standard',
     Admin: 'admin',
 } as const;
-const $$FooUsersWatchUserResponseRoleValues = ['standard', 'admin'] as const;
-export const $$FooUsersWatchUserResponseRole: ArriEnumValidator<FooUsersWatchUserResponseRole> =
+export const FooUsersWatchUserResponseRoleValues = [
+    'standard',
+    'admin',
+] as const;
+export function FooUsersWatchUserResponseRoleNew(): FooUsersWatchUserResponseRole {
+    return FooUsersWatchUserResponseRoleValues[0];
+}
+export function FooUsersWatchUserResponseRoleFromSerialValue(
+    input: string,
+): FooUsersWatchUserResponseRole {
+    if (FooUsersWatchUserResponseRoleValues.includes(input as any)) {
+        return input as FooUsersWatchUserResponseRole;
+    }
+    if (
+        FooUsersWatchUserResponseRoleValues.includes(input.toLowerCase() as any)
+    ) {
+        return input.toLowerCase() as FooUsersWatchUserResponseRole;
+    }
+    if (
+        FooUsersWatchUserResponseRoleValues.includes(input.toUpperCase() as any)
+    ) {
+        return input.toUpperCase() as FooUsersWatchUserResponseRole;
+    }
+    return 'standard';
+}
+export const $$FooUsersWatchUserResponseRole: TestClientPrefixedEnumValidator<FooUsersWatchUserResponseRole> =
     {
-        new(): FooUsersWatchUserResponseRole {
-            return $$FooUsersWatchUserResponseRoleValues[0];
-        },
-        validate(input): input is UsersWatchUserResponseRole {
-            return (
-                typeof input === 'string' &&
-                $$FooUsersWatchUserResponseRoleValues.includes(input as any)
-            );
-        },
-        values: $$FooUsersWatchUserResponseRoleValues,
-        fromSerialValue(input): FooUsersWatchUserResponseRole {
-            if ($$FooUsersWatchUserResponseRoleValues.includes(input as any)) {
-                return input as FooUsersWatchUserResponseRole;
-            }
-            if (
-                $$FooUsersWatchUserResponseRoleValues.includes(
-                    input.toLowerCase() as any,
-                )
-            ) {
-                return input.toLowerCase() as FooUsersWatchUserResponseRole;
-            }
-            if (
-                $$FooUsersWatchUserResponseRoleValues.includes(
-                    input.toUpperCase() as any,
-                )
-            ) {
-                return input.toUpperCase() as FooUsersWatchUserResponseRole;
-            }
-            return 'standard';
-        },
-    };
+        new: FooUsersWatchUserResponseRoleNew,
 
+        values: FooUsersWatchUserResponseRoleValues,
+        fromSerialValue: FooUsersWatchUserResponseRoleFromSerialValue,
+    };
 /**
  * A profile picture
  */
@@ -5863,132 +6284,144 @@ export interface FooUserPhoto {
      */
     nanoseconds: bigint;
 }
-export const $$FooUserPhoto: ArriModelValidator<FooUserPhoto> = {
-    new(): FooUserPhoto {
-        return {
-            url: '',
-            width: 0,
-            height: 0,
-            bytes: BigInt(0),
-            nanoseconds: BigInt(0),
-        };
-    },
-    validate(input): input is FooUserPhoto {
-        return (
-            isObject(input) &&
-            typeof input.url === 'string' &&
-            typeof input.width === 'number' &&
-            typeof input.height === 'number' &&
-            typeof input.bytes === 'bigint' &&
-            input.bytes >= INT64_MIN &&
-            input.bytes <= INT64_MAX &&
-            typeof input.nanoseconds === 'bigint' &&
-            input.nanoseconds >= BigInt(0) &&
-            input.nanoseconds <= UINT64_MAX
-        );
-    },
-    fromJson(input): FooUserPhoto {
-        let _url: string;
-        _url = parseString(input.url);
-        let _width: number;
-        _width = parseNumberFloat(input.width);
-        let _height: number;
-        _height = parseNumberFloat(input.height);
-        let _bytes: bigint;
-        _bytes = parseNumberBigInt(input.bytes);
-        let _nanoseconds: bigint;
-        _nanoseconds = parseNumberUnsignedBigInt(input.nanoseconds);
-        return {
-            url: _url,
-            width: _width,
-            height: _height,
-            bytes: _bytes,
-            nanoseconds: _nanoseconds,
-        };
-    },
-    fromJsonString(input): FooUserPhoto {
-        return $$FooUserPhoto.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"url":';
-        json += serializeString(input.url);
-        json += ',"width":';
-        json += `${input.width}`;
-        json += ',"height":';
-        json += `${input.height}`;
-        json += ',"bytes":';
-        json += `"${input.bytes}"`;
-        json += ',"nanoseconds":';
-        json += `"${input.nanoseconds}"`;
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`url=${input.url}`);
-        queryParts.push(`width=${input.width}`);
-        queryParts.push(`height=${input.height}`);
-        queryParts.push(`bytes=${input.bytes}`);
-        queryParts.push(`nanoseconds=${input.nanoseconds}`);
-        return queryParts.join('&');
-    },
+export function FooUserPhotoNew(): FooUserPhoto {
+    return {
+        url: '',
+        width: 0,
+        height: 0,
+        bytes: BigInt(0),
+        nanoseconds: BigInt(0),
+    };
+}
+export function FooUserPhotoFromJson(
+    input: Record<string, unknown>,
+): FooUserPhoto {
+    let _url: string;
+    _url = parseString(input.url);
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    let _bytes: bigint;
+    _bytes = parseNumberBigInt(input.bytes);
+    let _nanoseconds: bigint;
+    _nanoseconds = parseNumberUnsignedBigInt(input.nanoseconds);
+    return {
+        url: _url,
+        width: _width,
+        height: _height,
+        bytes: _bytes,
+        nanoseconds: _nanoseconds,
+    };
+}
+export function FooUserPhotoFromJsonString(input: string): FooUserPhoto {
+    return FooUserPhotoFromJson(JSON.parse(input));
+}
+export function FooUserPhotoToJsonString(input: FooUserPhoto): string {
+    let json = '{';
+    json += '"url":';
+    json += serializeString(input.url);
+    json += ',"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += ',"bytes":';
+    json += `"${input.bytes}"`;
+    json += ',"nanoseconds":';
+    json += `"${input.nanoseconds}"`;
+    json += '}';
+    return json;
+}
+export function FooUserPhotoToUrlSearchParams(
+    input: FooUserPhoto,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('url', input.url);
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    params.set('bytes', `${input.bytes}`);
+    params.set('nanoseconds', `${input.nanoseconds}`);
+    return params;
+}
+export function FooUserPhotoToUrlSearchParamsString(
+    input: FooUserPhoto,
+): string {
+    return FooUserPhotoToUrlSearchParams(input).toString();
+}
+
+export const $$FooUserPhoto: TestClientPrefixedValidator<FooUserPhoto> = {
+    new: FooUserPhotoNew,
+
+    fromJson: FooUserPhotoFromJson,
+    fromJsonString: FooUserPhotoFromJsonString,
+    toJsonString: FooUserPhotoToJsonString,
+    toUrlSearchParams: FooUserPhotoToUrlSearchParams,
+    toUrlSearchParamsString: FooUserPhotoToUrlSearchParamsString,
 };
 
 export interface FooUserSettings {
     notificationsEnabled: boolean;
     preferredTheme: FooUserSettingsPreferredTheme;
 }
-export const $$FooUserSettings: ArriModelValidator<FooUserSettings> = {
-    new(): FooUserSettings {
-        return {
-            notificationsEnabled: false,
-            preferredTheme: $$FooUserSettingsPreferredTheme.new(),
-        };
-    },
-    validate(input): input is FooUserSettings {
-        return (
-            isObject(input) &&
-            typeof input.notificationsEnabled === 'boolean' &&
-            $$FooUserSettingsPreferredTheme.validate(input.preferredTheme)
+export function FooUserSettingsNew(): FooUserSettings {
+    return {
+        notificationsEnabled: false,
+        preferredTheme: FooUserSettingsPreferredThemeNew(),
+    };
+}
+export function FooUserSettingsFromJson(
+    input: Record<string, unknown>,
+): FooUserSettings {
+    let _notificationsEnabled: boolean;
+    _notificationsEnabled = parseBoolean(input.notificationsEnabled);
+    let _preferredTheme: FooUserSettingsPreferredTheme;
+    if (typeof input.preferredTheme === 'string') {
+        _preferredTheme = FooUserSettingsPreferredThemeFromSerialValue(
+            input.preferredTheme,
         );
-    },
-    fromJson(input): FooUserSettings {
-        let _notificationsEnabled: boolean;
-        _notificationsEnabled = parseBoolean(input.notificationsEnabled);
-        let _preferredTheme: FooUserSettingsPreferredTheme;
-        if (typeof input.preferredTheme === 'string') {
-            _preferredTheme = $$FooUserSettingsPreferredTheme.fromSerialValue(
-                input.preferredTheme,
-            );
-        } else {
-            _preferredTheme = $$FooUserSettingsPreferredTheme.new();
-        }
-        return {
-            notificationsEnabled: _notificationsEnabled,
-            preferredTheme: _preferredTheme,
-        };
-    },
-    fromJsonString(input): FooUserSettings {
-        return $$FooUserSettings.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"notificationsEnabled":';
-        json += `${input.notificationsEnabled}`;
-        json += ',"preferredTheme":';
-        json += `"${input.preferredTheme}"`;
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`notificationsEnabled=${input.notificationsEnabled}`);
-        queryParts.push(`preferredTheme=${input.preferredTheme}`);
-        return queryParts.join('&');
-    },
-};
+    } else {
+        _preferredTheme = FooUserSettingsPreferredThemeNew();
+    }
+    return {
+        notificationsEnabled: _notificationsEnabled,
+        preferredTheme: _preferredTheme,
+    };
+}
+export function FooUserSettingsFromJsonString(input: string): FooUserSettings {
+    return FooUserSettingsFromJson(JSON.parse(input));
+}
+export function FooUserSettingsToJsonString(input: FooUserSettings): string {
+    let json = '{';
+    json += '"notificationsEnabled":';
+    json += `${input.notificationsEnabled}`;
+    json += ',"preferredTheme":';
+    json += `"${input.preferredTheme}"`;
+    json += '}';
+    return json;
+}
+export function FooUserSettingsToUrlSearchParams(
+    input: FooUserSettings,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('notificationsEnabled', `${input.notificationsEnabled}`);
+    params.set('preferredTheme', input.preferredTheme);
+    return params;
+}
+export function FooUserSettingsToUrlSearchParamsString(
+    input: FooUserSettings,
+): string {
+    return FooUserSettingsToUrlSearchParams(input).toString();
+}
 
+export const $$FooUserSettings: TestClientPrefixedValidator<FooUserSettings> = {
+    new: FooUserSettingsNew,
+
+    fromJson: FooUserSettingsFromJson,
+    fromJsonString: FooUserSettingsFromJsonString,
+    toJsonString: FooUserSettingsToJsonString,
+    toUrlSearchParams: FooUserSettingsToUrlSearchParams,
+    toUrlSearchParamsString: FooUserSettingsToUrlSearchParamsString,
+};
 export type FooUserSettingsPreferredTheme =
     | 'dark-mode'
     | 'light-mode'
@@ -5998,189 +6431,199 @@ export const FooUserSettingsPreferredTheme = {
     Lightmode: 'light-mode',
     System: 'system',
 } as const;
-const $$FooUserSettingsPreferredThemeValues = [
+export const FooUserSettingsPreferredThemeValues = [
     'dark-mode',
     'light-mode',
     'system',
 ] as const;
-export const $$FooUserSettingsPreferredTheme: ArriEnumValidator<FooUserSettingsPreferredTheme> =
+export function FooUserSettingsPreferredThemeNew(): FooUserSettingsPreferredTheme {
+    return FooUserSettingsPreferredThemeValues[0];
+}
+export function FooUserSettingsPreferredThemeFromSerialValue(
+    input: string,
+): FooUserSettingsPreferredTheme {
+    if (FooUserSettingsPreferredThemeValues.includes(input as any)) {
+        return input as FooUserSettingsPreferredTheme;
+    }
+    if (
+        FooUserSettingsPreferredThemeValues.includes(input.toLowerCase() as any)
+    ) {
+        return input.toLowerCase() as FooUserSettingsPreferredTheme;
+    }
+    if (
+        FooUserSettingsPreferredThemeValues.includes(input.toUpperCase() as any)
+    ) {
+        return input.toUpperCase() as FooUserSettingsPreferredTheme;
+    }
+    return 'dark-mode';
+}
+export const $$FooUserSettingsPreferredTheme: TestClientPrefixedEnumValidator<FooUserSettingsPreferredTheme> =
     {
-        new(): FooUserSettingsPreferredTheme {
-            return $$FooUserSettingsPreferredThemeValues[0];
-        },
-        validate(input): input is UserSettingsPreferredTheme {
-            return (
-                typeof input === 'string' &&
-                $$FooUserSettingsPreferredThemeValues.includes(input as any)
-            );
-        },
-        values: $$FooUserSettingsPreferredThemeValues,
-        fromSerialValue(input): FooUserSettingsPreferredTheme {
-            if ($$FooUserSettingsPreferredThemeValues.includes(input as any)) {
-                return input as FooUserSettingsPreferredTheme;
-            }
-            if (
-                $$FooUserSettingsPreferredThemeValues.includes(
-                    input.toLowerCase() as any,
-                )
-            ) {
-                return input.toLowerCase() as FooUserSettingsPreferredTheme;
-            }
-            if (
-                $$FooUserSettingsPreferredThemeValues.includes(
-                    input.toUpperCase() as any,
-                )
-            ) {
-                return input.toUpperCase() as FooUserSettingsPreferredTheme;
-            }
-            return 'dark-mode';
-        },
-    };
+        new: FooUserSettingsPreferredThemeNew,
 
+        values: FooUserSettingsPreferredThemeValues,
+        fromSerialValue: FooUserSettingsPreferredThemeFromSerialValue,
+    };
 export type FooUsersWatchUserResponseRecentNotificationsElement =
     | FooUsersWatchUserResponseRecentNotificationsElementPostLike
     | FooUsersWatchUserResponseRecentNotificationsElementPostComment;
-export const $$FooUsersWatchUserResponseRecentNotificationsElement: ArriModelValidator<FooUsersWatchUserResponseRecentNotificationsElement> =
-    {
-        new(): FooUsersWatchUserResponseRecentNotificationsElement {
-            return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.new();
-        },
-        validate(
-            input,
-        ): input is FooUsersWatchUserResponseRecentNotificationsElement {
-            if (!isObject(input)) {
-                return false;
-            }
-            if (typeof input.notificationType !== 'string') {
-                return false;
-            }
-            switch (input.notificationType) {
-                case 'POST_LIKE':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.validate(
-                        input,
-                    );
-                case 'POST_COMMENT':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.validate(
-                        input,
-                    );
-                default:
-                    return false;
-            }
-        },
-        fromJson(input): FooUsersWatchUserResponseRecentNotificationsElement {
-            switch (input.notificationType) {
-                case 'POST_LIKE':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
-                        input,
-                    );
-                case 'POST_COMMENT':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
-                        input,
-                    );
-                default:
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.new();
-            }
-        },
-        fromJsonString(
-            input,
-        ): FooUsersWatchUserResponseRecentNotificationsElement {
-            return $$FooUsersWatchUserResponseRecentNotificationsElement.fromJson(
-                JSON.parse(input),
+export function FooUsersWatchUserResponseRecentNotificationsElementNew(): FooUsersWatchUserResponseRecentNotificationsElement {
+    return FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew();
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementFromJson(
+    input: Record<string, unknown>,
+): FooUsersWatchUserResponseRecentNotificationsElement {
+    switch (input.notificationType) {
+        case 'POST_LIKE':
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson(
+                input,
             );
-        },
-        toJsonString(input): string {
-            switch (input.notificationType) {
-                case 'POST_LIKE':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.toJsonString(
-                        input,
-                    );
-                case 'POST_COMMENT':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.toJsonString(
-                        input,
-                    );
-                default:
-                    throw new Error(
-                        `Unhandled case "${(input as any).notificationType}"`,
-                    );
-            }
-        },
-        toUrlQueryString(input): string {
-            switch (input.notificationType) {
-                case 'POST_LIKE':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.toUrlQueryString(
-                        input,
-                    );
-                case 'POST_COMMENT':
-                    return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.toUrlQueryString(
-                        input,
-                    );
-                default:
-                    throw new Error('Unhandled case');
-            }
-        },
+        case 'POST_COMMENT':
+            return FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson(
+                input,
+            );
+        default:
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew();
+    }
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementFromJsonString(
+    input: string,
+): FooUsersWatchUserResponseRecentNotificationsElement {
+    return FooUsersWatchUserResponseRecentNotificationsElementFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementToJsonString(
+    input: FooUsersWatchUserResponseRecentNotificationsElement,
+): string {
+    switch (input.notificationType) {
+        case 'POST_LIKE':
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLikeToJsonString(
+                input,
+            );
+        case 'POST_COMMENT':
+            return FooUsersWatchUserResponseRecentNotificationsElementPostCommentToJsonString(
+                input,
+            );
+        default:
+            throw new Error(
+                `Unhandled case "${(input as any).notificationType}"`,
+            );
+    }
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParams(
+    input: FooUsersWatchUserResponseRecentNotificationsElement,
+): URLSearchParams {
+    switch (input.notificationType) {
+        case 'POST_LIKE':
+            return FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParams(
+                input,
+            );
+        case 'POST_COMMENT':
+            return FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParams(
+                input,
+            );
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParamsString(
+    input: FooUsersWatchUserResponseRecentNotificationsElement,
+): string {
+    return FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$FooUsersWatchUserResponseRecentNotificationsElement: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElement> =
+    {
+        new: FooUsersWatchUserResponseRecentNotificationsElementNew,
+
+        fromJson: FooUsersWatchUserResponseRecentNotificationsElementFromJson,
+        fromJsonString:
+            FooUsersWatchUserResponseRecentNotificationsElementFromJsonString,
+        toJsonString:
+            FooUsersWatchUserResponseRecentNotificationsElementToJsonString,
+        toUrlSearchParams:
+            FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParamsString,
     };
 export interface FooUsersWatchUserResponseRecentNotificationsElementPostLike {
     notificationType: 'POST_LIKE';
     postId: string;
     userId: string;
 }
-const $$FooUsersWatchUserResponseRecentNotificationsElementPostLike: ArriModelValidator<FooUsersWatchUserResponseRecentNotificationsElementPostLike> =
+export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew(): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+    return {
+        notificationType: 'POST_LIKE',
+        postId: '',
+        userId: '',
+    };
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson(
+    input: Record<string, unknown>,
+): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+    const _notificationType = 'POST_LIKE';
+    let _postId: string;
+    _postId = parseString(input.postId);
+    let _userId: string;
+    _userId = parseString(input.userId);
+    return {
+        notificationType: _notificationType,
+        postId: _postId,
+        userId: _userId,
+    };
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJsonString(
+    input: string,
+): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
+    return FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeToJsonString(
+    input: FooUsersWatchUserResponseRecentNotificationsElementPostLike,
+): string {
+    let json = '{';
+    json += '"notificationType":"POST_LIKE"';
+    json += ',"postId":';
+    json += serializeString(input.postId);
+    json += ',"userId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParams(
+    input: FooUsersWatchUserResponseRecentNotificationsElementPostLike,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('notificationType', 'POST_LIKE');
+    params.set('postId', input.postId);
+    params.set('userId', input.userId);
+    return params;
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParamsString(
+    input: FooUsersWatchUserResponseRecentNotificationsElementPostLike,
+): string {
+    return FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooUsersWatchUserResponseRecentNotificationsElementPostLike: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElementPostLike> =
     {
-        new(): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
-            return {
-                notificationType: 'POST_LIKE',
-                postId: '',
-                userId: '',
-            };
-        },
-        validate(
-            input,
-        ): input is FooUsersWatchUserResponseRecentNotificationsElementPostLike {
-            return (
-                isObject(input) &&
-                input.notificationType === 'POST_LIKE' &&
-                typeof input.postId === 'string' &&
-                typeof input.userId === 'string'
-            );
-        },
-        fromJson(
-            input,
-        ): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
-            const _notificationType = 'POST_LIKE';
-            let _postId: string;
-            _postId = parseString(input.postId);
-            let _userId: string;
-            _userId = parseString(input.userId);
-            return {
-                notificationType: _notificationType,
-                postId: _postId,
-                userId: _userId,
-            };
-        },
-        fromJsonString(
-            input,
-        ): FooUsersWatchUserResponseRecentNotificationsElementPostLike {
-            return $$FooUsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"notificationType":"POST_LIKE"';
-            json += ',"postId":';
-            json += serializeString(input.postId);
-            json += ',"userId":';
-            json += serializeString(input.userId);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('notificationType=POST_LIKE');
-            queryParts.push(`postId=${input.postId}`);
-            queryParts.push(`userId=${input.userId}`);
-            return queryParts.join('&');
-        },
+        new: FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew,
+
+        fromJson:
+            FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson,
+        fromJsonString:
+            FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJsonString,
+        toJsonString:
+            FooUsersWatchUserResponseRecentNotificationsElementPostLikeToJsonString,
+        toUrlSearchParams:
+            FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParamsString,
     };
 
 export interface FooUsersWatchUserResponseRecentNotificationsElementPostComment {
@@ -6189,120 +6632,149 @@ export interface FooUsersWatchUserResponseRecentNotificationsElementPostComment 
     userId: string;
     commentText: string;
 }
-const $$FooUsersWatchUserResponseRecentNotificationsElementPostComment: ArriModelValidator<FooUsersWatchUserResponseRecentNotificationsElementPostComment> =
+export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentNew(): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+    return {
+        notificationType: 'POST_COMMENT',
+        postId: '',
+        userId: '',
+        commentText: '',
+    };
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson(
+    input: Record<string, unknown>,
+): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+    const _notificationType = 'POST_COMMENT';
+    let _postId: string;
+    _postId = parseString(input.postId);
+    let _userId: string;
+    _userId = parseString(input.userId);
+    let _commentText: string;
+    _commentText = parseString(input.commentText);
+    return {
+        notificationType: _notificationType,
+        postId: _postId,
+        userId: _userId,
+        commentText: _commentText,
+    };
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJsonString(
+    input: string,
+): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
+    return FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentToJsonString(
+    input: FooUsersWatchUserResponseRecentNotificationsElementPostComment,
+): string {
+    let json = '{';
+    json += '"notificationType":"POST_COMMENT"';
+    json += ',"postId":';
+    json += serializeString(input.postId);
+    json += ',"userId":';
+    json += serializeString(input.userId);
+    json += ',"commentText":';
+    json += serializeString(input.commentText);
+    json += '}';
+    return json;
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParams(
+    input: FooUsersWatchUserResponseRecentNotificationsElementPostComment,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('notificationType', 'POST_COMMENT');
+    params.set('postId', input.postId);
+    params.set('userId', input.userId);
+    params.set('commentText', input.commentText);
+    return params;
+}
+export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParamsString(
+    input: FooUsersWatchUserResponseRecentNotificationsElementPostComment,
+): string {
+    return FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+const $$FooUsersWatchUserResponseRecentNotificationsElementPostComment: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElementPostComment> =
     {
-        new(): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
-            return {
-                notificationType: 'POST_COMMENT',
-                postId: '',
-                userId: '',
-                commentText: '',
-            };
-        },
-        validate(
-            input,
-        ): input is FooUsersWatchUserResponseRecentNotificationsElementPostComment {
-            return (
-                isObject(input) &&
-                input.notificationType === 'POST_COMMENT' &&
-                typeof input.postId === 'string' &&
-                typeof input.userId === 'string' &&
-                typeof input.commentText === 'string'
-            );
-        },
-        fromJson(
-            input,
-        ): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
-            const _notificationType = 'POST_COMMENT';
-            let _postId: string;
-            _postId = parseString(input.postId);
-            let _userId: string;
-            _userId = parseString(input.userId);
-            let _commentText: string;
-            _commentText = parseString(input.commentText);
-            return {
-                notificationType: _notificationType,
-                postId: _postId,
-                userId: _userId,
-                commentText: _commentText,
-            };
-        },
-        fromJsonString(
-            input,
-        ): FooUsersWatchUserResponseRecentNotificationsElementPostComment {
-            return $$FooUsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"notificationType":"POST_COMMENT"';
-            json += ',"postId":';
-            json += serializeString(input.postId);
-            json += ',"userId":';
-            json += serializeString(input.userId);
-            json += ',"commentText":';
-            json += serializeString(input.commentText);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push('notificationType=POST_COMMENT');
-            queryParts.push(`postId=${input.postId}`);
-            queryParts.push(`userId=${input.userId}`);
-            queryParts.push(`commentText=${input.commentText}`);
-            return queryParts.join('&');
-        },
+        new: FooUsersWatchUserResponseRecentNotificationsElementPostCommentNew,
+
+        fromJson:
+            FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson,
+        fromJsonString:
+            FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJsonString,
+        toJsonString:
+            FooUsersWatchUserResponseRecentNotificationsElementPostCommentToJsonString,
+        toUrlSearchParams:
+            FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParamsString,
     };
 
 export interface FooUsersWatchUserResponseBookmarksValue {
     postId: string;
     userId: string;
 }
-export const $$FooUsersWatchUserResponseBookmarksValue: ArriModelValidator<FooUsersWatchUserResponseBookmarksValue> =
+export function FooUsersWatchUserResponseBookmarksValueNew(): FooUsersWatchUserResponseBookmarksValue {
+    return {
+        postId: '',
+        userId: '',
+    };
+}
+export function FooUsersWatchUserResponseBookmarksValueFromJson(
+    input: Record<string, unknown>,
+): FooUsersWatchUserResponseBookmarksValue {
+    let _postId: string;
+    _postId = parseString(input.postId);
+    let _userId: string;
+    _userId = parseString(input.userId);
+    return {
+        postId: _postId,
+        userId: _userId,
+    };
+}
+export function FooUsersWatchUserResponseBookmarksValueFromJsonString(
+    input: string,
+): FooUsersWatchUserResponseBookmarksValue {
+    return FooUsersWatchUserResponseBookmarksValueFromJson(JSON.parse(input));
+}
+export function FooUsersWatchUserResponseBookmarksValueToJsonString(
+    input: FooUsersWatchUserResponseBookmarksValue,
+): string {
+    let json = '{';
+    json += '"postId":';
+    json += serializeString(input.postId);
+    json += ',"userId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooUsersWatchUserResponseBookmarksValueToUrlSearchParams(
+    input: FooUsersWatchUserResponseBookmarksValue,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('postId', input.postId);
+    params.set('userId', input.userId);
+    return params;
+}
+export function FooUsersWatchUserResponseBookmarksValueToUrlSearchParamsString(
+    input: FooUsersWatchUserResponseBookmarksValue,
+): string {
+    return FooUsersWatchUserResponseBookmarksValueToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export const $$FooUsersWatchUserResponseBookmarksValue: TestClientPrefixedValidator<FooUsersWatchUserResponseBookmarksValue> =
     {
-        new(): FooUsersWatchUserResponseBookmarksValue {
-            return {
-                postId: '',
-                userId: '',
-            };
-        },
-        validate(input): input is FooUsersWatchUserResponseBookmarksValue {
-            return (
-                isObject(input) &&
-                typeof input.postId === 'string' &&
-                typeof input.userId === 'string'
-            );
-        },
-        fromJson(input): FooUsersWatchUserResponseBookmarksValue {
-            let _postId: string;
-            _postId = parseString(input.postId);
-            let _userId: string;
-            _userId = parseString(input.userId);
-            return {
-                postId: _postId,
-                userId: _userId,
-            };
-        },
-        fromJsonString(input): FooUsersWatchUserResponseBookmarksValue {
-            return $$FooUsersWatchUserResponseBookmarksValue.fromJson(
-                JSON.parse(input),
-            );
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"postId":';
-            json += serializeString(input.postId);
-            json += ',"userId":';
-            json += serializeString(input.userId);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`postId=${input.postId}`);
-            queryParts.push(`userId=${input.userId}`);
-            return queryParts.join('&');
-        },
+        new: FooUsersWatchUserResponseBookmarksValueNew,
+
+        fromJson: FooUsersWatchUserResponseBookmarksValueFromJson,
+        fromJsonString: FooUsersWatchUserResponseBookmarksValueFromJsonString,
+        toJsonString: FooUsersWatchUserResponseBookmarksValueToJsonString,
+        toUrlSearchParams:
+            FooUsersWatchUserResponseBookmarksValueToUrlSearchParams,
+        toUrlSearchParamsString:
+            FooUsersWatchUserResponseBookmarksValueToUrlSearchParamsString,
     };
