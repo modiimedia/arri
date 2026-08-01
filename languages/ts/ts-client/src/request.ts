@@ -151,6 +151,7 @@ export type SafeResponse<T> =
 export interface ArriModelValidatorFull<T> {
     new: () => T;
     validate: (input: unknown) => input is T;
+    clone: (input: T) => T;
     fromJson: (input: Record<string, unknown>) => T;
     fromJsonString: (input: string) => T;
     toJsonString: (input: T) => string;
