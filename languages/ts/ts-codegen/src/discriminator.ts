@@ -30,6 +30,16 @@ export function tsTaggedUnionFromSchema(
             }
             return mainPart;
         },
+        cloneTemplate(input, target) {
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${target} = ${prefixedTypeName}Clone(${input});
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return `${target} = ${prefixedTypeName}Clone(${input});`;
+        },
         fromJsonTemplate(input: string, target: string): string {
             return `if (isObject(${input})) {
                 ${target} = ${prefixedTypeName}FromJson(${input});
@@ -100,6 +110,22 @@ ${subTypes
 }`;
     }
 
+    if (context.features.cloneFn) {
+        result.content += `
+export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
+    switch (input.${discriminatorKey}) {
+${subTypes
+    .map(
+        (type) => `        case "${type.value}":
+            return ${type.data.typeName}Clone(input);`,
+    )
+    .join('\n')}
+        default:
+            throw new Error('Unimplemented');
+    }
+}`;
+    }
+
     result.content += `
 export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
     switch (input.${discriminatorKey}) {
@@ -153,6 +179,7 @@ export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedType
 export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,
     ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''}
+    ${context.features.cloneFn ? `clone: ${prefixedTypeName}Clone,` : ''}
     fromJson: ${prefixedTypeName}FromJson,
     fromJsonString: ${prefixedTypeName}FromJsonString,
     toJsonString: ${prefixedTypeName}ToJsonString,

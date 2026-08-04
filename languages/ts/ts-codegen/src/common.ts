@@ -13,12 +13,17 @@ export interface TsProperty {
     validationTemplate: (input: string) => string;
     fromJsonTemplate: (input: string, target: string) => string;
     toJsonTemplate: (input: string, target: string, key: string) => string;
+    cloneTemplate: (input: string, target: string) => string;
     setSearchParamTemplate: (
         input: string,
         target: string,
         key: string,
     ) => string;
     content: string;
+}
+
+export function defaultCloneTemplate(input: string, target: string) {
+    return `${target} = ${input};`;
 }
 
 export interface CodegenContext {
@@ -38,6 +43,7 @@ export interface CodegenContext {
     rpcGenerators: Partial<Record<string, RpcGenerator>>;
     features: {
         validateFn: boolean;
+        cloneFn: boolean;
         validatorObj: boolean;
     };
 }

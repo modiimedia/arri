@@ -81,9 +81,14 @@ export interface TypescriptGeneratorOptions {
          */
         validateFn?: boolean;
         /**
+         * When enabled the generate will output a "clone()" function that performs a deep copy of the type
+         * (Default false)
+         */
+        cloneFn?: boolean;
+        /**
          * When enabled the generator will output a validator object that contains
          * all of the generated parsing, serializing, and helper functions
-         * (Default false)
+         * (Default true)
          */
         validatorObj?: boolean;
     };
@@ -131,7 +136,8 @@ export async function createTypescriptClient(
         },
         rpcGenerators: options.rpcGenerators ?? {},
         features: {
-            validateFn: options.features?.validateFn ?? true,
+            validateFn: options.features?.validateFn ?? false,
+            cloneFn: options.features?.cloneFn ?? false,
             validatorObj: options.features?.validatorObj ?? true,
         },
     };
@@ -170,6 +176,9 @@ export async function createTypescriptClient(
             modelFeatures.push('validate');
             enumFeatures.push('validate');
         }
+        if (context.features.cloneFn) {
+            modelFeatures.push('clone');
+        }
         modelFeatures.push('fromJson');
         modelFeatures.push('fromJsonString');
         modelFeatures.push('toJsonString');
@@ -203,7 +212,6 @@ import {
     isObject,
     parseString,
     parseBoolean,
-    parseNumber,
     parseTimestamp,
     parseNumberInt,
     parseNumberBigInt,

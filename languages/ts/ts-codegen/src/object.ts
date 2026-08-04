@@ -36,6 +36,16 @@ export function tsObjectFromSchema(
                 ${target} = ${defaultValue}; 
             }`;
         },
+        cloneTemplate(input, target) {
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${target} = ${prefixedTypeName}Clone(${input});
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return `${target} = ${prefixedTypeName}Clone(${input});`;
+        },
         toJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `if (${input} !== null) {
@@ -61,6 +71,7 @@ export function tsObjectFromSchema(
     const toJsonParts: string[] = [];
     const setSearchParamParts: string[] = [];
     const validationParts: string[] = ['isObject(input)'];
+    const cloneParts: string[] = [];
     const subContentParts: string[] = [];
     let hasKey = false;
     if (
@@ -81,6 +92,7 @@ export function tsObjectFromSchema(
         validationParts.push(
             `input.${key} === '${context.discriminatorValue}'`,
         );
+        cloneParts.push(`const _${key} = "${context.discriminatorValue}"`);
         newParts.push(`${key}: "${context.discriminatorValue}",`);
         constructionParts.push(`${key}: _${key},`);
     }
@@ -122,6 +134,8 @@ export function tsObjectFromSchema(
         );
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
         validationParts.push(validationPart);
+        cloneParts.push(`let ${tempKey}: ${prop.typeName}`);
+        cloneParts.push(prop.cloneTemplate(`input.${fieldName}`, tempKey));
         constructionParts.push(`${fieldName}: ${tempKey},`);
         hasKey = true;
     }
@@ -174,6 +188,11 @@ export function tsObjectFromSchema(
         validationParts.push(
             `((${validationPart}) || typeof input.${fieldName} === 'undefined')`,
         );
+        cloneParts.push(`let ${tempKey}: ${prop.typeName} | undefined;`);
+        const clonePart = prop.cloneTemplate(`input.${fieldName}`, tempKey);
+        cloneParts.push(`if (typeof input.${fieldName} !== 'undefined') {
+        ${clonePart}
+    }`);
         constructionParts.push(`${fieldName}: ${tempKey},`);
     }
 
@@ -192,6 +211,15 @@ export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixed
     return (
 ${validationParts.map((part) => `        ${part}`).join('&& \n')}
     )
+}`;
+    }
+    if (context.features.cloneFn) {
+        result.content += `
+export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
+${cloneParts.map((part) => `        ${part}`).join('\n')}
+    return {
+${constructionParts.map((part) => `        ${part}`).join('\n')}
+    }
 }`;
     }
     result.content += `
@@ -228,6 +256,7 @@ export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedType
 ${context.discriminatorParent && context.discriminatorValue ? '' : 'export '}const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,
     ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''} 
+    ${context.features.cloneFn ? `clone: ${prefixedTypeName}Clone,` : ''}
     fromJson: ${prefixedTypeName}FromJson,
     fromJsonString: ${prefixedTypeName}FromJsonString,
     toJsonString: ${prefixedTypeName}ToJsonString,

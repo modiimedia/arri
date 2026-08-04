@@ -22,6 +22,16 @@ export function tsRefFromSchema(
             }
             return `${prefixedTypeName}Validate(${input})`;
         },
+        cloneTemplate(input, target) {
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${target} = ${prefixedTypeName}Clone(${input});
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return `${target} = ${prefixedTypeName}Clone(${input});`;
+        },
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
                     ${target} = ${prefixedTypeName}FromJson(${input});
