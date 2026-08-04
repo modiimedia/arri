@@ -47,7 +47,7 @@ test('Minimal output matches reference file', async () => {
         fs.readFileSync(path.resolve('../../../.prettierrc'), 'utf8'),
     );
     const result = await createTypescriptClient(appDef, {
-        clientName: 'ExampleClient',
+        clientName: 'MinimalClient',
         outputFile: '',
         prettierOptions: prettierConfig,
         features: {

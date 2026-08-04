@@ -9,7 +9,7 @@ import {
     BookToJsonString,
     BookToUrlSearchParamsString,
     Enumerator,
-    ExampleClient,
+    MinimalClient,
     NestedObject,
     NestedObjectFromJsonString,
     NestedObjectToJsonString,
@@ -312,7 +312,7 @@ describe('RecursiveObject', () => {
 });
 
 describe('HTTP options', () => {
-    const client = new ExampleClient({
+    const client = new MinimalClient({
         baseUrl: 'https://thisdomaindoesnotexist.thisdomaindoesnotexist',
     });
     test('request hooks', async () => {
