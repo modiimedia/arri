@@ -48,7 +48,7 @@ import {
 
 type HeaderMap = Record<string, string | undefined>;
 
-export class ExampleClient {
+export class MinimalClient {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
@@ -56,7 +56,7 @@ export class ExampleClient {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
-    books: ExampleClientBooksService;
+    books: MinimalClientBooksService;
     constructor(
         config: {
             baseUrl?: string;
@@ -73,7 +73,7 @@ export class ExampleClient {
         this._headers = config.headers ?? {};
         this._onError = config.onError;
         this._options = config.options;
-        this.books = new ExampleClientBooksService(config);
+        this.books = new MinimalClientBooksService(config);
     }
 
     async sendObject(
@@ -96,7 +96,7 @@ export class ExampleClient {
     }
 }
 
-export class ExampleClientBooksService {
+export class MinimalClientBooksService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:

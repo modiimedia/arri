@@ -1,12 +1,14 @@
 import { ArriErrorInstance } from '@arrirpc/client';
 import { randomUUID } from 'crypto';
 import { FetchError, ofetch } from 'ofetch';
-import { describe, expect, test } from 'vitest';
+import { assertType, describe, expect, test } from 'vitest';
 
 import {
+    $$ObjectWithEveryTypeEnumerator,
     type ObjectWithEveryNullableType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryType,
+    ObjectWithEveryTypeEnumerator,
     ObjectWithPascalCaseKeys,
     ObjectWithSnakeCaseKeys,
     type RecursiveObject,
@@ -123,6 +125,13 @@ const input: ObjectWithEveryType = {
         ],
     ],
 };
+
+test('enum types resolve properly', async () => {
+    assertType<ObjectWithEveryTypeEnumerator>(
+        $$ObjectWithEveryTypeEnumerator.values[0]!,
+    );
+});
+
 test('can send/receive object every field type', async () => {
     const result = await client.tests.sendObject(input);
     expect(result).toStrictEqual(input);
