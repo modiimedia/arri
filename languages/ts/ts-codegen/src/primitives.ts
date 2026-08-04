@@ -1,6 +1,6 @@
 import { SchemaFormType } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, TsProperty } from './common';
+import { CodegenContext, defaultCloneTemplate, TsProperty } from './common';
 
 export function tsStringFromSchema(
     schema: SchemaFormType,
@@ -17,6 +17,7 @@ export function tsStringFromSchema(
             }
             return `typeof ${input} === 'string'`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableString(${input});`;
@@ -58,6 +59,7 @@ export function tsBooleanFromSchema(
             }
             return `typeof ${input} === 'boolean'`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableBoolean(${input});`;
@@ -88,6 +90,16 @@ export function tsDateFromSchema(
                 return `(${input} instanceof Date || ${input} === null)`;
             }
             return `${input} instanceof Date`;
+        },
+        cloneTemplate(input, target) {
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${target} = new Date(${input}.getTime());
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return `${target} = new Date(${input}.getTime());`;
         },
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
@@ -130,6 +142,7 @@ export function tsFloatFromSchema(
             }
             return `typeof ${input} === 'number'`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableNumberFloat(${input});`;
@@ -194,6 +207,7 @@ export function tsIntFromSchema(
             }
             return mainPart;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableNumberInt(${input}, ${min}, ${max});`;
@@ -229,7 +243,7 @@ export function tsBigIntFromSchema(
             }
             return mainPart;
         },
-
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (isUnsigned) {
                 if (schema.isNullable) {

@@ -33,6 +33,7 @@ test('Output matches reference file', async () => {
         prettierOptions: prettierConfig,
         features: {
             validateFn: true,
+            cloneFn: true,
             validatorObj: true,
         },
     });

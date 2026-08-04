@@ -35,6 +35,22 @@ export function tsRecordFromSchema(
             }
             return mainPart;
         },
+        cloneTemplate(input, target) {
+            const main = `${target} = {};
+            for (const [_key, _value] of Object.entries(${input})) {
+                let ${target}Value: ${innerType.typeName};
+                ${innerType.cloneTemplate('_value', `${target}Value`)}
+                ${target}[_key] = ${target}Value;
+            }`;
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${main}
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return main;
+        },
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
                 ${target} = {};

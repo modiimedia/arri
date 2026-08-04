@@ -1,6 +1,6 @@
 import { Schema } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, TsProperty } from './common';
+import { CodegenContext, defaultCloneTemplate, TsProperty } from './common';
 
 export function tsAnyFromSchema(
     schema: Schema,
@@ -14,6 +14,7 @@ export function tsAnyFromSchema(
         validationTemplate(_) {
             return 'true';
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             return `${target} = ${input}`;
         },

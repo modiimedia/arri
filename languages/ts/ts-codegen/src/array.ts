@@ -37,6 +37,22 @@ export function tsArrayFromSchema(
             }
             return mainPart;
         },
+        cloneTemplate(input, target) {
+            const main = `${target} = [];
+            for (const ${target}El of ${input}) {
+                let ${target}ElValue: ${innerType.typeName};
+                ${innerType.cloneTemplate(`${target}El`, `${target}ElValue`)}
+                ${target}.push(${target}ElValue);
+            }`;
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${main}
+                } else {
+                    ${target} = null;
+                }`;
+            }
+            return main;
+        },
         fromJsonTemplate(input, target) {
             return `if (Array.isArray(${input})) {
                 ${target} = [];

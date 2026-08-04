@@ -2,6 +2,7 @@ import { pascalCase, SchemaFormEnum } from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
+    defaultCloneTemplate,
     getJsDocComment,
     getTsTypeName,
     TsProperty,
@@ -33,6 +34,7 @@ export function tsEnumFromSchema(
             }
             return `${prefixedEnumName}Validate(${input})`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             return `if (typeof ${input} === 'string') {
                 ${target} = ${prefixedEnumName}FromSerialValue(${input});

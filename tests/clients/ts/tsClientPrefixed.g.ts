@@ -21,7 +21,6 @@ import {
     isObject,
     parseString,
     parseBoolean,
-    parseNumber,
     parseTimestamp,
     parseNumberInt,
     parseNumberBigInt,
@@ -46,19 +45,7 @@ import {
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
-export type TestClientPrefixedValidator<T> = ArriModelValidator<
-    T,
-    | 'new'
-    | 'fromJson'
-    | 'fromJsonString'
-    | 'toJsonString'
-    | 'toUrlSearchParams'
-    | 'toUrlSearchParamsString'
->;
-export type ExampleClientEnumValidator<T> = ArriEnumValidator<
-    T,
-    'new' | 'values' | 'fromSerialValue'
->;
+
 export class TestClientPrefixed {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
@@ -594,17 +581,6 @@ export function FooManuallyAddedModelToUrlSearchParamsString(
     return FooManuallyAddedModelToUrlSearchParams(input).toString();
 }
 
-export const $$FooManuallyAddedModel: TestClientPrefixedValidator<FooManuallyAddedModel> =
-    {
-        new: FooManuallyAddedModelNew,
-
-        fromJson: FooManuallyAddedModelFromJson,
-        fromJsonString: FooManuallyAddedModelFromJsonString,
-        toJsonString: FooManuallyAddedModelToJsonString,
-        toUrlSearchParams: FooManuallyAddedModelToUrlSearchParams,
-        toUrlSearchParamsString: FooManuallyAddedModelToUrlSearchParamsString,
-    };
-
 export interface FooDefaultPayload {
     message: string;
 }
@@ -648,17 +624,6 @@ export function FooDefaultPayloadToUrlSearchParamsString(
 ): string {
     return FooDefaultPayloadToUrlSearchParams(input).toString();
 }
-
-export const $$FooDefaultPayload: TestClientPrefixedValidator<FooDefaultPayload> =
-    {
-        new: FooDefaultPayloadNew,
-
-        fromJson: FooDefaultPayloadFromJson,
-        fromJsonString: FooDefaultPayloadFromJsonString,
-        toJsonString: FooDefaultPayloadToJsonString,
-        toUrlSearchParams: FooDefaultPayloadToUrlSearchParams,
-        toUrlSearchParamsString: FooDefaultPayloadToUrlSearchParamsString,
-    };
 
 /**
  * @deprecated
@@ -709,17 +674,6 @@ export function FooDeprecatedRpcParamsToUrlSearchParamsString(
 ): string {
     return FooDeprecatedRpcParamsToUrlSearchParams(input).toString();
 }
-
-export const $$FooDeprecatedRpcParams: TestClientPrefixedValidator<FooDeprecatedRpcParams> =
-    {
-        new: FooDeprecatedRpcParamsNew,
-
-        fromJson: FooDeprecatedRpcParamsFromJson,
-        fromJsonString: FooDeprecatedRpcParamsFromJsonString,
-        toJsonString: FooDeprecatedRpcParamsToJsonString,
-        toUrlSearchParams: FooDeprecatedRpcParamsToUrlSearchParams,
-        toUrlSearchParamsString: FooDeprecatedRpcParamsToUrlSearchParamsString,
-    };
 
 export type FooDiscriminatorWithEmptyObject =
     | FooDiscriminatorWithEmptyObjectEmpty
@@ -775,17 +729,6 @@ export function FooDiscriminatorWithEmptyObjectToUrlSearchParamsString(
 ): string {
     return FooDiscriminatorWithEmptyObjectToUrlSearchParams(input).toString();
 }
-export const $$FooDiscriminatorWithEmptyObject: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObject> =
-    {
-        new: FooDiscriminatorWithEmptyObjectNew,
-
-        fromJson: FooDiscriminatorWithEmptyObjectFromJson,
-        fromJsonString: FooDiscriminatorWithEmptyObjectFromJsonString,
-        toJsonString: FooDiscriminatorWithEmptyObjectToJsonString,
-        toUrlSearchParams: FooDiscriminatorWithEmptyObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooDiscriminatorWithEmptyObjectToUrlSearchParamsString,
-    };
 export interface FooDiscriminatorWithEmptyObjectEmpty {
     type: 'EMPTY';
 }
@@ -829,19 +772,6 @@ export function FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-const $$FooDiscriminatorWithEmptyObjectEmpty: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObjectEmpty> =
-    {
-        new: FooDiscriminatorWithEmptyObjectEmptyNew,
-
-        fromJson: FooDiscriminatorWithEmptyObjectEmptyFromJson,
-        fromJsonString: FooDiscriminatorWithEmptyObjectEmptyFromJsonString,
-        toJsonString: FooDiscriminatorWithEmptyObjectEmptyToJsonString,
-        toUrlSearchParams:
-            FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooDiscriminatorWithEmptyObjectEmptyToUrlSearchParamsString,
-    };
 
 export interface FooDiscriminatorWithEmptyObjectNotEmpty {
     type: 'NOT_EMPTY';
@@ -911,19 +841,6 @@ export function FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParamsString(
     ).toString();
 }
 
-const $$FooDiscriminatorWithEmptyObjectNotEmpty: TestClientPrefixedValidator<FooDiscriminatorWithEmptyObjectNotEmpty> =
-    {
-        new: FooDiscriminatorWithEmptyObjectNotEmptyNew,
-
-        fromJson: FooDiscriminatorWithEmptyObjectNotEmptyFromJson,
-        fromJsonString: FooDiscriminatorWithEmptyObjectNotEmptyFromJsonString,
-        toJsonString: FooDiscriminatorWithEmptyObjectNotEmptyToJsonString,
-        toUrlSearchParams:
-            FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooDiscriminatorWithEmptyObjectNotEmptyToUrlSearchParamsString,
-    };
-
 export interface FooSendErrorParams {
     code: number;
     message: string;
@@ -975,17 +892,6 @@ export function FooSendErrorParamsToUrlSearchParamsString(
 ): string {
     return FooSendErrorParamsToUrlSearchParams(input).toString();
 }
-
-export const $$FooSendErrorParams: TestClientPrefixedValidator<FooSendErrorParams> =
-    {
-        new: FooSendErrorParamsNew,
-
-        fromJson: FooSendErrorParamsFromJson,
-        fromJsonString: FooSendErrorParamsFromJsonString,
-        toJsonString: FooSendErrorParamsToJsonString,
-        toUrlSearchParams: FooSendErrorParamsToUrlSearchParams,
-        toUrlSearchParamsString: FooSendErrorParamsToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryType {
     any: any;
@@ -1304,16 +1210,6 @@ export function FooObjectWithEveryTypeToUrlSearchParamsString(
     return FooObjectWithEveryTypeToUrlSearchParams(input).toString();
 }
 
-export const $$FooObjectWithEveryType: TestClientPrefixedValidator<FooObjectWithEveryType> =
-    {
-        new: FooObjectWithEveryTypeNew,
-
-        fromJson: FooObjectWithEveryTypeFromJson,
-        fromJsonString: FooObjectWithEveryTypeFromJsonString,
-        toJsonString: FooObjectWithEveryTypeToJsonString,
-        toUrlSearchParams: FooObjectWithEveryTypeToUrlSearchParams,
-        toUrlSearchParamsString: FooObjectWithEveryTypeToUrlSearchParamsString,
-    };
 export type FooObjectWithEveryTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryTypeEnumerator = {
     A: 'A',
@@ -1346,13 +1242,6 @@ export function FooObjectWithEveryTypeEnumeratorFromSerialValue(
     }
     return 'A';
 }
-export const $$FooObjectWithEveryTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryTypeEnumerator> =
-    {
-        new: FooObjectWithEveryTypeEnumeratorNew,
-
-        values: FooObjectWithEveryTypeEnumeratorValues,
-        fromSerialValue: FooObjectWithEveryTypeEnumeratorFromSerialValue,
-    };
 export interface FooObjectWithEveryTypeObject {
     string: string;
     boolean: boolean;
@@ -1413,18 +1302,6 @@ export function FooObjectWithEveryTypeObjectToUrlSearchParamsString(
     return FooObjectWithEveryTypeObjectToUrlSearchParams(input).toString();
 }
 
-export const $$FooObjectWithEveryTypeObject: TestClientPrefixedValidator<FooObjectWithEveryTypeObject> =
-    {
-        new: FooObjectWithEveryTypeObjectNew,
-
-        fromJson: FooObjectWithEveryTypeObjectFromJson,
-        fromJsonString: FooObjectWithEveryTypeObjectFromJsonString,
-        toJsonString: FooObjectWithEveryTypeObjectToJsonString,
-        toUrlSearchParams: FooObjectWithEveryTypeObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeObjectToUrlSearchParamsString,
-    };
-
 export type FooObjectWithEveryTypeDiscriminator =
     | FooObjectWithEveryTypeDiscriminatorA
     | FooObjectWithEveryTypeDiscriminatorB;
@@ -1479,17 +1356,6 @@ export function FooObjectWithEveryTypeDiscriminatorToUrlSearchParamsString(
         input,
     ).toString();
 }
-export const $$FooObjectWithEveryTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminator> =
-    {
-        new: FooObjectWithEveryTypeDiscriminatorNew,
-
-        fromJson: FooObjectWithEveryTypeDiscriminatorFromJson,
-        fromJsonString: FooObjectWithEveryTypeDiscriminatorFromJsonString,
-        toJsonString: FooObjectWithEveryTypeDiscriminatorToJsonString,
-        toUrlSearchParams: FooObjectWithEveryTypeDiscriminatorToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeDiscriminatorToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryTypeDiscriminatorA {
     type: 'A';
     title: string;
@@ -1541,19 +1407,6 @@ export function FooObjectWithEveryTypeDiscriminatorAToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-const $$FooObjectWithEveryTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminatorA> =
-    {
-        new: FooObjectWithEveryTypeDiscriminatorANew,
-
-        fromJson: FooObjectWithEveryTypeDiscriminatorAFromJson,
-        fromJsonString: FooObjectWithEveryTypeDiscriminatorAFromJsonString,
-        toJsonString: FooObjectWithEveryTypeDiscriminatorAToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeDiscriminatorAToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryTypeDiscriminatorB {
     type: 'B';
@@ -1614,19 +1467,6 @@ export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-const $$FooObjectWithEveryTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryTypeDiscriminatorB> =
-    {
-        new: FooObjectWithEveryTypeDiscriminatorBNew,
-
-        fromJson: FooObjectWithEveryTypeDiscriminatorBFromJson,
-        fromJsonString: FooObjectWithEveryTypeDiscriminatorBFromJsonString,
-        toJsonString: FooObjectWithEveryTypeDiscriminatorBToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryTypeNestedObject {
     id: string;
@@ -1696,17 +1536,6 @@ export function FooObjectWithEveryTypeNestedObjectToUrlSearchParamsString(
     ).toString();
 }
 
-export const $$FooObjectWithEveryTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObject> =
-    {
-        new: FooObjectWithEveryTypeNestedObjectNew,
-
-        fromJson: FooObjectWithEveryTypeNestedObjectFromJson,
-        fromJsonString: FooObjectWithEveryTypeNestedObjectFromJsonString,
-        toJsonString: FooObjectWithEveryTypeNestedObjectToJsonString,
-        toUrlSearchParams: FooObjectWithEveryTypeNestedObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeNestedObjectToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryTypeNestedObjectData {
     id: string;
     timestamp: Date;
@@ -1775,18 +1604,6 @@ export function FooObjectWithEveryTypeNestedObjectDataToUrlSearchParamsString(
     ).toString();
 }
 
-export const $$FooObjectWithEveryTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObjectData> =
-    {
-        new: FooObjectWithEveryTypeNestedObjectDataNew,
-
-        fromJson: FooObjectWithEveryTypeNestedObjectDataFromJson,
-        fromJsonString: FooObjectWithEveryTypeNestedObjectDataFromJsonString,
-        toJsonString: FooObjectWithEveryTypeNestedObjectDataToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryTypeNestedObjectDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeNestedObjectDataToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryTypeNestedObjectDataData {
     id: string;
     timestamp: Date;
@@ -1843,20 +1660,6 @@ export function FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParamsStrin
     ).toString();
 }
 
-export const $$FooObjectWithEveryTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedObjectDataData> =
-    {
-        new: FooObjectWithEveryTypeNestedObjectDataDataNew,
-
-        fromJson: FooObjectWithEveryTypeNestedObjectDataDataFromJson,
-        fromJsonString:
-            FooObjectWithEveryTypeNestedObjectDataDataFromJsonString,
-        toJsonString: FooObjectWithEveryTypeNestedObjectDataDataToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeNestedObjectDataDataToUrlSearchParamsString,
-    };
-
 export interface FooObjectWithEveryTypeNestedArrayElementElement {
     id: string;
     timestamp: Date;
@@ -1912,21 +1715,6 @@ export function FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams
         input,
     ).toString();
 }
-
-export const $$FooObjectWithEveryTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryTypeNestedArrayElementElement> =
-    {
-        new: FooObjectWithEveryTypeNestedArrayElementElementNew,
-
-        fromJson: FooObjectWithEveryTypeNestedArrayElementElementFromJson,
-        fromJsonString:
-            FooObjectWithEveryTypeNestedArrayElementElementFromJsonString,
-        toJsonString:
-            FooObjectWithEveryTypeNestedArrayElementElementToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryNullableType {
     any: any;
@@ -2314,17 +2102,6 @@ export function FooObjectWithEveryNullableTypeToUrlSearchParamsString(
     return FooObjectWithEveryNullableTypeToUrlSearchParams(input).toString();
 }
 
-export const $$FooObjectWithEveryNullableType: TestClientPrefixedValidator<FooObjectWithEveryNullableType> =
-    {
-        new: FooObjectWithEveryNullableTypeNew,
-
-        fromJson: FooObjectWithEveryNullableTypeFromJson,
-        fromJsonString: FooObjectWithEveryNullableTypeFromJsonString,
-        toJsonString: FooObjectWithEveryNullableTypeToJsonString,
-        toUrlSearchParams: FooObjectWithEveryNullableTypeToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeToUrlSearchParamsString,
-    };
 export type FooObjectWithEveryNullableTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryNullableTypeEnumerator = {
     A: 'A',
@@ -2361,14 +2138,6 @@ export function FooObjectWithEveryNullableTypeEnumeratorFromSerialValue(
     }
     return 'A';
 }
-export const $$FooObjectWithEveryNullableTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryNullableTypeEnumerator> =
-    {
-        new: FooObjectWithEveryNullableTypeEnumeratorNew,
-
-        values: FooObjectWithEveryNullableTypeEnumeratorValues,
-        fromSerialValue:
-            FooObjectWithEveryNullableTypeEnumeratorFromSerialValue,
-    };
 export interface FooObjectWithEveryNullableTypeObject {
     string: string | null;
     boolean: boolean | null;
@@ -2439,19 +2208,6 @@ export function FooObjectWithEveryNullableTypeObjectToUrlSearchParamsString(
     ).toString();
 }
 
-export const $$FooObjectWithEveryNullableTypeObject: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeObject> =
-    {
-        new: FooObjectWithEveryNullableTypeObjectNew,
-
-        fromJson: FooObjectWithEveryNullableTypeObjectFromJson,
-        fromJsonString: FooObjectWithEveryNullableTypeObjectFromJsonString,
-        toJsonString: FooObjectWithEveryNullableTypeObjectToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeObjectToUrlSearchParamsString,
-    };
-
 export type FooObjectWithEveryNullableTypeDiscriminator =
     | FooObjectWithEveryNullableTypeDiscriminatorA
     | FooObjectWithEveryNullableTypeDiscriminatorB;
@@ -2516,19 +2272,6 @@ export function FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParamsStri
         input,
     ).toString();
 }
-export const $$FooObjectWithEveryNullableTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminator> =
-    {
-        new: FooObjectWithEveryNullableTypeDiscriminatorNew,
-
-        fromJson: FooObjectWithEveryNullableTypeDiscriminatorFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeDiscriminatorFromJsonString,
-        toJsonString: FooObjectWithEveryNullableTypeDiscriminatorToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryNullableTypeDiscriminatorA {
     type: 'A';
     title: string | null;
@@ -2586,20 +2329,6 @@ export function FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParamsStr
         input,
     ).toString();
 }
-
-const $$FooObjectWithEveryNullableTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminatorA> =
-    {
-        new: FooObjectWithEveryNullableTypeDiscriminatorANew,
-
-        fromJson: FooObjectWithEveryNullableTypeDiscriminatorAFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeDiscriminatorAFromJsonString,
-        toJsonString: FooObjectWithEveryNullableTypeDiscriminatorAToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryNullableTypeDiscriminatorB {
     type: 'B';
@@ -2670,20 +2399,6 @@ export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsStr
         input,
     ).toString();
 }
-
-const $$FooObjectWithEveryNullableTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeDiscriminatorB> =
-    {
-        new: FooObjectWithEveryNullableTypeDiscriminatorBNew,
-
-        fromJson: FooObjectWithEveryNullableTypeDiscriminatorBFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeDiscriminatorBFromJsonString,
-        toJsonString: FooObjectWithEveryNullableTypeDiscriminatorBToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryNullableTypeNestedObject {
     id: string | null;
@@ -2771,19 +2486,6 @@ export function FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParamsStrin
     ).toString();
 }
 
-export const $$FooObjectWithEveryNullableTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObject> =
-    {
-        new: FooObjectWithEveryNullableTypeNestedObjectNew,
-
-        fromJson: FooObjectWithEveryNullableTypeNestedObjectFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeNestedObjectFromJsonString,
-        toJsonString: FooObjectWithEveryNullableTypeNestedObjectToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeNestedObjectToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryNullableTypeNestedObjectData {
     id: string | null;
     timestamp: Date | null;
@@ -2870,20 +2572,6 @@ export function FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParamsS
     ).toString();
 }
 
-export const $$FooObjectWithEveryNullableTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObjectData> =
-    {
-        new: FooObjectWithEveryNullableTypeNestedObjectDataNew,
-
-        fromJson: FooObjectWithEveryNullableTypeNestedObjectDataFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeNestedObjectDataFromJsonString,
-        toJsonString:
-            FooObjectWithEveryNullableTypeNestedObjectDataToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeNestedObjectDataToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryNullableTypeNestedObjectDataData {
     id: string | null;
     timestamp: Date | null;
@@ -2948,21 +2636,6 @@ export function FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchPar
     ).toString();
 }
 
-export const $$FooObjectWithEveryNullableTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedObjectDataData> =
-    {
-        new: FooObjectWithEveryNullableTypeNestedObjectDataDataNew,
-
-        fromJson: FooObjectWithEveryNullableTypeNestedObjectDataDataFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeNestedObjectDataDataFromJsonString,
-        toJsonString:
-            FooObjectWithEveryNullableTypeNestedObjectDataDataToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeNestedObjectDataDataToUrlSearchParamsString,
-    };
-
 export interface FooObjectWithEveryNullableTypeNestedArrayElementElement {
     id: string | null;
     timestamp: Date | null;
@@ -3026,22 +2699,6 @@ export function FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSear
         input,
     ).toString();
 }
-
-export const $$FooObjectWithEveryNullableTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryNullableTypeNestedArrayElementElement> =
-    {
-        new: FooObjectWithEveryNullableTypeNestedArrayElementElementNew,
-
-        fromJson:
-            FooObjectWithEveryNullableTypeNestedArrayElementElementFromJson,
-        fromJsonString:
-            FooObjectWithEveryNullableTypeNestedArrayElementElementFromJsonString,
-        toJsonString:
-            FooObjectWithEveryNullableTypeNestedArrayElementElementToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryNullableTypeNestedArrayElementElementToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithPascalCaseKeys {
     createdAt: Date;
@@ -3133,18 +2790,6 @@ export function FooObjectWithPascalCaseKeysToUrlSearchParamsString(
     return FooObjectWithPascalCaseKeysToUrlSearchParams(input).toString();
 }
 
-export const $$FooObjectWithPascalCaseKeys: TestClientPrefixedValidator<FooObjectWithPascalCaseKeys> =
-    {
-        new: FooObjectWithPascalCaseKeysNew,
-
-        fromJson: FooObjectWithPascalCaseKeysFromJson,
-        fromJsonString: FooObjectWithPascalCaseKeysFromJsonString,
-        toJsonString: FooObjectWithPascalCaseKeysToJsonString,
-        toUrlSearchParams: FooObjectWithPascalCaseKeysToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithPascalCaseKeysToUrlSearchParamsString,
-    };
-
 export interface FooObjectWithSnakeCaseKeys {
     createdAt: Date;
     displayName: string;
@@ -3234,18 +2879,6 @@ export function FooObjectWithSnakeCaseKeysToUrlSearchParamsString(
 ): string {
     return FooObjectWithSnakeCaseKeysToUrlSearchParams(input).toString();
 }
-
-export const $$FooObjectWithSnakeCaseKeys: TestClientPrefixedValidator<FooObjectWithSnakeCaseKeys> =
-    {
-        new: FooObjectWithSnakeCaseKeysNew,
-
-        fromJson: FooObjectWithSnakeCaseKeysFromJson,
-        fromJsonString: FooObjectWithSnakeCaseKeysFromJsonString,
-        toJsonString: FooObjectWithSnakeCaseKeysToJsonString,
-        toUrlSearchParams: FooObjectWithSnakeCaseKeysToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithSnakeCaseKeysToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryOptionalType {
     any?: any;
@@ -3720,17 +3353,6 @@ export function FooObjectWithEveryOptionalTypeToUrlSearchParamsString(
     return FooObjectWithEveryOptionalTypeToUrlSearchParams(input).toString();
 }
 
-export const $$FooObjectWithEveryOptionalType: TestClientPrefixedValidator<FooObjectWithEveryOptionalType> =
-    {
-        new: FooObjectWithEveryOptionalTypeNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeFromJson,
-        fromJsonString: FooObjectWithEveryOptionalTypeFromJsonString,
-        toJsonString: FooObjectWithEveryOptionalTypeToJsonString,
-        toUrlSearchParams: FooObjectWithEveryOptionalTypeToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeToUrlSearchParamsString,
-    };
 export type FooObjectWithEveryOptionalTypeEnumerator = 'A' | 'B' | 'C';
 export const FooObjectWithEveryOptionalTypeEnumerator = {
     A: 'A',
@@ -3767,14 +3389,6 @@ export function FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue(
     }
     return 'A';
 }
-export const $$FooObjectWithEveryOptionalTypeEnumerator: TestClientPrefixedEnumValidator<FooObjectWithEveryOptionalTypeEnumerator> =
-    {
-        new: FooObjectWithEveryOptionalTypeEnumeratorNew,
-
-        values: FooObjectWithEveryOptionalTypeEnumeratorValues,
-        fromSerialValue:
-            FooObjectWithEveryOptionalTypeEnumeratorFromSerialValue,
-    };
 export interface FooObjectWithEveryOptionalTypeObject {
     string: string;
     boolean: boolean;
@@ -3836,19 +3450,6 @@ export function FooObjectWithEveryOptionalTypeObjectToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-export const $$FooObjectWithEveryOptionalTypeObject: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeObject> =
-    {
-        new: FooObjectWithEveryOptionalTypeObjectNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeObjectFromJson,
-        fromJsonString: FooObjectWithEveryOptionalTypeObjectFromJsonString,
-        toJsonString: FooObjectWithEveryOptionalTypeObjectToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeObjectToUrlSearchParamsString,
-    };
 
 export type FooObjectWithEveryOptionalTypeDiscriminator =
     | FooObjectWithEveryOptionalTypeDiscriminatorA
@@ -3914,19 +3515,6 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParamsStri
         input,
     ).toString();
 }
-export const $$FooObjectWithEveryOptionalTypeDiscriminator: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminator> =
-    {
-        new: FooObjectWithEveryOptionalTypeDiscriminatorNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeDiscriminatorFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeDiscriminatorFromJsonString,
-        toJsonString: FooObjectWithEveryOptionalTypeDiscriminatorToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryOptionalTypeDiscriminatorA {
     type: 'A';
     title: string;
@@ -3980,20 +3568,6 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParamsStr
         input,
     ).toString();
 }
-
-const $$FooObjectWithEveryOptionalTypeDiscriminatorA: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminatorA> =
-    {
-        new: FooObjectWithEveryOptionalTypeDiscriminatorANew,
-
-        fromJson: FooObjectWithEveryOptionalTypeDiscriminatorAFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeDiscriminatorAFromJsonString,
-        toJsonString: FooObjectWithEveryOptionalTypeDiscriminatorAToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryOptionalTypeDiscriminatorB {
     type: 'B';
@@ -4056,20 +3630,6 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsStr
         input,
     ).toString();
 }
-
-const $$FooObjectWithEveryOptionalTypeDiscriminatorB: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeDiscriminatorB> =
-    {
-        new: FooObjectWithEveryOptionalTypeDiscriminatorBNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeDiscriminatorBFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeDiscriminatorBFromJsonString,
-        toJsonString: FooObjectWithEveryOptionalTypeDiscriminatorBToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsString,
-    };
 
 export interface FooObjectWithEveryOptionalTypeNestedObject {
     id: string;
@@ -4145,19 +3705,6 @@ export function FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParamsStrin
     ).toString();
 }
 
-export const $$FooObjectWithEveryOptionalTypeNestedObject: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObject> =
-    {
-        new: FooObjectWithEveryOptionalTypeNestedObjectNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeNestedObjectFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeNestedObjectFromJsonString,
-        toJsonString: FooObjectWithEveryOptionalTypeNestedObjectToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeNestedObjectToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryOptionalTypeNestedObjectData {
     id: string;
     timestamp: Date;
@@ -4232,20 +3779,6 @@ export function FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParamsS
     ).toString();
 }
 
-export const $$FooObjectWithEveryOptionalTypeNestedObjectData: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObjectData> =
-    {
-        new: FooObjectWithEveryOptionalTypeNestedObjectDataNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeNestedObjectDataFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeNestedObjectDataFromJsonString,
-        toJsonString:
-            FooObjectWithEveryOptionalTypeNestedObjectDataToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeNestedObjectDataToUrlSearchParamsString,
-    };
 export interface FooObjectWithEveryOptionalTypeNestedObjectDataData {
     id: string;
     timestamp: Date;
@@ -4302,21 +3835,6 @@ export function FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchPar
     ).toString();
 }
 
-export const $$FooObjectWithEveryOptionalTypeNestedObjectDataData: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedObjectDataData> =
-    {
-        new: FooObjectWithEveryOptionalTypeNestedObjectDataDataNew,
-
-        fromJson: FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeNestedObjectDataDataFromJsonString,
-        toJsonString:
-            FooObjectWithEveryOptionalTypeNestedObjectDataDataToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeNestedObjectDataDataToUrlSearchParamsString,
-    };
-
 export interface FooObjectWithEveryOptionalTypeNestedArrayElementElement {
     id: string;
     timestamp: Date;
@@ -4372,22 +3890,6 @@ export function FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSear
         input,
     ).toString();
 }
-
-export const $$FooObjectWithEveryOptionalTypeNestedArrayElementElement: TestClientPrefixedValidator<FooObjectWithEveryOptionalTypeNestedArrayElementElement> =
-    {
-        new: FooObjectWithEveryOptionalTypeNestedArrayElementElementNew,
-
-        fromJson:
-            FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJson,
-        fromJsonString:
-            FooObjectWithEveryOptionalTypeNestedArrayElementElementFromJsonString,
-        toJsonString:
-            FooObjectWithEveryOptionalTypeNestedArrayElementElementToJsonString,
-        toUrlSearchParams:
-            FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooObjectWithEveryOptionalTypeNestedArrayElementElementToUrlSearchParamsString,
-    };
 
 export interface FooRecursiveObject {
     left: FooRecursiveObject | null;
@@ -4469,17 +3971,6 @@ export function FooRecursiveObjectToUrlSearchParamsString(
     return FooRecursiveObjectToUrlSearchParams(input).toString();
 }
 
-export const $$FooRecursiveObject: TestClientPrefixedValidator<FooRecursiveObject> =
-    {
-        new: FooRecursiveObjectNew,
-
-        fromJson: FooRecursiveObjectFromJson,
-        fromJsonString: FooRecursiveObjectFromJsonString,
-        toJsonString: FooRecursiveObjectToJsonString,
-        toUrlSearchParams: FooRecursiveObjectToUrlSearchParams,
-        toUrlSearchParamsString: FooRecursiveObjectToUrlSearchParamsString,
-    };
-
 export type FooRecursiveUnion =
     | FooRecursiveUnionChild
     | FooRecursiveUnionChildren
@@ -4546,16 +4037,6 @@ export function FooRecursiveUnionToUrlSearchParamsString(
 ): string {
     return FooRecursiveUnionToUrlSearchParams(input).toString();
 }
-export const $$FooRecursiveUnion: TestClientPrefixedValidator<FooRecursiveUnion> =
-    {
-        new: FooRecursiveUnionNew,
-
-        fromJson: FooRecursiveUnionFromJson,
-        fromJsonString: FooRecursiveUnionFromJsonString,
-        toJsonString: FooRecursiveUnionToJsonString,
-        toUrlSearchParams: FooRecursiveUnionToUrlSearchParams,
-        toUrlSearchParamsString: FooRecursiveUnionToUrlSearchParamsString,
-    };
 /**
  * Child node
  */
@@ -4614,17 +4095,6 @@ export function FooRecursiveUnionChildToUrlSearchParamsString(
 ): string {
     return FooRecursiveUnionChildToUrlSearchParams(input).toString();
 }
-
-const $$FooRecursiveUnionChild: TestClientPrefixedValidator<FooRecursiveUnionChild> =
-    {
-        new: FooRecursiveUnionChildNew,
-
-        fromJson: FooRecursiveUnionChildFromJson,
-        fromJsonString: FooRecursiveUnionChildFromJsonString,
-        toJsonString: FooRecursiveUnionChildToJsonString,
-        toUrlSearchParams: FooRecursiveUnionChildToUrlSearchParams,
-        toUrlSearchParamsString: FooRecursiveUnionChildToUrlSearchParamsString,
-    };
 
 /**
  * List of children node
@@ -4700,18 +4170,6 @@ export function FooRecursiveUnionChildrenToUrlSearchParamsString(
     return FooRecursiveUnionChildrenToUrlSearchParams(input).toString();
 }
 
-const $$FooRecursiveUnionChildren: TestClientPrefixedValidator<FooRecursiveUnionChildren> =
-    {
-        new: FooRecursiveUnionChildrenNew,
-
-        fromJson: FooRecursiveUnionChildrenFromJson,
-        fromJsonString: FooRecursiveUnionChildrenFromJsonString,
-        toJsonString: FooRecursiveUnionChildrenToJsonString,
-        toUrlSearchParams: FooRecursiveUnionChildrenToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooRecursiveUnionChildrenToUrlSearchParamsString,
-    };
-
 /**
  * Text node
  */
@@ -4764,17 +4222,6 @@ export function FooRecursiveUnionTextToUrlSearchParamsString(
 ): string {
     return FooRecursiveUnionTextToUrlSearchParams(input).toString();
 }
-
-const $$FooRecursiveUnionText: TestClientPrefixedValidator<FooRecursiveUnionText> =
-    {
-        new: FooRecursiveUnionTextNew,
-
-        fromJson: FooRecursiveUnionTextFromJson,
-        fromJsonString: FooRecursiveUnionTextFromJsonString,
-        toJsonString: FooRecursiveUnionTextToJsonString,
-        toUrlSearchParams: FooRecursiveUnionTextToUrlSearchParams,
-        toUrlSearchParamsString: FooRecursiveUnionTextToUrlSearchParamsString,
-    };
 
 /**
  * Shape node
@@ -4835,16 +4282,6 @@ export function FooRecursiveUnionShapeToUrlSearchParamsString(
     return FooRecursiveUnionShapeToUrlSearchParams(input).toString();
 }
 
-const $$FooRecursiveUnionShape: TestClientPrefixedValidator<FooRecursiveUnionShape> =
-    {
-        new: FooRecursiveUnionShapeNew,
-
-        fromJson: FooRecursiveUnionShapeFromJson,
-        fromJsonString: FooRecursiveUnionShapeFromJsonString,
-        toJsonString: FooRecursiveUnionShapeToJsonString,
-        toUrlSearchParams: FooRecursiveUnionShapeToUrlSearchParams,
-        toUrlSearchParamsString: FooRecursiveUnionShapeToUrlSearchParamsString,
-    };
 export interface FooRecursiveUnionShapeData {
     width: number;
     height: number;
@@ -4905,18 +4342,6 @@ export function FooRecursiveUnionShapeDataToUrlSearchParamsString(
     return FooRecursiveUnionShapeDataToUrlSearchParams(input).toString();
 }
 
-export const $$FooRecursiveUnionShapeData: TestClientPrefixedValidator<FooRecursiveUnionShapeData> =
-    {
-        new: FooRecursiveUnionShapeDataNew,
-
-        fromJson: FooRecursiveUnionShapeDataFromJson,
-        fromJsonString: FooRecursiveUnionShapeDataFromJsonString,
-        toJsonString: FooRecursiveUnionShapeDataToJsonString,
-        toUrlSearchParams: FooRecursiveUnionShapeDataToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooRecursiveUnionShapeDataToUrlSearchParamsString,
-    };
-
 export interface FooAutoReconnectParams {
     messageCount: number;
 }
@@ -4960,17 +4385,6 @@ export function FooAutoReconnectParamsToUrlSearchParamsString(
 ): string {
     return FooAutoReconnectParamsToUrlSearchParams(input).toString();
 }
-
-export const $$FooAutoReconnectParams: TestClientPrefixedValidator<FooAutoReconnectParams> =
-    {
-        new: FooAutoReconnectParamsNew,
-
-        fromJson: FooAutoReconnectParamsFromJson,
-        fromJsonString: FooAutoReconnectParamsFromJsonString,
-        toJsonString: FooAutoReconnectParamsToJsonString,
-        toUrlSearchParams: FooAutoReconnectParamsToUrlSearchParams,
-        toUrlSearchParamsString: FooAutoReconnectParamsToUrlSearchParamsString,
-    };
 
 export interface FooAutoReconnectResponse {
     count: number;
@@ -5023,18 +4437,6 @@ export function FooAutoReconnectResponseToUrlSearchParamsString(
 ): string {
     return FooAutoReconnectResponseToUrlSearchParams(input).toString();
 }
-
-export const $$FooAutoReconnectResponse: TestClientPrefixedValidator<FooAutoReconnectResponse> =
-    {
-        new: FooAutoReconnectResponseNew,
-
-        fromJson: FooAutoReconnectResponseFromJson,
-        fromJsonString: FooAutoReconnectResponseFromJsonString,
-        toJsonString: FooAutoReconnectResponseToJsonString,
-        toUrlSearchParams: FooAutoReconnectResponseToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooAutoReconnectResponseToUrlSearchParamsString,
-    };
 
 export interface FooStreamConnectionErrorTestParams {
     statusCode: number;
@@ -5090,18 +4492,6 @@ export function FooStreamConnectionErrorTestParamsToUrlSearchParamsString(
     ).toString();
 }
 
-export const $$FooStreamConnectionErrorTestParams: TestClientPrefixedValidator<FooStreamConnectionErrorTestParams> =
-    {
-        new: FooStreamConnectionErrorTestParamsNew,
-
-        fromJson: FooStreamConnectionErrorTestParamsFromJson,
-        fromJsonString: FooStreamConnectionErrorTestParamsFromJsonString,
-        toJsonString: FooStreamConnectionErrorTestParamsToJsonString,
-        toUrlSearchParams: FooStreamConnectionErrorTestParamsToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooStreamConnectionErrorTestParamsToUrlSearchParamsString,
-    };
-
 export interface FooStreamConnectionErrorTestResponse {
     message: string;
 }
@@ -5147,19 +4537,6 @@ export function FooStreamConnectionErrorTestResponseToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-export const $$FooStreamConnectionErrorTestResponse: TestClientPrefixedValidator<FooStreamConnectionErrorTestResponse> =
-    {
-        new: FooStreamConnectionErrorTestResponseNew,
-
-        fromJson: FooStreamConnectionErrorTestResponseFromJson,
-        fromJsonString: FooStreamConnectionErrorTestResponseFromJsonString,
-        toJsonString: FooStreamConnectionErrorTestResponseToJsonString,
-        toUrlSearchParams:
-            FooStreamConnectionErrorTestResponseToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooStreamConnectionErrorTestResponseToUrlSearchParamsString,
-    };
 
 export interface FooStreamHeartbeatDetectionTestParams {
     heartbeatEnabled: boolean;
@@ -5207,19 +4584,6 @@ export function FooStreamHeartbeatDetectionTestParamsToUrlSearchParamsString(
     ).toString();
 }
 
-export const $$FooStreamHeartbeatDetectionTestParams: TestClientPrefixedValidator<FooStreamHeartbeatDetectionTestParams> =
-    {
-        new: FooStreamHeartbeatDetectionTestParamsNew,
-
-        fromJson: FooStreamHeartbeatDetectionTestParamsFromJson,
-        fromJsonString: FooStreamHeartbeatDetectionTestParamsFromJsonString,
-        toJsonString: FooStreamHeartbeatDetectionTestParamsToJsonString,
-        toUrlSearchParams:
-            FooStreamHeartbeatDetectionTestParamsToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooStreamHeartbeatDetectionTestParamsToUrlSearchParamsString,
-    };
-
 export interface FooStreamHeartbeatDetectionTestResponse {
     message: string;
 }
@@ -5265,19 +4629,6 @@ export function FooStreamHeartbeatDetectionTestResponseToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-export const $$FooStreamHeartbeatDetectionTestResponse: TestClientPrefixedValidator<FooStreamHeartbeatDetectionTestResponse> =
-    {
-        new: FooStreamHeartbeatDetectionTestResponseNew,
-
-        fromJson: FooStreamHeartbeatDetectionTestResponseFromJson,
-        fromJsonString: FooStreamHeartbeatDetectionTestResponseFromJsonString,
-        toJsonString: FooStreamHeartbeatDetectionTestResponseToJsonString,
-        toUrlSearchParams:
-            FooStreamHeartbeatDetectionTestResponseToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooStreamHeartbeatDetectionTestResponseToUrlSearchParamsString,
-    };
 
 export interface FooStreamLargeObjectsResponse {
     numbers: number[];
@@ -5376,17 +4727,6 @@ export function FooStreamLargeObjectsResponseToUrlSearchParamsString(
     return FooStreamLargeObjectsResponseToUrlSearchParams(input).toString();
 }
 
-export const $$FooStreamLargeObjectsResponse: TestClientPrefixedValidator<FooStreamLargeObjectsResponse> =
-    {
-        new: FooStreamLargeObjectsResponseNew,
-
-        fromJson: FooStreamLargeObjectsResponseFromJson,
-        fromJsonString: FooStreamLargeObjectsResponseFromJsonString,
-        toJsonString: FooStreamLargeObjectsResponseToJsonString,
-        toUrlSearchParams: FooStreamLargeObjectsResponseToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooStreamLargeObjectsResponseToUrlSearchParamsString,
-    };
 export interface FooStreamLargeObjectsResponseObjectsElement {
     id: string;
     name: string;
@@ -5451,20 +4791,6 @@ export function FooStreamLargeObjectsResponseObjectsElementToUrlSearchParamsStri
     ).toString();
 }
 
-export const $$FooStreamLargeObjectsResponseObjectsElement: TestClientPrefixedValidator<FooStreamLargeObjectsResponseObjectsElement> =
-    {
-        new: FooStreamLargeObjectsResponseObjectsElementNew,
-
-        fromJson: FooStreamLargeObjectsResponseObjectsElementFromJson,
-        fromJsonString:
-            FooStreamLargeObjectsResponseObjectsElementFromJsonString,
-        toJsonString: FooStreamLargeObjectsResponseObjectsElementToJsonString,
-        toUrlSearchParams:
-            FooStreamLargeObjectsResponseObjectsElementToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooStreamLargeObjectsResponseObjectsElementToUrlSearchParamsString,
-    };
-
 export interface FooChatMessageParams {
     channelId: string;
 }
@@ -5508,17 +4834,6 @@ export function FooChatMessageParamsToUrlSearchParamsString(
 ): string {
     return FooChatMessageParamsToUrlSearchParams(input).toString();
 }
-
-export const $$FooChatMessageParams: TestClientPrefixedValidator<FooChatMessageParams> =
-    {
-        new: FooChatMessageParamsNew,
-
-        fromJson: FooChatMessageParamsFromJson,
-        fromJsonString: FooChatMessageParamsFromJsonString,
-        toJsonString: FooChatMessageParamsToJsonString,
-        toUrlSearchParams: FooChatMessageParamsToUrlSearchParams,
-        toUrlSearchParamsString: FooChatMessageParamsToUrlSearchParamsString,
-    };
 
 export type FooChatMessage =
     | FooChatMessageText
@@ -5575,15 +4890,6 @@ export function FooChatMessageToUrlSearchParamsString(
 ): string {
     return FooChatMessageToUrlSearchParams(input).toString();
 }
-export const $$FooChatMessage: TestClientPrefixedValidator<FooChatMessage> = {
-    new: FooChatMessageNew,
-
-    fromJson: FooChatMessageFromJson,
-    fromJsonString: FooChatMessageFromJsonString,
-    toJsonString: FooChatMessageToJsonString,
-    toUrlSearchParams: FooChatMessageToUrlSearchParams,
-    toUrlSearchParamsString: FooChatMessageToUrlSearchParamsString,
-};
 export interface FooChatMessageText {
     messageType: 'TEXT';
     id: string;
@@ -5665,16 +4971,6 @@ export function FooChatMessageTextToUrlSearchParamsString(
 ): string {
     return FooChatMessageTextToUrlSearchParams(input).toString();
 }
-
-const $$FooChatMessageText: TestClientPrefixedValidator<FooChatMessageText> = {
-    new: FooChatMessageTextNew,
-
-    fromJson: FooChatMessageTextFromJson,
-    fromJsonString: FooChatMessageTextFromJsonString,
-    toJsonString: FooChatMessageTextToJsonString,
-    toUrlSearchParams: FooChatMessageTextToUrlSearchParams,
-    toUrlSearchParamsString: FooChatMessageTextToUrlSearchParamsString,
-};
 
 export interface FooChatMessageImage {
     messageType: 'IMAGE';
@@ -5758,17 +5054,6 @@ export function FooChatMessageImageToUrlSearchParamsString(
     return FooChatMessageImageToUrlSearchParams(input).toString();
 }
 
-const $$FooChatMessageImage: TestClientPrefixedValidator<FooChatMessageImage> =
-    {
-        new: FooChatMessageImageNew,
-
-        fromJson: FooChatMessageImageFromJson,
-        fromJsonString: FooChatMessageImageFromJsonString,
-        toJsonString: FooChatMessageImageToJsonString,
-        toUrlSearchParams: FooChatMessageImageToUrlSearchParams,
-        toUrlSearchParamsString: FooChatMessageImageToUrlSearchParamsString,
-    };
-
 export interface FooChatMessageUrl {
     messageType: 'URL';
     id: string;
@@ -5851,16 +5136,6 @@ export function FooChatMessageUrlToUrlSearchParamsString(
     return FooChatMessageUrlToUrlSearchParams(input).toString();
 }
 
-const $$FooChatMessageUrl: TestClientPrefixedValidator<FooChatMessageUrl> = {
-    new: FooChatMessageUrlNew,
-
-    fromJson: FooChatMessageUrlFromJson,
-    fromJsonString: FooChatMessageUrlFromJsonString,
-    toJsonString: FooChatMessageUrlToJsonString,
-    toUrlSearchParams: FooChatMessageUrlToUrlSearchParams,
-    toUrlSearchParamsString: FooChatMessageUrlToUrlSearchParamsString,
-};
-
 export interface FooTestsStreamRetryWithNewCredentialsResponse {
     message: string;
 }
@@ -5909,20 +5184,6 @@ export function FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParamsSt
     ).toString();
 }
 
-export const $$FooTestsStreamRetryWithNewCredentialsResponse: TestClientPrefixedValidator<FooTestsStreamRetryWithNewCredentialsResponse> =
-    {
-        new: FooTestsStreamRetryWithNewCredentialsResponseNew,
-
-        fromJson: FooTestsStreamRetryWithNewCredentialsResponseFromJson,
-        fromJsonString:
-            FooTestsStreamRetryWithNewCredentialsResponseFromJsonString,
-        toJsonString: FooTestsStreamRetryWithNewCredentialsResponseToJsonString,
-        toUrlSearchParams:
-            FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooTestsStreamRetryWithNewCredentialsResponseToUrlSearchParamsString,
-    };
-
 export interface FooUsersWatchUserParams {
     userId: string;
 }
@@ -5966,17 +5227,6 @@ export function FooUsersWatchUserParamsToUrlSearchParamsString(
 ): string {
     return FooUsersWatchUserParamsToUrlSearchParams(input).toString();
 }
-
-export const $$FooUsersWatchUserParams: TestClientPrefixedValidator<FooUsersWatchUserParams> =
-    {
-        new: FooUsersWatchUserParamsNew,
-
-        fromJson: FooUsersWatchUserParamsFromJson,
-        fromJsonString: FooUsersWatchUserParamsFromJsonString,
-        toJsonString: FooUsersWatchUserParamsToJsonString,
-        toUrlSearchParams: FooUsersWatchUserParamsToUrlSearchParams,
-        toUrlSearchParamsString: FooUsersWatchUserParamsToUrlSearchParamsString,
-    };
 
 export interface FooUsersWatchUserResponse {
     id: string;
@@ -6223,17 +5473,6 @@ export function FooUsersWatchUserResponseToUrlSearchParamsString(
     return FooUsersWatchUserResponseToUrlSearchParams(input).toString();
 }
 
-export const $$FooUsersWatchUserResponse: TestClientPrefixedValidator<FooUsersWatchUserResponse> =
-    {
-        new: FooUsersWatchUserResponseNew,
-
-        fromJson: FooUsersWatchUserResponseFromJson,
-        fromJsonString: FooUsersWatchUserResponseFromJsonString,
-        toJsonString: FooUsersWatchUserResponseToJsonString,
-        toUrlSearchParams: FooUsersWatchUserResponseToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooUsersWatchUserResponseToUrlSearchParamsString,
-    };
 export type FooUsersWatchUserResponseRole = 'standard' | 'admin';
 export const FooUsersWatchUserResponseRole = {
     Standard: 'standard',
@@ -6264,13 +5503,6 @@ export function FooUsersWatchUserResponseRoleFromSerialValue(
     }
     return 'standard';
 }
-export const $$FooUsersWatchUserResponseRole: TestClientPrefixedEnumValidator<FooUsersWatchUserResponseRole> =
-    {
-        new: FooUsersWatchUserResponseRoleNew,
-
-        values: FooUsersWatchUserResponseRoleValues,
-        fromSerialValue: FooUsersWatchUserResponseRoleFromSerialValue,
-    };
 /**
  * A profile picture
  */
@@ -6349,16 +5581,6 @@ export function FooUserPhotoToUrlSearchParamsString(
     return FooUserPhotoToUrlSearchParams(input).toString();
 }
 
-export const $$FooUserPhoto: TestClientPrefixedValidator<FooUserPhoto> = {
-    new: FooUserPhotoNew,
-
-    fromJson: FooUserPhotoFromJson,
-    fromJsonString: FooUserPhotoFromJsonString,
-    toJsonString: FooUserPhotoToJsonString,
-    toUrlSearchParams: FooUserPhotoToUrlSearchParams,
-    toUrlSearchParamsString: FooUserPhotoToUrlSearchParamsString,
-};
-
 export interface FooUserSettings {
     notificationsEnabled: boolean;
     preferredTheme: FooUserSettingsPreferredTheme;
@@ -6413,15 +5635,6 @@ export function FooUserSettingsToUrlSearchParamsString(
     return FooUserSettingsToUrlSearchParams(input).toString();
 }
 
-export const $$FooUserSettings: TestClientPrefixedValidator<FooUserSettings> = {
-    new: FooUserSettingsNew,
-
-    fromJson: FooUserSettingsFromJson,
-    fromJsonString: FooUserSettingsFromJsonString,
-    toJsonString: FooUserSettingsToJsonString,
-    toUrlSearchParams: FooUserSettingsToUrlSearchParams,
-    toUrlSearchParamsString: FooUserSettingsToUrlSearchParamsString,
-};
 export type FooUserSettingsPreferredTheme =
     | 'dark-mode'
     | 'light-mode'
@@ -6457,13 +5670,6 @@ export function FooUserSettingsPreferredThemeFromSerialValue(
     }
     return 'dark-mode';
 }
-export const $$FooUserSettingsPreferredTheme: TestClientPrefixedEnumValidator<FooUserSettingsPreferredTheme> =
-    {
-        new: FooUserSettingsPreferredThemeNew,
-
-        values: FooUserSettingsPreferredThemeValues,
-        fromSerialValue: FooUserSettingsPreferredThemeFromSerialValue,
-    };
 export type FooUsersWatchUserResponseRecentNotificationsElement =
     | FooUsersWatchUserResponseRecentNotificationsElementPostLike
     | FooUsersWatchUserResponseRecentNotificationsElementPostComment;
@@ -6534,20 +5740,6 @@ export function FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchPa
         input,
     ).toString();
 }
-export const $$FooUsersWatchUserResponseRecentNotificationsElement: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElement> =
-    {
-        new: FooUsersWatchUserResponseRecentNotificationsElementNew,
-
-        fromJson: FooUsersWatchUserResponseRecentNotificationsElementFromJson,
-        fromJsonString:
-            FooUsersWatchUserResponseRecentNotificationsElementFromJsonString,
-        toJsonString:
-            FooUsersWatchUserResponseRecentNotificationsElementToJsonString,
-        toUrlSearchParams:
-            FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooUsersWatchUserResponseRecentNotificationsElementToUrlSearchParamsString,
-    };
 export interface FooUsersWatchUserResponseRecentNotificationsElementPostLike {
     notificationType: 'POST_LIKE';
     postId: string;
@@ -6609,22 +5801,6 @@ export function FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrl
         input,
     ).toString();
 }
-
-const $$FooUsersWatchUserResponseRecentNotificationsElementPostLike: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElementPostLike> =
-    {
-        new: FooUsersWatchUserResponseRecentNotificationsElementPostLikeNew,
-
-        fromJson:
-            FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJson,
-        fromJsonString:
-            FooUsersWatchUserResponseRecentNotificationsElementPostLikeFromJsonString,
-        toJsonString:
-            FooUsersWatchUserResponseRecentNotificationsElementPostLikeToJsonString,
-        toUrlSearchParams:
-            FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooUsersWatchUserResponseRecentNotificationsElementPostLikeToUrlSearchParamsString,
-    };
 
 export interface FooUsersWatchUserResponseRecentNotificationsElementPostComment {
     notificationType: 'POST_COMMENT';
@@ -6696,22 +5872,6 @@ export function FooUsersWatchUserResponseRecentNotificationsElementPostCommentTo
     ).toString();
 }
 
-const $$FooUsersWatchUserResponseRecentNotificationsElementPostComment: TestClientPrefixedValidator<FooUsersWatchUserResponseRecentNotificationsElementPostComment> =
-    {
-        new: FooUsersWatchUserResponseRecentNotificationsElementPostCommentNew,
-
-        fromJson:
-            FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJson,
-        fromJsonString:
-            FooUsersWatchUserResponseRecentNotificationsElementPostCommentFromJsonString,
-        toJsonString:
-            FooUsersWatchUserResponseRecentNotificationsElementPostCommentToJsonString,
-        toUrlSearchParams:
-            FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooUsersWatchUserResponseRecentNotificationsElementPostCommentToUrlSearchParamsString,
-    };
-
 export interface FooUsersWatchUserResponseBookmarksValue {
     postId: string;
     userId: string;
@@ -6765,16 +5925,3 @@ export function FooUsersWatchUserResponseBookmarksValueToUrlSearchParamsString(
         input,
     ).toString();
 }
-
-export const $$FooUsersWatchUserResponseBookmarksValue: TestClientPrefixedValidator<FooUsersWatchUserResponseBookmarksValue> =
-    {
-        new: FooUsersWatchUserResponseBookmarksValueNew,
-
-        fromJson: FooUsersWatchUserResponseBookmarksValueFromJson,
-        fromJsonString: FooUsersWatchUserResponseBookmarksValueFromJsonString,
-        toJsonString: FooUsersWatchUserResponseBookmarksValueToJsonString,
-        toUrlSearchParams:
-            FooUsersWatchUserResponseBookmarksValueToUrlSearchParams,
-        toUrlSearchParamsString:
-            FooUsersWatchUserResponseBookmarksValueToUrlSearchParamsString,
-    };

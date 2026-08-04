@@ -11,10 +11,12 @@ import {
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
     Book,
+    BookClone,
     Enumerator,
     ExampleClient,
     NestedObject,
     ObjectWithEveryType,
+    ObjectWithEveryTypeClone,
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
@@ -44,6 +46,19 @@ describe('Book', () => {
         expect($$Book.toUrlSearchParamsString(targetValue)).toEqual(
             `id=1&name=The+Adventures+of+Tom+Sawyer&createdAt=2001-01-01T16%3A00%3A00.000Z&updatedAt=2001-01-01T16%3A00%3A00.000Z`,
         );
+    });
+    test('Cloning', () => {
+        const testDate = new Date('01/01/2001 10:00 AM');
+        const input: Book = {
+            id: '1',
+            name: 'Foo',
+            createdAt: testDate,
+            updatedAt: testDate,
+        };
+        const output = BookClone(input);
+        expect(input).toStrictEqual(output);
+        input.createdAt = new Date('01/01/2001 10:01 AM');
+        expect(input).not.toStrictEqual(output);
     });
 });
 
@@ -126,6 +141,12 @@ describe('ObjectWithEveryType', () => {
         expect($$ObjectWithEveryType.toJsonString(targetValue)).toEqual(
             jsonReference,
         );
+    });
+    test('Cloning', () => {
+        const output = ObjectWithEveryTypeClone(targetValue);
+        expect(targetValue).toStrictEqual(output);
+        output.array[0] = false;
+        expect(targetValue).not.toStrictEqual(output);
     });
 });
 

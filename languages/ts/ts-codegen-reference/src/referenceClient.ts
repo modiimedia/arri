@@ -21,7 +21,6 @@ import {
     isObject,
     parseString,
     parseBoolean,
-    parseNumber,
     parseTimestamp,
     parseNumberInt,
     parseNumberBigInt,
@@ -53,6 +52,7 @@ export type ExampleClientValidator<T> = ArriModelValidator<
     T,
     | 'new'
     | 'validate'
+    | 'clone'
     | 'fromJson'
     | 'fromJsonString'
     | 'toJsonString'
@@ -217,6 +217,9 @@ export function EmptyObjectNew(): EmptyObject {
 export function EmptyObjectValidate(input: unknown): input is EmptyObject {
     return isObject(input);
 }
+export function EmptyObjectClone(input: EmptyObject): EmptyObject {
+    return {};
+}
 export function EmptyObjectFromJson(
     input: Record<string, unknown>,
 ): EmptyObject {
@@ -243,6 +246,7 @@ export function EmptyObjectToUrlSearchParamsString(input: EmptyObject): string {
 export const $$EmptyObject: ExampleClientValidator<EmptyObject> = {
     new: EmptyObjectNew,
     validate: EmptyObjectValidate,
+    clone: EmptyObjectClone,
     fromJson: EmptyObjectFromJson,
     fromJsonString: EmptyObjectFromJsonString,
     toJsonString: EmptyObjectToJsonString,
@@ -288,6 +292,22 @@ export function BookValidate(input: unknown): input is Book {
         input.createdAt instanceof Date &&
         input.updatedAt instanceof Date
     );
+}
+export function BookClone(input: Book): Book {
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    let _createdAt: Date;
+    _createdAt = new Date(input.createdAt.getTime());
+    let _updatedAt: Date;
+    _updatedAt = new Date(input.updatedAt.getTime());
+    return {
+        id: _id,
+        name: _name,
+        createdAt: _createdAt,
+        updatedAt: _updatedAt,
+    };
 }
 export function BookFromJson(input: Record<string, unknown>): Book {
     let _id: string;
@@ -335,6 +355,7 @@ export function BookToUrlSearchParamsString(input: Book): string {
 export const $$Book: ExampleClientValidator<Book> = {
     new: BookNew,
     validate: BookValidate,
+    clone: BookClone,
     fromJson: BookFromJson,
     fromJsonString: BookFromJsonString,
     toJsonString: BookToJsonString,
@@ -352,6 +373,13 @@ export function BookParamsNew(): BookParams {
 }
 export function BookParamsValidate(input: unknown): input is BookParams {
     return isObject(input) && typeof input.bookId === 'string';
+}
+export function BookParamsClone(input: BookParams): BookParams {
+    let _bookId: string;
+    _bookId = input.bookId;
+    return {
+        bookId: _bookId,
+    };
 }
 export function BookParamsFromJson(input: Record<string, unknown>): BookParams {
     let _bookId: string;
@@ -383,6 +411,7 @@ export function BookParamsToUrlSearchParamsString(input: BookParams): string {
 export const $$BookParams: ExampleClientValidator<BookParams> = {
     new: BookParamsNew,
     validate: BookParamsValidate,
+    clone: BookParamsClone,
     fromJson: BookParamsFromJson,
     fromJsonString: BookParamsFromJsonString,
     toJsonString: BookParamsToJsonString,
@@ -406,6 +435,16 @@ export function NestedObjectValidate(input: unknown): input is NestedObject {
         typeof input.id === 'string' &&
         typeof input.content === 'string'
     );
+}
+export function NestedObjectClone(input: NestedObject): NestedObject {
+    let _id: string;
+    _id = input.id;
+    let _content: string;
+    _content = input.content;
+    return {
+        id: _id,
+        content: _content,
+    };
 }
 export function NestedObjectFromJson(
     input: Record<string, unknown>,
@@ -447,6 +486,7 @@ export function NestedObjectToUrlSearchParamsString(
 export const $$NestedObject: ExampleClientValidator<NestedObject> = {
     new: NestedObjectNew,
     validate: NestedObjectValidate,
+    clone: NestedObjectClone,
     fromJson: NestedObjectFromJson,
     fromJsonString: NestedObjectFromJsonString,
     toJsonString: NestedObjectToJsonString,
@@ -549,6 +589,79 @@ export function ObjectWithEveryTypeValidate(
         DiscriminatorValidate(input.discriminator) &&
         true
     );
+}
+export function ObjectWithEveryTypeClone(
+    input: ObjectWithEveryType,
+): ObjectWithEveryType {
+    let _string: string;
+    _string = input.string;
+    let _boolean: boolean;
+    _boolean = input.boolean;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _float32: number;
+    _float32 = input.float32;
+    let _float64: number;
+    _float64 = input.float64;
+    let _int8: number;
+    _int8 = input.int8;
+    let _uint8: number;
+    _uint8 = input.uint8;
+    let _int16: number;
+    _int16 = input.int16;
+    let _uint16: number;
+    _uint16 = input.uint16;
+    let _int32: number;
+    _int32 = input.int32;
+    let _uint32: number;
+    _uint32 = input.uint32;
+    let _int64: bigint;
+    _int64 = input.int64;
+    let _uint64: bigint;
+    _uint64 = input.uint64;
+    let _enum: Enumerator;
+    _enum = input.enum;
+    let _object: NestedObject;
+    _object = NestedObjectClone(input.object);
+    let _array: boolean[];
+    _array = [];
+    for (const _arrayEl of input.array) {
+        let _arrayElValue: boolean;
+        _arrayElValue = _arrayEl;
+        _array.push(_arrayElValue);
+    }
+    let _record: Record<string, boolean>;
+    _record = {};
+    for (const [_key, _value] of Object.entries(input.record)) {
+        let _recordValue: boolean;
+        _recordValue = _value;
+        _record[_key] = _recordValue;
+    }
+    let _discriminator: Discriminator;
+    _discriminator = DiscriminatorClone(input.discriminator);
+    let _any: any;
+    _any = input.any;
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        discriminator: _discriminator,
+        any: _any,
+    };
 }
 export function ObjectWithEveryTypeFromJson(
     input: Record<string, unknown>,
@@ -753,6 +866,7 @@ export const $$ObjectWithEveryType: ExampleClientValidator<ObjectWithEveryType> 
     {
         new: ObjectWithEveryTypeNew,
         validate: ObjectWithEveryTypeValidate,
+        clone: ObjectWithEveryTypeClone,
         fromJson: ObjectWithEveryTypeFromJson,
         fromJsonString: ObjectWithEveryTypeFromJsonString,
         toJsonString: ObjectWithEveryTypeToJsonString,
@@ -814,6 +928,18 @@ export function DiscriminatorValidate(input: unknown): input is Discriminator {
             return false;
     }
 }
+export function DiscriminatorClone(input: Discriminator): Discriminator {
+    switch (input.typeName) {
+        case 'A':
+            return DiscriminatorAClone(input);
+        case 'B':
+            return DiscriminatorBClone(input);
+        case 'C':
+            return DiscriminatorCClone(input);
+        default:
+            throw new Error('Unimplemented');
+    }
+}
 export function DiscriminatorFromJson(
     input: Record<string, unknown>,
 ): Discriminator {
@@ -865,6 +991,7 @@ export function DiscriminatorToUrlSearchParamsString(
 export const $$Discriminator: ExampleClientValidator<Discriminator> = {
     new: DiscriminatorNew,
     validate: DiscriminatorValidate,
+    clone: DiscriminatorClone,
     fromJson: DiscriminatorFromJson,
     fromJsonString: DiscriminatorFromJsonString,
     toJsonString: DiscriminatorToJsonString,
@@ -889,6 +1016,15 @@ export function DiscriminatorAValidate(
         input.typeName === 'A' &&
         typeof input.id === 'string'
     );
+}
+export function DiscriminatorAClone(input: DiscriminatorA): DiscriminatorA {
+    const _typeName = 'A';
+    let _id: string;
+    _id = input.id;
+    return {
+        typeName: _typeName,
+        id: _id,
+    };
 }
 export function DiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -928,6 +1064,7 @@ export function DiscriminatorAToUrlSearchParamsString(
 const $$DiscriminatorA: ExampleClientValidator<DiscriminatorA> = {
     new: DiscriminatorANew,
     validate: DiscriminatorAValidate,
+    clone: DiscriminatorAClone,
     fromJson: DiscriminatorAFromJson,
     fromJsonString: DiscriminatorAFromJsonString,
     toJsonString: DiscriminatorAToJsonString,
@@ -955,6 +1092,18 @@ export function DiscriminatorBValidate(
         typeof input.id === 'string' &&
         typeof input.name === 'string'
     );
+}
+export function DiscriminatorBClone(input: DiscriminatorB): DiscriminatorB {
+    const _typeName = 'B';
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+    };
 }
 export function DiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -1000,6 +1149,7 @@ export function DiscriminatorBToUrlSearchParamsString(
 const $$DiscriminatorB: ExampleClientValidator<DiscriminatorB> = {
     new: DiscriminatorBNew,
     validate: DiscriminatorBValidate,
+    clone: DiscriminatorBClone,
     fromJson: DiscriminatorBFromJson,
     fromJsonString: DiscriminatorBFromJsonString,
     toJsonString: DiscriminatorBToJsonString,
@@ -1030,6 +1180,21 @@ export function DiscriminatorCValidate(
         typeof input.name === 'string' &&
         input.date instanceof Date
     );
+}
+export function DiscriminatorCClone(input: DiscriminatorC): DiscriminatorC {
+    const _typeName = 'C';
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    let _date: Date;
+    _date = new Date(input.date.getTime());
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+        date: _date,
+    };
 }
 export function DiscriminatorCFromJson(
     input: Record<string, unknown>,
@@ -1081,6 +1246,7 @@ export function DiscriminatorCToUrlSearchParamsString(
 const $$DiscriminatorC: ExampleClientValidator<DiscriminatorC> = {
     new: DiscriminatorCNew,
     validate: DiscriminatorCValidate,
+    clone: DiscriminatorCClone,
     fromJson: DiscriminatorCFromJson,
     fromJsonString: DiscriminatorCFromJsonString,
     toJsonString: DiscriminatorCToJsonString,
@@ -1180,6 +1346,117 @@ export function ObjectWithOptionalFieldsValidate(
             typeof input.discriminator === 'undefined') &&
         (true || typeof input.any === 'undefined')
     );
+}
+export function ObjectWithOptionalFieldsClone(
+    input: ObjectWithOptionalFields,
+): ObjectWithOptionalFields {
+    let _string: string | undefined;
+    if (typeof input.string !== 'undefined') {
+        _string = input.string;
+    }
+    let _boolean: boolean | undefined;
+    if (typeof input.boolean !== 'undefined') {
+        _boolean = input.boolean;
+    }
+    let _timestamp: Date | undefined;
+    if (typeof input.timestamp !== 'undefined') {
+        _timestamp = new Date(input.timestamp.getTime());
+    }
+    let _float32: number | undefined;
+    if (typeof input.float32 !== 'undefined') {
+        _float32 = input.float32;
+    }
+    let _float64: number | undefined;
+    if (typeof input.float64 !== 'undefined') {
+        _float64 = input.float64;
+    }
+    let _int8: number | undefined;
+    if (typeof input.int8 !== 'undefined') {
+        _int8 = input.int8;
+    }
+    let _uint8: number | undefined;
+    if (typeof input.uint8 !== 'undefined') {
+        _uint8 = input.uint8;
+    }
+    let _int16: number | undefined;
+    if (typeof input.int16 !== 'undefined') {
+        _int16 = input.int16;
+    }
+    let _uint16: number | undefined;
+    if (typeof input.uint16 !== 'undefined') {
+        _uint16 = input.uint16;
+    }
+    let _int32: number | undefined;
+    if (typeof input.int32 !== 'undefined') {
+        _int32 = input.int32;
+    }
+    let _uint32: number | undefined;
+    if (typeof input.uint32 !== 'undefined') {
+        _uint32 = input.uint32;
+    }
+    let _int64: bigint | undefined;
+    if (typeof input.int64 !== 'undefined') {
+        _int64 = input.int64;
+    }
+    let _uint64: bigint | undefined;
+    if (typeof input.uint64 !== 'undefined') {
+        _uint64 = input.uint64;
+    }
+    let _enum: Enumerator | undefined;
+    if (typeof input.enum !== 'undefined') {
+        _enum = input.enum;
+    }
+    let _object: NestedObject | undefined;
+    if (typeof input.object !== 'undefined') {
+        _object = NestedObjectClone(input.object);
+    }
+    let _array: boolean[] | undefined;
+    if (typeof input.array !== 'undefined') {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = _arrayEl;
+            _array.push(_arrayElValue);
+        }
+    }
+    let _record: Record<string, boolean> | undefined;
+    if (typeof input.record !== 'undefined') {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: boolean;
+            _recordValue = _value;
+            _record[_key] = _recordValue;
+        }
+    }
+    let _discriminator: Discriminator | undefined;
+    if (typeof input.discriminator !== 'undefined') {
+        _discriminator = DiscriminatorClone(input.discriminator);
+    }
+    let _any: any | undefined;
+    if (typeof input.any !== 'undefined') {
+        _any = input.any;
+    }
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        discriminator: _discriminator,
+        any: _any,
+    };
 }
 export function ObjectWithOptionalFieldsFromJson(
     input: Record<string, unknown>,
@@ -1537,6 +1814,7 @@ export const $$ObjectWithOptionalFields: ExampleClientValidator<ObjectWithOption
     {
         new: ObjectWithOptionalFieldsNew,
         validate: ObjectWithOptionalFieldsValidate,
+        clone: ObjectWithOptionalFieldsClone,
         fromJson: ObjectWithOptionalFieldsFromJson,
         fromJsonString: ObjectWithOptionalFieldsFromJsonString,
         toJsonString: ObjectWithOptionalFieldsToJsonString,
@@ -1651,6 +1929,99 @@ export function ObjectWithNullableFieldsValidate(
             input.discriminator === null) &&
         true
     );
+}
+export function ObjectWithNullableFieldsClone(
+    input: ObjectWithNullableFields,
+): ObjectWithNullableFields {
+    let _string: string | null;
+    _string = input.string;
+    let _boolean: boolean | null;
+    _boolean = input.boolean;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    let _float32: number | null;
+    _float32 = input.float32;
+    let _float64: number | null;
+    _float64 = input.float64;
+    let _int8: number | null;
+    _int8 = input.int8;
+    let _uint8: number | null;
+    _uint8 = input.uint8;
+    let _int16: number | null;
+    _int16 = input.int16;
+    let _uint16: number | null;
+    _uint16 = input.uint16;
+    let _int32: number | null;
+    _int32 = input.int32;
+    let _uint32: number | null;
+    _uint32 = input.uint32;
+    let _int64: bigint | null;
+    _int64 = input.int64;
+    let _uint64: bigint | null;
+    _uint64 = input.uint64;
+    let _enum: Enumerator | null;
+    _enum = input.enum;
+    let _object: NestedObject | null;
+    if (input.object !== null) {
+        _object = NestedObjectClone(input.object);
+    } else {
+        _object = null;
+    }
+    let _array: boolean[] | null;
+    if (input.array !== null) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = _arrayEl;
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = null;
+    }
+    let _record: Record<string, boolean> | null;
+    if (input.record !== null) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: boolean;
+            _recordValue = _value;
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = null;
+    }
+    let _discriminator: Discriminator | null;
+    if (input.discriminator !== null) {
+        _discriminator = DiscriminatorClone(input.discriminator);
+    } else {
+        _discriminator = null;
+    }
+    let _any: any;
+    _any = input.any;
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        discriminator: _discriminator,
+        any: _any,
+    };
 }
 export function ObjectWithNullableFieldsFromJson(
     input: Record<string, unknown>,
@@ -1891,6 +2262,7 @@ export const $$ObjectWithNullableFields: ExampleClientValidator<ObjectWithNullab
     {
         new: ObjectWithNullableFieldsNew,
         validate: ObjectWithNullableFieldsValidate,
+        clone: ObjectWithNullableFieldsClone,
         fromJson: ObjectWithNullableFieldsFromJson,
         fromJsonString: ObjectWithNullableFieldsFromJsonString,
         toJsonString: ObjectWithNullableFieldsToJsonString,
@@ -1917,6 +2289,24 @@ export function RecursiveObjectValidate(
         (RecursiveObjectValidate(input.left) || input.left === null) &&
         (RecursiveObjectValidate(input.right) || input.right === null)
     );
+}
+export function RecursiveObjectClone(input: RecursiveObject): RecursiveObject {
+    let _left: RecursiveObject | null;
+    if (input.left !== null) {
+        _left = RecursiveObjectClone(input.left);
+    } else {
+        _left = null;
+    }
+    let _right: RecursiveObject | null;
+    if (input.right !== null) {
+        _right = RecursiveObjectClone(input.right);
+    } else {
+        _right = null;
+    }
+    return {
+        left: _left,
+        right: _right,
+    };
 }
 export function RecursiveObjectFromJson(
     input: Record<string, unknown>,
@@ -1978,6 +2368,7 @@ export function RecursiveObjectToUrlSearchParamsString(
 export const $$RecursiveObject: ExampleClientValidator<RecursiveObject> = {
     new: RecursiveObjectNew,
     validate: RecursiveObjectValidate,
+    clone: RecursiveObjectClone,
     fromJson: RecursiveObjectFromJson,
     fromJsonString: RecursiveObjectFromJsonString,
     toJsonString: RecursiveObjectToJsonString,
