@@ -56,7 +56,7 @@ export type TestClientValidator<T> = ArriModelValidator<
     | 'toUrlSearchParams'
     | 'toUrlSearchParamsString'
 >;
-export type ExampleClientEnumValidator<T> = ArriEnumValidator<
+export type TestClientEnumValidator<T> = ArriEnumValidator<
     T,
     'new' | 'validate' | 'values' | 'fromSerialValue'
 >;
