@@ -21,7 +21,6 @@ import {
     isObject,
     parseString,
     parseBoolean,
-    parseNumber,
     parseTimestamp,
     parseNumberInt,
     parseNumberBigInt,
@@ -50,6 +49,7 @@ export type TestClientValidator<T> = ArriModelValidator<
     T,
     | 'new'
     | 'validate'
+    | 'clone'
     | 'fromJson'
     | 'fromJsonString'
     | 'toJsonString'
@@ -636,6 +636,15 @@ export function ManuallyAddedModelValidate(
 ): input is ManuallyAddedModel {
     return isObject(input) && typeof input.hello === 'string';
 }
+export function ManuallyAddedModelClone(
+    input: ManuallyAddedModel,
+): ManuallyAddedModel {
+    let _hello: string;
+    _hello = input.hello;
+    return {
+        hello: _hello,
+    };
+}
 export function ManuallyAddedModelFromJson(
     input: Record<string, unknown>,
 ): ManuallyAddedModel {
@@ -675,6 +684,7 @@ export function ManuallyAddedModelToUrlSearchParamsString(
 export const $$ManuallyAddedModel: TestClientValidator<ManuallyAddedModel> = {
     new: ManuallyAddedModelNew,
     validate: ManuallyAddedModelValidate,
+    clone: ManuallyAddedModelClone,
     fromJson: ManuallyAddedModelFromJson,
     fromJsonString: ManuallyAddedModelFromJsonString,
     toJsonString: ManuallyAddedModelToJsonString,
@@ -694,6 +704,13 @@ export function DefaultPayloadValidate(
     input: unknown,
 ): input is DefaultPayload {
     return isObject(input) && typeof input.message === 'string';
+}
+export function DefaultPayloadClone(input: DefaultPayload): DefaultPayload {
+    let _message: string;
+    _message = input.message;
+    return {
+        message: _message,
+    };
 }
 export function DefaultPayloadFromJson(
     input: Record<string, unknown>,
@@ -730,6 +747,7 @@ export function DefaultPayloadToUrlSearchParamsString(
 export const $$DefaultPayload: TestClientValidator<DefaultPayload> = {
     new: DefaultPayloadNew,
     validate: DefaultPayloadValidate,
+    clone: DefaultPayloadClone,
     fromJson: DefaultPayloadFromJson,
     fromJsonString: DefaultPayloadFromJsonString,
     toJsonString: DefaultPayloadToJsonString,
@@ -755,6 +773,15 @@ export function DeprecatedRpcParamsValidate(
     input: unknown,
 ): input is DeprecatedRpcParams {
     return isObject(input) && typeof input.deprecatedField === 'string';
+}
+export function DeprecatedRpcParamsClone(
+    input: DeprecatedRpcParams,
+): DeprecatedRpcParams {
+    let _deprecatedField: string;
+    _deprecatedField = input.deprecatedField;
+    return {
+        deprecatedField: _deprecatedField,
+    };
 }
 export function DeprecatedRpcParamsFromJson(
     input: Record<string, unknown>,
@@ -795,6 +822,7 @@ export function DeprecatedRpcParamsToUrlSearchParamsString(
 export const $$DeprecatedRpcParams: TestClientValidator<DeprecatedRpcParams> = {
     new: DeprecatedRpcParamsNew,
     validate: DeprecatedRpcParamsValidate,
+    clone: DeprecatedRpcParamsClone,
     fromJson: DeprecatedRpcParamsFromJson,
     fromJsonString: DeprecatedRpcParamsFromJsonString,
     toJsonString: DeprecatedRpcParamsToJsonString,
@@ -824,6 +852,18 @@ export function DiscriminatorWithEmptyObjectValidate(
             return DiscriminatorWithEmptyObjectNotEmptyValidate(input);
         default:
             return false;
+    }
+}
+export function DiscriminatorWithEmptyObjectClone(
+    input: DiscriminatorWithEmptyObject,
+): DiscriminatorWithEmptyObject {
+    switch (input.type) {
+        case 'EMPTY':
+            return DiscriminatorWithEmptyObjectEmptyClone(input);
+        case 'NOT_EMPTY':
+            return DiscriminatorWithEmptyObjectNotEmptyClone(input);
+        default:
+            throw new Error('Unimplemented');
     }
 }
 export function DiscriminatorWithEmptyObjectFromJson(
@@ -876,6 +916,7 @@ export const $$DiscriminatorWithEmptyObject: TestClientValidator<DiscriminatorWi
     {
         new: DiscriminatorWithEmptyObjectNew,
         validate: DiscriminatorWithEmptyObjectValidate,
+        clone: DiscriminatorWithEmptyObjectClone,
         fromJson: DiscriminatorWithEmptyObjectFromJson,
         fromJsonString: DiscriminatorWithEmptyObjectFromJsonString,
         toJsonString: DiscriminatorWithEmptyObjectToJsonString,
@@ -895,6 +936,14 @@ export function DiscriminatorWithEmptyObjectEmptyValidate(
     input: unknown,
 ): input is DiscriminatorWithEmptyObjectEmpty {
     return isObject(input) && input.type === 'EMPTY';
+}
+export function DiscriminatorWithEmptyObjectEmptyClone(
+    input: DiscriminatorWithEmptyObjectEmpty,
+): DiscriminatorWithEmptyObjectEmpty {
+    const _type = 'EMPTY';
+    return {
+        type: _type,
+    };
 }
 export function DiscriminatorWithEmptyObjectEmptyFromJson(
     input: Record<string, unknown>,
@@ -934,6 +983,7 @@ const $$DiscriminatorWithEmptyObjectEmpty: TestClientValidator<DiscriminatorWith
     {
         new: DiscriminatorWithEmptyObjectEmptyNew,
         validate: DiscriminatorWithEmptyObjectEmptyValidate,
+        clone: DiscriminatorWithEmptyObjectEmptyClone,
         fromJson: DiscriminatorWithEmptyObjectEmptyFromJson,
         fromJsonString: DiscriminatorWithEmptyObjectEmptyFromJsonString,
         toJsonString: DiscriminatorWithEmptyObjectEmptyToJsonString,
@@ -966,6 +1016,23 @@ export function DiscriminatorWithEmptyObjectNotEmptyValidate(
         typeof input.bar === 'number' &&
         typeof input.baz === 'boolean'
     );
+}
+export function DiscriminatorWithEmptyObjectNotEmptyClone(
+    input: DiscriminatorWithEmptyObjectNotEmpty,
+): DiscriminatorWithEmptyObjectNotEmpty {
+    const _type = 'NOT_EMPTY';
+    let _foo: string;
+    _foo = input.foo;
+    let _bar: number;
+    _bar = input.bar;
+    let _baz: boolean;
+    _baz = input.baz;
+    return {
+        type: _type,
+        foo: _foo,
+        bar: _bar,
+        baz: _baz,
+    };
 }
 export function DiscriminatorWithEmptyObjectNotEmptyFromJson(
     input: Record<string, unknown>,
@@ -1025,6 +1092,7 @@ const $$DiscriminatorWithEmptyObjectNotEmpty: TestClientValidator<DiscriminatorW
     {
         new: DiscriminatorWithEmptyObjectNotEmptyNew,
         validate: DiscriminatorWithEmptyObjectNotEmptyValidate,
+        clone: DiscriminatorWithEmptyObjectNotEmptyClone,
         fromJson: DiscriminatorWithEmptyObjectNotEmptyFromJson,
         fromJsonString: DiscriminatorWithEmptyObjectNotEmptyFromJsonString,
         toJsonString: DiscriminatorWithEmptyObjectNotEmptyToJsonString,
@@ -1055,6 +1123,16 @@ export function SendErrorParamsValidate(
         input.code <= UINT16_MAX &&
         typeof input.message === 'string'
     );
+}
+export function SendErrorParamsClone(input: SendErrorParams): SendErrorParams {
+    let _code: number;
+    _code = input.code;
+    let _message: string;
+    _message = input.message;
+    return {
+        code: _code,
+        message: _message,
+    };
 }
 export function SendErrorParamsFromJson(
     input: Record<string, unknown>,
@@ -1097,6 +1175,7 @@ export function SendErrorParamsToUrlSearchParamsString(
 export const $$SendErrorParams: TestClientValidator<SendErrorParams> = {
     new: SendErrorParamsNew,
     validate: SendErrorParamsValidate,
+    clone: SendErrorParamsClone,
     fromJson: SendErrorParamsFromJson,
     fromJsonString: SendErrorParamsFromJsonString,
     toJsonString: SendErrorParamsToJsonString,
@@ -1217,6 +1296,98 @@ export function ObjectWithEveryTypeValidate(
                 ),
         )
     );
+}
+export function ObjectWithEveryTypeClone(
+    input: ObjectWithEveryType,
+): ObjectWithEveryType {
+    let _any: any;
+    _any = input.any;
+    let _boolean: boolean;
+    _boolean = input.boolean;
+    let _string: string;
+    _string = input.string;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _float32: number;
+    _float32 = input.float32;
+    let _float64: number;
+    _float64 = input.float64;
+    let _int8: number;
+    _int8 = input.int8;
+    let _uint8: number;
+    _uint8 = input.uint8;
+    let _int16: number;
+    _int16 = input.int16;
+    let _uint16: number;
+    _uint16 = input.uint16;
+    let _int32: number;
+    _int32 = input.int32;
+    let _uint32: number;
+    _uint32 = input.uint32;
+    let _int64: bigint;
+    _int64 = input.int64;
+    let _uint64: bigint;
+    _uint64 = input.uint64;
+    let _enumerator: ObjectWithEveryTypeEnumerator;
+    _enumerator = input.enumerator;
+    let _array: boolean[];
+    _array = [];
+    for (const _arrayEl of input.array) {
+        let _arrayElValue: boolean;
+        _arrayElValue = _arrayEl;
+        _array.push(_arrayElValue);
+    }
+    let _object: ObjectWithEveryTypeObject;
+    _object = ObjectWithEveryTypeObjectClone(input.object);
+    let _record: Record<string, bigint>;
+    _record = {};
+    for (const [_key, _value] of Object.entries(input.record)) {
+        let _recordValue: bigint;
+        _recordValue = _value;
+        _record[_key] = _recordValue;
+    }
+    let _discriminator: ObjectWithEveryTypeDiscriminator;
+    _discriminator = ObjectWithEveryTypeDiscriminatorClone(input.discriminator);
+    let _nestedObject: ObjectWithEveryTypeNestedObject;
+    _nestedObject = ObjectWithEveryTypeNestedObjectClone(input.nestedObject);
+    let _nestedArray: ObjectWithEveryTypeNestedArrayElementElement[][];
+    _nestedArray = [];
+    for (const _nestedArrayEl of input.nestedArray) {
+        let _nestedArrayElValue: ObjectWithEveryTypeNestedArrayElementElement[];
+        _nestedArrayElValue = [];
+        for (const _nestedArrayElValueEl of _nestedArrayEl) {
+            let _nestedArrayElValueElValue: ObjectWithEveryTypeNestedArrayElementElement;
+            _nestedArrayElValueElValue =
+                ObjectWithEveryTypeNestedArrayElementElementClone(
+                    _nestedArrayElValueEl,
+                );
+            _nestedArrayElValue.push(_nestedArrayElValueElValue);
+        }
+        _nestedArray.push(_nestedArrayElValue);
+    }
+    return {
+        any: _any,
+        boolean: _boolean,
+        string: _string,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enumerator: _enumerator,
+        array: _array,
+        object: _object,
+        record: _record,
+        discriminator: _discriminator,
+        nestedObject: _nestedObject,
+        nestedArray: _nestedArray,
+    };
 }
 export function ObjectWithEveryTypeFromJson(
     input: Record<string, unknown>,
@@ -1488,6 +1659,7 @@ export function ObjectWithEveryTypeToUrlSearchParamsString(
 export const $$ObjectWithEveryType: TestClientValidator<ObjectWithEveryType> = {
     new: ObjectWithEveryTypeNew,
     validate: ObjectWithEveryTypeValidate,
+    clone: ObjectWithEveryTypeClone,
     fromJson: ObjectWithEveryTypeFromJson,
     fromJsonString: ObjectWithEveryTypeFromJsonString,
     toJsonString: ObjectWithEveryTypeToJsonString,
@@ -1559,6 +1731,21 @@ export function ObjectWithEveryTypeObjectValidate(
         input.timestamp instanceof Date
     );
 }
+export function ObjectWithEveryTypeObjectClone(
+    input: ObjectWithEveryTypeObject,
+): ObjectWithEveryTypeObject {
+    let _string: string;
+    _string = input.string;
+    let _boolean: boolean;
+    _boolean = input.boolean;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+    };
+}
 export function ObjectWithEveryTypeObjectFromJson(
     input: Record<string, unknown>,
 ): ObjectWithEveryTypeObject {
@@ -1611,6 +1798,7 @@ export const $$ObjectWithEveryTypeObject: TestClientValidator<ObjectWithEveryTyp
     {
         new: ObjectWithEveryTypeObjectNew,
         validate: ObjectWithEveryTypeObjectValidate,
+        clone: ObjectWithEveryTypeObjectClone,
         fromJson: ObjectWithEveryTypeObjectFromJson,
         fromJsonString: ObjectWithEveryTypeObjectFromJsonString,
         toJsonString: ObjectWithEveryTypeObjectToJsonString,
@@ -1641,6 +1829,18 @@ export function ObjectWithEveryTypeDiscriminatorValidate(
             return ObjectWithEveryTypeDiscriminatorBValidate(input);
         default:
             return false;
+    }
+}
+export function ObjectWithEveryTypeDiscriminatorClone(
+    input: ObjectWithEveryTypeDiscriminator,
+): ObjectWithEveryTypeDiscriminator {
+    switch (input.type) {
+        case 'A':
+            return ObjectWithEveryTypeDiscriminatorAClone(input);
+        case 'B':
+            return ObjectWithEveryTypeDiscriminatorBClone(input);
+        default:
+            throw new Error('Unimplemented');
     }
 }
 export function ObjectWithEveryTypeDiscriminatorFromJson(
@@ -1693,6 +1893,7 @@ export const $$ObjectWithEveryTypeDiscriminator: TestClientValidator<ObjectWithE
     {
         new: ObjectWithEveryTypeDiscriminatorNew,
         validate: ObjectWithEveryTypeDiscriminatorValidate,
+        clone: ObjectWithEveryTypeDiscriminatorClone,
         fromJson: ObjectWithEveryTypeDiscriminatorFromJson,
         fromJsonString: ObjectWithEveryTypeDiscriminatorFromJsonString,
         toJsonString: ObjectWithEveryTypeDiscriminatorToJsonString,
@@ -1716,6 +1917,17 @@ export function ObjectWithEveryTypeDiscriminatorAValidate(
     return (
         isObject(input) && input.type === 'A' && typeof input.title === 'string'
     );
+}
+export function ObjectWithEveryTypeDiscriminatorAClone(
+    input: ObjectWithEveryTypeDiscriminatorA,
+): ObjectWithEveryTypeDiscriminatorA {
+    const _type = 'A';
+    let _title: string;
+    _title = input.title;
+    return {
+        type: _type,
+        title: _title,
+    };
 }
 export function ObjectWithEveryTypeDiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -1761,6 +1973,7 @@ const $$ObjectWithEveryTypeDiscriminatorA: TestClientValidator<ObjectWithEveryTy
     {
         new: ObjectWithEveryTypeDiscriminatorANew,
         validate: ObjectWithEveryTypeDiscriminatorAValidate,
+        clone: ObjectWithEveryTypeDiscriminatorAClone,
         fromJson: ObjectWithEveryTypeDiscriminatorAFromJson,
         fromJsonString: ObjectWithEveryTypeDiscriminatorAFromJsonString,
         toJsonString: ObjectWithEveryTypeDiscriminatorAToJsonString,
@@ -1790,6 +2003,20 @@ export function ObjectWithEveryTypeDiscriminatorBValidate(
         typeof input.title === 'string' &&
         typeof input.description === 'string'
     );
+}
+export function ObjectWithEveryTypeDiscriminatorBClone(
+    input: ObjectWithEveryTypeDiscriminatorB,
+): ObjectWithEveryTypeDiscriminatorB {
+    const _type = 'B';
+    let _title: string;
+    _title = input.title;
+    let _description: string;
+    _description = input.description;
+    return {
+        type: _type,
+        title: _title,
+        description: _description,
+    };
 }
 export function ObjectWithEveryTypeDiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -1841,6 +2068,7 @@ const $$ObjectWithEveryTypeDiscriminatorB: TestClientValidator<ObjectWithEveryTy
     {
         new: ObjectWithEveryTypeDiscriminatorBNew,
         validate: ObjectWithEveryTypeDiscriminatorBValidate,
+        clone: ObjectWithEveryTypeDiscriminatorBClone,
         fromJson: ObjectWithEveryTypeDiscriminatorBFromJson,
         fromJsonString: ObjectWithEveryTypeDiscriminatorBFromJsonString,
         toJsonString: ObjectWithEveryTypeDiscriminatorBToJsonString,
@@ -1870,6 +2098,21 @@ export function ObjectWithEveryTypeNestedObjectValidate(
         input.timestamp instanceof Date &&
         ObjectWithEveryTypeNestedObjectDataValidate(input.data)
     );
+}
+export function ObjectWithEveryTypeNestedObjectClone(
+    input: ObjectWithEveryTypeNestedObject,
+): ObjectWithEveryTypeNestedObject {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _data: ObjectWithEveryTypeNestedObjectData;
+    _data = ObjectWithEveryTypeNestedObjectDataClone(input.data);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
 }
 export function ObjectWithEveryTypeNestedObjectFromJson(
     input: Record<string, unknown>,
@@ -1929,6 +2172,7 @@ export const $$ObjectWithEveryTypeNestedObject: TestClientValidator<ObjectWithEv
     {
         new: ObjectWithEveryTypeNestedObjectNew,
         validate: ObjectWithEveryTypeNestedObjectValidate,
+        clone: ObjectWithEveryTypeNestedObjectClone,
         fromJson: ObjectWithEveryTypeNestedObjectFromJson,
         fromJsonString: ObjectWithEveryTypeNestedObjectFromJsonString,
         toJsonString: ObjectWithEveryTypeNestedObjectToJsonString,
@@ -1957,6 +2201,21 @@ export function ObjectWithEveryTypeNestedObjectDataValidate(
         input.timestamp instanceof Date &&
         ObjectWithEveryTypeNestedObjectDataDataValidate(input.data)
     );
+}
+export function ObjectWithEveryTypeNestedObjectDataClone(
+    input: ObjectWithEveryTypeNestedObjectData,
+): ObjectWithEveryTypeNestedObjectData {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _data: ObjectWithEveryTypeNestedObjectDataData;
+    _data = ObjectWithEveryTypeNestedObjectDataDataClone(input.data);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
 }
 export function ObjectWithEveryTypeNestedObjectDataFromJson(
     input: Record<string, unknown>,
@@ -2018,6 +2277,7 @@ export const $$ObjectWithEveryTypeNestedObjectData: TestClientValidator<ObjectWi
     {
         new: ObjectWithEveryTypeNestedObjectDataNew,
         validate: ObjectWithEveryTypeNestedObjectDataValidate,
+        clone: ObjectWithEveryTypeNestedObjectDataClone,
         fromJson: ObjectWithEveryTypeNestedObjectDataFromJson,
         fromJsonString: ObjectWithEveryTypeNestedObjectDataFromJsonString,
         toJsonString: ObjectWithEveryTypeNestedObjectDataToJsonString,
@@ -2043,6 +2303,18 @@ export function ObjectWithEveryTypeNestedObjectDataDataValidate(
         typeof input.id === 'string' &&
         input.timestamp instanceof Date
     );
+}
+export function ObjectWithEveryTypeNestedObjectDataDataClone(
+    input: ObjectWithEveryTypeNestedObjectDataData,
+): ObjectWithEveryTypeNestedObjectDataData {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
 }
 export function ObjectWithEveryTypeNestedObjectDataDataFromJson(
     input: Record<string, unknown>,
@@ -2092,6 +2364,7 @@ export const $$ObjectWithEveryTypeNestedObjectDataData: TestClientValidator<Obje
     {
         new: ObjectWithEveryTypeNestedObjectDataDataNew,
         validate: ObjectWithEveryTypeNestedObjectDataDataValidate,
+        clone: ObjectWithEveryTypeNestedObjectDataDataClone,
         fromJson: ObjectWithEveryTypeNestedObjectDataDataFromJson,
         fromJsonString: ObjectWithEveryTypeNestedObjectDataDataFromJsonString,
         toJsonString: ObjectWithEveryTypeNestedObjectDataDataToJsonString,
@@ -2119,6 +2392,18 @@ export function ObjectWithEveryTypeNestedArrayElementElementValidate(
         typeof input.id === 'string' &&
         input.timestamp instanceof Date
     );
+}
+export function ObjectWithEveryTypeNestedArrayElementElementClone(
+    input: ObjectWithEveryTypeNestedArrayElementElement,
+): ObjectWithEveryTypeNestedArrayElementElement {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
 }
 export function ObjectWithEveryTypeNestedArrayElementElementFromJson(
     input: Record<string, unknown>,
@@ -2170,6 +2455,7 @@ export const $$ObjectWithEveryTypeNestedArrayElementElement: TestClientValidator
     {
         new: ObjectWithEveryTypeNestedArrayElementElementNew,
         validate: ObjectWithEveryTypeNestedArrayElementElementValidate,
+        clone: ObjectWithEveryTypeNestedArrayElementElementClone,
         fromJson: ObjectWithEveryTypeNestedArrayElementElementFromJson,
         fromJsonString:
             ObjectWithEveryTypeNestedArrayElementElementFromJsonString,
@@ -2321,6 +2607,145 @@ export function ObjectWithEveryNullableTypeValidate(
             )) ||
             input.nestedArray === null)
     );
+}
+export function ObjectWithEveryNullableTypeClone(
+    input: ObjectWithEveryNullableType,
+): ObjectWithEveryNullableType {
+    let _any: any;
+    _any = input.any;
+    let _boolean: boolean | null;
+    _boolean = input.boolean;
+    let _string: string | null;
+    _string = input.string;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    let _float32: number | null;
+    _float32 = input.float32;
+    let _float64: number | null;
+    _float64 = input.float64;
+    let _int8: number | null;
+    _int8 = input.int8;
+    let _uint8: number | null;
+    _uint8 = input.uint8;
+    let _int16: number | null;
+    _int16 = input.int16;
+    let _uint16: number | null;
+    _uint16 = input.uint16;
+    let _int32: number | null;
+    _int32 = input.int32;
+    let _uint32: number | null;
+    _uint32 = input.uint32;
+    let _int64: bigint | null;
+    _int64 = input.int64;
+    let _uint64: bigint | null;
+    _uint64 = input.uint64;
+    let _enumerator: ObjectWithEveryNullableTypeEnumerator | null;
+    _enumerator = input.enumerator;
+    let _array: (boolean | null)[] | null;
+    if (input.array !== null) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean | null;
+            _arrayElValue = _arrayEl;
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = null;
+    }
+    let _object: ObjectWithEveryNullableTypeObject | null;
+    if (input.object !== null) {
+        _object = ObjectWithEveryNullableTypeObjectClone(input.object);
+    } else {
+        _object = null;
+    }
+    let _record: Record<string, bigint | null> | null;
+    if (input.record !== null) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: bigint | null;
+            _recordValue = _value;
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = null;
+    }
+    let _discriminator: ObjectWithEveryNullableTypeDiscriminator | null;
+    if (input.discriminator !== null) {
+        _discriminator = ObjectWithEveryNullableTypeDiscriminatorClone(
+            input.discriminator,
+        );
+    } else {
+        _discriminator = null;
+    }
+    let _nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
+    if (input.nestedObject !== null) {
+        _nestedObject = ObjectWithEveryNullableTypeNestedObjectClone(
+            input.nestedObject,
+        );
+    } else {
+        _nestedObject = null;
+    }
+    let _nestedArray:
+        | (
+              | (ObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
+              | null
+          )[]
+        | null;
+    if (input.nestedArray !== null) {
+        _nestedArray = [];
+        for (const _nestedArrayEl of input.nestedArray) {
+            let _nestedArrayElValue:
+                | (ObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
+                | null;
+            if (_nestedArrayEl !== null) {
+                _nestedArrayElValue = [];
+                for (const _nestedArrayElValueEl of _nestedArrayEl) {
+                    let _nestedArrayElValueElValue: ObjectWithEveryNullableTypeNestedArrayElementElement | null;
+                    if (_nestedArrayElValueEl !== null) {
+                        _nestedArrayElValueElValue =
+                            ObjectWithEveryNullableTypeNestedArrayElementElementClone(
+                                _nestedArrayElValueEl,
+                            );
+                    } else {
+                        _nestedArrayElValueElValue = null;
+                    }
+                    _nestedArrayElValue.push(_nestedArrayElValueElValue);
+                }
+            } else {
+                _nestedArrayElValue = null;
+            }
+            _nestedArray.push(_nestedArrayElValue);
+        }
+    } else {
+        _nestedArray = null;
+    }
+    return {
+        any: _any,
+        boolean: _boolean,
+        string: _string,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enumerator: _enumerator,
+        array: _array,
+        object: _object,
+        record: _record,
+        discriminator: _discriminator,
+        nestedObject: _nestedObject,
+        nestedArray: _nestedArray,
+    };
 }
 export function ObjectWithEveryNullableTypeFromJson(
     input: Record<string, unknown>,
@@ -2659,6 +3084,7 @@ export const $$ObjectWithEveryNullableType: TestClientValidator<ObjectWithEveryN
     {
         new: ObjectWithEveryNullableTypeNew,
         validate: ObjectWithEveryNullableTypeValidate,
+        clone: ObjectWithEveryNullableTypeClone,
         fromJson: ObjectWithEveryNullableTypeFromJson,
         fromJsonString: ObjectWithEveryNullableTypeFromJsonString,
         toJsonString: ObjectWithEveryNullableTypeToJsonString,
@@ -2739,6 +3165,25 @@ export function ObjectWithEveryNullableTypeObjectValidate(
         (input.timestamp instanceof Date || input.timestamp === null)
     );
 }
+export function ObjectWithEveryNullableTypeObjectClone(
+    input: ObjectWithEveryNullableTypeObject,
+): ObjectWithEveryNullableTypeObject {
+    let _string: string | null;
+    _string = input.string;
+    let _boolean: boolean | null;
+    _boolean = input.boolean;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+    };
+}
 export function ObjectWithEveryNullableTypeObjectFromJson(
     input: Record<string, unknown>,
 ): ObjectWithEveryNullableTypeObject {
@@ -2799,6 +3244,7 @@ export const $$ObjectWithEveryNullableTypeObject: TestClientValidator<ObjectWith
     {
         new: ObjectWithEveryNullableTypeObjectNew,
         validate: ObjectWithEveryNullableTypeObjectValidate,
+        clone: ObjectWithEveryNullableTypeObjectClone,
         fromJson: ObjectWithEveryNullableTypeObjectFromJson,
         fromJsonString: ObjectWithEveryNullableTypeObjectFromJsonString,
         toJsonString: ObjectWithEveryNullableTypeObjectToJsonString,
@@ -2829,6 +3275,18 @@ export function ObjectWithEveryNullableTypeDiscriminatorValidate(
             return ObjectWithEveryNullableTypeDiscriminatorBValidate(input);
         default:
             return false;
+    }
+}
+export function ObjectWithEveryNullableTypeDiscriminatorClone(
+    input: ObjectWithEveryNullableTypeDiscriminator,
+): ObjectWithEveryNullableTypeDiscriminator {
+    switch (input.type) {
+        case 'A':
+            return ObjectWithEveryNullableTypeDiscriminatorAClone(input);
+        case 'B':
+            return ObjectWithEveryNullableTypeDiscriminatorBClone(input);
+        default:
+            throw new Error('Unimplemented');
     }
 }
 export function ObjectWithEveryNullableTypeDiscriminatorFromJson(
@@ -2887,6 +3345,7 @@ export const $$ObjectWithEveryNullableTypeDiscriminator: TestClientValidator<Obj
     {
         new: ObjectWithEveryNullableTypeDiscriminatorNew,
         validate: ObjectWithEveryNullableTypeDiscriminatorValidate,
+        clone: ObjectWithEveryNullableTypeDiscriminatorClone,
         fromJson: ObjectWithEveryNullableTypeDiscriminatorFromJson,
         fromJsonString: ObjectWithEveryNullableTypeDiscriminatorFromJsonString,
         toJsonString: ObjectWithEveryNullableTypeDiscriminatorToJsonString,
@@ -2913,6 +3372,17 @@ export function ObjectWithEveryNullableTypeDiscriminatorAValidate(
         input.type === 'A' &&
         (typeof input.title === 'string' || input.title === null)
     );
+}
+export function ObjectWithEveryNullableTypeDiscriminatorAClone(
+    input: ObjectWithEveryNullableTypeDiscriminatorA,
+): ObjectWithEveryNullableTypeDiscriminatorA {
+    const _type = 'A';
+    let _title: string | null;
+    _title = input.title;
+    return {
+        type: _type,
+        title: _title,
+    };
 }
 export function ObjectWithEveryNullableTypeDiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -2964,6 +3434,7 @@ const $$ObjectWithEveryNullableTypeDiscriminatorA: TestClientValidator<ObjectWit
     {
         new: ObjectWithEveryNullableTypeDiscriminatorANew,
         validate: ObjectWithEveryNullableTypeDiscriminatorAValidate,
+        clone: ObjectWithEveryNullableTypeDiscriminatorAClone,
         fromJson: ObjectWithEveryNullableTypeDiscriminatorAFromJson,
         fromJsonString: ObjectWithEveryNullableTypeDiscriminatorAFromJsonString,
         toJsonString: ObjectWithEveryNullableTypeDiscriminatorAToJsonString,
@@ -2994,6 +3465,20 @@ export function ObjectWithEveryNullableTypeDiscriminatorBValidate(
         (typeof input.title === 'string' || input.title === null) &&
         (typeof input.description === 'string' || input.description === null)
     );
+}
+export function ObjectWithEveryNullableTypeDiscriminatorBClone(
+    input: ObjectWithEveryNullableTypeDiscriminatorB,
+): ObjectWithEveryNullableTypeDiscriminatorB {
+    const _type = 'B';
+    let _title: string | null;
+    _title = input.title;
+    let _description: string | null;
+    _description = input.description;
+    return {
+        type: _type,
+        title: _title,
+        description: _description,
+    };
 }
 export function ObjectWithEveryNullableTypeDiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -3055,6 +3540,7 @@ const $$ObjectWithEveryNullableTypeDiscriminatorB: TestClientValidator<ObjectWit
     {
         new: ObjectWithEveryNullableTypeDiscriminatorBNew,
         validate: ObjectWithEveryNullableTypeDiscriminatorBValidate,
+        clone: ObjectWithEveryNullableTypeDiscriminatorBClone,
         fromJson: ObjectWithEveryNullableTypeDiscriminatorBFromJson,
         fromJsonString: ObjectWithEveryNullableTypeDiscriminatorBFromJsonString,
         toJsonString: ObjectWithEveryNullableTypeDiscriminatorBToJsonString,
@@ -3086,6 +3572,29 @@ export function ObjectWithEveryNullableTypeNestedObjectValidate(
         (ObjectWithEveryNullableTypeNestedObjectDataValidate(input.data) ||
             input.data === null)
     );
+}
+export function ObjectWithEveryNullableTypeNestedObjectClone(
+    input: ObjectWithEveryNullableTypeNestedObject,
+): ObjectWithEveryNullableTypeNestedObject {
+    let _id: string | null;
+    _id = input.id;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    let _data: ObjectWithEveryNullableTypeNestedObjectData | null;
+    if (input.data !== null) {
+        _data = ObjectWithEveryNullableTypeNestedObjectDataClone(input.data);
+    } else {
+        _data = null;
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
 }
 export function ObjectWithEveryNullableTypeNestedObjectFromJson(
     input: Record<string, unknown>,
@@ -3161,6 +3670,7 @@ export const $$ObjectWithEveryNullableTypeNestedObject: TestClientValidator<Obje
     {
         new: ObjectWithEveryNullableTypeNestedObjectNew,
         validate: ObjectWithEveryNullableTypeNestedObjectValidate,
+        clone: ObjectWithEveryNullableTypeNestedObjectClone,
         fromJson: ObjectWithEveryNullableTypeNestedObjectFromJson,
         fromJsonString: ObjectWithEveryNullableTypeNestedObjectFromJsonString,
         toJsonString: ObjectWithEveryNullableTypeNestedObjectToJsonString,
@@ -3191,6 +3701,31 @@ export function ObjectWithEveryNullableTypeNestedObjectDataValidate(
         (ObjectWithEveryNullableTypeNestedObjectDataDataValidate(input.data) ||
             input.data === null)
     );
+}
+export function ObjectWithEveryNullableTypeNestedObjectDataClone(
+    input: ObjectWithEveryNullableTypeNestedObjectData,
+): ObjectWithEveryNullableTypeNestedObjectData {
+    let _id: string | null;
+    _id = input.id;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    let _data: ObjectWithEveryNullableTypeNestedObjectDataData | null;
+    if (input.data !== null) {
+        _data = ObjectWithEveryNullableTypeNestedObjectDataDataClone(
+            input.data,
+        );
+    } else {
+        _data = null;
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
 }
 export function ObjectWithEveryNullableTypeNestedObjectDataFromJson(
     input: Record<string, unknown>,
@@ -3270,6 +3805,7 @@ export const $$ObjectWithEveryNullableTypeNestedObjectData: TestClientValidator<
     {
         new: ObjectWithEveryNullableTypeNestedObjectDataNew,
         validate: ObjectWithEveryNullableTypeNestedObjectDataValidate,
+        clone: ObjectWithEveryNullableTypeNestedObjectDataClone,
         fromJson: ObjectWithEveryNullableTypeNestedObjectDataFromJson,
         fromJsonString:
             ObjectWithEveryNullableTypeNestedObjectDataFromJsonString,
@@ -3297,6 +3833,22 @@ export function ObjectWithEveryNullableTypeNestedObjectDataDataValidate(
         (typeof input.id === 'string' || input.id === null) &&
         (input.timestamp instanceof Date || input.timestamp === null)
     );
+}
+export function ObjectWithEveryNullableTypeNestedObjectDataDataClone(
+    input: ObjectWithEveryNullableTypeNestedObjectDataData,
+): ObjectWithEveryNullableTypeNestedObjectDataData {
+    let _id: string | null;
+    _id = input.id;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
 }
 export function ObjectWithEveryNullableTypeNestedObjectDataDataFromJson(
     input: Record<string, unknown>,
@@ -3356,6 +3908,7 @@ export const $$ObjectWithEveryNullableTypeNestedObjectDataData: TestClientValida
     {
         new: ObjectWithEveryNullableTypeNestedObjectDataDataNew,
         validate: ObjectWithEveryNullableTypeNestedObjectDataDataValidate,
+        clone: ObjectWithEveryNullableTypeNestedObjectDataDataClone,
         fromJson: ObjectWithEveryNullableTypeNestedObjectDataDataFromJson,
         fromJsonString:
             ObjectWithEveryNullableTypeNestedObjectDataDataFromJsonString,
@@ -3385,6 +3938,22 @@ export function ObjectWithEveryNullableTypeNestedArrayElementElementValidate(
         (typeof input.id === 'string' || input.id === null) &&
         (input.timestamp instanceof Date || input.timestamp === null)
     );
+}
+export function ObjectWithEveryNullableTypeNestedArrayElementElementClone(
+    input: ObjectWithEveryNullableTypeNestedArrayElementElement,
+): ObjectWithEveryNullableTypeNestedArrayElementElement {
+    let _id: string | null;
+    _id = input.id;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
 }
 export function ObjectWithEveryNullableTypeNestedArrayElementElementFromJson(
     input: Record<string, unknown>,
@@ -3444,6 +4013,7 @@ export const $$ObjectWithEveryNullableTypeNestedArrayElementElement: TestClientV
     {
         new: ObjectWithEveryNullableTypeNestedArrayElementElementNew,
         validate: ObjectWithEveryNullableTypeNestedArrayElementElementValidate,
+        clone: ObjectWithEveryNullableTypeNestedArrayElementElementClone,
         fromJson: ObjectWithEveryNullableTypeNestedArrayElementElementFromJson,
         fromJsonString:
             ObjectWithEveryNullableTypeNestedArrayElementElementFromJsonString,
@@ -3482,6 +4052,31 @@ export function ObjectWithPascalCaseKeysValidate(
         (typeof input.isAdmin === 'boolean' ||
             typeof input.isAdmin === 'undefined')
     );
+}
+export function ObjectWithPascalCaseKeysClone(
+    input: ObjectWithPascalCaseKeys,
+): ObjectWithPascalCaseKeys {
+    let _CreatedAt: Date;
+    _CreatedAt = new Date(input.createdAt.getTime());
+    let _DisplayName: string;
+    _DisplayName = input.displayName;
+    let _PhoneNumber: string | null;
+    _PhoneNumber = input.phoneNumber;
+    let _EmailAddress: string | undefined;
+    if (typeof input.emailAddress !== 'undefined') {
+        _EmailAddress = input.emailAddress;
+    }
+    let _IsAdmin: boolean | undefined;
+    if (typeof input.isAdmin !== 'undefined') {
+        _IsAdmin = input.isAdmin;
+    }
+    return {
+        createdAt: _CreatedAt,
+        displayName: _DisplayName,
+        phoneNumber: _PhoneNumber,
+        emailAddress: _EmailAddress,
+        isAdmin: _IsAdmin,
+    };
 }
 export function ObjectWithPascalCaseKeysFromJson(
     input: Record<string, unknown>,
@@ -3563,6 +4158,7 @@ export const $$ObjectWithPascalCaseKeys: TestClientValidator<ObjectWithPascalCas
     {
         new: ObjectWithPascalCaseKeysNew,
         validate: ObjectWithPascalCaseKeysValidate,
+        clone: ObjectWithPascalCaseKeysClone,
         fromJson: ObjectWithPascalCaseKeysFromJson,
         fromJsonString: ObjectWithPascalCaseKeysFromJsonString,
         toJsonString: ObjectWithPascalCaseKeysToJsonString,
@@ -3598,6 +4194,31 @@ export function ObjectWithSnakeCaseKeysValidate(
         (typeof input.isAdmin === 'boolean' ||
             typeof input.isAdmin === 'undefined')
     );
+}
+export function ObjectWithSnakeCaseKeysClone(
+    input: ObjectWithSnakeCaseKeys,
+): ObjectWithSnakeCaseKeys {
+    let _created_at: Date;
+    _created_at = new Date(input.createdAt.getTime());
+    let _display_name: string;
+    _display_name = input.displayName;
+    let _phone_number: string | null;
+    _phone_number = input.phoneNumber;
+    let _email_address: string | undefined;
+    if (typeof input.emailAddress !== 'undefined') {
+        _email_address = input.emailAddress;
+    }
+    let _is_admin: boolean | undefined;
+    if (typeof input.isAdmin !== 'undefined') {
+        _is_admin = input.isAdmin;
+    }
+    return {
+        createdAt: _created_at,
+        displayName: _display_name,
+        phoneNumber: _phone_number,
+        emailAddress: _email_address,
+        isAdmin: _is_admin,
+    };
 }
 export function ObjectWithSnakeCaseKeysFromJson(
     input: Record<string, unknown>,
@@ -3679,6 +4300,7 @@ export const $$ObjectWithSnakeCaseKeys: TestClientValidator<ObjectWithSnakeCaseK
     {
         new: ObjectWithSnakeCaseKeysNew,
         validate: ObjectWithSnakeCaseKeysValidate,
+        clone: ObjectWithSnakeCaseKeysClone,
         fromJson: ObjectWithSnakeCaseKeysFromJson,
         fromJsonString: ObjectWithSnakeCaseKeysFromJsonString,
         toJsonString: ObjectWithSnakeCaseKeysToJsonString,
@@ -3799,6 +4421,146 @@ export function ObjectWithEveryOptionalTypeValidate(
             )) ||
             typeof input.nestedArray === 'undefined')
     );
+}
+export function ObjectWithEveryOptionalTypeClone(
+    input: ObjectWithEveryOptionalType,
+): ObjectWithEveryOptionalType {
+    let _any: any | undefined;
+    if (typeof input.any !== 'undefined') {
+        _any = input.any;
+    }
+    let _boolean: boolean | undefined;
+    if (typeof input.boolean !== 'undefined') {
+        _boolean = input.boolean;
+    }
+    let _string: string | undefined;
+    if (typeof input.string !== 'undefined') {
+        _string = input.string;
+    }
+    let _timestamp: Date | undefined;
+    if (typeof input.timestamp !== 'undefined') {
+        _timestamp = new Date(input.timestamp.getTime());
+    }
+    let _float32: number | undefined;
+    if (typeof input.float32 !== 'undefined') {
+        _float32 = input.float32;
+    }
+    let _float64: number | undefined;
+    if (typeof input.float64 !== 'undefined') {
+        _float64 = input.float64;
+    }
+    let _int8: number | undefined;
+    if (typeof input.int8 !== 'undefined') {
+        _int8 = input.int8;
+    }
+    let _uint8: number | undefined;
+    if (typeof input.uint8 !== 'undefined') {
+        _uint8 = input.uint8;
+    }
+    let _int16: number | undefined;
+    if (typeof input.int16 !== 'undefined') {
+        _int16 = input.int16;
+    }
+    let _uint16: number | undefined;
+    if (typeof input.uint16 !== 'undefined') {
+        _uint16 = input.uint16;
+    }
+    let _int32: number | undefined;
+    if (typeof input.int32 !== 'undefined') {
+        _int32 = input.int32;
+    }
+    let _uint32: number | undefined;
+    if (typeof input.uint32 !== 'undefined') {
+        _uint32 = input.uint32;
+    }
+    let _int64: bigint | undefined;
+    if (typeof input.int64 !== 'undefined') {
+        _int64 = input.int64;
+    }
+    let _uint64: bigint | undefined;
+    if (typeof input.uint64 !== 'undefined') {
+        _uint64 = input.uint64;
+    }
+    let _enumerator: ObjectWithEveryOptionalTypeEnumerator | undefined;
+    if (typeof input.enumerator !== 'undefined') {
+        _enumerator = input.enumerator;
+    }
+    let _array: boolean[] | undefined;
+    if (typeof input.array !== 'undefined') {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = _arrayEl;
+            _array.push(_arrayElValue);
+        }
+    }
+    let _object: ObjectWithEveryOptionalTypeObject | undefined;
+    if (typeof input.object !== 'undefined') {
+        _object = ObjectWithEveryOptionalTypeObjectClone(input.object);
+    }
+    let _record: Record<string, bigint> | undefined;
+    if (typeof input.record !== 'undefined') {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: bigint;
+            _recordValue = _value;
+            _record[_key] = _recordValue;
+        }
+    }
+    let _discriminator: ObjectWithEveryOptionalTypeDiscriminator | undefined;
+    if (typeof input.discriminator !== 'undefined') {
+        _discriminator = ObjectWithEveryOptionalTypeDiscriminatorClone(
+            input.discriminator,
+        );
+    }
+    let _nestedObject: ObjectWithEveryOptionalTypeNestedObject | undefined;
+    if (typeof input.nestedObject !== 'undefined') {
+        _nestedObject = ObjectWithEveryOptionalTypeNestedObjectClone(
+            input.nestedObject,
+        );
+    }
+    let _nestedArray:
+        | ObjectWithEveryOptionalTypeNestedArrayElementElement[][]
+        | undefined;
+    if (typeof input.nestedArray !== 'undefined') {
+        _nestedArray = [];
+        for (const _nestedArrayEl of input.nestedArray) {
+            let _nestedArrayElValue: ObjectWithEveryOptionalTypeNestedArrayElementElement[];
+            _nestedArrayElValue = [];
+            for (const _nestedArrayElValueEl of _nestedArrayEl) {
+                let _nestedArrayElValueElValue: ObjectWithEveryOptionalTypeNestedArrayElementElement;
+                _nestedArrayElValueElValue =
+                    ObjectWithEveryOptionalTypeNestedArrayElementElementClone(
+                        _nestedArrayElValueEl,
+                    );
+                _nestedArrayElValue.push(_nestedArrayElValueElValue);
+            }
+            _nestedArray.push(_nestedArrayElValue);
+        }
+    }
+    return {
+        any: _any,
+        boolean: _boolean,
+        string: _string,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enumerator: _enumerator,
+        array: _array,
+        object: _object,
+        record: _record,
+        discriminator: _discriminator,
+        nestedObject: _nestedObject,
+        nestedArray: _nestedArray,
+    };
 }
 export function ObjectWithEveryOptionalTypeFromJson(
     input: Record<string, unknown>,
@@ -4247,6 +5009,7 @@ export const $$ObjectWithEveryOptionalType: TestClientValidator<ObjectWithEveryO
     {
         new: ObjectWithEveryOptionalTypeNew,
         validate: ObjectWithEveryOptionalTypeValidate,
+        clone: ObjectWithEveryOptionalTypeClone,
         fromJson: ObjectWithEveryOptionalTypeFromJson,
         fromJsonString: ObjectWithEveryOptionalTypeFromJsonString,
         toJsonString: ObjectWithEveryOptionalTypeToJsonString,
@@ -4327,6 +5090,21 @@ export function ObjectWithEveryOptionalTypeObjectValidate(
         input.timestamp instanceof Date
     );
 }
+export function ObjectWithEveryOptionalTypeObjectClone(
+    input: ObjectWithEveryOptionalTypeObject,
+): ObjectWithEveryOptionalTypeObject {
+    let _string: string;
+    _string = input.string;
+    let _boolean: boolean;
+    _boolean = input.boolean;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+    };
+}
 export function ObjectWithEveryOptionalTypeObjectFromJson(
     input: Record<string, unknown>,
 ): ObjectWithEveryOptionalTypeObject {
@@ -4379,6 +5157,7 @@ export const $$ObjectWithEveryOptionalTypeObject: TestClientValidator<ObjectWith
     {
         new: ObjectWithEveryOptionalTypeObjectNew,
         validate: ObjectWithEveryOptionalTypeObjectValidate,
+        clone: ObjectWithEveryOptionalTypeObjectClone,
         fromJson: ObjectWithEveryOptionalTypeObjectFromJson,
         fromJsonString: ObjectWithEveryOptionalTypeObjectFromJsonString,
         toJsonString: ObjectWithEveryOptionalTypeObjectToJsonString,
@@ -4409,6 +5188,18 @@ export function ObjectWithEveryOptionalTypeDiscriminatorValidate(
             return ObjectWithEveryOptionalTypeDiscriminatorBValidate(input);
         default:
             return false;
+    }
+}
+export function ObjectWithEveryOptionalTypeDiscriminatorClone(
+    input: ObjectWithEveryOptionalTypeDiscriminator,
+): ObjectWithEveryOptionalTypeDiscriminator {
+    switch (input.type) {
+        case 'A':
+            return ObjectWithEveryOptionalTypeDiscriminatorAClone(input);
+        case 'B':
+            return ObjectWithEveryOptionalTypeDiscriminatorBClone(input);
+        default:
+            throw new Error('Unimplemented');
     }
 }
 export function ObjectWithEveryOptionalTypeDiscriminatorFromJson(
@@ -4467,6 +5258,7 @@ export const $$ObjectWithEveryOptionalTypeDiscriminator: TestClientValidator<Obj
     {
         new: ObjectWithEveryOptionalTypeDiscriminatorNew,
         validate: ObjectWithEveryOptionalTypeDiscriminatorValidate,
+        clone: ObjectWithEveryOptionalTypeDiscriminatorClone,
         fromJson: ObjectWithEveryOptionalTypeDiscriminatorFromJson,
         fromJsonString: ObjectWithEveryOptionalTypeDiscriminatorFromJsonString,
         toJsonString: ObjectWithEveryOptionalTypeDiscriminatorToJsonString,
@@ -4491,6 +5283,17 @@ export function ObjectWithEveryOptionalTypeDiscriminatorAValidate(
     return (
         isObject(input) && input.type === 'A' && typeof input.title === 'string'
     );
+}
+export function ObjectWithEveryOptionalTypeDiscriminatorAClone(
+    input: ObjectWithEveryOptionalTypeDiscriminatorA,
+): ObjectWithEveryOptionalTypeDiscriminatorA {
+    const _type = 'A';
+    let _title: string;
+    _title = input.title;
+    return {
+        type: _type,
+        title: _title,
+    };
 }
 export function ObjectWithEveryOptionalTypeDiscriminatorAFromJson(
     input: Record<string, unknown>,
@@ -4538,6 +5341,7 @@ const $$ObjectWithEveryOptionalTypeDiscriminatorA: TestClientValidator<ObjectWit
     {
         new: ObjectWithEveryOptionalTypeDiscriminatorANew,
         validate: ObjectWithEveryOptionalTypeDiscriminatorAValidate,
+        clone: ObjectWithEveryOptionalTypeDiscriminatorAClone,
         fromJson: ObjectWithEveryOptionalTypeDiscriminatorAFromJson,
         fromJsonString: ObjectWithEveryOptionalTypeDiscriminatorAFromJsonString,
         toJsonString: ObjectWithEveryOptionalTypeDiscriminatorAToJsonString,
@@ -4568,6 +5372,20 @@ export function ObjectWithEveryOptionalTypeDiscriminatorBValidate(
         typeof input.title === 'string' &&
         typeof input.description === 'string'
     );
+}
+export function ObjectWithEveryOptionalTypeDiscriminatorBClone(
+    input: ObjectWithEveryOptionalTypeDiscriminatorB,
+): ObjectWithEveryOptionalTypeDiscriminatorB {
+    const _type = 'B';
+    let _title: string;
+    _title = input.title;
+    let _description: string;
+    _description = input.description;
+    return {
+        type: _type,
+        title: _title,
+        description: _description,
+    };
 }
 export function ObjectWithEveryOptionalTypeDiscriminatorBFromJson(
     input: Record<string, unknown>,
@@ -4621,6 +5439,7 @@ const $$ObjectWithEveryOptionalTypeDiscriminatorB: TestClientValidator<ObjectWit
     {
         new: ObjectWithEveryOptionalTypeDiscriminatorBNew,
         validate: ObjectWithEveryOptionalTypeDiscriminatorBValidate,
+        clone: ObjectWithEveryOptionalTypeDiscriminatorBClone,
         fromJson: ObjectWithEveryOptionalTypeDiscriminatorBFromJson,
         fromJsonString: ObjectWithEveryOptionalTypeDiscriminatorBFromJsonString,
         toJsonString: ObjectWithEveryOptionalTypeDiscriminatorBToJsonString,
@@ -4651,6 +5470,21 @@ export function ObjectWithEveryOptionalTypeNestedObjectValidate(
         input.timestamp instanceof Date &&
         ObjectWithEveryOptionalTypeNestedObjectDataValidate(input.data)
     );
+}
+export function ObjectWithEveryOptionalTypeNestedObjectClone(
+    input: ObjectWithEveryOptionalTypeNestedObject,
+): ObjectWithEveryOptionalTypeNestedObject {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _data: ObjectWithEveryOptionalTypeNestedObjectData;
+    _data = ObjectWithEveryOptionalTypeNestedObjectDataClone(input.data);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
 }
 export function ObjectWithEveryOptionalTypeNestedObjectFromJson(
     input: Record<string, unknown>,
@@ -4712,6 +5546,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObject: TestClientValidator<Obje
     {
         new: ObjectWithEveryOptionalTypeNestedObjectNew,
         validate: ObjectWithEveryOptionalTypeNestedObjectValidate,
+        clone: ObjectWithEveryOptionalTypeNestedObjectClone,
         fromJson: ObjectWithEveryOptionalTypeNestedObjectFromJson,
         fromJsonString: ObjectWithEveryOptionalTypeNestedObjectFromJsonString,
         toJsonString: ObjectWithEveryOptionalTypeNestedObjectToJsonString,
@@ -4741,6 +5576,21 @@ export function ObjectWithEveryOptionalTypeNestedObjectDataValidate(
         input.timestamp instanceof Date &&
         ObjectWithEveryOptionalTypeNestedObjectDataDataValidate(input.data)
     );
+}
+export function ObjectWithEveryOptionalTypeNestedObjectDataClone(
+    input: ObjectWithEveryOptionalTypeNestedObjectData,
+): ObjectWithEveryOptionalTypeNestedObjectData {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _data: ObjectWithEveryOptionalTypeNestedObjectDataData;
+    _data = ObjectWithEveryOptionalTypeNestedObjectDataDataClone(input.data);
+    return {
+        id: _id,
+        timestamp: _timestamp,
+        data: _data,
+    };
 }
 export function ObjectWithEveryOptionalTypeNestedObjectDataFromJson(
     input: Record<string, unknown>,
@@ -4808,6 +5658,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectData: TestClientValidator<
     {
         new: ObjectWithEveryOptionalTypeNestedObjectDataNew,
         validate: ObjectWithEveryOptionalTypeNestedObjectDataValidate,
+        clone: ObjectWithEveryOptionalTypeNestedObjectDataClone,
         fromJson: ObjectWithEveryOptionalTypeNestedObjectDataFromJson,
         fromJsonString:
             ObjectWithEveryOptionalTypeNestedObjectDataFromJsonString,
@@ -4835,6 +5686,18 @@ export function ObjectWithEveryOptionalTypeNestedObjectDataDataValidate(
         typeof input.id === 'string' &&
         input.timestamp instanceof Date
     );
+}
+export function ObjectWithEveryOptionalTypeNestedObjectDataDataClone(
+    input: ObjectWithEveryOptionalTypeNestedObjectDataData,
+): ObjectWithEveryOptionalTypeNestedObjectDataData {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
 }
 export function ObjectWithEveryOptionalTypeNestedObjectDataDataFromJson(
     input: Record<string, unknown>,
@@ -4886,6 +5749,7 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectDataData: TestClientValida
     {
         new: ObjectWithEveryOptionalTypeNestedObjectDataDataNew,
         validate: ObjectWithEveryOptionalTypeNestedObjectDataDataValidate,
+        clone: ObjectWithEveryOptionalTypeNestedObjectDataDataClone,
         fromJson: ObjectWithEveryOptionalTypeNestedObjectDataDataFromJson,
         fromJsonString:
             ObjectWithEveryOptionalTypeNestedObjectDataDataFromJsonString,
@@ -4915,6 +5779,18 @@ export function ObjectWithEveryOptionalTypeNestedArrayElementElementValidate(
         typeof input.id === 'string' &&
         input.timestamp instanceof Date
     );
+}
+export function ObjectWithEveryOptionalTypeNestedArrayElementElementClone(
+    input: ObjectWithEveryOptionalTypeNestedArrayElementElement,
+): ObjectWithEveryOptionalTypeNestedArrayElementElement {
+    let _id: string;
+    _id = input.id;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        id: _id,
+        timestamp: _timestamp,
+    };
 }
 export function ObjectWithEveryOptionalTypeNestedArrayElementElementFromJson(
     input: Record<string, unknown>,
@@ -4966,6 +5842,7 @@ export const $$ObjectWithEveryOptionalTypeNestedArrayElementElement: TestClientV
     {
         new: ObjectWithEveryOptionalTypeNestedArrayElementElementNew,
         validate: ObjectWithEveryOptionalTypeNestedArrayElementElementValidate,
+        clone: ObjectWithEveryOptionalTypeNestedArrayElementElementClone,
         fromJson: ObjectWithEveryOptionalTypeNestedArrayElementElementFromJson,
         fromJsonString:
             ObjectWithEveryOptionalTypeNestedArrayElementElementFromJsonString,
@@ -4998,6 +5875,27 @@ export function RecursiveObjectValidate(
         (RecursiveObjectValidate(input.right) || input.right === null) &&
         typeof input.value === 'string'
     );
+}
+export function RecursiveObjectClone(input: RecursiveObject): RecursiveObject {
+    let _left: RecursiveObject | null;
+    if (input.left !== null) {
+        _left = RecursiveObjectClone(input.left);
+    } else {
+        _left = null;
+    }
+    let _right: RecursiveObject | null;
+    if (input.right !== null) {
+        _right = RecursiveObjectClone(input.right);
+    } else {
+        _right = null;
+    }
+    let _value: string;
+    _value = input.value;
+    return {
+        left: _left,
+        right: _right,
+        value: _value,
+    };
 }
 export function RecursiveObjectFromJson(
     input: Record<string, unknown>,
@@ -5066,6 +5964,7 @@ export function RecursiveObjectToUrlSearchParamsString(
 export const $$RecursiveObject: TestClientValidator<RecursiveObject> = {
     new: RecursiveObjectNew,
     validate: RecursiveObjectValidate,
+    clone: RecursiveObjectClone,
     fromJson: RecursiveObjectFromJson,
     fromJsonString: RecursiveObjectFromJsonString,
     toJsonString: RecursiveObjectToJsonString,
@@ -5101,6 +6000,20 @@ export function RecursiveUnionValidate(
             return RecursiveUnionShapeValidate(input);
         default:
             return false;
+    }
+}
+export function RecursiveUnionClone(input: RecursiveUnion): RecursiveUnion {
+    switch (input.type) {
+        case 'CHILD':
+            return RecursiveUnionChildClone(input);
+        case 'CHILDREN':
+            return RecursiveUnionChildrenClone(input);
+        case 'TEXT':
+            return RecursiveUnionTextClone(input);
+        case 'SHAPE':
+            return RecursiveUnionShapeClone(input);
+        default:
+            throw new Error('Unimplemented');
     }
 }
 export function RecursiveUnionFromJson(
@@ -5160,6 +6073,7 @@ export function RecursiveUnionToUrlSearchParamsString(
 export const $$RecursiveUnion: TestClientValidator<RecursiveUnion> = {
     new: RecursiveUnionNew,
     validate: RecursiveUnionValidate,
+    clone: RecursiveUnionClone,
     fromJson: RecursiveUnionFromJson,
     fromJsonString: RecursiveUnionFromJsonString,
     toJsonString: RecursiveUnionToJsonString,
@@ -5187,6 +6101,17 @@ export function RecursiveUnionChildValidate(
         input.type === 'CHILD' &&
         RecursiveUnionValidate(input.data)
     );
+}
+export function RecursiveUnionChildClone(
+    input: RecursiveUnionChild,
+): RecursiveUnionChild {
+    const _type = 'CHILD';
+    let _data: RecursiveUnion;
+    _data = RecursiveUnionClone(input.data);
+    return {
+        type: _type,
+        data: _data,
+    };
 }
 export function RecursiveUnionChildFromJson(
     input: Record<string, unknown>,
@@ -5237,6 +6162,7 @@ export function RecursiveUnionChildToUrlSearchParamsString(
 const $$RecursiveUnionChild: TestClientValidator<RecursiveUnionChild> = {
     new: RecursiveUnionChildNew,
     validate: RecursiveUnionChildValidate,
+    clone: RecursiveUnionChildClone,
     fromJson: RecursiveUnionChildFromJson,
     fromJsonString: RecursiveUnionChildFromJsonString,
     toJsonString: RecursiveUnionChildToJsonString,
@@ -5266,6 +6192,22 @@ export function RecursiveUnionChildrenValidate(
         Array.isArray(input.data) &&
         input.data.every((_element) => RecursiveUnionValidate(_element))
     );
+}
+export function RecursiveUnionChildrenClone(
+    input: RecursiveUnionChildren,
+): RecursiveUnionChildren {
+    const _type = 'CHILDREN';
+    let _data: RecursiveUnion[];
+    _data = [];
+    for (const _dataEl of input.data) {
+        let _dataElValue: RecursiveUnion;
+        _dataElValue = RecursiveUnionClone(_dataEl);
+        _data.push(_dataElValue);
+    }
+    return {
+        type: _type,
+        data: _data,
+    };
 }
 export function RecursiveUnionChildrenFromJson(
     input: Record<string, unknown>,
@@ -5331,6 +6273,7 @@ export function RecursiveUnionChildrenToUrlSearchParamsString(
 const $$RecursiveUnionChildren: TestClientValidator<RecursiveUnionChildren> = {
     new: RecursiveUnionChildrenNew,
     validate: RecursiveUnionChildrenValidate,
+    clone: RecursiveUnionChildrenClone,
     fromJson: RecursiveUnionChildrenFromJson,
     fromJsonString: RecursiveUnionChildrenFromJsonString,
     toJsonString: RecursiveUnionChildrenToJsonString,
@@ -5359,6 +6302,17 @@ export function RecursiveUnionTextValidate(
         input.type === 'TEXT' &&
         typeof input.data === 'string'
     );
+}
+export function RecursiveUnionTextClone(
+    input: RecursiveUnionText,
+): RecursiveUnionText {
+    const _type = 'TEXT';
+    let _data: string;
+    _data = input.data;
+    return {
+        type: _type,
+        data: _data,
+    };
 }
 export function RecursiveUnionTextFromJson(
     input: Record<string, unknown>,
@@ -5403,6 +6357,7 @@ export function RecursiveUnionTextToUrlSearchParamsString(
 const $$RecursiveUnionText: TestClientValidator<RecursiveUnionText> = {
     new: RecursiveUnionTextNew,
     validate: RecursiveUnionTextValidate,
+    clone: RecursiveUnionTextClone,
     fromJson: RecursiveUnionTextFromJson,
     fromJsonString: RecursiveUnionTextFromJsonString,
     toJsonString: RecursiveUnionTextToJsonString,
@@ -5431,6 +6386,17 @@ export function RecursiveUnionShapeValidate(
         input.type === 'SHAPE' &&
         RecursiveUnionShapeDataValidate(input.data)
     );
+}
+export function RecursiveUnionShapeClone(
+    input: RecursiveUnionShape,
+): RecursiveUnionShape {
+    const _type = 'SHAPE';
+    let _data: RecursiveUnionShapeData;
+    _data = RecursiveUnionShapeDataClone(input.data);
+    return {
+        type: _type,
+        data: _data,
+    };
 }
 export function RecursiveUnionShapeFromJson(
     input: Record<string, unknown>,
@@ -5481,6 +6447,7 @@ export function RecursiveUnionShapeToUrlSearchParamsString(
 const $$RecursiveUnionShape: TestClientValidator<RecursiveUnionShape> = {
     new: RecursiveUnionShapeNew,
     validate: RecursiveUnionShapeValidate,
+    clone: RecursiveUnionShapeClone,
     fromJson: RecursiveUnionShapeFromJson,
     fromJsonString: RecursiveUnionShapeFromJsonString,
     toJsonString: RecursiveUnionShapeToJsonString,
@@ -5508,6 +6475,21 @@ export function RecursiveUnionShapeDataValidate(
         typeof input.height === 'number' &&
         typeof input.color === 'string'
     );
+}
+export function RecursiveUnionShapeDataClone(
+    input: RecursiveUnionShapeData,
+): RecursiveUnionShapeData {
+    let _width: number;
+    _width = input.width;
+    let _height: number;
+    _height = input.height;
+    let _color: string;
+    _color = input.color;
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
 }
 export function RecursiveUnionShapeDataFromJson(
     input: Record<string, unknown>,
@@ -5561,6 +6543,7 @@ export const $$RecursiveUnionShapeData: TestClientValidator<RecursiveUnionShapeD
     {
         new: RecursiveUnionShapeDataNew,
         validate: RecursiveUnionShapeDataValidate,
+        clone: RecursiveUnionShapeDataClone,
         fromJson: RecursiveUnionShapeDataFromJson,
         fromJsonString: RecursiveUnionShapeDataFromJsonString,
         toJsonString: RecursiveUnionShapeDataToJsonString,
@@ -5586,6 +6569,15 @@ export function AutoReconnectParamsValidate(
         input.messageCount >= 0 &&
         input.messageCount <= UINT8_MAX
     );
+}
+export function AutoReconnectParamsClone(
+    input: AutoReconnectParams,
+): AutoReconnectParams {
+    let _messageCount: number;
+    _messageCount = input.messageCount;
+    return {
+        messageCount: _messageCount,
+    };
 }
 export function AutoReconnectParamsFromJson(
     input: Record<string, unknown>,
@@ -5626,6 +6618,7 @@ export function AutoReconnectParamsToUrlSearchParamsString(
 export const $$AutoReconnectParams: TestClientValidator<AutoReconnectParams> = {
     new: AutoReconnectParamsNew,
     validate: AutoReconnectParamsValidate,
+    clone: AutoReconnectParamsClone,
     fromJson: AutoReconnectParamsFromJson,
     fromJsonString: AutoReconnectParamsFromJsonString,
     toJsonString: AutoReconnectParamsToJsonString,
@@ -5654,6 +6647,18 @@ export function AutoReconnectResponseValidate(
         input.count <= UINT8_MAX &&
         typeof input.message === 'string'
     );
+}
+export function AutoReconnectResponseClone(
+    input: AutoReconnectResponse,
+): AutoReconnectResponse {
+    let _count: number;
+    _count = input.count;
+    let _message: string;
+    _message = input.message;
+    return {
+        count: _count,
+        message: _message,
+    };
 }
 export function AutoReconnectResponseFromJson(
     input: Record<string, unknown>,
@@ -5701,6 +6706,7 @@ export const $$AutoReconnectResponse: TestClientValidator<AutoReconnectResponse>
     {
         new: AutoReconnectResponseNew,
         validate: AutoReconnectResponseValidate,
+        clone: AutoReconnectResponseClone,
         fromJson: AutoReconnectResponseFromJson,
         fromJsonString: AutoReconnectResponseFromJsonString,
         toJsonString: AutoReconnectResponseToJsonString,
@@ -5729,6 +6735,18 @@ export function StreamConnectionErrorTestParamsValidate(
         input.statusCode <= INT32_MAX &&
         typeof input.statusMessage === 'string'
     );
+}
+export function StreamConnectionErrorTestParamsClone(
+    input: StreamConnectionErrorTestParams,
+): StreamConnectionErrorTestParams {
+    let _statusCode: number;
+    _statusCode = input.statusCode;
+    let _statusMessage: string;
+    _statusMessage = input.statusMessage;
+    return {
+        statusCode: _statusCode,
+        statusMessage: _statusMessage,
+    };
 }
 export function StreamConnectionErrorTestParamsFromJson(
     input: Record<string, unknown>,
@@ -5776,6 +6794,7 @@ export const $$StreamConnectionErrorTestParams: TestClientValidator<StreamConnec
     {
         new: StreamConnectionErrorTestParamsNew,
         validate: StreamConnectionErrorTestParamsValidate,
+        clone: StreamConnectionErrorTestParamsClone,
         fromJson: StreamConnectionErrorTestParamsFromJson,
         fromJsonString: StreamConnectionErrorTestParamsFromJsonString,
         toJsonString: StreamConnectionErrorTestParamsToJsonString,
@@ -5796,6 +6815,15 @@ export function StreamConnectionErrorTestResponseValidate(
     input: unknown,
 ): input is StreamConnectionErrorTestResponse {
     return isObject(input) && typeof input.message === 'string';
+}
+export function StreamConnectionErrorTestResponseClone(
+    input: StreamConnectionErrorTestResponse,
+): StreamConnectionErrorTestResponse {
+    let _message: string;
+    _message = input.message;
+    return {
+        message: _message,
+    };
 }
 export function StreamConnectionErrorTestResponseFromJson(
     input: Record<string, unknown>,
@@ -5837,6 +6865,7 @@ export const $$StreamConnectionErrorTestResponse: TestClientValidator<StreamConn
     {
         new: StreamConnectionErrorTestResponseNew,
         validate: StreamConnectionErrorTestResponseValidate,
+        clone: StreamConnectionErrorTestResponseClone,
         fromJson: StreamConnectionErrorTestResponseFromJson,
         fromJsonString: StreamConnectionErrorTestResponseFromJsonString,
         toJsonString: StreamConnectionErrorTestResponseToJsonString,
@@ -5857,6 +6886,15 @@ export function StreamHeartbeatDetectionTestParamsValidate(
     input: unknown,
 ): input is StreamHeartbeatDetectionTestParams {
     return isObject(input) && typeof input.heartbeatEnabled === 'boolean';
+}
+export function StreamHeartbeatDetectionTestParamsClone(
+    input: StreamHeartbeatDetectionTestParams,
+): StreamHeartbeatDetectionTestParams {
+    let _heartbeatEnabled: boolean;
+    _heartbeatEnabled = input.heartbeatEnabled;
+    return {
+        heartbeatEnabled: _heartbeatEnabled,
+    };
 }
 export function StreamHeartbeatDetectionTestParamsFromJson(
     input: Record<string, unknown>,
@@ -5900,6 +6938,7 @@ export const $$StreamHeartbeatDetectionTestParams: TestClientValidator<StreamHea
     {
         new: StreamHeartbeatDetectionTestParamsNew,
         validate: StreamHeartbeatDetectionTestParamsValidate,
+        clone: StreamHeartbeatDetectionTestParamsClone,
         fromJson: StreamHeartbeatDetectionTestParamsFromJson,
         fromJsonString: StreamHeartbeatDetectionTestParamsFromJsonString,
         toJsonString: StreamHeartbeatDetectionTestParamsToJsonString,
@@ -5920,6 +6959,15 @@ export function StreamHeartbeatDetectionTestResponseValidate(
     input: unknown,
 ): input is StreamHeartbeatDetectionTestResponse {
     return isObject(input) && typeof input.message === 'string';
+}
+export function StreamHeartbeatDetectionTestResponseClone(
+    input: StreamHeartbeatDetectionTestResponse,
+): StreamHeartbeatDetectionTestResponse {
+    let _message: string;
+    _message = input.message;
+    return {
+        message: _message,
+    };
 }
 export function StreamHeartbeatDetectionTestResponseFromJson(
     input: Record<string, unknown>,
@@ -5963,6 +7011,7 @@ export const $$StreamHeartbeatDetectionTestResponse: TestClientValidator<StreamH
     {
         new: StreamHeartbeatDetectionTestResponseNew,
         validate: StreamHeartbeatDetectionTestResponseValidate,
+        clone: StreamHeartbeatDetectionTestResponseClone,
         fromJson: StreamHeartbeatDetectionTestResponseFromJson,
         fromJsonString: StreamHeartbeatDetectionTestResponseFromJsonString,
         toJsonString: StreamHeartbeatDetectionTestResponseToJsonString,
@@ -5994,6 +7043,29 @@ export function StreamLargeObjectsResponseValidate(
             StreamLargeObjectsResponseObjectsElementValidate(_element),
         )
     );
+}
+export function StreamLargeObjectsResponseClone(
+    input: StreamLargeObjectsResponse,
+): StreamLargeObjectsResponse {
+    let _numbers: number[];
+    _numbers = [];
+    for (const _numbersEl of input.numbers) {
+        let _numbersElValue: number;
+        _numbersElValue = _numbersEl;
+        _numbers.push(_numbersElValue);
+    }
+    let _objects: StreamLargeObjectsResponseObjectsElement[];
+    _objects = [];
+    for (const _objectsEl of input.objects) {
+        let _objectsElValue: StreamLargeObjectsResponseObjectsElement;
+        _objectsElValue =
+            StreamLargeObjectsResponseObjectsElementClone(_objectsEl);
+        _objects.push(_objectsElValue);
+    }
+    return {
+        numbers: _numbers,
+        objects: _objects,
+    };
 }
 export function StreamLargeObjectsResponseFromJson(
     input: Record<string, unknown>,
@@ -6085,6 +7157,7 @@ export const $$StreamLargeObjectsResponse: TestClientValidator<StreamLargeObject
     {
         new: StreamLargeObjectsResponseNew,
         validate: StreamLargeObjectsResponseValidate,
+        clone: StreamLargeObjectsResponseClone,
         fromJson: StreamLargeObjectsResponseFromJson,
         fromJsonString: StreamLargeObjectsResponseFromJsonString,
         toJsonString: StreamLargeObjectsResponseToJsonString,
@@ -6113,6 +7186,21 @@ export function StreamLargeObjectsResponseObjectsElementValidate(
         typeof input.name === 'string' &&
         typeof input.email === 'string'
     );
+}
+export function StreamLargeObjectsResponseObjectsElementClone(
+    input: StreamLargeObjectsResponseObjectsElement,
+): StreamLargeObjectsResponseObjectsElement {
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    let _email: string;
+    _email = input.email;
+    return {
+        id: _id,
+        name: _name,
+        email: _email,
+    };
 }
 export function StreamLargeObjectsResponseObjectsElementFromJson(
     input: Record<string, unknown>,
@@ -6168,6 +7256,7 @@ export const $$StreamLargeObjectsResponseObjectsElement: TestClientValidator<Str
     {
         new: StreamLargeObjectsResponseObjectsElementNew,
         validate: StreamLargeObjectsResponseObjectsElementValidate,
+        clone: StreamLargeObjectsResponseObjectsElementClone,
         fromJson: StreamLargeObjectsResponseObjectsElementFromJson,
         fromJsonString: StreamLargeObjectsResponseObjectsElementFromJsonString,
         toJsonString: StreamLargeObjectsResponseObjectsElementToJsonString,
@@ -6189,6 +7278,15 @@ export function ChatMessageParamsValidate(
     input: unknown,
 ): input is ChatMessageParams {
     return isObject(input) && typeof input.channelId === 'string';
+}
+export function ChatMessageParamsClone(
+    input: ChatMessageParams,
+): ChatMessageParams {
+    let _channelId: string;
+    _channelId = input.channelId;
+    return {
+        channelId: _channelId,
+    };
 }
 export function ChatMessageParamsFromJson(
     input: Record<string, unknown>,
@@ -6229,6 +7327,7 @@ export function ChatMessageParamsToUrlSearchParamsString(
 export const $$ChatMessageParams: TestClientValidator<ChatMessageParams> = {
     new: ChatMessageParamsNew,
     validate: ChatMessageParamsValidate,
+    clone: ChatMessageParamsClone,
     fromJson: ChatMessageParamsFromJson,
     fromJsonString: ChatMessageParamsFromJsonString,
     toJsonString: ChatMessageParamsToJsonString,
@@ -6256,6 +7355,18 @@ export function ChatMessageValidate(input: unknown): input is ChatMessage {
             return ChatMessageUrlValidate(input);
         default:
             return false;
+    }
+}
+export function ChatMessageClone(input: ChatMessage): ChatMessage {
+    switch (input.messageType) {
+        case 'TEXT':
+            return ChatMessageTextClone(input);
+        case 'IMAGE':
+            return ChatMessageImageClone(input);
+        case 'URL':
+            return ChatMessageUrlClone(input);
+        default:
+            throw new Error('Unimplemented');
     }
 }
 export function ChatMessageFromJson(
@@ -6307,6 +7418,7 @@ export function ChatMessageToUrlSearchParamsString(input: ChatMessage): string {
 export const $$ChatMessage: TestClientValidator<ChatMessage> = {
     new: ChatMessageNew,
     validate: ChatMessageValidate,
+    clone: ChatMessageClone,
     fromJson: ChatMessageFromJson,
     fromJsonString: ChatMessageFromJsonString,
     toJsonString: ChatMessageToJsonString,
@@ -6343,6 +7455,27 @@ export function ChatMessageTextValidate(
         input.date instanceof Date &&
         typeof input.text === 'string'
     );
+}
+export function ChatMessageTextClone(input: ChatMessageText): ChatMessageText {
+    const _messageType = 'TEXT';
+    let _id: string;
+    _id = input.id;
+    let _channelId: string;
+    _channelId = input.channelId;
+    let _userId: string;
+    _userId = input.userId;
+    let _date: Date;
+    _date = new Date(input.date.getTime());
+    let _text: string;
+    _text = input.text;
+    return {
+        messageType: _messageType,
+        id: _id,
+        channelId: _channelId,
+        userId: _userId,
+        date: _date,
+        text: _text,
+    };
 }
 export function ChatMessageTextFromJson(
     input: Record<string, unknown>,
@@ -6407,6 +7540,7 @@ export function ChatMessageTextToUrlSearchParamsString(
 const $$ChatMessageText: TestClientValidator<ChatMessageText> = {
     new: ChatMessageTextNew,
     validate: ChatMessageTextValidate,
+    clone: ChatMessageTextClone,
     fromJson: ChatMessageTextFromJson,
     fromJsonString: ChatMessageTextFromJsonString,
     toJsonString: ChatMessageTextToJsonString,
@@ -6444,6 +7578,29 @@ export function ChatMessageImageValidate(
         input.date instanceof Date &&
         typeof input.image === 'string'
     );
+}
+export function ChatMessageImageClone(
+    input: ChatMessageImage,
+): ChatMessageImage {
+    const _messageType = 'IMAGE';
+    let _id: string;
+    _id = input.id;
+    let _channelId: string;
+    _channelId = input.channelId;
+    let _userId: string;
+    _userId = input.userId;
+    let _date: Date;
+    _date = new Date(input.date.getTime());
+    let _image: string;
+    _image = input.image;
+    return {
+        messageType: _messageType,
+        id: _id,
+        channelId: _channelId,
+        userId: _userId,
+        date: _date,
+        image: _image,
+    };
 }
 export function ChatMessageImageFromJson(
     input: Record<string, unknown>,
@@ -6510,6 +7667,7 @@ export function ChatMessageImageToUrlSearchParamsString(
 const $$ChatMessageImage: TestClientValidator<ChatMessageImage> = {
     new: ChatMessageImageNew,
     validate: ChatMessageImageValidate,
+    clone: ChatMessageImageClone,
     fromJson: ChatMessageImageFromJson,
     fromJsonString: ChatMessageImageFromJsonString,
     toJsonString: ChatMessageImageToJsonString,
@@ -6547,6 +7705,27 @@ export function ChatMessageUrlValidate(
         input.date instanceof Date &&
         typeof input.url === 'string'
     );
+}
+export function ChatMessageUrlClone(input: ChatMessageUrl): ChatMessageUrl {
+    const _messageType = 'URL';
+    let _id: string;
+    _id = input.id;
+    let _channelId: string;
+    _channelId = input.channelId;
+    let _userId: string;
+    _userId = input.userId;
+    let _date: Date;
+    _date = new Date(input.date.getTime());
+    let _url: string;
+    _url = input.url;
+    return {
+        messageType: _messageType,
+        id: _id,
+        channelId: _channelId,
+        userId: _userId,
+        date: _date,
+        url: _url,
+    };
 }
 export function ChatMessageUrlFromJson(
     input: Record<string, unknown>,
@@ -6611,6 +7790,7 @@ export function ChatMessageUrlToUrlSearchParamsString(
 const $$ChatMessageUrl: TestClientValidator<ChatMessageUrl> = {
     new: ChatMessageUrlNew,
     validate: ChatMessageUrlValidate,
+    clone: ChatMessageUrlClone,
     fromJson: ChatMessageUrlFromJson,
     fromJsonString: ChatMessageUrlFromJsonString,
     toJsonString: ChatMessageUrlToJsonString,
@@ -6630,6 +7810,15 @@ export function TestsStreamRetryWithNewCredentialsResponseValidate(
     input: unknown,
 ): input is TestsStreamRetryWithNewCredentialsResponse {
     return isObject(input) && typeof input.message === 'string';
+}
+export function TestsStreamRetryWithNewCredentialsResponseClone(
+    input: TestsStreamRetryWithNewCredentialsResponse,
+): TestsStreamRetryWithNewCredentialsResponse {
+    let _message: string;
+    _message = input.message;
+    return {
+        message: _message,
+    };
 }
 export function TestsStreamRetryWithNewCredentialsResponseFromJson(
     input: Record<string, unknown>,
@@ -6675,6 +7864,7 @@ export const $$TestsStreamRetryWithNewCredentialsResponse: TestClientValidator<T
     {
         new: TestsStreamRetryWithNewCredentialsResponseNew,
         validate: TestsStreamRetryWithNewCredentialsResponseValidate,
+        clone: TestsStreamRetryWithNewCredentialsResponseClone,
         fromJson: TestsStreamRetryWithNewCredentialsResponseFromJson,
         fromJsonString:
             TestsStreamRetryWithNewCredentialsResponseFromJsonString,
@@ -6697,6 +7887,15 @@ export function UsersWatchUserParamsValidate(
     input: unknown,
 ): input is UsersWatchUserParams {
     return isObject(input) && typeof input.userId === 'string';
+}
+export function UsersWatchUserParamsClone(
+    input: UsersWatchUserParams,
+): UsersWatchUserParams {
+    let _userId: string;
+    _userId = input.userId;
+    return {
+        userId: _userId,
+    };
 }
 export function UsersWatchUserParamsFromJson(
     input: Record<string, unknown>,
@@ -6738,6 +7937,7 @@ export const $$UsersWatchUserParams: TestClientValidator<UsersWatchUserParams> =
     {
         new: UsersWatchUserParamsNew,
         validate: UsersWatchUserParamsValidate,
+        clone: UsersWatchUserParamsClone,
         fromJson: UsersWatchUserParamsFromJson,
         fromJsonString: UsersWatchUserParamsFromJsonString,
         toJsonString: UsersWatchUserParamsToJsonString,
@@ -6803,6 +8003,74 @@ export function UsersWatchUserResponseValidate(
         input.randomList.every((_element) => true) &&
         (typeof input.bio === 'string' || typeof input.bio === 'undefined')
     );
+}
+export function UsersWatchUserResponseClone(
+    input: UsersWatchUserResponse,
+): UsersWatchUserResponse {
+    let _id: string;
+    _id = input.id;
+    let _role: UsersWatchUserResponseRole;
+    _role = input.role;
+    let _photo: UserPhoto | null;
+    if (input.photo !== null) {
+        _photo = UserPhotoClone(input.photo);
+    } else {
+        _photo = null;
+    }
+    let _createdAt: Date;
+    _createdAt = new Date(input.createdAt.getTime());
+    let _numFollowers: number;
+    _numFollowers = input.numFollowers;
+    let _settings: UserSettings;
+    _settings = UserSettingsClone(input.settings);
+    let _recentNotifications: UsersWatchUserResponseRecentNotificationsElement[];
+    _recentNotifications = [];
+    for (const _recentNotificationsEl of input.recentNotifications) {
+        let _recentNotificationsElValue: UsersWatchUserResponseRecentNotificationsElement;
+        _recentNotificationsElValue =
+            UsersWatchUserResponseRecentNotificationsElementClone(
+                _recentNotificationsEl,
+            );
+        _recentNotifications.push(_recentNotificationsElValue);
+    }
+    let _bookmarks: Record<string, UsersWatchUserResponseBookmarksValue>;
+    _bookmarks = {};
+    for (const [_key, _value] of Object.entries(input.bookmarks)) {
+        let _bookmarksValue: UsersWatchUserResponseBookmarksValue;
+        _bookmarksValue = UsersWatchUserResponseBookmarksValueClone(_value);
+        _bookmarks[_key] = _bookmarksValue;
+    }
+    let _metadata: Record<string, any>;
+    _metadata = {};
+    for (const [_key, _value] of Object.entries(input.metadata)) {
+        let _metadataValue: any;
+        _metadataValue = _value;
+        _metadata[_key] = _metadataValue;
+    }
+    let _randomList: any[];
+    _randomList = [];
+    for (const _randomListEl of input.randomList) {
+        let _randomListElValue: any;
+        _randomListElValue = _randomListEl;
+        _randomList.push(_randomListElValue);
+    }
+    let _bio: string | undefined;
+    if (typeof input.bio !== 'undefined') {
+        _bio = input.bio;
+    }
+    return {
+        id: _id,
+        role: _role,
+        photo: _photo,
+        createdAt: _createdAt,
+        numFollowers: _numFollowers,
+        settings: _settings,
+        recentNotifications: _recentNotifications,
+        bookmarks: _bookmarks,
+        metadata: _metadata,
+        randomList: _randomList,
+        bio: _bio,
+    };
 }
 export function UsersWatchUserResponseFromJson(
     input: Record<string, unknown>,
@@ -7023,6 +8291,7 @@ export const $$UsersWatchUserResponse: TestClientValidator<UsersWatchUserRespons
     {
         new: UsersWatchUserResponseNew,
         validate: UsersWatchUserResponseValidate,
+        clone: UsersWatchUserResponseClone,
         fromJson: UsersWatchUserResponseFromJson,
         fromJsonString: UsersWatchUserResponseFromJsonString,
         toJsonString: UsersWatchUserResponseToJsonString,
@@ -7103,6 +8372,25 @@ export function UserPhotoValidate(input: unknown): input is UserPhoto {
         input.nanoseconds <= UINT64_MAX
     );
 }
+export function UserPhotoClone(input: UserPhoto): UserPhoto {
+    let _url: string;
+    _url = input.url;
+    let _width: number;
+    _width = input.width;
+    let _height: number;
+    _height = input.height;
+    let _bytes: bigint;
+    _bytes = input.bytes;
+    let _nanoseconds: bigint;
+    _nanoseconds = input.nanoseconds;
+    return {
+        url: _url,
+        width: _width,
+        height: _height,
+        bytes: _bytes,
+        nanoseconds: _nanoseconds,
+    };
+}
 export function UserPhotoFromJson(input: Record<string, unknown>): UserPhoto {
     let _url: string;
     _url = parseString(input.url);
@@ -7156,6 +8444,7 @@ export function UserPhotoToUrlSearchParamsString(input: UserPhoto): string {
 export const $$UserPhoto: TestClientValidator<UserPhoto> = {
     new: UserPhotoNew,
     validate: UserPhotoValidate,
+    clone: UserPhotoClone,
     fromJson: UserPhotoFromJson,
     fromJsonString: UserPhotoFromJsonString,
     toJsonString: UserPhotoToJsonString,
@@ -7179,6 +8468,16 @@ export function UserSettingsValidate(input: unknown): input is UserSettings {
         typeof input.notificationsEnabled === 'boolean' &&
         UserSettingsPreferredThemeValidate(input.preferredTheme)
     );
+}
+export function UserSettingsClone(input: UserSettings): UserSettings {
+    let _notificationsEnabled: boolean;
+    _notificationsEnabled = input.notificationsEnabled;
+    let _preferredTheme: UserSettingsPreferredTheme;
+    _preferredTheme = input.preferredTheme;
+    return {
+        notificationsEnabled: _notificationsEnabled,
+        preferredTheme: _preferredTheme,
+    };
 }
 export function UserSettingsFromJson(
     input: Record<string, unknown>,
@@ -7227,6 +8526,7 @@ export function UserSettingsToUrlSearchParamsString(
 export const $$UserSettings: TestClientValidator<UserSettings> = {
     new: UserSettingsNew,
     validate: UserSettingsValidate,
+    clone: UserSettingsClone,
     fromJson: UserSettingsFromJson,
     fromJsonString: UserSettingsFromJsonString,
     toJsonString: UserSettingsToJsonString,
@@ -7304,6 +8604,22 @@ export function UsersWatchUserResponseRecentNotificationsElementValidate(
             return false;
     }
 }
+export function UsersWatchUserResponseRecentNotificationsElementClone(
+    input: UsersWatchUserResponseRecentNotificationsElement,
+): UsersWatchUserResponseRecentNotificationsElement {
+    switch (input.notificationType) {
+        case 'POST_LIKE':
+            return UsersWatchUserResponseRecentNotificationsElementPostLikeClone(
+                input,
+            );
+        case 'POST_COMMENT':
+            return UsersWatchUserResponseRecentNotificationsElementPostCommentClone(
+                input,
+            );
+        default:
+            throw new Error('Unimplemented');
+    }
+}
 export function UsersWatchUserResponseRecentNotificationsElementFromJson(
     input: Record<string, unknown>,
 ): UsersWatchUserResponseRecentNotificationsElement {
@@ -7372,6 +8688,7 @@ export const $$UsersWatchUserResponseRecentNotificationsElement: TestClientValid
     {
         new: UsersWatchUserResponseRecentNotificationsElementNew,
         validate: UsersWatchUserResponseRecentNotificationsElementValidate,
+        clone: UsersWatchUserResponseRecentNotificationsElementClone,
         fromJson: UsersWatchUserResponseRecentNotificationsElementFromJson,
         fromJsonString:
             UsersWatchUserResponseRecentNotificationsElementFromJsonString,
@@ -7403,6 +8720,20 @@ export function UsersWatchUserResponseRecentNotificationsElementPostLikeValidate
         typeof input.postId === 'string' &&
         typeof input.userId === 'string'
     );
+}
+export function UsersWatchUserResponseRecentNotificationsElementPostLikeClone(
+    input: UsersWatchUserResponseRecentNotificationsElementPostLike,
+): UsersWatchUserResponseRecentNotificationsElementPostLike {
+    const _notificationType = 'POST_LIKE';
+    let _postId: string;
+    _postId = input.postId;
+    let _userId: string;
+    _userId = input.userId;
+    return {
+        notificationType: _notificationType,
+        postId: _postId,
+        userId: _userId,
+    };
 }
 export function UsersWatchUserResponseRecentNotificationsElementPostLikeFromJson(
     input: Record<string, unknown>,
@@ -7459,6 +8790,7 @@ const $$UsersWatchUserResponseRecentNotificationsElementPostLike: TestClientVali
         new: UsersWatchUserResponseRecentNotificationsElementPostLikeNew,
         validate:
             UsersWatchUserResponseRecentNotificationsElementPostLikeValidate,
+        clone: UsersWatchUserResponseRecentNotificationsElementPostLikeClone,
         fromJson:
             UsersWatchUserResponseRecentNotificationsElementPostLikeFromJson,
         fromJsonString:
@@ -7495,6 +8827,23 @@ export function UsersWatchUserResponseRecentNotificationsElementPostCommentValid
         typeof input.userId === 'string' &&
         typeof input.commentText === 'string'
     );
+}
+export function UsersWatchUserResponseRecentNotificationsElementPostCommentClone(
+    input: UsersWatchUserResponseRecentNotificationsElementPostComment,
+): UsersWatchUserResponseRecentNotificationsElementPostComment {
+    const _notificationType = 'POST_COMMENT';
+    let _postId: string;
+    _postId = input.postId;
+    let _userId: string;
+    _userId = input.userId;
+    let _commentText: string;
+    _commentText = input.commentText;
+    return {
+        notificationType: _notificationType,
+        postId: _postId,
+        userId: _userId,
+        commentText: _commentText,
+    };
 }
 export function UsersWatchUserResponseRecentNotificationsElementPostCommentFromJson(
     input: Record<string, unknown>,
@@ -7557,6 +8906,7 @@ const $$UsersWatchUserResponseRecentNotificationsElementPostComment: TestClientV
         new: UsersWatchUserResponseRecentNotificationsElementPostCommentNew,
         validate:
             UsersWatchUserResponseRecentNotificationsElementPostCommentValidate,
+        clone: UsersWatchUserResponseRecentNotificationsElementPostCommentClone,
         fromJson:
             UsersWatchUserResponseRecentNotificationsElementPostCommentFromJson,
         fromJsonString:
@@ -7587,6 +8937,18 @@ export function UsersWatchUserResponseBookmarksValueValidate(
         typeof input.postId === 'string' &&
         typeof input.userId === 'string'
     );
+}
+export function UsersWatchUserResponseBookmarksValueClone(
+    input: UsersWatchUserResponseBookmarksValue,
+): UsersWatchUserResponseBookmarksValue {
+    let _postId: string;
+    _postId = input.postId;
+    let _userId: string;
+    _userId = input.userId;
+    return {
+        postId: _postId,
+        userId: _userId,
+    };
 }
 export function UsersWatchUserResponseBookmarksValueFromJson(
     input: Record<string, unknown>,
@@ -7636,6 +8998,7 @@ export const $$UsersWatchUserResponseBookmarksValue: TestClientValidator<UsersWa
     {
         new: UsersWatchUserResponseBookmarksValueNew,
         validate: UsersWatchUserResponseBookmarksValueValidate,
+        clone: UsersWatchUserResponseBookmarksValueClone,
         fromJson: UsersWatchUserResponseBookmarksValueFromJson,
         fromJsonString: UsersWatchUserResponseBookmarksValueFromJsonString,
         toJsonString: UsersWatchUserResponseBookmarksValueToJsonString,

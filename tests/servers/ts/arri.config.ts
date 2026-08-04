@@ -22,6 +22,11 @@ export default defineConfig({
                 '../../clients/ts/testClient.g.ts',
             ),
             prettierOptions: prettierConfig,
+            features: {
+                validateFn: true,
+                cloneFn: true,
+                validatorObj: true,
+            },
         }),
         generators.typescriptClient({
             clientName: 'TestClientPrefixed',
@@ -34,6 +39,8 @@ export default defineConfig({
             rootService: 'tests',
             features: {
                 validateFn: false,
+                cloneFn: false,
+                validatorObj: false,
             },
         }),
         generators.dartClient({
