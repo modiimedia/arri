@@ -5,6 +5,7 @@ import {
 import {
     AScalarSchemaWithAdapters,
     type ASchemaOptions,
+    defaultCloneFunction,
     SchemaValidator,
     type ValidationContext,
     VALIDATOR_KEY,
@@ -23,6 +24,7 @@ export function boolean(
         output: false,
         optional: false,
         parse: parse,
+        clone: defaultCloneFunction,
         validate,
         serialize: serialize,
         coerce(input, context) {

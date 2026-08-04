@@ -278,6 +278,33 @@ export function validateObjectSchema(
     return true;
 }
 
+export function cloneObjectSchema<T>(
+    schema: AObjectSchemaWithAdapters<T>,
+    input: T,
+    context: ValidationContext,
+): T {
+    if (!isObject(input)) {
+        context.errors.push({
+            message: `unable to clone. expected object. got ${typeof input}`,
+            instancePath: context.instancePath,
+        });
+        return input;
+    }
+    const result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(schema.properties)) {
+        result[key] = value[VALIDATOR_KEY].clone((input as any)[key]);
+    }
+    for (const [key, value] of Object.entries(
+        schema.optionalProperties ?? {},
+    )) {
+        const toClone = (input as any)[key];
+        if (typeof toClone !== 'undefined') {
+            result[key] = value[VALIDATOR_KEY].clone(toClone);
+        }
+    }
+    return result as any;
+}
+
 /**
  * Create an object schema using a subset of keys from another object schema
  *
@@ -538,6 +565,7 @@ export function extend<
         parse(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, false);
         },
+        clone: cloneObjectSchema,
         coerce(input: unknown, context: ValidationContext) {
             return decodeObjectSchema(schema as any, input, context, true);
         },

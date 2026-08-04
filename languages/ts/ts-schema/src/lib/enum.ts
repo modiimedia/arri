@@ -5,6 +5,7 @@ import {
 import {
     type ASchemaOptions,
     AStringEnumSchemaWithAdapters,
+    defaultCloneFunction,
     SchemaValidator,
     ValidationContext,
     VALIDATOR_KEY,
@@ -83,6 +84,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
         output: paramA[0] ?? ('' as any),
         optional: false,
         parse: parse,
+        clone: defaultCloneFunction,
         coerce: (input, context) => {
             if (isType(input)) {
                 return input;

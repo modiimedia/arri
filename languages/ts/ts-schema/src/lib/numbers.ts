@@ -5,6 +5,7 @@ import {
 import {
     AScalarSchemaWithAdapters,
     type ASchemaOptions,
+    defaultCloneFunction,
     type NumberType,
     SchemaValidator,
     type ValidationContext,
@@ -202,6 +203,7 @@ export function int64(
         output: BigInt('0'),
         optional: false,
         validate: isType,
+        clone: defaultCloneFunction,
         parse: parse,
         coerce: parse,
         serialize(input, context) {
@@ -274,6 +276,7 @@ export function uint64(
         output: BigInt('0'),
         optional: false,
         validate: isType,
+        clone: defaultCloneFunction,
         parse: parse,
         coerce: parse,
         serialize(input, context) {
@@ -375,6 +378,7 @@ function numberScalarType<TType extends NumberType>(
         output: 0,
         optional: false,
         validate,
+        clone: defaultCloneFunction,
         parse: parse,
         serialize: serializeNumber,
         coerce(input, options) {

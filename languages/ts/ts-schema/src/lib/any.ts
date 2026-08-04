@@ -5,6 +5,7 @@ import {
 import {
     type ASchemaOptions,
     ASchemaWithAdapters,
+    defaultCloneFunction,
     SchemaValidator,
     ValidationContext,
     VALIDATOR_KEY,
@@ -32,6 +33,7 @@ export function any(options: ASchemaOptions = {}): ASchemaWithAdapters<any> {
         output: undefined as any,
         optional: false,
         parse: parse,
+        clone: defaultCloneFunction,
         coerce: (input, context) => {
             if (
                 context.instancePath.length === 0 &&

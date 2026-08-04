@@ -52,9 +52,14 @@ export interface SchemaValidator<T, TOptional extends boolean = false> {
     output: T;
     optional: TOptional;
     validate: (input: unknown) => input is T;
+    clone: (input: T) => T;
     parse: (input: unknown, context: ValidationContext) => T | undefined;
     coerce: (input: unknown, context: ValidationContext) => T | undefined;
     serialize: (input: T, context: ValidationContext) => string | undefined;
+}
+
+export function defaultCloneFunction<T>(input: T): T {
+    return input;
 }
 
 export interface SchemaMetadata {
