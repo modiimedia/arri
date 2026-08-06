@@ -28,12 +28,12 @@ const main = defineCommand({
                 choices: ['codegen', 'other'],
             },
         ]);
-        let projectName: string;
-        let pkgName: string;
-        let pkgLocation: string;
-        let depth: number;
-        let outDir: string;
-        let isCodegen: boolean;
+        let projectName: string = '';
+        let pkgName: string = '';
+        let pkgLocation: string = '';
+        let depth: number = 0;
+        let outDir: string = '';
+        let isCodegen: boolean = false;
         switch (result.type) {
             case 'codegen':
                 {

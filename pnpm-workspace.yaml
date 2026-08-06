@@ -3,6 +3,10 @@ packages:
   - playground/**
   - tooling/**
   - tests/**
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  nx: true
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild

@@ -28,13 +28,7 @@ import {
 } from './numberConstants';
 
 export type JsonSchemaType =
-    | 'string'
-    | 'number'
-    | 'integer'
-    | 'boolean'
-    | 'object'
-    | 'array'
-    | 'null';
+    'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null';
 
 export interface JsonSchema {
     $schema?: string;

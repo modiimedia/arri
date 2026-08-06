@@ -290,9 +290,9 @@ export type InferObjectOutput<
 export type InferObjectOptionalKeys<
     TInput extends Record<any, ASchema<any, any>>,
 > = {
-    [K in keyof TInput]: TInput[K][typeof VALIDATOR_KEY]['optional'] extends true
-        ? K
-        : never;
+    [
+        K in keyof TInput
+    ]: TInput[K][typeof VALIDATOR_KEY]['optional'] extends true ? K : never;
 }[keyof TInput];
 
 export type InferObjectRawType<TInput extends Record<any, ASchema<any, any>>> =

@@ -630,7 +630,7 @@ export async function createAppWithRoutesModule(
     );
     routes.sort((a, b) => (a.name < b.name ? -1 : 1));
     const module = await prettier.format(
-        `import sourceMapSupport from 'source-map-support';
+        `import { sourceMapSupport } from '@arrirpc/server';
         sourceMapSupport.install();
         import app from '${appImportParts.join('.')}';
         ${routes

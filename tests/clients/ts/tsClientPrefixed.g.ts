@@ -50,8 +50,7 @@ export class TestClientPrefixed {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     nested: TestClientPrefixedNestedService;
@@ -443,8 +442,7 @@ export class TestClientPrefixedNestedService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
 
@@ -1303,8 +1301,7 @@ export function FooObjectWithEveryTypeObjectToUrlSearchParamsString(
 }
 
 export type FooObjectWithEveryTypeDiscriminator =
-    | FooObjectWithEveryTypeDiscriminatorA
-    | FooObjectWithEveryTypeDiscriminatorB;
+    FooObjectWithEveryTypeDiscriminatorA | FooObjectWithEveryTypeDiscriminatorB;
 export function FooObjectWithEveryTypeDiscriminatorNew(): FooObjectWithEveryTypeDiscriminator {
     return FooObjectWithEveryTypeDiscriminatorANew();
 }
@@ -3034,8 +3031,7 @@ export function FooObjectWithEveryOptionalTypeFromJson(
         }
     }
     let _nestedArray:
-        | FooObjectWithEveryOptionalTypeNestedArrayElementElement[][]
-        | undefined;
+        FooObjectWithEveryOptionalTypeNestedArrayElementElement[][] | undefined;
     if (typeof input.nestedArray !== 'undefined') {
         if (Array.isArray(input.nestedArray)) {
             _nestedArray = [];
@@ -4836,9 +4832,7 @@ export function FooChatMessageParamsToUrlSearchParamsString(
 }
 
 export type FooChatMessage =
-    | FooChatMessageText
-    | FooChatMessageImage
-    | FooChatMessageUrl;
+    FooChatMessageText | FooChatMessageImage | FooChatMessageUrl;
 export function FooChatMessageNew(): FooChatMessage {
     return FooChatMessageTextNew();
 }
@@ -5636,9 +5630,7 @@ export function FooUserSettingsToUrlSearchParamsString(
 }
 
 export type FooUserSettingsPreferredTheme =
-    | 'dark-mode'
-    | 'light-mode'
-    | 'system';
+    'dark-mode' | 'light-mode' | 'system';
 export const FooUserSettingsPreferredTheme = {
     Darkmode: 'dark-mode',
     Lightmode: 'light-mode',

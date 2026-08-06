@@ -68,8 +68,7 @@ export class ExampleClient {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     books: ExampleClientBooksService;
@@ -116,8 +115,7 @@ export class ExampleClientBooksService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     constructor(

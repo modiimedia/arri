@@ -39,8 +39,7 @@ import { type MiddlewareEvent } from './middleware';
 import { type RouteOptions } from './route';
 
 export type RpcParamSchema<T = any> =
-    | AObjectSchema<T>
-    | ADiscriminatorSchema<T>;
+    AObjectSchema<T> | ADiscriminatorSchema<T>;
 
 export function isRpcParamSchema(input: unknown): input is RpcParamSchema<any> {
     return isAObjectSchema(input) || isADiscriminatorSchema(input);

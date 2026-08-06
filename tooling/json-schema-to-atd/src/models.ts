@@ -15,9 +15,7 @@ export const JsonSchemaComplexTypeValues = [
 ] as const;
 
 export type JsonSchemaType =
-    | JsonSchemaScalarType
-    | JsonSchemaNullType
-    | JsonSchemaComplexType;
+    JsonSchemaScalarType | JsonSchemaNullType | JsonSchemaComplexType;
 
 export type JsonSchemaTypeValue =
     | (typeof JsonSchemaScalarTypeValues)[number]
@@ -63,9 +61,7 @@ export function isJsonSchemaNullType(input: any): input is JsonSchemaNullType {
 }
 
 export type JsonSchemaComplexType =
-    | JsonSchemaObject
-    | JsonSchemaArray
-    | JsonSchemaRecord;
+    JsonSchemaObject | JsonSchemaArray | JsonSchemaRecord;
 export interface JsonSchemaObject extends JsonSchemaTypeBase {
     type: 'object';
     properties: Record<string, JsonSchemaType>;

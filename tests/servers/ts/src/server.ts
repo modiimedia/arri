@@ -1,5 +1,4 @@
-import { toNodeListener } from '@arrirpc/server';
-import { listen } from '@joshmossas/listhen';
+import { toNodeListener, listen } from '@arrirpc/server';
 import app from 'virtual:arri/app';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

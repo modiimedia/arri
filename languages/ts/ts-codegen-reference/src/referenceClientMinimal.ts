@@ -52,8 +52,7 @@ export class MinimalClient {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     books: MinimalClientBooksService;
@@ -100,8 +99,7 @@ export class MinimalClientBooksService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     constructor(

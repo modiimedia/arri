@@ -89,9 +89,7 @@ export interface CustomRpcDefinition<T = string> extends RpcDefinitionBase<T> {
     [key: string]: unknown;
 }
 export type RpcDefinition<T = string> =
-    | HttpRpcDefinition<T>
-    | WsRpcDefinition<T>
-    | CustomRpcDefinition<T>;
+    HttpRpcDefinition<T> | WsRpcDefinition<T> | CustomRpcDefinition<T>;
 
 export function isRpcDefinitionBase(
     input: unknown,

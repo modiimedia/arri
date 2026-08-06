@@ -64,8 +64,7 @@ export class TestClient {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     tests: TestClientTestsService;
@@ -95,8 +94,7 @@ export class TestClientTestsService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
     nested: TestClientTestsNestedService;
@@ -481,8 +479,7 @@ export class TestClientTestsNestedService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
 
@@ -579,8 +576,7 @@ export class TestClientUsersService {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
     private readonly _headers:
-        | HeaderMap
-        | (() => HeaderMap | Promise<HeaderMap>);
+        HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
 
@@ -831,8 +827,7 @@ export const $$DeprecatedRpcParams: TestClientValidator<DeprecatedRpcParams> = {
 };
 
 export type DiscriminatorWithEmptyObject =
-    | DiscriminatorWithEmptyObjectEmpty
-    | DiscriminatorWithEmptyObjectNotEmpty;
+    DiscriminatorWithEmptyObjectEmpty | DiscriminatorWithEmptyObjectNotEmpty;
 export function DiscriminatorWithEmptyObjectNew(): DiscriminatorWithEmptyObject {
     return DiscriminatorWithEmptyObjectEmptyNew();
 }
@@ -1808,8 +1803,7 @@ export const $$ObjectWithEveryTypeObject: TestClientValidator<ObjectWithEveryTyp
     };
 
 export type ObjectWithEveryTypeDiscriminator =
-    | ObjectWithEveryTypeDiscriminatorA
-    | ObjectWithEveryTypeDiscriminatorB;
+    ObjectWithEveryTypeDiscriminatorA | ObjectWithEveryTypeDiscriminatorB;
 export function ObjectWithEveryTypeDiscriminatorNew(): ObjectWithEveryTypeDiscriminator {
     return ObjectWithEveryTypeDiscriminatorANew();
 }
@@ -4520,8 +4514,7 @@ export function ObjectWithEveryOptionalTypeClone(
         );
     }
     let _nestedArray:
-        | ObjectWithEveryOptionalTypeNestedArrayElementElement[][]
-        | undefined;
+        ObjectWithEveryOptionalTypeNestedArrayElementElement[][] | undefined;
     if (typeof input.nestedArray !== 'undefined') {
         _nestedArray = [];
         for (const _nestedArrayEl of input.nestedArray) {
@@ -4686,8 +4679,7 @@ export function ObjectWithEveryOptionalTypeFromJson(
         }
     }
     let _nestedArray:
-        | ObjectWithEveryOptionalTypeNestedArrayElementElement[][]
-        | undefined;
+        ObjectWithEveryOptionalTypeNestedArrayElementElement[][] | undefined;
     if (typeof input.nestedArray !== 'undefined') {
         if (Array.isArray(input.nestedArray)) {
             _nestedArray = [];
