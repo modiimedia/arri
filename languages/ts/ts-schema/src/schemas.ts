@@ -1,5 +1,6 @@
 import {
     isSchemaFormDiscriminator,
+    isSchemaFormUnion,
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
@@ -224,18 +225,40 @@ export function isAStringEnumSchema(
 export type AStringEnumSchemaWithAdapters<T extends string[]> =
     AStringEnumSchema<T> & WithAdapters<T[number]>;
 
-// discriminators
+/**
+ * @deprecated move to union schemas
+ */
 export interface ADiscriminatorSchema<T> extends ASchema<T> {
     discriminator: string;
     mapping: Record<string, AObjectSchema<any>>;
 }
+/**
+ * @deprecated move to union schemas
+ */
 export function isADiscriminatorSchema(
     input: unknown,
 ): input is ADiscriminatorSchema<any> {
     return isASchema(input) && isSchemaFormDiscriminator(input);
 }
+/**
+ * @deprecated move to union schemas
+ */
 export type ADiscriminatorSchemaWithAdapters<T> = ADiscriminatorSchema<T> &
     WithAdapters<T>;
+
+export interface AUnionSchema<T> extends ASchema<T> {
+    union: Record<string, ASchema<any>>;
+}
+export type AUnionSchemaWithAdapter<T> = AUnionSchema<T> & WithAdapters<T>;
+export function isAUnionSchema(input: unknown): input is AUnionSchema<any> {
+    return isASchema(input) && isSchemaFormUnion(input);
+}
+
+export type InferUnionType<TMapping extends Record<string, ASchema<any>>> = {
+    [TKey in keyof TMapping]: {
+        [K in TKey]: InferType<TMapping[TKey]>;
+    };
+}[keyof TMapping];
 
 // records
 export interface ARecordSchema<
@@ -290,9 +313,9 @@ export type InferObjectOutput<
 export type InferObjectOptionalKeys<
     TInput extends Record<any, ASchema<any, any>>,
 > = {
-    [K in keyof TInput]: TInput[K][typeof VALIDATOR_KEY]['optional'] extends true
-        ? K
-        : never;
+    [
+        K in keyof TInput
+    ]: TInput[K][typeof VALIDATOR_KEY]['optional'] extends true ? K : never;
 }[keyof TInput];
 
 export type InferObjectRawType<TInput extends Record<any, ASchema<any, any>>> =

@@ -17,6 +17,7 @@ export type Schema =
     | SchemaFormProperties
     | SchemaFormValues
     | SchemaFormDiscriminator
+    | SchemaFormUnion
     | SchemaFormRef;
 export function isSchema(input: unknown): input is Schema {
     const allowedProperties = [
@@ -162,6 +163,9 @@ export function isSchemaFormValues(input: unknown): input is SchemaFormValues {
 }
 
 // TAGGED UNIONS //
+/**
+ * @deprecated will be removed in a future version. please migrate to SchemaFormUnion
+ */
 export interface SchemaFormDiscriminator extends SchemaFormEmpty {
     discriminator: string;
     mapping: Record<string, SchemaFormProperties>;
@@ -184,6 +188,27 @@ export function isSchemaFormDiscriminator(
                 return false;
             }
         }
+        return true;
+    }
+    return false;
+}
+
+/**
+ * A tagged union supporting any
+ */
+export interface SchemaFormUnion extends SchemaFormEmpty {
+    union: Record<string, Schema>;
+}
+
+export function isSchemaFormUnion(input: unknown): input is SchemaFormUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (
+        'union' in input &&
+        typeof input.union === 'object' &&
+        input.union !== null
+    ) {
         return true;
     }
     return false;

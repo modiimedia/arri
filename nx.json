@@ -53,5 +53,6 @@
       "cache": true
     }
   },
-  "useLegacyCache": false
+  "useLegacyCache": false,
+  "analytics": false
 }

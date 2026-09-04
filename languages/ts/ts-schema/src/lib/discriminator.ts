@@ -17,6 +17,8 @@ import {
 } from '../schemas';
 
 /**
+ * @deprecated migrate to a.union()
+ *
  * Create a discriminated union / tagged union
  *
  * This is an implementation of https://jsontypedef.com/docs/jtd-in-5-minutes/#discriminator-schemas
@@ -64,6 +66,42 @@ export function discriminator<
         JoinedDiscriminator<TDiscriminatorKey, TMapping>
     >
 >;
+/**
+ * @deprecated migrate to a.union()
+ *
+ * Create a discriminated union / tagged union
+ *
+ * This is an implementation of https://jsontypedef.com/docs/jtd-in-5-minutes/#discriminator-schemas
+ *
+ * @example
+ * const Schema = a.discriminator("eventType", {
+ *   CREATED: a.object({
+ *     id: a.string(),
+ *     createdAt: a.timestamp(),
+ *   }),
+ *   UPDATED: a.object({
+ *     id: a.string(),
+ *     createdAt: a.timestamp(),
+ *     updatedAt: a.timestamp(),
+ *   })
+ * })
+ * a.validate(Schema, {
+ *   eventType: "CREATED",
+ *   id: "1",
+ *   createdAt: new Date()
+ * }) // true
+ * a.validate(Schema, {
+ *   eventType: "UPDATED",
+ *   id: "2",
+ *   createdAt: new Date(),
+ *   updatedAt: new Date(),
+ * }) // true
+ * a.validate(Schema, {
+ *   eventType: "DELETED",
+ *   id: "1",
+ *   createdAt: new Date(),
+ * }) // false
+ */
 export function discriminator<
     TDiscriminatorKey extends string,
     TMapping extends Record<string, AObjectSchema<any>>,

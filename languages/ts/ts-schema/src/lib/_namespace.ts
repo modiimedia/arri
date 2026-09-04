@@ -8,6 +8,7 @@ export { any } from './any';
 export { array } from './array';
 export { boolean } from './boolean';
 export { discriminator } from './discriminator';
+export { union } from './union';
 export { enumerator, stringEnum } from './enum';
 export type { JsonSchema, ToJsonSchemaOptions } from './jsonSchema';
 export { schemaToJsonSchema, toJsonSchema } from './jsonSchema';

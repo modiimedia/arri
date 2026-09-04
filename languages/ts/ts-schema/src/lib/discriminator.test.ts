@@ -58,9 +58,9 @@ describe('Parsing', () => {
             id: '131241513',
             plan: 'PAID',
         };
-        expect(parse(createdInput));
-        expect(parse(deletedInput));
-        expect(parse(planChangedInput));
+        expect(parse(createdInput)).toBe(true);
+        expect(parse(deletedInput)).toBe(true);
+        expect(parse(planChangedInput)).toBe(true);
     });
     it('Rejects uncompliant objects', () => {
         const additionalFieldInput = {
