@@ -4,14 +4,10 @@ import {
     hideInvalidProperties,
 } from '../adapters';
 import {
-    AArraySchema,
-    AObjectSchemaWithAdapters,
-    AScalarSchemaWithAdapters,
     ASchema,
     ASchemaOptions,
-    ASchemaWithAdapters,
     AUnionSchema,
-    AUnionSchemaWithAdapter,
+    AUnionSchemaWithAdapters,
     InferType,
     InferUnionType,
     isObject,
@@ -23,15 +19,15 @@ import {
 export function union<TUnion extends Record<string, ASchema<any>>>(
     union: TUnion,
     opts?: ASchemaOptions,
-): AUnionSchema<InferUnionType<TUnion>>;
+): AUnionSchemaWithAdapters<InferUnionType<TUnion>>;
 export function union<TUnion extends Record<string, ASchema<any>>>(
     id: string,
     union: TUnion,
-): AUnionSchema<InferUnionType<TUnion>>;
+): AUnionSchemaWithAdapters<InferUnionType<TUnion>>;
 export function union<TUnion extends Record<string, ASchema<any>>>(
     propA: string | TUnion,
     propB?: TUnion | ASchemaOptions,
-): AUnionSchema<InferUnionType<TUnion>> {
+): AUnionSchemaWithAdapters<InferUnionType<TUnion>> {
     type T = InferType<AUnionSchema<InferUnionType<TUnion>>>;
     const isIdShorthand = typeof propA === 'string';
     const union = (isIdShorthand ? propB : propA) as TUnion;
@@ -79,7 +75,7 @@ export function union<TUnion extends Record<string, ASchema<any>>>(
             return `{${strParts.join(',')}}`;
         },
     };
-    const result: AUnionSchemaWithAdapter<InferUnionType<TUnion>> = {
+    const result: AUnionSchemaWithAdapters<InferUnionType<TUnion>> = {
         union: union,
         metadata: opts,
         [VALIDATOR_KEY]: validator,

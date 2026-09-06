@@ -68,13 +68,13 @@ const RecursiveObject = a.recursive<RecursiveObject>((self) =>
     }),
 );
 
-export type RecursiveUnion =
-    | { type: 'CHILD'; data: RecursiveUnion }
-    | { type: 'CHILDREN'; data: RecursiveUnion[] }
+export type RecursiveDiscriminator =
+    | { type: 'CHILD'; data: RecursiveDiscriminator }
+    | { type: 'CHILDREN'; data: RecursiveDiscriminator[] }
     | { type: 'TEXT'; data: string }
     | { type: 'SHAPE'; data: { width: number; height: number } };
-export const RecursiveUnion = a.recursive<RecursiveUnion>(
-    'RecursiveUnion',
+export const RecursiveDiscriminator = a.recursive<RecursiveDiscriminator>(
+    'RecursiveDiscriminator',
     (self) =>
         a.discriminator('type', {
             CHILD: a.object({ data: self }),
@@ -91,6 +91,38 @@ export const RecursiveUnion = a.recursive<RecursiveUnion>(
                 }),
             }),
         }),
+);
+
+type RecursiveUnion =
+    | {
+          child: RecursiveUnion;
+      }
+    | {
+          children: RecursiveUnion[];
+      }
+    | {
+          text: string;
+      }
+    | {
+          shape: {
+              width: number;
+              height: number;
+              color: string;
+          };
+      };
+const RecursiveUnion = a.recursive<RecursiveUnion>(
+    (self) =>
+        a.union({
+            child: self,
+            children: a.array(self),
+            text: a.string(),
+            shape: a.object({
+                width: a.float64(),
+                height: a.float64(),
+                color: a.string(),
+            }),
+        }),
+    { id: 'RecursiveUnion' },
 );
 
 export const validationTestSuites: Record<
@@ -848,7 +880,7 @@ export const validationTestSuites: Record<
         ],
     },
     'recursive discriminator': {
-        schema: RecursiveUnion,
+        schema: RecursiveDiscriminator,
         goodInputs: [
             {
                 type: 'CHILD',
