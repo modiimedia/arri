@@ -369,8 +369,6 @@ function unionTemplate(input: TemplateInput<AUnionSchema<any>>): string {
         }
         mainTemplate = `${fnName}(${input.val})`;
     }
-    console.log('TEMPLATE', mainTemplate);
-    console.log('SUB FUNC', input.subFunctions[fnName]);
     if (input.schema.isNullable) {
         return `${input.val} === null || (${mainTemplate})`;
     }

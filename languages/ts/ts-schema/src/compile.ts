@@ -7,22 +7,22 @@ import { createSerializationV2Template as getSchemaSerializationCode } from './c
 import { createValidationTemplate as getSchemaValidationCode } from './compiler/validate';
 import { Result, ValidationException } from './errors';
 import {
+    int8Max,
+    int8Min,
     int16Max,
     int16Min,
     int32Max,
     int32Min,
     int64Max,
     int64Min,
-    int8Max,
-    int8Min,
+    uint8Max,
+    uint8Min,
     uint16Max,
     uint16Min,
     uint32Max,
     uint32Min,
     uint64Max,
     uint64Min,
-    uint8Max,
-    uint8Min,
 } from './lib/numberConstants';
 import {
     type ASchema,

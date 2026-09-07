@@ -2,9 +2,9 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
+    "source.fixAll.eslint": "explicit"
   },
+  "eslint.useFlatConfig": true,
   "dart.onlyAnalyzeProjectsWithOpenFiles": true,
   "dart.projectSearchDepth": 3,
   "dart.analysisExcludedFolders": [

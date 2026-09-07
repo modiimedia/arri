@@ -8,7 +8,6 @@ import {
     type ARefSchema,
     ARefSchemaWithAdapters,
     type ASchemaOptions,
-    AUnionSchema,
     AUnionSchemaWithAdapters,
     SchemaValidator,
     VALIDATOR_KEY,

@@ -22,18 +22,18 @@ import {
 import { camelCase } from 'scule';
 
 import {
+    int8Max,
+    int8Min,
     int16Max,
     int16Min,
     int32Max,
     int32Min,
-    int8Max,
-    int8Min,
+    uint8Max,
+    uint8Min,
     uint16Max,
     uint16Min,
     uint32Max,
     uint32Min,
-    uint8Max,
-    uint8Min,
 } from '../lib/numberConstants';
 import { refFunctionName, type TemplateInput } from './common';
 

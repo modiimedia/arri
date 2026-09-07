@@ -1,4 +1,5 @@
 import { SchemaFormUnion } from '@arrirpc/type-defs';
+
 import { a, matchUnion, unwrapUnion } from '../_index';
 
 const UnionSchema = a.union('UnionSchema', {
@@ -147,6 +148,9 @@ describe('Serialization', () => {
         );
         expect(a.serializeUnsafe(UnionSchema, numberInput)).toBe(
             `{"NUMBER":15}`,
+        );
+        expect(a.serializeUnsafe(UnionSchema, arrayInput)).toBe(
+            `{"ARRAY":["hello","world"]}`,
         );
     });
 });
