@@ -4,7 +4,6 @@
     "source.fixAll": "explicit",
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.useFlatConfig": true,
   "dart.onlyAnalyzeProjectsWithOpenFiles": true,
   "dart.projectSearchDepth": 3,
   "dart.analysisExcludedFolders": [
@@ -78,5 +77,11 @@
     "editor.insertSpaces": true,
     "editor.defaultFormatter": "golang.go"
   },
-  "eslint.validate": ["json"]
+  "eslint.validate": [
+    "json",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
 }
