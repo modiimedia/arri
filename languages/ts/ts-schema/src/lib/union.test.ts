@@ -33,7 +33,7 @@ describe('Type Inference', () => {
 });
 
 describe('Parsing', () => {
-    const parse = (input: unknown) => a.parse(UnionSchema, input).success;
+    const parse = (input: unknown) => a.parse(UnionSchema, input);
     it('parses compliant objects', () => {
         const objectInput: UnionSchema = {
             OBJECT: {
@@ -50,18 +50,40 @@ describe('Parsing', () => {
         const arrayInput: UnionSchema = {
             ARRAY: ['hello', 'world'],
         };
-        expect(parse(objectInput)).toBe(true);
-        expect(parse(numberInput)).toBe(true);
-        expect(parse(booleanInput)).toBe(true);
-        expect(parse(arrayInput)).toBe(true);
+        const objectResult = parse(objectInput);
+        expect(objectResult.success).toBe(true);
+        if (objectResult.success) {
+            expect(objectResult.value).toStrictEqual({
+                OBJECT: { foo: 'hello world', bar: false },
+            });
+        }
+        const numberResult = parse(numberInput);
+        expect(numberResult.success).toBe(true);
+        if (numberResult.success) {
+            expect(numberResult.value).toStrictEqual({ NUMBER: 15 });
+        }
+        const booleanResult = parse(booleanInput);
+        expect(booleanResult.success).toBe(true);
+        if (booleanResult.success) {
+            expect(booleanResult.value).toStrictEqual({
+                BOOLEAN: true,
+            });
+        }
+        const arrayResult = parse(arrayInput);
+        expect(arrayResult.success).toBe(true);
+        if (arrayResult.success) {
+            expect(arrayResult.value).toStrictEqual({
+                ARRAY: ['hello', 'world'],
+            });
+        }
     });
     it('reject uncompliant objects', () => {
         const myType = {
             FOO: 'foo',
         };
         const emptyObject = {};
-        expect(parse(myType)).toBe(false);
-        expect(parse(emptyObject)).toBe(false);
+        expect(parse(myType).success).toBe(false);
+        expect(parse(emptyObject).success).toBe(false);
     });
 });
 
@@ -94,6 +116,38 @@ describe('Validation', () => {
         const emptyObject = {};
         expect(a.validate(UnionSchema, myType)).toBe(false);
         expect(a.validate(UnionSchema, emptyObject)).toBe(false);
+    });
+});
+
+describe('Serialization', () => {
+    it('serializes correctly', () => {
+        const objectInput: UnionSchema = {
+            OBJECT: {
+                foo: 'hello world',
+                bar: false,
+            },
+        };
+        const numberInput: UnionSchema = {
+            NUMBER: 15,
+        };
+        const booleanInput: UnionSchema = {
+            BOOLEAN: true,
+        };
+        const arrayInput: UnionSchema = {
+            ARRAY: ['hello', 'world'],
+        };
+        expect(a.serializeUnsafe(UnionSchema, objectInput)).toBe(
+            `{"OBJECT":{"foo":"hello world","bar":false}}`,
+        );
+        expect(a.serializeUnsafe(UnionSchema, numberInput)).toBe(
+            `{"NUMBER":15}`,
+        );
+        expect(a.serializeUnsafe(UnionSchema, booleanInput)).toBe(
+            `{"BOOLEAN":true}`,
+        );
+        expect(a.serializeUnsafe(UnionSchema, numberInput)).toBe(
+            `{"NUMBER":15}`,
+        );
     });
 });
 

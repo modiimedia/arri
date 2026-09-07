@@ -35,7 +35,8 @@ Originally this library was created as a way for building schemas for [Json Type
     - [Arrays / Lists](#arrays--lists)
     - [Objects](#objects)
     - [Records / Maps](#records--maps)
-    - [Discriminated Unions](#discriminated-unions)
+    - [Discriminated Unions (Deprecated)](#discriminated-unions-deprecated)
+    - [Tagged Unions](#tagged-unions)
     - [Recursive Types](#recursive-types)
 - [Modifiers](#modifiers)
     - [Optional](#optional)
@@ -492,7 +493,9 @@ a.validate(R, {
 }
 ```
 
-### Discriminated Unions
+### Discriminated Unions (Deprecated)
+
+_Warning: this specific type definition has been deprecated and replaced with the [union](#tagged-unions) type def which can be seen below. The main benefit that the union type has over discriminators is that with discriminators every variants must be an object so that it can append the "discriminator" field (such as `type`). In contrast union types can use any sub type in their variants._
 
 **Usage**
 
@@ -552,6 +555,127 @@ a.validate(Shape, {
             }
         }
     }
+}
+```
+
+### Tagged Unions
+
+The `a.union()` type def allows you to create tagged unions of any sub schema. This is in contrast to the deprecated [discriminator](#discriminated-unions-deprecated) type def which can only create a union of objects.
+
+**Usage**
+
+```ts
+const CategoryFilter = a.union({
+    one: a.string(),
+    many: a.array(a.string()),
+});
+
+type CategoryFilter = a.infer<typeof CategoryFilter>;
+// { one: string } | { many: string[] }
+
+a.validate(CategoryFilter, { one: 'category-1' }); // true
+a.validate(CategoryFilter, { many: ['category-1', 'category-2'] }); // true
+a.validate(CategoryFilter, { all: true }); // false
+a.validate(CategoryFilter, { many: 'category-1' }); // false
+```
+
+**Outputted ATD**
+
+```json
+{
+    "union": {
+        "one": {
+            "type": "string"
+        },
+        "many": {
+            "elements": {
+                "type": "string"
+            }
+        }
+    }
+}
+```
+
+#### Union Helpers
+
+This library comes with some helpers to make interacting with unions easier
+
+**matchUnion()**
+
+This helper forces you to handle every possible variant case
+
+```ts
+const CategoryFilter = a.union({
+    one: a.string(),
+    many: a.array(a.string()),
+});
+type CategoryFilter = a.infer<typeof CategoryFilter>;
+
+const filter: CategoryFilter = { one: 'category-1' };
+
+// this forces us to handle every possible case
+matchUnion(filter, {
+    one: (value) => {
+        console.log(value); // 'category-1'
+    },
+    many: (value) => {
+        console.log(value); // this branch doesn't get reached
+    },
+});
+```
+
+`matchUnion()` will also return the result of the branch that it hits
+
+```ts
+const Shape = a.union({
+    rectangle: a.object({
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    circle: a.object({
+        radius: a.float64(),
+    }),
+});
+type Shape = a.infer<typeof Shape>;
+
+function getShapeArea(shape: Shape): number {
+    return matchUnion(shape, {
+        rectangle: (rect) => rect.width * rect.height,
+        circle: (circle) => 3.14 * (circle.radius ^ 2),
+    });
+}
+
+getShapeArea({ rectangle: { width: 10, height: 10 } }); // 100
+getShapeArea({ circle: { radius: 10 } }); // 314
+```
+
+**unwrapUnion()**
+
+This helper makes it easy to use a union over a switch statement
+
+```ts
+// this is the same CategoryFilter type as above
+const CategoryFilter = a.union({
+    one: a.string(),
+    many: a.array(a.string()),
+});
+type CategoryFilter = a.infer<typeof CategoryFilter>;
+
+const filter: CategoryFilter = { one: 'category-foo' };
+
+const [key, value] = unwrapUnion(filter);
+switch (key) {
+    case 'one': {
+        console.log(value); // 'category-foo'
+        break;
+    }
+    case 'many': {
+        console.log(value); // this branch isn't reached
+        break;
+    }
+    default:
+        key satisfies never;
+        break;
 }
 ```
 

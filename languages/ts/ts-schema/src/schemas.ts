@@ -1,10 +1,10 @@
 import {
     isSchemaFormDiscriminator,
-    isSchemaFormUnion,
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormRef,
+    isSchemaFormUnion,
     isSchemaFormValues,
     type Type as JtdType,
     TypeValues,

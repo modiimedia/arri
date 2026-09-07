@@ -7,7 +7,6 @@ import {
     isSchemaFormType,
     isSchemaFormUnion,
     isSchemaFormValues,
-    SchemaFormUnion,
     type Schema,
     type SchemaFormDiscriminator,
     type SchemaFormElements,
@@ -16,6 +15,7 @@ import {
     type SchemaFormProperties,
     type SchemaFormRef,
     type SchemaFormType,
+    type SchemaFormUnion,
     type SchemaFormValues,
 } from '@arrirpc/type-defs';
 import { camelCase } from 'scule';

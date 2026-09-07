@@ -356,7 +356,7 @@ function unionTemplate(input: TemplateInput<AUnionSchema<any>>): string {
             );
             parts.push(')');
         }
-        let mainTemplate = `typeof ${inputName} === 'object' && (${parts.join('')})`;
+        const mainTemplate = `typeof ${inputName} === 'object' && (${parts.join('')})`;
         return mainTemplate;
     }
     const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');

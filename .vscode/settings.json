@@ -1,7 +1,9 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
   },
   "dart.onlyAnalyzeProjectsWithOpenFiles": true,
   "dart.projectSearchDepth": 3,

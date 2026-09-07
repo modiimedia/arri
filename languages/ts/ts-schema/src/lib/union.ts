@@ -13,7 +13,6 @@ import {
     isObject,
     SchemaValidator,
     VALIDATOR_KEY,
-    WithAdapters,
 } from '../schemas';
 
 export function union<TUnion extends Record<string, ASchema<any>>>(
