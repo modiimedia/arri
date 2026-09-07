@@ -49,12 +49,18 @@ describe('parsing test suites', () => {
                     if (!actualResult.success) {
                         console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should parse');
+                        console.log(actualResult.errors);
                     }
                     expect(actualResult.success).toBe(true);
                     if (!actualResult.success) return;
                     const serializedResult = Compiled.serialize(
                         actualResult.value,
                     );
+                    if (!serializedResult.success) {
+                        console.error('code', Compiled.compiledCode.serialize);
+                        console.error(`input`, actualResult.value);
+                        console.error('error', serializedResult.errors);
+                    }
                     expect(serializedResult.success).toBe(true);
                     if (!serializedResult.success) return;
                     expect(actualResult.value).toStrictEqual(expectedResult);

@@ -223,10 +223,6 @@ describe('validation', () => {
                 },
             ],
         };
-        console.log(
-            a.parse(RecursiveUnion, input),
-            a.validate(RecursiveUnion, input),
-        );
         expect(a.validate(RecursiveUnion, input)).toBe(true);
         const badInput = {
             children: [

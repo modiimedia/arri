@@ -6,7 +6,9 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
+    SchemaFormUnion,
     type Schema,
     type SchemaFormDiscriminator,
     type SchemaFormElements,
@@ -33,7 +35,7 @@ import {
     uint32Max,
     uint32Min,
 } from '../lib/numberConstants';
-import { type TemplateInput } from './common';
+import { refFunctionName, type TemplateInput } from './common';
 
 export function createParsingTemplate(
     input: string,
@@ -69,12 +71,12 @@ export function createParsingTemplate(
         subFunctions,
         shouldCoerce: shouldCoerce,
     });
-
     if (
         isSchemaFormProperties(schema) ||
         isSchemaFormValues(schema) ||
         isSchemaFormElements(schema) ||
-        isSchemaFormDiscriminator(schema)
+        isSchemaFormDiscriminator(schema) ||
+        isSchemaFormUnion(schema)
     ) {
         jsonParseCheck = `if (typeof ${input} === 'string') {
             const json = JSON.parse(${input});
@@ -149,6 +151,9 @@ export function schemaTemplate(input: TemplateInput): string {
     }
     if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
+    }
+    if (isSchemaFormUnion(input.schema)) {
+        return unionTemplate(input);
     }
     if (isSchemaFormRef(input.schema)) {
         return refTemplate(input);
@@ -576,8 +581,8 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             input.schemaPath
         }", "Expected object");
     }`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
-    if (Object.keys(input.subFunctions).includes(fnName)) {
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
+    if (fnName in input.subFunctions) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
                     let _fnTarget
@@ -642,6 +647,9 @@ export function arrayTemplate(
     return mainTemplate;
 }
 
+/**
+ * @deprecated
+ */
 export function discriminatorTemplate(
     input: TemplateInput<SchemaFormDiscriminator>,
 ): string {
@@ -683,7 +691,7 @@ export function discriminatorTemplate(
             input.schemaPath
         }", "Expected Object.");
     }`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
@@ -707,6 +715,58 @@ export function discriminatorTemplate(
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
+        }`;
+    }
+    return mainTemplate;
+}
+
+export function unionTemplate(input: TemplateInput<SchemaFormUnion>): string {
+    function buildMain(inputName: string, targetName: string) {
+        const parsingParts: string[] = [];
+        const unionKeys = Object.keys(input.schema.union);
+        for (let i = 0; i < unionKeys.length; i++) {
+            const key = unionKeys[i]!;
+            const variantSchema = input.schema.union[key]!;
+            if (i > 0) {
+                parsingParts.push(`else if (\`${key}\` in ${inputName}) {`);
+            } else {
+                parsingParts.push(`if (\`${key}\` in ${inputName}) {`);
+            }
+            parsingParts.push(`${targetName} = {}`);
+            const innerTemplate = schemaTemplate({
+                val: `${inputName}.${key}`,
+                targetVal: `${targetName}.${key}`,
+                schema: variantSchema,
+                instancePath: `${input.instancePath}/${key}`,
+                schemaPath: `${input.schemaPath}/union/${key}`,
+                subFunctions: input.subFunctions,
+                shouldCoerce: input.shouldCoerce,
+            });
+            parsingParts.push(innerTemplate);
+            parsingParts.push('}');
+        }
+        parsingParts.push(`else {
+        $fallback("${input.instancePath}", "${input.schemaPath}/union", "no matching union variants");    
+    }`);
+        return parsingParts.join('\n');
+    }
+    let mainTemplate = buildMain(input.val, input.targetVal);
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
+    if (fnName in input.subFunctions) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
+                let _fnTarget;
+                ${buildMain('_fnVal', '_fnTarget')}
+                return _fnTarget;
+            }`;
+        }
+        mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
+    }
+    if (input.schema.isNullable) {
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}    
         }`;
     }
     return mainTemplate;
@@ -753,12 +813,8 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
     return mainTemplate;
 }
 
-function refFunctionName(id: string) {
-    return `__parse_${id}`;
-}
-
 export function refTemplate(input: TemplateInput<SchemaFormRef>): string {
-    const fnName = refFunctionName(input.schema.ref);
+    const fnName = refFunctionName('parse', input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }

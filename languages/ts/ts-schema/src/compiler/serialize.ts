@@ -5,7 +5,9 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
+    SchemaFormUnion,
     type Schema,
     type SchemaFormDiscriminator,
     type SchemaFormElements,
@@ -18,7 +20,7 @@ import {
 } from '@arrirpc/type-defs';
 import { camelCase } from 'scule';
 
-import { type TemplateInput } from './common';
+import { refFunctionName, type TemplateInput } from './common';
 
 interface SerializeTemplateInput<
     TSchema extends Schema = any,
@@ -76,6 +78,9 @@ export function template(input: SerializeTemplateInput): string {
     }
     if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
+    }
+    if (isSchemaFormUnion(input.schema)) {
+        return unionTemplate(input);
     }
     if (isSchemaFormRef(input.schema)) {
         return refTemplate(input);
@@ -397,7 +402,10 @@ export function objectTemplate(
     }
     templateParts.push(`${input.targetVal} += '}';`);
     let mainTemplate = templateParts.join('\n');
-    const fnName = refFnName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
     if (hasFunctionName(fnName, input.subFunctions)) {
         if (!hasFunctionBody(fnName, input.subFunctions)) {
             input.subFunctions[fnName] = `function ${fnName}(__inputVal__) {
@@ -565,7 +573,10 @@ function discriminatorTemplate(
     }
     templateParts.push('}');
     let mainTemplate = templateParts.join('\n');
-    const fnName = refFnName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
     if (hasFunctionName(fnName, input.subFunctions)) {
         if (!hasFunctionBody(fnName, input.subFunctions)) {
             input.subFunctions[fnName] = `function ${fnName}(__fnInput__){
@@ -583,6 +594,59 @@ function discriminatorTemplate(
         }`;
     }
     return mainTemplate.split(inputPlaceholder).join(input.val);
+}
+
+function unionTemplate(input: SerializeTemplateInput<SchemaFormUnion>): string {
+    function buildMain(inputName: string): string {
+        const parts: string[] = [];
+        parts.push(`${input.targetVal} += '{';`);
+        const keys = Object.keys(input.schema.union);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]!;
+            const subSchema = input.schema.union[key]!;
+            if (i > 0) {
+                parts.push(` else if (\`${key}\` in ${inputName}) {`);
+            } else {
+                parts.push(`if (\`${key}\` in ${inputName}) {`);
+            }
+            parts.push(`
+                ${input.targetVal} += \`"${key}":\`;
+                ${template({
+                    val: `${inputName}.${key}`,
+                    targetVal: input.targetVal,
+                    schema: subSchema,
+                    instancePath: `${input.instancePath}/${key}`,
+                    schemaPath: `${input.schemaPath}/union/${key}`,
+                    subFunctions: input.subFunctions,
+                    shouldCoerce: input.shouldCoerce,
+                    outputPrefix: input.outputPrefix,
+                    needsSanitization: input.needsSanitization,
+                })}
+            }`);
+        }
+        parts.push(`${input.targetVal} += '}';`);
+        return parts.join('\n');
+    }
+    let mainTemplate = buildMain(input.val);
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
+    if (hasFunctionName(fnName, input.subFunctions)) {
+        if (!hasFunctionBody(fnName, input.subFunctions)) {
+            input.subFunctions[fnName] = `function ${fnName}(__fnInput__){
+                ${buildMain(`__fnInput__`)};
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val});`;
+    }
+    if (input.schema.isNullable) {
+        return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
+            ${mainTemplate}
+        } else {
+            ${input.targetVal} += '${input.outputPrefix}null'`;
+    }
+    return mainTemplate;
 }
 
 export function anyTemplate(
@@ -606,14 +670,10 @@ export function anyTemplate(
     }`;
 }
 
-function refFnName(id: string) {
-    return `__serialize_${id}`;
-}
-
 export function refTemplate(
     input: SerializeTemplateInput<SchemaFormRef>,
 ): string {
-    const fnName = refFnName(input.schema.ref);
+    const fnName = refFunctionName('serialize', input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }

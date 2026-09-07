@@ -23,6 +23,7 @@ import {
     type AScalarSchema,
     type ASchema,
     type AStringEnumSchema,
+    AUnionSchema,
     isAAraySchema,
     isADiscriminatorSchema,
     isAObjectSchema,
@@ -30,8 +31,9 @@ import {
     isARefSchema,
     isAScalarSchema,
     isAStringEnumSchema,
+    isAUnionSchema,
 } from '../schemas';
-import { type TemplateInput } from './common';
+import { refFunctionName, type TemplateInput } from './common';
 
 export function createValidationTemplate(
     inputName: string,
@@ -99,6 +101,9 @@ function schemaTemplate(input: TemplateInput): string {
     }
     if (isADiscriminatorSchema(input.schema)) {
         return discriminatorTemplate(input);
+    }
+    if (isAUnionSchema(input.schema)) {
+        return unionTemplate(input);
     }
     if (isARefSchema(input.schema)) {
         return refTemplate(input);
@@ -219,7 +224,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         }
     }
     let mainTemplate = parts.join(' && ');
-    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(input) {
@@ -282,6 +287,9 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
     return mainTemplate;
 }
 
+/**
+ * @deprecated
+ */
 function discriminatorTemplate(
     input: TemplateInput<ADiscriminatorSchema<any>>,
 ): string {
@@ -308,7 +316,7 @@ function discriminatorTemplate(
     let mainTemplate = `typeof ${input.val} === 'object' && ${
         input.val
     } !== null && (${parts.join(' || ')})`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');
 
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
@@ -325,12 +333,52 @@ function discriminatorTemplate(
     return mainTemplate;
 }
 
-function refFunctionName(id: string) {
-    return `__validate_${id}`;
+function unionTemplate(input: TemplateInput<AUnionSchema<any>>): string {
+    function buildMain(inputName: string): string {
+        const parts: string[] = [];
+        const unionKeys = Object.keys(input.schema.union);
+        for (let i = 0; i < unionKeys.length; i++) {
+            const key = unionKeys[i]!;
+            const subSchema = input.schema.union[key]!;
+            if (i > 0) parts.push(' || ');
+            parts.push('(');
+            parts.push(`\`${key}\` in ${input.val} && `);
+            parts.push(
+                schemaTemplate({
+                    schema: subSchema,
+                    val: `${inputName}.${key}`,
+                    targetVal: '',
+                    instancePath: `${input.instancePath}/${key}`,
+                    schemaPath: `${input.schemaPath}/union/${key}`,
+                    subFunctions: input.subFunctions,
+                    shouldCoerce: undefined,
+                }),
+            );
+            parts.push(')');
+        }
+        let mainTemplate = `typeof ${inputName} === 'object' && (${parts.join('')})`;
+        return mainTemplate;
+    }
+    const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');
+    let mainTemplate = buildMain(input.val);
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(input) {
+                return ${buildMain('input')};
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+    console.log('TEMPLATE', mainTemplate);
+    console.log('SUB FUNC', input.subFunctions[fnName]);
+    if (input.schema.isNullable) {
+        return `${input.val} === null || (${mainTemplate})`;
+    }
+    return mainTemplate;
 }
 
 function refTemplate(input: TemplateInput<ARefSchema<any>>) {
-    const fnName = refFunctionName(input.schema.ref);
+    const fnName = refFunctionName('validate', input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }

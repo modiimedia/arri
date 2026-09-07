@@ -42,13 +42,13 @@ export function union<TUnion extends Record<string, ASchema<any>>>(
         input: unknown,
         context: ValidationContext,
     ): T | undefined => {
-        return parse(union, input, context, false);
+        return parse(union, input, context, false) as any;
     };
     const coerceType = (
         input: unknown,
         context: ValidationContext,
     ): T | undefined => {
-        return parse(union, input, context, true);
+        return parse(union, input, context, true) as any;
     };
     const validator: SchemaValidator<InferUnionType<TUnion>, false> = {
         output: {} as any,
@@ -89,12 +89,11 @@ function validate(union: Record<string, ASchema<any>>, input: unknown) {
     if (!isObject(input)) {
         return false;
     }
-    const keys = Object.keys(union);
-    if (keys.length > 1 || keys.length === 0) return false;
-    for (const key of keys) {
-        if (!(key in input)) continue;
-        const data = input[key]!;
-        return union[key]![VALIDATOR_KEY].validate(data);
+    for (const key of Object.keys(union)) {
+        if (key in input) {
+            const data = (input as any)[key];
+            return union[key]![VALIDATOR_KEY].validate(data);
+        }
     }
     return false;
 }
@@ -143,9 +142,13 @@ function parse(
             exitOnFirstError: context.exitOnFirstError,
         };
         if (coerce) {
-            return value[VALIDATOR_KEY].coerce(data, newContext);
+            return {
+                [key]: value[VALIDATOR_KEY].coerce(data, newContext),
+            };
         }
-        return value[VALIDATOR_KEY].parse(data, newContext);
+        return {
+            [key]: value[VALIDATOR_KEY].parse(data, newContext),
+        };
     }
     context.errors.push({
         message: `No matching union variant. Available variants: [${Object.keys(union).join(', ')}]`,

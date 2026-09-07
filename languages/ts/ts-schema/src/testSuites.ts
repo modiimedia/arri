@@ -645,6 +645,78 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    union: {
+        schema: a.union({
+            object: a.object({
+                foo: a.string(),
+                bar: a.boolean(),
+            }),
+            text: a.string(),
+            array: a.array(a.boolean()),
+            record: a.record(a.uint32()),
+            nullableBool: a.nullable(a.boolean()),
+        }),
+        goodInputs: [
+            {
+                object: {
+                    foo: 'string',
+                    bar: true,
+                },
+            },
+            {
+                text: 'hello world',
+            },
+            {
+                array: [true, false, false],
+            },
+            {
+                record: {
+                    a: 13,
+                    b: 49,
+                    c: 99,
+                },
+            },
+            {
+                nullableBool: true,
+            },
+            {
+                nullableBool: null,
+            },
+            {
+                nullableBool: false,
+            },
+        ],
+        badInputs: [
+            {
+                object: {
+                    foo: 'string',
+                    bar: 'true',
+                },
+            },
+            {
+                text: null,
+            },
+            {
+                array: [true, false, 1],
+            },
+            {
+                record: {
+                    a: 13,
+                    b: 49,
+                    c: '99',
+                },
+            },
+            {
+                nullableBool: 'true',
+            },
+            {
+                nullableBool: undefined,
+            },
+            {
+                foo: true,
+            },
+        ],
+    },
     'record with boolean values': {
         schema: a.record(a.boolean()),
         goodInputs: [{ a: true, b: false, [`"C"`]: true }, {}],
@@ -926,6 +998,63 @@ export const validationTestSuites: Record<
                         },
                     ],
                 },
+            },
+        ],
+    },
+    'recursive union': {
+        schema: RecursiveUnion,
+        goodInputs: [
+            {
+                children: [
+                    {
+                        children: [
+                            {
+                                child: {
+                                    text: 'hello world',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        child: {
+                            text: 'hello world',
+                        },
+                    },
+                    {
+                        shape: {
+                            width: 1.5,
+                            height: 1.5,
+                            color: '#fafafa',
+                        },
+                    },
+                ],
+            },
+        ],
+        badInputs: [
+            {
+                children: [
+                    {
+                        children: [
+                            {
+                                child: {
+                                    text: 'hello world',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        child: {
+                            text: 'hello world',
+                        },
+                    },
+                    {
+                        shape: {
+                            width: 1.5,
+                            height: 1.5,
+                            color: true,
+                        },
+                    },
+                ],
             },
         ],
     },
@@ -1341,6 +1470,18 @@ export const parsingTestSuites: Record<
                 }
             }`,
         ],
+    },
+    'recursive union': {
+        schema: RecursiveUnion,
+        goodInputs: [
+            `{ "child": { "text" : "foo" } }`,
+            `{ "children": [ { "child": { "text": "foo" } } ] }`,
+        ],
+        expectedResults: [
+            { child: { text: 'foo' } },
+            { children: [{ child: { text: 'foo' } }] },
+        ],
+        badInputs: [],
     },
 };
 

@@ -1,4 +1,9 @@
-import { isSchemaFormEnum, isSchemaFormType, Schema } from '@arrirpc/type-defs';
+import {
+    isSchemaFormEnum,
+    isSchemaFormType,
+    isSchemaFormUnion,
+    Schema,
+} from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
 import { createStandardSchemaProperty } from './adapters';
@@ -28,11 +33,13 @@ import {
     type ASchema,
     ASchemaStrict,
     type InferType,
+    isAUnionSchema,
     newValidationContext,
     SchemaValidator,
     ValidationContext,
     VALIDATOR_KEY,
 } from './schemas';
+import { writeFileSync } from 'fs';
 
 export {
     getSchemaDecodingCode,

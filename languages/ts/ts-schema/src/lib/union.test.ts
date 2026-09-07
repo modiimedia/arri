@@ -65,6 +65,38 @@ describe('Parsing', () => {
     });
 });
 
+describe('Validation', () => {
+    it('validates compliant objects', () => {
+        const objectInput: UnionSchema = {
+            OBJECT: {
+                foo: 'hello world',
+                bar: false,
+            },
+        };
+        const numberInput: UnionSchema = {
+            NUMBER: 15,
+        };
+        const booleanInput: UnionSchema = {
+            BOOLEAN: true,
+        };
+        const arrayInput: UnionSchema = {
+            ARRAY: ['hello', 'world'],
+        };
+        expect(a.validate(UnionSchema, objectInput)).toBe(true);
+        expect(a.validate(UnionSchema, numberInput)).toBe(true);
+        expect(a.validate(UnionSchema, booleanInput)).toBe(true);
+        expect(a.validate(UnionSchema, arrayInput)).toBe(true);
+    });
+    it('rejects uncompliant objects', () => {
+        const myType = {
+            FOO: 'foo',
+        };
+        const emptyObject = {};
+        expect(a.validate(UnionSchema, myType)).toBe(false);
+        expect(a.validate(UnionSchema, emptyObject)).toBe(false);
+    });
+});
+
 test('overloaded functions produce the same results', () => {
     const SchemaA = a.union(
         {
