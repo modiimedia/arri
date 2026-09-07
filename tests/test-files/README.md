@@ -256,6 +256,63 @@ Below are all of the contents of the test JSON files in an easier to read format
 }
 ```
 
+## Union_Object.json
+
+```json
+{
+  "OBJECT": {
+    "string": "",
+    "boolean": false,
+    "timestamp": "2001-01-01T16:00:00.000Z",
+    "float32": 1.5,
+    "float64": 1.5,
+    "int8": 1,
+    "uint8": 1,
+    "int16": 10,
+    "uint16": 10,
+    "int32": 100,
+    "uint32": 100,
+    "int64": "1000",
+    "uint64": "1000",
+    "enum": "BAZ",
+    "object": { "id": "1", "content": "hello world" },
+    "array": [true, false, false],
+    "record": { "B": false, "A": true },
+    "discriminator": {
+      "typeName": "C",
+      "id": "",
+      "name": "",
+      "date": "2001-01-01T16:00:00.000Z"
+    },
+    "any": "hello world"
+  }
+}
+```
+
+## Union_Boolean.json
+
+```json
+{ "BOOLEAN": true }
+```
+
+## Union_Array.json
+
+```json
+{ "ARRAY": ["hello", "world"] }
+```
+
+## Union_Timestamp.json
+
+```json
+{ "NULLABLE_TIMESTAMP": "2001-01-01T16:00:00.000Z" }
+```
+
+## Union_TimestampNull.json
+
+```json
+{ "NULLABLE_TIMESTAMP": null }
+```
+
 ## RecursiveObject.json
 
 ```json

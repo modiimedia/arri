@@ -102,6 +102,14 @@ const ObjectWithNullableFields = a.object(
 );
 type ObjectWithNullableFields = a.infer<typeof ObjectWithNullableFields>;
 
+const Union = a.union('Union', {
+    OBJECT: ObjectWithEveryType,
+    ARRAY: a.array(a.string()),
+    BOOLEAN: a.boolean(),
+    NULLABLE_TIMESTAMP: a.nullable(a.timestamp()),
+});
+type Union = a.infer<typeof Union>;
+
 interface RecursiveObject {
     left: RecursiveObject | null;
     right: RecursiveObject | null;
@@ -190,6 +198,7 @@ const def = createAppDefinition({
         ObjectWithEveryType,
         ObjectWithOptionalFields,
         ObjectWithNullableFields,
+        Union,
         RecursiveObject,
     },
 });
@@ -411,6 +420,41 @@ async function main() {
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,
         ),
+    });
+    const unionVariantObject: Union = {
+        OBJECT: objectWithEveryFieldValue,
+    };
+    files.push({
+        filename: `Union_Object.json`,
+        content: a.serializeUnsafe(Union, unionVariantObject),
+    });
+    const unionVariantBoolean: Union = {
+        BOOLEAN: true,
+    };
+    files.push({
+        filename: `Union_Boolean.json`,
+        content: a.serializeUnsafe(Union, unionVariantBoolean),
+    });
+    const unionVariantArray: Union = {
+        ARRAY: ['hello', 'world'],
+    };
+    files.push({
+        filename: 'Union_Array.json',
+        content: a.serializeUnsafe(Union, unionVariantArray),
+    });
+    const unionVariantTimestamp: Union = {
+        NULLABLE_TIMESTAMP: targetDate,
+    };
+    files.push({
+        filename: 'Union_Timestamp.json',
+        content: a.serializeUnsafe(Union, unionVariantTimestamp),
+    });
+    const unionVariantTimestampNull: Union = {
+        NULLABLE_TIMESTAMP: null,
+    };
+    files.push({
+        filename: 'Union_TimestampNull.json',
+        content: a.serializeUnsafe(Union, unionVariantTimestampNull),
     });
 
     const recursiveObject: RecursiveObject = {
