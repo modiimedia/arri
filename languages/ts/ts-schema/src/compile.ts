@@ -94,6 +94,11 @@ type CompiledValidatorWithAdapters<
 > = CompiledValidator<TSchema, TIncludeCode> &
     StandardSchemaV1<InferType<TSchema>>;
 
+let LOG_CODE_OUTPUT = false;
+export function logCodeOutput(doLog: boolean) {
+    LOG_CODE_OUTPUT = doLog;
+}
+
 /**
  * Create compiled versions of the `decode()`, `validate()`, and `serialize()` functions
  */
@@ -254,6 +259,12 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     shouldCoerce: boolean,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaDecodingCode(input, schema, shouldCoerce);
+    if (LOG_CODE_OUTPUT) {
+        // eslint-disable-next-line no-console
+        console.log('code = ', code);
+        // eslint-disable-next-line no-console
+        console.log('schema = ', schema);
+    }
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'float32':

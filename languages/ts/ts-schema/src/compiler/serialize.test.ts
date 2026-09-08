@@ -171,3 +171,42 @@ it('serializes any object', () => {
     const result = Compiled.serializeUnsafe(input);
     expect(Compiled.parseUnsafe(result)).toStrictEqual(input);
 });
+
+it('serializes unions', () => {
+    const Schema = a.object({
+        message: a.string(),
+        metadata: a.union({
+            text: a.string(),
+            image: a.nullable(
+                a.object({
+                    url: a.string(),
+                    width: a.float64(),
+                    height: a.float64(),
+                }),
+            ),
+        }),
+    });
+    type Schema = a.infer<typeof Schema>;
+    const $$Schema = a.compile(Schema, true);
+    let input: Schema = {
+        message: 'hello world',
+        metadata: {
+            image: null,
+        },
+    };
+    let expectedOutput = `{"message":"hello world","metadata":{"image":null}}`;
+    expect($$Schema.serializeUnsafe(input)).toBe(expectedOutput);
+
+    input = {
+        message: 'foo',
+        metadata: {
+            image: {
+                url: 'https://example.com',
+                width: 10,
+                height: 10,
+            },
+        },
+    };
+    expectedOutput = `{"message":"foo","metadata":{"image":{"url":"https://example.com","width":10,"height":10}}}`;
+    expect($$Schema.serializeUnsafe(input)).toBe(expectedOutput);
+});

@@ -599,7 +599,7 @@ function discriminatorTemplate(
 function unionTemplate(input: SerializeTemplateInput<SchemaFormUnion>): string {
     function buildMain(inputName: string): string {
         const parts: string[] = [];
-        parts.push(`${input.targetVal} += '{';`);
+        parts.push(`${input.targetVal} += '${input.outputPrefix}{';`);
         const keys = Object.keys(input.schema.union);
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i]!;
@@ -609,6 +609,7 @@ function unionTemplate(input: SerializeTemplateInput<SchemaFormUnion>): string {
             } else {
                 parts.push(`if (\`${key}\` in ${inputName}) {`);
             }
+
             parts.push(`
                 ${input.targetVal} += \`"${key}":\`;
                 ${template({
@@ -619,7 +620,7 @@ function unionTemplate(input: SerializeTemplateInput<SchemaFormUnion>): string {
                     schemaPath: `${input.schemaPath}/union/${key}`,
                     subFunctions: input.subFunctions,
                     shouldCoerce: input.shouldCoerce,
-                    outputPrefix: input.outputPrefix,
+                    outputPrefix: '',
                     needsSanitization: input.needsSanitization,
                 })}
             }`);
@@ -644,7 +645,8 @@ function unionTemplate(input: SerializeTemplateInput<SchemaFormUnion>): string {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += '${input.outputPrefix}null'`;
+            ${input.targetVal} += '${input.outputPrefix}null';
+        }`;
     }
     return mainTemplate;
 }

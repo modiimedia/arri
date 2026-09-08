@@ -30,9 +30,15 @@ describe('parsing test suites', () => {
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
                 const expectedResult = suite.expectedResults[i];
-                expect(
-                    isEqual(a.parseUnsafe(suite.schema, input), expectedResult),
-                );
+                const result = a.parse(suite.schema, input);
+                if (!result.success) {
+                    console.error('input = ', input);
+                    console.error('error(s) = ', result.errors);
+                }
+                expect(result.success).toBe(true);
+                if (result.success) {
+                    expect(isEqual(result.value, expectedResult));
+                }
             }
             for (const input of suite.badInputs) {
                 expect(!a.parse(suite.schema, input).success);

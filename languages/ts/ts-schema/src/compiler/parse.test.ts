@@ -1,7 +1,7 @@
 import { isEqual } from 'lodash';
 
 import { a } from '../_index';
-import { compile } from '../compile';
+import { compile, logCodeOutput } from '../compile';
 import {
     coercionTestSuites,
     parsingTestSuites,
@@ -40,7 +40,14 @@ describe('parsing test suites', () => {
     for (const key of Object.keys(parsingTestSuites)) {
         const suite = parsingTestSuites[key]!;
         describe(key, () => {
-            const Compiled = compile(suite.schema, true);
+            let Compiled: ReturnType<typeof compile<any, true>>;
+            try {
+                Compiled = compile(suite.schema, true);
+            } catch (_) {
+                logCodeOutput(true);
+                compile(suite.schema);
+                return;
+            }
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 test(`${key} - Good Input ${i}`, () => {
                     const input = suite.goodInputs[i];

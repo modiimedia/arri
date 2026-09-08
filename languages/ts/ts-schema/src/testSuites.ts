@@ -1483,6 +1483,54 @@ export const parsingTestSuites: Record<
         ],
         badInputs: [],
     },
+    'nullable union': {
+        schema: a.object({
+            union: a.nullable(
+                a.union({
+                    one: a.string(),
+                    many: a.array(a.string()),
+                }),
+            ),
+        }),
+        goodInputs: [
+            '{"union":null}',
+            '{"union":{"one":"foo"}}',
+            '{"union":{"many":["hello","world"]}}',
+        ],
+        expectedResults: [
+            { union: null },
+            { union: { one: 'foo' } },
+            { union: { many: ['hello', 'world'] } },
+        ],
+        badInputs: [],
+    },
+    'nullable union 2': {
+        schema: a.object({
+            /** @deprecated */
+            foo: a.nullable(a.string()),
+            bar: a.nullable(
+                a.union({
+                    A: a.object({
+                        title: a.string(),
+                        description: a.string(),
+                    }),
+                    B: a.stringEnum(['A', 'B', 'C']),
+                }),
+            ),
+        }),
+        goodInputs: [
+            `{"foo":null,"bar":null}`,
+            `{"foo":"hello world","bar":{"A":{"title":"foo","description":"foo"}}}`,
+        ],
+        expectedResults: [
+            { foo: null, bar: null },
+            {
+                foo: 'hello world',
+                bar: { A: { title: 'foo', description: 'foo' } },
+            },
+        ],
+        badInputs: [],
+    },
 };
 
 export const coercionTestSuites: Record<
