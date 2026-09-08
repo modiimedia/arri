@@ -12,13 +12,16 @@ const RecursiveUnionV2 = a.recursive<RecursiveUnionV2>(
     (self) =>
         a.union({
             child: self,
-            children: a.array(self),
-            text: a.string(),
-            shape: a.object({
-                width: a.float64(),
-                height: a.float64(),
-                color: a.string(),
-            }),
+            children: a.array(self, { description: 'List of children nodes' }),
+            text: a.string({ description: 'Text node' }),
+            shape: a.object(
+                {
+                    width: a.float64(),
+                    height: a.float64(),
+                    color: a.string(),
+                },
+                { description: 'Shape node' },
+            ),
         }),
 );
 

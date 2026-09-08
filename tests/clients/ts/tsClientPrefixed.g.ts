@@ -5268,6 +5268,9 @@ export function FooRecursiveUnionV2ToUrlSearchParamsString(
     return UnionToUrlSearchParams(input).toString();
 }
 
+/**
+ * Shape node
+ */
 export interface FooRecursiveUnionV2Shape {
     width: number;
     height: number;

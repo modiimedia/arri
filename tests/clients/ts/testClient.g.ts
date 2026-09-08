@@ -7996,6 +7996,9 @@ export const $$RecursiveUnionV2: TestClientValidator<RecursiveUnionV2> = {
     toUrlSearchParamsString: RecursiveUnionV2ToUrlSearchParamsString,
 };
 
+/**
+ * Shape node
+ */
 export interface RecursiveUnionV2Shape {
     width: number;
     height: number;
