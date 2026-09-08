@@ -71,7 +71,6 @@ export default defineRpc({
     params: ObjectWithEveryType,
     response: ObjectWithEveryType,
     handler({ params }) {
-        console.log('INPUT', params);
         return params;
     },
 });
