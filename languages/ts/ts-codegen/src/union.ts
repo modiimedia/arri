@@ -1,5 +1,4 @@
 import { SchemaFormUnion } from '@arrirpc/codegen-utils';
-import { join } from 'path';
 
 import { tsTypeFromSchema } from './_index';
 import {

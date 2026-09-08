@@ -10,6 +10,7 @@ import {
     $$ObjectWithNullableFields,
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
+    $$Union,
     Book,
     BookClone,
     Enumerator,
@@ -20,6 +21,7 @@ import {
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
+    Union,
 } from './referenceClient';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -303,6 +305,98 @@ describe('ObjectWithNullableFields', () => {
         expect(
             $$ObjectWithNullableFields.toJsonString(noNullTargetValue),
         ).toEqual(noNullJsonReference);
+    });
+});
+
+describe('Union', () => {
+    describe('object variant', () => {
+        const objectValue: Union = {
+            type: 'object',
+            value: {
+                string: '',
+                boolean: false,
+                timestamp: testDate,
+                float32: 1.5,
+                float64: 1.5,
+                int8: 1,
+                uint8: 1,
+                int16: 10,
+                uint16: 10,
+                int32: 100,
+                uint32: 100,
+                int64: 1000n,
+                uint64: 1000n,
+                enum: 'BAZ',
+                object: {
+                    id: '1',
+                    content: 'hello world',
+                },
+                array: [true, false, false],
+                record: {
+                    B: false,
+                    A: true,
+                },
+                discriminator: {
+                    typeName: 'C',
+                    id: '',
+                    name: '',
+                    date: testDate,
+                },
+                any: 'hello world',
+            },
+        };
+        const jsonReference = testFile('Union_Object.json');
+        const emptyJsonReference = testFile(
+            'ObjectWithOptionalFields_AllUndefined.json',
+        );
+        test('JSON Parsing', () => {
+            expect($$Union.fromJsonString(jsonReference)).toStrictEqual(
+                objectValue,
+            );
+            expect($$Union.fromJsonString(emptyJsonReference)).toStrictEqual(
+                $$Union.new(),
+            );
+        });
+        test('JSON Output', () => {
+            expect($$Union.toJsonString(objectValue)).toBe(jsonReference);
+        });
+        test('Cloning', () => {
+            const cloned = $$Union.clone(objectValue);
+            expect(objectValue).toStrictEqual(cloned);
+            expect(cloned.type).toBe('object');
+            if (cloned.type === 'object') {
+                cloned.value.float32 = 9.999;
+                expect(objectValue).not.toStrictEqual(cloned);
+            }
+        });
+    });
+    describe('array variant', () => {
+        const arrayValue: Union = {
+            type: 'array',
+            value: ['hello', 'world'],
+        };
+        const jsonReference = testFile('Union_Array.json');
+        const emptyJsonReference = '{}';
+        test('JSON Parsing', () => {
+            expect($$Union.fromJsonString(jsonReference)).toStrictEqual(
+                arrayValue,
+            );
+            expect($$Union.fromJsonString(emptyJsonReference)).toStrictEqual(
+                $$Union.new(),
+            );
+        });
+        test('JSON Output', () => {
+            expect($$Union.toJsonString(arrayValue)).toBe(jsonReference);
+        });
+        test('Cloning', () => {
+            const cloned = $$Union.clone(arrayValue);
+            expect(cloned).toStrictEqual(arrayValue);
+            expect(cloned.type === 'array');
+            if (cloned.type === 'array') {
+                cloned.value.push('!!!');
+            }
+            expect(cloned).not.toStrictEqual(arrayValue);
+        });
     });
 });
 
