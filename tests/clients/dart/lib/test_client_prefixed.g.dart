@@ -176,6 +176,21 @@ class TestClientPrefixed {
     );
   }
 
+  Future<FooRecursiveUnionV2> sendRecursiveUnionV2(
+      FooRecursiveUnionV2 params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-recursive-union-v2",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => FooRecursiveUnionV2.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
   EventSource<FooAutoReconnectResponse> streamAutoReconnect(
     FooAutoReconnectParams params, {
     void Function(FooAutoReconnectResponse data,
@@ -1117,6 +1132,7 @@ class FooObjectWithEveryType implements ArriModel {
   final FooObjectWithEveryTypeObject object;
   final Map<String, BigInt> record;
   final FooObjectWithEveryTypeDiscriminator discriminator;
+  final dynamic union;
   final FooObjectWithEveryTypeNestedObject nestedObject;
   final List<List<FooObjectWithEveryTypeNestedArrayElementElement>> nestedArray;
   const FooObjectWithEveryType({
@@ -1139,6 +1155,7 @@ class FooObjectWithEveryType implements ArriModel {
     required this.object,
     required this.record,
     required this.discriminator,
+    required this.union,
     required this.nestedObject,
     required this.nestedArray,
   });
@@ -1164,6 +1181,7 @@ class FooObjectWithEveryType implements ArriModel {
       object: FooObjectWithEveryTypeObject.empty(),
       record: {},
       discriminator: FooObjectWithEveryTypeDiscriminator.empty(),
+      union: null,
       nestedObject: FooObjectWithEveryTypeNestedObject.empty(),
       nestedArray: [],
     );
@@ -1205,6 +1223,7 @@ class FooObjectWithEveryType implements ArriModel {
     final discriminator = _input_["discriminator"] is Map<String, dynamic>
         ? FooObjectWithEveryTypeDiscriminator.fromJson(_input_["discriminator"])
         : FooObjectWithEveryTypeDiscriminator.empty();
+    final union = _input_["union"];
     final nestedObject = _input_["nestedObject"] is Map<String, dynamic>
         ? FooObjectWithEveryTypeNestedObject.fromJson(_input_["nestedObject"])
         : FooObjectWithEveryTypeNestedObject.empty();
@@ -1241,6 +1260,7 @@ class FooObjectWithEveryType implements ArriModel {
       object: object,
       record: record,
       discriminator: discriminator,
+      union: union,
       nestedObject: nestedObject,
       nestedArray: nestedArray,
     );
@@ -1277,6 +1297,7 @@ class FooObjectWithEveryType implements ArriModel {
         ),
       ),
       "discriminator": discriminator.toJson(),
+      "union": union,
       "nestedObject": nestedObject.toJson(),
       "nestedArray": nestedArray
           .map((_el_) => _el_.map((_el_) => _el_.toJson()).toList())
@@ -1319,6 +1340,8 @@ class FooObjectWithEveryType implements ArriModel {
     print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.");
     print(
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/union.");
+    print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.");
     print(
         "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.");
@@ -1346,6 +1369,7 @@ class FooObjectWithEveryType implements ArriModel {
     FooObjectWithEveryTypeObject? object,
     Map<String, BigInt>? record,
     FooObjectWithEveryTypeDiscriminator? discriminator,
+    dynamic union,
     FooObjectWithEveryTypeNestedObject? nestedObject,
     List<List<FooObjectWithEveryTypeNestedArrayElementElement>>? nestedArray,
   }) {
@@ -1369,6 +1393,7 @@ class FooObjectWithEveryType implements ArriModel {
       object: object ?? this.object,
       record: record ?? this.record,
       discriminator: discriminator ?? this.discriminator,
+      union: union ?? this.union,
       nestedObject: nestedObject ?? this.nestedObject,
       nestedArray: nestedArray ?? this.nestedArray,
     );
@@ -1395,6 +1420,7 @@ class FooObjectWithEveryType implements ArriModel {
         object,
         record,
         discriminator,
+        union,
         nestedObject,
         nestedArray,
       ];
@@ -2111,6 +2137,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
   final FooObjectWithEveryNullableTypeObject? object;
   final Map<String, BigInt?>? record;
   final FooObjectWithEveryNullableTypeDiscriminator? discriminator;
+  final dynamic union;
   final FooObjectWithEveryNullableTypeNestedObject? nestedObject;
   final List<List<FooObjectWithEveryNullableTypeNestedArrayElementElement?>?>?
       nestedArray;
@@ -2134,6 +2161,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
     required this.object,
     required this.record,
     required this.discriminator,
+    required this.union,
     required this.nestedObject,
     required this.nestedArray,
   });
@@ -2159,6 +2187,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
       object: null,
       record: null,
       discriminator: null,
+      union: null,
       nestedObject: null,
       nestedArray: null,
     );
@@ -2204,6 +2233,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
         ? FooObjectWithEveryNullableTypeDiscriminator.fromJson(
             _input_["discriminator"])
         : null;
+    final union = _input_["union"];
     final nestedObject = _input_["nestedObject"] is Map<String, dynamic>
         ? FooObjectWithEveryNullableTypeNestedObject.fromJson(
             _input_["nestedObject"])
@@ -2240,6 +2270,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
       object: object,
       record: record,
       discriminator: discriminator,
+      union: union,
       nestedObject: nestedObject,
       nestedArray: nestedArray,
     );
@@ -2276,6 +2307,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
         ),
       ),
       "discriminator": discriminator?.toJson(),
+      "union": union,
       "nestedObject": nestedObject?.toJson(),
       "nestedArray": nestedArray
           ?.map((_el_) => _el_?.map((_el_) => _el_?.toJson()).toList())
@@ -2318,6 +2350,8 @@ class FooObjectWithEveryNullableType implements ArriModel {
     print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.");
     print(
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/union.");
+    print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.");
     print(
         "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.");
@@ -2345,6 +2379,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
     FooObjectWithEveryNullableTypeObject? Function()? object,
     Map<String, BigInt?>? Function()? record,
     FooObjectWithEveryNullableTypeDiscriminator? Function()? discriminator,
+    dynamic Function()? union,
     FooObjectWithEveryNullableTypeNestedObject? Function()? nestedObject,
     List<List<FooObjectWithEveryNullableTypeNestedArrayElementElement?>?>?
             Function()?
@@ -2371,6 +2406,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
       record: record != null ? record() : this.record,
       discriminator:
           discriminator != null ? discriminator() : this.discriminator,
+      union: union != null ? union() : this.union,
       nestedObject: nestedObject != null ? nestedObject() : this.nestedObject,
       nestedArray: nestedArray != null ? nestedArray() : this.nestedArray,
     );
@@ -2397,6 +2433,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
         object,
         record,
         discriminator,
+        union,
         nestedObject,
         nestedArray,
       ];
@@ -3351,6 +3388,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
   final FooObjectWithEveryOptionalTypeObject? object;
   final Map<String, BigInt>? record;
   final FooObjectWithEveryOptionalTypeDiscriminator? discriminator;
+  final dynamic union;
   final FooObjectWithEveryOptionalTypeNestedObject? nestedObject;
   final List<List<FooObjectWithEveryOptionalTypeNestedArrayElementElement>>?
       nestedArray;
@@ -3374,6 +3412,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
     this.object,
     this.record,
     this.discriminator,
+    this.union,
     this.nestedObject,
     this.nestedArray,
   });
@@ -3422,6 +3461,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
         ? FooObjectWithEveryOptionalTypeDiscriminator.fromJson(
             _input_["discriminator"])
         : null;
+    final union = _input_["union"];
     final nestedObject = _input_["nestedObject"] is Map<String, dynamic>
         ? FooObjectWithEveryOptionalTypeNestedObject.fromJson(
             _input_["nestedObject"])
@@ -3459,6 +3499,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
       object: object,
       record: record,
       discriminator: discriminator,
+      union: union,
       nestedObject: nestedObject,
       nestedArray: nestedArray,
     );
@@ -3498,6 +3539,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
       );
     if (discriminator != null)
       _output_["discriminator"] = discriminator!.toJson();
+    if (union != null) _output_["union"] = union;
     if (nestedObject != null) _output_["nestedObject"] = nestedObject!.toJson();
     if (nestedArray != null)
       _output_["nestedArray"] = nestedArray!
@@ -3541,6 +3583,8 @@ class FooObjectWithEveryOptionalType implements ArriModel {
     print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.");
     print(
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/union.");
+    print(
         "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.");
     print(
         "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.");
@@ -3568,6 +3612,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
     FooObjectWithEveryOptionalTypeObject? Function()? object,
     Map<String, BigInt>? Function()? record,
     FooObjectWithEveryOptionalTypeDiscriminator? Function()? discriminator,
+    dynamic Function()? union,
     FooObjectWithEveryOptionalTypeNestedObject? Function()? nestedObject,
     List<List<FooObjectWithEveryOptionalTypeNestedArrayElementElement>>?
             Function()?
@@ -3594,6 +3639,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
       record: record != null ? record() : this.record,
       discriminator:
           discriminator != null ? discriminator() : this.discriminator,
+      union: union != null ? union() : this.union,
       nestedObject: nestedObject != null ? nestedObject() : this.nestedObject,
       nestedArray: nestedArray != null ? nestedArray() : this.nestedArray,
     );
@@ -3620,6 +3666,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
         object,
         record,
         discriminator,
+        union,
         nestedObject,
         nestedArray,
       ];

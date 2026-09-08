@@ -311,6 +311,24 @@ export class TestClientTestsService {
             options: options ?? this._options,
         });
     }
+    async sendRecursiveUnionV2(
+        params: RecursiveUnionV2,
+        options?: ArriRequestOptions,
+    ): Promise<RecursiveUnionV2> {
+        return arriRequest<RecursiveUnionV2, RecursiveUnionV2>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-union-v2`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: RecursiveUnionV2FromJson,
+            responseFromString: RecursiveUnionV2FromJsonString,
+            serializer: RecursiveUnionV2ToJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
     streamAutoReconnect(
         params: AutoReconnectParams,
         options: SseOptions<AutoReconnectResponse> = {},
@@ -1203,6 +1221,7 @@ export interface ObjectWithEveryType {
     object: ObjectWithEveryTypeObject;
     record: Record<string, bigint>;
     discriminator: ObjectWithEveryTypeDiscriminator;
+    union: ObjectWithEveryTypeUnion;
     nestedObject: ObjectWithEveryTypeNestedObject;
     nestedArray: ObjectWithEveryTypeNestedArrayElementElement[][];
 }
@@ -1227,6 +1246,7 @@ export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
         object: ObjectWithEveryTypeObjectNew(),
         record: {},
         discriminator: ObjectWithEveryTypeDiscriminatorNew(),
+        union: ObjectWithEveryTypeUnionNew(),
         nestedObject: ObjectWithEveryTypeNestedObjectNew(),
         nestedArray: [],
     };
@@ -1284,6 +1304,7 @@ export function ObjectWithEveryTypeValidate(
                 _value <= UINT64_MAX,
         ) &&
         ObjectWithEveryTypeDiscriminatorValidate(input.discriminator) &&
+        ObjectWithEveryTypeUnionValidate(input.union) &&
         ObjectWithEveryTypeNestedObjectValidate(input.nestedObject) &&
         Array.isArray(input.nestedArray) &&
         input.nestedArray.every(
@@ -1348,6 +1369,8 @@ export function ObjectWithEveryTypeClone(
     }
     let _discriminator: ObjectWithEveryTypeDiscriminator;
     _discriminator = ObjectWithEveryTypeDiscriminatorClone(input.discriminator);
+    let _union: ObjectWithEveryTypeUnion;
+    _union = ObjectWithEveryTypeUnionClone(input.union);
     let _nestedObject: ObjectWithEveryTypeNestedObject;
     _nestedObject = ObjectWithEveryTypeNestedObjectClone(input.nestedObject);
     let _nestedArray: ObjectWithEveryTypeNestedArrayElementElement[][];
@@ -1385,6 +1408,7 @@ export function ObjectWithEveryTypeClone(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -1464,6 +1488,12 @@ export function ObjectWithEveryTypeFromJson(
     } else {
         _discriminator = ObjectWithEveryTypeDiscriminatorNew();
     }
+    let _union: ObjectWithEveryTypeUnion;
+    if (isObject(input.union)) {
+        _union = ObjectWithEveryTypeUnionFromJson(input.union);
+    } else {
+        _union = ObjectWithEveryTypeUnionNew();
+    }
     let _nestedObject: ObjectWithEveryTypeNestedObject;
     if (isObject(input.nestedObject)) {
         _nestedObject = ObjectWithEveryTypeNestedObjectFromJson(
@@ -1520,6 +1550,7 @@ export function ObjectWithEveryTypeFromJson(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -1588,6 +1619,8 @@ export function ObjectWithEveryTypeToJsonString(
 
     json += ',"discriminator":';
     json += ObjectWithEveryTypeDiscriminatorToJsonString(input.discriminator);
+    json += ',"union":';
+    json += ObjectWithEveryTypeUnionToJsonString(input.union);
     json += ',"nestedObject":';
     json += ObjectWithEveryTypeNestedObjectToJsonString(input.nestedObject);
     json += ',"nestedArray":';
@@ -1641,6 +1674,9 @@ export function ObjectWithEveryTypeToUrlSearchParams(
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/union.',
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/nestedObject.',
@@ -2077,6 +2113,374 @@ const $$ObjectWithEveryTypeDiscriminatorB: TestClientValidator<ObjectWithEveryTy
             ObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString,
     };
 
+export type ObjectWithEveryTypeUnion =
+    | { type: `A`; value: ObjectWithEveryTypeUnionA }
+    | { type: `B`; value: ObjectWithEveryTypeUnionB }
+    | { type: `C`; value: Date | null }
+    | { type: `D`; value: Record<string, boolean> };
+export function ObjectWithEveryTypeUnionNew(): ObjectWithEveryTypeUnion {
+    return {
+        type: `A`,
+        value: ObjectWithEveryTypeUnionANew(),
+    };
+}
+export function ObjectWithEveryTypeUnionValidate(
+    input: unknown,
+): input is ObjectWithEveryTypeUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `A`:
+            return ObjectWithEveryTypeUnionAValidate(input.value);
+
+        case `B`:
+            return ObjectWithEveryTypeUnionBValidate(input.value);
+
+        case `C`:
+            return input.value instanceof Date || input.value === null;
+
+        case `D`:
+            return (
+                isObject(input.value) &&
+                Object.values(input.value).every(
+                    (_value) => typeof _value === 'boolean',
+                )
+            );
+
+        default:
+            return false;
+    }
+}
+export function ObjectWithEveryTypeUnionClone(
+    input: ObjectWithEveryTypeUnion,
+): ObjectWithEveryTypeUnion {
+    switch (input.type) {
+        case `A`: {
+            let __value__: ObjectWithEveryTypeUnionA;
+            __value__ = ObjectWithEveryTypeUnionAClone(input.value);
+            return {
+                type: `A`,
+                value: __value__,
+            };
+        }
+
+        case `B`: {
+            let __value__: ObjectWithEveryTypeUnionB;
+            __value__ = input.value;
+            return {
+                type: `B`,
+                value: __value__,
+            };
+        }
+
+        case `C`: {
+            let __value__: Date | null;
+            if (input.value !== null) {
+                __value__ = new Date(input.value.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `C`,
+                value: __value__,
+            };
+        }
+
+        case `D`: {
+            let __value__: Record<string, boolean>;
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input.value)) {
+                let __value__Value: boolean;
+                __value__Value = _value;
+                __value__[_key] = __value__Value;
+            }
+            return {
+                type: `D`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function ObjectWithEveryTypeUnionFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryTypeUnion {
+    if (`A` in input) {
+        let __value__: ObjectWithEveryTypeUnionA;
+        if (isObject(input[`A`])) {
+            __value__ = ObjectWithEveryTypeUnionAFromJson(input[`A`]);
+        } else {
+            __value__ = ObjectWithEveryTypeUnionANew();
+        }
+        return {
+            type: `A`,
+            value: __value__,
+        };
+    }
+
+    if (`B` in input) {
+        let __value__: ObjectWithEveryTypeUnionB;
+        if (typeof input[`B`] === 'string') {
+            __value__ = ObjectWithEveryTypeUnionBFromSerialValue(input[`B`]);
+        } else {
+            __value__ = ObjectWithEveryTypeUnionBNew();
+        }
+        return {
+            type: `B`,
+            value: __value__,
+        };
+    }
+
+    if (`C` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`C`]);
+        return {
+            type: `C`,
+            value: __value__,
+        };
+    }
+
+    if (`D` in input) {
+        let __value__: Record<string, boolean>;
+        if (isObject(input[`D`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`D`])) {
+                let __value__Value: boolean;
+                __value__Value = parseBoolean(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `D`,
+            value: __value__,
+        };
+    }
+    return ObjectWithEveryTypeUnionNew();
+}
+export function ObjectWithEveryTypeUnionFromJsonString(
+    input: string,
+): ObjectWithEveryTypeUnion {
+    return ObjectWithEveryTypeUnionFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryTypeUnionToJsonString(
+    input: ObjectWithEveryTypeUnion,
+): string {
+    switch (input.type) {
+        case `A`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += ObjectWithEveryTypeUnionAToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `B`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `C`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `D`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += `${_value}`;
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function ObjectWithEveryTypeUnionToUrlSearchParams(
+    input: ObjectWithEveryTypeUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function ObjectWithEveryTypeUnionToUrlSearchParamsString(
+    input: ObjectWithEveryTypeUnion,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export const $$ObjectWithEveryTypeUnion: TestClientValidator<ObjectWithEveryTypeUnion> =
+    {
+        new: ObjectWithEveryTypeUnionNew,
+        validate: ObjectWithEveryTypeUnionValidate,
+        clone: ObjectWithEveryTypeUnionClone,
+        fromJson: ObjectWithEveryTypeUnionFromJson,
+        fromJsonString: ObjectWithEveryTypeUnionFromJsonString,
+        toJsonString: ObjectWithEveryTypeUnionToJsonString,
+        toUrlSearchParams: ObjectWithEveryTypeUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithEveryTypeUnionToUrlSearchParamsString,
+    };
+export interface ObjectWithEveryTypeUnionA {
+    title: string;
+    description: string;
+}
+export function ObjectWithEveryTypeUnionANew(): ObjectWithEveryTypeUnionA {
+    return {
+        title: '',
+        description: '',
+    };
+}
+export function ObjectWithEveryTypeUnionAValidate(
+    input: unknown,
+): input is ObjectWithEveryTypeUnionA {
+    return (
+        isObject(input) &&
+        typeof input.title === 'string' &&
+        typeof input.description === 'string'
+    );
+}
+export function ObjectWithEveryTypeUnionAClone(
+    input: ObjectWithEveryTypeUnionA,
+): ObjectWithEveryTypeUnionA {
+    let _title: string;
+    _title = input.title;
+    let _description: string;
+    _description = input.description;
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function ObjectWithEveryTypeUnionAFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryTypeUnionA {
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function ObjectWithEveryTypeUnionAFromJsonString(
+    input: string,
+): ObjectWithEveryTypeUnionA {
+    return ObjectWithEveryTypeUnionAFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryTypeUnionAToJsonString(
+    input: ObjectWithEveryTypeUnionA,
+): string {
+    let json = '{';
+    json += '"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function ObjectWithEveryTypeUnionAToUrlSearchParams(
+    input: ObjectWithEveryTypeUnionA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function ObjectWithEveryTypeUnionAToUrlSearchParamsString(
+    input: ObjectWithEveryTypeUnionA,
+): string {
+    return ObjectWithEveryTypeUnionAToUrlSearchParams(input).toString();
+}
+
+export const $$ObjectWithEveryTypeUnionA: TestClientValidator<ObjectWithEveryTypeUnionA> =
+    {
+        new: ObjectWithEveryTypeUnionANew,
+        validate: ObjectWithEveryTypeUnionAValidate,
+        clone: ObjectWithEveryTypeUnionAClone,
+        fromJson: ObjectWithEveryTypeUnionAFromJson,
+        fromJsonString: ObjectWithEveryTypeUnionAFromJsonString,
+        toJsonString: ObjectWithEveryTypeUnionAToJsonString,
+        toUrlSearchParams: ObjectWithEveryTypeUnionAToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithEveryTypeUnionAToUrlSearchParamsString,
+    };
+
+export type ObjectWithEveryTypeUnionB = 'A' | 'B' | 'C';
+export const ObjectWithEveryTypeUnionB = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+export const ObjectWithEveryTypeUnionBValues = ['A', 'B', 'C'] as const;
+export function ObjectWithEveryTypeUnionBNew(): ObjectWithEveryTypeUnionB {
+    return ObjectWithEveryTypeUnionBValues[0];
+}
+export function ObjectWithEveryTypeUnionBValidate(
+    input: unknown,
+): input is ObjectWithEveryTypeUnionB {
+    return (
+        typeof input === 'string' &&
+        ObjectWithEveryTypeUnionBValues.includes(input as any)
+    );
+}
+export function ObjectWithEveryTypeUnionBFromSerialValue(
+    input: string,
+): ObjectWithEveryTypeUnionB {
+    if (ObjectWithEveryTypeUnionBValues.includes(input as any)) {
+        return input as ObjectWithEveryTypeUnionB;
+    }
+    if (ObjectWithEveryTypeUnionBValues.includes(input.toLowerCase() as any)) {
+        return input.toLowerCase() as ObjectWithEveryTypeUnionB;
+    }
+    if (ObjectWithEveryTypeUnionBValues.includes(input.toUpperCase() as any)) {
+        return input.toUpperCase() as ObjectWithEveryTypeUnionB;
+    }
+    return 'A';
+}
+export const $$ObjectWithEveryTypeUnionB: TestClientEnumValidator<ObjectWithEveryTypeUnionB> =
+    {
+        new: ObjectWithEveryTypeUnionBNew,
+        validate: ObjectWithEveryTypeUnionBValidate,
+        values: ObjectWithEveryTypeUnionBValues,
+        fromSerialValue: ObjectWithEveryTypeUnionBFromSerialValue,
+    };
+
 export interface ObjectWithEveryTypeNestedObject {
     id: string;
     timestamp: Date;
@@ -2486,6 +2890,7 @@ export interface ObjectWithEveryNullableType {
     object: ObjectWithEveryNullableTypeObject | null;
     record: Record<string, bigint | null> | null;
     discriminator: ObjectWithEveryNullableTypeDiscriminator | null;
+    union: ObjectWithEveryNullableTypeUnion | null;
     nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
     nestedArray:
         | (
@@ -2515,6 +2920,7 @@ export function ObjectWithEveryNullableTypeNew(): ObjectWithEveryNullableType {
         object: null,
         record: null,
         discriminator: null,
+        union: null,
         nestedObject: null,
         nestedArray: null,
     };
@@ -2591,6 +2997,8 @@ export function ObjectWithEveryNullableTypeValidate(
             input.discriminator,
         ) ||
             input.discriminator === null) &&
+        (ObjectWithEveryNullableTypeUnionValidate(input.union) ||
+            input.union === null) &&
         (ObjectWithEveryNullableTypeNestedObjectValidate(input.nestedObject) ||
             input.nestedObject === null) &&
         ((Array.isArray(input.nestedArray) &&
@@ -2681,6 +3089,12 @@ export function ObjectWithEveryNullableTypeClone(
     } else {
         _discriminator = null;
     }
+    let _union: ObjectWithEveryNullableTypeUnion | null;
+    if (input.union !== null) {
+        _union = ObjectWithEveryNullableTypeUnionClone(input.union);
+    } else {
+        _union = null;
+    }
     let _nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
     if (input.nestedObject !== null) {
         _nestedObject = ObjectWithEveryNullableTypeNestedObjectClone(
@@ -2743,6 +3157,7 @@ export function ObjectWithEveryNullableTypeClone(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -2822,6 +3237,12 @@ export function ObjectWithEveryNullableTypeFromJson(
     } else {
         _discriminator = null;
     }
+    let _union: ObjectWithEveryNullableTypeUnion | null;
+    if (isObject(input.union)) {
+        _union = ObjectWithEveryNullableTypeUnionFromJson(input.union);
+    } else {
+        _union = null;
+    }
     let _nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
     if (isObject(input.nestedObject)) {
         _nestedObject = ObjectWithEveryNullableTypeNestedObjectFromJson(
@@ -2884,6 +3305,7 @@ export function ObjectWithEveryNullableTypeFromJson(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -2993,6 +3415,12 @@ export function ObjectWithEveryNullableTypeToJsonString(
     } else {
         json += 'null';
     }
+    json += ',"union":';
+    if (input.union != null) {
+        json += ObjectWithEveryNullableTypeUnionToJsonString(input.union);
+    } else {
+        json += 'null';
+    }
     json += ',"nestedObject":';
     if (input.nestedObject !== null) {
         json += ObjectWithEveryNullableTypeNestedObjectToJsonString(
@@ -3065,6 +3493,9 @@ export function ObjectWithEveryNullableTypeToUrlSearchParams(
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/discriminator.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryNullableType/union.',
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/nestedObject.',
@@ -3548,6 +3979,384 @@ const $$ObjectWithEveryNullableTypeDiscriminatorB: TestClientValidator<ObjectWit
             ObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams,
         toUrlSearchParamsString:
             ObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsString,
+    };
+
+export type ObjectWithEveryNullableTypeUnion =
+    | { type: `A`; value: ObjectWithEveryNullableTypeUnionA }
+    | { type: `B`; value: ObjectWithEveryNullableTypeUnionB }
+    | { type: `C`; value: Date | null }
+    | { type: `D`; value: Record<string, boolean> };
+export function ObjectWithEveryNullableTypeUnionNew(): ObjectWithEveryNullableTypeUnion {
+    return {
+        type: `A`,
+        value: ObjectWithEveryNullableTypeUnionANew(),
+    };
+}
+export function ObjectWithEveryNullableTypeUnionValidate(
+    input: unknown,
+): input is ObjectWithEveryNullableTypeUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `A`:
+            return ObjectWithEveryNullableTypeUnionAValidate(input.value);
+
+        case `B`:
+            return ObjectWithEveryNullableTypeUnionBValidate(input.value);
+
+        case `C`:
+            return input.value instanceof Date || input.value === null;
+
+        case `D`:
+            return (
+                isObject(input.value) &&
+                Object.values(input.value).every(
+                    (_value) => typeof _value === 'boolean',
+                )
+            );
+
+        default:
+            return false;
+    }
+}
+export function ObjectWithEveryNullableTypeUnionClone(
+    input: ObjectWithEveryNullableTypeUnion,
+): ObjectWithEveryNullableTypeUnion {
+    switch (input.type) {
+        case `A`: {
+            let __value__: ObjectWithEveryNullableTypeUnionA;
+            __value__ = ObjectWithEveryNullableTypeUnionAClone(input.value);
+            return {
+                type: `A`,
+                value: __value__,
+            };
+        }
+
+        case `B`: {
+            let __value__: ObjectWithEveryNullableTypeUnionB;
+            __value__ = input.value;
+            return {
+                type: `B`,
+                value: __value__,
+            };
+        }
+
+        case `C`: {
+            let __value__: Date | null;
+            if (input.value !== null) {
+                __value__ = new Date(input.value.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `C`,
+                value: __value__,
+            };
+        }
+
+        case `D`: {
+            let __value__: Record<string, boolean>;
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input.value)) {
+                let __value__Value: boolean;
+                __value__Value = _value;
+                __value__[_key] = __value__Value;
+            }
+            return {
+                type: `D`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function ObjectWithEveryNullableTypeUnionFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryNullableTypeUnion {
+    if (`A` in input) {
+        let __value__: ObjectWithEveryNullableTypeUnionA;
+        if (isObject(input[`A`])) {
+            __value__ = ObjectWithEveryNullableTypeUnionAFromJson(input[`A`]);
+        } else {
+            __value__ = ObjectWithEveryNullableTypeUnionANew();
+        }
+        return {
+            type: `A`,
+            value: __value__,
+        };
+    }
+
+    if (`B` in input) {
+        let __value__: ObjectWithEveryNullableTypeUnionB;
+        if (typeof input[`B`] === 'string') {
+            __value__ = ObjectWithEveryNullableTypeUnionBFromSerialValue(
+                input[`B`],
+            );
+        } else {
+            __value__ = ObjectWithEveryNullableTypeUnionBNew();
+        }
+        return {
+            type: `B`,
+            value: __value__,
+        };
+    }
+
+    if (`C` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`C`]);
+        return {
+            type: `C`,
+            value: __value__,
+        };
+    }
+
+    if (`D` in input) {
+        let __value__: Record<string, boolean>;
+        if (isObject(input[`D`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`D`])) {
+                let __value__Value: boolean;
+                __value__Value = parseBoolean(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `D`,
+            value: __value__,
+        };
+    }
+    return ObjectWithEveryNullableTypeUnionNew();
+}
+export function ObjectWithEveryNullableTypeUnionFromJsonString(
+    input: string,
+): ObjectWithEveryNullableTypeUnion {
+    return ObjectWithEveryNullableTypeUnionFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryNullableTypeUnionToJsonString(
+    input: ObjectWithEveryNullableTypeUnion,
+): string {
+    switch (input.type) {
+        case `A`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += ObjectWithEveryNullableTypeUnionAToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `B`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `C`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `D`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += `${_value}`;
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function ObjectWithEveryNullableTypeUnionToUrlSearchParams(
+    input: ObjectWithEveryNullableTypeUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function ObjectWithEveryNullableTypeUnionToUrlSearchParamsString(
+    input: ObjectWithEveryNullableTypeUnion,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export const $$ObjectWithEveryNullableTypeUnion: TestClientValidator<ObjectWithEveryNullableTypeUnion> =
+    {
+        new: ObjectWithEveryNullableTypeUnionNew,
+        validate: ObjectWithEveryNullableTypeUnionValidate,
+        clone: ObjectWithEveryNullableTypeUnionClone,
+        fromJson: ObjectWithEveryNullableTypeUnionFromJson,
+        fromJsonString: ObjectWithEveryNullableTypeUnionFromJsonString,
+        toJsonString: ObjectWithEveryNullableTypeUnionToJsonString,
+        toUrlSearchParams: ObjectWithEveryNullableTypeUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithEveryNullableTypeUnionToUrlSearchParamsString,
+    };
+export interface ObjectWithEveryNullableTypeUnionA {
+    title: string;
+    description: string;
+}
+export function ObjectWithEveryNullableTypeUnionANew(): ObjectWithEveryNullableTypeUnionA {
+    return {
+        title: '',
+        description: '',
+    };
+}
+export function ObjectWithEveryNullableTypeUnionAValidate(
+    input: unknown,
+): input is ObjectWithEveryNullableTypeUnionA {
+    return (
+        isObject(input) &&
+        typeof input.title === 'string' &&
+        typeof input.description === 'string'
+    );
+}
+export function ObjectWithEveryNullableTypeUnionAClone(
+    input: ObjectWithEveryNullableTypeUnionA,
+): ObjectWithEveryNullableTypeUnionA {
+    let _title: string;
+    _title = input.title;
+    let _description: string;
+    _description = input.description;
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function ObjectWithEveryNullableTypeUnionAFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryNullableTypeUnionA {
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function ObjectWithEveryNullableTypeUnionAFromJsonString(
+    input: string,
+): ObjectWithEveryNullableTypeUnionA {
+    return ObjectWithEveryNullableTypeUnionAFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryNullableTypeUnionAToJsonString(
+    input: ObjectWithEveryNullableTypeUnionA,
+): string {
+    let json = '{';
+    json += '"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function ObjectWithEveryNullableTypeUnionAToUrlSearchParams(
+    input: ObjectWithEveryNullableTypeUnionA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function ObjectWithEveryNullableTypeUnionAToUrlSearchParamsString(
+    input: ObjectWithEveryNullableTypeUnionA,
+): string {
+    return ObjectWithEveryNullableTypeUnionAToUrlSearchParams(input).toString();
+}
+
+export const $$ObjectWithEveryNullableTypeUnionA: TestClientValidator<ObjectWithEveryNullableTypeUnionA> =
+    {
+        new: ObjectWithEveryNullableTypeUnionANew,
+        validate: ObjectWithEveryNullableTypeUnionAValidate,
+        clone: ObjectWithEveryNullableTypeUnionAClone,
+        fromJson: ObjectWithEveryNullableTypeUnionAFromJson,
+        fromJsonString: ObjectWithEveryNullableTypeUnionAFromJsonString,
+        toJsonString: ObjectWithEveryNullableTypeUnionAToJsonString,
+        toUrlSearchParams: ObjectWithEveryNullableTypeUnionAToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithEveryNullableTypeUnionAToUrlSearchParamsString,
+    };
+
+export type ObjectWithEveryNullableTypeUnionB = 'A' | 'B' | 'C';
+export const ObjectWithEveryNullableTypeUnionB = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+export const ObjectWithEveryNullableTypeUnionBValues = ['A', 'B', 'C'] as const;
+export function ObjectWithEveryNullableTypeUnionBNew(): ObjectWithEveryNullableTypeUnionB {
+    return ObjectWithEveryNullableTypeUnionBValues[0];
+}
+export function ObjectWithEveryNullableTypeUnionBValidate(
+    input: unknown,
+): input is ObjectWithEveryNullableTypeUnionB {
+    return (
+        typeof input === 'string' &&
+        ObjectWithEveryNullableTypeUnionBValues.includes(input as any)
+    );
+}
+export function ObjectWithEveryNullableTypeUnionBFromSerialValue(
+    input: string,
+): ObjectWithEveryNullableTypeUnionB {
+    if (ObjectWithEveryNullableTypeUnionBValues.includes(input as any)) {
+        return input as ObjectWithEveryNullableTypeUnionB;
+    }
+    if (
+        ObjectWithEveryNullableTypeUnionBValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as ObjectWithEveryNullableTypeUnionB;
+    }
+    if (
+        ObjectWithEveryNullableTypeUnionBValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as ObjectWithEveryNullableTypeUnionB;
+    }
+    return 'A';
+}
+export const $$ObjectWithEveryNullableTypeUnionB: TestClientEnumValidator<ObjectWithEveryNullableTypeUnionB> =
+    {
+        new: ObjectWithEveryNullableTypeUnionBNew,
+        validate: ObjectWithEveryNullableTypeUnionBValidate,
+        values: ObjectWithEveryNullableTypeUnionBValues,
+        fromSerialValue: ObjectWithEveryNullableTypeUnionBFromSerialValue,
     };
 
 export interface ObjectWithEveryNullableTypeNestedObject {
@@ -4328,6 +5137,7 @@ export interface ObjectWithEveryOptionalType {
     object?: ObjectWithEveryOptionalTypeObject;
     record?: Record<string, bigint>;
     discriminator?: ObjectWithEveryOptionalTypeDiscriminator;
+    union?: ObjectWithEveryOptionalTypeUnion;
     nestedObject?: ObjectWithEveryOptionalTypeNestedObject;
     nestedArray?: ObjectWithEveryOptionalTypeNestedArrayElementElement[][];
 }
@@ -4407,6 +5217,8 @@ export function ObjectWithEveryOptionalTypeValidate(
             input.discriminator,
         ) ||
             typeof input.discriminator === 'undefined') &&
+        (ObjectWithEveryOptionalTypeUnionValidate(input.union) ||
+            typeof input.union === 'undefined') &&
         (ObjectWithEveryOptionalTypeNestedObjectValidate(input.nestedObject) ||
             typeof input.nestedObject === 'undefined') &&
         ((Array.isArray(input.nestedArray) &&
@@ -4513,6 +5325,10 @@ export function ObjectWithEveryOptionalTypeClone(
             input.discriminator,
         );
     }
+    let _union: ObjectWithEveryOptionalTypeUnion | undefined;
+    if (typeof input.union !== 'undefined') {
+        _union = ObjectWithEveryOptionalTypeUnionClone(input.union);
+    }
     let _nestedObject: ObjectWithEveryOptionalTypeNestedObject | undefined;
     if (typeof input.nestedObject !== 'undefined') {
         _nestedObject = ObjectWithEveryOptionalTypeNestedObjectClone(
@@ -4558,6 +5374,7 @@ export function ObjectWithEveryOptionalTypeClone(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -4675,6 +5492,14 @@ export function ObjectWithEveryOptionalTypeFromJson(
             _discriminator = ObjectWithEveryOptionalTypeDiscriminatorNew();
         }
     }
+    let _union: ObjectWithEveryOptionalTypeUnion | undefined;
+    if (typeof input.union !== 'undefined') {
+        if (isObject(input.union)) {
+            _union = ObjectWithEveryOptionalTypeUnionFromJson(input.union);
+        } else {
+            _union = ObjectWithEveryOptionalTypeUnionNew();
+        }
+    }
     let _nestedObject: ObjectWithEveryOptionalTypeNestedObject | undefined;
     if (typeof input.nestedObject !== 'undefined') {
         if (isObject(input.nestedObject)) {
@@ -4737,6 +5562,7 @@ export function ObjectWithEveryOptionalTypeFromJson(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -4884,6 +5710,12 @@ export function ObjectWithEveryOptionalTypeToJsonString(
         );
         _hasKey = true;
     }
+    if (typeof input.union !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"union":';
+        json += ObjectWithEveryOptionalTypeUnionToJsonString(input.union);
+        _hasKey = true;
+    }
     if (typeof input.nestedObject !== 'undefined') {
         if (_hasKey) json += ',';
         json += '"nestedObject":';
@@ -4985,6 +5817,11 @@ export function ObjectWithEveryOptionalTypeToUrlSearchParams(
     if (typeof input.discriminator !== 'undefined') {
         console.warn(
             '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/discriminator.',
+        );
+    }
+    if (typeof input.union !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryOptionalType/union.',
         );
     }
     if (typeof input.nestedObject !== 'undefined') {
@@ -5447,6 +6284,384 @@ const $$ObjectWithEveryOptionalTypeDiscriminatorB: TestClientValidator<ObjectWit
             ObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams,
         toUrlSearchParamsString:
             ObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsString,
+    };
+
+export type ObjectWithEveryOptionalTypeUnion =
+    | { type: `A`; value: ObjectWithEveryOptionalTypeUnionA }
+    | { type: `B`; value: ObjectWithEveryOptionalTypeUnionB }
+    | { type: `C`; value: Date | null }
+    | { type: `D`; value: Record<string, boolean> };
+export function ObjectWithEveryOptionalTypeUnionNew(): ObjectWithEveryOptionalTypeUnion {
+    return {
+        type: `A`,
+        value: ObjectWithEveryOptionalTypeUnionANew(),
+    };
+}
+export function ObjectWithEveryOptionalTypeUnionValidate(
+    input: unknown,
+): input is ObjectWithEveryOptionalTypeUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `A`:
+            return ObjectWithEveryOptionalTypeUnionAValidate(input.value);
+
+        case `B`:
+            return ObjectWithEveryOptionalTypeUnionBValidate(input.value);
+
+        case `C`:
+            return input.value instanceof Date || input.value === null;
+
+        case `D`:
+            return (
+                isObject(input.value) &&
+                Object.values(input.value).every(
+                    (_value) => typeof _value === 'boolean',
+                )
+            );
+
+        default:
+            return false;
+    }
+}
+export function ObjectWithEveryOptionalTypeUnionClone(
+    input: ObjectWithEveryOptionalTypeUnion,
+): ObjectWithEveryOptionalTypeUnion {
+    switch (input.type) {
+        case `A`: {
+            let __value__: ObjectWithEveryOptionalTypeUnionA;
+            __value__ = ObjectWithEveryOptionalTypeUnionAClone(input.value);
+            return {
+                type: `A`,
+                value: __value__,
+            };
+        }
+
+        case `B`: {
+            let __value__: ObjectWithEveryOptionalTypeUnionB;
+            __value__ = input.value;
+            return {
+                type: `B`,
+                value: __value__,
+            };
+        }
+
+        case `C`: {
+            let __value__: Date | null;
+            if (input.value !== null) {
+                __value__ = new Date(input.value.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `C`,
+                value: __value__,
+            };
+        }
+
+        case `D`: {
+            let __value__: Record<string, boolean>;
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input.value)) {
+                let __value__Value: boolean;
+                __value__Value = _value;
+                __value__[_key] = __value__Value;
+            }
+            return {
+                type: `D`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function ObjectWithEveryOptionalTypeUnionFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryOptionalTypeUnion {
+    if (`A` in input) {
+        let __value__: ObjectWithEveryOptionalTypeUnionA;
+        if (isObject(input[`A`])) {
+            __value__ = ObjectWithEveryOptionalTypeUnionAFromJson(input[`A`]);
+        } else {
+            __value__ = ObjectWithEveryOptionalTypeUnionANew();
+        }
+        return {
+            type: `A`,
+            value: __value__,
+        };
+    }
+
+    if (`B` in input) {
+        let __value__: ObjectWithEveryOptionalTypeUnionB;
+        if (typeof input[`B`] === 'string') {
+            __value__ = ObjectWithEveryOptionalTypeUnionBFromSerialValue(
+                input[`B`],
+            );
+        } else {
+            __value__ = ObjectWithEveryOptionalTypeUnionBNew();
+        }
+        return {
+            type: `B`,
+            value: __value__,
+        };
+    }
+
+    if (`C` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`C`]);
+        return {
+            type: `C`,
+            value: __value__,
+        };
+    }
+
+    if (`D` in input) {
+        let __value__: Record<string, boolean>;
+        if (isObject(input[`D`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`D`])) {
+                let __value__Value: boolean;
+                __value__Value = parseBoolean(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `D`,
+            value: __value__,
+        };
+    }
+    return ObjectWithEveryOptionalTypeUnionNew();
+}
+export function ObjectWithEveryOptionalTypeUnionFromJsonString(
+    input: string,
+): ObjectWithEveryOptionalTypeUnion {
+    return ObjectWithEveryOptionalTypeUnionFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryOptionalTypeUnionToJsonString(
+    input: ObjectWithEveryOptionalTypeUnion,
+): string {
+    switch (input.type) {
+        case `A`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += ObjectWithEveryOptionalTypeUnionAToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `B`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `C`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `D`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += `${_value}`;
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function ObjectWithEveryOptionalTypeUnionToUrlSearchParams(
+    input: ObjectWithEveryOptionalTypeUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function ObjectWithEveryOptionalTypeUnionToUrlSearchParamsString(
+    input: ObjectWithEveryOptionalTypeUnion,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export const $$ObjectWithEveryOptionalTypeUnion: TestClientValidator<ObjectWithEveryOptionalTypeUnion> =
+    {
+        new: ObjectWithEveryOptionalTypeUnionNew,
+        validate: ObjectWithEveryOptionalTypeUnionValidate,
+        clone: ObjectWithEveryOptionalTypeUnionClone,
+        fromJson: ObjectWithEveryOptionalTypeUnionFromJson,
+        fromJsonString: ObjectWithEveryOptionalTypeUnionFromJsonString,
+        toJsonString: ObjectWithEveryOptionalTypeUnionToJsonString,
+        toUrlSearchParams: ObjectWithEveryOptionalTypeUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithEveryOptionalTypeUnionToUrlSearchParamsString,
+    };
+export interface ObjectWithEveryOptionalTypeUnionA {
+    title: string;
+    description: string;
+}
+export function ObjectWithEveryOptionalTypeUnionANew(): ObjectWithEveryOptionalTypeUnionA {
+    return {
+        title: '',
+        description: '',
+    };
+}
+export function ObjectWithEveryOptionalTypeUnionAValidate(
+    input: unknown,
+): input is ObjectWithEveryOptionalTypeUnionA {
+    return (
+        isObject(input) &&
+        typeof input.title === 'string' &&
+        typeof input.description === 'string'
+    );
+}
+export function ObjectWithEveryOptionalTypeUnionAClone(
+    input: ObjectWithEveryOptionalTypeUnionA,
+): ObjectWithEveryOptionalTypeUnionA {
+    let _title: string;
+    _title = input.title;
+    let _description: string;
+    _description = input.description;
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function ObjectWithEveryOptionalTypeUnionAFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryOptionalTypeUnionA {
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function ObjectWithEveryOptionalTypeUnionAFromJsonString(
+    input: string,
+): ObjectWithEveryOptionalTypeUnionA {
+    return ObjectWithEveryOptionalTypeUnionAFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryOptionalTypeUnionAToJsonString(
+    input: ObjectWithEveryOptionalTypeUnionA,
+): string {
+    let json = '{';
+    json += '"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function ObjectWithEveryOptionalTypeUnionAToUrlSearchParams(
+    input: ObjectWithEveryOptionalTypeUnionA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function ObjectWithEveryOptionalTypeUnionAToUrlSearchParamsString(
+    input: ObjectWithEveryOptionalTypeUnionA,
+): string {
+    return ObjectWithEveryOptionalTypeUnionAToUrlSearchParams(input).toString();
+}
+
+export const $$ObjectWithEveryOptionalTypeUnionA: TestClientValidator<ObjectWithEveryOptionalTypeUnionA> =
+    {
+        new: ObjectWithEveryOptionalTypeUnionANew,
+        validate: ObjectWithEveryOptionalTypeUnionAValidate,
+        clone: ObjectWithEveryOptionalTypeUnionAClone,
+        fromJson: ObjectWithEveryOptionalTypeUnionAFromJson,
+        fromJsonString: ObjectWithEveryOptionalTypeUnionAFromJsonString,
+        toJsonString: ObjectWithEveryOptionalTypeUnionAToJsonString,
+        toUrlSearchParams: ObjectWithEveryOptionalTypeUnionAToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithEveryOptionalTypeUnionAToUrlSearchParamsString,
+    };
+
+export type ObjectWithEveryOptionalTypeUnionB = 'A' | 'B' | 'C';
+export const ObjectWithEveryOptionalTypeUnionB = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+export const ObjectWithEveryOptionalTypeUnionBValues = ['A', 'B', 'C'] as const;
+export function ObjectWithEveryOptionalTypeUnionBNew(): ObjectWithEveryOptionalTypeUnionB {
+    return ObjectWithEveryOptionalTypeUnionBValues[0];
+}
+export function ObjectWithEveryOptionalTypeUnionBValidate(
+    input: unknown,
+): input is ObjectWithEveryOptionalTypeUnionB {
+    return (
+        typeof input === 'string' &&
+        ObjectWithEveryOptionalTypeUnionBValues.includes(input as any)
+    );
+}
+export function ObjectWithEveryOptionalTypeUnionBFromSerialValue(
+    input: string,
+): ObjectWithEveryOptionalTypeUnionB {
+    if (ObjectWithEveryOptionalTypeUnionBValues.includes(input as any)) {
+        return input as ObjectWithEveryOptionalTypeUnionB;
+    }
+    if (
+        ObjectWithEveryOptionalTypeUnionBValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as ObjectWithEveryOptionalTypeUnionB;
+    }
+    if (
+        ObjectWithEveryOptionalTypeUnionBValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as ObjectWithEveryOptionalTypeUnionB;
+    }
+    return 'A';
+}
+export const $$ObjectWithEveryOptionalTypeUnionB: TestClientEnumValidator<ObjectWithEveryOptionalTypeUnionB> =
+    {
+        new: ObjectWithEveryOptionalTypeUnionBNew,
+        validate: ObjectWithEveryOptionalTypeUnionBValidate,
+        values: ObjectWithEveryOptionalTypeUnionBValues,
+        fromSerialValue: ObjectWithEveryOptionalTypeUnionBFromSerialValue,
     };
 
 export interface ObjectWithEveryOptionalTypeNestedObject {
@@ -6549,6 +7764,333 @@ export const $$RecursiveUnionShapeData: TestClientValidator<RecursiveUnionShapeD
         toJsonString: RecursiveUnionShapeDataToJsonString,
         toUrlSearchParams: RecursiveUnionShapeDataToUrlSearchParams,
         toUrlSearchParamsString: RecursiveUnionShapeDataToUrlSearchParamsString,
+    };
+
+export type RecursiveUnionV2 =
+    | { type: `child`; value: RecursiveUnionV2 }
+    | { type: `children`; value: RecursiveUnionV2[] }
+    | { type: `text`; value: string }
+    | { type: `shape`; value: RecursiveUnionV2Shape };
+export function RecursiveUnionV2New(): RecursiveUnionV2 {
+    return {
+        type: `child`,
+        value: RecursiveUnionV2New(),
+    };
+}
+export function RecursiveUnionV2Validate(
+    input: unknown,
+): input is RecursiveUnionV2 {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `child`:
+            return RecursiveUnionV2Validate(input.value);
+
+        case `children`:
+            return (
+                Array.isArray(input.value) &&
+                input.value.every((_element) =>
+                    RecursiveUnionV2Validate(_element),
+                )
+            );
+
+        case `text`:
+            return typeof input.value === 'string';
+
+        case `shape`:
+            return RecursiveUnionV2ShapeValidate(input.value);
+
+        default:
+            return false;
+    }
+}
+export function RecursiveUnionV2Clone(
+    input: RecursiveUnionV2,
+): RecursiveUnionV2 {
+    switch (input.type) {
+        case `child`: {
+            let __value__: RecursiveUnionV2;
+            __value__ = RecursiveUnionV2Clone(input.value);
+            return {
+                type: `child`,
+                value: __value__,
+            };
+        }
+
+        case `children`: {
+            let __value__: RecursiveUnionV2[];
+            __value__ = [];
+            for (const __value__El of input.value) {
+                let __value__ElValue: RecursiveUnionV2;
+                __value__ElValue = RecursiveUnionV2Clone(__value__El);
+                __value__.push(__value__ElValue);
+            }
+            return {
+                type: `children`,
+                value: __value__,
+            };
+        }
+
+        case `text`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `text`,
+                value: __value__,
+            };
+        }
+
+        case `shape`: {
+            let __value__: RecursiveUnionV2Shape;
+            __value__ = RecursiveUnionV2ShapeClone(input.value);
+            return {
+                type: `shape`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function RecursiveUnionV2FromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionV2 {
+    if (`child` in input) {
+        let __value__: RecursiveUnionV2;
+        if (isObject(input[`child`])) {
+            __value__ = RecursiveUnionV2FromJson(input[`child`]);
+        } else {
+            __value__ = RecursiveUnionV2New();
+        }
+        return {
+            type: `child`,
+            value: __value__,
+        };
+    }
+
+    if (`children` in input) {
+        let __value__: RecursiveUnionV2[];
+        if (Array.isArray(input[`children`])) {
+            __value__ = [];
+            for (const __value__El of input[`children`]) {
+                let __value__ElValue: RecursiveUnionV2;
+                if (isObject(__value__El)) {
+                    __value__ElValue = RecursiveUnionV2FromJson(__value__El);
+                } else {
+                    __value__ElValue = RecursiveUnionV2New();
+                }
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `children`,
+            value: __value__,
+        };
+    }
+
+    if (`text` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`text`]);
+        return {
+            type: `text`,
+            value: __value__,
+        };
+    }
+
+    if (`shape` in input) {
+        let __value__: RecursiveUnionV2Shape;
+        if (isObject(input[`shape`])) {
+            __value__ = RecursiveUnionV2ShapeFromJson(input[`shape`]);
+        } else {
+            __value__ = RecursiveUnionV2ShapeNew();
+        }
+        return {
+            type: `shape`,
+            value: __value__,
+        };
+    }
+    return RecursiveUnionV2New();
+}
+export function RecursiveUnionV2FromJsonString(
+    input: string,
+): RecursiveUnionV2 {
+    return RecursiveUnionV2FromJson(JSON.parse(input));
+}
+export function RecursiveUnionV2ToJsonString(input: RecursiveUnionV2): string {
+    switch (input.type) {
+        case `child`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += RecursiveUnionV2ToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `children`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i];
+                json += RecursiveUnionV2ToJsonString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `text`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `shape`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += RecursiveUnionV2ShapeToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function RecursiveUnionV2ToUrlSearchParams(
+    input: RecursiveUnionV2,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function RecursiveUnionV2ToUrlSearchParamsString(
+    input: RecursiveUnionV2,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export const $$RecursiveUnionV2: TestClientValidator<RecursiveUnionV2> = {
+    new: RecursiveUnionV2New,
+    validate: RecursiveUnionV2Validate,
+    clone: RecursiveUnionV2Clone,
+    fromJson: RecursiveUnionV2FromJson,
+    fromJsonString: RecursiveUnionV2FromJsonString,
+    toJsonString: RecursiveUnionV2ToJsonString,
+    toUrlSearchParams: RecursiveUnionV2ToUrlSearchParams,
+    toUrlSearchParamsString: RecursiveUnionV2ToUrlSearchParamsString,
+};
+
+export interface RecursiveUnionV2Shape {
+    width: number;
+    height: number;
+    color: string;
+}
+export function RecursiveUnionV2ShapeNew(): RecursiveUnionV2Shape {
+    return {
+        width: 0,
+        height: 0,
+        color: '',
+    };
+}
+export function RecursiveUnionV2ShapeValidate(
+    input: unknown,
+): input is RecursiveUnionV2Shape {
+    return (
+        isObject(input) &&
+        typeof input.width === 'number' &&
+        typeof input.height === 'number' &&
+        typeof input.color === 'string'
+    );
+}
+export function RecursiveUnionV2ShapeClone(
+    input: RecursiveUnionV2Shape,
+): RecursiveUnionV2Shape {
+    let _width: number;
+    _width = input.width;
+    let _height: number;
+    _height = input.height;
+    let _color: string;
+    _color = input.color;
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
+}
+export function RecursiveUnionV2ShapeFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionV2Shape {
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    let _color: string;
+    _color = parseString(input.color);
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
+}
+export function RecursiveUnionV2ShapeFromJsonString(
+    input: string,
+): RecursiveUnionV2Shape {
+    return RecursiveUnionV2ShapeFromJson(JSON.parse(input));
+}
+export function RecursiveUnionV2ShapeToJsonString(
+    input: RecursiveUnionV2Shape,
+): string {
+    let json = '{';
+    json += '"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += ',"color":';
+    json += serializeString(input.color);
+    json += '}';
+    return json;
+}
+export function RecursiveUnionV2ShapeToUrlSearchParams(
+    input: RecursiveUnionV2Shape,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    params.set('color', input.color);
+    return params;
+}
+export function RecursiveUnionV2ShapeToUrlSearchParamsString(
+    input: RecursiveUnionV2Shape,
+): string {
+    return RecursiveUnionV2ShapeToUrlSearchParams(input).toString();
+}
+
+export const $$RecursiveUnionV2Shape: TestClientValidator<RecursiveUnionV2Shape> =
+    {
+        new: RecursiveUnionV2ShapeNew,
+        validate: RecursiveUnionV2ShapeValidate,
+        clone: RecursiveUnionV2ShapeClone,
+        fromJson: RecursiveUnionV2ShapeFromJson,
+        fromJsonString: RecursiveUnionV2ShapeFromJsonString,
+        toJsonString: RecursiveUnionV2ShapeToJsonString,
+        toUrlSearchParams: RecursiveUnionV2ShapeToUrlSearchParams,
+        toUrlSearchParamsString: RecursiveUnionV2ShapeToUrlSearchParamsString,
     };
 
 export interface AutoReconnectParams {

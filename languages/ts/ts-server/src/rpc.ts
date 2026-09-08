@@ -9,11 +9,13 @@ import {
     a,
     ADiscriminatorSchema,
     AObjectSchema,
+    AUnionSchema,
     errorMessageFromErrors,
     InferType,
     isADiscriminatorSchema,
     isAObjectSchema,
     isASchema,
+    isAUnionSchema,
     Result,
     ValueError,
 } from '@arrirpc/schema';
@@ -40,10 +42,15 @@ import { type RouteOptions } from './route';
 
 export type RpcParamSchema<T = any> =
     | AObjectSchema<T>
+    | AUnionSchema<T>
     | ADiscriminatorSchema<T>;
 
 export function isRpcParamSchema(input: unknown): input is RpcParamSchema<any> {
-    return isAObjectSchema(input) || isADiscriminatorSchema(input);
+    return (
+        isAObjectSchema(input) ||
+        isAUnionSchema(input) ||
+        isADiscriminatorSchema(input)
+    );
 }
 
 export interface NamedHttpRpc<

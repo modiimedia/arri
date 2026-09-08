@@ -106,6 +106,10 @@ const input: ObjectWithEveryType = {
         title: 'Hello World',
         description: '',
     },
+    union: {
+        type: 'B',
+        value: 'C',
+    },
     nestedObject: {
         id: '',
         timestamp: new Date(),
@@ -234,6 +238,7 @@ test('can send/receive partial objects', async () => {
         object: undefined,
         record: undefined,
         discriminator: undefined,
+        union: undefined,
         nestedObject: undefined,
         nestedArray: undefined,
         any: undefined,
@@ -266,6 +271,7 @@ test('can send/receive object with nullable fields', async () => {
         object: null,
         record: null,
         discriminator: null,
+        union: null,
         nestedObject: {
             id: null,
             timestamp: null,

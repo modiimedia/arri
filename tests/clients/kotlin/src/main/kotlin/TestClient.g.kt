@@ -326,6 +326,33 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         }
     }
 
+    suspend fun sendRecursiveUnionV2(params: RecursiveUnionV2): RecursiveUnionV2 {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-recursive-union-v2",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+            if (response.status.value in 200..299) {
+                return RecursiveUnionV2.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
     suspend fun streamAutoReconnect(
             params: AutoReconnectParams,
             lastEventId: String? = null,
@@ -1209,6 +1236,7 @@ data class ObjectWithEveryType(
     val `object`: ObjectWithEveryTypeObject,
     val record: MutableMap<String, ULong>,
     val discriminator: ObjectWithEveryTypeDiscriminator,
+    val union: JsonElement,
     val nestedObject: ObjectWithEveryTypeNestedObject,
     val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>>,
 ) : TestClientModel {
@@ -1267,6 +1295,8 @@ output += "{"
             output += "}"
 output += ",\"discriminator\":"
 output += discriminator.toJson()
+output += ",\"union\":"
+output += JsonInstance.encodeToString(union)
 output += ",\"nestedObject\":"
 output += nestedObject.toJson()
 output += ",\"nestedArray\":"
@@ -1314,6 +1344,7 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
+__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/union.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.")
 __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.")
 return queryParts.joinToString("&")
@@ -1342,6 +1373,7 @@ return queryParts.joinToString("&")
                 `object` = ObjectWithEveryTypeObject.new(),
                 record = mutableMapOf(),
                 discriminator = ObjectWithEveryTypeDiscriminator.new(),
+                union = JsonNull,
                 nestedObject = ObjectWithEveryTypeNestedObject.new(),
                 nestedArray = mutableListOf(),
             )
@@ -1468,6 +1500,10 @@ val discriminator: ObjectWithEveryTypeDiscriminator = when (__input.jsonObject["
                 )
                 else -> ObjectWithEveryTypeDiscriminator.new()
             }
+val union: JsonElement = when (__input.jsonObject["union"]) {
+                is JsonElement -> __input.jsonObject["union"]!!
+                else -> JsonNull
+            }
 val nestedObject: ObjectWithEveryTypeNestedObject = when (__input.jsonObject["nestedObject"]) {
                 is JsonObject -> ObjectWithEveryTypeNestedObject.fromJsonElement(
                     __input.jsonObject["nestedObject"]!!,
@@ -1528,6 +1564,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementEl
                 `object`,
                 record,
                 discriminator,
+                union,
                 nestedObject,
                 nestedArray,
             )
@@ -2116,6 +2153,7 @@ data class ObjectWithEveryNullableType(
     val `object`: ObjectWithEveryNullableTypeObject?,
     val record: MutableMap<String, ULong?>?,
     val discriminator: ObjectWithEveryNullableTypeDiscriminator?,
+    val union: JsonElement?,
     val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
     val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?,
 ) : TestClientModel {
@@ -2203,6 +2241,11 @@ if (record == null) {
                 }
 output += ",\"discriminator\":"
 output += discriminator?.toJson()
+output += ",\"union\":"
+output += when (union) {
+                    null -> "null"
+                    else -> JsonInstance.encodeToString(union)
+                }
 output += ",\"nestedObject\":"
 output += nestedObject?.toJson()
 output += ",\"nestedArray\":"
@@ -2261,6 +2304,7 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.")
+__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/union.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.")
 __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.")
 return queryParts.joinToString("&")
@@ -2289,6 +2333,7 @@ return queryParts.joinToString("&")
                 `object` = null,
                 record = null,
                 discriminator = null,
+                union = null,
                 nestedObject = null,
                 nestedArray = null,
             )
@@ -2415,6 +2460,11 @@ val discriminator: ObjectWithEveryNullableTypeDiscriminator? = when (__input.jso
                 )
                 else -> null
             }
+val union: JsonElement? = when (__input.jsonObject["union"]) {
+                    JsonNull -> null
+                    null -> null
+                    else -> __input.jsonObject["union"]
+                }
 val nestedObject: ObjectWithEveryNullableTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
                     is JsonObject -> ObjectWithEveryNullableTypeNestedObject.fromJsonElement(
                         __input.jsonObject["nestedObject"]!!,
@@ -2473,6 +2523,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayE
                 `object`,
                 record,
                 discriminator,
+                union,
                 nestedObject,
                 nestedArray,
             )
@@ -3325,6 +3376,7 @@ data class ObjectWithEveryOptionalType(
     val `object`: ObjectWithEveryOptionalTypeObject? = null,
     val record: MutableMap<String, ULong>? = null,
     val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = null,
+    val union: JsonElement? = null,
     val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
     val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = null,
 ) : TestClientModel {
@@ -3477,6 +3529,13 @@ if (discriminator != null) {
     output += discriminator.toJson()
     hasProperties = true
 }
+if (union != null) {
+        if (hasProperties) output += ","
+
+    output += "\"union\":"
+    output += JsonInstance.encodeToString(union)
+    hasProperties = true
+}
 if (nestedObject != null) {
         if (hasProperties) output += ","
 
@@ -3562,6 +3621,7 @@ __logError("[WARNING] arrays cannot be serialized to query params. Skipping fiel
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.")
+__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/union.")
 __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.")
 __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.")
 return queryParts.joinToString("&")
@@ -3695,6 +3755,10 @@ val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = when (__input.jso
                 )
                 else -> null
             }
+val union: JsonElement? = when (__input.jsonObject["union"]) {
+                    null -> null
+                    else -> __input.jsonObject["union"] 
+                }
 val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
                     is JsonObject -> ObjectWithEveryOptionalTypeNestedObject.fromJsonElement(
                         __input.jsonObject["nestedObject"]!!,
@@ -3754,6 +3818,7 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayE
                 `object`,
                 record,
                 discriminator,
+                union,
                 nestedObject,
                 nestedArray,
             )

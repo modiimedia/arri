@@ -272,6 +272,24 @@ export class TestClientPrefixed {
             options: options ?? this._options,
         });
     }
+    async sendRecursiveUnionV2(
+        params: FooRecursiveUnionV2,
+        options?: ArriRequestOptions,
+    ): Promise<FooRecursiveUnionV2> {
+        return arriRequest<FooRecursiveUnionV2, FooRecursiveUnionV2>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-union-v2`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: FooRecursiveUnionV2FromJson,
+            responseFromString: FooRecursiveUnionV2FromJsonString,
+            serializer: FooRecursiveUnionV2ToJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
     streamAutoReconnect(
         params: FooAutoReconnectParams,
         options: SseOptions<FooAutoReconnectResponse> = {},
@@ -913,6 +931,7 @@ export interface FooObjectWithEveryType {
     object: FooObjectWithEveryTypeObject;
     record: Record<string, bigint>;
     discriminator: FooObjectWithEveryTypeDiscriminator;
+    union: FooObjectWithEveryTypeUnion;
     nestedObject: FooObjectWithEveryTypeNestedObject;
     nestedArray: FooObjectWithEveryTypeNestedArrayElementElement[][];
 }
@@ -937,6 +956,7 @@ export function FooObjectWithEveryTypeNew(): FooObjectWithEveryType {
         object: FooObjectWithEveryTypeObjectNew(),
         record: {},
         discriminator: FooObjectWithEveryTypeDiscriminatorNew(),
+        union: FooObjectWithEveryTypeUnionNew(),
         nestedObject: FooObjectWithEveryTypeNestedObjectNew(),
         nestedArray: [],
     };
@@ -1016,6 +1036,12 @@ export function FooObjectWithEveryTypeFromJson(
     } else {
         _discriminator = FooObjectWithEveryTypeDiscriminatorNew();
     }
+    let _union: FooObjectWithEveryTypeUnion;
+    if (isObject(input.union)) {
+        _union = FooObjectWithEveryTypeUnionFromJson(input.union);
+    } else {
+        _union = FooObjectWithEveryTypeUnionNew();
+    }
     let _nestedObject: FooObjectWithEveryTypeNestedObject;
     if (isObject(input.nestedObject)) {
         _nestedObject = FooObjectWithEveryTypeNestedObjectFromJson(
@@ -1072,6 +1098,7 @@ export function FooObjectWithEveryTypeFromJson(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -1142,6 +1169,8 @@ export function FooObjectWithEveryTypeToJsonString(
     json += FooObjectWithEveryTypeDiscriminatorToJsonString(
         input.discriminator,
     );
+    json += ',"union":';
+    json += FooObjectWithEveryTypeUnionToJsonString(input.union);
     json += ',"nestedObject":';
     json += FooObjectWithEveryTypeNestedObjectToJsonString(input.nestedObject);
     json += ',"nestedArray":';
@@ -1195,6 +1224,9 @@ export function FooObjectWithEveryTypeToUrlSearchParams(
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/union.',
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/nestedObject.',
@@ -1468,6 +1500,233 @@ export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString(
     ).toString();
 }
 
+export type FooObjectWithEveryTypeUnion =
+    | { type: `A`; value: FooObjectWithEveryTypeUnionA }
+    | { type: `B`; value: FooObjectWithEveryTypeUnionB }
+    | { type: `C`; value: Date | null }
+    | { type: `D`; value: Record<string, boolean> };
+export function FooObjectWithEveryTypeUnionNew(): FooObjectWithEveryTypeUnion {
+    return {
+        type: `A`,
+        value: FooObjectWithEveryTypeUnionANew(),
+    };
+}
+export function FooObjectWithEveryTypeUnionFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeUnion {
+    if (`A` in input) {
+        let __value__: FooObjectWithEveryTypeUnionA;
+        if (isObject(input[`A`])) {
+            __value__ = FooObjectWithEveryTypeUnionAFromJson(input[`A`]);
+        } else {
+            __value__ = FooObjectWithEveryTypeUnionANew();
+        }
+        return {
+            type: `A`,
+            value: __value__,
+        };
+    }
+
+    if (`B` in input) {
+        let __value__: FooObjectWithEveryTypeUnionB;
+        if (typeof input[`B`] === 'string') {
+            __value__ = FooObjectWithEveryTypeUnionBFromSerialValue(input[`B`]);
+        } else {
+            __value__ = FooObjectWithEveryTypeUnionBNew();
+        }
+        return {
+            type: `B`,
+            value: __value__,
+        };
+    }
+
+    if (`C` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`C`]);
+        return {
+            type: `C`,
+            value: __value__,
+        };
+    }
+
+    if (`D` in input) {
+        let __value__: Record<string, boolean>;
+        if (isObject(input[`D`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`D`])) {
+                let __value__Value: boolean;
+                __value__Value = parseBoolean(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `D`,
+            value: __value__,
+        };
+    }
+    return FooObjectWithEveryTypeUnionNew();
+}
+export function FooObjectWithEveryTypeUnionFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeUnion {
+    return FooObjectWithEveryTypeUnionFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeUnionToJsonString(
+    input: FooObjectWithEveryTypeUnion,
+): string {
+    switch (input.type) {
+        case `A`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithEveryTypeUnionAToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `B`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `C`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `D`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += `${_value}`;
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooObjectWithEveryTypeUnionToUrlSearchParams(
+    input: FooObjectWithEveryTypeUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function FooObjectWithEveryTypeUnionToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeUnion,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export interface FooObjectWithEveryTypeUnionA {
+    title: string;
+    description: string;
+}
+export function FooObjectWithEveryTypeUnionANew(): FooObjectWithEveryTypeUnionA {
+    return {
+        title: '',
+        description: '',
+    };
+}
+export function FooObjectWithEveryTypeUnionAFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryTypeUnionA {
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function FooObjectWithEveryTypeUnionAFromJsonString(
+    input: string,
+): FooObjectWithEveryTypeUnionA {
+    return FooObjectWithEveryTypeUnionAFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryTypeUnionAToJsonString(
+    input: FooObjectWithEveryTypeUnionA,
+): string {
+    let json = '{';
+    json += '"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryTypeUnionAToUrlSearchParams(
+    input: FooObjectWithEveryTypeUnionA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function FooObjectWithEveryTypeUnionAToUrlSearchParamsString(
+    input: FooObjectWithEveryTypeUnionA,
+): string {
+    return FooObjectWithEveryTypeUnionAToUrlSearchParams(input).toString();
+}
+
+export type FooObjectWithEveryTypeUnionB = 'A' | 'B' | 'C';
+export const FooObjectWithEveryTypeUnionB = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+export const FooObjectWithEveryTypeUnionBValues = ['A', 'B', 'C'] as const;
+export function FooObjectWithEveryTypeUnionBNew(): FooObjectWithEveryTypeUnionB {
+    return FooObjectWithEveryTypeUnionBValues[0];
+}
+export function FooObjectWithEveryTypeUnionBFromSerialValue(
+    input: string,
+): FooObjectWithEveryTypeUnionB {
+    if (FooObjectWithEveryTypeUnionBValues.includes(input as any)) {
+        return input as FooObjectWithEveryTypeUnionB;
+    }
+    if (
+        FooObjectWithEveryTypeUnionBValues.includes(input.toLowerCase() as any)
+    ) {
+        return input.toLowerCase() as FooObjectWithEveryTypeUnionB;
+    }
+    if (
+        FooObjectWithEveryTypeUnionBValues.includes(input.toUpperCase() as any)
+    ) {
+        return input.toUpperCase() as FooObjectWithEveryTypeUnionB;
+    }
+    return 'A';
+}
+
 export interface FooObjectWithEveryTypeNestedObject {
     id: string;
     timestamp: Date;
@@ -1736,6 +1995,7 @@ export interface FooObjectWithEveryNullableType {
     object: FooObjectWithEveryNullableTypeObject | null;
     record: Record<string, bigint | null> | null;
     discriminator: FooObjectWithEveryNullableTypeDiscriminator | null;
+    union: FooObjectWithEveryNullableTypeUnion | null;
     nestedObject: FooObjectWithEveryNullableTypeNestedObject | null;
     nestedArray:
         | (
@@ -1765,6 +2025,7 @@ export function FooObjectWithEveryNullableTypeNew(): FooObjectWithEveryNullableT
         object: null,
         record: null,
         discriminator: null,
+        union: null,
         nestedObject: null,
         nestedArray: null,
     };
@@ -1844,6 +2105,12 @@ export function FooObjectWithEveryNullableTypeFromJson(
     } else {
         _discriminator = null;
     }
+    let _union: FooObjectWithEveryNullableTypeUnion | null;
+    if (isObject(input.union)) {
+        _union = FooObjectWithEveryNullableTypeUnionFromJson(input.union);
+    } else {
+        _union = null;
+    }
     let _nestedObject: FooObjectWithEveryNullableTypeNestedObject | null;
     if (isObject(input.nestedObject)) {
         _nestedObject = FooObjectWithEveryNullableTypeNestedObjectFromJson(
@@ -1906,6 +2173,7 @@ export function FooObjectWithEveryNullableTypeFromJson(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -2015,6 +2283,12 @@ export function FooObjectWithEveryNullableTypeToJsonString(
     } else {
         json += 'null';
     }
+    json += ',"union":';
+    if (input.union != null) {
+        json += FooObjectWithEveryNullableTypeUnionToJsonString(input.union);
+    } else {
+        json += 'null';
+    }
     json += ',"nestedObject":';
     if (input.nestedObject !== null) {
         json += FooObjectWithEveryNullableTypeNestedObjectToJsonString(
@@ -2087,6 +2361,9 @@ export function FooObjectWithEveryNullableTypeToUrlSearchParams(
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/discriminator.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryNullableType/union.',
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/nestedObject.',
@@ -2398,6 +2675,249 @@ export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsStr
     return FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
         input,
     ).toString();
+}
+
+export type FooObjectWithEveryNullableTypeUnion =
+    | { type: `A`; value: FooObjectWithEveryNullableTypeUnionA }
+    | { type: `B`; value: FooObjectWithEveryNullableTypeUnionB }
+    | { type: `C`; value: Date | null }
+    | { type: `D`; value: Record<string, boolean> };
+export function FooObjectWithEveryNullableTypeUnionNew(): FooObjectWithEveryNullableTypeUnion {
+    return {
+        type: `A`,
+        value: FooObjectWithEveryNullableTypeUnionANew(),
+    };
+}
+export function FooObjectWithEveryNullableTypeUnionFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeUnion {
+    if (`A` in input) {
+        let __value__: FooObjectWithEveryNullableTypeUnionA;
+        if (isObject(input[`A`])) {
+            __value__ = FooObjectWithEveryNullableTypeUnionAFromJson(
+                input[`A`],
+            );
+        } else {
+            __value__ = FooObjectWithEveryNullableTypeUnionANew();
+        }
+        return {
+            type: `A`,
+            value: __value__,
+        };
+    }
+
+    if (`B` in input) {
+        let __value__: FooObjectWithEveryNullableTypeUnionB;
+        if (typeof input[`B`] === 'string') {
+            __value__ = FooObjectWithEveryNullableTypeUnionBFromSerialValue(
+                input[`B`],
+            );
+        } else {
+            __value__ = FooObjectWithEveryNullableTypeUnionBNew();
+        }
+        return {
+            type: `B`,
+            value: __value__,
+        };
+    }
+
+    if (`C` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`C`]);
+        return {
+            type: `C`,
+            value: __value__,
+        };
+    }
+
+    if (`D` in input) {
+        let __value__: Record<string, boolean>;
+        if (isObject(input[`D`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`D`])) {
+                let __value__Value: boolean;
+                __value__Value = parseBoolean(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `D`,
+            value: __value__,
+        };
+    }
+    return FooObjectWithEveryNullableTypeUnionNew();
+}
+export function FooObjectWithEveryNullableTypeUnionFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeUnion {
+    return FooObjectWithEveryNullableTypeUnionFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryNullableTypeUnionToJsonString(
+    input: FooObjectWithEveryNullableTypeUnion,
+): string {
+    switch (input.type) {
+        case `A`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithEveryNullableTypeUnionAToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `B`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `C`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `D`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += `${_value}`;
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooObjectWithEveryNullableTypeUnionToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function FooObjectWithEveryNullableTypeUnionToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeUnion,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export interface FooObjectWithEveryNullableTypeUnionA {
+    title: string;
+    description: string;
+}
+export function FooObjectWithEveryNullableTypeUnionANew(): FooObjectWithEveryNullableTypeUnionA {
+    return {
+        title: '',
+        description: '',
+    };
+}
+export function FooObjectWithEveryNullableTypeUnionAFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryNullableTypeUnionA {
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function FooObjectWithEveryNullableTypeUnionAFromJsonString(
+    input: string,
+): FooObjectWithEveryNullableTypeUnionA {
+    return FooObjectWithEveryNullableTypeUnionAFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryNullableTypeUnionAToJsonString(
+    input: FooObjectWithEveryNullableTypeUnionA,
+): string {
+    let json = '{';
+    json += '"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryNullableTypeUnionAToUrlSearchParams(
+    input: FooObjectWithEveryNullableTypeUnionA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function FooObjectWithEveryNullableTypeUnionAToUrlSearchParamsString(
+    input: FooObjectWithEveryNullableTypeUnionA,
+): string {
+    return FooObjectWithEveryNullableTypeUnionAToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type FooObjectWithEveryNullableTypeUnionB = 'A' | 'B' | 'C';
+export const FooObjectWithEveryNullableTypeUnionB = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+export const FooObjectWithEveryNullableTypeUnionBValues = [
+    'A',
+    'B',
+    'C',
+] as const;
+export function FooObjectWithEveryNullableTypeUnionBNew(): FooObjectWithEveryNullableTypeUnionB {
+    return FooObjectWithEveryNullableTypeUnionBValues[0];
+}
+export function FooObjectWithEveryNullableTypeUnionBFromSerialValue(
+    input: string,
+): FooObjectWithEveryNullableTypeUnionB {
+    if (FooObjectWithEveryNullableTypeUnionBValues.includes(input as any)) {
+        return input as FooObjectWithEveryNullableTypeUnionB;
+    }
+    if (
+        FooObjectWithEveryNullableTypeUnionBValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as FooObjectWithEveryNullableTypeUnionB;
+    }
+    if (
+        FooObjectWithEveryNullableTypeUnionBValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as FooObjectWithEveryNullableTypeUnionB;
+    }
+    return 'A';
 }
 
 export interface FooObjectWithEveryNullableTypeNestedObject {
@@ -2900,6 +3420,7 @@ export interface FooObjectWithEveryOptionalType {
     object?: FooObjectWithEveryOptionalTypeObject;
     record?: Record<string, bigint>;
     discriminator?: FooObjectWithEveryOptionalTypeDiscriminator;
+    union?: FooObjectWithEveryOptionalTypeUnion;
     nestedObject?: FooObjectWithEveryOptionalTypeNestedObject;
     nestedArray?: FooObjectWithEveryOptionalTypeNestedArrayElementElement[][];
 }
@@ -3023,6 +3544,14 @@ export function FooObjectWithEveryOptionalTypeFromJson(
             _discriminator = FooObjectWithEveryOptionalTypeDiscriminatorNew();
         }
     }
+    let _union: FooObjectWithEveryOptionalTypeUnion | undefined;
+    if (typeof input.union !== 'undefined') {
+        if (isObject(input.union)) {
+            _union = FooObjectWithEveryOptionalTypeUnionFromJson(input.union);
+        } else {
+            _union = FooObjectWithEveryOptionalTypeUnionNew();
+        }
+    }
     let _nestedObject: FooObjectWithEveryOptionalTypeNestedObject | undefined;
     if (typeof input.nestedObject !== 'undefined') {
         if (isObject(input.nestedObject)) {
@@ -3085,6 +3614,7 @@ export function FooObjectWithEveryOptionalTypeFromJson(
         object: _object,
         record: _record,
         discriminator: _discriminator,
+        union: _union,
         nestedObject: _nestedObject,
         nestedArray: _nestedArray,
     };
@@ -3232,6 +3762,12 @@ export function FooObjectWithEveryOptionalTypeToJsonString(
         );
         _hasKey = true;
     }
+    if (typeof input.union !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"union":';
+        json += FooObjectWithEveryOptionalTypeUnionToJsonString(input.union);
+        _hasKey = true;
+    }
     if (typeof input.nestedObject !== 'undefined') {
         if (_hasKey) json += ',';
         json += '"nestedObject":';
@@ -3333,6 +3869,11 @@ export function FooObjectWithEveryOptionalTypeToUrlSearchParams(
     if (typeof input.discriminator !== 'undefined') {
         console.warn(
             '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/discriminator.',
+        );
+    }
+    if (typeof input.union !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryOptionalType/union.',
         );
     }
     if (typeof input.nestedObject !== 'undefined') {
@@ -3629,6 +4170,249 @@ export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsStr
     return FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
         input,
     ).toString();
+}
+
+export type FooObjectWithEveryOptionalTypeUnion =
+    | { type: `A`; value: FooObjectWithEveryOptionalTypeUnionA }
+    | { type: `B`; value: FooObjectWithEveryOptionalTypeUnionB }
+    | { type: `C`; value: Date | null }
+    | { type: `D`; value: Record<string, boolean> };
+export function FooObjectWithEveryOptionalTypeUnionNew(): FooObjectWithEveryOptionalTypeUnion {
+    return {
+        type: `A`,
+        value: FooObjectWithEveryOptionalTypeUnionANew(),
+    };
+}
+export function FooObjectWithEveryOptionalTypeUnionFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeUnion {
+    if (`A` in input) {
+        let __value__: FooObjectWithEveryOptionalTypeUnionA;
+        if (isObject(input[`A`])) {
+            __value__ = FooObjectWithEveryOptionalTypeUnionAFromJson(
+                input[`A`],
+            );
+        } else {
+            __value__ = FooObjectWithEveryOptionalTypeUnionANew();
+        }
+        return {
+            type: `A`,
+            value: __value__,
+        };
+    }
+
+    if (`B` in input) {
+        let __value__: FooObjectWithEveryOptionalTypeUnionB;
+        if (typeof input[`B`] === 'string') {
+            __value__ = FooObjectWithEveryOptionalTypeUnionBFromSerialValue(
+                input[`B`],
+            );
+        } else {
+            __value__ = FooObjectWithEveryOptionalTypeUnionBNew();
+        }
+        return {
+            type: `B`,
+            value: __value__,
+        };
+    }
+
+    if (`C` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`C`]);
+        return {
+            type: `C`,
+            value: __value__,
+        };
+    }
+
+    if (`D` in input) {
+        let __value__: Record<string, boolean>;
+        if (isObject(input[`D`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`D`])) {
+                let __value__Value: boolean;
+                __value__Value = parseBoolean(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `D`,
+            value: __value__,
+        };
+    }
+    return FooObjectWithEveryOptionalTypeUnionNew();
+}
+export function FooObjectWithEveryOptionalTypeUnionFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeUnion {
+    return FooObjectWithEveryOptionalTypeUnionFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryOptionalTypeUnionToJsonString(
+    input: FooObjectWithEveryOptionalTypeUnion,
+): string {
+    switch (input.type) {
+        case `A`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithEveryOptionalTypeUnionAToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `B`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `C`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `D`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += `${_value}`;
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooObjectWithEveryOptionalTypeUnionToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeUnionToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeUnion,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+export interface FooObjectWithEveryOptionalTypeUnionA {
+    title: string;
+    description: string;
+}
+export function FooObjectWithEveryOptionalTypeUnionANew(): FooObjectWithEveryOptionalTypeUnionA {
+    return {
+        title: '',
+        description: '',
+    };
+}
+export function FooObjectWithEveryOptionalTypeUnionAFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithEveryOptionalTypeUnionA {
+    let _title: string;
+    _title = parseString(input.title);
+    let _description: string;
+    _description = parseString(input.description);
+    return {
+        title: _title,
+        description: _description,
+    };
+}
+export function FooObjectWithEveryOptionalTypeUnionAFromJsonString(
+    input: string,
+): FooObjectWithEveryOptionalTypeUnionA {
+    return FooObjectWithEveryOptionalTypeUnionAFromJson(JSON.parse(input));
+}
+export function FooObjectWithEveryOptionalTypeUnionAToJsonString(
+    input: FooObjectWithEveryOptionalTypeUnionA,
+): string {
+    let json = '{';
+    json += '"title":';
+    json += serializeString(input.title);
+    json += ',"description":';
+    json += serializeString(input.description);
+    json += '}';
+    return json;
+}
+export function FooObjectWithEveryOptionalTypeUnionAToUrlSearchParams(
+    input: FooObjectWithEveryOptionalTypeUnionA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('title', input.title);
+    params.set('description', input.description);
+    return params;
+}
+export function FooObjectWithEveryOptionalTypeUnionAToUrlSearchParamsString(
+    input: FooObjectWithEveryOptionalTypeUnionA,
+): string {
+    return FooObjectWithEveryOptionalTypeUnionAToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type FooObjectWithEveryOptionalTypeUnionB = 'A' | 'B' | 'C';
+export const FooObjectWithEveryOptionalTypeUnionB = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+export const FooObjectWithEveryOptionalTypeUnionBValues = [
+    'A',
+    'B',
+    'C',
+] as const;
+export function FooObjectWithEveryOptionalTypeUnionBNew(): FooObjectWithEveryOptionalTypeUnionB {
+    return FooObjectWithEveryOptionalTypeUnionBValues[0];
+}
+export function FooObjectWithEveryOptionalTypeUnionBFromSerialValue(
+    input: string,
+): FooObjectWithEveryOptionalTypeUnionB {
+    if (FooObjectWithEveryOptionalTypeUnionBValues.includes(input as any)) {
+        return input as FooObjectWithEveryOptionalTypeUnionB;
+    }
+    if (
+        FooObjectWithEveryOptionalTypeUnionBValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as FooObjectWithEveryOptionalTypeUnionB;
+    }
+    if (
+        FooObjectWithEveryOptionalTypeUnionBValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as FooObjectWithEveryOptionalTypeUnionB;
+    }
+    return 'A';
 }
 
 export interface FooObjectWithEveryOptionalTypeNestedObject {
@@ -4340,6 +5124,208 @@ export function FooRecursiveUnionShapeDataToUrlSearchParamsString(
     input: FooRecursiveUnionShapeData,
 ): string {
     return FooRecursiveUnionShapeDataToUrlSearchParams(input).toString();
+}
+
+export type FooRecursiveUnionV2 =
+    | { type: `child`; value: FooRecursiveUnionV2 }
+    | { type: `children`; value: FooRecursiveUnionV2[] }
+    | { type: `text`; value: string }
+    | { type: `shape`; value: FooRecursiveUnionV2Shape };
+export function FooRecursiveUnionV2New(): FooRecursiveUnionV2 {
+    return {
+        type: `child`,
+        value: FooRecursiveUnionV2New(),
+    };
+}
+export function FooRecursiveUnionV2FromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionV2 {
+    if (`child` in input) {
+        let __value__: FooRecursiveUnionV2;
+        if (isObject(input[`child`])) {
+            __value__ = FooRecursiveUnionV2FromJson(input[`child`]);
+        } else {
+            __value__ = FooRecursiveUnionV2New();
+        }
+        return {
+            type: `child`,
+            value: __value__,
+        };
+    }
+
+    if (`children` in input) {
+        let __value__: FooRecursiveUnionV2[];
+        if (Array.isArray(input[`children`])) {
+            __value__ = [];
+            for (const __value__El of input[`children`]) {
+                let __value__ElValue: FooRecursiveUnionV2;
+                if (isObject(__value__El)) {
+                    __value__ElValue = FooRecursiveUnionV2FromJson(__value__El);
+                } else {
+                    __value__ElValue = FooRecursiveUnionV2New();
+                }
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `children`,
+            value: __value__,
+        };
+    }
+
+    if (`text` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`text`]);
+        return {
+            type: `text`,
+            value: __value__,
+        };
+    }
+
+    if (`shape` in input) {
+        let __value__: FooRecursiveUnionV2Shape;
+        if (isObject(input[`shape`])) {
+            __value__ = FooRecursiveUnionV2ShapeFromJson(input[`shape`]);
+        } else {
+            __value__ = FooRecursiveUnionV2ShapeNew();
+        }
+        return {
+            type: `shape`,
+            value: __value__,
+        };
+    }
+    return FooRecursiveUnionV2New();
+}
+export function FooRecursiveUnionV2FromJsonString(
+    input: string,
+): FooRecursiveUnionV2 {
+    return FooRecursiveUnionV2FromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionV2ToJsonString(
+    input: FooRecursiveUnionV2,
+): string {
+    switch (input.type) {
+        case `child`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooRecursiveUnionV2ToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `children`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i];
+                json += FooRecursiveUnionV2ToJsonString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `text`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `shape`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooRecursiveUnionV2ShapeToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooRecursiveUnionV2ToUrlSearchParams(
+    input: FooRecursiveUnionV2,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function FooRecursiveUnionV2ToUrlSearchParamsString(
+    input: FooRecursiveUnionV2,
+): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+
+export interface FooRecursiveUnionV2Shape {
+    width: number;
+    height: number;
+    color: string;
+}
+export function FooRecursiveUnionV2ShapeNew(): FooRecursiveUnionV2Shape {
+    return {
+        width: 0,
+        height: 0,
+        color: '',
+    };
+}
+export function FooRecursiveUnionV2ShapeFromJson(
+    input: Record<string, unknown>,
+): FooRecursiveUnionV2Shape {
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    let _color: string;
+    _color = parseString(input.color);
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
+}
+export function FooRecursiveUnionV2ShapeFromJsonString(
+    input: string,
+): FooRecursiveUnionV2Shape {
+    return FooRecursiveUnionV2ShapeFromJson(JSON.parse(input));
+}
+export function FooRecursiveUnionV2ShapeToJsonString(
+    input: FooRecursiveUnionV2Shape,
+): string {
+    let json = '{';
+    json += '"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += ',"color":';
+    json += serializeString(input.color);
+    json += '}';
+    return json;
+}
+export function FooRecursiveUnionV2ShapeToUrlSearchParams(
+    input: FooRecursiveUnionV2Shape,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    params.set('color', input.color);
+    return params;
+}
+export function FooRecursiveUnionV2ShapeToUrlSearchParamsString(
+    input: FooRecursiveUnionV2Shape,
+): string {
+    return FooRecursiveUnionV2ShapeToUrlSearchParams(input).toString();
 }
 
 export interface FooAutoReconnectParams {
