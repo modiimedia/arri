@@ -103,10 +103,10 @@ const ObjectWithNullableFields = a.object(
 type ObjectWithNullableFields = a.infer<typeof ObjectWithNullableFields>;
 
 const Union = a.union('Union', {
-    OBJECT: ObjectWithEveryType,
-    ARRAY: a.array(a.string()),
-    BOOLEAN: a.boolean(),
-    NULLABLE_TIMESTAMP: a.nullable(a.timestamp()),
+    object: ObjectWithEveryType,
+    array: a.array(a.string()),
+    boolean: a.boolean(),
+    'nullable-timestamp': a.nullable(a.timestamp()),
 });
 type Union = a.infer<typeof Union>;
 
@@ -422,35 +422,35 @@ async function main() {
         ),
     });
     const unionVariantObject: Union = {
-        OBJECT: objectWithEveryFieldValue,
+        object: objectWithEveryFieldValue,
     };
     files.push({
         filename: `Union_Object.json`,
         content: a.serializeUnsafe(Union, unionVariantObject),
     });
     const unionVariantBoolean: Union = {
-        BOOLEAN: true,
+        boolean: true,
     };
     files.push({
         filename: `Union_Boolean.json`,
         content: a.serializeUnsafe(Union, unionVariantBoolean),
     });
     const unionVariantArray: Union = {
-        ARRAY: ['hello', 'world'],
+        array: ['hello', 'world'],
     };
     files.push({
         filename: 'Union_Array.json',
         content: a.serializeUnsafe(Union, unionVariantArray),
     });
     const unionVariantTimestamp: Union = {
-        NULLABLE_TIMESTAMP: targetDate,
+        'nullable-timestamp': targetDate,
     };
     files.push({
         filename: 'Union_Timestamp.json',
         content: a.serializeUnsafe(Union, unionVariantTimestamp),
     });
     const unionVariantTimestampNull: Union = {
-        NULLABLE_TIMESTAMP: null,
+        'nullable-timestamp': null,
     };
     files.push({
         filename: 'Union_TimestampNull.json',

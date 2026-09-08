@@ -1,15 +1,16 @@
-import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
+import { SchemaFormUnion } from '@arrirpc/codegen-utils';
+import { join } from 'path';
 
+import { tsTypeFromSchema } from './_index';
 import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
     TsProperty,
 } from './common';
-import { tsObjectFromSchema } from './object';
 
-export function tsDiscriminatorFromSchema(
-    schema: SchemaFormDiscriminator,
+export function tsTaggedUnionFromSchema(
+    schema: SchemaFormUnion,
     context: CodegenContext,
 ): TsProperty {
     const typeName = getTsTypeName(schema, context);
@@ -58,35 +59,37 @@ export function tsDiscriminatorFromSchema(
             return `${target} += ${prefixedTypeName}ToJsonString(${input});`;
         },
         setSearchParamTemplate(_: string, __: string, ___: string): string {
-            return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.');`;
+            return `console.warn('[WARNING] Cannot serialize nested unions to query string. Skipping property at ${context.instancePath}.');`;
         },
         content: '',
     };
     if (context.generatedTypes.includes(typeName)) return result;
-    const subTypes: { value: string; data: TsProperty }[] = [];
-    const discriminatorKey = schema.discriminator;
-    for (const key of Object.keys(schema.mapping)) {
-        const subSchema = schema.mapping[key]!;
-        const subType = tsObjectFromSchema(subSchema, {
+    const subTypes: { data: TsProperty; key: string }[] = [];
+    for (const key of Object.keys(schema.union)) {
+        const subSchema = schema.union[key]!;
+        const subType = tsTypeFromSchema(subSchema, {
             clientName: context.clientName,
             typePrefix: context.typePrefix,
             generatedTypes: context.generatedTypes,
-            instancePath: context.instancePath,
-            schemaPath: `${context.schemaPath}/mapping/${key}`,
-            discriminatorParent: typeName,
-            discriminatorKey: discriminatorKey,
-            discriminatorValue: key,
+            instancePath: `${context.instancePath}/${key}`,
+            schemaPath: `${context.schemaPath}/union/${key}`,
+            discriminatorParent: '',
+            discriminatorKey: '',
+            discriminatorValue: '',
             versionNumber: context.versionNumber,
             useRpcTypes: context.useRpcTypes,
             rpcGenerators: context.rpcGenerators,
             features: context.features,
         });
-        subTypes.push({ value: key, data: subType });
+        subTypes.push({ data: subType, key: key });
     }
-    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};`;
+    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => `{ type: \`${type.key}\`; value: ${type.data.typeName} }`).join(' |')};`;
     result.content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
-    return ${subTypes[0]!.data.typeName}New();
+    return {
+        type: \`${subTypes[0]?.key}\`,
+        value: ${subTypes[0]?.data.defaultValue},
+    };
 }`;
     if (context.features.validateFn) {
         result.content += `
@@ -94,14 +97,16 @@ export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixed
     if (!isObject(input)) {
         return false;
     }
-    if (typeof input.${discriminatorKey} !== 'string') {
+    if (!('type' in input) || !('value' in input)) {
         return false;
     }
-    switch (input.${discriminatorKey}) {
+    switch (input.type) {
 ${subTypes
     .map(
-        (type) => `       case "${type.value}":
-            return ${type.data.typeName}Validate(input);`,
+        (sub) => `
+        case \`${sub.key}\`:
+            return ${sub.data.validationTemplate(`input.value`)};
+    `,
     )
     .join('\n')}
         default:
@@ -113,31 +118,43 @@ ${subTypes
     if (context.features.cloneFn) {
         result.content += `
 export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
-    switch (input.${discriminatorKey}) {
+    switch (input.type) {
 ${subTypes
     .map(
-        (type) => `        case "${type.value}":
-            return ${type.data.typeName}Clone(input);`,
+        (sub) => `
+        case \`${sub.key}\`: {
+            let __value__: ${sub.data.typeName};
+            ${sub.data.cloneTemplate('input.value', `__value__`)}
+            return {
+                type: \`${sub.key}\`,
+                value: __value__,
+            };
+        }`,
     )
     .join('\n')}
         default:
-            throw new Error('Unimplemented');
-    }
+            input satisfies never;
+            throw new Error(\`Unknown union variant: \${(input as any).type}\`);
+   }
 }`;
     }
 
     result.content += `
 export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
-    switch (input.${discriminatorKey}) {
 ${subTypes
     .map(
-        (type) => `        case "${type.value}":
-            return ${type.data.typeName}FromJson(input);`,
+        (sub) => `
+    if (\`${sub.key}\` in input) {
+        let __value__: ${sub.data.typeName};
+        ${sub.data.fromJsonTemplate(`input[\`${sub.key}\`]`, '__value__')}
+        return {
+            type: \`${sub.key}\`,
+            value: __value__,
+        }
+    }`,
     )
     .join('\n')}
-        default:
-            return ${subTypes[0]!.data.typeName}New();
-    }
+    return ${prefixedTypeName}New();
 }`;
 
     result.content += `
@@ -146,33 +163,36 @@ export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedType
 }`;
     result.content += `
 export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
-    switch (input.${discriminatorKey}) {
+    switch (input.type) {
 ${subTypes
     .map(
-        (type) => `        case "${type.value}":
-            return ${type.data.typeName}ToJsonString(input);`,
+        (sub) => `
+        case \`${sub.key}\`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            ${sub.data.toJsonTemplate('input.value', 'json', '')}
+            json += '}';
+            return json;
+        }
+        `,
     )
     .join('\n')}
-        default:
-            throw new Error(\`Unhandled case "\${(input as any).${discriminatorKey}}"\`);
+        default: {
+            input satisfies never;
+            throw new Error(\`Unknown variant type: \${(input as any).type}\`);
+        }
     }
 }`;
     result.content += `
 export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
-    switch (input.${discriminatorKey}) {
-${subTypes
-    .map(
-        (type) => `        case "${type.value}":
-            return ${type.data.typeName}ToUrlSearchParams(input);`,
-    )
-    .join('\n')}
-        default:
-            throw new Error('Unhandled case');
-    }
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
 }`;
     result.content += `
 export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedTypeName}): string {
-    return ${prefixedTypeName}ToUrlSearchParams(input).toString();
+    return UnionToUrlSearchParams(input).toString();
 }`;
     if (context.features.validatorObj) {
         result.content += `

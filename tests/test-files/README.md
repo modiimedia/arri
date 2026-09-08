@@ -260,7 +260,7 @@ Below are all of the contents of the test JSON files in an easier to read format
 
 ```json
 {
-  "OBJECT": {
+  "object": {
     "string": "",
     "boolean": false,
     "timestamp": "2001-01-01T16:00:00.000Z",
@@ -292,25 +292,25 @@ Below are all of the contents of the test JSON files in an easier to read format
 ## Union_Boolean.json
 
 ```json
-{ "BOOLEAN": true }
+{ "boolean": true }
 ```
 
 ## Union_Array.json
 
 ```json
-{ "ARRAY": ["hello", "world"] }
+{ "array": ["hello", "world"] }
 ```
 
 ## Union_Timestamp.json
 
 ```json
-{ "NULLABLE_TIMESTAMP": "2001-01-01T16:00:00.000Z" }
+{ "nullable-timestamp": "2001-01-01T16:00:00.000Z" }
 ```
 
 ## Union_TimestampNull.json
 
 ```json
-{ "NULLABLE_TIMESTAMP": null }
+{ "nullable-timestamp": null }
 ```
 
 ## RecursiveObject.json

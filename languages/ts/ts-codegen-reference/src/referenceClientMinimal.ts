@@ -1518,6 +1518,128 @@ export function ObjectWithNullableFieldsToUrlSearchParamsString(
     return ObjectWithNullableFieldsToUrlSearchParams(input).toString();
 }
 
+export type Union =
+    | { type: `object`; value: ObjectWithEveryType }
+    | { type: `array`; value: string[] }
+    | { type: `boolean`; value: boolean }
+    | { type: `nullable-timestamp`; value: Date | null };
+
+export function UnionNew(): Union {
+    return {
+        type: `object`,
+        value: ObjectWithEveryTypeNew(),
+    };
+}
+export function UnionFromJson(input: Record<string, unknown>): Union {
+    if (`object` in input) {
+        let __value__: ObjectWithEveryType;
+        if (isObject(input[`object`])) {
+            __value__ = ObjectWithEveryTypeFromJson(input[`object`]);
+        } else {
+            __value__ = ObjectWithEveryTypeNew();
+        }
+        return {
+            type: `object`,
+            value: __value__,
+        };
+    }
+    if (`array` in input) {
+        let __value__: string[];
+        if (Array.isArray(input[`array`])) {
+            __value__ = [];
+            for (const __value__El of input[`array`]) {
+                let __value__ElValue: string;
+                __value__ElValue = parseString(__value__El);
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `array`,
+            value: __value__,
+        };
+    }
+    if (`boolean` in input) {
+        let __value__: boolean;
+        __value__ = parseBoolean(input[`boolean`]);
+        return {
+            type: `boolean`,
+            value: __value__,
+        };
+    }
+    if (`nullable-timestamp` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
+        return {
+            type: `nullable-timestamp`,
+            value: __value__,
+        };
+    }
+    return UnionNew();
+}
+export function UnionFromJsonString(input: string): Union {
+    return UnionFromJson(JSON.parse(input));
+}
+export function UnionToJsonString(input: Union): string {
+    switch (input.type) {
+        case `object`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += ObjectWithEveryTypeToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+        case `array`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i];
+                json += serializeString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+        case `boolean`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `${input.value}`;
+            json += '}';
+            return json;
+        }
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionToUrlSearchParams(input: Union): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function UnionToUrlSearchParamsString(input: Union): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+
 export interface RecursiveObject {
     left: RecursiveObject | null;
     right: RecursiveObject | null;

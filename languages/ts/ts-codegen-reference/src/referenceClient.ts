@@ -2271,6 +2271,210 @@ export const $$ObjectWithNullableFields: ExampleClientValidator<ObjectWithNullab
             ObjectWithNullableFieldsToUrlSearchParamsString,
     };
 
+export type Union =
+    | { type: `object`; value: ObjectWithEveryType }
+    | { type: `array`; value: string[] }
+    | { type: `boolean`; value: boolean }
+    | { type: `nullable-timestamp`; value: Date | null };
+export function UnionNew(): Union {
+    return {
+        type: `object`,
+        value: ObjectWithEveryTypeNew(),
+    };
+}
+export function UnionValidate(input: unknown): input is Union {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `object`:
+            return ObjectWithEveryTypeValidate(input.value);
+        case `array`:
+            return (
+                Array.isArray(input.value) &&
+                input.value.every((_element) => typeof _element === 'string')
+            );
+        case `boolean`:
+            return typeof input.value === 'boolean';
+        case `nullable-timestamp`:
+            return input.value instanceof Date || input.value === null;
+        default:
+            return false;
+    }
+}
+export function UnionClone(input: Union): Union {
+    switch (input.type) {
+        case `object`: {
+            let __value__: ObjectWithEveryType;
+            __value__ = ObjectWithEveryTypeClone(input.value);
+            return {
+                type: `object`,
+                value: __value__,
+            };
+        }
+        case `array`: {
+            let __value__: string[];
+            __value__ = [];
+            for (const __value__El of input.value) {
+                let __value__ElValue: string;
+                __value__ElValue = __value__El;
+                __value__.push(__value__ElValue);
+            }
+            return {
+                type: `array`,
+                value: __value__,
+            };
+        }
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = input.value;
+            return {
+                type: `boolean`,
+                value: __value__,
+            };
+        }
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            if (input.value !== null) {
+                __value__ = new Date(input.value.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `nullable-timestamp`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionFromJson(input: Record<string, unknown>): Union {
+    if (`object` in input) {
+        let __value__: ObjectWithEveryType;
+        if (isObject(input[`object`])) {
+            __value__ = ObjectWithEveryTypeFromJson(input[`object`]);
+        } else {
+            __value__ = ObjectWithEveryTypeNew();
+        }
+        return {
+            type: `object`,
+            value: __value__,
+        };
+    }
+    if (`array` in input) {
+        let __value__: string[];
+        if (Array.isArray(input[`array`])) {
+            __value__ = [];
+            for (const __value__El of input[`array`]) {
+                let __value__ElValue: string;
+                __value__ElValue = parseString(__value__El);
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `array`,
+            value: __value__,
+        };
+    }
+    if (`boolean` in input) {
+        let __value__: boolean;
+        __value__ = parseBoolean(input[`boolean`]);
+        return {
+            type: `boolean`,
+            value: __value__,
+        };
+    }
+    if (`nullable-timestamp` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
+        return {
+            type: `nullable-timestamp`,
+            value: __value__,
+        };
+    }
+    return UnionNew();
+}
+export function UnionFromJsonString(input: string): Union {
+    return UnionFromJson(JSON.parse(input));
+}
+export function UnionToJsonString(input: Union): string {
+    switch (input.type) {
+        case `object`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += ObjectWithEveryTypeToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+        case `array`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i];
+                json += serializeString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+        case `boolean`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `${input.value}`;
+            json += '}';
+            return json;
+        }
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+
+export function UnionToUrlSearchParams(input: Union): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    return params;
+}
+export function UnionToUrlSearchParamsString(input: Union): string {
+    return UnionToUrlSearchParams(input).toString();
+}
+
+export const $$Union: ExampleClientValidator<Union> = {
+    new: UnionNew,
+    validate: UnionValidate,
+    clone: UnionClone,
+    fromJson: UnionFromJson,
+    fromJsonString: UnionFromJsonString,
+    toJsonString: UnionToJsonString,
+    toUrlSearchParams: UnionToUrlSearchParams,
+    toUrlSearchParamsString: UnionToUrlSearchParamsString,
+};
+
 export interface RecursiveObject {
     left: RecursiveObject | null;
     right: RecursiveObject | null;

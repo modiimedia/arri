@@ -280,7 +280,7 @@
     },
     "Union": {
       "union": {
-        "OBJECT": {
+        "object": {
           "properties": {
             "string": { "type": "string", "metadata": {} },
             "boolean": { "type": "boolean", "metadata": {} },
@@ -343,12 +343,12 @@
           },
           "metadata": { "id": "ObjectWithEveryType" }
         },
-        "ARRAY": {
+        "array": {
           "elements": { "type": "string", "metadata": {} },
           "metadata": {}
         },
-        "BOOLEAN": { "type": "boolean", "metadata": {} },
-        "NULLABLE_TIMESTAMP": {
+        "boolean": { "type": "boolean", "metadata": {} },
+        "nullable-timestamp": {
           "type": "timestamp",
           "metadata": {},
           "isNullable": true
