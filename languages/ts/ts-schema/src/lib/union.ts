@@ -1,10 +1,10 @@
-import { AObjectSchema, ValidationContext } from '../../dist';
 import {
     createStandardSchemaProperty,
     hideInvalidProperties,
 } from '../adapters';
 import { ValueError } from '../errors';
 import {
+    AObjectSchema,
     ASchema,
     ASchemaOptions,
     AUnionSchema,
@@ -13,6 +13,7 @@ import {
     InferUnionType,
     isObject,
     SchemaValidator,
+    ValidationContext,
     VALIDATOR_KEY,
 } from '../schemas';
 
