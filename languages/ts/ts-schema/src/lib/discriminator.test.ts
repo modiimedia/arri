@@ -137,8 +137,8 @@ it('produces valid ATD', () => {
         ),
     );
     expect(result).toStrictEqual({
-        discriminator: 'type',
-        mapping: {
+        tagKey: 'type',
+        union: {
             TEXT: {
                 properties: {
                     content: {

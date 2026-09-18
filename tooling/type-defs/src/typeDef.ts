@@ -170,6 +170,9 @@ export interface SchemaFormDiscriminator extends SchemaFormEmpty {
     discriminator: string;
     mapping: Record<string, SchemaFormProperties>;
 }
+/**
+ * @deprecated will be removed in a future version. please migrate to SchemaFormUnion
+ */
 export function isSchemaFormDiscriminator(
     input: unknown,
 ): input is SchemaFormDiscriminator {
@@ -194,9 +197,53 @@ export function isSchemaFormDiscriminator(
 }
 
 /**
- * A tagged union supporting any
+ * Represents tagged / discriminated unions.
+ *
+ * ### Default (External Tagging)
+ * If neither `tagKey` nor `valueKey` is set, the payload is nested under the active union key:
+ * ```json
+ * {
+ *   "rectangle": {
+ *     "width": 15,
+ *     "height": 15
+ *   }
+ * }
+ * ```
  */
 export interface SchemaFormUnion extends SchemaFormEmpty {
+    /**
+     * Enables internal / adjacent tagging using this field as the discriminator.
+     *
+     * ### Example (`tagKey: "kind"`)
+     * ```json
+     * {
+     *   "kind": "rectangle",
+     *   "width": 15,
+     *   "height": 15
+     * }
+     * ```
+     */
+    tagKey?: string;
+    /**
+     * Nests the union payload fields under this property name.
+     *
+     * *Note: Requires `tagKey` to be set.*
+     *
+     * ### Example (`tagKey: "type"`, `valueKey: "data"`)
+     * ```json
+     * {
+     *   "type": "rectangle",
+     *   "data": {
+     *     "width": 15,
+     *     "height": 15
+     *   }
+     * }
+     * ```
+     */
+    valueKey?: string;
+    /**
+     * Map of union keys to their respective schemas.
+     */
     union: Record<string, Schema>;
 }
 
@@ -205,13 +252,19 @@ export function isSchemaFormUnion(input: unknown): input is SchemaFormUnion {
         return false;
     }
     if (
-        'union' in input &&
-        typeof input.union === 'object' &&
-        input.union !== null
+        !('union' in input) ||
+        typeof input.union !== 'object' ||
+        input.union === null
     ) {
-        return true;
+        return false;
     }
-    return false;
+    if ('tagKey' in input && typeof input.tagKey !== 'string') {
+        return false;
+    }
+    if ('valueKey' in input && typeof input.valueKey !== 'string') {
+        return false;
+    }
+    return true;
 }
 
 // REFS //
