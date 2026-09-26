@@ -293,15 +293,15 @@ describe('errors()', () => {
         const result4 = a.errors(schema, '');
         expect(result1.length).toBe(1);
         expect(result1[0]!.instancePath).toBe('/messageType');
-        expect(result1[0]!.schemaPath).toBe('/discriminator');
+        expect(result1[0]!.schemaPath).toBe('/tagKey');
         expect(result2.length).toBe(1);
         expect(result2[0]!.instancePath).toBe('/imageUrl');
         expect(result2[0]!.schemaPath).toBe(
-            '/mapping/IMAGE/properties/imageUrl/type',
+            '/union/IMAGE/properties/imageUrl/type',
         );
         expect(result3.length).toBe(0);
         expect(result4.length).toBe(1);
         expect(result4[0]!.instancePath).toBe('');
-        expect(result4[0]!.schemaPath).toBe('/discriminator');
+        expect(result4[0]!.schemaPath).toBe('/union');
     });
 });

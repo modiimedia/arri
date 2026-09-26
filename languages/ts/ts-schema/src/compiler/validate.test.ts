@@ -3,26 +3,35 @@ import { compile } from '../compile';
 import { validationTestSuites } from '../testSuites';
 
 Object.keys(validationTestSuites).forEach((key) => {
-    test(key, () => {
+    describe(key, () => {
         const suite = validationTestSuites[key]!;
         const Compiled = compile(suite.schema, true);
-        for (const input of suite.goodInputs) {
-            if (!Compiled.validate(input)) {
-                console.log(suite.schema);
-                console.log(input, 'Should be TRUE');
-                console.log(Compiled.compiledCode.validate);
-            }
-            expect(Compiled.validate(input)).toBe(true);
+        for (let i = 0; i < suite.goodInputs.length; i++) {
+            const input = suite.goodInputs[i]!;
+            test(`Good input ${i + 1}`, () => {
+                if (!Compiled.validate(input)) {
+                    console.log(suite.schema);
+                    console.log(input, 'Should be TRUE');
+                    console.log(Compiled.compiledCode.validate);
+                }
+                expect(Compiled.validate(input)).toBe(true);
+            })
+
         }
-        for (const input of suite.badInputs) {
-            if (Compiled.validate(input)) {
-                console.log(suite.schema);
-                console.log(input, 'Should be FALSE');
-                console.log(Compiled.compiledCode.validate);
-            }
-            expect(Compiled.validate(input)).toBe(false);
+        for (let i = 0; i < suite.badInputs.length; i++) {
+            const input = suite.badInputs[i]!;
+            test(`Bad input ${i + 1}`, () => {
+                if (Compiled.validate(input)) {
+                    console.log(suite.schema);
+                    console.log(input, 'Should be FALSE');
+                    console.log(Compiled.compiledCode.validate);
+                }
+                expect(Compiled.validate(input)).toBe(false);
+
+            })
         }
-    });
+
+    })
 });
 
 const User = a.object({

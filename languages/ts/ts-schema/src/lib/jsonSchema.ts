@@ -6,8 +6,10 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     type Schema,
+    SchemaFormUnion,
     type Type,
 } from '@arrirpc/type-defs';
 
@@ -188,6 +190,9 @@ function getBaseSchema(schema: Schema): JsonSchema {
     if (isSchemaFormDiscriminator(schema)) {
         return convertDiscriminator(schema as DiscriminatorSchema);
     }
+    if (isSchemaFormUnion(schema)) {
+        return convertUnion(schema);
+    }
     if (isSchemaFormRef(schema)) {
         return { $ref: `#/$defs/${schema.ref}` };
     }
@@ -231,6 +236,67 @@ function convertDiscriminator(schema: DiscriminatorSchema): JsonSchema {
         },
     );
     return { oneOf };
+}
+
+function convertUnion(schema: SchemaFormUnion): JsonSchema {
+    if (schema.tagKey?.length && schema.valueKey?.length) {
+        const oneOf = Object.entries(schema.union).map(
+            ([variantName, variantSchema]) => {
+                const variant = convertSchema(variantSchema);
+                return {
+                    type: 'object',
+                    properties: {
+                        [schema.tagKey!]: {
+                            type: 'string',
+                            const: variantName,
+                        },
+                        [schema.valueKey!]: variant,
+                    },
+                    required: [schema.tagKey!, schema.valueKey!],
+                } satisfies JsonSchema;
+            },
+        );
+        return {
+            oneOf,
+            $id: schema.metadata?.id,
+        };
+    }
+    if (schema.tagKey?.length) {
+        const oneOf = Object.entries(schema.union).map(
+            ([variantName, variantSchema]) => {
+                const variant = convertObject(variantSchema as ObjectSchema);
+                variant.properties = {
+                    ...variant.properties,
+                    [schema.tagKey!]: { type: 'string', const: variantName },
+                };
+                variant.required = [
+                    ...(variant.required ?? []),
+                    schema.tagKey!,
+                ];
+                return variant;
+            },
+        );
+        return {
+            oneOf,
+            $id: schema.metadata?.id,
+        };
+    }
+    const oneOf = Object.entries(schema.union).map(
+        ([variantName, variantSchema]) => {
+            const variant = convertSchema(variantSchema);
+            return {
+                type: 'object',
+                properties: {
+                    [variantName]: variant,
+                },
+                required: [variantName],
+            } satisfies JsonSchema;
+        },
+    );
+    return {
+        oneOf,
+        $id: schema.metadata?.id,
+    };
 }
 
 function makeNullable(jsonSchema: JsonSchema, atdSchema: Schema): JsonSchema {

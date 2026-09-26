@@ -334,6 +334,22 @@ function discriminatorTemplate(
 }
 
 function unionTemplate(input: TemplateInput<AUnionSchema<any>>): string {
+    if (input.schema.tagKey?.length && input.schema.valueKey?.length) {
+        return unionTemplateInternallyTaggedWithValueKey(
+            input,
+            input.schema.tagKey,
+            input.schema.valueKey,
+        );
+    }
+    if (input.schema.tagKey?.length) {
+        return unionTemplateInternallyTagged(input, input.schema.tagKey);
+    }
+    return unionTemplateExternallyTagged(input);
+}
+
+function unionTemplateExternallyTagged(
+    input: TemplateInput<AUnionSchema<any>>,
+): string {
     function buildMain(inputName: string): string {
         const parts: string[] = [];
         const unionKeys = Object.keys(input.schema.union);
@@ -365,6 +381,96 @@ function unionTemplate(input: TemplateInput<AUnionSchema<any>>): string {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(input) {
                 return ${buildMain('input')};
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+    if (input.schema.isNullable) {
+        return `${input.val} === null || (${mainTemplate})`;
+    }
+    return mainTemplate;
+}
+
+function unionTemplateInternallyTagged(
+    input: TemplateInput<AUnionSchema<any>>,
+    tagKey: string,
+): string {
+    const parts: string[] = [];
+    for (const variantName of Object.keys(input.schema.union)) {
+        const subSchema = input.schema.union[variantName] as AObjectSchema<any>;
+        if (!subSchema) {
+            continue;
+        }
+        parts.push(
+            objectTemplate({
+                val: input.val,
+                targetVal: '',
+                schema: subSchema,
+                schemaPath: `${input.schemaPath}/union/${variantName}`,
+                instancePath: input.instancePath,
+                discriminatorKey: tagKey,
+                discriminatorValue: variantName,
+                subFunctions: input.subFunctions,
+                shouldCoerce: undefined,
+            }),
+        );
+    }
+    let mainTemplate = `typeof ${input.val} === 'object' && ${
+        input.val
+    } !== null && (${parts.join(' || ')})`;
+    const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');
+
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(input) {
+            return ${mainTemplate}
+        }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+
+    if (input.schema.isNullable) {
+        return `((${mainTemplate}) || ${input.val} === null)`;
+    }
+    return mainTemplate;
+}
+
+function unionTemplateInternallyTaggedWithValueKey(
+    input: TemplateInput<AUnionSchema<any>>,
+    tagKey: string,
+    valueKey: string,
+): string {
+    function buildMain(inputName: string) {
+        const parts: string[] = [];
+        const unionTags = Object.keys(input.schema.union);
+        for (let i = 0; i < unionTags.length; i++) {
+            const tagValue = unionTags[i]!;
+            const subSchema = input.schema.union[tagValue]!;
+            if (i > 0) parts.push(' || ');
+            parts.push('(');
+            parts.push(`${inputName}[\`${tagKey}\`] === \`${tagValue}\` && `);
+            parts.push(
+                schemaTemplate({
+                    schema: subSchema,
+                    val: `${inputName}[\`${valueKey}\`]`,
+                    targetVal: '',
+                    instancePath: `${input.instancePath}/${valueKey}`,
+                    schemaPath: `${input.schemaPath}/union/${tagValue}`,
+                    subFunctions: input.subFunctions,
+                    shouldCoerce: undefined,
+                }),
+            );
+            parts.push(')');
+        }
+        const mainTemplate = `typeof ${inputName} === 'object' && \`${tagKey}\` in ${inputName} && \`${valueKey}\` in ${inputName} && (${parts.join('')})`;
+        return mainTemplate;
+    }
+    const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');
+    let mainTemplate = buildMain(input.val);
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(input) {
+                return ${buildMain('input')}
             }`;
         }
         mainTemplate = `${fnName}(${input.val})`;

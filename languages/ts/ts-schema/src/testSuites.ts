@@ -95,21 +95,21 @@ export const RecursiveDiscriminator = a.recursive<RecursiveDiscriminator>(
 
 type RecursiveUnion =
     | {
-          child: RecursiveUnion;
-      }
+        child: RecursiveUnion;
+    }
     | {
-          children: RecursiveUnion[];
-      }
+        children: RecursiveUnion[];
+    }
     | {
-          text: string;
-      }
+        text: string;
+    }
     | {
-          shape: {
-              width: number;
-              height: number;
-              color: string;
-          };
-      };
+        shape: {
+            width: number;
+            height: number;
+            color: string;
+        };
+    };
 const RecursiveUnion = a.recursive<RecursiveUnion>(
     (self) =>
         a.union({
@@ -124,6 +124,44 @@ const RecursiveUnion = a.recursive<RecursiveUnion>(
         }),
     { id: 'RecursiveUnion' },
 );
+
+const UnionExternalTagging = a.union({
+    text: a.string(),
+    image: a.object({
+        url: a.string(),
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    references: a.array(a.string())
+})
+type UnionExternalTagging = a.infer<typeof UnionExternalTagging>;
+
+const UnionInternalTagging = a.union({
+    rectangle: a.object({
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    circle: a.object({
+        radius: a.float64(),
+    }),
+}, {
+    tagKey: "kind"
+});
+type UnionInternalTagging = a.infer<typeof UnionInternalTagging>;
+
+const UnionInternalTaggingWithValue = a.union({
+    text: a.string(),
+    image: a.object({
+        url: a.string(),
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    references: a.array(a.string())
+}, {
+    tagKey: "type",
+    valueKey: 'data'
+})
+type UnionInternalTaggingWithValue = a.infer<typeof UnionInternalTaggingWithValue>;
 
 export const validationTestSuites: Record<
     string,
@@ -716,6 +754,45 @@ export const validationTestSuites: Record<
                 foo: true,
             },
         ],
+    },
+    'union with external tagging (default)': {
+        schema: UnionExternalTagging,
+        goodInputs: [
+            { text: 'hello world' },
+            { image: { url: 'http://example.com', width: 15, height: 15 } },
+            { references: ['hello', 'world'] }
+        ] satisfies UnionExternalTagging[],
+        badInputs: [
+            { text: null },
+            { image: { url: 15, width: 15, height: 15 } },
+            { references: ['hello', false] },
+            { tags: ['hello', 'world'] }
+        ]
+    },
+    'union with internal tagging': {
+        schema: UnionInternalTagging,
+        goodInputs: [
+            { kind: 'rectangle', width: 15.5, height: 25.5 },
+            { kind: 'circle', radius: 16 }
+        ] satisfies UnionInternalTagging[],
+        badInputs: [
+            { kind: 'rectangle', width: true, height: 25.5 },
+            { kind: 'circle', radius: true },
+            { kind: 'triangle', width: 25.5, height: 25.5 },
+        ]
+    },
+    'union with internal tagging + value key': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            { type: 'text', data: 'hello world' },
+            { type: 'image', data: { url: 'https://example.com', width: 100, height: 50 } },
+            { type: 'references', data: ['hello', 'world'] }
+        ] satisfies UnionInternalTaggingWithValue[],
+        badInputs: [
+            { type: 'text', data: null },
+            { type: 'image', data: { src: 'https://example.com', width: 100, height: 50 } },
+            { type: 'references', data: ['hello', 'world', false] }
+        ]
     },
     'record with boolean values': {
         schema: a.record(a.boolean()),

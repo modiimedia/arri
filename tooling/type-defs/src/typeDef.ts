@@ -258,10 +258,18 @@ export function isSchemaFormUnion(input: unknown): input is SchemaFormUnion {
     ) {
         return false;
     }
-    if ('tagKey' in input && typeof input.tagKey !== 'string') {
+    if (
+        'tagKey' in input &&
+        typeof input.tagKey !== 'string' &&
+        typeof input.tagKey !== 'undefined'
+    ) {
         return false;
     }
-    if ('valueKey' in input && typeof input.valueKey !== 'string') {
+    if (
+        'valueKey' in input &&
+        typeof input.valueKey !== 'string' &&
+        typeof input.valueKey !== 'undefined'
+    ) {
         return false;
     }
     return true;
