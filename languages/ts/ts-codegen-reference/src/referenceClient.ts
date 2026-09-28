@@ -534,7 +534,7 @@ export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
         object: NestedObjectNew(),
         array: [],
         record: {},
-        discriminator: DiscriminatorNew(),
+        union: UnionNew(),
         any: undefined,
     };
 }
@@ -586,7 +586,7 @@ export function ObjectWithEveryTypeValidate(
         Object.values(input.record).every(
             (_value) => typeof _value === 'boolean',
         ) &&
-        DiscriminatorValidate(input.discriminator) &&
+        UnionValidate(input.union) &&
         true
     );
 }
@@ -850,7 +850,7 @@ export function ObjectWithEveryTypeToUrlSearchParams(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
     );
     console.warn(
-        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/union.',
     );
     console.warn(
         "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
@@ -1128,7 +1128,7 @@ export interface ObjectWithOptionalFields {
     object?: NestedObject;
     array?: boolean[];
     record?: Record<string, boolean>;
-    discriminator?: LegacyDiscriminator;
+    union?: Union;
     any?: any;
 }
 export function ObjectWithOptionalFieldsNew(): ObjectWithOptionalFields {
@@ -1198,8 +1198,7 @@ export function ObjectWithOptionalFieldsValidate(
                 (_value) => typeof _value === 'boolean',
             )) ||
             typeof input.record === 'undefined') &&
-        (DiscriminatorValidate(input.discriminator) ||
-            typeof input.discriminator === 'undefined') &&
+        (UnionValidate(input.union) || typeof input.union === 'undefined') &&
         (true || typeof input.any === 'undefined')
     );
 }
@@ -1284,9 +1283,9 @@ export function ObjectWithOptionalFieldsClone(
             _record[_key] = _recordValue;
         }
     }
-    let _discriminator: LegacyDiscriminator | undefined;
-    if (typeof input.discriminator !== 'undefined') {
-        _discriminator = DiscriminatorClone(input.discriminator);
+    let _union: Union | undefined;
+    if (typeof input.union !== 'undefined') {
+        _union = UnionClone(input.union);
     }
     let _any: any | undefined;
     if (typeof input.any !== 'undefined') {
@@ -1310,7 +1309,7 @@ export function ObjectWithOptionalFieldsClone(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        union: _union,
         any: _any,
     };
 }
@@ -1411,12 +1410,12 @@ export function ObjectWithOptionalFieldsFromJson(
             _record = {};
         }
     }
-    let _discriminator: LegacyDiscriminator | undefined;
-    if (typeof input.discriminator !== 'undefined') {
-        if (isObject(input.discriminator)) {
-            _discriminator = DiscriminatorFromJson(input.discriminator);
+    let _union: Union | undefined;
+    if (typeof input.union !== 'undefined') {
+        if (isObject(input.union)) {
+            _union = UnionFromJson(input.union);
         } else {
-            _discriminator = DiscriminatorNew();
+            _union = UnionNew();
         }
     }
     let _any: any | undefined;
@@ -1441,7 +1440,7 @@ export function ObjectWithOptionalFieldsFromJson(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        union: _union,
         any: _any,
     };
 }
@@ -1573,10 +1572,10 @@ export function ObjectWithOptionalFieldsToJsonString(
         json += '}';
         _hasKey = true;
     }
-    if (typeof input.discriminator !== 'undefined') {
+    if (typeof input.union !== 'undefined') {
         if (_hasKey) json += ',';
-        json += '"discriminator":';
-        json += DiscriminatorToJsonString(input.discriminator);
+        json += '"union":';
+        json += UnionToJsonString(input.union);
         _hasKey = true;
     }
     if (typeof input.any !== 'undefined') {
@@ -1649,9 +1648,9 @@ export function ObjectWithOptionalFieldsToUrlSearchParams(
             '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.',
         );
     }
-    if (typeof input.discriminator !== 'undefined') {
+    if (typeof input.union !== 'undefined') {
         console.warn(
-            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/discriminator.',
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/union.',
         );
     }
     if (typeof input.any !== 'undefined') {
@@ -1697,7 +1696,7 @@ export interface ObjectWithNullableFields {
     object: NestedObject | null;
     array: boolean[] | null;
     record: Record<string, boolean> | null;
-    discriminator: LegacyDiscriminator | null;
+    union: Union | null;
     any: any;
 }
 export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
@@ -1719,7 +1718,7 @@ export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
         object: null,
         array: null,
         record: null,
-        discriminator: null,
+        union: null,
         any: null,
     };
 }
@@ -1781,8 +1780,7 @@ export function ObjectWithNullableFieldsValidate(
                 (_value) => typeof _value === 'boolean',
             )) ||
             input.record === null) &&
-        (DiscriminatorValidate(input.discriminator) ||
-            input.discriminator === null) &&
+        (UnionValidate(input.union) || input.union === null) &&
         true
     );
 }
@@ -1849,11 +1847,11 @@ export function ObjectWithNullableFieldsClone(
     } else {
         _record = null;
     }
-    let _discriminator: LegacyDiscriminator | null;
-    if (input.discriminator !== null) {
-        _discriminator = DiscriminatorClone(input.discriminator);
+    let _union: Union | null;
+    if (input.union !== null) {
+        _union = UnionClone(input.union);
     } else {
-        _discriminator = null;
+        _union = null;
     }
     let _any: any;
     _any = input.any;
@@ -1875,7 +1873,7 @@ export function ObjectWithNullableFieldsClone(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        union: _union,
         any: _any,
     };
 }
@@ -1942,11 +1940,11 @@ export function ObjectWithNullableFieldsFromJson(
     } else {
         _record = null;
     }
-    let _discriminator: LegacyDiscriminator | null;
-    if (isObject(input.discriminator)) {
-        _discriminator = DiscriminatorFromJson(input.discriminator);
+    let _union: Union | null;
+    if (isObject(input.union)) {
+        _union = UnionFromJson(input.union);
     } else {
-        _discriminator = null;
+        _union = null;
     }
     let _any: any;
     _any = input.any;
@@ -1968,7 +1966,7 @@ export function ObjectWithNullableFieldsFromJson(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        union: _union,
         any: _any,
     };
 }
@@ -2063,9 +2061,9 @@ export function ObjectWithNullableFieldsToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"discriminator":';
-    if (input.discriminator != null) {
-        json += DiscriminatorToJsonString(input.discriminator);
+    json += ',"union":';
+    if (input.union != null) {
+        json += UnionToJsonString(input.union);
     } else {
         json += 'null';
     }
@@ -2102,7 +2100,7 @@ export function ObjectWithNullableFieldsToUrlSearchParams(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.',
     );
     console.warn(
-        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/discriminator.',
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/union.',
     );
     console.warn(
         "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",

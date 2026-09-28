@@ -171,7 +171,7 @@ describe('ObjectWithOptionalFields', () => {
         object: undefined,
         array: undefined,
         record: undefined,
-        discriminator: undefined,
+        union: undefined,
         any: undefined,
     };
     const noUndefinedTargetValue: ObjectWithOptionalFields = {
@@ -198,7 +198,7 @@ describe('ObjectWithOptionalFields', () => {
             A: true,
             B: false,
         },
-        discriminator: {
+        union: {
             typeName: 'C',
             id: '',
             name: '',
@@ -249,7 +249,7 @@ describe('ObjectWithNullableFields', () => {
         object: null,
         array: null,
         record: null,
-        discriminator: null,
+        union: null,
         any: null,
     };
     const noNullTargetValue: ObjectWithNullableFields = {
@@ -276,7 +276,7 @@ describe('ObjectWithNullableFields', () => {
             A: true,
             B: false,
         },
-        discriminator: {
+        union: {
             typeName: 'C',
             id: '',
             name: '',
