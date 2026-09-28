@@ -59,12 +59,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
-  "discriminator": {
-    "typeName": "C",
-    "id": "",
-    "name": "",
-    "date": "2001-01-01T16:00:00.000Z"
-  },
+  "union": { "array": ["hello", "world"] },
   "any": "hello world"
 }
 ```
@@ -90,12 +85,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "B": false, "A": true },
-  "discriminator": {
-    "typeName": "C",
-    "id": "",
-    "name": "",
-    "date": "2001-01-01T16:00:00.000Z"
-  },
+  "union": { "array": ["hello", "world"] },
   "any": "hello world"
 }
 ```
@@ -127,12 +117,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
-  "discriminator": {
-    "typeName": "C",
-    "id": "",
-    "name": "",
-    "date": "2001-01-01T16:00:00.000Z"
-  },
+  "union": { "array": ["hello", "world"] },
   "any": "hello world"
 }
 ```
@@ -158,12 +143,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "B": false, "A": true },
-  "discriminator": {
-    "typeName": "C",
-    "id": "",
-    "name": "",
-    "date": "2001-01-01T16:00:00.000Z"
-  },
+  "union": { "array": ["hello", "world"] },
   "any": "hello world"
 }
 ```
@@ -189,7 +169,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": null,
   "array": null,
   "record": null,
-  "discriminator": null,
+  "union": null,
   "any": null
 }
 ```
@@ -215,12 +195,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "", "content": "" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
-  "discriminator": {
-    "typeName": "C",
-    "id": "",
-    "name": "",
-    "date": "2001-01-01T16:00:00.000Z"
-  },
+  "union": { "array": ["hello", "world"] },
   "any": { "message": "hello world" }
 }
 ```
@@ -246,12 +221,7 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "", "content": "" },
   "array": [true, false, false],
   "record": { "B": false, "A": true },
-  "discriminator": {
-    "typeName": "C",
-    "id": "",
-    "name": "",
-    "date": "2001-01-01T16:00:00.000Z"
-  },
+  "union": { "array": ["hello", "world"] },
   "any": { "message": "hello world" }
 }
 ```
@@ -259,34 +229,7 @@ Below are all of the contents of the test JSON files in an easier to read format
 ## Union_Object.json
 
 ```json
-{
-  "object": {
-    "string": "",
-    "boolean": false,
-    "timestamp": "2001-01-01T16:00:00.000Z",
-    "float32": 1.5,
-    "float64": 1.5,
-    "int8": 1,
-    "uint8": 1,
-    "int16": 10,
-    "uint16": 10,
-    "int32": 100,
-    "uint32": 100,
-    "int64": "1000",
-    "uint64": "1000",
-    "enum": "BAZ",
-    "object": { "id": "1", "content": "hello world" },
-    "array": [true, false, false],
-    "record": { "B": false, "A": true },
-    "discriminator": {
-      "typeName": "C",
-      "id": "",
-      "name": "",
-      "date": "2001-01-01T16:00:00.000Z"
-    },
-    "any": "hello world"
-  }
-}
+{ "object": { "id": "1", "content": "hello world" } }
 ```
 
 ## Union_Boolean.json
@@ -323,4 +266,33 @@ Below are all of the contents of the test JSON files in an easier to read format
   },
   "right": { "left": null, "right": null }
 }
+```
+
+## LegacyDiscriminator.json
+
+```json
+{
+  "typeName": "C",
+  "id": "1",
+  "name": "John Doe",
+  "date": "2001-01-01T16:00:00.000Z"
+}
+```
+
+## ShapeExternallyTagged.json
+
+```json
+{ "rectangle": { "width": 50, "height": 25 } }
+```
+
+## ShapeInternallyTagged.json
+
+```json
+{ "shape": "rectangle", "width": 50, "height": 25 }
+```
+
+## ShapeInternallyTaggedWithValueKey.json
+
+```json
+{ "kind": "rectangle", "data": { "width": 50, "height": 25 } }
 ```

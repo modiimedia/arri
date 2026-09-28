@@ -3,7 +3,10 @@ import path from 'pathe';
 import prettier from 'prettier';
 
 import { a } from '../../languages/ts/ts-schema/src/_index';
-import { createAppDefinition } from '../../tooling/codegen-utils/src';
+import {
+    createAppDefinition,
+    SchemaFormDiscriminator,
+} from '../../tooling/codegen-utils/src';
 
 const Enumerator = a.enumerator(['FOO', 'BAR', 'BAZ'], { id: 'Enumerator' });
 type Enumerator = a.infer<typeof Enumerator>;
@@ -17,27 +20,74 @@ const NestedObject = a.object(
 );
 type NestedObject = a.infer<typeof NestedObject>;
 
-const Discriminator = a.discriminator(
-    'typeName',
+const LegacyDiscriminator: SchemaFormDiscriminator = {
+    discriminator: 'typeName',
+    mapping: {
+        A: { properties: { id: { type: 'string' } } },
+        B: { properties: { id: { type: 'string' }, name: { type: 'string' } } },
+        C: {
+            properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                date: { type: 'timestamp' },
+            },
+        },
+    },
+    metadata: {
+        id: 'LegacyDiscriminator',
+    },
+};
+
+const Union = a.union('Union', {
+    object: NestedObject,
+    array: a.array(a.string()),
+    boolean: a.boolean(),
+    'nullable-timestamp': a.nullable(a.timestamp()),
+});
+type Union = a.infer<typeof Union>;
+const ShapeExternallyTagged = a.union('ShapeExternallyTagged', {
+    rectangle: a.object({
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    circle: a.object({
+        radius: a.float64(),
+    }),
+});
+type ShapeExternallyTagged = a.infer<typeof ShapeExternallyTagged>;
+const ShapeInternallyTagged = a.union(
+    'ShapeInternallyTagged',
     {
-        A: a.object({
-            id: a.string(),
+        rectangle: a.object({
+            width: a.float64(),
+            height: a.float64(),
         }),
-        B: a.object({
-            id: a.string(),
-            name: a.string(),
+        circle: a.object({
+            radius: a.float64(),
         }),
-        C: a.object({
-            id: a.string(),
-            name: a.string(),
-            date: a.timestamp(),
+    },
+    { tagKey: 'shape' },
+);
+type ShapeInternallyTagged = a.infer<typeof ShapeInternallyTagged>;
+const ShapeInternallyTaggedWithValueKey = a.union(
+    'ShapeInternallyTaggedWithValueKey',
+    {
+        rectangle: a.object({
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        circle: a.object({
+            radius: a.float64(),
         }),
     },
     {
-        id: 'Discriminator',
+        tagKey: 'kind',
+        valueKey: 'data',
     },
 );
-type Discriminator = a.infer<typeof Discriminator>;
+type ShapeInternallyTaggedWithValueKey = a.infer<
+    typeof ShapeInternallyTaggedWithValueKey
+>;
 
 const EmptyObject = a.object({});
 
@@ -60,7 +110,7 @@ const ObjectWithEveryType = a.object(
         object: NestedObject,
         array: a.array(a.boolean()),
         record: a.record(a.boolean()),
-        discriminator: Discriminator,
+        union: Union,
         any: a.any(),
     },
     {
@@ -93,7 +143,7 @@ const ObjectWithNullableFields = a.object(
         object: a.nullable(NestedObject),
         array: a.nullable(a.array(a.boolean())),
         record: a.nullable(a.record(a.boolean())),
-        discriminator: a.nullable(Discriminator),
+        union: a.nullable(Union),
         any: a.nullable(a.any()),
     },
     {
@@ -101,14 +151,6 @@ const ObjectWithNullableFields = a.object(
     },
 );
 type ObjectWithNullableFields = a.infer<typeof ObjectWithNullableFields>;
-
-const Union = a.union('Union', {
-    object: ObjectWithEveryType,
-    array: a.array(a.string()),
-    boolean: a.boolean(),
-    'nullable-timestamp': a.nullable(a.timestamp()),
-});
-type Union = a.infer<typeof Union>;
 
 interface RecursiveObject {
     left: RecursiveObject | null;
@@ -200,6 +242,10 @@ const def = createAppDefinition({
         ObjectWithNullableFields,
         Union,
         RecursiveObject,
+        LegacyDiscriminator,
+        ShapeExternallyTagged,
+        ShapeInternallyTagged,
+        ShapeInternallyTaggedWithValueKey,
     },
 });
 
@@ -288,11 +334,8 @@ async function main() {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: targetDate,
+        union: {
+            array: ['hello', 'world'],
         },
         any: 'hello world',
     };
@@ -359,7 +402,7 @@ async function main() {
         object: null,
         array: null,
         record: null,
-        discriminator: null,
+        union: null,
         any: null,
     };
     files.push({
@@ -393,11 +436,8 @@ async function main() {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: targetDate,
+        union: {
+            array: ['hello', 'world'],
         },
         any: {
             message: 'hello world',
@@ -422,7 +462,7 @@ async function main() {
         ),
     });
     const unionVariantObject: Union = {
-        object: objectWithEveryFieldValue,
+        object: nestedObject,
     };
     files.push({
         filename: `Union_Object.json`,
@@ -476,6 +516,38 @@ async function main() {
     files.push({
         filename: 'RecursiveObject.json',
         content: a.serializeUnsafe(RecursiveObject, recursiveObject),
+    });
+
+    const legacyDiscriminatorSerialized = `{"typeName":"C","id":"1","name":"John Doe","date":"${targetDate.toISOString()}"}`;
+    files.push({
+        filename: 'LegacyDiscriminator.json',
+        content: legacyDiscriminatorSerialized,
+    });
+
+    // same shape but tagged 3 different ways
+    files.push({
+        filename: 'ShapeExternallyTagged.json',
+        content: a.serializeUnsafe(ShapeExternallyTagged, {
+            rectangle: { width: 50, height: 25 },
+        }),
+    });
+    files.push({
+        filename: 'ShapeInternallyTagged.json',
+        content: a.serializeUnsafe(ShapeInternallyTagged, {
+            shape: 'rectangle',
+            width: 50,
+            height: 25,
+        }),
+    });
+    files.push({
+        filename: 'ShapeInternallyTaggedWithValueKey.json',
+        content: a.serializeUnsafe(ShapeInternallyTaggedWithValueKey, {
+            kind: 'rectangle',
+            data: {
+                width: 50,
+                height: 25,
+            },
+        }),
     });
 
     const mdParts: string[] = [
