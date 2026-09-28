@@ -15,8 +15,7 @@ Object.keys(validationTestSuites).forEach((key) => {
                     console.log(Compiled.compiledCode.validate);
                 }
                 expect(Compiled.validate(input)).toBe(true);
-            })
-
+            });
         }
         for (let i = 0; i < suite.badInputs.length; i++) {
             const input = suite.badInputs[i]!;
@@ -27,11 +26,9 @@ Object.keys(validationTestSuites).forEach((key) => {
                     console.log(Compiled.compiledCode.validate);
                 }
                 expect(Compiled.validate(input)).toBe(false);
-
-            })
+            });
         }
-
-    })
+    });
 });
 
 const User = a.object({

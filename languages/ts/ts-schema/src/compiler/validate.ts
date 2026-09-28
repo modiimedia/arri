@@ -16,7 +16,6 @@ import {
 } from '../lib/numberConstants';
 import {
     type AArraySchema,
-    type ADiscriminatorSchema,
     type AObjectSchema,
     type ARecordSchema,
     type ARefSchema,
@@ -25,7 +24,6 @@ import {
     type AStringEnumSchema,
     AUnionSchema,
     isAAraySchema,
-    isADiscriminatorSchema,
     isAObjectSchema,
     isARecordSchema,
     isARefSchema,
@@ -98,9 +96,6 @@ function schemaTemplate(input: TemplateInput): string {
     }
     if (isARecordSchema(input.schema)) {
         return recordTemplate(input);
-    }
-    if (isADiscriminatorSchema(input.schema)) {
-        return discriminatorTemplate(input);
     }
     if (isAUnionSchema(input.schema)) {
         return unionTemplate(input);
@@ -281,52 +276,6 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         shouldCoerce: undefined,
     });
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
-    if (input.schema.isNullable) {
-        return `((${mainTemplate}) || ${input.val} === null)`;
-    }
-    return mainTemplate;
-}
-
-/**
- * @deprecated
- */
-function discriminatorTemplate(
-    input: TemplateInput<ADiscriminatorSchema<any>>,
-): string {
-    const parts: string[] = [];
-    for (const discriminatorVal of Object.keys(input.schema.mapping)) {
-        const subSchema = input.schema.mapping[discriminatorVal];
-        if (!subSchema) {
-            continue;
-        }
-        parts.push(
-            objectTemplate({
-                val: input.val,
-                targetVal: '',
-                schema: subSchema,
-                schemaPath: `${input.schemaPath}/mapping/${discriminatorVal}`,
-                instancePath: input.instancePath,
-                discriminatorKey: input.schema.discriminator,
-                discriminatorValue: discriminatorVal,
-                subFunctions: input.subFunctions,
-                shouldCoerce: undefined,
-            }),
-        );
-    }
-    let mainTemplate = `typeof ${input.val} === 'object' && ${
-        input.val
-    } !== null && (${parts.join(' || ')})`;
-    const fnName = refFunctionName('validate', input.schema.metadata?.id ?? '');
-
-    if (Object.keys(input.subFunctions).includes(fnName)) {
-        if (!input.subFunctions[fnName]) {
-            input.subFunctions[fnName] = `function ${fnName}(input) {
-            return ${mainTemplate}
-        }`;
-        }
-        mainTemplate = `${fnName}(${input.val})`;
-    }
-
     if (input.schema.isNullable) {
         return `((${mainTemplate}) || ${input.val} === null)`;
     }

@@ -1,7 +1,8 @@
 import { isEqual } from 'lodash';
+import { describe, test } from 'vitest';
 
 import { a } from '../_index';
-import { compile, logCodeOutput } from '../compile';
+import { compile, debugCodeOutput } from '../compile';
 import {
     coercionTestSuites,
     parsingTestSuites,
@@ -13,7 +14,7 @@ for (const key of Object.keys(validationTestSuites)) {
     describe(key, () => {
         const Compiled = compile(suite.schema);
         for (let i = 0; i < suite.goodInputs.length; i++) {
-            test(`Good Input - ${i + 1}`, () => {
+            test(`${key} -> good input -> ${i + 1}`, () => {
                 const input = suite.goodInputs[i];
                 expect(isEqual(Compiled.parse(input), input));
                 if (typeof input === 'object') {
@@ -27,7 +28,7 @@ for (const key of Object.keys(validationTestSuites)) {
             });
         }
         for (let i = 0; i < suite.badInputs.length; i++) {
-            test(`Bad input - ${i + 1}`, () => {
+            test(`${key} -> bad input -> ${i + 1}`, () => {
                 const input = suite.badInputs[i];
                 expect(Compiled.parse(input).success).toBe(false);
                 expect(a.parse(suite.schema, input).success).toBe(false);
@@ -44,12 +45,13 @@ describe('parsing test suites', () => {
             try {
                 Compiled = compile(suite.schema, true);
             } catch (_) {
-                logCodeOutput(true);
+                debugCodeOutput({ parse: { log: true } });
                 compile(suite.schema);
+                debugCodeOutput({ parse: { log: false } });
                 return;
             }
             for (let i = 0; i < suite.goodInputs.length; i++) {
-                test(`${key} - Good Input ${i}`, () => {
+                test(`${key} -> good input -> ${i + 1}`, () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.parse(input);
@@ -80,7 +82,7 @@ describe('parsing test suites', () => {
                 });
             }
             for (let i = 0; i < suite.badInputs.length; i++) {
-                test(`${key} - Bad Input ${i}`, () => {
+                test(`${key} -> bad input -> ${i + 1}`, () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.parse(input);
                     if (result.success) {
@@ -100,7 +102,7 @@ describe('coercion test suites', () => {
         describe(key, () => {
             const Compiled = compile(suite.schema);
             for (let i = 0; i < suite.goodInputs.length; i++) {
-                test(`${key} - Good Input ${i}`, () => {
+                test(`${key} -> good input -> ${i + 1}`, () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.coerce(input);
@@ -130,7 +132,7 @@ describe('coercion test suites', () => {
                 });
             }
             for (let i = 0; i < suite.badInputs.length; i++) {
-                test(`${key} - Bad Input ${i}`, () => {
+                test(`${key} -> bad input -> ${i}`, () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.coerce(input);
                     if (result.success) {

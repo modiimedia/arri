@@ -1,5 +1,6 @@
 import { isSchemaFormEnum, isSchemaFormType, Schema } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
+import { writeFileSync } from 'fs';
 
 import { createStandardSchemaProperty } from './adapters';
 import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
@@ -94,9 +95,37 @@ type CompiledValidatorWithAdapters<
 > = CompiledValidator<TSchema, TIncludeCode> &
     StandardSchemaV1<InferType<TSchema>>;
 
-let LOG_CODE_OUTPUT = false;
-export function logCodeOutput(doLog: boolean) {
-    LOG_CODE_OUTPUT = doLog;
+type DebugArg = {
+    log?: boolean;
+    file?: string;
+};
+
+const debug = {
+    parse: {
+        log: false,
+        file: '',
+    },
+    serialize: {
+        log: false,
+        file: '',
+    },
+    validate: {
+        log: false,
+        file: '',
+    },
+};
+
+export function debugCodeOutput(args: {
+    parse?: DebugArg;
+    serialize?: DebugArg;
+    validate?: DebugArg;
+}) {
+    debug.parse.log = args.parse?.log ?? debug.parse.log;
+    debug.parse.file = args.parse?.file ?? debug.parse.file;
+    debug.serialize.log = args.serialize?.log ?? debug.serialize.log;
+    debug.serialize.file = args.serialize?.file ?? debug.serialize.file;
+    debug.validate.log = args.validate?.log ?? debug.validate.log;
+    debug.validate.file = args.validate?.file ?? debug.validate.file;
 }
 
 /**
@@ -110,6 +139,20 @@ export function compile<
     includeCompiledCode?: TIncludeCompiled,
 ): CompiledValidatorWithAdapters<TSchema, TIncludeCompiled> {
     const validateCode = getSchemaValidationCode('input', schema);
+    if (debug.validate.log) {
+        // eslint-disable-next-line no-console
+        console.log(`code = ${validateCode}`);
+        // eslint-disable-next-line no-console
+        console.log(`schema = ${schema}`);
+    }
+    if (debug.validate.file.length) {
+        writeFileSync(
+            debug.validate.file,
+            `function validate(input) {
+            ${validateCode}    
+        }`,
+        );
+    }
     const parser = getCompiledParser('input', schema, false);
     const parserFn = parser.fn;
     const coercer = getCompiledParser('input', schema, true);
@@ -259,11 +302,17 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     shouldCoerce: boolean,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaDecodingCode(input, schema, shouldCoerce);
-    if (LOG_CODE_OUTPUT) {
+    if (debug.parse.log) {
         // eslint-disable-next-line no-console
         console.log('code = ', code);
         // eslint-disable-next-line no-console
         console.log('schema = ', schema);
+    }
+    if (debug.parse.file.length > 0) {
+        writeFileSync(
+            debug.parse.file,
+            'function parse(input) {\n' + code + '}',
+        );
     }
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
@@ -969,6 +1018,20 @@ export function getCompiledSerializer<TSchema extends ASchema>(
     schema: TSchema,
 ): { fn: (input: InferType<TSchema>) => string; code: string } {
     const code = getSchemaSerializationCode('input', schema);
+    if (debug.serialize.log) {
+        // eslint-disable-next-line no-console
+        console.log(`code = ${code}`);
+        // eslint-disable-next-line no-console
+        console.log(`schema = ${schema}`);
+    }
+    if (debug.serialize.file.length) {
+        writeFileSync(
+            debug.serialize.file,
+            `function serialize(input) {
+            ${code}    
+        }`,
+        );
+    }
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'string':

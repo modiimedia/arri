@@ -7,7 +7,7 @@ for (const key of Object.keys(validationTestSuites)) {
     const Compiled = compile(suite.schema, true);
     for (let i = 0; i < suite.goodInputs.length; i++) {
         const input = suite.goodInputs[i]!;
-        test(`${key} - ${i + 1}`, () => {
+        test(`${key} -> ${i + 1}`, () => {
             try {
                 const result = Compiled.serializeUnsafe(input);
                 expect(typeof result === 'string').toBe(true);
