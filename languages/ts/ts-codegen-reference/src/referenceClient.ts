@@ -2,7 +2,7 @@
 // For more information visit https://github.com/modiimedia/arri
 
 /* eslint-disable */
-// @ts-nocheck
+// -@ts-nocheck
 import {
     ArriEnumValidator,
     ArriModelValidator,
@@ -512,7 +512,7 @@ export interface ObjectWithEveryType {
     object: NestedObject;
     array: boolean[];
     record: Record<string, boolean>;
-    discriminator: Discriminator;
+    union: Union;
     any: any;
 }
 export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
@@ -637,8 +637,8 @@ export function ObjectWithEveryTypeClone(
         _recordValue = _value;
         _record[_key] = _recordValue;
     }
-    let _discriminator: Discriminator;
-    _discriminator = DiscriminatorClone(input.discriminator);
+    let _union: Union;
+    _union = UnionClone(input.union);
     let _any: any;
     _any = input.any;
     return {
@@ -659,7 +659,7 @@ export function ObjectWithEveryTypeClone(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        union: _union,
         any: _any,
     };
 }
@@ -726,11 +726,11 @@ export function ObjectWithEveryTypeFromJson(
     } else {
         _record = {};
     }
-    let _discriminator: Discriminator;
-    if (isObject(input.discriminator)) {
-        _discriminator = DiscriminatorFromJson(input.discriminator);
+    let _union: Union;
+    if (isObject(input.union)) {
+        _union = UnionFromJson(input.union);
     } else {
-        _discriminator = DiscriminatorNew();
+        _union = UnionNew();
     }
     let _any: any;
     _any = input.any;
@@ -752,7 +752,7 @@ export function ObjectWithEveryTypeFromJson(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        union: _union,
         any: _any,
     };
 }
@@ -815,8 +815,8 @@ export function ObjectWithEveryTypeToJsonString(
         _recordPropertyCount++;
     }
     json += '}';
-    json += ',"discriminator":';
-    json += DiscriminatorToJsonString(input.discriminator);
+    json += ',"union":';
+    json += UnionToJsonString(input.union);
     json += ',"any":';
     json += JSON.stringify(input.any);
     json += '}';
@@ -906,352 +906,208 @@ export const $$Enumerator: ExampleClientEnumValidator<Enumerator> = {
     fromSerialValue: EnumeratorFromSerialValue,
 };
 
-export type Discriminator = DiscriminatorA | DiscriminatorB | DiscriminatorC;
-export function DiscriminatorNew(): Discriminator {
-    return DiscriminatorANew();
+export type Union =
+    | { type: `object`; value: ObjectWithEveryType }
+    | { type: `array`; value: string[] }
+    | { type: `boolean`; value: boolean }
+    | { type: `nullable-timestamp`; value: Date | null };
+export function UnionNew(): Union {
+    return {
+        type: `object`,
+        value: ObjectWithEveryTypeNew(),
+    };
 }
-export function DiscriminatorValidate(input: unknown): input is Discriminator {
+export function UnionValidate(input: unknown): input is Union {
     if (!isObject(input)) {
         return false;
     }
-    if (typeof input.typeName !== 'string') {
+    if (!('type' in input) || !('value' in input)) {
         return false;
     }
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAValidate(input);
-        case 'B':
-            return DiscriminatorBValidate(input);
-        case 'C':
-            return DiscriminatorCValidate(input);
+    switch (input.type) {
+        case `object`:
+            return ObjectWithEveryTypeValidate(input.value);
+        case `array`:
+            return (
+                Array.isArray(input.value) &&
+                input.value.every((_element) => typeof _element === 'string')
+            );
+        case `boolean`:
+            return typeof input.value === 'boolean';
+        case `nullable-timestamp`:
+            return input.value instanceof Date || input.value === null;
         default:
             return false;
     }
 }
-export function DiscriminatorClone(input: Discriminator): Discriminator {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAClone(input);
-        case 'B':
-            return DiscriminatorBClone(input);
-        case 'C':
-            return DiscriminatorCClone(input);
+export function UnionClone(input: Union): Union {
+    switch (input.type) {
+        case `object`: {
+            let __value__: ObjectWithEveryType;
+            __value__ = ObjectWithEveryTypeClone(input.value);
+            return {
+                type: `object`,
+                value: __value__,
+            };
+        }
+        case `array`: {
+            let __value__: string[];
+            __value__ = [];
+            for (const __value__El of input.value) {
+                let __value__ElValue: string;
+                __value__ElValue = __value__El;
+                __value__.push(__value__ElValue);
+            }
+            return {
+                type: `array`,
+                value: __value__,
+            };
+        }
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = input.value;
+            return {
+                type: `boolean`,
+                value: __value__,
+            };
+        }
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            if (input.value !== null) {
+                __value__ = new Date(input.value.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `nullable-timestamp`,
+                value: __value__,
+            };
+        }
         default:
-            throw new Error('Unimplemented');
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
     }
 }
-export function DiscriminatorFromJson(
-    input: Record<string, unknown>,
-): Discriminator {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAFromJson(input);
-        case 'B':
-            return DiscriminatorBFromJson(input);
-        case 'C':
-            return DiscriminatorCFromJson(input);
-        default:
-            return DiscriminatorANew();
+export function UnionFromJson(input: Record<string, unknown>): Union {
+    if (`object` in input) {
+        let __value__: ObjectWithEveryType;
+        if (isObject(input[`object`])) {
+            __value__ = ObjectWithEveryTypeFromJson(input[`object`]);
+        } else {
+            __value__ = ObjectWithEveryTypeNew();
+        }
+        return {
+            type: `object`,
+            value: __value__,
+        };
+    }
+    if (`array` in input) {
+        let __value__: string[];
+        if (Array.isArray(input[`array`])) {
+            __value__ = [];
+            for (const __value__El of input[`array`]) {
+                let __value__ElValue: string;
+                __value__ElValue = parseString(__value__El);
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `array`,
+            value: __value__,
+        };
+    }
+    if (`boolean` in input) {
+        let __value__: boolean;
+        __value__ = parseBoolean(input[`boolean`]);
+        return {
+            type: `boolean`,
+            value: __value__,
+        };
+    }
+    if (`nullable-timestamp` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
+        return {
+            type: `nullable-timestamp`,
+            value: __value__,
+        };
+    }
+    return UnionNew();
+}
+export function UnionFromJsonString(input: string): Union {
+    return UnionFromJson(JSON.parse(input));
+}
+export function UnionToJsonString(input: Union): string {
+    switch (input.type) {
+        case `object`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += ObjectWithEveryTypeToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+        case `array`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i];
+                json += serializeString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+        case `boolean`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `${input.value}`;
+            json += '}';
+            return json;
+        }
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
     }
 }
-export function DiscriminatorFromJsonString(input: string): Discriminator {
-    return DiscriminatorFromJson(JSON.parse(input));
-}
-export function DiscriminatorToJsonString(input: Discriminator): string {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAToJsonString(input);
-        case 'B':
-            return DiscriminatorBToJsonString(input);
-        case 'C':
-            return DiscriminatorCToJsonString(input);
-        default:
-            throw new Error(`Unhandled case "${(input as any).typeName}"`);
-    }
-}
-export function DiscriminatorToUrlSearchParams(
-    input: Discriminator,
-): URLSearchParams {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAToUrlSearchParams(input);
-        case 'B':
-            return DiscriminatorBToUrlSearchParams(input);
-        case 'C':
-            return DiscriminatorCToUrlSearchParams(input);
-        default:
-            throw new Error('Unhandled case');
-    }
-}
-export function DiscriminatorToUrlSearchParamsString(
-    input: Discriminator,
-): string {
-    return DiscriminatorToUrlSearchParams(input).toString();
-}
-export const $$Discriminator: ExampleClientValidator<Discriminator> = {
-    new: DiscriminatorNew,
-    validate: DiscriminatorValidate,
-    clone: DiscriminatorClone,
-    fromJson: DiscriminatorFromJson,
-    fromJsonString: DiscriminatorFromJsonString,
-    toJsonString: DiscriminatorToJsonString,
-    toUrlSearchParams: DiscriminatorToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorToUrlSearchParamsString,
-};
-export interface DiscriminatorA {
-    typeName: 'A';
-    id: string;
-}
-export function DiscriminatorANew(): DiscriminatorA {
-    return {
-        typeName: 'A',
-        id: '',
-    };
-}
-export function DiscriminatorAValidate(
-    input: unknown,
-): input is DiscriminatorA {
-    return (
-        isObject(input) &&
-        input.typeName === 'A' &&
-        typeof input.id === 'string'
-    );
-}
-export function DiscriminatorAClone(input: DiscriminatorA): DiscriminatorA {
-    const _typeName = 'A';
-    let _id: string;
-    _id = input.id;
-    return {
-        typeName: _typeName,
-        id: _id,
-    };
-}
-export function DiscriminatorAFromJson(
-    input: Record<string, unknown>,
-): DiscriminatorA {
-    const _typeName = 'A';
-    let _id: string;
-    _id = parseString(input.id);
-    return {
-        typeName: _typeName,
-        id: _id,
-    };
-}
-export function DiscriminatorAFromJsonString(input: string): DiscriminatorA {
-    return DiscriminatorAFromJson(JSON.parse(input));
-}
-export function DiscriminatorAToJsonString(input: DiscriminatorA): string {
-    let json = '{';
-    json += '"typeName":"A"';
-    json += ',"id":';
-    json += serializeString(input.id);
-    json += '}';
-    return json;
-}
-export function DiscriminatorAToUrlSearchParams(
-    input: DiscriminatorA,
-): URLSearchParams {
+
+export function UnionToUrlSearchParams(input: Union): URLSearchParams {
     const params = new URLSearchParams();
-    params.set('typeName', 'A');
-    params.set('id', input.id);
+    console.warn('[WARNING] Cannot serialize unions ot query string.');
     return params;
 }
-export function DiscriminatorAToUrlSearchParamsString(
-    input: DiscriminatorA,
-): string {
-    return DiscriminatorAToUrlSearchParams(input).toString();
+export function UnionToUrlSearchParamsString(input: Union): string {
+    return UnionToUrlSearchParams(input).toString();
 }
-const $$DiscriminatorA: ExampleClientValidator<DiscriminatorA> = {
-    new: DiscriminatorANew,
-    validate: DiscriminatorAValidate,
-    clone: DiscriminatorAClone,
-    fromJson: DiscriminatorAFromJson,
-    fromJsonString: DiscriminatorAFromJsonString,
-    toJsonString: DiscriminatorAToJsonString,
-    toUrlSearchParams: DiscriminatorAToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorAToUrlSearchParamsString,
-};
-export interface DiscriminatorB {
-    typeName: 'B';
-    id: string;
-    name: string;
-}
-export function DiscriminatorBNew(): DiscriminatorB {
-    return {
-        typeName: 'B',
-        id: '',
-        name: '',
-    };
-}
-export function DiscriminatorBValidate(
-    input: unknown,
-): input is DiscriminatorB {
-    return (
-        isObject(input) &&
-        input.typeName === 'B' &&
-        typeof input.id === 'string' &&
-        typeof input.name === 'string'
-    );
-}
-export function DiscriminatorBClone(input: DiscriminatorB): DiscriminatorB {
-    const _typeName = 'B';
-    let _id: string;
-    _id = input.id;
-    let _name: string;
-    _name = input.name;
-    return {
-        typeName: _typeName,
-        id: _id,
-        name: _name,
-    };
-}
-export function DiscriminatorBFromJson(
-    input: Record<string, unknown>,
-): DiscriminatorB {
-    const _typeName = 'B';
-    let _id: string;
-    _id = parseString(input.id);
-    let _name: string;
-    _name = parseString(input.name);
-    return {
-        typeName: _typeName,
-        id: _id,
-        name: _name,
-    };
-}
-export function DiscriminatorBFromJsonString(input: string): DiscriminatorB {
-    return DiscriminatorBFromJson(JSON.parse(input));
-}
-export function DiscriminatorBToJsonString(input: DiscriminatorB): string {
-    let json = '{';
-    json += '"typeName":"B"';
-    json += ',"id":';
-    json += serializeString(input.id);
-    json += ',"name":';
-    json += serializeString(input.name);
-    json += '}';
-    return json;
-}
-export function DiscriminatorBToUrlSearchParams(
-    input: DiscriminatorB,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('typeName', 'B');
-    params.set('id', input.id);
-    params.set('name', input.name);
-    return params;
-}
-export function DiscriminatorBToUrlSearchParamsString(
-    input: DiscriminatorB,
-): string {
-    return DiscriminatorBToUrlSearchParams(input).toString();
-}
-const $$DiscriminatorB: ExampleClientValidator<DiscriminatorB> = {
-    new: DiscriminatorBNew,
-    validate: DiscriminatorBValidate,
-    clone: DiscriminatorBClone,
-    fromJson: DiscriminatorBFromJson,
-    fromJsonString: DiscriminatorBFromJsonString,
-    toJsonString: DiscriminatorBToJsonString,
-    toUrlSearchParams: DiscriminatorBToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorBToUrlSearchParamsString,
-};
-export interface DiscriminatorC {
-    typeName: 'C';
-    id: string;
-    name: string;
-    date: Date;
-}
-export function DiscriminatorCNew(): DiscriminatorC {
-    return {
-        typeName: 'C',
-        id: '',
-        name: '',
-        date: new Date(0),
-    };
-}
-export function DiscriminatorCValidate(
-    input: unknown,
-): input is DiscriminatorC {
-    return (
-        isObject(input) &&
-        input.typeName === 'C' &&
-        typeof input.id === 'string' &&
-        typeof input.name === 'string' &&
-        input.date instanceof Date
-    );
-}
-export function DiscriminatorCClone(input: DiscriminatorC): DiscriminatorC {
-    const _typeName = 'C';
-    let _id: string;
-    _id = input.id;
-    let _name: string;
-    _name = input.name;
-    let _date: Date;
-    _date = new Date(input.date.getTime());
-    return {
-        typeName: _typeName,
-        id: _id,
-        name: _name,
-        date: _date,
-    };
-}
-export function DiscriminatorCFromJson(
-    input: Record<string, unknown>,
-): DiscriminatorC {
-    const _typeName = 'C';
-    let _id: string;
-    _id = parseString(input.id);
-    let _name: string;
-    _name = parseString(input.name);
-    let _date: Date;
-    _date = parseTimestamp(input.date);
-    return {
-        typeName: _typeName,
-        id: _id,
-        name: _name,
-        date: _date,
-    };
-}
-export function DiscriminatorCFromJsonString(input: string): DiscriminatorC {
-    return DiscriminatorCFromJson(JSON.parse(input));
-}
-export function DiscriminatorCToJsonString(input: DiscriminatorC): string {
-    let json = '{';
-    json += '"typeName":"C"';
-    json += ',"id":';
-    json += serializeString(input.id);
-    json += ',"name":';
-    json += serializeString(input.name);
-    json += ',"date":';
-    json += `"${input.date.toISOString()}"`;
-    json += '}';
-    return json;
-}
-export function DiscriminatorCToUrlSearchParams(
-    input: DiscriminatorC,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('typeName', 'C');
-    params.set('id', input.id);
-    params.set('name', input.name);
-    params.set('date', input.date.toISOString());
-    return params;
-}
-export function DiscriminatorCToUrlSearchParamsString(
-    input: DiscriminatorC,
-): string {
-    return DiscriminatorCToUrlSearchParams(input).toString();
-}
-const $$DiscriminatorC: ExampleClientValidator<DiscriminatorC> = {
-    new: DiscriminatorCNew,
-    validate: DiscriminatorCValidate,
-    clone: DiscriminatorCClone,
-    fromJson: DiscriminatorCFromJson,
-    fromJsonString: DiscriminatorCFromJsonString,
-    toJsonString: DiscriminatorCToJsonString,
-    toUrlSearchParams: DiscriminatorCToUrlSearchParams,
-    toUrlSearchParamsString: DiscriminatorCToUrlSearchParamsString,
+
+export const $$Union: ExampleClientValidator<Union> = {
+    new: UnionNew,
+    validate: UnionValidate,
+    clone: UnionClone,
+    fromJson: UnionFromJson,
+    fromJsonString: UnionFromJsonString,
+    toJsonString: UnionToJsonString,
+    toUrlSearchParams: UnionToUrlSearchParams,
+    toUrlSearchParamsString: UnionToUrlSearchParamsString,
 };
 
 export interface ObjectWithOptionalFields {
@@ -1272,7 +1128,7 @@ export interface ObjectWithOptionalFields {
     object?: NestedObject;
     array?: boolean[];
     record?: Record<string, boolean>;
-    discriminator?: Discriminator;
+    discriminator?: LegacyDiscriminator;
     any?: any;
 }
 export function ObjectWithOptionalFieldsNew(): ObjectWithOptionalFields {
@@ -1428,7 +1284,7 @@ export function ObjectWithOptionalFieldsClone(
             _record[_key] = _recordValue;
         }
     }
-    let _discriminator: Discriminator | undefined;
+    let _discriminator: LegacyDiscriminator | undefined;
     if (typeof input.discriminator !== 'undefined') {
         _discriminator = DiscriminatorClone(input.discriminator);
     }
@@ -1555,7 +1411,7 @@ export function ObjectWithOptionalFieldsFromJson(
             _record = {};
         }
     }
-    let _discriminator: Discriminator | undefined;
+    let _discriminator: LegacyDiscriminator | undefined;
     if (typeof input.discriminator !== 'undefined') {
         if (isObject(input.discriminator)) {
             _discriminator = DiscriminatorFromJson(input.discriminator);
@@ -1841,7 +1697,7 @@ export interface ObjectWithNullableFields {
     object: NestedObject | null;
     array: boolean[] | null;
     record: Record<string, boolean> | null;
-    discriminator: Discriminator | null;
+    discriminator: LegacyDiscriminator | null;
     any: any;
 }
 export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
@@ -1993,7 +1849,7 @@ export function ObjectWithNullableFieldsClone(
     } else {
         _record = null;
     }
-    let _discriminator: Discriminator | null;
+    let _discriminator: LegacyDiscriminator | null;
     if (input.discriminator !== null) {
         _discriminator = DiscriminatorClone(input.discriminator);
     } else {
@@ -2086,7 +1942,7 @@ export function ObjectWithNullableFieldsFromJson(
     } else {
         _record = null;
     }
-    let _discriminator: Discriminator | null;
+    let _discriminator: LegacyDiscriminator | null;
     if (isObject(input.discriminator)) {
         _discriminator = DiscriminatorFromJson(input.discriminator);
     } else {
@@ -2271,210 +2127,6 @@ export const $$ObjectWithNullableFields: ExampleClientValidator<ObjectWithNullab
             ObjectWithNullableFieldsToUrlSearchParamsString,
     };
 
-export type Union =
-    | { type: `object`; value: ObjectWithEveryType }
-    | { type: `array`; value: string[] }
-    | { type: `boolean`; value: boolean }
-    | { type: `nullable-timestamp`; value: Date | null };
-export function UnionNew(): Union {
-    return {
-        type: `object`,
-        value: ObjectWithEveryTypeNew(),
-    };
-}
-export function UnionValidate(input: unknown): input is Union {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (!('type' in input) || !('value' in input)) {
-        return false;
-    }
-    switch (input.type) {
-        case `object`:
-            return ObjectWithEveryTypeValidate(input.value);
-        case `array`:
-            return (
-                Array.isArray(input.value) &&
-                input.value.every((_element) => typeof _element === 'string')
-            );
-        case `boolean`:
-            return typeof input.value === 'boolean';
-        case `nullable-timestamp`:
-            return input.value instanceof Date || input.value === null;
-        default:
-            return false;
-    }
-}
-export function UnionClone(input: Union): Union {
-    switch (input.type) {
-        case `object`: {
-            let __value__: ObjectWithEveryType;
-            __value__ = ObjectWithEveryTypeClone(input.value);
-            return {
-                type: `object`,
-                value: __value__,
-            };
-        }
-        case `array`: {
-            let __value__: string[];
-            __value__ = [];
-            for (const __value__El of input.value) {
-                let __value__ElValue: string;
-                __value__ElValue = __value__El;
-                __value__.push(__value__ElValue);
-            }
-            return {
-                type: `array`,
-                value: __value__,
-            };
-        }
-        case `boolean`: {
-            let __value__: boolean;
-            __value__ = input.value;
-            return {
-                type: `boolean`,
-                value: __value__,
-            };
-        }
-        case `nullable-timestamp`: {
-            let __value__: Date | null;
-            if (input.value !== null) {
-                __value__ = new Date(input.value.getTime());
-            } else {
-                __value__ = null;
-            }
-            return {
-                type: `nullable-timestamp`,
-                value: __value__,
-            };
-        }
-        default:
-            input satisfies never;
-            throw new Error(`Unknown union variant: ${(input as any).type}`);
-    }
-}
-export function UnionFromJson(input: Record<string, unknown>): Union {
-    if (`object` in input) {
-        let __value__: ObjectWithEveryType;
-        if (isObject(input[`object`])) {
-            __value__ = ObjectWithEveryTypeFromJson(input[`object`]);
-        } else {
-            __value__ = ObjectWithEveryTypeNew();
-        }
-        return {
-            type: `object`,
-            value: __value__,
-        };
-    }
-    if (`array` in input) {
-        let __value__: string[];
-        if (Array.isArray(input[`array`])) {
-            __value__ = [];
-            for (const __value__El of input[`array`]) {
-                let __value__ElValue: string;
-                __value__ElValue = parseString(__value__El);
-                __value__.push(__value__ElValue);
-            }
-        } else {
-            __value__ = [];
-        }
-        return {
-            type: `array`,
-            value: __value__,
-        };
-    }
-    if (`boolean` in input) {
-        let __value__: boolean;
-        __value__ = parseBoolean(input[`boolean`]);
-        return {
-            type: `boolean`,
-            value: __value__,
-        };
-    }
-    if (`nullable-timestamp` in input) {
-        let __value__: Date | null;
-        __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
-        return {
-            type: `nullable-timestamp`,
-            value: __value__,
-        };
-    }
-    return UnionNew();
-}
-export function UnionFromJsonString(input: string): Union {
-    return UnionFromJson(JSON.parse(input));
-}
-export function UnionToJsonString(input: Union): string {
-    switch (input.type) {
-        case `object`: {
-            let json = '{';
-            json += serializeString(input.type);
-            json += ':';
-            json += ObjectWithEveryTypeToJsonString(input.value);
-            json += '}';
-            return json;
-        }
-        case `array`: {
-            let json = '{';
-            json += serializeString(input.type);
-            json += ':';
-            json += '[';
-            for (let i = 0; i < input.value.length; i++) {
-                if (i !== 0) json += ',';
-                const _inputValueEl = input.value[i];
-                json += serializeString(_inputValueEl);
-            }
-            json += ']';
-            json += '}';
-            return json;
-        }
-        case `boolean`: {
-            let json = '{';
-            json += serializeString(input.type);
-            json += ':';
-            json += `${input.value}`;
-            json += '}';
-            return json;
-        }
-        case `nullable-timestamp`: {
-            let json = '{';
-            json += serializeString(input.type);
-            json += ':';
-            if (input.value instanceof Date) {
-                json += `"${input.value.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += '}';
-            return json;
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-
-export function UnionToUrlSearchParams(input: Union): URLSearchParams {
-    const params = new URLSearchParams();
-    console.warn('[WARNING] Cannot serialize unions ot query string.');
-    return params;
-}
-export function UnionToUrlSearchParamsString(input: Union): string {
-    return UnionToUrlSearchParams(input).toString();
-}
-
-export const $$Union: ExampleClientValidator<Union> = {
-    new: UnionNew,
-    validate: UnionValidate,
-    clone: UnionClone,
-    fromJson: UnionFromJson,
-    fromJsonString: UnionFromJsonString,
-    toJsonString: UnionToJsonString,
-    toUrlSearchParams: UnionToUrlSearchParams,
-    toUrlSearchParamsString: UnionToUrlSearchParamsString,
-};
-
 export interface RecursiveObject {
     left: RecursiveObject | null;
     right: RecursiveObject | null;
@@ -2579,3 +2231,429 @@ export const $$RecursiveObject: ExampleClientValidator<RecursiveObject> = {
     toUrlSearchParams: RecursiveObjectToUrlSearchParams,
     toUrlSearchParamsString: RecursiveObjectToUrlSearchParamsString,
 };
+
+export type LegacyDiscriminator =
+    | LegacyDiscriminatorA
+    | LegacyDiscriminatorB
+    | LegacyDiscriminatorC;
+export function DiscriminatorNew(): LegacyDiscriminator {
+    return DiscriminatorANew();
+}
+export function DiscriminatorValidate(
+    input: unknown,
+): input is LegacyDiscriminator {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (typeof input.typeName !== 'string') {
+        return false;
+    }
+    switch (input.typeName) {
+        case 'A':
+            return DiscriminatorAValidate(input);
+        case 'B':
+            return DiscriminatorBValidate(input);
+        case 'C':
+            return DiscriminatorCValidate(input);
+        default:
+            return false;
+    }
+}
+export function DiscriminatorClone(
+    input: LegacyDiscriminator,
+): LegacyDiscriminator {
+    switch (input.typeName) {
+        case 'A':
+            return DiscriminatorAClone(input);
+        case 'B':
+            return DiscriminatorBClone(input);
+        case 'C':
+            return DiscriminatorCClone(input);
+        default:
+            throw new Error('Unimplemented');
+    }
+}
+export function DiscriminatorFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminator {
+    switch (input.typeName) {
+        case 'A':
+            return DiscriminatorAFromJson(input);
+        case 'B':
+            return DiscriminatorBFromJson(input);
+        case 'C':
+            return DiscriminatorCFromJson(input);
+        default:
+            return DiscriminatorANew();
+    }
+}
+export function DiscriminatorFromJsonString(
+    input: string,
+): LegacyDiscriminator {
+    return DiscriminatorFromJson(JSON.parse(input));
+}
+export function DiscriminatorToJsonString(input: LegacyDiscriminator): string {
+    switch (input.typeName) {
+        case 'A':
+            return DiscriminatorAToJsonString(input);
+        case 'B':
+            return DiscriminatorBToJsonString(input);
+        case 'C':
+            return DiscriminatorCToJsonString(input);
+        default:
+            throw new Error(`Unhandled case "${(input as any).typeName}"`);
+    }
+}
+export function DiscriminatorToUrlSearchParams(
+    input: LegacyDiscriminator,
+): URLSearchParams {
+    switch (input.typeName) {
+        case 'A':
+            return DiscriminatorAToUrlSearchParams(input);
+        case 'B':
+            return DiscriminatorBToUrlSearchParams(input);
+        case 'C':
+            return DiscriminatorCToUrlSearchParams(input);
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function DiscriminatorToUrlSearchParamsString(
+    input: LegacyDiscriminator,
+): string {
+    return DiscriminatorToUrlSearchParams(input).toString();
+}
+export const $$Discriminator: ExampleClientValidator<LegacyDiscriminator> = {
+    new: DiscriminatorNew,
+    validate: DiscriminatorValidate,
+    clone: DiscriminatorClone,
+    fromJson: DiscriminatorFromJson,
+    fromJsonString: DiscriminatorFromJsonString,
+    toJsonString: DiscriminatorToJsonString,
+    toUrlSearchParams: DiscriminatorToUrlSearchParams,
+    toUrlSearchParamsString: DiscriminatorToUrlSearchParamsString,
+};
+export interface LegacyDiscriminatorA {
+    typeName: 'A';
+    id: string;
+}
+export function DiscriminatorANew(): LegacyDiscriminatorA {
+    return {
+        typeName: 'A',
+        id: '',
+    };
+}
+export function DiscriminatorAValidate(
+    input: unknown,
+): input is LegacyDiscriminatorA {
+    return (
+        isObject(input) &&
+        input.typeName === 'A' &&
+        typeof input.id === 'string'
+    );
+}
+export function DiscriminatorAClone(
+    input: LegacyDiscriminatorA,
+): LegacyDiscriminatorA {
+    const _typeName = 'A';
+    let _id: string;
+    _id = input.id;
+    return {
+        typeName: _typeName,
+        id: _id,
+    };
+}
+export function DiscriminatorAFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorA {
+    const _typeName = 'A';
+    let _id: string;
+    _id = parseString(input.id);
+    return {
+        typeName: _typeName,
+        id: _id,
+    };
+}
+export function DiscriminatorAFromJsonString(
+    input: string,
+): LegacyDiscriminatorA {
+    return DiscriminatorAFromJson(JSON.parse(input));
+}
+export function DiscriminatorAToJsonString(
+    input: LegacyDiscriminatorA,
+): string {
+    let json = '{';
+    json += '"typeName":"A"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += '}';
+    return json;
+}
+export function DiscriminatorAToUrlSearchParams(
+    input: LegacyDiscriminatorA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', 'A');
+    params.set('id', input.id);
+    return params;
+}
+export function DiscriminatorAToUrlSearchParamsString(
+    input: LegacyDiscriminatorA,
+): string {
+    return DiscriminatorAToUrlSearchParams(input).toString();
+}
+const $$DiscriminatorA: ExampleClientValidator<LegacyDiscriminatorA> = {
+    new: DiscriminatorANew,
+    validate: DiscriminatorAValidate,
+    clone: DiscriminatorAClone,
+    fromJson: DiscriminatorAFromJson,
+    fromJsonString: DiscriminatorAFromJsonString,
+    toJsonString: DiscriminatorAToJsonString,
+    toUrlSearchParams: DiscriminatorAToUrlSearchParams,
+    toUrlSearchParamsString: DiscriminatorAToUrlSearchParamsString,
+};
+export interface LegacyDiscriminatorB {
+    typeName: 'B';
+    id: string;
+    name: string;
+}
+export function DiscriminatorBNew(): LegacyDiscriminatorB {
+    return {
+        typeName: 'B',
+        id: '',
+        name: '',
+    };
+}
+export function DiscriminatorBValidate(
+    input: unknown,
+): input is LegacyDiscriminatorB {
+    return (
+        isObject(input) &&
+        input.typeName === 'B' &&
+        typeof input.id === 'string' &&
+        typeof input.name === 'string'
+    );
+}
+export function DiscriminatorBClone(
+    input: LegacyDiscriminatorB,
+): LegacyDiscriminatorB {
+    const _typeName = 'B';
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+    };
+}
+export function DiscriminatorBFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorB {
+    const _typeName = 'B';
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+    };
+}
+export function DiscriminatorBFromJsonString(
+    input: string,
+): LegacyDiscriminatorB {
+    return DiscriminatorBFromJson(JSON.parse(input));
+}
+export function DiscriminatorBToJsonString(
+    input: LegacyDiscriminatorB,
+): string {
+    let json = '{';
+    json += '"typeName":"B"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += '}';
+    return json;
+}
+export function DiscriminatorBToUrlSearchParams(
+    input: LegacyDiscriminatorB,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', 'B');
+    params.set('id', input.id);
+    params.set('name', input.name);
+    return params;
+}
+export function DiscriminatorBToUrlSearchParamsString(
+    input: LegacyDiscriminatorB,
+): string {
+    return DiscriminatorBToUrlSearchParams(input).toString();
+}
+const $$DiscriminatorB: ExampleClientValidator<LegacyDiscriminatorB> = {
+    new: DiscriminatorBNew,
+    validate: DiscriminatorBValidate,
+    clone: DiscriminatorBClone,
+    fromJson: DiscriminatorBFromJson,
+    fromJsonString: DiscriminatorBFromJsonString,
+    toJsonString: DiscriminatorBToJsonString,
+    toUrlSearchParams: DiscriminatorBToUrlSearchParams,
+    toUrlSearchParamsString: DiscriminatorBToUrlSearchParamsString,
+};
+export interface LegacyDiscriminatorC {
+    typeName: 'C';
+    id: string;
+    name: string;
+    date: Date;
+}
+export function DiscriminatorCNew(): LegacyDiscriminatorC {
+    return {
+        typeName: 'C',
+        id: '',
+        name: '',
+        date: new Date(0),
+    };
+}
+export function DiscriminatorCValidate(
+    input: unknown,
+): input is LegacyDiscriminatorC {
+    return (
+        isObject(input) &&
+        input.typeName === 'C' &&
+        typeof input.id === 'string' &&
+        typeof input.name === 'string' &&
+        input.date instanceof Date
+    );
+}
+export function DiscriminatorCClone(
+    input: LegacyDiscriminatorC,
+): LegacyDiscriminatorC {
+    const _typeName = 'C';
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    let _date: Date;
+    _date = new Date(input.date.getTime());
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+        date: _date,
+    };
+}
+export function DiscriminatorCFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorC {
+    const _typeName = 'C';
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    let _date: Date;
+    _date = parseTimestamp(input.date);
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+        date: _date,
+    };
+}
+export function DiscriminatorCFromJsonString(
+    input: string,
+): LegacyDiscriminatorC {
+    return DiscriminatorCFromJson(JSON.parse(input));
+}
+export function DiscriminatorCToJsonString(
+    input: LegacyDiscriminatorC,
+): string {
+    let json = '{';
+    json += '"typeName":"C"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"date":';
+    json += `"${input.date.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function DiscriminatorCToUrlSearchParams(
+    input: LegacyDiscriminatorC,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', 'C');
+    params.set('id', input.id);
+    params.set('name', input.name);
+    params.set('date', input.date.toISOString());
+    return params;
+}
+export function DiscriminatorCToUrlSearchParamsString(
+    input: LegacyDiscriminatorC,
+): string {
+    return DiscriminatorCToUrlSearchParams(input).toString();
+}
+const $$DiscriminatorC: ExampleClientValidator<LegacyDiscriminatorC> = {
+    new: DiscriminatorCNew,
+    validate: DiscriminatorCValidate,
+    clone: DiscriminatorCClone,
+    fromJson: DiscriminatorCFromJson,
+    fromJsonString: DiscriminatorCFromJsonString,
+    toJsonString: DiscriminatorCToJsonString,
+    toUrlSearchParams: DiscriminatorCToUrlSearchParams,
+    toUrlSearchParamsString: DiscriminatorCToUrlSearchParamsString,
+};
+
+export type ShapeExternallyTagged =
+    | {
+          rectangle: ShapeExternallyTaggedRectangle;
+      }
+    | { circle: ShapeExternallyTaggedCircle };
+
+export interface ShapeExternallyTaggedRectangle {
+    width: number;
+    height: number;
+}
+
+export interface ShapeExternallyTaggedCircle {
+    radius: number;
+}
+
+// TODO
+
+export type ShapeInternallyTagged =
+    | ShapeInternallyTaggedRectangle
+    | ShapeInternallyTaggedCircle;
+export interface ShapeInternallyTaggedRectangle {
+    shape: 'rectangle';
+    width: number;
+    height: number;
+}
+export interface ShapeInternallyTaggedCircle {
+    shape: 'circle';
+    radius: number;
+}
+
+// TODO
+
+export type ShapeInternallyTaggedWithValueKey =
+    | {
+          kind: 'rectangle';
+          data: ShapeInternallyTaggedWithValueKeyRectangle;
+      }
+    | {
+          kind: 'circle';
+          data: ShapeInternallyTaggedWithValueKeyCircle;
+      };
+export interface ShapeInternallyTaggedWithValueKeyRectangle {
+    width: number;
+    height: number;
+}
+export interface ShapeInternallyTaggedWithValueKeyCircle {
+    radius: number;
+}
+
+// TODO
