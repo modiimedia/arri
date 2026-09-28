@@ -119,11 +119,9 @@ describe('ObjectWithEveryType', () => {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: testDate,
+        union: {
+            type: 'array',
+            value: ['hello', 'world'],
         },
         any: 'hello world',
     };
@@ -199,10 +197,8 @@ describe('ObjectWithOptionalFields', () => {
             B: false,
         },
         union: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: testDate,
+            type: 'array',
+            value: ['hello', 'world'],
         },
         any: 'hello world',
     };
@@ -277,10 +273,8 @@ describe('ObjectWithNullableFields', () => {
             B: false,
         },
         union: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: testDate,
+            type: 'array',
+            value: ['hell', 'world'],
         },
         any: { message: 'hello world' },
     };
@@ -336,11 +330,9 @@ describe('Union', () => {
                     B: false,
                     A: true,
                 },
-                discriminator: {
-                    typeName: 'C',
-                    id: '',
-                    name: '',
-                    date: testDate,
+                union: {
+                    type: 'array',
+                    value: ['hello', 'world'],
                 },
                 any: 'hello world',
             },
