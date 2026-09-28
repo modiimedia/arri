@@ -95,21 +95,21 @@ export const RecursiveDiscriminator = a.recursive<RecursiveDiscriminator>(
 
 type RecursiveUnion =
     | {
-        child: RecursiveUnion;
-    }
+          child: RecursiveUnion;
+      }
     | {
-        children: RecursiveUnion[];
-    }
+          children: RecursiveUnion[];
+      }
     | {
-        text: string;
-    }
+          text: string;
+      }
     | {
-        shape: {
-            width: number;
-            height: number;
-            color: string;
-        };
-    };
+          shape: {
+              width: number;
+              height: number;
+              color: string;
+          };
+      };
 const RecursiveUnion = a.recursive<RecursiveUnion>(
     (self) =>
         a.union({
@@ -132,36 +132,44 @@ const UnionExternalTagging = a.union({
         width: a.float64(),
         height: a.float64(),
     }),
-    references: a.array(a.string())
-})
+    references: a.array(a.string()),
+});
 type UnionExternalTagging = a.infer<typeof UnionExternalTagging>;
 
-const UnionInternalTagging = a.union({
-    rectangle: a.object({
-        width: a.float64(),
-        height: a.float64(),
-    }),
-    circle: a.object({
-        radius: a.float64(),
-    }),
-}, {
-    tagKey: "kind"
-});
+const UnionInternalTagging = a.union(
+    {
+        rectangle: a.object({
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        circle: a.object({
+            radius: a.float64(),
+        }),
+    },
+    {
+        tagKey: 'kind',
+    },
+);
 type UnionInternalTagging = a.infer<typeof UnionInternalTagging>;
 
-const UnionInternalTaggingWithValue = a.union({
-    text: a.string(),
-    image: a.object({
-        url: a.string(),
-        width: a.float64(),
-        height: a.float64(),
-    }),
-    references: a.array(a.string())
-}, {
-    tagKey: "type",
-    valueKey: 'data'
-})
-type UnionInternalTaggingWithValue = a.infer<typeof UnionInternalTaggingWithValue>;
+const UnionInternalTaggingWithValue = a.union(
+    {
+        text: a.string(),
+        image: a.object({
+            url: a.string(),
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        references: a.array(a.string()),
+    },
+    {
+        tagKey: 'type',
+        valueKey: 'data',
+    },
+);
+type UnionInternalTaggingWithValue = a.infer<
+    typeof UnionInternalTaggingWithValue
+>;
 
 export const validationTestSuites: Record<
     string,
@@ -760,39 +768,45 @@ export const validationTestSuites: Record<
         goodInputs: [
             { text: 'hello world' },
             { image: { url: 'http://example.com', width: 15, height: 15 } },
-            { references: ['hello', 'world'] }
+            { references: ['hello', 'world'] },
         ] satisfies UnionExternalTagging[],
         badInputs: [
             { text: null },
             { image: { url: 15, width: 15, height: 15 } },
             { references: ['hello', false] },
-            { tags: ['hello', 'world'] }
-        ]
+            { tags: ['hello', 'world'] },
+        ],
     },
     'union with internal tagging': {
         schema: UnionInternalTagging,
         goodInputs: [
             { kind: 'rectangle', width: 15.5, height: 25.5 },
-            { kind: 'circle', radius: 16 }
+            { kind: 'circle', radius: 16 },
         ] satisfies UnionInternalTagging[],
         badInputs: [
             { kind: 'rectangle', width: true, height: 25.5 },
             { kind: 'circle', radius: true },
             { kind: 'triangle', width: 25.5, height: 25.5 },
-        ]
+        ],
     },
     'union with internal tagging + value key': {
         schema: UnionInternalTaggingWithValue,
         goodInputs: [
             { type: 'text', data: 'hello world' },
-            { type: 'image', data: { url: 'https://example.com', width: 100, height: 50 } },
-            { type: 'references', data: ['hello', 'world'] }
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: 100, height: 50 },
+            },
+            { type: 'references', data: ['hello', 'world'] },
         ] satisfies UnionInternalTaggingWithValue[],
         badInputs: [
             { type: 'text', data: null },
-            { type: 'image', data: { src: 'https://example.com', width: 100, height: 50 } },
-            { type: 'references', data: ['hello', 'world', false] }
-        ]
+            {
+                type: 'image',
+                data: { src: 'https://example.com', width: 100, height: 50 },
+            },
+            { type: 'references', data: ['hello', 'world', false] },
+        ],
     },
     'record with boolean values': {
         schema: a.record(a.boolean()),
@@ -1607,6 +1621,43 @@ export const parsingTestSuites: Record<
             },
         ],
         badInputs: [],
+    },
+    'union internally tagged': {
+        schema: UnionInternalTagging,
+        goodInputs: [
+            `{"kind":"rectangle","width":15,"height":10}`,
+            `{"kind":"circle","radius":22.5}`,
+        ],
+        expectedResults: [
+            { kind: 'rectangle', width: 15, height: 10 },
+            { kind: 'circle', radius: 22.5 },
+        ],
+        badInputs: [`{"kind":"triangle","width":15,"height":10}`],
+    },
+    'union internally tagged with value': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            `{"type":"text","data":"hello world"}`,
+            `{"type":"image","data":{"url":"https://www.youtube.com","width":1080,"height":720}}`,
+            `{"type":"references","data":["hello","world"]}`,
+        ],
+        expectedResults: [
+            { type: 'text', data: 'hello world' },
+            {
+                type: 'image',
+                data: {
+                    url: 'https://www.youtube.com',
+                    width: 1080,
+                    height: 720,
+                },
+            },
+            { type: 'references', data: ['hello', 'world'] },
+        ],
+        badInputs: [
+            { type: 'foo', data: { url: 'foo' } },
+            { data: 'hello world' },
+            { type: 'text', data: null },
+        ],
     },
 };
 
