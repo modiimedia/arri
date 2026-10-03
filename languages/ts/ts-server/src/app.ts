@@ -36,7 +36,12 @@ import {
     Rpc,
 } from './rpc';
 import { ArriService } from './service';
-import { type ArriWorker, defineWorker, type WorkerHandler } from './worker';
+import {
+    type ArriWorker,
+    defineWorker,
+    type WorkerErrorHandler,
+    type WorkerHandler,
+} from './worker';
 
 export type DefinitionMap = Record<
     string,
@@ -58,6 +63,7 @@ export class ArriApp {
     private readonly _workers: ArriWorker[] = [];
     private readonly _onStartHooks: Array<() => Promise<void> | void> = [];
     private readonly _onStopHooks: Array<() => Promise<void> | void> = [];
+    private readonly _workerErrorHooks: WorkerErrorHandler[] = [];
     private _abortController: AbortController | null = null;
     private _isRunning = false;
     private readonly _onRequest: ArriOptions['onRequest'];
@@ -84,6 +90,9 @@ export class ArriApp {
         }
         if (opts.onStop) {
             this.onStop(opts.onStop);
+        }
+        if (opts.onWorkerError) {
+            this.onWorkerError(opts.onWorkerError);
         }
         this._heartbeatMs = opts.heartbeatMs ?? 20000;
         this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? '';
@@ -280,13 +289,7 @@ export class ArriApp {
                 try {
                     await w.start(this._abortController!.signal);
                 } catch (err) {
-                    if (this._debug) {
-                        // eslint-disable-next-line no-console
-                        console.error(
-                            `Error in worker ${w.name ?? 'unnamed'}:`,
-                            err,
-                        );
-                    }
+                    await this._handleWorkerError(w, err);
                 }
             })();
         }
@@ -298,6 +301,45 @@ export class ArriApp {
 
     onStop(hook: () => Promise<void> | void) {
         this._onStopHooks.push(hook);
+    }
+
+    onWorkerError(hook: WorkerErrorHandler) {
+        this._workerErrorHooks.push(hook);
+    }
+
+    private async _handleWorkerError(worker: ArriWorker, error: unknown) {
+        let handled = false;
+        if (worker.onError) {
+            try {
+                await worker.onError(error);
+                handled = true;
+            } catch (hookErr) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `[Arri] Error in worker.onError hook for worker ${worker.name ?? 'unnamed'}:`,
+                    hookErr,
+                );
+            }
+        }
+        for (const hook of this._workerErrorHooks) {
+            try {
+                await hook(error, worker);
+                handled = true;
+            } catch (hookErr) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `[Arri] Error in onWorkerError hook for worker ${worker.name ?? 'unnamed'}:`,
+                    hookErr,
+                );
+            }
+        }
+        if (!handled) {
+            // eslint-disable-next-line no-console
+            console.error(
+                `[Arri] Unhandled error in worker ${worker.name ?? 'unnamed'}:`,
+                error,
+            );
+        }
     }
 
     async start(): Promise<void> {
@@ -324,13 +366,7 @@ export class ArriApp {
                 try {
                     await worker.start(controller.signal);
                 } catch (err) {
-                    if (this._debug) {
-                        // eslint-disable-next-line no-console
-                        console.error(
-                            `Error in worker ${worker.name ?? 'unnamed'}:`,
-                            err,
-                        );
-                    }
+                    await this._handleWorkerError(worker, err);
                 }
             })();
         }
@@ -349,13 +385,7 @@ export class ArriApp {
                     await worker.stop();
                 }
             } catch (err) {
-                if (this._debug) {
-                    // eslint-disable-next-line no-console
-                    console.error(
-                        `Error stopping worker ${worker.name ?? 'unnamed'}:`,
-                        err,
-                    );
-                }
+                await this._handleWorkerError(worker, err);
             }
         });
 
@@ -406,6 +436,7 @@ export interface ArriOptions {
     ) => void | Promise<void>;
     onStart?: () => Promise<void> | void;
     onStop?: () => Promise<void> | void;
+    onWorkerError?: WorkerErrorHandler;
 }
 
 export interface RequestHookEvent extends Omit<H3Event, 'context'> {

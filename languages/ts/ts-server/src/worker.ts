@@ -1,9 +1,15 @@
 export type WorkerHandler = (signal: AbortSignal) => Promise<void> | void;
 
+export type WorkerErrorHandler = (
+    error: unknown,
+    worker: ArriWorker,
+) => void | Promise<void>;
+
 export interface ArriWorker {
     name?: string;
     start: (signal: AbortSignal) => Promise<void> | void;
     stop?: () => Promise<void> | void;
+    onError?: (error: unknown) => void | Promise<void>;
 }
 
 export function defineWorker(worker: ArriWorker | WorkerHandler): ArriWorker {

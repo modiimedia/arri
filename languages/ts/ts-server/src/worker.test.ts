@@ -267,4 +267,73 @@ describe('Arri Workers & Lifecycle', () => {
             'v2-stop',
         ]);
     });
+
+    test('worker error handling with worker.onError and app.onWorkerError', async () => {
+        let workerCapturedError: unknown;
+        let appOptionCapturedError: unknown;
+        let appMethodCapturedError: unknown;
+        let capturedWorkerName: string | undefined;
+
+        const testError = new Error('Database disconnected');
+
+        const app = new ArriApp({
+            onWorkerError: (err, worker) => {
+                appOptionCapturedError = err;
+                capturedWorkerName = worker.name;
+            },
+        });
+
+        app.onWorkerError((err) => {
+            appMethodCapturedError = err;
+        });
+
+        app.registerWorker({
+            name: 'faulty-worker',
+            start: () => {
+                throw testError;
+            },
+            onError: (err) => {
+                workerCapturedError = err;
+            },
+        });
+
+        await app.start();
+        // Allow background error dispatch to flush
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        expect(workerCapturedError).toBe(testError);
+        expect(appOptionCapturedError).toBe(testError);
+        expect(appMethodCapturedError).toBe(testError);
+        expect(capturedWorkerName).toBe('faulty-worker');
+
+        await app.stop();
+    });
+
+    test('worker error falls back to console.error when no handler is registered', async () => {
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+
+        const testError = new Error('Unhandled worker crash');
+        const app = new ArriApp();
+
+        app.registerWorker({
+            name: 'crashing-worker',
+            start: () => {
+                throw testError;
+            },
+        });
+
+        await app.start();
+        // Allow background error dispatch to flush
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            '[Arri] Unhandled error in worker crashing-worker:',
+            testError,
+        );
+
+        consoleSpy.mockRestore();
+        await app.stop();
+    });
 });
