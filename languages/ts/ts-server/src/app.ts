@@ -36,6 +36,12 @@ import {
     Rpc,
 } from './rpc';
 import { ArriService } from './service';
+import {
+    type ArriWorker,
+    defineWorker,
+    type WorkerErrorHandler,
+    type WorkerHandler,
+} from './worker';
 
 export type DefinitionMap = Record<
     string,
@@ -51,9 +57,15 @@ export class ArriApp {
     private readonly _rpcDefinitionPath: string;
     private readonly _rpcRoutePrefix: string;
     appInfo: AppDefinition['info'];
-    private _procedures: Record<string, RpcDefinition> = {};
+    private readonly _procedures: Record<string, RpcDefinition> = {};
     private _definitions: DefinitionMap = {};
     private readonly _middlewares: Middleware[] = [];
+    private readonly _workers: ArriWorker[] = [];
+    private readonly _onStartHooks: Array<() => Promise<void> | void> = [];
+    private readonly _onStopHooks: Array<() => Promise<void> | void> = [];
+    private readonly _workerErrorHooks: WorkerErrorHandler[] = [];
+    private _abortController: AbortController | null = null;
+    private _isRunning = false;
     private readonly _onRequest: ArriOptions['onRequest'];
     private readonly _onAfterResponse: ArriOptions['onAfterResponse'];
     private readonly _onBeforeResponse: ArriOptions['onBeforeResponse'];
@@ -73,6 +85,15 @@ export class ArriApp {
         this._onError = opts.onError;
         this._onAfterResponse = opts.onAfterResponse;
         this._onBeforeResponse = opts.onBeforeResponse;
+        if (opts.onStart) {
+            this.onStart(opts.onStart);
+        }
+        if (opts.onStop) {
+            this.onStop(opts.onStop);
+        }
+        if (opts.onWorkerError) {
+            this.onWorkerError(opts.onWorkerError);
+        }
         this._heartbeatMs = opts.heartbeatMs ?? 20000;
         this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? '';
         this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? '__definition';
@@ -171,6 +192,9 @@ export class ArriApp {
                 this.rpc(rpc.name, rpc);
             }
             this.registerDefinitions(input.getDefinitions());
+            for (const worker of input.getWorkers()) {
+                this.registerWorker(worker);
+            }
             return;
         }
         this._middlewares.push(input);
@@ -256,6 +280,136 @@ export class ArriApp {
         }
         return appDef;
     }
+
+    registerWorker(worker: ArriWorker | WorkerHandler) {
+        const w = defineWorker(worker);
+        this._workers.push(w);
+        if (this._isRunning && this._abortController) {
+            void (async () => {
+                try {
+                    await w.start(this._abortController!.signal);
+                } catch (err) {
+                    await this._handleWorkerError(w, err);
+                }
+            })();
+        }
+    }
+
+    onStart(hook: () => Promise<void> | void) {
+        this._onStartHooks.push(hook);
+    }
+
+    onStop(hook: () => Promise<void> | void) {
+        this._onStopHooks.push(hook);
+    }
+
+    onWorkerError(hook: WorkerErrorHandler) {
+        this._workerErrorHooks.push(hook);
+    }
+
+    private async _handleWorkerError(worker: ArriWorker, error: unknown) {
+        let handled = false;
+        if (worker.onError) {
+            try {
+                await worker.onError(error);
+                handled = true;
+            } catch (hookErr) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `[Arri] Error in worker.onError hook for worker ${worker.name ?? 'unnamed'}:`,
+                    hookErr,
+                );
+            }
+        }
+        for (const hook of this._workerErrorHooks) {
+            try {
+                await hook(error, worker);
+                handled = true;
+            } catch (hookErr) {
+                // eslint-disable-next-line no-console
+                console.error(
+                    `[Arri] Error in onWorkerError hook for worker ${worker.name ?? 'unnamed'}:`,
+                    hookErr,
+                );
+            }
+        }
+        if (!handled) {
+            // eslint-disable-next-line no-console
+            console.error(
+                `[Arri] Unhandled error in worker ${worker.name ?? 'unnamed'}:`,
+                error,
+            );
+        }
+    }
+
+    async start(): Promise<void> {
+        if (this._isRunning) {
+            return;
+        }
+        this._isRunning = true;
+        const controller = new AbortController();
+        this._abortController = controller;
+
+        try {
+            for (const hook of this._onStartHooks) {
+                await hook();
+            }
+        } catch (err) {
+            this._isRunning = false;
+            controller.abort();
+            this._abortController = null;
+            throw err;
+        }
+
+        for (const worker of this._workers) {
+            void (async () => {
+                try {
+                    await worker.start(controller.signal);
+                } catch (err) {
+                    await this._handleWorkerError(worker, err);
+                }
+            })();
+        }
+    }
+
+    async stop(): Promise<void> {
+        if (!this._isRunning) {
+            return;
+        }
+        this._isRunning = false;
+        this._abortController?.abort();
+
+        const stopPromises = this._workers.map(async (worker) => {
+            try {
+                if (worker.stop) {
+                    await worker.stop();
+                }
+            } catch (err) {
+                await this._handleWorkerError(worker, err);
+            }
+        });
+
+        const hookPromises = this._onStopHooks.map(async (hook) => {
+            try {
+                await hook();
+            } catch (err) {
+                if (this._debug) {
+                    // eslint-disable-next-line no-console
+                    console.error('Error in onStop hook:', err);
+                }
+            }
+        });
+
+        await Promise.allSettled([...stopPromises, ...hookPromises]);
+    }
+
+    get workers(): ArriWorker[] {
+        return [...this._workers];
+    }
+
+    get isRunning(): boolean {
+        return this._isRunning;
+    }
 }
 
 export interface ArriOptions {
@@ -280,6 +434,9 @@ export interface ArriOptions {
         error: arriError,
         event: RequestHookEvent,
     ) => void | Promise<void>;
+    onStart?: () => Promise<void> | void;
+    onStop?: () => Promise<void> | void;
+    onWorkerError?: WorkerErrorHandler;
 }
 
 export interface RequestHookEvent extends Omit<H3Event, 'context'> {
