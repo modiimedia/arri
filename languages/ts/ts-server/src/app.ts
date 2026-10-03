@@ -36,6 +36,7 @@ import {
     Rpc,
 } from './rpc';
 import { ArriService } from './service';
+import { type ArriWorker, defineWorker, type WorkerHandler } from './worker';
 
 export type DefinitionMap = Record<
     string,
@@ -51,9 +52,14 @@ export class ArriApp {
     private readonly _rpcDefinitionPath: string;
     private readonly _rpcRoutePrefix: string;
     appInfo: AppDefinition['info'];
-    private _procedures: Record<string, RpcDefinition> = {};
+    private readonly _procedures: Record<string, RpcDefinition> = {};
     private _definitions: DefinitionMap = {};
     private readonly _middlewares: Middleware[] = [];
+    private readonly _workers: ArriWorker[] = [];
+    private readonly _onStartHooks: Array<() => Promise<void> | void> = [];
+    private readonly _onStopHooks: Array<() => Promise<void> | void> = [];
+    private _abortController: AbortController | null = null;
+    private _isRunning = false;
     private readonly _onRequest: ArriOptions['onRequest'];
     private readonly _onAfterResponse: ArriOptions['onAfterResponse'];
     private readonly _onBeforeResponse: ArriOptions['onBeforeResponse'];
@@ -73,6 +79,12 @@ export class ArriApp {
         this._onError = opts.onError;
         this._onAfterResponse = opts.onAfterResponse;
         this._onBeforeResponse = opts.onBeforeResponse;
+        if (opts.onStart) {
+            this.onStart(opts.onStart);
+        }
+        if (opts.onStop) {
+            this.onStop(opts.onStop);
+        }
         this._heartbeatMs = opts.heartbeatMs ?? 20000;
         this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? '';
         this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? '__definition';
@@ -171,6 +183,9 @@ export class ArriApp {
                 this.rpc(rpc.name, rpc);
             }
             this.registerDefinitions(input.getDefinitions());
+            for (const worker of input.getWorkers()) {
+                this.registerWorker(worker);
+            }
             return;
         }
         this._middlewares.push(input);
@@ -256,6 +271,115 @@ export class ArriApp {
         }
         return appDef;
     }
+
+    registerWorker(worker: ArriWorker | WorkerHandler) {
+        const w = defineWorker(worker);
+        this._workers.push(w);
+        if (this._isRunning && this._abortController) {
+            void (async () => {
+                try {
+                    await w.start(this._abortController!.signal);
+                } catch (err) {
+                    if (this._debug) {
+                        // eslint-disable-next-line no-console
+                        console.error(
+                            `Error in worker ${w.name ?? 'unnamed'}:`,
+                            err,
+                        );
+                    }
+                }
+            })();
+        }
+    }
+
+    onStart(hook: () => Promise<void> | void) {
+        this._onStartHooks.push(hook);
+    }
+
+    onStop(hook: () => Promise<void> | void) {
+        this._onStopHooks.push(hook);
+    }
+
+    async start(): Promise<void> {
+        if (this._isRunning) {
+            return;
+        }
+        this._isRunning = true;
+        const controller = new AbortController();
+        this._abortController = controller;
+
+        try {
+            for (const hook of this._onStartHooks) {
+                await hook();
+            }
+        } catch (err) {
+            this._isRunning = false;
+            controller.abort();
+            this._abortController = null;
+            throw err;
+        }
+
+        for (const worker of this._workers) {
+            void (async () => {
+                try {
+                    await worker.start(controller.signal);
+                } catch (err) {
+                    if (this._debug) {
+                        // eslint-disable-next-line no-console
+                        console.error(
+                            `Error in worker ${worker.name ?? 'unnamed'}:`,
+                            err,
+                        );
+                    }
+                }
+            })();
+        }
+    }
+
+    async stop(): Promise<void> {
+        if (!this._isRunning) {
+            return;
+        }
+        this._isRunning = false;
+        this._abortController?.abort();
+
+        const stopPromises = this._workers.map(async (worker) => {
+            try {
+                if (worker.stop) {
+                    await worker.stop();
+                }
+            } catch (err) {
+                if (this._debug) {
+                    // eslint-disable-next-line no-console
+                    console.error(
+                        `Error stopping worker ${worker.name ?? 'unnamed'}:`,
+                        err,
+                    );
+                }
+            }
+        });
+
+        const hookPromises = this._onStopHooks.map(async (hook) => {
+            try {
+                await hook();
+            } catch (err) {
+                if (this._debug) {
+                    // eslint-disable-next-line no-console
+                    console.error('Error in onStop hook:', err);
+                }
+            }
+        });
+
+        await Promise.allSettled([...stopPromises, ...hookPromises]);
+    }
+
+    get workers(): ArriWorker[] {
+        return [...this._workers];
+    }
+
+    get isRunning(): boolean {
+        return this._isRunning;
+    }
 }
 
 export interface ArriOptions {
@@ -280,6 +404,8 @@ export interface ArriOptions {
         error: arriError,
         event: RequestHookEvent,
     ) => void | Promise<void>;
+    onStart?: () => Promise<void> | void;
+    onStop?: () => Promise<void> | void;
 }
 
 export interface RequestHookEvent extends Omit<H3Event, 'context'> {

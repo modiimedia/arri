@@ -1,5 +1,6 @@
 import { DefinitionMap } from './app';
 import { HttpRpc, NamedHttpRpc, Rpc } from './rpc';
+import { type ArriWorker, defineWorker, type WorkerHandler } from './worker';
 
 export class ArriService {
     name: string;
@@ -12,9 +13,15 @@ export class ArriService {
 
     private readonly definitions: DefinitionMap = {};
 
+    private readonly workers: ArriWorker[] = [];
+
     rpc(name: string, procedure: Rpc<any, any, any>) {
         (procedure as any).name = `${this.name}.${name}`;
         this.procedures.push(procedure as any);
+    }
+
+    registerWorker(worker: ArriWorker | WorkerHandler) {
+        this.workers.push(defineWorker(worker));
     }
 
     registerDefinitions(models: DefinitionMap) {
@@ -29,6 +36,10 @@ export class ArriService {
 
     getDefinitions() {
         return this.definitions;
+    }
+
+    getWorkers() {
+        return this.workers;
     }
 }
 
