@@ -2611,6 +2611,18 @@ export type ShapeExternallyTagged =
       }
     | { circle: ShapeExternallyTaggedCircle };
 
+export function ShapeExternallyTaggedNew(): ShapeExternallyTagged {
+    return {
+        rectangle: ShapeExternallyTaggedRectangleNew(),
+    };
+}
+
+export function ShapeExternallyTaggedValidate(
+    input: unknown,
+): input is ShapeExternallyTagged {
+    // todo
+}
+
 export interface ShapeExternallyTaggedRectangle {
     width: number;
     height: number;
@@ -2618,6 +2630,13 @@ export interface ShapeExternallyTaggedRectangle {
 
 export interface ShapeExternallyTaggedCircle {
     radius: number;
+}
+
+export function ShapeExternallyTaggedRectangleNew(): ShapeExternallyTaggedRectangle {
+    return {
+        width: 0,
+        height: 0,
+    };
 }
 
 // TODO
