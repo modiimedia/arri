@@ -385,6 +385,74 @@ declare module '@arrirpc/server' {
 }
 ```
 
+### Background Workers & Lifecycle Hooks
+
+You can register background workers and lifecycle hooks on `ArriApp`. Workers and lifecycle hooks do not run when the app is imported during codegen (`arri build`); they only start when the web server begins listening.
+
+```ts
+import { ArriApp, defineWorker } from '@arrirpc/server';
+
+const app = new ArriApp({
+    onStart() {
+        console.log('Server is starting up');
+    },
+    onStop() {
+        console.log('Server is shutting down');
+    },
+    onWorkerError(err, worker) {
+        logger.error({ err, worker: worker.name }, 'Worker error');
+    },
+});
+
+// Registering a worker with a continuous loop and AbortSignal
+app.registerWorker(
+    defineWorker({
+        name: 'queue-consumer',
+        async start(signal) {
+            while (!signal.aborted) {
+                const job = await queue.pop({ signal });
+                if (job) await processJob(job);
+            }
+        },
+        async stop() {
+            // Optional: cleanup or drain
+        },
+    }),
+);
+
+// Registering a third-party worker (e.g. BullMQ)
+app.registerWorker(
+    defineWorker({
+        name: 'bullmq-emails',
+        async start() {
+            worker = new Worker('emails', async (job) => {
+                await sendEmail(job.data);
+            });
+        },
+        async stop() {
+            await worker.close();
+        },
+    }),
+);
+
+// Function shorthand
+app.registerWorker(async (signal) => {
+    while (!signal.aborted) {
+        await heartbeat();
+        await delay(5000, signal);
+    }
+});
+```
+
+Services can also register workers:
+
+```ts
+const authService = new ArriService('auth');
+authService.registerWorker(tokenCleanupWorker);
+
+app.use(authService); // Workers will be registered on the app
+```
+
 ### Adding Client Generators
 
 ```ts

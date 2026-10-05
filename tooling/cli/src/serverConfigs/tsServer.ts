@@ -261,7 +261,7 @@ const require = topLevelCreateRequire(import.meta.url);`,
     });
 }
 
-async function createServerEntryFile(config: Required<TsServerConfig>) {
+export async function createServerEntryFile(config: Required<TsServerConfig>) {
     if (config.serverEntry) {
         const buildEntry = path.resolve(
             config.rootDir,
@@ -293,6 +293,16 @@ const require = topLevelCreateRequire(import.meta.url);`,
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split('.');
     appImportParts.pop();
+    const virtualEntry = createServerEntryTemplate(config);
+    await fs.writeFile(
+        path.resolve(config.rootDir, '.output', OUT_SERVER_ENTRY),
+        virtualEntry,
+    );
+}
+
+export function createServerEntryTemplate(
+    config: Required<TsServerConfig>,
+): string {
     let httpsString = ``;
     if (config.https === true) {
         httpsString = `https: true,`;
@@ -305,28 +315,40 @@ const require = topLevelCreateRequire(import.meta.url);`,
                 : 'undefined'
         }},`;
     }
-    const virtualEntry = `import { toNodeListener } from '@arrirpc/server';
+    return `import { toNodeListener } from '@arrirpc/server';
 import { listen } from '@joshmossas/listhen';
 import app from './${OUT_APP_FILE}';
 
-void listen(toNodeListener(app.h3App), {
-    port: process.env.PORT ?? ${config.port},
-    public: true,
-    ws: {
-        resolve(info) {
-            if (app.h3App.websocket?.resolve) {
-                return app.h3App.websocket.resolve(info);
+async function startServer() {
+    const listener = await listen(toNodeListener(app.h3App), {
+        port: process.env.PORT ?? ${config.port},
+        public: true,
+        ws: {
+            resolve(info) {
+                if (app.h3App.websocket?.resolve) {
+                    return app.h3App.websocket.resolve(info);
+                }
+                return app.h3App.websocket?.hooks ?? app.h3App.handler?.__websocket__ ?? {};
             }
-            return app.h3App.websocket?.hooks ?? app.h3App.handler?.__websocket__ ?? {};
-        }
-    },
-    http2: ${config.http2 ?? false},
-    ${httpsString}
-});`;
-    await fs.writeFile(
-        path.resolve(config.rootDir, '.output', OUT_SERVER_ENTRY),
-        virtualEntry,
-    );
+        },
+        http2: ${config.http2 ?? false},
+        ${httpsString}
+    });
+    await app.start?.();
+
+    let isShuttingDown = false;
+    const handleShutdown = async () => {
+        if (isShuttingDown) return;
+        isShuttingDown = true;
+        await app.stop?.();
+        await listener.close();
+        process.exit(0);
+    };
+    process.on('SIGTERM', handleShutdown);
+    process.on('SIGINT', handleShutdown);
+}
+
+void startServer();`;
 }
 
 // async function createCodegenEntryFile(config: Required<TsServerConfig>) {
@@ -375,6 +397,8 @@ async function bundleFilesContext(config: Required<TsServerConfig>) {
 type ArriApp = {
     h3App: App;
     getAppDefinition(): AppDefinition;
+    start?(): Promise<void> | void;
+    stop?(): Promise<void> | void;
 };
 
 ///// DEV SERVER ////////
@@ -423,6 +447,7 @@ async function createDevServer(config: Required<TsServerConfig>) {
             `Serving unencrypted traffic from port ${secondaryListener.address.port}`,
         );
     }
+    let currentApp: ArriApp | undefined;
     async function reload(): Promise<AppDefinition> {
         let importPath = path.resolve(
             config.rootDir,
@@ -433,18 +458,29 @@ async function createDevServer(config: Required<TsServerConfig>) {
         if (isOnWindows()) {
             importPath = createWindowsCompatibleImportPath(importPath);
         }
+        if (currentApp) {
+            await currentApp.stop?.();
+        }
         const appEntry = (await import(importPath)).default as ArriApp;
+        currentApp = appEntry;
         dynamicHandler.set(fromNodeMiddleware(appEntry.h3App.handler as any));
         ws = appEntry.h3App.websocket;
+        await appEntry.start?.();
         return appEntry.getAppDefinition();
     }
-    await reload();
+    const initialAppDef = await reload();
     return {
         h3App: app,
         listener,
         secondaryListener,
         reload,
         ws,
+        close: async () => {
+            if (currentApp) {
+                await currentApp.stop?.();
+            }
+        },
+        currentAppDef: initialAppDef,
     };
 }
 
@@ -459,7 +495,7 @@ export async function startDevServer(
     const context = await bundleFilesContext(config);
     await context.rebuild();
     const devServer = await createDevServer(config);
-    let appDef = await devServer.reload();
+    let appDef = devServer.currentAppDef;
     let appDefStr = JSON.stringify(appDef);
     if (generators.length) {
         logger.info(`Running generators...`);
@@ -468,10 +504,15 @@ export async function startDevServer(
         logger.warn(`No generators specified in config. Skipping codegen.`);
     }
     const cleanExit = async () => {
+        await devServer.close();
         process.exit();
     };
     process.on('exit', async () => {
-        await Promise.allSettled([fileWatcher?.close(), context.dispose()]);
+        await Promise.allSettled([
+            fileWatcher?.close(),
+            context.dispose(),
+            devServer.close(),
+        ]);
     });
     process.on('SIGINT', cleanExit);
     process.on('SIGTERM', cleanExit);
