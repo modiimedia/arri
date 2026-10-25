@@ -1633,7 +1633,7 @@ export function UnionToJsonString(input: Union): string {
 }
 export function UnionToUrlSearchParams(input: Union): URLSearchParams {
     const params = new URLSearchParams();
-    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
 export function UnionToUrlSearchParamsString(input: Union): string {

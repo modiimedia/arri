@@ -251,9 +251,12 @@ export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedType
     return ${prefixedTypeName}ToUrlSearchParams(input).toString();
 }
 `;
-    if (context.features.validatorObj) {
-        result.content += `
-${context.discriminatorParent && context.discriminatorValue ? '' : 'export '}const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
+    if (
+        context.features.validatorObj &&
+        !context.discriminatorKey &&
+        !context.discriminatorValue
+    ) {
+        result.content += `export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,
     ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''} 
     ${context.features.cloneFn ? `clone: ${prefixedTypeName}Clone,` : ''}

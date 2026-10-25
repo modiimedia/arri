@@ -186,12 +186,12 @@ ${subTypes
     result.content += `
 export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
     const params = new URLSearchParams();
-    console.warn('[WARNING] Cannot serialize unions ot query string.');
+    console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }`;
     result.content += `
 export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedTypeName}): string {
-    return UnionToUrlSearchParams(input).toString();
+    return ${prefixedTypeName}ToUrlSearchParams(input).toString();
 }`;
     if (context.features.validatorObj) {
         result.content += `
