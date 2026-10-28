@@ -45,9 +45,14 @@ describe('parsing test suites', () => {
             try {
                 Compiled = compile(suite.schema, true);
             } catch (_) {
-                debugCodeOutput({ parse: { log: true } });
+                debugCodeOutput({
+                    parse: ({ code, schema }) => {
+                        console.log('code = ', code);
+                        console.log('schema = ', schema);
+                    },
+                });
                 compile(suite.schema);
-                debugCodeOutput({ parse: { log: false } });
+                debugCodeOutput({});
                 return;
             }
             for (let i = 0; i < suite.goodInputs.length; i++) {

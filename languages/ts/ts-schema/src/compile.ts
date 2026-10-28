@@ -1,6 +1,5 @@
 import { isSchemaFormEnum, isSchemaFormType, Schema } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import { writeFileSync } from 'fs';
 
 import { createStandardSchemaProperty } from './adapters';
 import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
@@ -95,37 +94,38 @@ type CompiledValidatorWithAdapters<
 > = CompiledValidator<TSchema, TIncludeCode> &
     StandardSchemaV1<InferType<TSchema>>;
 
-type DebugArg = {
-    log?: boolean;
-    file?: string;
-};
+export type DebugCodeOutputFn = (output: {
+    /**
+     * Generated function body. The input variable is named `input`.
+     */
+    code: string;
+    schema: Schema;
+}) => void;
 
-const debug = {
-    parse: {
-        log: false,
-        file: '',
-    },
-    serialize: {
-        log: false,
-        file: '',
-    },
-    validate: {
-        log: false,
-        file: '',
-    },
-};
+const debug: {
+    parse?: DebugCodeOutputFn;
+    serialize?: DebugCodeOutputFn;
+    validate?: DebugCodeOutputFn;
+} = {};
 
+/**
+ * Register callbacks that receive the generated code whenever a parser, serializer, or validator is compiled.
+ * Each call replaces all previously registered callbacks. Call with `{}` to disable.
+ *
+ * @example
+ * debugCodeOutput({
+ *     parse: ({ code }) => console.log(code),
+ *     validate: ({ code }) => fs.writeFileSync('validate.js', `function validate(input) {\n${code}\n}`),
+ * });
+ */
 export function debugCodeOutput(args: {
-    parse?: DebugArg;
-    serialize?: DebugArg;
-    validate?: DebugArg;
+    parse?: DebugCodeOutputFn;
+    serialize?: DebugCodeOutputFn;
+    validate?: DebugCodeOutputFn;
 }) {
-    debug.parse.log = args.parse?.log ?? debug.parse.log;
-    debug.parse.file = args.parse?.file ?? debug.parse.file;
-    debug.serialize.log = args.serialize?.log ?? debug.serialize.log;
-    debug.serialize.file = args.serialize?.file ?? debug.serialize.file;
-    debug.validate.log = args.validate?.log ?? debug.validate.log;
-    debug.validate.file = args.validate?.file ?? debug.validate.file;
+    debug.parse = args.parse;
+    debug.serialize = args.serialize;
+    debug.validate = args.validate;
 }
 
 /**
@@ -139,20 +139,7 @@ export function compile<
     includeCompiledCode?: TIncludeCompiled,
 ): CompiledValidatorWithAdapters<TSchema, TIncludeCompiled> {
     const validateCode = getSchemaValidationCode('input', schema);
-    if (debug.validate.log) {
-        // eslint-disable-next-line no-console
-        console.log(`code = ${validateCode}`);
-        // eslint-disable-next-line no-console
-        console.log(`schema = ${schema}`);
-    }
-    if (debug.validate.file.length) {
-        writeFileSync(
-            debug.validate.file,
-            `function validate(input) {
-            ${validateCode}    
-        }`,
-        );
-    }
+    debug.validate?.({ code: validateCode, schema });
     const parser = getCompiledParser('input', schema, false);
     const parserFn = parser.fn;
     const coercer = getCompiledParser('input', schema, true);
@@ -302,18 +289,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     shouldCoerce: boolean,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaDecodingCode(input, schema, shouldCoerce);
-    if (debug.parse.log) {
-        // eslint-disable-next-line no-console
-        console.log('code = ', code);
-        // eslint-disable-next-line no-console
-        console.log('schema = ', schema);
-    }
-    if (debug.parse.file.length > 0) {
-        writeFileSync(
-            debug.parse.file,
-            'function parse(input) {\n' + code + '}',
-        );
-    }
+    debug.parse?.({ code, schema });
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'float32':
@@ -1018,20 +994,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
     schema: TSchema,
 ): { fn: (input: InferType<TSchema>) => string; code: string } {
     const code = getSchemaSerializationCode('input', schema);
-    if (debug.serialize.log) {
-        // eslint-disable-next-line no-console
-        console.log(`code = ${code}`);
-        // eslint-disable-next-line no-console
-        console.log(`schema = ${schema}`);
-    }
-    if (debug.serialize.file.length) {
-        writeFileSync(
-            debug.serialize.file,
-            `function serialize(input) {
-            ${code}    
-        }`,
-        );
-    }
+    debug.serialize?.({ code, schema });
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'string':
