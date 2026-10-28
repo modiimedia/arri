@@ -1727,26 +1727,24 @@ export function LegacyDiscriminatorCToUrlSearchParamsString(
     return LegacyDiscriminatorCToUrlSearchParams(input).toString();
 }
 
-export type ShapeExternallyTagged =
-    | { type: `rectangle`; value: ShapeExternallyTaggedRectangle }
-    | { type: `circle`; value: ShapeExternallyTaggedCircle };
-export function ShapeExternallyTaggedNew(): ShapeExternallyTagged {
+export type ShapeExternal =
+    | { type: `rectangle`; value: ShapeExternalRectangle }
+    | { type: `circle`; value: ShapeExternalCircle };
+export function ShapeExternalNew(): ShapeExternal {
     return {
         type: `rectangle`,
-        value: ShapeExternallyTaggedRectangleNew(),
+        value: ShapeExternalRectangleNew(),
     };
 }
-export function ShapeExternallyTaggedFromJson(
+export function ShapeExternalFromJson(
     input: Record<string, unknown>,
-): ShapeExternallyTagged {
+): ShapeExternal {
     if (`rectangle` in input) {
-        let __value__: ShapeExternallyTaggedRectangle;
+        let __value__: ShapeExternalRectangle;
         if (isObject(input[`rectangle`])) {
-            __value__ = ShapeExternallyTaggedRectangleFromJson(
-                input[`rectangle`],
-            );
+            __value__ = ShapeExternalRectangleFromJson(input[`rectangle`]);
         } else {
-            __value__ = ShapeExternallyTaggedRectangleNew();
+            __value__ = ShapeExternalRectangleNew();
         }
         return {
             type: `rectangle`,
@@ -1754,33 +1752,29 @@ export function ShapeExternallyTaggedFromJson(
         };
     }
     if (`circle` in input) {
-        let __value__: ShapeExternallyTaggedCircle;
+        let __value__: ShapeExternalCircle;
         if (isObject(input[`circle`])) {
-            __value__ = ShapeExternallyTaggedCircleFromJson(input[`circle`]);
+            __value__ = ShapeExternalCircleFromJson(input[`circle`]);
         } else {
-            __value__ = ShapeExternallyTaggedCircleNew();
+            __value__ = ShapeExternalCircleNew();
         }
         return {
             type: `circle`,
             value: __value__,
         };
     }
-    return ShapeExternallyTaggedNew();
+    return ShapeExternalNew();
 }
-export function ShapeExternallyTaggedFromJsonString(
-    input: string,
-): ShapeExternallyTagged {
-    return ShapeExternallyTaggedFromJson(JSON.parse(input));
+export function ShapeExternalFromJsonString(input: string): ShapeExternal {
+    return ShapeExternalFromJson(JSON.parse(input));
 }
-export function ShapeExternallyTaggedToJsonString(
-    input: ShapeExternallyTagged,
-): string {
+export function ShapeExternalToJsonString(input: ShapeExternal): string {
     switch (input.type) {
         case `rectangle`: {
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ShapeExternallyTaggedRectangleToJsonString(input.value);
+            json += ShapeExternalRectangleToJsonString(input.value);
             json += '}';
             return json;
         }
@@ -1788,7 +1782,7 @@ export function ShapeExternallyTaggedToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ShapeExternallyTaggedCircleToJsonString(input.value);
+            json += ShapeExternalCircleToJsonString(input.value);
             json += '}';
             return json;
         }
@@ -1798,32 +1792,32 @@ export function ShapeExternallyTaggedToJsonString(
         }
     }
 }
-export function ShapeExternallyTaggedToUrlSearchParams(
-    input: ShapeExternallyTagged,
+export function ShapeExternalToUrlSearchParams(
+    input: ShapeExternal,
 ): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function ShapeExternallyTaggedToUrlSearchParamsString(
-    input: ShapeExternallyTagged,
+export function ShapeExternalToUrlSearchParamsString(
+    input: ShapeExternal,
 ): string {
-    return ShapeExternallyTaggedToUrlSearchParams(input).toString();
+    return ShapeExternalToUrlSearchParams(input).toString();
 }
 
-export interface ShapeExternallyTaggedRectangle {
+export interface ShapeExternalRectangle {
     width: number;
     height: number;
 }
-export function ShapeExternallyTaggedRectangleNew(): ShapeExternallyTaggedRectangle {
+export function ShapeExternalRectangleNew(): ShapeExternalRectangle {
     return {
         width: 0,
         height: 0,
     };
 }
-export function ShapeExternallyTaggedRectangleFromJson(
+export function ShapeExternalRectangleFromJson(
     input: Record<string, unknown>,
-): ShapeExternallyTaggedRectangle {
+): ShapeExternalRectangle {
     let _width: number;
     _width = parseNumberFloat(input.width);
     let _height: number;
@@ -1833,13 +1827,13 @@ export function ShapeExternallyTaggedRectangleFromJson(
         height: _height,
     };
 }
-export function ShapeExternallyTaggedRectangleFromJsonString(
+export function ShapeExternalRectangleFromJsonString(
     input: string,
-): ShapeExternallyTaggedRectangle {
-    return ShapeExternallyTaggedRectangleFromJson(JSON.parse(input));
+): ShapeExternalRectangle {
+    return ShapeExternalRectangleFromJson(JSON.parse(input));
 }
-export function ShapeExternallyTaggedRectangleToJsonString(
-    input: ShapeExternallyTaggedRectangle,
+export function ShapeExternalRectangleToJsonString(
+    input: ShapeExternalRectangle,
 ): string {
     let json = '{';
     json += '"width":';
@@ -1849,44 +1843,44 @@ export function ShapeExternallyTaggedRectangleToJsonString(
     json += '}';
     return json;
 }
-export function ShapeExternallyTaggedRectangleToUrlSearchParams(
-    input: ShapeExternallyTaggedRectangle,
+export function ShapeExternalRectangleToUrlSearchParams(
+    input: ShapeExternalRectangle,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('width', `${input.width}`);
     params.set('height', `${input.height}`);
     return params;
 }
-export function ShapeExternallyTaggedRectangleToUrlSearchParamsString(
-    input: ShapeExternallyTaggedRectangle,
+export function ShapeExternalRectangleToUrlSearchParamsString(
+    input: ShapeExternalRectangle,
 ): string {
-    return ShapeExternallyTaggedRectangleToUrlSearchParams(input).toString();
+    return ShapeExternalRectangleToUrlSearchParams(input).toString();
 }
 
-export interface ShapeExternallyTaggedCircle {
+export interface ShapeExternalCircle {
     radius: number;
 }
-export function ShapeExternallyTaggedCircleNew(): ShapeExternallyTaggedCircle {
+export function ShapeExternalCircleNew(): ShapeExternalCircle {
     return {
         radius: 0,
     };
 }
-export function ShapeExternallyTaggedCircleFromJson(
+export function ShapeExternalCircleFromJson(
     input: Record<string, unknown>,
-): ShapeExternallyTaggedCircle {
+): ShapeExternalCircle {
     let _radius: number;
     _radius = parseNumberFloat(input.radius);
     return {
         radius: _radius,
     };
 }
-export function ShapeExternallyTaggedCircleFromJsonString(
+export function ShapeExternalCircleFromJsonString(
     input: string,
-): ShapeExternallyTaggedCircle {
-    return ShapeExternallyTaggedCircleFromJson(JSON.parse(input));
+): ShapeExternalCircle {
+    return ShapeExternalCircleFromJson(JSON.parse(input));
 }
-export function ShapeExternallyTaggedCircleToJsonString(
-    input: ShapeExternallyTaggedCircle,
+export function ShapeExternalCircleToJsonString(
+    input: ShapeExternalCircle,
 ): string {
     let json = '{';
     json += '"radius":';
@@ -1894,54 +1888,48 @@ export function ShapeExternallyTaggedCircleToJsonString(
     json += '}';
     return json;
 }
-export function ShapeExternallyTaggedCircleToUrlSearchParams(
-    input: ShapeExternallyTaggedCircle,
+export function ShapeExternalCircleToUrlSearchParams(
+    input: ShapeExternalCircle,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('radius', `${input.radius}`);
     return params;
 }
-export function ShapeExternallyTaggedCircleToUrlSearchParamsString(
-    input: ShapeExternallyTaggedCircle,
+export function ShapeExternalCircleToUrlSearchParamsString(
+    input: ShapeExternalCircle,
 ): string {
-    return ShapeExternallyTaggedCircleToUrlSearchParams(input).toString();
+    return ShapeExternalCircleToUrlSearchParams(input).toString();
 }
 
-export type ShapeInternallyTagged =
-    | ShapeInternallyTaggedRectangle
-    | ShapeInternallyTaggedCircle;
-export function ShapeInternallyTaggedNew(): ShapeInternallyTagged {
-    return ShapeInternallyTaggedRectangleNew();
+export type ShapeInternal = ShapeInternalRectangle | ShapeInternalCircle;
+export function ShapeInternalNew(): ShapeInternal {
+    return ShapeInternalRectangleNew();
 }
-export function ShapeInternallyTaggedFromJson(
+export function ShapeInternalFromJson(
     input: Record<string, unknown>,
-): ShapeInternallyTagged {
+): ShapeInternal {
     switch (input[`shape`]) {
         case `rectangle`: {
-            return ShapeInternallyTaggedRectangleFromJson(input);
+            return ShapeInternalRectangleFromJson(input);
         }
         case `circle`: {
-            return ShapeInternallyTaggedCircleFromJson(input);
+            return ShapeInternalCircleFromJson(input);
         }
         default: {
-            return ShapeInternallyTaggedRectangleNew();
+            return ShapeInternalRectangleNew();
         }
     }
 }
-export function ShapeInternallyTaggedFromJsonString(
-    input: string,
-): ShapeInternallyTagged {
-    return ShapeInternallyTaggedFromJson(JSON.parse(input));
+export function ShapeInternalFromJsonString(input: string): ShapeInternal {
+    return ShapeInternalFromJson(JSON.parse(input));
 }
-export function ShapeInternallyTaggedToJsonString(
-    input: ShapeInternallyTagged,
-): string {
+export function ShapeInternalToJsonString(input: ShapeInternal): string {
     switch (input[`shape`]) {
         case `rectangle`: {
-            return ShapeInternallyTaggedRectangleToJsonString(input);
+            return ShapeInternalRectangleToJsonString(input);
         }
         case `circle`: {
-            return ShapeInternallyTaggedCircleToJsonString(input);
+            return ShapeInternalCircleToJsonString(input);
         }
         default: {
             input satisfies never;
@@ -1949,15 +1937,15 @@ export function ShapeInternallyTaggedToJsonString(
         }
     }
 }
-export function ShapeInternallyTaggedToUrlSearchParams(
-    input: ShapeInternallyTagged,
+export function ShapeInternalToUrlSearchParams(
+    input: ShapeInternal,
 ): URLSearchParams {
     switch (input[`shape`]) {
         case `rectangle`: {
-            return ShapeInternallyTaggedRectangleToUrlSearchParams(input);
+            return ShapeInternalRectangleToUrlSearchParams(input);
         }
         case `circle`: {
-            return ShapeInternallyTaggedCircleToUrlSearchParams(input);
+            return ShapeInternalCircleToUrlSearchParams(input);
         }
         default: {
             input satisfies never;
@@ -1965,27 +1953,27 @@ export function ShapeInternallyTaggedToUrlSearchParams(
         }
     }
 }
-export function ShapeInternallyTaggedToUrlSearchParamsString(
-    input: ShapeInternallyTagged,
+export function ShapeInternalToUrlSearchParamsString(
+    input: ShapeInternal,
 ): string {
-    return ShapeInternallyTaggedToUrlSearchParams(input).toString();
+    return ShapeInternalToUrlSearchParams(input).toString();
 }
 
-export interface ShapeInternallyTaggedRectangle {
+export interface ShapeInternalRectangle {
     shape: `rectangle`;
     width: number;
     height: number;
 }
-export function ShapeInternallyTaggedRectangleNew(): ShapeInternallyTaggedRectangle {
+export function ShapeInternalRectangleNew(): ShapeInternalRectangle {
     return {
         shape: `rectangle`,
         width: 0,
         height: 0,
     };
 }
-export function ShapeInternallyTaggedRectangleFromJson(
+export function ShapeInternalRectangleFromJson(
     input: Record<string, unknown>,
-): ShapeInternallyTaggedRectangle {
+): ShapeInternalRectangle {
     const _shape = `rectangle`;
     let _width: number;
     _width = parseNumberFloat(input.width);
@@ -1997,13 +1985,13 @@ export function ShapeInternallyTaggedRectangleFromJson(
         height: _height,
     };
 }
-export function ShapeInternallyTaggedRectangleFromJsonString(
+export function ShapeInternalRectangleFromJsonString(
     input: string,
-): ShapeInternallyTaggedRectangle {
-    return ShapeInternallyTaggedRectangleFromJson(JSON.parse(input));
+): ShapeInternalRectangle {
+    return ShapeInternalRectangleFromJson(JSON.parse(input));
 }
-export function ShapeInternallyTaggedRectangleToJsonString(
-    input: ShapeInternallyTaggedRectangle,
+export function ShapeInternalRectangleToJsonString(
+    input: ShapeInternalRectangle,
 ): string {
     let json = '{';
     json += '"shape":"rectangle"';
@@ -2014,8 +2002,8 @@ export function ShapeInternallyTaggedRectangleToJsonString(
     json += '}';
     return json;
 }
-export function ShapeInternallyTaggedRectangleToUrlSearchParams(
-    input: ShapeInternallyTaggedRectangle,
+export function ShapeInternalRectangleToUrlSearchParams(
+    input: ShapeInternalRectangle,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('shape', `rectangle`);
@@ -2023,25 +2011,25 @@ export function ShapeInternallyTaggedRectangleToUrlSearchParams(
     params.set('height', `${input.height}`);
     return params;
 }
-export function ShapeInternallyTaggedRectangleToUrlSearchParamsString(
-    input: ShapeInternallyTaggedRectangle,
+export function ShapeInternalRectangleToUrlSearchParamsString(
+    input: ShapeInternalRectangle,
 ): string {
-    return ShapeInternallyTaggedRectangleToUrlSearchParams(input).toString();
+    return ShapeInternalRectangleToUrlSearchParams(input).toString();
 }
 
-export interface ShapeInternallyTaggedCircle {
+export interface ShapeInternalCircle {
     shape: `circle`;
     radius: number;
 }
-export function ShapeInternallyTaggedCircleNew(): ShapeInternallyTaggedCircle {
+export function ShapeInternalCircleNew(): ShapeInternalCircle {
     return {
         shape: `circle`,
         radius: 0,
     };
 }
-export function ShapeInternallyTaggedCircleFromJson(
+export function ShapeInternalCircleFromJson(
     input: Record<string, unknown>,
-): ShapeInternallyTaggedCircle {
+): ShapeInternalCircle {
     const _shape = `circle`;
     let _radius: number;
     _radius = parseNumberFloat(input.radius);
@@ -2051,13 +2039,13 @@ export function ShapeInternallyTaggedCircleFromJson(
         radius: _radius,
     };
 }
-export function ShapeInternallyTaggedCircleFromJsonString(
+export function ShapeInternalCircleFromJsonString(
     input: string,
-): ShapeInternallyTaggedCircle {
-    return ShapeInternallyTaggedCircleFromJson(JSON.parse(input));
+): ShapeInternalCircle {
+    return ShapeInternalCircleFromJson(JSON.parse(input));
 }
-export function ShapeInternallyTaggedCircleToJsonString(
-    input: ShapeInternallyTaggedCircle,
+export function ShapeInternalCircleToJsonString(
+    input: ShapeInternalCircle,
 ): string {
     let json = '{';
     json += '"shape":"circle"';
@@ -2066,45 +2054,43 @@ export function ShapeInternallyTaggedCircleToJsonString(
     json += '}';
     return json;
 }
-export function ShapeInternallyTaggedCircleToUrlSearchParams(
-    input: ShapeInternallyTaggedCircle,
+export function ShapeInternalCircleToUrlSearchParams(
+    input: ShapeInternalCircle,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('shape', `circle`);
     params.set('radius', `${input.radius}`);
     return params;
 }
-export function ShapeInternallyTaggedCircleToUrlSearchParamsString(
-    input: ShapeInternallyTaggedCircle,
+export function ShapeInternalCircleToUrlSearchParamsString(
+    input: ShapeInternalCircle,
 ): string {
-    return ShapeInternallyTaggedCircleToUrlSearchParams(input).toString();
+    return ShapeInternalCircleToUrlSearchParams(input).toString();
 }
 
-export type ShapeInternallyTaggedWithValueKey =
-    | { kind: `rectangle`; data: ShapeInternallyTaggedWithValueKeyRectangle }
-    | { kind: `circle`; data: ShapeInternallyTaggedWithValueKeyCircle };
+export type ShapeAdjacent =
+    | { kind: `rectangle`; data: ShapeAdjacentRectangle }
+    | { kind: `circle`; data: ShapeAdjacentCircle };
 
-export function ShapeInternallyTaggedWithValueKeyNew(): ShapeInternallyTaggedWithValueKey {
+export function ShapeAdjacentNew(): ShapeAdjacent {
     return {
         kind: `rectangle`,
-        data: ShapeInternallyTaggedWithValueKeyRectangleNew(),
+        data: ShapeAdjacentRectangleNew(),
     };
 }
-export function ShapeInternallyTaggedWithValueKeyFromJson(
+export function ShapeAdjacentFromJson(
     input: Record<string, unknown>,
-): ShapeInternallyTaggedWithValueKey {
+): ShapeAdjacent {
     if (typeof input.kind !== 'string') {
-        return ShapeInternallyTaggedWithValueKeyNew();
+        return ShapeAdjacentNew();
     }
     switch (input.kind) {
         case `rectangle`: {
-            let __value__: ShapeInternallyTaggedWithValueKeyRectangle;
+            let __value__: ShapeAdjacentRectangle;
             if (isObject(input.data)) {
-                __value__ = ShapeInternallyTaggedWithValueKeyRectangleFromJson(
-                    input.data,
-                );
+                __value__ = ShapeAdjacentRectangleFromJson(input.data);
             } else {
-                __value__ = ShapeInternallyTaggedWithValueKeyRectangleNew();
+                __value__ = ShapeAdjacentRectangleNew();
             }
             return {
                 kind: `rectangle`,
@@ -2112,13 +2098,11 @@ export function ShapeInternallyTaggedWithValueKeyFromJson(
             };
         }
         case `circle`: {
-            let __value__: ShapeInternallyTaggedWithValueKeyCircle;
+            let __value__: ShapeAdjacentCircle;
             if (isObject(input.data)) {
-                __value__ = ShapeInternallyTaggedWithValueKeyCircleFromJson(
-                    input.data,
-                );
+                __value__ = ShapeAdjacentCircleFromJson(input.data);
             } else {
-                __value__ = ShapeInternallyTaggedWithValueKeyCircleNew();
+                __value__ = ShapeAdjacentCircleNew();
             }
             return {
                 kind: `circle`,
@@ -2126,26 +2110,20 @@ export function ShapeInternallyTaggedWithValueKeyFromJson(
             };
         }
         default: {
-            return ShapeInternallyTaggedWithValueKeyNew();
+            return ShapeAdjacentNew();
         }
     }
 }
-export function ShapeInternallyTaggedWithValueKeyFromJsonString(
-    input: string,
-): ShapeInternallyTaggedWithValueKey {
-    return ShapeInternallyTaggedWithValueKeyFromJson(JSON.parse(input));
+export function ShapeAdjacentFromJsonString(input: string): ShapeAdjacent {
+    return ShapeAdjacentFromJson(JSON.parse(input));
 }
-export function ShapeInternallyTaggedWithValueKeyToJsonString(
-    input: ShapeInternallyTaggedWithValueKey,
-): string {
+export function ShapeAdjacentToJsonString(input: ShapeAdjacent): string {
     switch (input.kind) {
         case `rectangle`: {
             let json = '{';
             json += '"kind":"rectangle"';
             json += ',"data":';
-            json += ShapeInternallyTaggedWithValueKeyRectangleToJsonString(
-                input.data,
-            );
+            json += ShapeAdjacentRectangleToJsonString(input.data);
             json += '}';
             return json;
         }
@@ -2153,9 +2131,7 @@ export function ShapeInternallyTaggedWithValueKeyToJsonString(
             let json = '{';
             json += '"kind":"circle"';
             json += ',"data":';
-            json += ShapeInternallyTaggedWithValueKeyCircleToJsonString(
-                input.data,
-            );
+            json += ShapeAdjacentCircleToJsonString(input.data);
             json += '}';
             return json;
         }
@@ -2165,32 +2141,32 @@ export function ShapeInternallyTaggedWithValueKeyToJsonString(
         }
     }
 }
-export function ShapeInternallyTaggedWithValueKeyToUrlSearchParams(
-    input: ShapeInternallyTaggedWithValueKey,
+export function ShapeAdjacentToUrlSearchParams(
+    input: ShapeAdjacent,
 ): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function ShapeInternallyTaggedWithValueKeyToUrlSearchParamsString(
-    input: ShapeInternallyTaggedWithValueKey,
+export function ShapeAdjacentToUrlSearchParamsString(
+    input: ShapeAdjacent,
 ): string {
-    return ShapeInternallyTaggedWithValueKeyToUrlSearchParams(input).toString();
+    return ShapeAdjacentToUrlSearchParams(input).toString();
 }
 
-export interface ShapeInternallyTaggedWithValueKeyRectangle {
+export interface ShapeAdjacentRectangle {
     width: number;
     height: number;
 }
-export function ShapeInternallyTaggedWithValueKeyRectangleNew(): ShapeInternallyTaggedWithValueKeyRectangle {
+export function ShapeAdjacentRectangleNew(): ShapeAdjacentRectangle {
     return {
         width: 0,
         height: 0,
     };
 }
-export function ShapeInternallyTaggedWithValueKeyRectangleFromJson(
+export function ShapeAdjacentRectangleFromJson(
     input: Record<string, unknown>,
-): ShapeInternallyTaggedWithValueKeyRectangle {
+): ShapeAdjacentRectangle {
     let _width: number;
     _width = parseNumberFloat(input.width);
     let _height: number;
@@ -2200,15 +2176,13 @@ export function ShapeInternallyTaggedWithValueKeyRectangleFromJson(
         height: _height,
     };
 }
-export function ShapeInternallyTaggedWithValueKeyRectangleFromJsonString(
+export function ShapeAdjacentRectangleFromJsonString(
     input: string,
-): ShapeInternallyTaggedWithValueKeyRectangle {
-    return ShapeInternallyTaggedWithValueKeyRectangleFromJson(
-        JSON.parse(input),
-    );
+): ShapeAdjacentRectangle {
+    return ShapeAdjacentRectangleFromJson(JSON.parse(input));
 }
-export function ShapeInternallyTaggedWithValueKeyRectangleToJsonString(
-    input: ShapeInternallyTaggedWithValueKeyRectangle,
+export function ShapeAdjacentRectangleToJsonString(
+    input: ShapeAdjacentRectangle,
 ): string {
     let json = '{';
     json += '"width":';
@@ -2218,46 +2192,44 @@ export function ShapeInternallyTaggedWithValueKeyRectangleToJsonString(
     json += '}';
     return json;
 }
-export function ShapeInternallyTaggedWithValueKeyRectangleToUrlSearchParams(
-    input: ShapeInternallyTaggedWithValueKeyRectangle,
+export function ShapeAdjacentRectangleToUrlSearchParams(
+    input: ShapeAdjacentRectangle,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('width', `${input.width}`);
     params.set('height', `${input.height}`);
     return params;
 }
-export function ShapeInternallyTaggedWithValueKeyRectangleToUrlSearchParamsString(
-    input: ShapeInternallyTaggedWithValueKeyRectangle,
+export function ShapeAdjacentRectangleToUrlSearchParamsString(
+    input: ShapeAdjacentRectangle,
 ): string {
-    return ShapeInternallyTaggedWithValueKeyRectangleToUrlSearchParams(
-        input,
-    ).toString();
+    return ShapeAdjacentRectangleToUrlSearchParams(input).toString();
 }
 
-export interface ShapeInternallyTaggedWithValueKeyCircle {
+export interface ShapeAdjacentCircle {
     radius: number;
 }
-export function ShapeInternallyTaggedWithValueKeyCircleNew(): ShapeInternallyTaggedWithValueKeyCircle {
+export function ShapeAdjacentCircleNew(): ShapeAdjacentCircle {
     return {
         radius: 0,
     };
 }
-export function ShapeInternallyTaggedWithValueKeyCircleFromJson(
+export function ShapeAdjacentCircleFromJson(
     input: Record<string, unknown>,
-): ShapeInternallyTaggedWithValueKeyCircle {
+): ShapeAdjacentCircle {
     let _radius: number;
     _radius = parseNumberFloat(input.radius);
     return {
         radius: _radius,
     };
 }
-export function ShapeInternallyTaggedWithValueKeyCircleFromJsonString(
+export function ShapeAdjacentCircleFromJsonString(
     input: string,
-): ShapeInternallyTaggedWithValueKeyCircle {
-    return ShapeInternallyTaggedWithValueKeyCircleFromJson(JSON.parse(input));
+): ShapeAdjacentCircle {
+    return ShapeAdjacentCircleFromJson(JSON.parse(input));
 }
-export function ShapeInternallyTaggedWithValueKeyCircleToJsonString(
-    input: ShapeInternallyTaggedWithValueKeyCircle,
+export function ShapeAdjacentCircleToJsonString(
+    input: ShapeAdjacentCircle,
 ): string {
     let json = '{';
     json += '"radius":';
@@ -2265,17 +2237,15 @@ export function ShapeInternallyTaggedWithValueKeyCircleToJsonString(
     json += '}';
     return json;
 }
-export function ShapeInternallyTaggedWithValueKeyCircleToUrlSearchParams(
-    input: ShapeInternallyTaggedWithValueKeyCircle,
+export function ShapeAdjacentCircleToUrlSearchParams(
+    input: ShapeAdjacentCircle,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('radius', `${input.radius}`);
     return params;
 }
-export function ShapeInternallyTaggedWithValueKeyCircleToUrlSearchParamsString(
-    input: ShapeInternallyTaggedWithValueKeyCircle,
+export function ShapeAdjacentCircleToUrlSearchParamsString(
+    input: ShapeAdjacentCircle,
 ): string {
-    return ShapeInternallyTaggedWithValueKeyCircleToUrlSearchParams(
-        input,
-    ).toString();
+    return ShapeAdjacentCircleToUrlSearchParams(input).toString();
 }

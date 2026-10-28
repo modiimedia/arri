@@ -45,7 +45,7 @@ const Union = a.union('Union', {
     'nullable-timestamp': a.nullable(a.timestamp()),
 });
 type Union = a.infer<typeof Union>;
-const ShapeExternallyTagged = a.union('ShapeExternallyTagged', {
+const ShapeExternal = a.union('ShapeExternal', {
     rectangle: a.object({
         width: a.float64(),
         height: a.float64(),
@@ -54,9 +54,9 @@ const ShapeExternallyTagged = a.union('ShapeExternallyTagged', {
         radius: a.float64(),
     }),
 });
-type ShapeExternallyTagged = a.infer<typeof ShapeExternallyTagged>;
-const ShapeInternallyTagged = a.union(
-    'ShapeInternallyTagged',
+type ShapeExternal = a.infer<typeof ShapeExternal>;
+const ShapeInternal = a.union(
+    'ShapeInternal',
     {
         rectangle: a.object({
             width: a.float64(),
@@ -68,9 +68,9 @@ const ShapeInternallyTagged = a.union(
     },
     { tagKey: 'shape' },
 );
-type ShapeInternallyTagged = a.infer<typeof ShapeInternallyTagged>;
-const ShapeInternallyTaggedWithValueKey = a.union(
-    'ShapeInternallyTaggedWithValueKey',
+type ShapeInternal = a.infer<typeof ShapeInternal>;
+const ShapeAdjacent = a.union(
+    'ShapeAdjacent',
     {
         rectangle: a.object({
             width: a.float64(),
@@ -85,9 +85,7 @@ const ShapeInternallyTaggedWithValueKey = a.union(
         valueKey: 'data',
     },
 );
-type ShapeInternallyTaggedWithValueKey = a.infer<
-    typeof ShapeInternallyTaggedWithValueKey
->;
+type ShapeAdjacent = a.infer<typeof ShapeAdjacent>;
 
 const EmptyObject = a.object({});
 
@@ -243,9 +241,9 @@ const def = createAppDefinition({
         Union,
         RecursiveObject,
         LegacyDiscriminator,
-        ShapeExternallyTagged,
-        ShapeInternallyTagged,
-        ShapeInternallyTaggedWithValueKey,
+        ShapeExternal,
+        ShapeInternal,
+        ShapeAdjacent,
     },
 });
 
@@ -526,22 +524,22 @@ async function main() {
 
     // same shape but tagged 3 different ways
     files.push({
-        filename: 'ShapeExternallyTagged.json',
-        content: a.serializeUnsafe(ShapeExternallyTagged, {
+        filename: 'ShapeExternal.json',
+        content: a.serializeUnsafe(ShapeExternal, {
             rectangle: { width: 50, height: 25 },
         }),
     });
     files.push({
-        filename: 'ShapeInternallyTagged.json',
-        content: a.serializeUnsafe(ShapeInternallyTagged, {
+        filename: 'ShapeInternal.json',
+        content: a.serializeUnsafe(ShapeInternal, {
             shape: 'rectangle',
             width: 50,
             height: 25,
         }),
     });
     files.push({
-        filename: 'ShapeInternallyTaggedWithValueKey.json',
-        content: a.serializeUnsafe(ShapeInternallyTaggedWithValueKey, {
+        filename: 'ShapeAdjacent.json',
+        content: a.serializeUnsafe(ShapeAdjacent, {
             kind: 'rectangle',
             data: {
                 width: 50,

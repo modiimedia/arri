@@ -279,19 +279,19 @@ Below are all of the contents of the test JSON files in an easier to read format
 }
 ```
 
-## ShapeExternallyTagged.json
+## ShapeExternal.json
 
 ```json
 { "rectangle": { "width": 50, "height": 25 } }
 ```
 
-## ShapeInternallyTagged.json
+## ShapeInternal.json
 
 ```json
 { "shape": "rectangle", "width": 50, "height": 25 }
 ```
 
-## ShapeInternallyTaggedWithValueKey.json
+## ShapeAdjacent.json
 
 ```json
 { "kind": "rectangle", "data": { "width": 50, "height": 25 } }

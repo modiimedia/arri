@@ -326,7 +326,7 @@
       },
       "metadata": { "id": "LegacyDiscriminator" }
     },
-    "ShapeExternallyTagged": {
+    "ShapeExternal": {
       "union": {
         "rectangle": {
           "properties": {
@@ -340,9 +340,9 @@
           "metadata": {}
         }
       },
-      "metadata": { "id": "ShapeExternallyTagged" }
+      "metadata": { "id": "ShapeExternal" }
     },
-    "ShapeInternallyTagged": {
+    "ShapeInternal": {
       "tagKey": "shape",
       "union": {
         "rectangle": {
@@ -357,9 +357,9 @@
           "metadata": {}
         }
       },
-      "metadata": { "id": "ShapeInternallyTagged" }
+      "metadata": { "id": "ShapeInternal" }
     },
-    "ShapeInternallyTaggedWithValueKey": {
+    "ShapeAdjacent": {
       "tagKey": "kind",
       "valueKey": "data",
       "union": {
@@ -375,7 +375,7 @@
           "metadata": {}
         }
       },
-      "metadata": { "id": "ShapeInternallyTaggedWithValueKey" }
+      "metadata": { "id": "ShapeAdjacent" }
     }
   }
 }

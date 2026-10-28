@@ -26,15 +26,15 @@ import {
     RecursiveObject,
     RecursiveObjectFromJsonString,
     RecursiveObjectToJsonString,
-    ShapeExternallyTagged,
-    ShapeExternallyTaggedFromJsonString,
-    ShapeExternallyTaggedToJsonString,
-    ShapeInternallyTagged,
-    ShapeInternallyTaggedFromJsonString,
-    ShapeInternallyTaggedToJsonString,
-    ShapeInternallyTaggedWithValueKey,
-    ShapeInternallyTaggedWithValueKeyFromJsonString,
-    ShapeInternallyTaggedWithValueKeyToJsonString,
+    ShapeAdjacent,
+    ShapeAdjacentFromJsonString,
+    ShapeAdjacentToJsonString,
+    ShapeExternal,
+    ShapeExternalFromJsonString,
+    ShapeExternalToJsonString,
+    ShapeInternal,
+    ShapeInternalFromJsonString,
+    ShapeInternalToJsonString,
 } from './referenceClientMinimal';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -296,58 +296,52 @@ describe('ObjectWithNullableFields', () => {
     });
 });
 
-describe('ShapeExternallyTagged', () => {
-    const targetValue: ShapeExternallyTagged = {
+describe('ShapeExternal', () => {
+    const targetValue: ShapeExternal = {
         type: 'rectangle',
         value: { width: 50, height: 25 },
     };
-    const jsonReference = testFile('ShapeExternallyTagged.json');
+    const jsonReference = testFile('ShapeExternal.json');
     test('JSON Parsing', () => {
-        expect(
-            ShapeExternallyTaggedFromJsonString(jsonReference),
-        ).toStrictEqual(targetValue);
+        expect(ShapeExternalFromJsonString(jsonReference)).toStrictEqual(
+            targetValue,
+        );
     });
     test('JSON Output', () => {
-        expect(ShapeExternallyTaggedToJsonString(targetValue)).toBe(
-            jsonReference,
-        );
+        expect(ShapeExternalToJsonString(targetValue)).toBe(jsonReference);
     });
 });
 
-describe('ShapeInternallyTagged', () => {
-    const targetValue: ShapeInternallyTagged = {
+describe('ShapeInternal', () => {
+    const targetValue: ShapeInternal = {
         shape: 'rectangle',
         width: 50,
         height: 25,
     };
-    const jsonReference = testFile('ShapeInternallyTagged.json');
+    const jsonReference = testFile('ShapeInternal.json');
     test('JSON Parsing', () => {
-        expect(
-            ShapeInternallyTaggedFromJsonString(jsonReference),
-        ).toStrictEqual(targetValue);
+        expect(ShapeInternalFromJsonString(jsonReference)).toStrictEqual(
+            targetValue,
+        );
     });
     test('JSON Output', () => {
-        expect(ShapeInternallyTaggedToJsonString(targetValue)).toBe(
-            jsonReference,
-        );
+        expect(ShapeInternalToJsonString(targetValue)).toBe(jsonReference);
     });
 });
 
-describe('ShapeInternallyTaggedWithValueKey', () => {
-    const targetValue: ShapeInternallyTaggedWithValueKey = {
+describe('ShapeAdjacent', () => {
+    const targetValue: ShapeAdjacent = {
         kind: 'rectangle',
         data: { width: 50, height: 25 },
     };
-    const jsonReference = testFile('ShapeInternallyTaggedWithValueKey.json');
+    const jsonReference = testFile('ShapeAdjacent.json');
     test('JSON Parsing', () => {
-        expect(
-            ShapeInternallyTaggedWithValueKeyFromJsonString(jsonReference),
-        ).toStrictEqual(targetValue);
+        expect(ShapeAdjacentFromJsonString(jsonReference)).toStrictEqual(
+            targetValue,
+        );
     });
     test('JSON Output', () => {
-        expect(ShapeInternallyTaggedWithValueKeyToJsonString(targetValue)).toBe(
-            jsonReference,
-        );
+        expect(ShapeAdjacentToJsonString(targetValue)).toBe(jsonReference);
     });
 });
 
