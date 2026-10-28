@@ -475,7 +475,7 @@ ${subTypes
         case \`${sub.key}\`: {
             let json = '{';
             json += '"${schema.tagKey}":"${sub.key}"';
-            json += '"${schema.valueKey}":';
+            json += ',"${schema.valueKey}":';
             ${sub.data.toJsonTemplate(`input.${schema.valueKey}`, 'json', '')}
             json += '}';
             return json;

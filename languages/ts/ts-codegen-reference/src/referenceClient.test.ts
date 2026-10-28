@@ -10,6 +10,9 @@ import {
     $$ObjectWithNullableFields,
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
+    $$ShapeExternallyTagged,
+    $$ShapeInternallyTagged,
+    $$ShapeInternallyTaggedWithValueKey,
     $$Union,
     Book,
     BookClone,
@@ -21,6 +24,9 @@ import {
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
+    ShapeExternallyTagged,
+    ShapeInternallyTagged,
+    ShapeInternallyTaggedWithValueKey,
     Union,
 } from './referenceClient';
 
@@ -363,6 +369,115 @@ describe('Union', () => {
             }
             expect(cloned).not.toStrictEqual(arrayValue);
         });
+    });
+});
+
+describe('ShapeExternallyTagged', () => {
+    const targetValue: ShapeExternallyTagged = {
+        type: 'rectangle',
+        value: { width: 50, height: 25 },
+    };
+    const jsonReference = testFile('ShapeExternallyTagged.json');
+    test('JSON Parsing', () => {
+        expect(
+            $$ShapeExternallyTagged.fromJsonString(jsonReference),
+        ).toStrictEqual(targetValue);
+    });
+    test('JSON Output', () => {
+        expect($$ShapeExternallyTagged.toJsonString(targetValue)).toBe(
+            jsonReference,
+        );
+    });
+    test('Validation', () => {
+        expect($$ShapeExternallyTagged.validate(targetValue)).toBe(true);
+        expect(
+            $$ShapeExternallyTagged.validate({
+                type: 'triangle',
+                value: { width: 50, height: 25 },
+            }),
+        ).toBe(false);
+    });
+    test('Cloning', () => {
+        const cloned = $$ShapeExternallyTagged.clone(targetValue);
+        expect(cloned).toStrictEqual(targetValue);
+        if (cloned.type === 'rectangle') {
+            cloned.value.width = 100;
+        }
+        expect(cloned).not.toStrictEqual(targetValue);
+    });
+});
+
+describe('ShapeInternallyTagged', () => {
+    const targetValue: ShapeInternallyTagged = {
+        shape: 'rectangle',
+        width: 50,
+        height: 25,
+    };
+    const jsonReference = testFile('ShapeInternallyTagged.json');
+    test('JSON Parsing', () => {
+        expect(
+            $$ShapeInternallyTagged.fromJsonString(jsonReference),
+        ).toStrictEqual(targetValue);
+    });
+    test('JSON Output', () => {
+        expect($$ShapeInternallyTagged.toJsonString(targetValue)).toBe(
+            jsonReference,
+        );
+    });
+    test('Validation', () => {
+        expect($$ShapeInternallyTagged.validate(targetValue)).toBe(true);
+        expect(
+            $$ShapeInternallyTagged.validate({
+                shape: 'triangle',
+                width: 50,
+                height: 25,
+            }),
+        ).toBe(false);
+    });
+    test('Cloning', () => {
+        const cloned = $$ShapeInternallyTagged.clone(targetValue);
+        expect(cloned).toStrictEqual(targetValue);
+        if (cloned.shape === 'rectangle') {
+            cloned.width = 100;
+        }
+        expect(cloned).not.toStrictEqual(targetValue);
+    });
+});
+
+describe('ShapeInternallyTaggedWithValueKey', () => {
+    const targetValue: ShapeInternallyTaggedWithValueKey = {
+        kind: 'rectangle',
+        data: { width: 50, height: 25 },
+    };
+    const jsonReference = testFile('ShapeInternallyTaggedWithValueKey.json');
+    test('JSON Parsing', () => {
+        expect(
+            $$ShapeInternallyTaggedWithValueKey.fromJsonString(jsonReference),
+        ).toStrictEqual(targetValue);
+    });
+    test('JSON Output', () => {
+        expect(
+            $$ShapeInternallyTaggedWithValueKey.toJsonString(targetValue),
+        ).toBe(jsonReference);
+    });
+    test('Validation', () => {
+        expect($$ShapeInternallyTaggedWithValueKey.validate(targetValue)).toBe(
+            true,
+        );
+        expect(
+            $$ShapeInternallyTaggedWithValueKey.validate({
+                kind: 'triangle',
+                data: { width: 50, height: 25 },
+            }),
+        ).toBe(false);
+    });
+    test('Cloning', () => {
+        const cloned = $$ShapeInternallyTaggedWithValueKey.clone(targetValue);
+        expect(cloned).toStrictEqual(targetValue);
+        if (cloned.kind === 'rectangle') {
+            cloned.data.width = 100;
+        }
+        expect(cloned).not.toStrictEqual(targetValue);
     });
 });
 

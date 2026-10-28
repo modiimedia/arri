@@ -26,6 +26,15 @@ import {
     RecursiveObject,
     RecursiveObjectFromJsonString,
     RecursiveObjectToJsonString,
+    ShapeExternallyTagged,
+    ShapeExternallyTaggedFromJsonString,
+    ShapeExternallyTaggedToJsonString,
+    ShapeInternallyTagged,
+    ShapeInternallyTaggedFromJsonString,
+    ShapeInternallyTaggedToJsonString,
+    ShapeInternallyTaggedWithValueKey,
+    ShapeInternallyTaggedWithValueKeyFromJsonString,
+    ShapeInternallyTaggedWithValueKeyToJsonString,
 } from './referenceClientMinimal';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -283,6 +292,61 @@ describe('ObjectWithNullableFields', () => {
         ).toEqual(allNullJsonReference);
         expect(ObjectWithNullableFieldsToJsonString(noNullTargetValue)).toEqual(
             noNullJsonReference,
+        );
+    });
+});
+
+describe('ShapeExternallyTagged', () => {
+    const targetValue: ShapeExternallyTagged = {
+        type: 'rectangle',
+        value: { width: 50, height: 25 },
+    };
+    const jsonReference = testFile('ShapeExternallyTagged.json');
+    test('JSON Parsing', () => {
+        expect(
+            ShapeExternallyTaggedFromJsonString(jsonReference),
+        ).toStrictEqual(targetValue);
+    });
+    test('JSON Output', () => {
+        expect(ShapeExternallyTaggedToJsonString(targetValue)).toBe(
+            jsonReference,
+        );
+    });
+});
+
+describe('ShapeInternallyTagged', () => {
+    const targetValue: ShapeInternallyTagged = {
+        shape: 'rectangle',
+        width: 50,
+        height: 25,
+    };
+    const jsonReference = testFile('ShapeInternallyTagged.json');
+    test('JSON Parsing', () => {
+        expect(
+            ShapeInternallyTaggedFromJsonString(jsonReference),
+        ).toStrictEqual(targetValue);
+    });
+    test('JSON Output', () => {
+        expect(ShapeInternallyTaggedToJsonString(targetValue)).toBe(
+            jsonReference,
+        );
+    });
+});
+
+describe('ShapeInternallyTaggedWithValueKey', () => {
+    const targetValue: ShapeInternallyTaggedWithValueKey = {
+        kind: 'rectangle',
+        data: { width: 50, height: 25 },
+    };
+    const jsonReference = testFile('ShapeInternallyTaggedWithValueKey.json');
+    test('JSON Parsing', () => {
+        expect(
+            ShapeInternallyTaggedWithValueKeyFromJsonString(jsonReference),
+        ).toStrictEqual(targetValue);
+    });
+    test('JSON Output', () => {
+        expect(ShapeInternallyTaggedWithValueKeyToJsonString(targetValue)).toBe(
+            jsonReference,
         );
     });
 });

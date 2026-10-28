@@ -3242,7 +3242,7 @@ export function ShapeInternallyTaggedWithValueKeyToJsonString(
         case `rectangle`: {
             let json = '{';
             json += '"kind":"rectangle"';
-            json += '"data":';
+            json += ',"data":';
             json += ShapeInternallyTaggedWithValueKeyRectangleToJsonString(
                 input.data,
             );
@@ -3252,7 +3252,7 @@ export function ShapeInternallyTaggedWithValueKeyToJsonString(
         case `circle`: {
             let json = '{';
             json += '"kind":"circle"';
-            json += '"data":';
+            json += ',"data":';
             json += ShapeInternallyTaggedWithValueKeyCircleToJsonString(
                 input.data,
             );
