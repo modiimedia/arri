@@ -140,12 +140,12 @@ describe('a.object()', () => {
         };
         const goodJsonInput = JSON.stringify(goodInput);
         const goodInputResult = a.parse(UserSchema, goodInput);
-        expect(goodInputResult.success);
+        expect(goodInputResult.success).toBe(true);
         if (goodInputResult.success) {
             expect(goodInputResult.value).toStrictEqual(goodInput);
         }
         const goodJsonResult = a.parse(UserSchema, goodJsonInput);
-        expect(goodJsonResult.success);
+        expect(goodJsonResult.success).toBe(true);
         if (goodJsonResult.success) {
             expect(goodJsonResult.value).toStrictEqual(goodInput);
         }
@@ -196,12 +196,12 @@ describe('a.object()', () => {
         };
         const goodJsonInput = JSON.stringify(goodInput);
         const result = a.parse(PostSchema, goodInput);
-        expect(result.success);
+        expect(result.success).toBe(true);
         if (result.success) {
             expect(result.value).toStrictEqual(goodInput);
         }
         const jsonResult = a.parse(PostSchema, goodJsonInput);
-        expect(jsonResult.success);
+        expect(jsonResult.success).toBe(true);
         if (jsonResult.success) {
             expect(jsonResult.value).toStrictEqual(goodInput);
         }
@@ -364,7 +364,7 @@ describe('a.object()', () => {
         });
         it('omits the ~standard key from json', () => {
             const result = JSON.stringify(ObjectWithEveryType);
-            expect(result.includes('"~standard":'));
+            expect(result.includes('"~standard":')).toBe(false);
         });
     });
 });
@@ -398,7 +398,7 @@ describe('a.object() -> Coersion', () => {
         if (!simpleResult.success) {
             console.error(simpleResult.errors);
         }
-        expect(simpleResult.success);
+        expect(simpleResult.success).toBe(true);
         if (simpleResult.success) {
             expect(simpleResult.value).toStrictEqual({
                 limit: 100.5,
@@ -421,7 +421,7 @@ describe('a.object() -> Coersion', () => {
         if (!complexResult.success) {
             console.error(complexResult.errors);
         }
-        expect(complexResult.success);
+        expect(complexResult.success).toBe(true);
         if (complexResult.success) {
             expect(complexResult.value).toStrictEqual({
                 limit: 100.5,
@@ -451,7 +451,7 @@ describe('a.pick()', () => {
             email: 'johndoe@gmail.com',
         };
         const result = a.parse(UserSubsetSchema, input);
-        expect(result.success);
+        expect(result.success).toBe(true);
         if (result.success) {
             expect(result.value).toStrictEqual({
                 name: 'john doe',
@@ -460,15 +460,12 @@ describe('a.pick()', () => {
         }
     });
     it("doesn't parse bad input", () => {
-        const input: UserSchema = {
-            id: '123115',
-            name: 'John Doe',
+        const input = {
+            name: 1,
             email: 'johndoe@gmail.com',
-            isAdmin: false,
-            createdAt: undefined,
         };
         const result = a.parse(UserSubsetSchema, input);
-        expect(!result.success);
+        expect(result.success).toBe(false);
     });
     it('produces ATD object schema with picked properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
@@ -522,7 +519,7 @@ describe('a.pick()', () => {
         });
         it('omits the ~standard key from json', () => {
             const result = JSON.stringify(PickedSchema);
-            expect(result.includes('"~standard":'));
+            expect(result.includes('"~standard":')).toBe(false);
         });
     });
 });
@@ -550,7 +547,7 @@ describe('a.omit()', () => {
         if (!goodResult.success) {
             console.error(goodResult.errors);
         }
-        expect(goodResult.success);
+        expect(goodResult.success).toBe(true);
     });
     it("doesn't parse bad input", () => {
         const unomittedInput: UserSchema = {
@@ -670,19 +667,19 @@ describe('a.partial()', () => {
     it('validates good input', () => {
         const input1: PartialObject = {};
         const result1 = a.validate(PartialObject, input1);
-        expect(result1);
+        expect(result1).toBe(true);
         const input2: PartialObject = {
             date: new Date(),
             stringEnum: 'a',
         };
         const result2 = a.validate(PartialObject, input2);
-        expect(result2);
+        expect(result2).toBe(true);
     });
 
     it('parses good input', () => {
         const input1: PartialObject = {};
         const result1 = a.parse(PartialObject, input1);
-        expect(result1.success);
+        expect(result1.success).toBe(true);
         if (result1.success) {
             expect(result1.value).toStrictEqual(input1);
         }
@@ -712,13 +709,13 @@ describe('a.partial()', () => {
             stringEnum: '1',
         };
         const result1 = a.parse(PartialObject, input1);
-        expect(!result1.success);
+        expect(result1.success).toBe(false);
 
         const input2 = {
-            foo: '',
+            count: 'one',
         };
         const result2 = a.parse(PartialObject, input2);
-        expect(!result2.success);
+        expect(result2.success).toBe(false);
     });
 
     it('produces jdt object schema will all optional properties', () => {
@@ -795,7 +792,7 @@ describe('a.partial()', () => {
         });
         it('omits the ~standard key from json', () => {
             const result = JSON.stringify(PartialSchema);
-            expect(result.includes('"~standard":'));
+            expect(result.includes('"~standard":')).toBe(false);
         });
     });
 });

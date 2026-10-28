@@ -30,20 +30,22 @@ test('Type Inference', () => {
 
 describe('Parsing', () => {
     it('accepts good input', () => {
-        expect(a.parse(NumberRecordSchema, { '1': 1, '2': 2 }).success);
+        expect(a.parse(NumberRecordSchema, { '1': 1, '2': 2 }).success).toBe(
+            true,
+        );
         expect(
             a.parse(StringRecordSchema, {
                 '1': '1',
                 '2': '2',
                 [`A song titled "Song"`]: `A song titled "Song"`,
             }).success,
-        );
+        ).toBe(true);
         expect(
             a.parse(ObjectRecordSchema, {
                 a: { id: '12345', type: 'notification' },
                 b: { id: '12345', type: 'alert' },
             }).success,
-        );
+        ).toBe(true);
         expect(
             a.parse(
                 ObjectRecordSchema,
@@ -51,7 +53,7 @@ describe('Parsing', () => {
                     a: { id: '12345', type: 'notification' },
                 }),
             ).success,
-        );
+        ).toBe(true);
     });
     it('rejects bad input', () => {
         expect(

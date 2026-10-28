@@ -827,19 +827,19 @@ describe('union helpers', () => {
         switch (key) {
             case 'foo':
                 assertType<string>(value.message);
-                expect(true, 'should hit this branch');
+                expect(true, 'should hit this branch').toBe(true);
                 break;
             case 'bar':
                 assertType<boolean[]>(value);
-                expect(false, 'should not hit this branch');
+                expect(false, 'should not hit this branch').toBe(true);
                 break;
             case 'baz':
                 assertType<Date | null>(value);
-                expect(false, 'should not hit this branch');
+                expect(false, 'should not hit this branch').toBe(true);
                 break;
             default:
                 key satisfies never;
-                expect(false, 'should not hit this branch');
+                expect(false, 'should not hit this branch').toBe(true);
                 break;
         }
     });

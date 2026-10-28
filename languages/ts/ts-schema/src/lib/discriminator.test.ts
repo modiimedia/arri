@@ -71,8 +71,9 @@ describe('Parsing', () => {
         const missingFieldsInput = {
             id: '1234531',
         };
-        expect(!parse(additionalFieldInput));
-        expect(!parse(missingFieldsInput));
+        // objects aren't strict by default so additional fields are allowed
+        expect(parse(additionalFieldInput)).toBe(true);
+        expect(parse(missingFieldsInput)).toBe(false);
     });
 });
 

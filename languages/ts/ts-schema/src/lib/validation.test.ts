@@ -12,13 +12,16 @@ for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
     test(key, () => {
         for (const input of suite.goodInputs) {
-            expect(a.validate(suite.schema, input));
+            expect(a.validate(suite.schema, input)).toBe(true);
             const json = a.serializeUnsafe(suite.schema, input);
-            expect(isEqual(a.parseUnsafe(suite.schema, json), input));
+            // undefined fields and unknown keys get stripped so compare against the parsed input
+            expect(a.parseUnsafe(suite.schema, json)).toStrictEqual(
+                a.parseUnsafe(suite.schema, input),
+            );
         }
         for (const input of suite.badInputs) {
-            expect(!a.validate(suite.schema, input));
-            expect(!a.parse(suite.schema, input).success);
+            expect(a.validate(suite.schema, input)).toBe(false);
+            expect(a.parse(suite.schema, input).success).toBe(false);
         }
     });
 }
@@ -37,11 +40,11 @@ describe('parsing test suites', () => {
                 }
                 expect(result.success).toBe(true);
                 if (result.success) {
-                    expect(isEqual(result.value, expectedResult));
+                    expect(isEqual(result.value, expectedResult)).toBe(true);
                 }
             }
             for (const input of suite.badInputs) {
-                expect(!a.parse(suite.schema, input).success);
+                expect(a.parse(suite.schema, input).success).toBe(false);
             }
         });
     }
