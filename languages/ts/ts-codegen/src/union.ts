@@ -1,4 +1,4 @@
-import { SchemaFormUnion } from '@arrirpc/codegen-utils';
+import { Schema, SchemaFormUnion } from '@arrirpc/codegen-utils';
 
 import { tsTypeFromSchema } from './_index';
 import {
@@ -17,7 +17,6 @@ export function tsTaggedUnionFromSchema(
     const defaultValue = schema.isNullable
         ? 'null'
         : `${prefixedTypeName}New()`;
-
     const result: TsProperty = {
         typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
@@ -63,6 +62,9 @@ export function tsTaggedUnionFromSchema(
         content: '',
     };
     if (context.generatedTypes.includes(typeName)) return result;
+    const needsInjectedTagField =
+        (schema.tagKey?.length ?? 0) > 0 &&
+        (schema.valueKey?.length ?? 0) === 0;
     const subTypes: { data: TsProperty; key: string }[] = [];
     for (const key of Object.keys(schema.union)) {
         const subSchema = schema.union[key]!;
@@ -72,9 +74,11 @@ export function tsTaggedUnionFromSchema(
             generatedTypes: context.generatedTypes,
             instancePath: `${context.instancePath}/${key}`,
             schemaPath: `${context.schemaPath}/union/${key}`,
-            discriminatorParent: '',
-            discriminatorKey: '',
-            discriminatorValue: '',
+            discriminatorParent: needsInjectedTagField ? typeName : '',
+            discriminatorKey: needsInjectedTagField
+                ? (schema.tagKey ?? '')
+                : '',
+            discriminatorValue: needsInjectedTagField ? key : '',
             versionNumber: context.versionNumber,
             useRpcTypes: context.useRpcTypes,
             rpcGenerators: context.rpcGenerators,
@@ -82,8 +86,44 @@ export function tsTaggedUnionFromSchema(
         });
         subTypes.push({ data: subType, key: key });
     }
-    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => `{ type: \`${type.key}\`; value: ${type.data.typeName} }`).join(' |')};`;
-    result.content += `
+    if (schema.tagKey && schema.valueKey) {
+        result.content = _internallyTaggedWithValueKeyContent(
+            typeName,
+            prefixedTypeName,
+            subTypes,
+            schema,
+            context,
+        );
+    } else if (schema.tagKey) {
+        result.content = _internallyTaggedContent(
+            typeName,
+            prefixedTypeName,
+            subTypes,
+
+            schema,
+            context,
+        );
+    } else {
+        result.content = _externallyTaggedContent(
+            typeName,
+            prefixedTypeName,
+            subTypes,
+            schema,
+            context,
+        );
+    }
+    return result;
+}
+
+function _externallyTaggedContent(
+    typeName: string,
+    prefixedTypeName: string,
+    subTypes: { data: TsProperty; key: string }[],
+    schema: SchemaFormUnion,
+    context: CodegenContext,
+): string {
+    let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => `{ type: \`${type.key}\`; value: ${type.data.typeName} }`).join(' |')};`;
+    content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
     return {
         type: \`${subTypes[0]?.key}\`,
@@ -91,7 +131,7 @@ export function ${prefixedTypeName}New(): ${prefixedTypeName} {
     };
 }`;
     if (context.features.validateFn) {
-        result.content += `
+        content += `
 export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixedTypeName} {
     if (!isObject(input)) {
         return false;
@@ -115,7 +155,7 @@ ${subTypes
     }
 
     if (context.features.cloneFn) {
-        result.content += `
+        content += `
 export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
     switch (input.type) {
 ${subTypes
@@ -138,7 +178,7 @@ ${subTypes
 }`;
     }
 
-    result.content += `
+    content += `
 export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
 ${subTypes
     .map(
@@ -156,11 +196,11 @@ ${subTypes
     return ${prefixedTypeName}New();
 }`;
 
-    result.content += `
+    content += `
 export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedTypeName} {
     return ${prefixedTypeName}FromJson(JSON.parse(input));
 }`;
-    result.content += `
+    content += `
 export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
     switch (input.type) {
 ${subTypes
@@ -183,18 +223,18 @@ ${subTypes
         }
     }
 }`;
-    result.content += `
+    content += `
 export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }`;
-    result.content += `
+    content += `
 export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedTypeName}): string {
     return ${prefixedTypeName}ToUrlSearchParams(input).toString();
 }`;
     if (context.features.validatorObj) {
-        result.content += `
+        content += `
 export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,
     ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''}
@@ -206,9 +246,275 @@ export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTyp
     toUrlSearchParamsString: ${prefixedTypeName}ToUrlSearchParamsString,
 }`;
     }
-    result.content += `
+    content += `
 ${subTypes.map((type) => type.data.content).join('\n')}
 `;
     context.generatedTypes.push(typeName);
-    return result;
+    return content;
+}
+
+function _internallyTaggedContent(
+    typeName: string,
+    prefixedTypeName: string,
+    subTypes: { data: TsProperty; key: string }[],
+    schema: SchemaFormUnion,
+    context: CodegenContext,
+): string {
+    let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};`;
+    content += `
+export function ${prefixedTypeName}New(): ${prefixedTypeName} {
+    return ${subTypes[0]?.data.typeName}New();
+}`;
+    if (context.features.validateFn) {
+        content += `
+export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixedTypeName} {
+    return (
+        ${subTypes.map((value) => `${value.data.typeName}Validate(input)`).join(' || ')}
+    );
+}`;
+    }
+
+    if (context.features.cloneFn) {
+        content += `
+export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
+    switch (input.${schema.tagKey}) {
+${subTypes
+    .map(
+        (sub) => `
+        case \`${sub.key}\`: {
+            let __value__: ${sub.data.typeName};
+            ${sub.data.cloneTemplate('input', '__value__')};
+            return __value__;
+        }`,
+    )
+    .join('\n')}
+        default: {
+            input satisfies never;
+            throw new Error(\`Unknown union variant: \${(input as any).${schema.tagKey}}\`);
+        }
+   }
+}`;
+    }
+
+    content += `
+export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
+    switch (input[\`${schema.tagKey}\`]) {
+${subTypes
+    .map(
+        (sub) => `       case \`${sub.key}\`: {
+            return ${sub.data.typeName}FromJson(input);
+        }`,
+    )
+    .join('\n')}
+        default: {
+            return ${subTypes[0]?.data.typeName}New();
+        }
+    }
+}`;
+
+    content += `
+export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedTypeName} {
+    return ${prefixedTypeName}FromJson(JSON.parse(input));
+}`;
+    content += `
+export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
+    switch (input[\`${schema.tagKey}\`]) {
+${subTypes
+    .map(
+        (sub) => `
+        case \`${sub.key}\`: {
+            return ${sub.data.typeName}ToJsonString(input);
+        }
+        `,
+    )
+    .join('\n')}
+        default: {
+            input satisfies never;
+            throw new Error(\`Unknown variant type: \${(input as any).type}\`);
+        }
+    }
+}`;
+    content += `
+export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
+    switch (input[\`${schema.tagKey}\`]) {
+        ${subTypes
+            .map(
+                (sub) => `case \`${sub.key}\`: {
+            return ${sub.data.typeName}ToUrlSearchParams(input);
+        }`,
+            )
+            .join('\n')}
+        default: {
+            input satisfies never;
+            throw new Error(\`Unknown variant type: \${(input as any).${schema.tagKey}}\`);
+        }
+    }
+}`;
+    content += `
+export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedTypeName}): string {
+    return ${prefixedTypeName}ToUrlSearchParams(input).toString();
+}`;
+    if (context.features.validatorObj) {
+        content += `
+export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
+    new: ${prefixedTypeName}New,
+    ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''}
+    ${context.features.cloneFn ? `clone: ${prefixedTypeName}Clone,` : ''}
+    fromJson: ${prefixedTypeName}FromJson,
+    fromJsonString: ${prefixedTypeName}FromJsonString,
+    toJsonString: ${prefixedTypeName}ToJsonString,
+    toUrlSearchParams: ${prefixedTypeName}ToUrlSearchParams,
+    toUrlSearchParamsString: ${prefixedTypeName}ToUrlSearchParamsString,
+}`;
+    }
+    content += `
+${subTypes.map((type) => type.data.content).join('\n')}
+`;
+    context.generatedTypes.push(typeName);
+    return content;
+}
+
+function _internallyTaggedWithValueKeyContent(
+    typeName: string,
+    prefixedTypeName: string,
+    subTypes: { data: TsProperty; key: string }[],
+    schema: SchemaFormUnion,
+    context: CodegenContext,
+): string {
+    let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => `{ ${schema.tagKey}: \`${type.key}\`; ${schema.valueKey}: ${type.data.typeName} }`).join(' |')};`;
+    content += `
+export function ${prefixedTypeName}New(): ${prefixedTypeName} {
+    return {
+        ${schema.tagKey}: \`${subTypes[0]?.key}\`,
+        ${schema.valueKey}: ${subTypes[0]?.data.defaultValue},
+    };
+}`;
+    if (context.features.validateFn) {
+        content += `
+export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixedTypeName} {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('${schema.tagKey}' in input) || !('${schema.valueKey}' in input)) {
+        return false;
+    }
+    switch (input.${schema.tagKey}) {
+${subTypes
+    .map(
+        (sub) => `
+        case \`${sub.key}\`:
+            return ${sub.data.validationTemplate(`input.${schema.valueKey}`)};
+    `,
+    )
+    .join('\n')}
+        default:
+            return false;
+    }
+}`;
+    }
+
+    if (context.features.cloneFn) {
+        content += `
+export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
+    switch (input.${schema.tagKey}) {
+${subTypes
+    .map(
+        (sub) => `
+        case \`${sub.key}\`: {
+            let __value__: ${sub.data.typeName};
+            ${sub.data.cloneTemplate(`input.${schema.valueKey}`, `__value__`)}
+            return {
+                ${schema.tagKey}: \`${sub.key}\`,
+                ${schema.valueKey}: __value__,
+            };
+        }`,
+    )
+    .join('\n')}
+        default: {
+            input satisfies never;
+            throw new Error(\`Unknown union variant: \${(input as any).${schema.tagKey}}\`);
+        }
+   }
+}`;
+    }
+
+    content += `
+export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
+    if (typeof input.${schema.tagKey} !== 'string') {
+        return ${prefixedTypeName}New();
+    }
+    switch (input.${schema.tagKey}) {
+${subTypes
+    .map(
+        (sub) => `       case \`${sub.key}\`: {
+            let __value__: ${sub.data.typeName};
+            ${sub.data.fromJsonTemplate(`input.${schema.valueKey}`, '__value__')};
+            return {
+                ${schema.tagKey}: \`${sub.key}\`,
+                ${schema.valueKey}: __value__,
+            };
+        }`,
+    )
+    .join('\n')}
+        default: {
+            return ${prefixedTypeName}New();
+        }
+    }
+}`;
+
+    content += `
+export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedTypeName} {
+    return ${prefixedTypeName}FromJson(JSON.parse(input));
+}`;
+    content += `
+export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
+    switch (input.${schema.tagKey}) {
+${subTypes
+    .map(
+        (sub) => `
+        case \`${sub.key}\`: {
+            let json = '{';
+            json += '"${schema.tagKey}":"${sub.key}"';
+            json += '"${schema.valueKey}":';
+            ${sub.data.toJsonTemplate(`input.${schema.valueKey}`, 'json', '')}
+            json += '}';
+            return json;
+        }
+        `,
+    )
+    .join('\n')}
+        default: {
+            input satisfies never;
+            throw new Error(\`Unknown variant type: \${(input as any).${schema.tagKey}}\`);
+        }
+    }
+}`;
+    content += `
+export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}`;
+    content += `
+export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedTypeName}): string {
+    return ${prefixedTypeName}ToUrlSearchParams(input).toString();
+}`;
+    if (context.features.validatorObj) {
+        content += `
+export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
+    new: ${prefixedTypeName}New,
+    ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''}
+    ${context.features.cloneFn ? `clone: ${prefixedTypeName}Clone,` : ''}
+    fromJson: ${prefixedTypeName}FromJson,
+    fromJsonString: ${prefixedTypeName}FromJsonString,
+    toJsonString: ${prefixedTypeName}ToJsonString,
+    toUrlSearchParams: ${prefixedTypeName}ToUrlSearchParams,
+    toUrlSearchParamsString: ${prefixedTypeName}ToUrlSearchParamsString,
+}`;
+    }
+    content += `
+${subTypes.map((type) => type.data.content).join('\n')}
+`;
+    context.generatedTypes.push(typeName);
+    return content;
 }

@@ -83,17 +83,17 @@ export function tsObjectFromSchema(
         const key = validVarName(
             camelCase(context.discriminatorKey, { normalize: true }),
         );
-        fieldParts.push(`${key}: "${context.discriminatorValue}",`);
-        fromJsonParts.push(`const _${key} = "${context.discriminatorValue}"`);
+        fieldParts.push(`${key}: \`${context.discriminatorValue}\`,`);
+        fromJsonParts.push(`const _${key} = \`${context.discriminatorValue}\``);
         toJsonParts.push(`json += '"${key}":"${context.discriminatorValue}"'`);
         setSearchParamParts.push(
-            `params.set('${context.discriminatorKey}', '${context.discriminatorValue}');`,
+            `params.set('${context.discriminatorKey}', \`${context.discriminatorValue}\`);`,
         );
         validationParts.push(
-            `input.${key} === '${context.discriminatorValue}'`,
+            `input.${key} === \`${context.discriminatorValue}\``,
         );
-        cloneParts.push(`const _${key} = "${context.discriminatorValue}"`);
-        newParts.push(`${key}: "${context.discriminatorValue}",`);
+        cloneParts.push(`const _${key} = \`${context.discriminatorValue}\``);
+        newParts.push(`${key}: \`${context.discriminatorValue}\`,`);
         constructionParts.push(`${key}: _${key},`);
     }
     for (const key of Object.keys(schema.properties)) {
@@ -253,8 +253,8 @@ export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedType
 `;
     if (
         context.features.validatorObj &&
-        !context.discriminatorKey &&
-        !context.discriminatorValue
+        !context.discriminatorKey.length &&
+        !context.discriminatorValue.length
     ) {
         result.content += `export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,

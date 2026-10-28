@@ -274,7 +274,7 @@ describe('ObjectWithNullableFields', () => {
         },
         union: {
             type: 'array',
-            value: ['hell', 'world'],
+            value: ['hello', 'world'],
         },
         any: { message: 'hello world' },
     };
@@ -307,34 +307,8 @@ describe('Union', () => {
         const objectValue: Union = {
             type: 'object',
             value: {
-                string: '',
-                boolean: false,
-                timestamp: testDate,
-                float32: 1.5,
-                float64: 1.5,
-                int8: 1,
-                uint8: 1,
-                int16: 10,
-                uint16: 10,
-                int32: 100,
-                uint32: 100,
-                int64: 1000n,
-                uint64: 1000n,
-                enum: 'BAZ',
-                object: {
-                    id: '1',
-                    content: 'hello world',
-                },
-                array: [true, false, false],
-                record: {
-                    B: false,
-                    A: true,
-                },
-                union: {
-                    type: 'array',
-                    value: ['hello', 'world'],
-                },
-                any: 'hello world',
+                id: '1',
+                content: 'hello world',
             },
         };
         const jsonReference = testFile('Union_Object.json');
@@ -357,7 +331,7 @@ describe('Union', () => {
             expect(objectValue).toStrictEqual(cloned);
             expect(cloned.type).toBe('object');
             if (cloned.type === 'object') {
-                cloned.value.float32 = 9.999;
+                cloned.value.content = 'hello world!!!';
                 expect(objectValue).not.toStrictEqual(cloned);
             }
         });
