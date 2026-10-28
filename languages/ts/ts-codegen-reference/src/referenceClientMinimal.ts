@@ -1908,7 +1908,7 @@ export function ShapeInternalNew(): ShapeInternal {
 export function ShapeInternalFromJson(
     input: Record<string, unknown>,
 ): ShapeInternal {
-    switch (input[`shape`]) {
+    switch (input.shape) {
         case `rectangle`: {
             return ShapeInternalRectangleFromJson(input);
         }
@@ -1924,7 +1924,7 @@ export function ShapeInternalFromJsonString(input: string): ShapeInternal {
     return ShapeInternalFromJson(JSON.parse(input));
 }
 export function ShapeInternalToJsonString(input: ShapeInternal): string {
-    switch (input[`shape`]) {
+    switch (input.shape) {
         case `rectangle`: {
             return ShapeInternalRectangleToJsonString(input);
         }
@@ -1933,14 +1933,14 @@ export function ShapeInternalToJsonString(input: ShapeInternal): string {
         }
         default: {
             input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
         }
     }
 }
 export function ShapeInternalToUrlSearchParams(
     input: ShapeInternal,
 ): URLSearchParams {
-    switch (input[`shape`]) {
+    switch (input.shape) {
         case `rectangle`: {
             return ShapeInternalRectangleToUrlSearchParams(input);
         }

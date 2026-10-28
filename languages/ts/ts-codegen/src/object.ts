@@ -5,6 +5,7 @@ import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
+    jsonKeyAccessor,
     TsProperty,
     validVarName,
 } from './common';
@@ -85,7 +86,9 @@ export function tsObjectFromSchema(
         );
         fieldParts.push(`${key}: \`${context.discriminatorValue}\`,`);
         fromJsonParts.push(`const _${key} = \`${context.discriminatorValue}\``);
-        toJsonParts.push(`json += '"${key}":"${context.discriminatorValue}"'`);
+        toJsonParts.push(
+            `json += '"${context.discriminatorKey}":"${context.discriminatorValue}"'`,
+        );
         setSearchParamParts.push(
             `params.set('${context.discriminatorKey}', \`${context.discriminatorValue}\`);`,
         );
@@ -120,7 +123,9 @@ export function tsObjectFromSchema(
         newParts.push(`${fieldName}: ${prop.defaultValue},`);
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName};`);
-        fromJsonParts.push(prop.fromJsonTemplate(`input.${key}`, tempKey));
+        fromJsonParts.push(
+            prop.fromJsonTemplate(jsonKeyAccessor('input', key), tempKey),
+        );
         if (hasKey) {
             toJsonParts.push(`json += ',"${key}":';`);
         } else {
@@ -166,7 +171,7 @@ export function tsObjectFromSchema(
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName} | undefined;`);
         fromJsonParts.push(`if (typeof input.${key} !== 'undefined') {
-            ${prop.fromJsonTemplate(`input.${key}`, tempKey)}
+            ${prop.fromJsonTemplate(jsonKeyAccessor('input', key), tempKey)}
         }`);
         if (hasKey) {
             toJsonParts.push(`if (typeof input.${fieldName} !== 'undefined') {

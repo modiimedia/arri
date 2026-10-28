@@ -1,11 +1,13 @@
-import { Schema, SchemaFormUnion } from '@arrirpc/codegen-utils';
+import { camelCase, SchemaFormUnion } from '@arrirpc/codegen-utils';
 
 import { tsTypeFromSchema } from './_index';
 import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
+    jsonKeyAccessor,
     TsProperty,
+    validVarName,
 } from './common';
 
 export function tsTaggedUnionFromSchema(
@@ -260,6 +262,7 @@ function _internallyTaggedContent(
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {
+    const tagField = tsFieldName(schema.tagKey!);
     let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};`;
     content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
@@ -277,7 +280,7 @@ export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixed
     if (context.features.cloneFn) {
         content += `
 export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
-    switch (input.${schema.tagKey}) {
+    switch (input.${tagField}) {
 ${subTypes
     .map(
         (sub) => `
@@ -290,7 +293,7 @@ ${subTypes
     .join('\n')}
         default: {
             input satisfies never;
-            throw new Error(\`Unknown union variant: \${(input as any).${schema.tagKey}}\`);
+            throw new Error(\`Unknown union variant: \${(input as any).${tagField}}\`);
         }
    }
 }`;
@@ -298,7 +301,7 @@ ${subTypes
 
     content += `
 export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
-    switch (input[\`${schema.tagKey}\`]) {
+    switch (${jsonKeyAccessor('input', schema.tagKey!)}) {
 ${subTypes
     .map(
         (sub) => `       case \`${sub.key}\`: {
@@ -318,7 +321,7 @@ export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedType
 }`;
     content += `
 export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
-    switch (input[\`${schema.tagKey}\`]) {
+    switch (input.${tagField}) {
 ${subTypes
     .map(
         (sub) => `
@@ -330,13 +333,13 @@ ${subTypes
     .join('\n')}
         default: {
             input satisfies never;
-            throw new Error(\`Unknown variant type: \${(input as any).type}\`);
+            throw new Error(\`Unknown variant type: \${(input as any).${tagField}}\`);
         }
     }
 }`;
     content += `
 export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName}): URLSearchParams {
-    switch (input[\`${schema.tagKey}\`]) {
+    switch (input.${tagField}) {
         ${subTypes
             .map(
                 (sub) => `case \`${sub.key}\`: {
@@ -346,7 +349,7 @@ export function ${prefixedTypeName}ToUrlSearchParams(input: ${prefixedTypeName})
             .join('\n')}
         default: {
             input satisfies never;
-            throw new Error(\`Unknown variant type: \${(input as any).${schema.tagKey}}\`);
+            throw new Error(\`Unknown variant type: \${(input as any).${tagField}}\`);
         }
     }
 }`;
@@ -381,12 +384,14 @@ function _internallyTaggedWithValueKeyContent(
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {
-    let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => `{ ${schema.tagKey}: \`${type.key}\`; ${schema.valueKey}: ${type.data.typeName} }`).join(' |')};`;
+    const tagField = tsFieldName(schema.tagKey!);
+    const valueField = tsFieldName(schema.valueKey!);
+    let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => `{ ${tagField}: \`${type.key}\`; ${valueField}: ${type.data.typeName} }`).join(' |')};`;
     content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
     return {
-        ${schema.tagKey}: \`${subTypes[0]?.key}\`,
-        ${schema.valueKey}: ${subTypes[0]?.data.defaultValue},
+        ${tagField}: \`${subTypes[0]?.key}\`,
+        ${valueField}: ${subTypes[0]?.data.defaultValue},
     };
 }`;
     if (context.features.validateFn) {
@@ -395,15 +400,15 @@ export function ${prefixedTypeName}Validate(input: unknown): input is ${prefixed
     if (!isObject(input)) {
         return false;
     }
-    if (!('${schema.tagKey}' in input) || !('${schema.valueKey}' in input)) {
+    if (!('${tagField}' in input) || !('${valueField}' in input)) {
         return false;
     }
-    switch (input.${schema.tagKey}) {
+    switch (input.${tagField}) {
 ${subTypes
     .map(
         (sub) => `
         case \`${sub.key}\`:
-            return ${sub.data.validationTemplate(`input.${schema.valueKey}`)};
+            return ${sub.data.validationTemplate(`input.${valueField}`)};
     `,
     )
     .join('\n')}
@@ -416,23 +421,23 @@ ${subTypes
     if (context.features.cloneFn) {
         content += `
 export function ${prefixedTypeName}Clone(input: ${prefixedTypeName}): ${prefixedTypeName} {
-    switch (input.${schema.tagKey}) {
+    switch (input.${tagField}) {
 ${subTypes
     .map(
         (sub) => `
         case \`${sub.key}\`: {
             let __value__: ${sub.data.typeName};
-            ${sub.data.cloneTemplate(`input.${schema.valueKey}`, `__value__`)}
+            ${sub.data.cloneTemplate(`input.${valueField}`, `__value__`)}
             return {
-                ${schema.tagKey}: \`${sub.key}\`,
-                ${schema.valueKey}: __value__,
+                ${tagField}: \`${sub.key}\`,
+                ${valueField}: __value__,
             };
         }`,
     )
     .join('\n')}
         default: {
             input satisfies never;
-            throw new Error(\`Unknown union variant: \${(input as any).${schema.tagKey}}\`);
+            throw new Error(\`Unknown union variant: \${(input as any).${tagField}}\`);
         }
    }
 }`;
@@ -440,18 +445,18 @@ ${subTypes
 
     content += `
 export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
-    if (typeof input.${schema.tagKey} !== 'string') {
+    if (typeof ${jsonKeyAccessor('input', schema.tagKey!)} !== 'string') {
         return ${prefixedTypeName}New();
     }
-    switch (input.${schema.tagKey}) {
+    switch (${jsonKeyAccessor('input', schema.tagKey!)}) {
 ${subTypes
     .map(
         (sub) => `       case \`${sub.key}\`: {
             let __value__: ${sub.data.typeName};
-            ${sub.data.fromJsonTemplate(`input.${schema.valueKey}`, '__value__')};
+            ${sub.data.fromJsonTemplate(jsonKeyAccessor('input', schema.valueKey!), '__value__')};
             return {
-                ${schema.tagKey}: \`${sub.key}\`,
-                ${schema.valueKey}: __value__,
+                ${tagField}: \`${sub.key}\`,
+                ${valueField}: __value__,
             };
         }`,
     )
@@ -468,7 +473,7 @@ export function ${prefixedTypeName}FromJsonString(input: string): ${prefixedType
 }`;
     content += `
 export function ${prefixedTypeName}ToJsonString(input: ${prefixedTypeName}): string {
-    switch (input.${schema.tagKey}) {
+    switch (input.${tagField}) {
 ${subTypes
     .map(
         (sub) => `
@@ -476,7 +481,7 @@ ${subTypes
             let json = '{';
             json += '"${schema.tagKey}":"${sub.key}"';
             json += ',"${schema.valueKey}":';
-            ${sub.data.toJsonTemplate(`input.${schema.valueKey}`, 'json', '')}
+            ${sub.data.toJsonTemplate(`input.${valueField}`, 'json', '')}
             json += '}';
             return json;
         }
@@ -485,7 +490,7 @@ ${subTypes
     .join('\n')}
         default: {
             input satisfies never;
-            throw new Error(\`Unknown variant type: \${(input as any).${schema.tagKey}}\`);
+            throw new Error(\`Unknown variant type: \${(input as any).${tagField}}\`);
         }
     }
 }`;
@@ -517,4 +522,11 @@ ${subTypes.map((type) => type.data.content).join('\n')}
 `;
     context.generatedTypes.push(typeName);
     return content;
+}
+
+/**
+ * Unions with a tagKey/valueKey use camelCase field names in TS but keep the original key in JSON
+ */
+function tsFieldName(key: string): string {
+    return validVarName(camelCase(key, { normalize: true }));
 }
