@@ -152,100 +152,100 @@ const goodInput: Post = {
     },
 };
 it('validates good input', () => {
-    expect(PostValidator.validate(goodInput));
+    expect(PostValidator.validate(goodInput)).toBe(true);
 });
 it("doesn't validate bad input", () => {
     const badInput1 = {
         ...goodInput,
         numArray: ['1', '2', '50'],
     };
-    expect(PostValidator.validate(badInput1));
+    expect(PostValidator.validate(badInput1)).toBe(false);
     const badInput2 = {
         ...goodInput,
         metadata: { foo: { name: 'blah', createdAt: 0 } },
     };
-    expect(!PostValidator.validate(badInput2));
+    expect(PostValidator.validate(badInput2)).toBe(false);
 });
 
 it('validates strings', () => {
     const Compiled = compile(a.string());
-    expect(Compiled.validate('hello world'));
-    expect(!Compiled.validate(0));
-    expect(!Compiled.validate({ hello: 'world' }));
+    expect(Compiled.validate('hello world')).toBe(true);
+    expect(Compiled.validate(0)).toBe(false);
+    expect(Compiled.validate({ hello: 'world' })).toBe(false);
 });
 
 it('validates nullable strings', () => {
     const Compiled = compile(a.nullable(a.string()));
-    expect(Compiled.validate('hello world'));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate(0));
+    expect(Compiled.validate('hello world')).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate(0)).toBe(false);
 });
 
 it('validates floats', () => {
     const Compiled = compile(a.float32());
-    expect(Compiled.validate(0.1));
-    expect(Compiled.validate(100));
-    expect(Compiled.validate(-100.5));
-    expect(!Compiled.validate('0.5'));
+    expect(Compiled.validate(0.1)).toBe(true);
+    expect(Compiled.validate(100)).toBe(true);
+    expect(Compiled.validate(-100.5)).toBe(true);
+    expect(Compiled.validate('0.5')).toBe(false);
 });
 
 it('validates nullable floats', () => {
     const Compiled = compile(a.nullable(a.float32()));
-    expect(Compiled.validate(0.1));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate('0.1'));
+    expect(Compiled.validate(0.1)).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate('0.1')).toBe(false);
 });
 
 it('validates ints', () => {
     const CompiledInt8 = compile(a.int8());
-    expect(CompiledInt8.validate(1));
-    expect(CompiledInt8.validate(100));
-    expect(!CompiledInt8.validate(10000));
-    expect(!CompiledInt8.validate(1.5));
-    expect(!CompiledInt8.validate('199'));
+    expect(CompiledInt8.validate(1)).toBe(true);
+    expect(CompiledInt8.validate(100)).toBe(true);
+    expect(CompiledInt8.validate(10000)).toBe(false);
+    expect(CompiledInt8.validate(1.5)).toBe(false);
+    expect(CompiledInt8.validate('199')).toBe(false);
 
     const CompiledUint8 = compile(a.uint8());
-    expect(CompiledUint8.validate(1));
-    expect(CompiledUint8.validate(255));
-    expect(!CompiledUint8.validate(1000));
-    expect(!CompiledUint8.validate(-100));
-    expect(!CompiledUint8.validate(10.5));
-    expect(!CompiledUint8.validate('100'));
+    expect(CompiledUint8.validate(1)).toBe(true);
+    expect(CompiledUint8.validate(255)).toBe(true);
+    expect(CompiledUint8.validate(1000)).toBe(false);
+    expect(CompiledUint8.validate(-100)).toBe(false);
+    expect(CompiledUint8.validate(10.5)).toBe(false);
+    expect(CompiledUint8.validate('100')).toBe(false);
 
     const CompiledInt32 = compile(a.int32());
-    expect(CompiledInt32.validate(5000));
-    expect(CompiledInt32.validate(-1035));
+    expect(CompiledInt32.validate(5000)).toBe(true);
+    expect(CompiledInt32.validate(-1035)).toBe(true);
     // eslint-disable-next-line no-loss-of-precision
-    expect(!CompiledInt32.validate(99999999999999999999));
-    expect(!CompiledInt32.validate(100.5));
-    expect(!CompiledInt32.validate('100'));
+    expect(CompiledInt32.validate(99999999999999999999)).toBe(false);
+    expect(CompiledInt32.validate(100.5)).toBe(false);
+    expect(CompiledInt32.validate('100')).toBe(false);
 
     const CompiledUint32 = compile(a.uint32());
-    expect(CompiledUint32.validate(1000));
-    expect(!CompiledUint32.validate(-1000));
+    expect(CompiledUint32.validate(1000)).toBe(true);
+    expect(CompiledUint32.validate(-1000)).toBe(false);
 });
 
 it('validates nullable ints', () => {
     const Compiled = compile(a.nullable(a.int8()));
-    expect(Compiled.validate(1));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate('1'));
+    expect(Compiled.validate(1)).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate('1')).toBe(false);
 });
 
 it('validates enums', () => {
     const Compiled = compile(a.stringEnum(['TEXT', 'VIDEO', 'IMAGE']));
-    expect(Compiled.validate('TEXT'));
-    expect(Compiled.validate('VIDEO'));
-    expect(!Compiled.validate('text'));
+    expect(Compiled.validate('TEXT')).toBe(true);
+    expect(Compiled.validate('VIDEO')).toBe(true);
+    expect(Compiled.validate('text')).toBe(false);
 });
 
 it('validates nullable enums', () => {
     const Compiled = compile(
         a.nullable(a.stringEnum(['TEXT', 'VIDEO', 'IMAGE'])),
     );
-    expect(Compiled.validate('TEXT'));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate('BAR'));
+    expect(Compiled.validate('TEXT')).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate('BAR')).toBe(false);
 });
 
 it('validates objects', () => {
@@ -262,14 +262,14 @@ it('validates objects', () => {
             isActive: false,
             createdAt: undefined,
         }),
-    );
+    ).toBe(true);
     expect(
-        !Compiled.validate({
+        Compiled.validate({
             id: 1,
             isActive: true,
             createdAt: new Date(),
         }),
-    );
+    ).toBe(false);
     const CompiledNested = compile(
         a.object({
             foo: a.string(),
@@ -285,7 +285,7 @@ it('validates objects', () => {
             foo: '1',
             bar: { foo: [true, false], bar: new Date(), baz: null },
         }),
-    );
+    ).toBe(true);
     expect(
         CompiledNested.validate({
             foo: '1',
@@ -295,9 +295,9 @@ it('validates objects', () => {
                 baz: { a: true, _b: false },
             },
         }),
-    );
+    ).toBe(true);
     expect(
-        !CompiledNested.validate({
+        CompiledNested.validate({
             foo: '1',
             bar: {
                 foo: [true, false],
@@ -305,7 +305,7 @@ it('validates objects', () => {
                 baz: { a: null, _b: 'Hello world' },
             },
         }),
-    );
+    ).toBe(false);
 });
 
 it('validates nullable objects', () => {
@@ -318,35 +318,37 @@ it('validates nullable objects', () => {
             }),
         ),
     );
-    expect(Compiled.validate({ foo: 'FOO', bar: 'BAR', baz: new Date() }));
-    expect(Compiled.validate(null));
+    expect(Compiled.validate({ foo: 'FOO', bar: 'BAR', baz: new Date() })).toBe(
+        true,
+    );
+    expect(Compiled.validate(null)).toBe(true);
     expect(
-        !Compiled.validate({
+        Compiled.validate({
             foo: 1,
             bar: '',
             baz: false,
         }),
-    );
+    ).toBe(false);
 });
 
 it('validates booleans', () => {
     const Compiled = compile(a.boolean());
-    expect(Compiled.validate(true));
-    expect(Compiled.validate(false));
-    expect(!Compiled.validate('Hello world'));
+    expect(Compiled.validate(true)).toBe(true);
+    expect(Compiled.validate(false)).toBe(true);
+    expect(Compiled.validate('Hello world')).toBe(false);
 });
 
 it('validates nullable booleans', () => {
     const Compiled = compile(a.nullable(a.boolean()));
-    expect(Compiled.validate(true));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate('Hello world'));
+    expect(Compiled.validate(true)).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate('Hello world')).toBe(false);
 });
 
 it('validates arrays', () => {
     const CompiledSimple = compile(a.array(a.boolean()));
-    expect(CompiledSimple.validate([true, false, true]));
-    expect(!CompiledSimple.validate([true, false, 1, 'true']));
+    expect(CompiledSimple.validate([true, false, true])).toBe(true);
+    expect(CompiledSimple.validate([true, false, 1, 'true'])).toBe(false);
 
     const CompiledComplex = compile(
         a.array(a.object({ id: a.string(), isActive: a.boolean() })),
@@ -356,22 +358,22 @@ it('validates arrays', () => {
             { id: '12345', isActive: true },
             { id: '1', isActive: false },
         ]),
-    );
+    ).toBe(true);
     expect(
-        !CompiledComplex.validate([
+        CompiledComplex.validate([
             {
                 id: 1,
                 isActive: 'true',
             },
         ]),
-    );
+    ).toBe(false);
 });
 
 it('validates nullable arrays', () => {
-    const Compiled = compile(a.array(a.string()));
-    expect(Compiled.validate(['1', '2']));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate([1, 2]));
+    const Compiled = compile(a.nullable(a.array(a.string())));
+    expect(Compiled.validate(['1', '2'])).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate([1, 2])).toBe(false);
 });
 
 it('validates records', () => {
@@ -382,21 +384,21 @@ it('validates records', () => {
             bar: 2,
             baz: 3,
         }),
-    );
+    ).toBe(true);
     expect(
-        !Compiled.validate({
+        Compiled.validate({
             foo: '1',
             bar: '2',
             baz: '3',
         }),
-    );
+    ).toBe(false);
 });
 
 it('validates nullable records', () => {
-    const Compiled = compile(a.record(a.string()));
-    expect(Compiled.validate({ foo: 'foo' }));
-    expect(Compiled.validate(null));
-    expect(!Compiled.validate({ foo: true }));
+    const Compiled = compile(a.nullable(a.record(a.string())));
+    expect(Compiled.validate({ foo: 'foo' })).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
+    expect(Compiled.validate({ foo: true })).toBe(false);
 });
 
 it('validates discriminators', () => {
@@ -415,7 +417,7 @@ it('validates discriminators', () => {
     );
     expect(
         Compiled.validate({ eventType: 'POST_LIKE', userId: '', postId: '' }),
-    );
+    ).toBe(true);
     expect(
         Compiled.validate({
             eventType: 'POST_COMMENT',
@@ -423,46 +425,48 @@ it('validates discriminators', () => {
             postId: '',
             commentText: '',
         }),
-    );
+    ).toBe(true);
     expect(
-        !Compiled.validate({
+        Compiled.validate({
             eventType: 'POST_DELETE',
             postId: '',
         }),
-    );
+    ).toBe(false);
 });
 
 it('validates nullable discriminators', () => {
     const Compiled = compile(
-        a.discriminator('eventType', {
-            A: a.object({
-                foo: a.string(),
+        a.nullable(
+            a.discriminator('eventType', {
+                A: a.object({
+                    foo: a.string(),
+                }),
+                B: a.object({
+                    foo: a.string(),
+                    bar: a.number(),
+                }),
             }),
-            B: a.object({
-                foo: a.string(),
-                bar: a.number(),
-            }),
-        }),
+        ),
     );
     expect(
         Compiled.validate({
             eventType: 'A',
             foo: 'foo',
         }),
-    );
+    ).toBe(true);
     expect(
         Compiled.validate({
             eventType: 'B',
             foo: 'foo',
             bar: 0,
         }),
-    );
-    expect(Compiled.validate(null));
+    ).toBe(true);
+    expect(Compiled.validate(null)).toBe(true);
     expect(
-        !Compiled.validate({
+        Compiled.validate({
             eventType: 'A',
         }),
-    );
+    ).toBe(false);
 });
 
 it('uses strict properly', () => {
@@ -485,9 +489,10 @@ it('uses strict properly', () => {
     const inputWithAdditionalFields = {
         id: '',
         name: '',
+        description: '',
     };
-    expect(LooseSchema.validate(input));
-    expect(LooseSchema.validate(inputWithAdditionalFields));
-    expect(StrictSchema.validate(input));
-    expect(!StrictSchema.validate(inputWithAdditionalFields));
+    expect(LooseSchema.validate(input)).toBe(true);
+    expect(LooseSchema.validate(inputWithAdditionalFields)).toBe(true);
+    expect(StrictSchema.validate(input)).toBe(true);
+    expect(StrictSchema.validate(inputWithAdditionalFields)).toBe(false);
 });

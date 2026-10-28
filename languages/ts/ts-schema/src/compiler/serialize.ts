@@ -676,7 +676,7 @@ function unionTemplateInternallyTagged(
         mainTemplate = `${fnName}(${input.val})`;
     }
     if (input.schema.isNullable) {
-        return `if (typeof ${input.val}) === 'object' && ${input.val} !== null {
+        return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
             ${input.targetVal} += '${input.outputPrefix}null';    
@@ -739,7 +739,7 @@ function unionTemplateInternallyTaggedWithValueKey(
         mainTemplate = `${fnName}(${input.val})`;
     }
     if (input.schema.isNullable) {
-        return `if (typeof ${input.val}) === 'object' && ${input.val} !== null {
+        return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
             ${input.targetVal} += '${input.outputPrefix}null';    

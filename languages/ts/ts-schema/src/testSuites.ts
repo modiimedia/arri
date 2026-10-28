@@ -808,6 +808,61 @@ export const validationTestSuites: Record<
             { type: 'references', data: ['hello', 'world', false] },
         ],
     },
+    'nullable union with internal tagging': {
+        schema: a.nullable(UnionInternalTagging),
+        goodInputs: [
+            null,
+            { kind: 'rectangle', width: 15.5, height: 25.5 },
+            { kind: 'circle', radius: 16 },
+        ] satisfies (UnionInternalTagging | null)[],
+        badInputs: [
+            undefined,
+            'rectangle',
+            { kind: 'triangle', width: 25.5, height: 25.5 },
+        ],
+    },
+    'nullable union with internal tagging + value key': {
+        schema: a.nullable(UnionInternalTaggingWithValue),
+        goodInputs: [
+            null,
+            { type: 'text', data: 'hello world' },
+            { type: 'references', data: ['hello', 'world'] },
+        ] satisfies (UnionInternalTaggingWithValue | null)[],
+        badInputs: [undefined, 'text', { type: 'text', data: null }],
+    },
+    'object with tagged union fields': {
+        schema: a.object({
+            internal: UnionInternalTagging,
+            adjacent: a.nullable(UnionInternalTaggingWithValue),
+            list: a.array(UnionInternalTagging),
+        }),
+        goodInputs: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'text', data: 'hello world' },
+                list: [
+                    { kind: 'rectangle', width: 1, height: 2 },
+                    { kind: 'circle', radius: 3 },
+                ],
+            },
+            {
+                internal: { kind: 'rectangle', width: 1, height: 2 },
+                adjacent: null,
+                list: [],
+            },
+        ],
+        badInputs: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'text', data: 'hello world' },
+                list: [{ kind: 'triangle' }],
+            },
+            {
+                internal: { kind: 'circle', radius: 5 },
+                list: [],
+            },
+        ],
+    },
     'record with boolean values': {
         schema: a.record(a.boolean()),
         goodInputs: [{ a: true, b: false, [`"C"`]: true }, {}],
@@ -1659,6 +1714,45 @@ export const parsingTestSuites: Record<
             { type: 'text', data: null },
         ],
     },
+    'nullable union internally tagged': {
+        schema: a.nullable(UnionInternalTagging),
+        goodInputs: ['null', `{"kind":"circle","radius":22.5}`],
+        expectedResults: [null, { kind: 'circle', radius: 22.5 }],
+        badInputs: [`{"kind":"triangle","width":15,"height":10}`],
+    },
+    'nullable union internally tagged with value': {
+        schema: a.nullable(UnionInternalTaggingWithValue),
+        goodInputs: ['null', `{"type":"text","data":"hello world"}`],
+        expectedResults: [null, { type: 'text', data: 'hello world' }],
+        badInputs: [`{"type":"text","data":null}`],
+    },
+    'object with tagged union fields': {
+        schema: a.object({
+            internal: UnionInternalTagging,
+            adjacent: a.nullable(UnionInternalTaggingWithValue),
+            list: a.array(UnionInternalTagging),
+        }),
+        goodInputs: [
+            `{"internal":{"kind":"circle","radius":5},"adjacent":{"type":"references","data":["a","b"]},"list":[{"kind":"rectangle","width":1,"height":2}]}`,
+            `{"internal":{"kind":"circle","radius":5},"adjacent":null,"list":[]}`,
+        ],
+        expectedResults: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'references', data: ['a', 'b'] },
+                list: [{ kind: 'rectangle', width: 1, height: 2 }],
+            },
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: null,
+                list: [],
+            },
+        ],
+        badInputs: [
+            `{"internal":{"kind":"circle","radius":5},"adjacent":null,"list":[{"kind":"triangle"}]}`,
+            `{"internal":{"kind":"circle"},"adjacent":null,"list":[]}`,
+        ],
+    },
 };
 
 export const coercionTestSuites: Record<
@@ -2115,6 +2209,38 @@ export const coercionTestSuites: Record<
                 ],
             },
         ],
+    },
+    'union with external tagging': {
+        schema: UnionExternalTagging,
+        goodInputs: [
+            { image: { url: 'https://example.com', width: '15', height: 20 } },
+        ],
+        expectedResults: [
+            { image: { url: 'https://example.com', width: 15, height: 20 } },
+        ],
+        badInputs: [{ image: { url: 'https://example.com', width: 'foo' } }],
+    },
+    'union with internal tagging': {
+        schema: UnionInternalTagging,
+        goodInputs: [{ kind: 'rectangle', width: '15.5', height: 25.5 }],
+        expectedResults: [{ kind: 'rectangle', width: 15.5, height: 25.5 }],
+        badInputs: [{ kind: 'triangle', width: '15.5', height: 25.5 }],
+    },
+    'union with internal tagging + value key': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: '100', height: 50 },
+            },
+        ],
+        expectedResults: [
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: 100, height: 50 },
+            },
+        ],
+        badInputs: [{ type: 'image', data: { url: 'https://example.com' } }],
     },
 };
 

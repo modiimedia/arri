@@ -303,7 +303,10 @@ function validateNumber(input: unknown): input is number {
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number, _context: ValidationContext): string {
+function serializeNumber(input: number, context: ValidationContext): string {
+    if (context.instancePath.length > 0 && Number.isNaN(input)) {
+        throw new Error(`Expected number at ${context.instancePath} got NaN`);
+    }
     return input.toString();
 }
 function decodeNumber(input: unknown, context: ValidationContext) {

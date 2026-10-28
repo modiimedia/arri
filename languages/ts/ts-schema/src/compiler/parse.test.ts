@@ -1,4 +1,3 @@
-import { isEqual } from 'lodash';
 import { describe, test } from 'vitest';
 
 import { a } from '../_index';
@@ -16,13 +15,18 @@ for (const key of Object.keys(validationTestSuites)) {
         for (let i = 0; i < suite.goodInputs.length; i++) {
             test(`${key} -> good input -> ${i + 1}`, () => {
                 const input = suite.goodInputs[i];
-                expect(isEqual(Compiled.parse(input), input));
-                if (typeof input === 'object') {
-                    expect(
-                        isEqual(
-                            Compiled.parse(Compiled.serialize(input)),
-                            input,
-                        ),
+                const result = Compiled.parse(input);
+                if (!result.success) console.log(result.errors);
+                expect(result.success).toBe(true);
+                if (!result.success) return;
+                // undefined fields and unknown keys get stripped so compare against the non-compiled parser
+                expect(result.value).toStrictEqual(
+                    a.parseUnsafe(suite.schema, input),
+                );
+                if (typeof input === 'object' && input !== null) {
+                    const json = Compiled.serializeUnsafe(input);
+                    expect(Compiled.parseUnsafe(json)).toStrictEqual(
+                        result.value,
                     );
                 }
             });
@@ -44,16 +48,20 @@ describe('parsing test suites', () => {
             let Compiled: ReturnType<typeof compile<any, true>>;
             try {
                 Compiled = compile(suite.schema, true);
-            } catch (_) {
+            } catch (err) {
                 debugCodeOutput({
                     parse: ({ code, schema }) => {
                         console.log('code = ', code);
                         console.log('schema = ', schema);
                     },
                 });
-                compile(suite.schema);
+                try {
+                    compile(suite.schema);
+                } catch (_) {
+                    // already logged above
+                }
                 debugCodeOutput({});
-                return;
+                throw err;
             }
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 test(`${key} -> good input -> ${i + 1}`, () => {
@@ -161,17 +169,17 @@ it('parses floats', () => {
     expect(Compiled.parseUnsafe('1')).toBe(1);
     expect(Compiled.parseUnsafe(1)).toBe(1);
     expect(Compiled.parseUnsafe('1500.5')).toBe(1500.5);
-    expect(!Compiled.parse('hello world').success);
-    expect(!Compiled.parse(true).success);
+    expect(Compiled.parse('hello world').success).toBe(false);
+    expect(Compiled.parse(true).success).toBe(false);
 });
 
 it('parses ints', () => {
     const Compiled = a.compile(a.uint32());
     expect(Compiled.parseUnsafe('1')).toBe(1);
     expect(Compiled.parseUnsafe(1)).toBe(1);
-    expect(!Compiled.parse('1500.5').success);
-    expect(!Compiled.parse(-100).success);
-    expect(!Compiled.parse(true).success);
+    expect(Compiled.parse('1500.5').success).toBe(false);
+    expect(Compiled.parse(-100).success).toBe(false);
+    expect(Compiled.parse(true).success).toBe(false);
 });
 
 it('parses timestamps', () => {
@@ -215,10 +223,10 @@ it('respects the strict option', () => {
         name: '',
         description: '',
     };
-    expect(LooseSchema.parse(input).success);
-    expect(LooseSchema.parse(inputWithAdditionalFields).success);
-    expect(StrictSchema.parse(input).success);
-    expect(!StrictSchema.parse(inputWithAdditionalFields).success);
+    expect(LooseSchema.parse(input).success).toBe(true);
+    expect(LooseSchema.parse(inputWithAdditionalFields).success).toBe(true);
+    expect(StrictSchema.parse(input).success).toBe(true);
+    expect(StrictSchema.parse(inputWithAdditionalFields).success).toBe(false);
 });
 
 it('parses discriminated unions', () => {

@@ -28,6 +28,8 @@ for (const key of Object.keys(validationTestSuites)) {
                     console.error(Compiled.compiledCode.serialize);
                     console.error(result, 'SHOULD BE VALID');
                 }
+                expect(parseResult.success).toBe(true);
+                expect(result).toBe(a.serializeUnsafe(suite.schema, input));
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
@@ -48,13 +50,14 @@ for (const key of Object.keys(serializationTestSuites)) {
                 const result = Compiled.serializeUnsafe(input);
                 expect(typeof result).toBe('string');
                 if (
-                    !isAScalarSchema(suite.schema) ||
+                    !isAScalarSchema(suite.schema) &&
                     !isAStringEnumSchema(suite.schema)
                 ) {
                     JSON.parse(result);
                 }
                 const parsedResult = Compiled.parse(result);
                 expect(parsedResult.success).toBe(true);
+                expect(result).toBe(a.serializeUnsafe(suite.schema, input));
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
@@ -86,12 +89,8 @@ it("doesn't serialize NaN", () => {
     const Schema = a.object({ num: a.number(), int: a.int32() });
     const Compiled = compile(Schema);
     const input = { num: NaN, int: NaN };
-    try {
-        expect(Compiled.serializeUnsafe(input));
-        expect(a.serializeUnsafe(Schema, input));
-    } catch (_) {
-        expect(true).toBe(true);
-    }
+    expect(() => Compiled.serializeUnsafe(input)).toThrow();
+    expect(() => a.serializeUnsafe(Schema, input)).toThrow();
 });
 it('serializes objects', () => {
     const Compiled = compile(
