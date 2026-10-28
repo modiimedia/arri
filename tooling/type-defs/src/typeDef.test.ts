@@ -1,4 +1,10 @@
-import { isSchemaFormUnion, SchemaFormUnion } from './typeDef';
+import {
+    isSchema,
+    isSchemaFormProperties,
+    isSchemaFormUnion,
+    isSchemaFormValues,
+    SchemaFormUnion,
+} from './typeDef';
 
 describe('isSchemaFormUnion()', () => {
     const goodSchemas: SchemaFormUnion[] = [
@@ -115,4 +121,28 @@ describe('isSchemaFormUnion()', () => {
             assertType<SchemaFormUnion>(typeCheck);
         }
     });
+});
+
+describe('union schemas nested in other schemas', () => {
+    const unions: SchemaFormUnion[] = [
+        { union: { text: { type: 'string' } } },
+        {
+            tagKey: 'kind',
+            union: { circle: { properties: { radius: { type: 'float64' } } } },
+        },
+        {
+            tagKey: 'kind',
+            valueKey: 'data',
+            union: { text: { type: 'string' } },
+        },
+    ];
+    for (const union of unions) {
+        test(`tagKey: ${union.tagKey}, valueKey: ${union.valueKey}`, () => {
+            expect(isSchema(union)).toBe(true);
+            expect(isSchemaFormProperties({ properties: { a: union } })).toBe(
+                true,
+            );
+            expect(isSchemaFormValues({ values: union })).toBe(true);
+        });
+    }
 });

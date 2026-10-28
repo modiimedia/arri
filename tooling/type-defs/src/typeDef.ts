@@ -32,6 +32,9 @@ export function isSchema(input: unknown): input is Schema {
         'optionalProperties',
         'discriminator',
         'mapping',
+        'union',
+        'tagKey',
+        'valueKey',
         'ref',
         'definitions',
     ];
