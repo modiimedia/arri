@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import {
     $$Book,
@@ -411,6 +411,17 @@ describe('UnionExternal', () => {
         }
         expect(cloned).not.toStrictEqual(value);
     });
+    test('URL query string output is unsupported', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        expect(
+            $$UnionExternal.toUrlSearchParamsString({
+                type: 'boolean',
+                value: true,
+            }),
+        ).toBe('');
+        expect(warn).toHaveBeenCalledOnce();
+        warn.mockRestore();
+    });
 });
 
 describe('UnionInternal', () => {
@@ -445,6 +456,37 @@ describe('UnionInternal', () => {
             cloned.width = 100;
         }
         expect(cloned).not.toStrictEqual(targetValue);
+    });
+    test('JSON parsing falls back to new() for a missing or unknown tag', () => {
+        expect($$UnionInternal.fromJsonString('{}')).toStrictEqual(
+            $$UnionInternal.new(),
+        );
+        expect(
+            $$UnionInternal.fromJsonString(
+                '{"shape":"triangle","width":50,"height":25}',
+            ),
+        ).toStrictEqual($$UnionInternal.new());
+    });
+    test('Validation rejects a known tag with invalid fields', () => {
+        expect(
+            $$UnionInternal.validate({
+                shape: 'circle',
+                width: 50,
+                height: 25,
+            }),
+        ).toBe(false);
+        expect($$UnionInternal.validate({ width: 50, height: 25 })).toBe(false);
+    });
+    test('URL query string output', () => {
+        expect($$UnionInternal.toUrlSearchParamsString(targetValue)).toBe(
+            'shape=rectangle&width=50&height=25',
+        );
+        expect(
+            $$UnionInternal.toUrlSearchParamsString({
+                shape: 'circle',
+                radius: 2.5,
+            }),
+        ).toBe('shape=circle&radius=2.5');
     });
 });
 
@@ -504,6 +546,25 @@ describe('UnionAdjacent', () => {
             cloned.data.content = 'hello world!!!';
         }
         expect(cloned).not.toStrictEqual(value);
+    });
+    test('JSON parsing falls back to new() for a missing or unknown tag', () => {
+        expect($$UnionAdjacent.fromJsonString('{}')).toStrictEqual(
+            $$UnionAdjacent.new(),
+        );
+        expect(
+            $$UnionAdjacent.fromJsonString('{"kind":"triangle","data":true}'),
+        ).toStrictEqual($$UnionAdjacent.new());
+    });
+    test('URL query string output is unsupported', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        expect(
+            $$UnionAdjacent.toUrlSearchParamsString({
+                kind: 'boolean',
+                data: true,
+            }),
+        ).toBe('');
+        expect(warn).toHaveBeenCalledOnce();
+        warn.mockRestore();
     });
 });
 
