@@ -8,7 +8,7 @@ import {
 } from './common';
 import { tsObjectFromSchema } from './object';
 
-export function tsTaggedUnionFromSchema(
+export function tsDiscriminatorFromSchema(
     schema: SchemaFormDiscriminator,
     context: CodegenContext,
 ): TsProperty {

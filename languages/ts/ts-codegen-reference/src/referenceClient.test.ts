@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import {
     $$Book,
@@ -10,6 +10,9 @@ import {
     $$ObjectWithNullableFields,
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
+    $$UnionAdjacent,
+    $$UnionExternal,
+    $$UnionInternal,
     Book,
     BookClone,
     Enumerator,
@@ -20,6 +23,9 @@ import {
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
+    UnionAdjacent,
+    UnionExternal,
+    UnionInternal,
 } from './referenceClient';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -117,11 +123,17 @@ describe('ObjectWithEveryType', () => {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: testDate,
+        unionExternal: {
+            type: 'array',
+            value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: testDate,
         },
         any: 'hello world',
     };
@@ -147,6 +159,11 @@ describe('ObjectWithEveryType', () => {
         expect(targetValue).toStrictEqual(output);
         output.array[0] = false;
         expect(targetValue).not.toStrictEqual(output);
+        const output2 = ObjectWithEveryTypeClone(targetValue);
+        if (output2.unionInternal.shape === 'circle') {
+            output2.unionInternal.radius = 100;
+        }
+        expect(targetValue).not.toStrictEqual(output2);
     });
 });
 
@@ -169,7 +186,9 @@ describe('ObjectWithOptionalFields', () => {
         object: undefined,
         array: undefined,
         record: undefined,
-        discriminator: undefined,
+        unionExternal: undefined,
+        unionInternal: undefined,
+        unionAdjacent: undefined,
         any: undefined,
     };
     const noUndefinedTargetValue: ObjectWithOptionalFields = {
@@ -196,11 +215,17 @@ describe('ObjectWithOptionalFields', () => {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: testDate,
+        unionExternal: {
+            type: 'array',
+            value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: testDate,
         },
         any: 'hello world',
     };
@@ -247,7 +272,9 @@ describe('ObjectWithNullableFields', () => {
         object: null,
         array: null,
         record: null,
-        discriminator: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         any: null,
     };
     const noNullTargetValue: ObjectWithNullableFields = {
@@ -274,11 +301,17 @@ describe('ObjectWithNullableFields', () => {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: testDate,
+        unionExternal: {
+            type: 'array',
+            value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'boolean',
+            data: true,
         },
         any: { message: 'hello world' },
     };
@@ -303,6 +336,235 @@ describe('ObjectWithNullableFields', () => {
         expect(
             $$ObjectWithNullableFields.toJsonString(noNullTargetValue),
         ).toEqual(noNullJsonReference);
+    });
+});
+
+describe('UnionExternal', () => {
+    const emptyJsonReference = testFile(
+        'ObjectWithOptionalFields_AllUndefined.json',
+    );
+    const variants: { name: string; value: UnionExternal; file: string }[] = [
+        {
+            name: 'object',
+            value: {
+                type: 'object',
+                value: { id: '1', content: 'hello world' },
+            },
+            file: 'UnionExternal_Object.json',
+        },
+        {
+            name: 'array',
+            value: { type: 'array', value: ['hello', 'world'] },
+            file: 'UnionExternal_Array.json',
+        },
+        {
+            name: 'boolean',
+            value: { type: 'boolean', value: true },
+            file: 'UnionExternal_Boolean.json',
+        },
+        {
+            name: 'nullable-timestamp',
+            value: { type: 'nullable-timestamp', value: testDate },
+            file: 'UnionExternal_Timestamp.json',
+        },
+        {
+            name: 'nullable-timestamp (null)',
+            value: { type: 'nullable-timestamp', value: null },
+            file: 'UnionExternal_TimestampNull.json',
+        },
+    ];
+    for (const variant of variants) {
+        describe(`${variant.name} variant`, () => {
+            const jsonReference = testFile(variant.file);
+            test('JSON Parsing', () => {
+                expect(
+                    $$UnionExternal.fromJsonString(jsonReference),
+                ).toStrictEqual(variant.value);
+            });
+            test('JSON Output', () => {
+                expect($$UnionExternal.toJsonString(variant.value)).toBe(
+                    jsonReference,
+                );
+            });
+            test('Validation', () => {
+                expect($$UnionExternal.validate(variant.value)).toBe(true);
+            });
+            test('Cloning', () => {
+                const cloned = $$UnionExternal.clone(variant.value);
+                expect(cloned).toStrictEqual(variant.value);
+            });
+        });
+    }
+    test('JSON parsing falls back to new() when no variant matches', () => {
+        expect(
+            $$UnionExternal.fromJsonString(emptyJsonReference),
+        ).toStrictEqual($$UnionExternal.new());
+    });
+    test('Cloning is deep', () => {
+        const value: UnionExternal = {
+            type: 'object',
+            value: { id: '1', content: 'hello world' },
+        };
+        const cloned = $$UnionExternal.clone(value);
+        if (cloned.type === 'object') {
+            cloned.value.content = 'hello world!!!';
+        }
+        expect(cloned).not.toStrictEqual(value);
+    });
+    test('URL query string output is unsupported', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        expect(
+            $$UnionExternal.toUrlSearchParamsString({
+                type: 'boolean',
+                value: true,
+            }),
+        ).toBe('');
+        expect(warn).toHaveBeenCalledOnce();
+        warn.mockRestore();
+    });
+});
+
+describe('UnionInternal', () => {
+    const targetValue: UnionInternal = {
+        shape: 'rectangle',
+        width: 10.7,
+        height: 5.3,
+    };
+    const jsonReference = testFile('UnionInternal_Rectangle.json');
+    test('JSON Parsing', () => {
+        expect($$UnionInternal.fromJsonString(jsonReference)).toStrictEqual(
+            targetValue,
+        );
+    });
+    test('JSON Output', () => {
+        expect($$UnionInternal.toJsonString(targetValue)).toBe(jsonReference);
+    });
+    test('Validation', () => {
+        expect($$UnionInternal.validate(targetValue)).toBe(true);
+        expect(
+            $$UnionInternal.validate({
+                shape: 'triangle',
+                width: 50,
+                height: 25,
+            }),
+        ).toBe(false);
+    });
+    test('Cloning', () => {
+        const cloned = $$UnionInternal.clone(targetValue);
+        expect(cloned).toStrictEqual(targetValue);
+        if (cloned.shape === 'rectangle') {
+            cloned.width = 100;
+        }
+        expect(cloned).not.toStrictEqual(targetValue);
+    });
+    test('JSON parsing falls back to new() for a missing or unknown tag', () => {
+        expect($$UnionInternal.fromJsonString('{}')).toStrictEqual(
+            $$UnionInternal.new(),
+        );
+        expect(
+            $$UnionInternal.fromJsonString(
+                '{"shape":"triangle","width":50,"height":25}',
+            ),
+        ).toStrictEqual($$UnionInternal.new());
+    });
+    test('Validation rejects a known tag with invalid fields', () => {
+        expect(
+            $$UnionInternal.validate({
+                shape: 'circle',
+                width: 50,
+                height: 25,
+            }),
+        ).toBe(false);
+        expect($$UnionInternal.validate({ width: 50, height: 25 })).toBe(false);
+    });
+    test('URL query string output', () => {
+        expect($$UnionInternal.toUrlSearchParamsString(targetValue)).toBe(
+            'shape=rectangle&width=10.7&height=5.3',
+        );
+        expect(
+            $$UnionInternal.toUrlSearchParamsString({
+                shape: 'circle',
+                radius: 2.5,
+            }),
+        ).toBe('shape=circle&radius=2.5');
+    });
+});
+
+describe('UnionAdjacent', () => {
+    const variants: { name: string; value: UnionAdjacent; file: string }[] = [
+        {
+            name: 'object',
+            value: {
+                kind: 'object',
+                data: { id: '1', content: 'hello world' },
+            },
+            file: 'UnionAdjacent_Object.json',
+        },
+        {
+            name: 'nullable-timestamp (null)',
+            value: { kind: 'nullable-timestamp', data: null },
+            file: 'UnionAdjacent_TimestampNull.json',
+        },
+    ];
+    for (const variant of variants) {
+        describe(`${variant.name} variant`, () => {
+            const jsonReference = testFile(variant.file);
+            test('JSON Parsing', () => {
+                expect(
+                    $$UnionAdjacent.fromJsonString(jsonReference),
+                ).toStrictEqual(variant.value);
+            });
+            test('JSON Output', () => {
+                expect($$UnionAdjacent.toJsonString(variant.value)).toBe(
+                    jsonReference,
+                );
+            });
+            test('Validation', () => {
+                expect($$UnionAdjacent.validate(variant.value)).toBe(true);
+            });
+            test('Cloning', () => {
+                const cloned = $$UnionAdjacent.clone(variant.value);
+                expect(cloned).toStrictEqual(variant.value);
+            });
+        });
+    }
+    test('Validation rejects mismatched tag and value', () => {
+        expect(
+            $$UnionAdjacent.validate({
+                kind: 'boolean',
+                data: { id: '1', content: 'hello world' },
+            }),
+        ).toBe(false);
+    });
+    test('Cloning is deep', () => {
+        const value: UnionAdjacent = {
+            kind: 'object',
+            data: { id: '1', content: 'hello world' },
+        };
+        const cloned = $$UnionAdjacent.clone(value);
+        if (cloned.kind === 'object') {
+            cloned.data.content = 'hello world!!!';
+        }
+        expect(cloned).not.toStrictEqual(value);
+    });
+    test('JSON parsing falls back to new() for a missing or unknown tag', () => {
+        expect($$UnionAdjacent.fromJsonString('{}')).toStrictEqual(
+            $$UnionAdjacent.new(),
+        );
+        expect(
+            $$UnionAdjacent.fromJsonString('{"kind":"triangle","data":true}'),
+        ).toStrictEqual($$UnionAdjacent.new());
+    });
+    test('URL query string output is unsupported', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        expect(
+            $$UnionAdjacent.toUrlSearchParamsString({
+                kind: 'boolean',
+                data: true,
+            }),
+        ).toBe('');
+        expect(warn).toHaveBeenCalledOnce();
+        warn.mockRestore();
     });
 });
 

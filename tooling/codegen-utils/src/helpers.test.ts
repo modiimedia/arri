@@ -1,7 +1,10 @@
 import {
     AppDefinition,
+    matchSchemaForms,
     removeDisallowedChars,
     type RpcDefinition,
+    Schema,
+    SchemaMatcher,
     setNestedObjectProperty,
     stringStartsWithNumber,
     unflattenObject,
@@ -215,4 +218,118 @@ describe('String utils', () => {
             expect(stringStartsWithNumber(input)).toBe(false);
         }
     });
+});
+
+describe('matchSchemaForms()', () => {
+    const testMatcher: SchemaMatcher<keyof SchemaMatcher<string>> = {
+        type: (_) => 'type',
+        enum: (_) => 'enum',
+        properties: (_) => 'properties',
+        elements: (_) => 'elements',
+        values: (_) => 'values',
+        discriminator: (_) => 'discriminator',
+        union: (_) => 'union',
+        ref: (_) => 'ref',
+        empty: (_) => 'empty',
+    };
+    const testCases: {
+        title: string;
+        input: Schema;
+        output: keyof SchemaMatcher<string>;
+    }[] = [
+        {
+            title: 'SchemaFormType',
+            input: { type: 'boolean' },
+            output: 'type',
+        },
+        {
+            title: 'SchemaFormEnum',
+            input: { enum: ['foo', 'bar'] },
+            output: 'enum',
+        },
+        {
+            title: 'SchemaFormProperties',
+            input: {
+                properties: { foo: { type: 'string' } },
+                optionalProperties: { bar: { type: 'boolean' } },
+            },
+            output: 'properties',
+        },
+        {
+            title: 'SchemaFormElements',
+            input: {
+                elements: {
+                    type: 'boolean',
+                },
+            },
+            output: 'elements',
+        },
+        {
+            title: 'SchemaFormValues',
+            input: {
+                values: {
+                    type: 'timestamp',
+                },
+            },
+            output: 'values',
+        },
+        {
+            title: 'SchemaFormDiscriminator',
+            input: {
+                discriminator: 'type',
+                mapping: {
+                    foo: {
+                        properties: {
+                            foo: {
+                                type: 'string',
+                            },
+                        },
+                    },
+                },
+            },
+            output: 'discriminator',
+        },
+        {
+            title: 'SchemaFormUnion',
+            input: {
+                union: {},
+            },
+            output: 'union',
+        },
+        {
+            title: 'SchemaFormRef',
+            input: {
+                ref: 'Foo',
+            },
+            output: 'ref',
+        },
+        {
+            title: 'SchemaFormEmpty',
+            input: {},
+            output: 'empty',
+        },
+        {
+            title: 'SchemaFormEmpty with metadata',
+
+            input: {
+                metadata: {},
+            },
+            output: 'empty',
+        },
+        {
+            title: 'Unknown schema falls back to SchemaFormEmpty',
+            input: {
+                foo: {},
+            } as any,
+            output: 'empty',
+        },
+    ];
+    for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i]!;
+        test(testCase.title, () => {
+            expect(matchSchemaForms(testCase.input, testMatcher)).toBe(
+                testCase.output,
+            );
+        });
+    }
 });

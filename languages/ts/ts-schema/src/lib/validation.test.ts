@@ -12,13 +12,16 @@ for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
     test(key, () => {
         for (const input of suite.goodInputs) {
-            expect(a.validate(suite.schema, input));
+            expect(a.validate(suite.schema, input)).toBe(true);
             const json = a.serializeUnsafe(suite.schema, input);
-            expect(isEqual(a.parseUnsafe(suite.schema, json), input));
+            // undefined fields and unknown keys get stripped so compare against the parsed input
+            expect(a.parseUnsafe(suite.schema, json)).toStrictEqual(
+                a.parseUnsafe(suite.schema, input),
+            );
         }
         for (const input of suite.badInputs) {
-            expect(!a.validate(suite.schema, input));
-            expect(!a.parse(suite.schema, input).success);
+            expect(a.validate(suite.schema, input)).toBe(false);
+            expect(a.parse(suite.schema, input).success).toBe(false);
         }
     });
 }
@@ -30,12 +33,18 @@ describe('parsing test suites', () => {
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
                 const expectedResult = suite.expectedResults[i];
-                expect(
-                    isEqual(a.parseUnsafe(suite.schema, input), expectedResult),
-                );
+                const result = a.parse(suite.schema, input);
+                if (!result.success) {
+                    console.error('input = ', input);
+                    console.error('error(s) = ', result.errors);
+                }
+                expect(result.success).toBe(true);
+                if (result.success) {
+                    expect(isEqual(result.value, expectedResult)).toBe(true);
+                }
             }
             for (const input of suite.badInputs) {
-                expect(!a.parse(suite.schema, input).success);
+                expect(a.parse(suite.schema, input).success).toBe(false);
             }
         });
     }
@@ -287,15 +296,15 @@ describe('errors()', () => {
         const result4 = a.errors(schema, '');
         expect(result1.length).toBe(1);
         expect(result1[0]!.instancePath).toBe('/messageType');
-        expect(result1[0]!.schemaPath).toBe('/discriminator');
+        expect(result1[0]!.schemaPath).toBe('/tagKey');
         expect(result2.length).toBe(1);
         expect(result2[0]!.instancePath).toBe('/imageUrl');
         expect(result2[0]!.schemaPath).toBe(
-            '/mapping/IMAGE/properties/imageUrl/type',
+            '/union/IMAGE/properties/imageUrl/type',
         );
         expect(result3.length).toBe(0);
         expect(result4.length).toBe(1);
         expect(result4[0]!.instancePath).toBe('');
-        expect(result4[0]!.schemaPath).toBe('/discriminator');
+        expect(result4[0]!.schemaPath).toBe('/union');
     });
 });

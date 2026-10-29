@@ -8,6 +8,7 @@ import {
     type ARefSchema,
     ARefSchemaWithAdapters,
     type ASchemaOptions,
+    AUnionSchemaWithAdapters,
     SchemaValidator,
     VALIDATOR_KEY,
 } from '../schemas';
@@ -16,7 +17,10 @@ let recursiveTypeCount = 0;
 
 type RecursiveCallback<T> = (
     self: ARefSchema<T>,
-) => AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
+) =>
+    | AObjectSchemaWithAdapters<T>
+    | ADiscriminatorSchemaWithAdapters<T>
+    | AUnionSchemaWithAdapters<T>;
 
 /**
  * @example
@@ -37,7 +41,10 @@ type RecursiveCallback<T> = (
 export function recursive<T = any>(
     callback: RecursiveCallback<T>,
     metadata?: ASchemaOptions,
-): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
+):
+    | AObjectSchemaWithAdapters<T>
+    | ADiscriminatorSchemaWithAdapters<T>
+    | AUnionSchemaWithAdapters<T>;
 /**
  * Recursive ID Shorthand
  *
@@ -60,11 +67,17 @@ export function recursive<T = any>(
 export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
-): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T>;
+):
+    | AObjectSchemaWithAdapters<T>
+    | ADiscriminatorSchemaWithAdapters<T>
+    | AUnionSchemaWithAdapters<T>;
 export function recursive<T = any>(
     propA: RecursiveCallback<T> | string,
     propB?: ASchemaOptions | RecursiveCallback<T>,
-): AObjectSchemaWithAdapters<T> | ADiscriminatorSchemaWithAdapters<T> {
+):
+    | AObjectSchemaWithAdapters<T>
+    | ADiscriminatorSchemaWithAdapters<T>
+    | AUnionSchemaWithAdapters<T> {
     const isIdShorthand = typeof propA === 'string';
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
     const options = isIdShorthand

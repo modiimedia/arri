@@ -94,6 +94,40 @@ type CompiledValidatorWithAdapters<
 > = CompiledValidator<TSchema, TIncludeCode> &
     StandardSchemaV1<InferType<TSchema>>;
 
+export type DebugCodeOutputFn = (output: {
+    /**
+     * Generated function body. The input variable is named `input`.
+     */
+    code: string;
+    schema: Schema;
+}) => void;
+
+const debug: {
+    parse?: DebugCodeOutputFn;
+    serialize?: DebugCodeOutputFn;
+    validate?: DebugCodeOutputFn;
+} = {};
+
+/**
+ * Register callbacks that receive the generated code whenever a parser, serializer, or validator is compiled.
+ * Each call replaces all previously registered callbacks. Call with `{}` to disable.
+ *
+ * @example
+ * debugCodeOutput({
+ *     parse: ({ code }) => console.log(code),
+ *     validate: ({ code }) => fs.writeFileSync('validate.js', `function validate(input) {\n${code}\n}`),
+ * });
+ */
+export function debugCodeOutput(args: {
+    parse?: DebugCodeOutputFn;
+    serialize?: DebugCodeOutputFn;
+    validate?: DebugCodeOutputFn;
+}) {
+    debug.parse = args.parse;
+    debug.serialize = args.serialize;
+    debug.validate = args.validate;
+}
+
 /**
  * Create compiled versions of the `decode()`, `validate()`, and `serialize()` functions
  */
@@ -105,6 +139,7 @@ export function compile<
     includeCompiledCode?: TIncludeCompiled,
 ): CompiledValidatorWithAdapters<TSchema, TIncludeCompiled> {
     const validateCode = getSchemaValidationCode('input', schema);
+    debug.validate?.({ code: validateCode, schema });
     const parser = getCompiledParser('input', schema, false);
     const parserFn = parser.fn;
     const coercer = getCompiledParser('input', schema, true);
@@ -254,6 +289,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     shouldCoerce: boolean,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaDecodingCode(input, schema, shouldCoerce);
+    debug.parse?.({ code, schema });
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'float32':
@@ -958,6 +994,7 @@ export function getCompiledSerializer<TSchema extends ASchema>(
     schema: TSchema,
 ): { fn: (input: InferType<TSchema>) => string; code: string } {
     const code = getSchemaSerializationCode('input', schema);
+    debug.serialize?.({ code, schema });
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case 'string':

@@ -7,7 +7,7 @@ for (const key of Object.keys(validationTestSuites)) {
     const Compiled = compile(suite.schema, true);
     for (let i = 0; i < suite.goodInputs.length; i++) {
         const input = suite.goodInputs[i]!;
-        test(`${key} - ${i + 1}`, () => {
+        test(`${key} -> ${i + 1}`, () => {
             try {
                 const result = Compiled.serializeUnsafe(input);
                 expect(typeof result === 'string').toBe(true);
@@ -28,6 +28,8 @@ for (const key of Object.keys(validationTestSuites)) {
                     console.error(Compiled.compiledCode.serialize);
                     console.error(result, 'SHOULD BE VALID');
                 }
+                expect(parseResult.success).toBe(true);
+                expect(result).toBe(a.serializeUnsafe(suite.schema, input));
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
@@ -48,13 +50,14 @@ for (const key of Object.keys(serializationTestSuites)) {
                 const result = Compiled.serializeUnsafe(input);
                 expect(typeof result).toBe('string');
                 if (
-                    !isAScalarSchema(suite.schema) ||
+                    !isAScalarSchema(suite.schema) &&
                     !isAStringEnumSchema(suite.schema)
                 ) {
                     JSON.parse(result);
                 }
                 const parsedResult = Compiled.parse(result);
                 expect(parsedResult.success).toBe(true);
+                expect(result).toBe(a.serializeUnsafe(suite.schema, input));
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
@@ -86,12 +89,8 @@ it("doesn't serialize NaN", () => {
     const Schema = a.object({ num: a.number(), int: a.int32() });
     const Compiled = compile(Schema);
     const input = { num: NaN, int: NaN };
-    try {
-        expect(Compiled.serializeUnsafe(input));
-        expect(a.serializeUnsafe(Schema, input));
-    } catch (_) {
-        expect(true).toBe(true);
-    }
+    expect(() => Compiled.serializeUnsafe(input)).toThrow();
+    expect(() => a.serializeUnsafe(Schema, input)).toThrow();
 });
 it('serializes objects', () => {
     const Compiled = compile(
@@ -170,4 +169,43 @@ it('serializes any object', () => {
     };
     const result = Compiled.serializeUnsafe(input);
     expect(Compiled.parseUnsafe(result)).toStrictEqual(input);
+});
+
+it('serializes unions', () => {
+    const Schema = a.object({
+        message: a.string(),
+        metadata: a.union({
+            text: a.string(),
+            image: a.nullable(
+                a.object({
+                    url: a.string(),
+                    width: a.float64(),
+                    height: a.float64(),
+                }),
+            ),
+        }),
+    });
+    type Schema = a.infer<typeof Schema>;
+    const $$Schema = a.compile(Schema, true);
+    let input: Schema = {
+        message: 'hello world',
+        metadata: {
+            image: null,
+        },
+    };
+    let expectedOutput = `{"message":"hello world","metadata":{"image":null}}`;
+    expect($$Schema.serializeUnsafe(input)).toBe(expectedOutput);
+
+    input = {
+        message: 'foo',
+        metadata: {
+            image: {
+                url: 'https://example.com',
+                width: 10,
+                height: 10,
+            },
+        },
+    };
+    expectedOutput = `{"message":"foo","metadata":{"image":{"url":"https://example.com","width":10,"height":10}}}`;
+    expect($$Schema.serializeUnsafe(input)).toBe(expectedOutput);
 });

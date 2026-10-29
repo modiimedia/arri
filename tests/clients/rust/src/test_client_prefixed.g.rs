@@ -220,6 +220,26 @@ impl TestClientPrefixed {
         )
         .await
     }
+    pub async fn send_recursive_union_v2(
+        &self,
+        params: FooRecursiveUnionV2,
+    ) -> Result<FooRecursiveUnionV2, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-recursive-union-v2",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return FooRecursiveUnionV2::from_json_string(body),
+        )
+        .await
+    }
     pub async fn stream_auto_reconnect<OnEvent>(
         &self,
         params: FooAutoReconnectParams,
@@ -819,6 +839,7 @@ pub struct FooObjectWithEveryType {
     pub object: FooObjectWithEveryTypeObject,
     pub record: BTreeMap<String, u64>,
     pub discriminator: FooObjectWithEveryTypeDiscriminator,
+    pub r#union: serde_json::Value,
     pub nested_object: FooObjectWithEveryTypeNestedObject,
     pub nested_array: Vec<Vec<FooObjectWithEveryTypeNestedArrayElementElement>>,
 }
@@ -845,6 +866,7 @@ impl ArriModel for FooObjectWithEveryType {
             object: FooObjectWithEveryTypeObject::new(),
             record: BTreeMap::new(),
             discriminator: FooObjectWithEveryTypeDiscriminator::new(),
+            r#union: serde_json::Value::Null,
             nested_object: FooObjectWithEveryTypeNestedObject::new(),
             nested_array: Vec::new(),
         }
@@ -987,6 +1009,10 @@ impl ArriModel for FooObjectWithEveryType {
                     },
                     _ => FooObjectWithEveryTypeDiscriminator::new(),
                 };
+                let r#union = match _val_.get("union") {
+                    Some(union_val) => union_val.to_owned(),
+                    _ => serde_json::Value::Null,
+                };
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => {
                         FooObjectWithEveryTypeNestedObject::from_json(nested_object_val.to_owned())
@@ -1037,6 +1063,7 @@ impl ArriModel for FooObjectWithEveryType {
                     object,
                     record,
                     discriminator,
+                    r#union,
                     nested_object,
                     nested_array,
                 }
@@ -1110,6 +1137,12 @@ impl ArriModel for FooObjectWithEveryType {
         _json_output_.push('}');
         _json_output_.push_str(",\"discriminator\":");
         _json_output_.push_str(&self.discriminator.to_json_string().as_str());
+        _json_output_.push_str(",\"union\":");
+        _json_output_.push_str(
+            serde_json::to_string(&self.r#union)
+                .unwrap_or("null".to_string())
+                .as_str(),
+        );
         _json_output_.push_str(",\"nestedObject\":");
         _json_output_.push_str(&self.nested_object.to_json_string().as_str());
         _json_output_.push_str(",\"nestedArray\":");
@@ -1155,6 +1188,7 @@ impl ArriModel for FooObjectWithEveryType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/union.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/nestedArray.");
         _query_parts_.join("&")
@@ -1640,6 +1674,7 @@ pub struct FooObjectWithEveryNullableType {
     pub object: Option<FooObjectWithEveryNullableTypeObject>,
     pub record: Option<BTreeMap<String, Option<u64>>>,
     pub discriminator: Option<FooObjectWithEveryNullableTypeDiscriminator>,
+    pub r#union: serde_json::Value,
     pub nested_object: Option<FooObjectWithEveryNullableTypeNestedObject>,
     pub nested_array:
         Option<Vec<Option<Vec<Option<FooObjectWithEveryNullableTypeNestedArrayElementElement>>>>>,
@@ -1667,6 +1702,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
             object: None,
             record: None,
             discriminator: None,
+            r#union: serde_json::Value::Null,
             nested_object: None,
             nested_array: None,
         }
@@ -1849,6 +1885,10 @@ impl ArriModel for FooObjectWithEveryNullableType {
                     },
                     _ => None,
                 };
+                let r#union = match _val_.get("union") {
+                    Some(union_val) => union_val.to_owned(),
+                    _ => serde_json::Value::Null,
+                };
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => match nested_object_val {
                         serde_json::Value::Object(_) => {
@@ -1913,6 +1953,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
                     object,
                     record,
                     discriminator,
+                    r#union,
                     nested_object,
                     nested_array,
                 }
@@ -2126,6 +2167,12 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 _json_output_.push_str("null");
             }
         };
+        _json_output_.push_str(",\"union\":");
+        _json_output_.push_str(
+            serde_json::to_string(&self.r#union)
+                .unwrap_or("null".to_string())
+                .as_str(),
+        );
         _json_output_.push_str(",\"nestedObject\":");
         match &self.nested_object {
             Some(nested_object_val) => {
@@ -2298,6 +2345,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/record.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryNullableType/union.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.");
         _query_parts_.join("&")
@@ -3284,6 +3332,7 @@ pub struct FooObjectWithEveryOptionalType {
     pub object: Option<FooObjectWithEveryOptionalTypeObject>,
     pub record: Option<BTreeMap<String, u64>>,
     pub discriminator: Option<FooObjectWithEveryOptionalTypeDiscriminator>,
+    pub r#union: Option<serde_json::Value>,
     pub nested_object: Option<FooObjectWithEveryOptionalTypeNestedObject>,
     pub nested_array: Option<Vec<Vec<FooObjectWithEveryOptionalTypeNestedArrayElementElement>>>,
 }
@@ -3310,6 +3359,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
             object: None,
             record: None,
             discriminator: None,
+            r#union: None,
             nested_object: None,
             nested_array: None,
         }
@@ -3489,6 +3539,10 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                     },
                     _ => None,
                 };
+                let r#union = match _val_.get("union") {
+                    Some(union_val) => Some(union_val.to_owned()),
+                    _ => None,
+                };
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => match nested_object_val {
                         serde_json::Value::Object(_) => {
@@ -3544,6 +3598,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                     object,
                     record,
                     discriminator,
+                    r#union,
                     nested_object,
                     nested_array,
                 }
@@ -3785,6 +3840,21 @@ impl ArriModel for FooObjectWithEveryOptionalType {
             }
             _ => {}
         };
+        match &self.r#union {
+            Some(union_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"union\":");
+                _json_output_.push_str(
+                    serde_json::to_string(union_val)
+                        .unwrap_or("null".to_string())
+                        .as_str(),
+                );
+                _has_keys_ = true;
+            }
+            _ => {}
+        };
         match &self.nested_object {
             Some(nested_object_val) => {
                 if _has_keys_ {
@@ -3917,6 +3987,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/record.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryOptionalType/union.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.");
         _query_parts_.join("&")

@@ -125,7 +125,7 @@ describe('int64', () => {
             BigInt('-115191141'),
         ];
         for (const input of inputs) {
-            expect(a.parse(Schema, input).success);
+            expect(a.parse(Schema, input).success).toBe(true);
         }
     });
     it('rejects invalid inputs', () => {
@@ -133,14 +133,13 @@ describe('int64', () => {
         const inputs = [
             '9223372036854775808',
             '-9223372036854775809',
-            -1,
             // eslint-disable-next-line no-loss-of-precision
             9999999999999999999999999999999999999999999,
             null,
             '14315h',
         ];
         for (const input of inputs) {
-            expect(!a.parse(Schema, input).success);
+            expect(a.parse(Schema, input).success).toBe(false);
         }
     });
     it('serializes to json string', () => {

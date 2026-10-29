@@ -1,6 +1,23 @@
 import {
     AppDefinition,
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormRef,
+    isSchemaFormType,
+    isSchemaFormUnion,
+    isSchemaFormValues,
     RpcDefinition,
+    Schema,
+    SchemaFormDiscriminator,
+    SchemaFormElements,
+    SchemaFormEnum,
+    SchemaFormProperties,
+    SchemaFormRef,
+    SchemaFormType,
+    SchemaFormUnion,
+    SchemaFormValues,
     ServiceDefinition,
 } from '@arrirpc/type-defs';
 
@@ -88,4 +105,34 @@ export function normalizeWhitespace(input: string) {
         return normalizeWhitespace(result.split('\n\n').join('\n'));
     }
     return result;
+}
+
+export type SchemaMatcher<T> = {
+    type: (schema: SchemaFormType) => T;
+    enum: (schema: SchemaFormEnum) => T;
+    properties: (schema: SchemaFormProperties) => T;
+    elements: (schema: SchemaFormElements) => T;
+    values: (schema: SchemaFormValues) => T;
+    /**
+     * @deprecated
+     */
+    discriminator: (schema: SchemaFormDiscriminator) => T;
+    union: (schema: SchemaFormUnion) => T;
+    ref: (schema: SchemaFormRef) => T;
+    empty: (schema: SchemaFormElements) => T;
+};
+
+export function matchSchemaForms<T = void>(
+    schema: Schema,
+    matcher: SchemaMatcher<T>,
+) {
+    if (isSchemaFormType(schema)) return matcher.type(schema);
+    if (isSchemaFormEnum(schema)) return matcher.enum(schema);
+    if (isSchemaFormProperties(schema)) return matcher.properties(schema);
+    if (isSchemaFormElements(schema)) return matcher.elements(schema);
+    if (isSchemaFormValues(schema)) return matcher.values(schema);
+    if (isSchemaFormDiscriminator(schema)) return matcher.discriminator(schema);
+    if (isSchemaFormUnion(schema)) return matcher.union(schema);
+    if (isSchemaFormRef(schema)) return matcher.ref(schema);
+    return matcher.empty(schema as any);
 }

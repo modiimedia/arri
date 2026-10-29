@@ -1,20 +1,20 @@
 import {
-    isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEmpty,
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     type Schema,
-    type SchemaFormDiscriminator,
     type SchemaFormElements,
     type SchemaFormEmpty,
     type SchemaFormEnum,
     type SchemaFormProperties,
     type SchemaFormRef,
     type SchemaFormType,
+    type SchemaFormUnion,
     type SchemaFormValues,
 } from '@arrirpc/type-defs';
 import { camelCase } from 'scule';
@@ -33,7 +33,7 @@ import {
     uint32Max,
     uint32Min,
 } from '../lib/numberConstants';
-import { type TemplateInput } from './common';
+import { refFunctionName, type TemplateInput } from './common';
 
 export function createParsingTemplate(
     input: string,
@@ -69,12 +69,11 @@ export function createParsingTemplate(
         subFunctions,
         shouldCoerce: shouldCoerce,
     });
-
     if (
         isSchemaFormProperties(schema) ||
         isSchemaFormValues(schema) ||
         isSchemaFormElements(schema) ||
-        isSchemaFormDiscriminator(schema)
+        isSchemaFormUnion(schema)
     ) {
         jsonParseCheck = `if (typeof ${input} === 'string') {
             const json = JSON.parse(${input});
@@ -147,8 +146,8 @@ export function schemaTemplate(input: TemplateInput): string {
     if (isSchemaFormValues(input.schema)) {
         return recordTemplate(input);
     }
-    if (isSchemaFormDiscriminator(input.schema)) {
-        return discriminatorTemplate(input);
+    if (isSchemaFormUnion(input.schema)) {
+        return unionTemplate(input);
     }
     if (isSchemaFormRef(input.schema)) {
         return refTemplate(input);
@@ -243,7 +242,16 @@ export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
 
 function getVarName(input: string): string {
     return camelCase(
-        input.split('.').join('_').split('[').join('_').split(']').join('_'),
+        input
+            .split('.')
+            .join('_')
+            .split('[')
+            .join('_')
+            .split(']')
+            .join('_')
+            .split('`')
+            .join('_')
+            .split('"'),
     );
 }
 
@@ -576,8 +584,8 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             input.schemaPath
         }", "Expected object");
     }`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
-    if (Object.keys(input.subFunctions).includes(fnName)) {
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
+    if (fnName in input.subFunctions) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
                     let _fnTarget
@@ -642,20 +650,94 @@ export function arrayTemplate(
     return mainTemplate;
 }
 
-export function discriminatorTemplate(
-    input: TemplateInput<SchemaFormDiscriminator>,
+export function unionTemplate(input: TemplateInput<SchemaFormUnion>): string {
+    if (input.schema.tagKey?.length && input.schema.valueKey?.length) {
+        return unionTemplateInternallyTaggedWithValueKey(
+            input,
+            input.schema.tagKey,
+            input.schema.valueKey,
+        );
+    }
+    if (input.schema.tagKey?.length) {
+        return unionTemplateInternallyTagged(input, input.schema.tagKey);
+    }
+    return unionTemplateExternallyTagged(input);
+}
+
+export function unionTemplateExternallyTagged(
+    input: TemplateInput<SchemaFormUnion>,
+): string {
+    function buildMain(inputName: string, targetName: string) {
+        const parsingParts: string[] = [];
+        const unionKeys = Object.keys(input.schema.union);
+        for (let i = 0; i < unionKeys.length; i++) {
+            const key = unionKeys[i]!;
+            const variantSchema = input.schema.union[key]!;
+            if (i > 0) {
+                parsingParts.push(`else if (\`${key}\` in ${inputName}) {`);
+            } else {
+                parsingParts.push(`if (\`${key}\` in ${inputName}) {`);
+            }
+            parsingParts.push(`${targetName} = {}`);
+            const innerTemplate = schemaTemplate({
+                val: `${inputName}.${key}`,
+                targetVal: `${targetName}.${key}`,
+                schema: variantSchema,
+                instancePath: `${input.instancePath}/${key}`,
+                schemaPath: `${input.schemaPath}/union/${key}`,
+                subFunctions: input.subFunctions,
+                shouldCoerce: input.shouldCoerce,
+            });
+            parsingParts.push(innerTemplate);
+            parsingParts.push('}');
+        }
+        parsingParts.push(`else {
+        $fallback("${input.instancePath}", "${input.schemaPath}/union", "no matching union variants");    
+    }`);
+        return parsingParts.join('\n');
+    }
+    let mainTemplate = buildMain(input.val, input.targetVal);
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
+    if (fnName in input.subFunctions) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
+                let _fnTarget;
+                ${buildMain('_fnVal', '_fnTarget')}
+                return _fnTarget;
+            }`;
+        }
+        mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
+    }
+    if (input.schema.isNullable) {
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}    
+        }`;
+    }
+    return mainTemplate;
+}
+
+export function unionTemplateInternallyTagged(
+    input: TemplateInput<SchemaFormUnion>,
+    tagKey: string,
 ): string {
     const switchParts: string[] = [];
-    const types = Object.keys(input.schema.mapping);
+    const types = Object.keys(input.schema.union);
     for (const type of types) {
-        const innerSchema = input.schema.mapping[type]!;
+        const innerSchema = input.schema.union[type]!;
+        if (!isSchemaFormProperties(innerSchema)) {
+            throw new Error(
+                `Union Error at ${input.schemaPath}/union/${type}: When tagKey is specified without tagValue all union variants must be of schema form properties.`,
+            );
+        }
         const template = objectTemplate({
             val: input.val,
             targetVal: input.targetVal,
             schema: innerSchema,
-            schemaPath: `${input.schemaPath}/mapping`,
+            schemaPath: `${input.schemaPath}/union/${type}`,
             instancePath: `${input.instancePath}`,
-            discriminatorKey: input.schema.discriminator,
+            discriminatorKey: tagKey,
             discriminatorValue: type,
             subFunctions: input.subFunctions,
             shouldCoerce: input.shouldCoerce,
@@ -668,14 +750,14 @@ export function discriminatorTemplate(
     let mainTemplate = `if (typeof ${input.val} === 'object' && ${
         input.val
     } !== null) {
-        switch(${input.val}.${input.schema.discriminator}) {
+        switch(${input.val}[\`${tagKey}\`]) {
             ${switchParts.join('\n')}
             default:
                 $fallback("${input.instancePath}", "${
                     input.schemaPath
-                }/mapping", "${input.val}.${
-                    input.schema.discriminator
-                } did not match one of the specified values");
+                }/union", "${input.val}[\`${
+                    tagKey
+                }\`] did not match one of the specified values");
                 break;
         }
     } else {
@@ -683,7 +765,7 @@ export function discriminatorTemplate(
             input.schemaPath
         }", "Expected Object.");
     }`;
-    const fnName = refFunctionName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
             input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
@@ -707,6 +789,62 @@ export function discriminatorTemplate(
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
+        }`;
+    }
+    return mainTemplate;
+}
+
+export function unionTemplateInternallyTaggedWithValueKey(
+    input: TemplateInput<SchemaFormUnion>,
+    tagKey: string,
+    valueKey: string,
+): string {
+    function buildMain(inputName: string, targetName: string) {
+        const parsingParts: string[] = [];
+        const unionKeys = Object.keys(input.schema.union);
+        parsingParts.push(`${targetName} = {};`);
+        parsingParts.push(`switch (${input.val}[\`${tagKey}\`]) {`);
+        for (let i = 0; i < unionKeys.length; i++) {
+            const key = unionKeys[i]!;
+            const variantSchema = input.schema.union[key]!;
+            const innerTemplate = schemaTemplate({
+                val: `${inputName}[\`${valueKey}\`]`,
+                targetVal: `${targetName}[\`${valueKey}\`]`,
+                schema: variantSchema,
+                instancePath: `${input.instancePath}/${valueKey}`,
+                schemaPath: `${input.schemaPath}/union/${key}`,
+                subFunctions: input.subFunctions,
+                shouldCoerce: input.shouldCoerce,
+            });
+            parsingParts.push(`        case \`${key}\`: {`);
+            parsingParts.push(`${targetName}[\`${tagKey}\`] = \`${key}\`;`);
+            parsingParts.push(innerTemplate);
+            parsingParts.push('break;');
+            parsingParts.push('}');
+        }
+        parsingParts.push(`
+        default:
+            $fallback("${input.instancePath}", "${input.schemaPath}/union", "no matching union variants");  
+    }`);
+        return parsingParts.join('\n');
+    }
+    let mainTemplate = buildMain(input.val, input.targetVal);
+    const fnName = refFunctionName('parse', input.schema.metadata?.id ?? '');
+    if (fnName in input.subFunctions) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
+                let _fnTarget;
+                ${buildMain('_fnVal', '_fnTarget')}
+                return _fnTarget;
+            }`;
+        }
+        mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
+    }
+    if (input.schema.isNullable) {
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}    
         }`;
     }
     return mainTemplate;
@@ -753,12 +891,8 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
     return mainTemplate;
 }
 
-function refFunctionName(id: string) {
-    return `__parse_${id}`;
-}
-
 export function refTemplate(input: TemplateInput<SchemaFormRef>): string {
-    const fnName = refFunctionName(input.schema.ref);
+    const fnName = refFunctionName('parse', input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }

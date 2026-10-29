@@ -68,13 +68,13 @@ const RecursiveObject = a.recursive<RecursiveObject>((self) =>
     }),
 );
 
-export type RecursiveUnion =
-    | { type: 'CHILD'; data: RecursiveUnion }
-    | { type: 'CHILDREN'; data: RecursiveUnion[] }
+export type RecursiveDiscriminator =
+    | { type: 'CHILD'; data: RecursiveDiscriminator }
+    | { type: 'CHILDREN'; data: RecursiveDiscriminator[] }
     | { type: 'TEXT'; data: string }
     | { type: 'SHAPE'; data: { width: number; height: number } };
-export const RecursiveUnion = a.recursive<RecursiveUnion>(
-    'RecursiveUnion',
+export const RecursiveDiscriminator = a.recursive<RecursiveDiscriminator>(
+    'RecursiveDiscriminator',
     (self) =>
         a.discriminator('type', {
             CHILD: a.object({ data: self }),
@@ -92,6 +92,85 @@ export const RecursiveUnion = a.recursive<RecursiveUnion>(
             }),
         }),
 );
+
+type RecursiveUnion =
+    | {
+          child: RecursiveUnion;
+      }
+    | {
+          children: RecursiveUnion[];
+      }
+    | {
+          text: string;
+      }
+    | {
+          shape: {
+              width: number;
+              height: number;
+              color: string;
+          };
+      };
+const RecursiveUnion = a.recursive<RecursiveUnion>(
+    (self) =>
+        a.union({
+            child: self,
+            children: a.array(self),
+            text: a.string(),
+            shape: a.object({
+                width: a.float64(),
+                height: a.float64(),
+                color: a.string(),
+            }),
+        }),
+    { id: 'RecursiveUnion' },
+);
+
+const UnionExternalTagging = a.union({
+    text: a.string(),
+    image: a.object({
+        url: a.string(),
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    references: a.array(a.string()),
+});
+type UnionExternalTagging = a.infer<typeof UnionExternalTagging>;
+
+const UnionInternalTagging = a.union(
+    {
+        rectangle: a.object({
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        circle: a.object({
+            radius: a.float64(),
+        }),
+    },
+    {
+        tagKey: 'kind',
+    },
+);
+type UnionInternalTagging = a.infer<typeof UnionInternalTagging>;
+
+const UnionInternalTaggingWithValue = a.union(
+    {
+        text: a.string(),
+        image: a.object({
+            url: a.string(),
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        references: a.array(a.string()),
+        nullableText: a.nullable(a.string()),
+    },
+    {
+        tagKey: 'type',
+        valueKey: 'data',
+    },
+);
+type UnionInternalTaggingWithValue = a.infer<
+    typeof UnionInternalTaggingWithValue
+>;
 
 export const validationTestSuites: Record<
     string,
@@ -613,6 +692,180 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    union: {
+        schema: a.union({
+            object: a.object({
+                foo: a.string(),
+                bar: a.boolean(),
+            }),
+            text: a.string(),
+            array: a.array(a.boolean()),
+            record: a.record(a.uint32()),
+            nullableBool: a.nullable(a.boolean()),
+        }),
+        goodInputs: [
+            {
+                object: {
+                    foo: 'string',
+                    bar: true,
+                },
+            },
+            {
+                text: 'hello world',
+            },
+            {
+                array: [true, false, false],
+            },
+            {
+                record: {
+                    a: 13,
+                    b: 49,
+                    c: 99,
+                },
+            },
+            {
+                nullableBool: true,
+            },
+            {
+                nullableBool: null,
+            },
+            {
+                nullableBool: false,
+            },
+        ],
+        badInputs: [
+            {
+                object: {
+                    foo: 'string',
+                    bar: 'true',
+                },
+            },
+            {
+                text: null,
+            },
+            {
+                array: [true, false, 1],
+            },
+            {
+                record: {
+                    a: 13,
+                    b: 49,
+                    c: '99',
+                },
+            },
+            {
+                nullableBool: 'true',
+            },
+            {
+                nullableBool: undefined,
+            },
+            {
+                foo: true,
+            },
+        ],
+    },
+    'union with external tagging (default)': {
+        schema: UnionExternalTagging,
+        goodInputs: [
+            { text: 'hello world' },
+            { image: { url: 'http://example.com', width: 15, height: 15 } },
+            { references: ['hello', 'world'] },
+        ] satisfies UnionExternalTagging[],
+        badInputs: [
+            { text: null },
+            { image: { url: 15, width: 15, height: 15 } },
+            { references: ['hello', false] },
+            { tags: ['hello', 'world'] },
+        ],
+    },
+    'union with internal tagging': {
+        schema: UnionInternalTagging,
+        goodInputs: [
+            { kind: 'rectangle', width: 15.5, height: 25.5 },
+            { kind: 'circle', radius: 16 },
+        ] satisfies UnionInternalTagging[],
+        badInputs: [
+            { kind: 'rectangle', width: true, height: 25.5 },
+            { kind: 'circle', radius: true },
+            { kind: 'triangle', width: 25.5, height: 25.5 },
+        ],
+    },
+    'union with internal tagging + value key': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            { type: 'text', data: 'hello world' },
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: 100, height: 50 },
+            },
+            { type: 'references', data: ['hello', 'world'] },
+            { type: 'nullableText', data: 'hello world' },
+            { type: 'nullableText', data: null },
+        ] satisfies UnionInternalTaggingWithValue[],
+        badInputs: [
+            { type: 'text', data: null },
+            {
+                type: 'image',
+                data: { src: 'https://example.com', width: 100, height: 50 },
+            },
+            { type: 'references', data: ['hello', 'world', false] },
+        ],
+    },
+    'nullable union with internal tagging': {
+        schema: a.nullable(UnionInternalTagging),
+        goodInputs: [
+            null,
+            { kind: 'rectangle', width: 15.5, height: 25.5 },
+            { kind: 'circle', radius: 16 },
+        ] satisfies (UnionInternalTagging | null)[],
+        badInputs: [
+            undefined,
+            'rectangle',
+            { kind: 'triangle', width: 25.5, height: 25.5 },
+        ],
+    },
+    'nullable union with internal tagging + value key': {
+        schema: a.nullable(UnionInternalTaggingWithValue),
+        goodInputs: [
+            null,
+            { type: 'text', data: 'hello world' },
+            { type: 'references', data: ['hello', 'world'] },
+        ] satisfies (UnionInternalTaggingWithValue | null)[],
+        badInputs: [undefined, 'text', { type: 'text', data: null }],
+    },
+    'object with tagged union fields': {
+        schema: a.object({
+            internal: UnionInternalTagging,
+            adjacent: a.nullable(UnionInternalTaggingWithValue),
+            list: a.array(UnionInternalTagging),
+        }),
+        goodInputs: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'text', data: 'hello world' },
+                list: [
+                    { kind: 'rectangle', width: 1, height: 2 },
+                    { kind: 'circle', radius: 3 },
+                ],
+            },
+            {
+                internal: { kind: 'rectangle', width: 1, height: 2 },
+                adjacent: null,
+                list: [],
+            },
+        ],
+        badInputs: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'text', data: 'hello world' },
+                list: [{ kind: 'triangle' }],
+            },
+            {
+                internal: { kind: 'circle', radius: 5 },
+                list: [],
+            },
+        ],
+    },
     'record with boolean values': {
         schema: a.record(a.boolean()),
         goodInputs: [{ a: true, b: false, [`"C"`]: true }, {}],
@@ -848,7 +1101,7 @@ export const validationTestSuites: Record<
         ],
     },
     'recursive discriminator': {
-        schema: RecursiveUnion,
+        schema: RecursiveDiscriminator,
         goodInputs: [
             {
                 type: 'CHILD',
@@ -894,6 +1147,63 @@ export const validationTestSuites: Record<
                         },
                     ],
                 },
+            },
+        ],
+    },
+    'recursive union': {
+        schema: RecursiveUnion,
+        goodInputs: [
+            {
+                children: [
+                    {
+                        children: [
+                            {
+                                child: {
+                                    text: 'hello world',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        child: {
+                            text: 'hello world',
+                        },
+                    },
+                    {
+                        shape: {
+                            width: 1.5,
+                            height: 1.5,
+                            color: '#fafafa',
+                        },
+                    },
+                ],
+            },
+        ],
+        badInputs: [
+            {
+                children: [
+                    {
+                        children: [
+                            {
+                                child: {
+                                    text: 'hello world',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        child: {
+                            text: 'hello world',
+                        },
+                    },
+                    {
+                        shape: {
+                            width: 1.5,
+                            height: 1.5,
+                            color: true,
+                        },
+                    },
+                ],
             },
         ],
     },
@@ -1308,6 +1618,142 @@ export const parsingTestSuites: Record<
                     }
                 }
             }`,
+        ],
+    },
+    'recursive union': {
+        schema: RecursiveUnion,
+        goodInputs: [
+            `{ "child": { "text" : "foo" } }`,
+            `{ "children": [ { "child": { "text": "foo" } } ] }`,
+        ],
+        expectedResults: [
+            { child: { text: 'foo' } },
+            { children: [{ child: { text: 'foo' } }] },
+        ],
+        badInputs: [],
+    },
+    'nullable union': {
+        schema: a.object({
+            union: a.nullable(
+                a.union({
+                    one: a.string(),
+                    many: a.array(a.string()),
+                }),
+            ),
+        }),
+        goodInputs: [
+            '{"union":null}',
+            '{"union":{"one":"foo"}}',
+            '{"union":{"many":["hello","world"]}}',
+        ],
+        expectedResults: [
+            { union: null },
+            { union: { one: 'foo' } },
+            { union: { many: ['hello', 'world'] } },
+        ],
+        badInputs: [],
+    },
+    'nullable union 2': {
+        schema: a.object({
+            /** @deprecated */
+            foo: a.nullable(a.string()),
+            bar: a.nullable(
+                a.union({
+                    A: a.object({
+                        title: a.string(),
+                        description: a.string(),
+                    }),
+                    B: a.stringEnum(['A', 'B', 'C']),
+                }),
+            ),
+        }),
+        goodInputs: [
+            `{"foo":null,"bar":null}`,
+            `{"foo":"hello world","bar":{"A":{"title":"foo","description":"foo"}}}`,
+        ],
+        expectedResults: [
+            { foo: null, bar: null },
+            {
+                foo: 'hello world',
+                bar: { A: { title: 'foo', description: 'foo' } },
+            },
+        ],
+        badInputs: [],
+    },
+    'union internally tagged': {
+        schema: UnionInternalTagging,
+        goodInputs: [
+            `{"kind":"rectangle","width":15,"height":10}`,
+            `{"kind":"circle","radius":22.5}`,
+        ],
+        expectedResults: [
+            { kind: 'rectangle', width: 15, height: 10 },
+            { kind: 'circle', radius: 22.5 },
+        ],
+        badInputs: [`{"kind":"triangle","width":15,"height":10}`],
+    },
+    'union internally tagged with value': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            `{"type":"text","data":"hello world"}`,
+            `{"type":"image","data":{"url":"https://www.youtube.com","width":1080,"height":720}}`,
+            `{"type":"references","data":["hello","world"]}`,
+        ],
+        expectedResults: [
+            { type: 'text', data: 'hello world' },
+            {
+                type: 'image',
+                data: {
+                    url: 'https://www.youtube.com',
+                    width: 1080,
+                    height: 720,
+                },
+            },
+            { type: 'references', data: ['hello', 'world'] },
+        ],
+        badInputs: [
+            { type: 'foo', data: { url: 'foo' } },
+            { data: 'hello world' },
+            { type: 'text', data: null },
+        ],
+    },
+    'nullable union internally tagged': {
+        schema: a.nullable(UnionInternalTagging),
+        goodInputs: ['null', `{"kind":"circle","radius":22.5}`],
+        expectedResults: [null, { kind: 'circle', radius: 22.5 }],
+        badInputs: [`{"kind":"triangle","width":15,"height":10}`],
+    },
+    'nullable union internally tagged with value': {
+        schema: a.nullable(UnionInternalTaggingWithValue),
+        goodInputs: ['null', `{"type":"text","data":"hello world"}`],
+        expectedResults: [null, { type: 'text', data: 'hello world' }],
+        badInputs: [`{"type":"text","data":null}`],
+    },
+    'object with tagged union fields': {
+        schema: a.object({
+            internal: UnionInternalTagging,
+            adjacent: a.nullable(UnionInternalTaggingWithValue),
+            list: a.array(UnionInternalTagging),
+        }),
+        goodInputs: [
+            `{"internal":{"kind":"circle","radius":5},"adjacent":{"type":"references","data":["a","b"]},"list":[{"kind":"rectangle","width":1,"height":2}]}`,
+            `{"internal":{"kind":"circle","radius":5},"adjacent":null,"list":[]}`,
+        ],
+        expectedResults: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'references', data: ['a', 'b'] },
+                list: [{ kind: 'rectangle', width: 1, height: 2 }],
+            },
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: null,
+                list: [],
+            },
+        ],
+        badInputs: [
+            `{"internal":{"kind":"circle","radius":5},"adjacent":null,"list":[{"kind":"triangle"}]}`,
+            `{"internal":{"kind":"circle"},"adjacent":null,"list":[]}`,
         ],
     },
 };
@@ -1766,6 +2212,38 @@ export const coercionTestSuites: Record<
                 ],
             },
         ],
+    },
+    'union with external tagging': {
+        schema: UnionExternalTagging,
+        goodInputs: [
+            { image: { url: 'https://example.com', width: '15', height: 20 } },
+        ],
+        expectedResults: [
+            { image: { url: 'https://example.com', width: 15, height: 20 } },
+        ],
+        badInputs: [{ image: { url: 'https://example.com', width: 'foo' } }],
+    },
+    'union with internal tagging': {
+        schema: UnionInternalTagging,
+        goodInputs: [{ kind: 'rectangle', width: '15.5', height: 25.5 }],
+        expectedResults: [{ kind: 'rectangle', width: 15.5, height: 25.5 }],
+        badInputs: [{ kind: 'triangle', width: '15.5', height: 25.5 }],
+    },
+    'union with internal tagging + value key': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: '100', height: 50 },
+            },
+        ],
+        expectedResults: [
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: 100, height: 50 },
+            },
+        ],
+        badInputs: [{ type: 'image', data: { url: 'https://example.com' } }],
     },
 };
 

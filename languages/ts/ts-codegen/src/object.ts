@@ -5,6 +5,7 @@ import {
     CodegenContext,
     getJsDocComment,
     getTsTypeName,
+    jsonKeyAccessor,
     TsProperty,
     validVarName,
 } from './common';
@@ -83,17 +84,19 @@ export function tsObjectFromSchema(
         const key = validVarName(
             camelCase(context.discriminatorKey, { normalize: true }),
         );
-        fieldParts.push(`${key}: "${context.discriminatorValue}",`);
-        fromJsonParts.push(`const _${key} = "${context.discriminatorValue}"`);
-        toJsonParts.push(`json += '"${key}":"${context.discriminatorValue}"'`);
+        fieldParts.push(`${key}: \`${context.discriminatorValue}\`,`);
+        fromJsonParts.push(`const _${key} = \`${context.discriminatorValue}\``);
+        toJsonParts.push(
+            `json += '"${context.discriminatorKey}":"${context.discriminatorValue}"'`,
+        );
         setSearchParamParts.push(
-            `params.set('${context.discriminatorKey}', '${context.discriminatorValue}');`,
+            `params.set('${context.discriminatorKey}', \`${context.discriminatorValue}\`);`,
         );
         validationParts.push(
-            `input.${key} === '${context.discriminatorValue}'`,
+            `input.${key} === \`${context.discriminatorValue}\``,
         );
-        cloneParts.push(`const _${key} = "${context.discriminatorValue}"`);
-        newParts.push(`${key}: "${context.discriminatorValue}",`);
+        cloneParts.push(`const _${key} = \`${context.discriminatorValue}\``);
+        newParts.push(`${key}: \`${context.discriminatorValue}\`,`);
         constructionParts.push(`${key}: _${key},`);
     }
     for (const key of Object.keys(schema.properties)) {
@@ -120,7 +123,9 @@ export function tsObjectFromSchema(
         newParts.push(`${fieldName}: ${prop.defaultValue},`);
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName};`);
-        fromJsonParts.push(prop.fromJsonTemplate(`input.${key}`, tempKey));
+        fromJsonParts.push(
+            prop.fromJsonTemplate(jsonKeyAccessor('input', key), tempKey),
+        );
         if (hasKey) {
             toJsonParts.push(`json += ',"${key}":';`);
         } else {
@@ -166,7 +171,7 @@ export function tsObjectFromSchema(
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName} | undefined;`);
         fromJsonParts.push(`if (typeof input.${key} !== 'undefined') {
-            ${prop.fromJsonTemplate(`input.${key}`, tempKey)}
+            ${prop.fromJsonTemplate(jsonKeyAccessor('input', key), tempKey)}
         }`);
         if (hasKey) {
             toJsonParts.push(`if (typeof input.${fieldName} !== 'undefined') {
@@ -251,9 +256,12 @@ export function ${prefixedTypeName}ToUrlSearchParamsString(input: ${prefixedType
     return ${prefixedTypeName}ToUrlSearchParams(input).toString();
 }
 `;
-    if (context.features.validatorObj) {
-        result.content += `
-${context.discriminatorParent && context.discriminatorValue ? '' : 'export '}const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
+    if (
+        context.features.validatorObj &&
+        !context.discriminatorKey.length &&
+        !context.discriminatorValue.length
+    ) {
+        result.content += `export const $$${prefixedTypeName}: ${context.clientName}Validator<${prefixedTypeName}> = {
     new: ${prefixedTypeName}New,
     ${context.features.validateFn ? `validate: ${prefixedTypeName}Validate,` : ''} 
     ${context.features.cloneFn ? `clone: ${prefixedTypeName}Clone,` : ''}

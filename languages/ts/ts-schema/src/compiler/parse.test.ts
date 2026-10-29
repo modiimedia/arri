@@ -1,7 +1,7 @@
-import { isEqual } from 'lodash';
+import { describe, test } from 'vitest';
 
 import { a } from '../_index';
-import { compile } from '../compile';
+import { compile, debugCodeOutput } from '../compile';
 import {
     coercionTestSuites,
     parsingTestSuites,
@@ -13,21 +13,26 @@ for (const key of Object.keys(validationTestSuites)) {
     describe(key, () => {
         const Compiled = compile(suite.schema);
         for (let i = 0; i < suite.goodInputs.length; i++) {
-            test(`Good Input - ${i + 1}`, () => {
+            test(`${key} -> good input -> ${i + 1}`, () => {
                 const input = suite.goodInputs[i];
-                expect(isEqual(Compiled.parse(input), input));
-                if (typeof input === 'object') {
-                    expect(
-                        isEqual(
-                            Compiled.parse(Compiled.serialize(input)),
-                            input,
-                        ),
+                const result = Compiled.parse(input);
+                if (!result.success) console.log(result.errors);
+                expect(result.success).toBe(true);
+                if (!result.success) return;
+                // undefined fields and unknown keys get stripped so compare against the non-compiled parser
+                expect(result.value).toStrictEqual(
+                    a.parseUnsafe(suite.schema, input),
+                );
+                if (typeof input === 'object' && input !== null) {
+                    const json = Compiled.serializeUnsafe(input);
+                    expect(Compiled.parseUnsafe(json)).toStrictEqual(
+                        result.value,
                     );
                 }
             });
         }
         for (let i = 0; i < suite.badInputs.length; i++) {
-            test(`Bad input - ${i + 1}`, () => {
+            test(`${key} -> bad input -> ${i + 1}`, () => {
                 const input = suite.badInputs[i];
                 expect(Compiled.parse(input).success).toBe(false);
                 expect(a.parse(suite.schema, input).success).toBe(false);
@@ -40,21 +45,44 @@ describe('parsing test suites', () => {
     for (const key of Object.keys(parsingTestSuites)) {
         const suite = parsingTestSuites[key]!;
         describe(key, () => {
-            const Compiled = compile(suite.schema, true);
+            let Compiled: ReturnType<typeof compile<any, true>>;
+            try {
+                Compiled = compile(suite.schema, true);
+            } catch (err) {
+                debugCodeOutput({
+                    parse: ({ code, schema }) => {
+                        console.log('code = ', code);
+                        console.log('schema = ', schema);
+                    },
+                });
+                try {
+                    compile(suite.schema);
+                } catch (_) {
+                    // already logged above
+                }
+                debugCodeOutput({});
+                throw err;
+            }
             for (let i = 0; i < suite.goodInputs.length; i++) {
-                test(`${key} - Good Input ${i}`, () => {
+                test(`${key} -> good input -> ${i + 1}`, () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.parse(input);
                     if (!actualResult.success) {
                         console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should parse');
+                        console.log(actualResult.errors);
                     }
                     expect(actualResult.success).toBe(true);
                     if (!actualResult.success) return;
                     const serializedResult = Compiled.serialize(
                         actualResult.value,
                     );
+                    if (!serializedResult.success) {
+                        console.error('code', Compiled.compiledCode.serialize);
+                        console.error(`input`, actualResult.value);
+                        console.error('error', serializedResult.errors);
+                    }
                     expect(serializedResult.success).toBe(true);
                     if (!serializedResult.success) return;
                     expect(actualResult.value).toStrictEqual(expectedResult);
@@ -67,7 +95,7 @@ describe('parsing test suites', () => {
                 });
             }
             for (let i = 0; i < suite.badInputs.length; i++) {
-                test(`${key} - Bad Input ${i}`, () => {
+                test(`${key} -> bad input -> ${i + 1}`, () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.parse(input);
                     if (result.success) {
@@ -87,7 +115,7 @@ describe('coercion test suites', () => {
         describe(key, () => {
             const Compiled = compile(suite.schema);
             for (let i = 0; i < suite.goodInputs.length; i++) {
-                test(`${key} - Good Input ${i}`, () => {
+                test(`${key} -> good input -> ${i + 1}`, () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.coerce(input);
@@ -117,7 +145,7 @@ describe('coercion test suites', () => {
                 });
             }
             for (let i = 0; i < suite.badInputs.length; i++) {
-                test(`${key} - Bad Input ${i}`, () => {
+                test(`${key} -> bad input -> ${i}`, () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.coerce(input);
                     if (result.success) {
@@ -141,17 +169,17 @@ it('parses floats', () => {
     expect(Compiled.parseUnsafe('1')).toBe(1);
     expect(Compiled.parseUnsafe(1)).toBe(1);
     expect(Compiled.parseUnsafe('1500.5')).toBe(1500.5);
-    expect(!Compiled.parse('hello world').success);
-    expect(!Compiled.parse(true).success);
+    expect(Compiled.parse('hello world').success).toBe(false);
+    expect(Compiled.parse(true).success).toBe(false);
 });
 
 it('parses ints', () => {
     const Compiled = a.compile(a.uint32());
     expect(Compiled.parseUnsafe('1')).toBe(1);
     expect(Compiled.parseUnsafe(1)).toBe(1);
-    expect(!Compiled.parse('1500.5').success);
-    expect(!Compiled.parse(-100).success);
-    expect(!Compiled.parse(true).success);
+    expect(Compiled.parse('1500.5').success).toBe(false);
+    expect(Compiled.parse(-100).success).toBe(false);
+    expect(Compiled.parse(true).success).toBe(false);
 });
 
 it('parses timestamps', () => {
@@ -195,10 +223,10 @@ it('respects the strict option', () => {
         name: '',
         description: '',
     };
-    expect(LooseSchema.parse(input).success);
-    expect(LooseSchema.parse(inputWithAdditionalFields).success);
-    expect(StrictSchema.parse(input).success);
-    expect(!StrictSchema.parse(inputWithAdditionalFields).success);
+    expect(LooseSchema.parse(input).success).toBe(true);
+    expect(LooseSchema.parse(inputWithAdditionalFields).success).toBe(true);
+    expect(StrictSchema.parse(input).success).toBe(true);
+    expect(StrictSchema.parse(inputWithAdditionalFields).success).toBe(false);
 });
 
 it('parses discriminated unions', () => {

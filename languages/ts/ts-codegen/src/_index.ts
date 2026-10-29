@@ -7,6 +7,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     RpcDefinition,
     type Schema,
@@ -18,7 +19,7 @@ import prettier from 'prettier';
 import { tsAnyFromSchema } from './any';
 import { tsArrayFromSchema } from './array';
 import { CodegenContext, TsProperty } from './common';
-import { tsTaggedUnionFromSchema } from './discriminator';
+import { tsDiscriminatorFromSchema } from './discriminator';
 import { tsEnumFromSchema } from './enum';
 import { tsObjectFromSchema } from './object';
 import {
@@ -33,6 +34,7 @@ import { tsRecordFromSchema } from './record';
 import { tsRefFromSchema } from './ref';
 import { RpcGenerator } from './rpc';
 import { tsServiceFromDefinition } from './service';
+import { tsTaggedUnionFromSchema } from './union';
 
 export * from './common';
 export * from './rpc';
@@ -305,6 +307,9 @@ export function tsTypeFromSchema(
         return tsRecordFromSchema(schema, context);
     }
     if (isSchemaFormDiscriminator(schema)) {
+        return tsDiscriminatorFromSchema(schema, context);
+    }
+    if (isSchemaFormUnion(schema)) {
         return tsTaggedUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {

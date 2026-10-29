@@ -30,6 +30,7 @@ export { record } from './record';
 export { recursive } from './recursive';
 export { string } from './string';
 export { timestamp } from './timestamp';
+export { union } from './union';
 export {
     coerce,
     coerceUnsafe,

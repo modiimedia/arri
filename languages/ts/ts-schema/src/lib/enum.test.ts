@@ -11,30 +11,30 @@ test('type inference', () => {
 describe('parsing', () => {
     const parse = (input: unknown) => a.parse(UserRolesSchema, input);
     it('accepts good inputs', () => {
-        expect(parse('admin'));
-        expect(parse('standard'));
+        expect(parse('admin').success).toBe(true);
+        expect(parse('standard').success).toBe(true);
     });
 
     it('rejects bad inputs', () => {
         const badInput1 = parse('ADMIN');
-        expect(!badInput1.success && badInput1.errors.length > 0);
-        expect(!parse('STANDARD').success);
-        expect(!parse(0).success);
-        expect(!parse('aldskjfa').success);
+        expect(!badInput1.success && badInput1.errors.length > 0).toBe(true);
+        expect(parse('STANDARD').success).toBe(false);
+        expect(parse(0).success).toBe(false);
+        expect(parse('aldskjfa').success).toBe(false);
     });
 });
 
 describe('validation', () => {
     const validate = (input: unknown) => a.validate(UserRolesSchema, input);
     it('accepts good input', () => {
-        expect(validate('admin'));
-        expect(validate('standard'));
+        expect(validate('admin')).toBe(true);
+        expect(validate('standard')).toBe(true);
     });
     it('rejects bad input', () => {
-        expect(!validate('ADMIN'));
-        expect(!validate('STANDARD'));
-        expect(!validate(0));
-        expect(!validate({ j: 0 }));
+        expect(validate('ADMIN')).toBe(false);
+        expect(validate('STANDARD')).toBe(false);
+        expect(validate(0)).toBe(false);
+        expect(validate({ j: 0 })).toBe(false);
     });
 });
 

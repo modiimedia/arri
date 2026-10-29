@@ -5,15 +5,15 @@ import * as a from './_namespace';
 describe('parsing', () => {
     const parse = (input: unknown) => a.parse(a.string(), input).success;
     it('accepts valid input', () => {
-        expect(parse('123453'));
-        expect(parse('hello world'));
-        expect(parse('{"message": "hello world"}'));
+        expect(parse('123453')).toBe(true);
+        expect(parse('hello world')).toBe(true);
+        expect(parse('{"message": "hello world"}')).toBe(true);
     });
     it('rejects bad input', () => {
-        expect(!parse(1));
-        expect(!parse(undefined));
-        expect(!parse({ message: 'hello world' }));
-        expect(!parse(true));
+        expect(parse(1)).toBe(false);
+        expect(parse(undefined)).toBe(false);
+        expect(parse({ message: 'hello world' })).toBe(false);
+        expect(parse(true)).toBe(false);
     });
 });
 

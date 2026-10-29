@@ -215,9 +215,7 @@ describe('toJsonSchema()', () => {
     describe('discriminator type', () => {
         it('converts to oneOf with discriminator property', () => {
             const result = toJsonSchema(ApiResponseSchema);
-
             expect(result.oneOf?.length).toBe(2);
-
             const success = result.oneOf?.find(
                 (s) => s.properties?.status?.const === 'success',
             );
@@ -228,6 +226,138 @@ describe('toJsonSchema()', () => {
                 (s) => s.properties?.status?.const === 'error',
             );
             expect(error?.properties?.code?.type).toBe('integer');
+        });
+    });
+
+    describe('union type', () => {
+        const ExternallyTagged = a.union({
+            text: a.string(),
+            image: a.object({
+                url: a.string(),
+                width: a.float64(),
+                height: a.float64(),
+            }),
+            tags: a.array(a.string()),
+        });
+        const InternallyTagged = a.union(
+            {
+                rectangle: a.object({
+                    width: a.float64(),
+                    height: a.float64(),
+                }),
+                circle: a.object({
+                    radius: a.float64(),
+                }),
+            },
+            {
+                tagKey: 'type',
+            },
+        );
+        const InternallyTaggedWithValueKey = a.union(
+            {
+                text: a.string(),
+                image: a.object({
+                    url: a.string(),
+                    width: a.float64(),
+                    height: a.float64(),
+                }),
+                tags: a.array(a.string()),
+            },
+            {
+                tagKey: 'kind',
+                valueKey: 'data',
+            },
+        );
+        it('converts externally tagged union', () => {
+            const result = toJsonSchema(ExternallyTagged);
+            expect(result.oneOf).toStrictEqual([
+                {
+                    type: 'object',
+                    properties: { text: { type: 'string' } },
+                    required: ['text'],
+                },
+                {
+                    type: 'object',
+                    properties: {
+                        image: {
+                            type: 'object',
+                            properties: {
+                                url: { type: 'string' },
+                                width: { type: 'number' },
+                                height: { type: 'number' },
+                            },
+                            required: ['url', 'width', 'height'],
+                        },
+                    },
+                    required: ['image'],
+                },
+                {
+                    type: 'object',
+                    properties: {
+                        tags: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['tags'],
+                },
+            ]);
+        });
+        it('converts internally tagged union', () => {
+            const result = toJsonSchema(InternallyTagged);
+            expect(result.oneOf).toStrictEqual([
+                {
+                    type: 'object',
+                    properties: {
+                        type: { type: 'string', const: 'rectangle' },
+                        width: { type: 'number' },
+                        height: { type: 'number' },
+                    },
+                    required: ['width', 'height', 'type'],
+                },
+                {
+                    type: 'object',
+                    properties: {
+                        type: { type: 'string', const: 'circle' },
+                        radius: { type: 'number' },
+                    },
+                    required: ['radius', 'type'],
+                },
+            ] satisfies JsonSchema[]);
+        });
+        it('converts internally tagged union w/ value key', () => {
+            const result = toJsonSchema(InternallyTaggedWithValueKey);
+            expect(result.oneOf).toStrictEqual([
+                {
+                    type: 'object',
+                    properties: {
+                        kind: { type: 'string', const: 'text' },
+                        data: { type: 'string' },
+                    },
+                    required: ['kind', 'data'],
+                },
+                {
+                    type: 'object',
+                    properties: {
+                        kind: { type: 'string', const: 'image' },
+                        data: {
+                            type: 'object',
+                            properties: {
+                                url: { type: 'string' },
+                                width: { type: 'number' },
+                                height: { type: 'number' },
+                            },
+                            required: ['url', 'width', 'height'],
+                        },
+                    },
+                    required: ['kind', 'data'],
+                },
+                {
+                    type: 'object',
+                    properties: {
+                        kind: { type: 'string', const: 'tags' },
+                        data: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['kind', 'data'],
+                },
+            ] satisfies JsonSchema[]);
         });
     });
 
@@ -356,7 +486,6 @@ describe('toJsonSchema()', () => {
 
         it('converts discriminated union API response', () => {
             const result = toJsonSchema(ApiResponseSchema);
-
             expect(result.oneOf?.length).toBe(2);
 
             const success = result.oneOf?.find(

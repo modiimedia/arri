@@ -105,10 +105,10 @@ void main() {
       object: NestedObject(id: "1", content: "hello world"),
       array: [true, false, false],
       record: {"A": true, "B": false},
-      discriminator: DiscriminatorC(
-        id: "",
-        name: "",
-        date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      unionExternal: UnionExternalArray(value: ["hello", "world"]),
+      unionInternal: UnionInternalCircle(radius: 2.5),
+      unionAdjacent: UnionAdjacentNullableTimestamp(
+        data: DateTime.parse("2001-01-01T16:00:00.000Z"),
       ),
       any: "hello world",
     );
@@ -124,16 +124,10 @@ void main() {
       final now = DateTime.now();
       expect(ObjectWithEveryType.fromJsonString(reference), equals(input));
       expect(
-        ObjectWithEveryType.fromJsonString(emptyReference).copyWith(
-          timestamp: now,
-          discriminator: DiscriminatorC.empty().copyWith(date: now),
-        ),
-        equals(
-          ObjectWithEveryType.empty().copyWith(
-            timestamp: now,
-            discriminator: DiscriminatorC.empty().copyWith(date: now),
-          ),
-        ),
+        ObjectWithEveryType.fromJsonString(
+          emptyReference,
+        ).copyWith(timestamp: now),
+        equals(ObjectWithEveryType.empty().copyWith(timestamp: now)),
       );
     });
     test("toJsonString()", () {
@@ -159,10 +153,10 @@ void main() {
       object: NestedObject(id: "1", content: "hello world"),
       array: [true, false, false],
       record: {"A": true, "B": false},
-      discriminator: DiscriminatorC(
-        id: "",
-        name: "",
-        date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      unionExternal: UnionExternalArray(value: ["hello", "world"]),
+      unionInternal: UnionInternalCircle(radius: 2.5),
+      unionAdjacent: UnionAdjacentNullableTimestamp(
+        data: DateTime.parse("2001-01-01T16:00:00.000Z"),
       ),
       any: "hello world",
     );
@@ -228,10 +222,10 @@ void main() {
         object: NestedObject(id: "1", content: "hello world"),
         array: [true, false, false],
         record: {"A": true, "B": false},
-        discriminator: DiscriminatorC(
-          id: "",
-          name: "",
-          date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+        unionExternal: UnionExternalArray(value: ["hello", "world"]),
+        unionInternal: UnionInternalCircle(radius: 2.5),
+        unionAdjacent: UnionAdjacentNullableTimestamp(
+          data: DateTime.parse("2001-01-01T16:00:00.000Z"),
         ),
         any: "hello world",
       );
@@ -244,6 +238,221 @@ void main() {
         noUndefinedInput == newInput.copyWith(array: () => [true, true, true]),
         equals(false),
       );
+    });
+  });
+
+  group("ObjectWithNullableFields", () {
+    final noNullInput = ObjectWithNullableFields(
+      string: "",
+      boolean: true,
+      timestamp: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      float32: 1.5,
+      float64: 1.5,
+      int8: 1,
+      uint8: 1,
+      int16: 10,
+      uint16: 10,
+      int32: 100,
+      uint32: 100,
+      int64: BigInt.from(1000),
+      uint64: BigInt.from(1000),
+      k_enum: Enumerator.baz,
+      object: NestedObject(id: "", content: ""),
+      array: [true, false, false],
+      record: {"A": true, "B": false},
+      unionExternal: UnionExternalArray(value: ["hello", "world"]),
+      unionInternal: UnionInternalCircle(radius: 2.5),
+      unionAdjacent: UnionAdjacentBoolean(data: true),
+      any: {"message": "hello world"},
+    );
+    late String allNullReference;
+    late String noNullReference;
+    setUpAll(() async {
+      allNullReference =
+          await File(
+            "../../../tests/test-files/ObjectWithNullableFields_AllNull.json",
+          ).readAsString();
+      noNullReference =
+          await File(
+            "../../../tests/test-files/ObjectWithNullableFields_NoNull.json",
+          ).readAsString();
+    });
+    test("fromJsonString()", () {
+      expect(
+        ObjectWithNullableFields.fromJsonString(allNullReference),
+        equals(ObjectWithNullableFields.empty()),
+      );
+      expect(
+        ObjectWithNullableFields.fromJsonString(noNullReference),
+        equals(noNullInput),
+      );
+    });
+    test("toJsonString()", () {
+      expect(
+        ObjectWithNullableFields.empty().toJsonString(),
+        equals(allNullReference),
+      );
+      expect(noNullInput.toJsonString(), equals(noNullReference));
+    });
+  });
+
+  group("UnionExternal", () {
+    final inputs = <String, UnionExternal>{
+      "UnionExternal_Object.json": UnionExternalObject(
+        value: NestedObject(id: "1", content: "hello world"),
+      ),
+      "UnionExternal_Array.json": UnionExternalArray(value: ["hello", "world"]),
+      "UnionExternal_Boolean.json": UnionExternalBoolean(value: true),
+      "UnionExternal_Timestamp.json": UnionExternalNullableTimestamp(
+        value: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      ),
+      "UnionExternal_TimestampNull.json": UnionExternalNullableTimestamp(
+        value: null,
+      ),
+    };
+    final references = <String, String>{};
+    setUpAll(() async {
+      for (final filename in inputs.keys) {
+        references[filename] =
+            await File("../../../tests/test-files/$filename").readAsString();
+      }
+    });
+    test("fromJsonString()", () {
+      for (final entry in inputs.entries) {
+        expect(
+          UnionExternal.fromJsonString(references[entry.key]!),
+          equals(entry.value),
+        );
+      }
+    });
+    test("toJsonString()", () {
+      for (final entry in inputs.entries) {
+        expect(entry.value.toJsonString(), equals(references[entry.key]));
+      }
+    });
+    test("unknown variant falls back to the first variant", () {
+      expect(
+        UnionExternal.fromJsonString('{"triangle":{"base":10}}'),
+        equals(UnionExternal.empty()),
+      );
+      expect(
+        UnionExternal.empty(),
+        equals(UnionExternalObject(value: NestedObject.empty())),
+      );
+    });
+    test("== operator", () {
+      expect(
+        UnionExternalBoolean(value: true) == UnionExternalBoolean(value: false),
+        equals(false),
+      );
+      expect(
+        UnionExternalArray(value: ["a"]),
+        equals(UnionExternalArray(value: ["a"])),
+      );
+    });
+  });
+
+  group("UnionInternal", () {
+    final input = UnionInternalRectangle(width: 10.7, height: 5.3);
+    late String reference;
+    setUpAll(() async {
+      reference =
+          await File(
+            "../../../tests/test-files/UnionInternal_Rectangle.json",
+          ).readAsString();
+    });
+    test("fromJsonString()", () {
+      expect(UnionInternal.fromJsonString(reference), equals(input));
+    });
+    test("toJsonString()", () {
+      expect(input.toJsonString(), equals(reference));
+    });
+    test("toUrlQueryParams()", () {
+      expect(
+        input.toUrlQueryParams(),
+        equals("shape=rectangle&width=10.7&height=5.3"),
+      );
+    });
+    test("unknown variant falls back to the first variant", () {
+      expect(
+        UnionInternal.fromJsonString(
+          '{"shape":"triangle","base":10,"height":5}',
+        ),
+        equals(UnionInternalRectangle.empty()),
+      );
+      expect(
+        UnionInternal.fromJsonString('{"width":10}'),
+        equals(UnionInternalRectangle.empty()),
+      );
+    });
+  });
+
+  group("UnionAdjacent", () {
+    final inputs = <String, UnionAdjacent>{
+      "UnionAdjacent_Object.json": UnionAdjacentObject(
+        data: NestedObject(id: "1", content: "hello world"),
+      ),
+      "UnionAdjacent_TimestampNull.json": UnionAdjacentNullableTimestamp(
+        data: null,
+      ),
+    };
+    final references = <String, String>{};
+    setUpAll(() async {
+      for (final filename in inputs.keys) {
+        references[filename] =
+            await File("../../../tests/test-files/$filename").readAsString();
+      }
+    });
+    test("fromJsonString()", () {
+      for (final entry in inputs.entries) {
+        expect(
+          UnionAdjacent.fromJsonString(references[entry.key]!),
+          equals(entry.value),
+        );
+      }
+    });
+    test("toJsonString()", () {
+      for (final entry in inputs.entries) {
+        expect(entry.value.toJsonString(), equals(references[entry.key]));
+      }
+    });
+    test("kind getter", () {
+      expect(UnionAdjacentBoolean(data: true).kind, equals("boolean"));
+      expect(
+        UnionAdjacentNullableTimestamp(data: null).kind,
+        equals("nullable-timestamp"),
+      );
+    });
+    test("unknown variant falls back to the first variant", () {
+      expect(
+        UnionAdjacent.fromJsonString('{"kind":"triangle","data":{"base":10}}'),
+        equals(UnionAdjacentObject(data: NestedObject.empty())),
+      );
+      expect(
+        UnionAdjacent.fromJsonString('{"data":true}'),
+        equals(UnionAdjacentObject(data: NestedObject.empty())),
+      );
+    });
+  });
+
+  group("LegacyDiscriminator", () {
+    final input = LegacyDiscriminatorC(
+      id: "1",
+      name: "John Doe",
+      date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+    );
+    late String reference;
+    setUpAll(() async {
+      reference =
+          await File(
+            "../../../tests/test-files/LegacyDiscriminator.json",
+          ).readAsString();
+    });
+    test("fromJsonString()", () {
+      expect(LegacyDiscriminator.fromJsonString(reference), equals(input));
+    });
+    test("toJsonString()", () {
+      expect(input.toJsonString(), equals(reference));
     });
   });
 }

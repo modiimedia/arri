@@ -147,6 +147,18 @@ public class TestClientPrefixed {
         )
         return result
     }
+    public func sendRecursiveUnionV2(_ params: FooRecursiveUnionV2) async throws -> FooRecursiveUnionV2 {
+        let result: FooRecursiveUnionV2 = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-recursive-union-v2",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        return result
+    }
     public func streamAutoReconnect(_ params: FooAutoReconnectParams, options: EventSourceOptions<FooAutoReconnectResponse>) -> Task<(), Never> {
         let task = Task {
             var eventSource = EventSource<FooAutoReconnectResponse>(
@@ -756,6 +768,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
     public var object: FooObjectWithEveryTypeObject = FooObjectWithEveryTypeObject()
     public var record: Dictionary<String, UInt64> = Dictionary()
     public var discriminator: FooObjectWithEveryTypeDiscriminator = FooObjectWithEveryTypeDiscriminator()
+    public var union: JSON = JSON()
     public var nestedObject: FooObjectWithEveryTypeNestedObject = FooObjectWithEveryTypeNestedObject()
     public var nestedArray: [[FooObjectWithEveryTypeNestedArrayElementElement]] = []
     public init(
@@ -778,6 +791,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
         object: FooObjectWithEveryTypeObject,
         record: Dictionary<String, UInt64>,
         discriminator: FooObjectWithEveryTypeDiscriminator,
+        union: JSON,
         nestedObject: FooObjectWithEveryTypeNestedObject,
         nestedArray: [[FooObjectWithEveryTypeNestedArrayElementElement]]
     ) {
@@ -800,6 +814,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
             self.object = object
             self.record = record
             self.discriminator = discriminator
+            self.union = union
             self.nestedObject = nestedObject
             self.nestedArray = nestedArray
     }
@@ -834,6 +849,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
                 self.record[__key] = __parsedValue            
             }
         self.discriminator = FooObjectWithEveryTypeDiscriminator(json: json["discriminator"])
+        self.union = json["union"]
         self.nestedObject = FooObjectWithEveryTypeNestedObject(json: json["nestedObject"])
         self.nestedArray = []
             for __nestedArrayJsonElement in json["nestedArray"].array ?? [] {
@@ -921,6 +937,8 @@ public struct FooObjectWithEveryType: ArriClientModel {
             __json += "}"
         __json += ",\"discriminator\":"
         __json += self.discriminator.toJSONString()
+        __json += ",\"union\":"
+        __json += serializeAny(input: self.union)
         __json += ",\"nestedObject\":"
         __json += self.nestedObject.toJSONString()
         __json += ",\"nestedArray\":"
@@ -963,6 +981,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/union.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.")
         return __queryParts
@@ -1010,6 +1029,7 @@ var __nestedArrayCloned: [[FooObjectWithEveryTypeNestedArrayElementElement]] = [
             object: self.object.clone(),
             record: __recordCloned,
             discriminator: self.discriminator.clone(),
+            union: self.union,
             nestedObject: self.nestedObject.clone(),
             nestedArray: __nestedArrayCloned
         )
@@ -1574,6 +1594,7 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
     public var object: FooObjectWithEveryNullableTypeObject?
     public var record: Dictionary<String, UInt64?>?
     public var discriminator: FooObjectWithEveryNullableTypeDiscriminator?
+    public var union: JSON = JSON(parseJSON: "null")
     public var nestedObject: FooObjectWithEveryNullableTypeNestedObject?
     public var nestedArray: [[FooObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
     public init(
@@ -1596,6 +1617,7 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
         object: FooObjectWithEveryNullableTypeObject?,
         record: Dictionary<String, UInt64?>?,
         discriminator: FooObjectWithEveryNullableTypeDiscriminator?,
+        union: JSON,
         nestedObject: FooObjectWithEveryNullableTypeNestedObject?,
         nestedArray: [[FooObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
     ) {
@@ -1618,6 +1640,7 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
             self.object = object
             self.record = record
             self.discriminator = discriminator
+            self.union = union
             self.nestedObject = nestedObject
             self.nestedArray = nestedArray
     }
@@ -1694,6 +1717,9 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
         if json["discriminator"].dictionary != nil {
                     self.discriminator = FooObjectWithEveryNullableTypeDiscriminator(json: json["discriminator"])
                 }
+        if json["union"].exists() {
+            self.union = json["union"]
+        }
         if json["nestedObject"].dictionary != nil {
                     self.nestedObject = FooObjectWithEveryNullableTypeNestedObject(json: json["nestedObject"])
                 }
@@ -1869,6 +1895,8 @@ if self.record != nil {
                 } else {
                     __json += "null" 
                 }
+        __json += ",\"union\":"
+        __json += serializeAny(input: self.union)
         __json += ",\"nestedObject\":"
         if self.nestedObject != nil {
                     __json += self.nestedObject!.toJSONString()
@@ -1983,6 +2011,7 @@ if self.record != nil {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/union.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.")
         return __queryParts
@@ -2042,6 +2071,7 @@ var __nestedArrayCloned: [[FooObjectWithEveryNullableTypeNestedArrayElementEleme
             object: self.object?.clone(),
             record: __recordCloned,
             discriminator: self.discriminator?.clone(),
+            union: self.union,
             nestedObject: self.nestedObject?.clone(),
             nestedArray: __nestedArrayCloned
         )
@@ -2970,6 +3000,7 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
     public var object: FooObjectWithEveryOptionalTypeObject?
     public var record: Dictionary<String, UInt64>?
     public var discriminator: FooObjectWithEveryOptionalTypeDiscriminator?
+    public var union: JSON?
     public var nestedObject: FooObjectWithEveryOptionalTypeNestedObject?
     public var nestedArray: [[FooObjectWithEveryOptionalTypeNestedArrayElementElement]]?
     public init(
@@ -2992,6 +3023,7 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
         object: FooObjectWithEveryOptionalTypeObject?,
         record: Dictionary<String, UInt64>?,
         discriminator: FooObjectWithEveryOptionalTypeDiscriminator?,
+        union: JSON?,
         nestedObject: FooObjectWithEveryOptionalTypeNestedObject?,
         nestedArray: [[FooObjectWithEveryOptionalTypeNestedArrayElementElement]]?
     ) {
@@ -3014,6 +3046,7 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
             self.object = object
             self.record = record
             self.discriminator = discriminator
+            self.union = union
             self.nestedObject = nestedObject
             self.nestedArray = nestedArray
     }
@@ -3086,6 +3119,9 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
         if json["discriminator"].exists() {
                     self.discriminator = FooObjectWithEveryOptionalTypeDiscriminator(json: json["discriminator"])
                 }
+        if json["union"].exists() {
+            self.union = json["union"]
+        }
          if json["nestedObject"].exists() {
                     self.nestedObject = FooObjectWithEveryOptionalTypeNestedObject(json: json["nestedObject"])
                 }
@@ -3288,6 +3324,14 @@ __numKeys += 1
         __json += self.discriminator!.toJSONString()            
 __numKeys += 1
         }
+        if self.union != nil {
+                        if __numKeys > 0 {
+                    __json += ","
+                }
+            __json += "\"union\":"
+        __json += serializeAny(input: self.union!)            
+__numKeys += 1
+        }
         if self.nestedObject != nil {
                         if __numKeys > 0 {
                     __json += ","
@@ -3370,6 +3414,7 @@ __numKeys += 1
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/union.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.")
         return __queryParts
@@ -3426,6 +3471,7 @@ var __nestedArrayCloned: [[FooObjectWithEveryOptionalTypeNestedArrayElementEleme
             object: self.object?.clone(),
             record: __recordCloned,
             discriminator: self.discriminator?.clone(),
+            union: self.union,
             nestedObject: self.nestedObject?.clone(),
             nestedArray: __nestedArrayCloned
         )

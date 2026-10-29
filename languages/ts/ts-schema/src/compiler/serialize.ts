@@ -1,24 +1,24 @@
 import {
-    isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     type Schema,
-    type SchemaFormDiscriminator,
     type SchemaFormElements,
     type SchemaFormEmpty,
     type SchemaFormEnum,
     type SchemaFormProperties,
     type SchemaFormRef,
     type SchemaFormType,
+    type SchemaFormUnion,
     type SchemaFormValues,
 } from '@arrirpc/type-defs';
 import { camelCase } from 'scule';
 
-import { type TemplateInput } from './common';
+import { refFunctionName, type TemplateInput } from './common';
 
 interface SerializeTemplateInput<
     TSchema extends Schema = any,
@@ -30,7 +30,7 @@ interface SerializeTemplateInput<
 export function createSerializationV2Template(
     inputName: string,
     schema: Schema,
-) {
+): string {
     const subFunctions: Record<string, string> = {};
     const context: SerializeTemplateInput<any> = {
         val: inputName,
@@ -74,8 +74,8 @@ export function template(input: SerializeTemplateInput): string {
     if (isSchemaFormValues(input.schema)) {
         return recordTemplate(input);
     }
-    if (isSchemaFormDiscriminator(input.schema)) {
-        return discriminatorTemplate(input);
+    if (isSchemaFormUnion(input.schema)) {
+        return unionTemplate(input);
     }
     if (isSchemaFormRef(input.schema)) {
         return refTemplate(input);
@@ -397,7 +397,10 @@ export function objectTemplate(
     }
     templateParts.push(`${input.targetVal} += '}';`);
     let mainTemplate = templateParts.join('\n');
-    const fnName = refFnName(input.schema.metadata?.id ?? '');
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
     if (hasFunctionName(fnName, input.subFunctions)) {
         if (!hasFunctionBody(fnName, input.subFunctions)) {
             input.subFunctions[fnName] = `function ${fnName}(__inputVal__) {
@@ -430,7 +433,19 @@ function hasFunctionBody(name: string, fns: Record<string, string>) {
 export function arrayTemplate(
     input: SerializeTemplateInput<SchemaFormElements>,
 ): string {
-    const itemVarName = camelCase(`${input.val || 'list'}_item`);
+    const itemVarName = camelCase(
+        `${
+            input.val
+                .split('`')
+                .join('_')
+                .split('"')
+                .join('_')
+                .split('[')
+                .join('_')
+                .split(']')
+                .join('_') || 'list'
+        }_item`,
+    );
     const templateParts: string[] = [
         `${input.targetVal} += '${input.outputPrefix}[';`,
     ];
@@ -536,53 +551,201 @@ export function recordTemplate(
     return mainTemplate;
 }
 
-function discriminatorTemplate(
-    input: SerializeTemplateInput<SchemaFormDiscriminator>,
-): string {
-    const discriminatorKey = input.schema.discriminator;
-    const discriminatorVals = Object.keys(input.schema.mapping);
-    const inputPlaceholder = '<<<tempval>>>';
-    const templateParts = [`switch(${inputPlaceholder}.${discriminatorKey}) {`];
-    for (const val of discriminatorVals) {
-        const valSchema = input.schema.mapping[val];
-        const innerTemplate = template({
-            schema: valSchema,
-            schemaPath: `${input.schemaPath}/mapping/${val}`,
-            instancePath: `${input.instancePath}`,
-            val: inputPlaceholder,
-            targetVal: input.targetVal,
-            discriminatorKey,
-            discriminatorValue: val,
-            outputPrefix: input.outputPrefix,
-            needsSanitization: input.needsSanitization,
-            subFunctions: input.subFunctions,
-            shouldCoerce: undefined,
-        });
-        templateParts.push(`case '${val}': {
-            ${innerTemplate}
-            break;
-        }`);
+function unionTemplate(input: SerializeTemplateInput<SchemaFormUnion>): string {
+    if (input.schema.tagKey?.length && input.schema.valueKey?.length) {
+        return unionTemplateInternallyTaggedWithValueKey(
+            input,
+            input.schema.tagKey,
+            input.schema.valueKey,
+        );
     }
-    templateParts.push('}');
-    let mainTemplate = templateParts.join('\n');
-    const fnName = refFnName(input.schema.metadata?.id ?? '');
+    if (input.schema.tagKey?.length) {
+        return unionTemplateInternallyTagged(input, input.schema.tagKey);
+    }
+    return unionTemplateExternallyTagged(input);
+}
+
+function unionTemplateExternallyTagged(
+    input: SerializeTemplateInput<SchemaFormUnion>,
+): string {
+    function buildMain(inputName: string): string {
+        const parts: string[] = [];
+        parts.push(`${input.targetVal} += '${input.outputPrefix}{';`);
+        const keys = Object.keys(input.schema.union);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]!;
+            const subSchema = input.schema.union[key]!;
+            if (i > 0) {
+                parts.push(` else if (\`${key}\` in ${inputName}) {`);
+            } else {
+                parts.push(`if (\`${key}\` in ${inputName}) {`);
+            }
+
+            parts.push(`
+                ${input.targetVal} += \`"${key}":\`;
+                ${template({
+                    val: `${inputName}.${key}`,
+                    targetVal: input.targetVal,
+                    schema: subSchema,
+                    instancePath: `${input.instancePath}/${key}`,
+                    schemaPath: `${input.schemaPath}/union/${key}`,
+                    subFunctions: input.subFunctions,
+                    shouldCoerce: input.shouldCoerce,
+                    outputPrefix: '',
+                    needsSanitization: input.needsSanitization,
+                })}
+            }`);
+        }
+        parts.push(`${input.targetVal} += '}';`);
+        return parts.join('\n');
+    }
+    let mainTemplate = buildMain(input.val);
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
     if (hasFunctionName(fnName, input.subFunctions)) {
         if (!hasFunctionBody(fnName, input.subFunctions)) {
             input.subFunctions[fnName] = `function ${fnName}(__fnInput__){
-                ${mainTemplate.split(inputPlaceholder).join('__fnInput__')}
+                ${buildMain(`__fnInput__`)};
             }`;
         }
         mainTemplate = `${fnName}(${input.val});`;
     }
-
     if (input.schema.isNullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
-            ${mainTemplate.split(inputPlaceholder).join(input.val)}
+            ${mainTemplate}
         } else {
             ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
-    return mainTemplate.split(inputPlaceholder).join(input.val);
+    return mainTemplate;
+}
+
+function unionTemplateInternallyTagged(
+    input: SerializeTemplateInput<SchemaFormUnion>,
+    tagKey: string,
+): string {
+    function buildMain(inputName: string): string {
+        const parts: string[] = [];
+        parts.push(`${input.targetVal} += '${input.outputPrefix}';`);
+        const keys = Object.keys(input.schema.union);
+        parts.push(`switch (${inputName}[\`${tagKey}\`]) {`);
+        for (const key of keys) {
+            const subSchema = input.schema.union[key];
+            if (!isSchemaFormProperties(subSchema)) {
+                throw new Error(
+                    `Error at ${input.schemaPath}/union/${key}: All union variants must be an object when tagKey is specified without a valueKey`,
+                );
+            }
+            parts.push(`    case \`${key}\`: {`);
+            parts.push(
+                template({
+                    val: inputName,
+                    targetVal: input.targetVal,
+                    instancePath: input.instancePath,
+                    schema: subSchema,
+                    schemaPath: `${input.schemaPath}/union/${key}`,
+                    discriminatorKey: tagKey,
+                    discriminatorValue: key,
+                    outputPrefix: '',
+                    needsSanitization: input.needsSanitization,
+                    subFunctions: input.subFunctions,
+                    shouldCoerce: undefined,
+                }),
+            );
+            parts.push('break;');
+            parts.push('}');
+        }
+        parts.push(`    default:
+            throw new Error(\`Error at ${input.instancePath}/${tagKey}: Expected one of [${keys.join(', ')}]\`);`);
+        parts.push(`}`);
+        return parts.join('\n');
+    }
+    let mainTemplate = buildMain(input.val);
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
+    if (hasFunctionName(fnName, input.subFunctions)) {
+        if (!hasFunctionBody(fnName, input.subFunctions)) {
+            input.subFunctions[fnName] = `function ${fnName}(__fnInput__) {
+                ${buildMain(`__fnInput__`)}
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+    if (input.schema.isNullable) {
+        return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
+            ${mainTemplate}
+        } else {
+            ${input.targetVal} += '${input.outputPrefix}null';    
+        }`;
+    }
+    return mainTemplate;
+}
+
+function unionTemplateInternallyTaggedWithValueKey(
+    input: SerializeTemplateInput<SchemaFormUnion>,
+    tagKey: string,
+    valueKey: string,
+): string {
+    function buildMain(inputName: string): string {
+        const parts: string[] = [];
+        parts.push(`${input.targetVal} += '${input.outputPrefix}{';`);
+        const keys = Object.keys(input.schema.union);
+        parts.push(`switch (${inputName}[\`${tagKey}\`]) {`);
+        for (const key of keys) {
+            const subSchema = input.schema.union[key]!;
+            parts.push(`case \`${key}\`: {`);
+            parts.push(`    ${input.targetVal} += '"${tagKey}":"${key}",';`);
+            parts.push(`    ${input.targetVal} += '"${valueKey}":';`);
+            parts.push(
+                template({
+                    outputPrefix: '',
+                    needsSanitization: input.needsSanitization,
+                    val: `${inputName}[\`${valueKey}\`]`,
+                    targetVal: input.targetVal,
+                    schema: subSchema,
+                    instancePath: `${input.instancePath}/${valueKey}`,
+                    schemaPath: `${input.schemaPath}/union/${key}`,
+                    subFunctions: input.subFunctions,
+                    shouldCoerce: undefined,
+                }),
+            );
+            parts.push('break;');
+            parts.push(`}`);
+        }
+        parts.push('default:');
+        parts.push(
+            `throw new Error('Error at ${input.instancePath}/${input.schema.tagKey}. Expected one of [${keys.join(', ')}]')`,
+        );
+        parts.push('}');
+        parts.push(`${input.targetVal} += '}';`);
+        return parts.join('\n');
+    }
+
+    let mainTemplate = buildMain(input.val);
+    const fnName = refFunctionName(
+        'serialize',
+        input.schema.metadata?.id ?? '',
+    );
+    if (hasFunctionName(fnName, input.subFunctions)) {
+        if (!hasFunctionBody(fnName, input.subFunctions)) {
+            input.subFunctions[fnName] = `function ${fnName}(__fnInput__) {
+                ${buildMain(`__fnInput__`)}
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+    if (input.schema.isNullable) {
+        return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
+            ${mainTemplate}
+        } else {
+            ${input.targetVal} += '${input.outputPrefix}null';    
+        }`;
+    }
+    return mainTemplate;
 }
 
 export function anyTemplate(
@@ -606,14 +769,10 @@ export function anyTemplate(
     }`;
 }
 
-function refFnName(id: string) {
-    return `__serialize_${id}`;
-}
-
 export function refTemplate(
     input: SerializeTemplateInput<SchemaFormRef>,
 ): string {
-    const fnName = refFnName(input.schema.ref);
+    const fnName = refFunctionName('serialize', input.schema.ref);
     if (!Object.keys(input.subFunctions).includes(fnName)) {
         input.subFunctions[fnName] = '';
     }

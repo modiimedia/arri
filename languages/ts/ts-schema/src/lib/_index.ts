@@ -12,4 +12,5 @@ export * from './record';
 export * from './recursive';
 export * from './string';
 export * from './timestamp';
+export * from './union';
 export * from './validation';

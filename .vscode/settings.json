@@ -1,7 +1,8 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit"
   },
   "dart.onlyAnalyzeProjectsWithOpenFiles": true,
   "dart.projectSearchDepth": 3,
@@ -71,10 +72,20 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[go]": {
     "editor.formatOnSave": true,
     "editor.insertSpaces": true,
     "editor.defaultFormatter": "golang.go"
   },
-  "eslint.validate": ["json"]
+  "eslint.validate": [
+    "json",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
 }

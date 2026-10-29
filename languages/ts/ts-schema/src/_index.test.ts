@@ -1,11 +1,11 @@
 import {
-    isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEmpty,
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
 } from '@arrirpc/type-defs';
 
@@ -28,14 +28,14 @@ test('isSchemaFormType', () => {
         a.timestamp(),
     ];
     for (const schema of Schemas) {
-        expect(isSchemaFormType(schema));
-        expect(isSchemaFormType(JSON.parse(JSON.stringify(schema))));
+        expect(isSchemaFormType(schema)).toBe(true);
+        expect(isSchemaFormType(JSON.parse(JSON.stringify(schema)))).toBe(true);
     }
 });
 test('isSchemaFormEnum', () => {
     const Schema = a.stringEnum(['A', 'B', 'C']);
-    expect(isSchemaFormEnum(Schema));
-    expect(isSchemaFormEnum(JSON.parse(JSON.stringify(Schema))));
+    expect(isSchemaFormEnum(Schema)).toBe(true);
+    expect(isSchemaFormEnum(JSON.parse(JSON.stringify(Schema)))).toBe(true);
 });
 
 test('isSchemaFormElements', () => {
@@ -45,8 +45,8 @@ test('isSchemaFormElements', () => {
             name: a.string(),
         }),
     );
-    expect(isSchemaFormElements(Schema));
-    expect(isSchemaFormElements(JSON.parse(JSON.stringify(Schema))));
+    expect(isSchemaFormElements(Schema)).toBe(true);
+    expect(isSchemaFormElements(JSON.parse(JSON.stringify(Schema)))).toBe(true);
 });
 
 test('isSchemaFormProperties', () => {
@@ -71,12 +71,15 @@ test('isSchemaFormProperties', () => {
         ),
     ];
     for (const schema of Schemas) {
-        expect(isSchemaFormProperties(schema));
-        expect(isSchemaFormProperties(JSON.parse(JSON.stringify(schema))));
+        expect(isSchemaFormProperties(schema)).toBe(true);
+        expect(isSchemaFormProperties(JSON.parse(JSON.stringify(schema)))).toBe(
+            true,
+        );
     }
 });
 
-test('isSchemaFormDiscriminator', () => {
+// a.discriminator() produces an internally tagged union
+test('isSchemaFormUnion (discriminator)', () => {
     const Schema = a.discriminator('type', {
         A: a.object({
             id: a.string(),
@@ -86,8 +89,9 @@ test('isSchemaFormDiscriminator', () => {
             name: a.string(),
         }),
     });
-    expect(isSchemaFormDiscriminator(Schema));
-    expect(isSchemaFormDiscriminator(JSON.parse(JSON.stringify(Schema))));
+    expect(isSchemaFormUnion(Schema)).toBe(true);
+    expect(isSchemaFormUnion(JSON.parse(JSON.stringify(Schema)))).toBe(true);
+    expect(Schema.tagKey).toBe('type');
 });
 
 test('isSchemaFormValues', () => {
@@ -97,19 +101,19 @@ test('isSchemaFormValues', () => {
             name: a.string(),
         }),
     );
-    expect(isSchemaFormValues(Schema));
-    expect(isSchemaFormValues(JSON.parse(JSON.stringify(Schema))));
+    expect(isSchemaFormValues(Schema)).toBe(true);
+    expect(isSchemaFormValues(JSON.parse(JSON.stringify(Schema)))).toBe(true);
 });
 
 test('isSchemaFormEmpty', () => {
     const Schema = a.any();
-    expect(isSchemaFormEmpty(Schema));
-    expect(isSchemaFormEmpty(JSON.parse(JSON.stringify(Schema))));
+    expect(isSchemaFormEmpty(Schema)).toBe(true);
+    expect(isSchemaFormEmpty(JSON.parse(JSON.stringify(Schema)))).toBe(true);
 });
 
 test('isSchemaFormRef', () => {
     const Schema = {
         ref: 'A',
     };
-    expect(isSchemaFormRef(Schema));
+    expect(isSchemaFormRef(Schema)).toBe(true);
 });

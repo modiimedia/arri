@@ -12,3 +12,7 @@ export interface TemplateInput<TSchema extends Schema = any> {
     finalFunctionBody?: string;
     shouldCoerce: boolean | undefined;
 }
+
+export function refFunctionName(prefix: string, id: string) {
+    return `__${prefix}_${id}`;
+}

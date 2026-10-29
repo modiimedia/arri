@@ -75,7 +75,6 @@ export class MinimalClient {
         this._options = config.options;
         this.books = new MinimalClientBooksService(config);
     }
-
     async sendObject(
         params: NestedObject,
         options?: ArriRequestOptions,
@@ -104,6 +103,7 @@ export class MinimalClientBooksService {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
+
     constructor(
         config: {
             baseUrl?: string;
@@ -216,6 +216,7 @@ export function EmptyObjectToUrlSearchParams(
     input: EmptyObject,
 ): URLSearchParams {
     const params = new URLSearchParams();
+
     return params;
 }
 export function EmptyObjectToUrlSearchParamsString(input: EmptyObject): string {
@@ -331,6 +332,7 @@ export function BookParamsToUrlSearchParams(
 export function BookParamsToUrlSearchParamsString(input: BookParams): string {
     return BookParamsToUrlSearchParams(input).toString();
 }
+
 export interface NestedObject {
     id: string;
     content: string;
@@ -397,10 +399,11 @@ export interface ObjectWithEveryType {
     object: NestedObject;
     array: boolean[];
     record: Record<string, boolean>;
-    discriminator: Discriminator;
+    unionExternal: UnionExternal;
+    unionInternal: UnionInternal;
+    unionAdjacent: UnionAdjacent;
     any: any;
 }
-
 export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
     return {
         string: '',
@@ -420,7 +423,9 @@ export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
         object: NestedObjectNew(),
         array: [],
         record: {},
-        discriminator: DiscriminatorNew(),
+        unionExternal: UnionExternalNew(),
+        unionInternal: UnionInternalNew(),
+        unionAdjacent: UnionAdjacentNew(),
         any: undefined,
     };
 }
@@ -487,11 +492,23 @@ export function ObjectWithEveryTypeFromJson(
     } else {
         _record = {};
     }
-    let _discriminator: Discriminator;
-    if (isObject(input.discriminator)) {
-        _discriminator = DiscriminatorFromJson(input.discriminator);
+    let _unionExternal: UnionExternal;
+    if (isObject(input.unionExternal)) {
+        _unionExternal = UnionExternalFromJson(input.unionExternal);
     } else {
-        _discriminator = DiscriminatorNew();
+        _unionExternal = UnionExternalNew();
+    }
+    let _unionInternal: UnionInternal;
+    if (isObject(input.unionInternal)) {
+        _unionInternal = UnionInternalFromJson(input.unionInternal);
+    } else {
+        _unionInternal = UnionInternalNew();
+    }
+    let _unionAdjacent: UnionAdjacent;
+    if (isObject(input.unionAdjacent)) {
+        _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+    } else {
+        _unionAdjacent = UnionAdjacentNew();
     }
     let _any: any;
     _any = input.any;
@@ -513,7 +530,9 @@ export function ObjectWithEveryTypeFromJson(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
         any: _any,
     };
 }
@@ -560,7 +579,7 @@ export function ObjectWithEveryTypeToJsonString(
     json += '[';
     for (let i = 0; i < input.array.length; i++) {
         if (i !== 0) json += ',';
-        const _inputArrayEl = input.array[i];
+        const _inputArrayEl = input.array[i]!;
         json += `${_inputArrayEl}`;
     }
     json += ']';
@@ -576,8 +595,13 @@ export function ObjectWithEveryTypeToJsonString(
         _recordPropertyCount++;
     }
     json += '}';
-    json += ',"discriminator":';
-    json += DiscriminatorToJsonString(input.discriminator);
+
+    json += ',"unionExternal":';
+    json += UnionExternalToJsonString(input.unionExternal);
+    json += ',"unionInternal":';
+    json += UnionInternalToJsonString(input.unionInternal);
+    json += ',"unionAdjacent":';
+    json += UnionAdjacentToJsonString(input.unionAdjacent);
     json += ',"any":';
     json += JSON.stringify(input.any);
     json += '}';
@@ -611,7 +635,13 @@ export function ObjectWithEveryTypeToUrlSearchParams(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
     );
     console.warn(
-        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionExternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionInternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionAdjacent.',
     );
     console.warn(
         "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
@@ -646,218 +676,443 @@ export function EnumeratorFromSerialValue(input: string): Enumerator {
     }
     return 'FOO';
 }
+export type UnionExternal =
+    | { type: `object`; value: NestedObject }
+    | { type: `array`; value: string[] }
+    | { type: `boolean`; value: boolean }
+    | { type: `nullable-timestamp`; value: Date | null };
+export function UnionExternalNew(): UnionExternal {
+    return {
+        type: `object`,
+        value: NestedObjectNew(),
+    };
+}
+export function UnionExternalFromJson(
+    input: Record<string, unknown>,
+): UnionExternal {
+    if (`object` in input) {
+        let __value__: NestedObject;
+        if (isObject(input[`object`])) {
+            __value__ = NestedObjectFromJson(input[`object`]);
+        } else {
+            __value__ = NestedObjectNew();
+        }
+        return {
+            type: `object`,
+            value: __value__,
+        };
+    }
 
-export type Discriminator = DiscriminatorA | DiscriminatorB | DiscriminatorC;
-export function DiscriminatorNew(): Discriminator {
-    return DiscriminatorANew();
+    if (`array` in input) {
+        let __value__: string[];
+        if (Array.isArray(input[`array`])) {
+            __value__ = [];
+            for (const __value__El of input[`array`]) {
+                let __value__ElValue: string;
+                __value__ElValue = parseString(__value__El);
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `array`,
+            value: __value__,
+        };
+    }
+
+    if (`boolean` in input) {
+        let __value__: boolean;
+        __value__ = parseBoolean(input[`boolean`]);
+        return {
+            type: `boolean`,
+            value: __value__,
+        };
+    }
+
+    if (`nullable-timestamp` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
+        return {
+            type: `nullable-timestamp`,
+            value: __value__,
+        };
+    }
+    return UnionExternalNew();
 }
-export function DiscriminatorFromJson(
-    input: Record<string, unknown>,
-): Discriminator {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAFromJson(input);
-        case 'B':
-            return DiscriminatorBFromJson(input);
-        case 'C':
-            return DiscriminatorCFromJson(input);
-        default:
-            return DiscriminatorANew();
+export function UnionExternalFromJsonString(input: string): UnionExternal {
+    return UnionExternalFromJson(JSON.parse(input));
+}
+export function UnionExternalToJsonString(input: UnionExternal): string {
+    switch (input.type) {
+        case `object`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += NestedObjectToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `array`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i]!;
+                json += serializeString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `boolean`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `${input.value}`;
+            json += '}';
+            return json;
+        }
+
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
     }
 }
-export function DiscriminatorFromJsonString(input: string): Discriminator {
-    return DiscriminatorFromJson(JSON.parse(input));
-}
-export function DiscriminatorToJsonString(input: Discriminator): string {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAToJsonString(input);
-        case 'B':
-            return DiscriminatorBToJsonString(input);
-        case 'C':
-            return DiscriminatorCToJsonString(input);
-        default:
-            throw new Error(`Unhandled case "${(input as any).typeName}"`);
-    }
-}
-export function DiscriminatorToUrlSearchParams(
-    input: Discriminator,
+export function UnionExternalToUrlSearchParams(
+    input: UnionExternal,
 ): URLSearchParams {
-    switch (input.typeName) {
-        case 'A':
-            return DiscriminatorAToUrlSearchParams(input);
-        case 'B':
-            return DiscriminatorBToUrlSearchParams(input);
-        case 'C':
-            return DiscriminatorCToUrlSearchParams(input);
-        default:
-            throw new Error('Unhandled case');
-    }
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
 }
-export function DiscriminatorToUrlSearchParamsString(
-    input: Discriminator,
+export function UnionExternalToUrlSearchParamsString(
+    input: UnionExternal,
 ): string {
-    return DiscriminatorToUrlSearchParams(input).toString();
+    return UnionExternalToUrlSearchParams(input).toString();
 }
 
-export interface DiscriminatorA {
-    typeName: 'A';
-    id: string;
+export type UnionInternal = UnionInternalRectangle | UnionInternalCircle;
+export function UnionInternalNew(): UnionInternal {
+    return UnionInternalRectangleNew();
 }
-export function DiscriminatorANew(): DiscriminatorA {
-    return {
-        typeName: 'A',
-        id: '',
-    };
-}
-export function DiscriminatorAFromJson(
+export function UnionInternalFromJson(
     input: Record<string, unknown>,
-): DiscriminatorA {
-    const _typeName = 'A';
-    let _id: string;
-    _id = parseString(input.id);
+): UnionInternal {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleFromJson(input);
+        }
+        case `circle`: {
+            return UnionInternalCircleFromJson(input);
+        }
+        default: {
+            return UnionInternalRectangleNew();
+        }
+    }
+}
+export function UnionInternalFromJsonString(input: string): UnionInternal {
+    return UnionInternalFromJson(JSON.parse(input));
+}
+export function UnionInternalToJsonString(input: UnionInternal): string {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleToJsonString(input);
+        }
+
+        case `circle`: {
+            return UnionInternalCircleToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalToUrlSearchParams(
+    input: UnionInternal,
+): URLSearchParams {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleToUrlSearchParams(input);
+        }
+        case `circle`: {
+            return UnionInternalCircleToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalToUrlSearchParamsString(
+    input: UnionInternal,
+): string {
+    return UnionInternalToUrlSearchParams(input).toString();
+}
+export interface UnionInternalRectangle {
+    shape: `rectangle`;
+    width: number;
+    height: number;
+}
+export function UnionInternalRectangleNew(): UnionInternalRectangle {
     return {
-        typeName: _typeName,
-        id: _id,
+        shape: `rectangle`,
+        width: 0,
+        height: 0,
     };
 }
-export function DiscriminatorAFromJsonString(input: string): DiscriminatorA {
-    return DiscriminatorAFromJson(JSON.parse(input));
+export function UnionInternalRectangleFromJson(
+    input: Record<string, unknown>,
+): UnionInternalRectangle {
+    const _shape = `rectangle`;
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    return {
+        shape: _shape,
+        width: _width,
+        height: _height,
+    };
 }
-export function DiscriminatorAToJsonString(input: DiscriminatorA): string {
+export function UnionInternalRectangleFromJsonString(
+    input: string,
+): UnionInternalRectangle {
+    return UnionInternalRectangleFromJson(JSON.parse(input));
+}
+export function UnionInternalRectangleToJsonString(
+    input: UnionInternalRectangle,
+): string {
     let json = '{';
-    json += '"typeName":"A"';
-    json += ',"id":';
-    json += serializeString(input.id);
+    json += '"shape":"rectangle"';
+    json += ',"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
     json += '}';
     return json;
 }
-export function DiscriminatorAToUrlSearchParams(
-    input: DiscriminatorA,
+export function UnionInternalRectangleToUrlSearchParams(
+    input: UnionInternalRectangle,
 ): URLSearchParams {
     const params = new URLSearchParams();
-    params.set('typeName', 'A');
-    params.set('id', input.id);
+    params.set('shape', `rectangle`);
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
     return params;
 }
-export function DiscriminatorAToUrlSearchParamsString(
-    input: DiscriminatorA,
+export function UnionInternalRectangleToUrlSearchParamsString(
+    input: UnionInternalRectangle,
 ): string {
-    return DiscriminatorAToUrlSearchParams(input).toString();
+    return UnionInternalRectangleToUrlSearchParams(input).toString();
 }
-export interface DiscriminatorB {
-    typeName: 'B';
-    id: string;
-    name: string;
+
+export interface UnionInternalCircle {
+    shape: `circle`;
+    radius: number;
 }
-export function DiscriminatorBNew(): DiscriminatorB {
+export function UnionInternalCircleNew(): UnionInternalCircle {
     return {
-        typeName: 'B',
-        id: '',
-        name: '',
+        shape: `circle`,
+        radius: 0,
     };
 }
-export function DiscriminatorBFromJson(
+export function UnionInternalCircleFromJson(
     input: Record<string, unknown>,
-): DiscriminatorB {
-    const _typeName = 'B';
-    let _id: string;
-    _id = parseString(input.id);
-    let _name: string;
-    _name = parseString(input.name);
+): UnionInternalCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = parseNumberFloat(input.radius);
     return {
-        typeName: _typeName,
-        id: _id,
-        name: _name,
+        shape: _shape,
+        radius: _radius,
     };
 }
-export function DiscriminatorBFromJsonString(input: string): DiscriminatorB {
-    return DiscriminatorBFromJson(JSON.parse(input));
+export function UnionInternalCircleFromJsonString(
+    input: string,
+): UnionInternalCircle {
+    return UnionInternalCircleFromJson(JSON.parse(input));
 }
-export function DiscriminatorBToJsonString(input: DiscriminatorB): string {
+export function UnionInternalCircleToJsonString(
+    input: UnionInternalCircle,
+): string {
     let json = '{';
-    json += '"typeName":"B"';
-    json += ',"id":';
-    json += serializeString(input.id);
-    json += ',"name":';
-    json += serializeString(input.name);
+    json += '"shape":"circle"';
+    json += ',"radius":';
+    json += `${input.radius}`;
     json += '}';
     return json;
 }
-export function DiscriminatorBToUrlSearchParams(
-    input: DiscriminatorB,
+export function UnionInternalCircleToUrlSearchParams(
+    input: UnionInternalCircle,
 ): URLSearchParams {
     const params = new URLSearchParams();
-    params.set('typeName', 'B');
-    params.set('id', input.id);
-    params.set('name', input.name);
+    params.set('shape', `circle`);
+    params.set('radius', `${input.radius}`);
     return params;
 }
-export function DiscriminatorBToUrlSearchParamsString(
-    input: DiscriminatorB,
+export function UnionInternalCircleToUrlSearchParamsString(
+    input: UnionInternalCircle,
 ): string {
-    return DiscriminatorBToUrlSearchParams(input).toString();
+    return UnionInternalCircleToUrlSearchParams(input).toString();
 }
-export interface DiscriminatorC {
-    typeName: 'C';
-    id: string;
-    name: string;
-    date: Date;
-}
-export function DiscriminatorCNew(): DiscriminatorC {
+
+export type UnionAdjacent =
+    | { kind: `object`; data: NestedObject }
+    | { kind: `array`; data: string[] }
+    | { kind: `boolean`; data: boolean }
+    | { kind: `nullable-timestamp`; data: Date | null };
+export function UnionAdjacentNew(): UnionAdjacent {
     return {
-        typeName: 'C',
-        id: '',
-        name: '',
-        date: new Date(0),
+        kind: `object`,
+        data: NestedObjectNew(),
     };
 }
-export function DiscriminatorCFromJson(
+export function UnionAdjacentFromJson(
     input: Record<string, unknown>,
-): DiscriminatorC {
-    const _typeName = 'C';
-    let _id: string;
-    _id = parseString(input.id);
-    let _name: string;
-    _name = parseString(input.name);
-    let _date: Date;
-    _date = parseTimestamp(input.date);
-    return {
-        typeName: _typeName,
-        id: _id,
-        name: _name,
-        date: _date,
-    };
+): UnionAdjacent {
+    if (typeof input.kind !== 'string') {
+        return UnionAdjacentNew();
+    }
+    switch (input.kind) {
+        case `object`: {
+            let __value__: NestedObject;
+            if (isObject(input.data)) {
+                __value__ = NestedObjectFromJson(input.data);
+            } else {
+                __value__ = NestedObjectNew();
+            }
+            return {
+                kind: `object`,
+                data: __value__,
+            };
+        }
+        case `array`: {
+            let __value__: string[];
+            if (Array.isArray(input.data)) {
+                __value__ = [];
+                for (const __value__El of input.data) {
+                    let __value__ElValue: string;
+                    __value__ElValue = parseString(__value__El);
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = [];
+            }
+            return {
+                kind: `array`,
+                data: __value__,
+            };
+        }
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = parseBoolean(input.data);
+            return {
+                kind: `boolean`,
+                data: __value__,
+            };
+        }
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            __value__ = parseNullableTimestamp(input.data);
+            return {
+                kind: `nullable-timestamp`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionAdjacentNew();
+        }
+    }
 }
-export function DiscriminatorCFromJsonString(input: string): DiscriminatorC {
-    return DiscriminatorCFromJson(JSON.parse(input));
+export function UnionAdjacentFromJsonString(input: string): UnionAdjacent {
+    return UnionAdjacentFromJson(JSON.parse(input));
 }
-export function DiscriminatorCToJsonString(input: DiscriminatorC): string {
-    let json = '{';
-    json += '"typeName":"C"';
-    json += ',"id":';
-    json += serializeString(input.id);
-    json += ',"name":';
-    json += serializeString(input.name);
-    json += ',"date":';
-    json += `"${input.date.toISOString()}"`;
-    json += '}';
-    return json;
+export function UnionAdjacentToJsonString(input: UnionAdjacent): string {
+    switch (input.kind) {
+        case `object`: {
+            let json = '{';
+            json += '"kind":"object"';
+            json += ',"data":';
+            json += NestedObjectToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `array`: {
+            let json = '{';
+            json += '"kind":"array"';
+            json += ',"data":';
+            json += '[';
+            for (let i = 0; i < input.data.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputDataEl = input.data[i]!;
+                json += serializeString(_inputDataEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `boolean`: {
+            let json = '{';
+            json += '"kind":"boolean"';
+            json += ',"data":';
+            json += `${input.data}`;
+            json += '}';
+            return json;
+        }
+
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += '"kind":"nullable-timestamp"';
+            json += ',"data":';
+            if (input.data instanceof Date) {
+                json += `"${input.data.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
 }
-export function DiscriminatorCToUrlSearchParams(
-    input: DiscriminatorC,
+export function UnionAdjacentToUrlSearchParams(
+    input: UnionAdjacent,
 ): URLSearchParams {
     const params = new URLSearchParams();
-    params.set('typeName', 'C');
-    params.set('id', input.id);
-    params.set('name', input.name);
-    params.set('date', input.date.toISOString());
+    console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function DiscriminatorCToUrlSearchParamsString(
-    input: DiscriminatorC,
+export function UnionAdjacentToUrlSearchParamsString(
+    input: UnionAdjacent,
 ): string {
-    return DiscriminatorCToUrlSearchParams(input).toString();
+    return UnionAdjacentToUrlSearchParams(input).toString();
 }
 
 export interface ObjectWithOptionalFields {
@@ -878,7 +1133,9 @@ export interface ObjectWithOptionalFields {
     object?: NestedObject;
     array?: boolean[];
     record?: Record<string, boolean>;
-    discriminator?: Discriminator;
+    unionExternal?: UnionExternal;
+    unionInternal?: UnionInternal;
+    unionAdjacent?: UnionAdjacent;
     any?: any;
 }
 export function ObjectWithOptionalFieldsNew(): ObjectWithOptionalFields {
@@ -981,12 +1238,28 @@ export function ObjectWithOptionalFieldsFromJson(
             _record = {};
         }
     }
-    let _discriminator: Discriminator | undefined;
-    if (typeof input.discriminator !== 'undefined') {
-        if (isObject(input.discriminator)) {
-            _discriminator = DiscriminatorFromJson(input.discriminator);
+    let _unionExternal: UnionExternal | undefined;
+    if (typeof input.unionExternal !== 'undefined') {
+        if (isObject(input.unionExternal)) {
+            _unionExternal = UnionExternalFromJson(input.unionExternal);
         } else {
-            _discriminator = DiscriminatorNew();
+            _unionExternal = UnionExternalNew();
+        }
+    }
+    let _unionInternal: UnionInternal | undefined;
+    if (typeof input.unionInternal !== 'undefined') {
+        if (isObject(input.unionInternal)) {
+            _unionInternal = UnionInternalFromJson(input.unionInternal);
+        } else {
+            _unionInternal = UnionInternalNew();
+        }
+    }
+    let _unionAdjacent: UnionAdjacent | undefined;
+    if (typeof input.unionAdjacent !== 'undefined') {
+        if (isObject(input.unionAdjacent)) {
+            _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+        } else {
+            _unionAdjacent = UnionAdjacentNew();
         }
     }
     let _any: any | undefined;
@@ -1011,7 +1284,9 @@ export function ObjectWithOptionalFieldsFromJson(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
         any: _any,
     };
 }
@@ -1121,7 +1396,7 @@ export function ObjectWithOptionalFieldsToJsonString(
         json += '[';
         for (let i = 0; i < input.array.length; i++) {
             if (i !== 0) json += ',';
-            const _inputArrayEl = input.array[i];
+            const _inputArrayEl = input.array[i]!;
             json += `${_inputArrayEl}`;
         }
         json += ']';
@@ -1141,12 +1416,25 @@ export function ObjectWithOptionalFieldsToJsonString(
             _recordPropertyCount++;
         }
         json += '}';
+
         _hasKey = true;
     }
-    if (typeof input.discriminator !== 'undefined') {
+    if (typeof input.unionExternal !== 'undefined') {
         if (_hasKey) json += ',';
-        json += '"discriminator":';
-        json += DiscriminatorToJsonString(input.discriminator);
+        json += '"unionExternal":';
+        json += UnionExternalToJsonString(input.unionExternal);
+        _hasKey = true;
+    }
+    if (typeof input.unionInternal !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionInternal":';
+        json += UnionInternalToJsonString(input.unionInternal);
+        _hasKey = true;
+    }
+    if (typeof input.unionAdjacent !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionAdjacent":';
+        json += UnionAdjacentToJsonString(input.unionAdjacent);
         _hasKey = true;
     }
     if (typeof input.any !== 'undefined') {
@@ -1219,9 +1507,19 @@ export function ObjectWithOptionalFieldsToUrlSearchParams(
             '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.',
         );
     }
-    if (typeof input.discriminator !== 'undefined') {
+    if (typeof input.unionExternal !== 'undefined') {
         console.warn(
-            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/discriminator.',
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionExternal.',
+        );
+    }
+    if (typeof input.unionInternal !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionInternal.',
+        );
+    }
+    if (typeof input.unionAdjacent !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionAdjacent.',
         );
     }
     if (typeof input.any !== 'undefined') {
@@ -1255,10 +1553,11 @@ export interface ObjectWithNullableFields {
     object: NestedObject | null;
     array: boolean[] | null;
     record: Record<string, boolean> | null;
-    discriminator: Discriminator | null;
+    unionExternal: UnionExternal | null;
+    unionInternal: UnionInternal | null;
+    unionAdjacent: UnionAdjacent | null;
     any: any;
 }
-
 export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
     return {
         string: null,
@@ -1278,7 +1577,9 @@ export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
         object: null,
         array: null,
         record: null,
-        discriminator: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         any: null,
     };
 }
@@ -1345,11 +1646,23 @@ export function ObjectWithNullableFieldsFromJson(
     } else {
         _record = null;
     }
-    let _discriminator: Discriminator | null;
-    if (isObject(input.discriminator)) {
-        _discriminator = DiscriminatorFromJson(input.discriminator);
+    let _unionExternal: UnionExternal | null;
+    if (isObject(input.unionExternal)) {
+        _unionExternal = UnionExternalFromJson(input.unionExternal);
     } else {
-        _discriminator = null;
+        _unionExternal = null;
+    }
+    let _unionInternal: UnionInternal | null;
+    if (isObject(input.unionInternal)) {
+        _unionInternal = UnionInternalFromJson(input.unionInternal);
+    } else {
+        _unionInternal = null;
+    }
+    let _unionAdjacent: UnionAdjacent | null;
+    if (isObject(input.unionAdjacent)) {
+        _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+    } else {
+        _unionAdjacent = null;
     }
     let _any: any;
     _any = input.any;
@@ -1371,7 +1684,9 @@ export function ObjectWithNullableFieldsFromJson(
         object: _object,
         array: _array,
         record: _record,
-        discriminator: _discriminator,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
         any: _any,
     };
 }
@@ -1443,7 +1758,7 @@ export function ObjectWithNullableFieldsToJsonString(
         json += '[';
         for (let i = 0; i < input.array.length; i++) {
             if (i !== 0) json += ',';
-            const _inputArrayEl = input.array[i];
+            const _inputArrayEl = input.array[i]!;
             json += `${_inputArrayEl}`;
         }
         json += ']';
@@ -1466,9 +1781,21 @@ export function ObjectWithNullableFieldsToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"discriminator":';
-    if (input.discriminator != null) {
-        json += DiscriminatorToJsonString(input.discriminator);
+    json += ',"unionExternal":';
+    if (input.unionExternal != null) {
+        json += UnionExternalToJsonString(input.unionExternal);
+    } else {
+        json += 'null';
+    }
+    json += ',"unionInternal":';
+    if (input.unionInternal != null) {
+        json += UnionInternalToJsonString(input.unionInternal);
+    } else {
+        json += 'null';
+    }
+    json += ',"unionAdjacent":';
+    if (input.unionAdjacent != null) {
+        json += UnionAdjacentToJsonString(input.unionAdjacent);
     } else {
         json += 'null';
     }
@@ -1505,7 +1832,13 @@ export function ObjectWithNullableFieldsToUrlSearchParams(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.',
     );
     console.warn(
-        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/discriminator.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionExternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionInternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionAdjacent.',
     );
     console.warn(
         "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",
@@ -1584,4 +1917,237 @@ export function RecursiveObjectToUrlSearchParamsString(
     input: RecursiveObject,
 ): string {
     return RecursiveObjectToUrlSearchParams(input).toString();
+}
+
+export type LegacyDiscriminator =
+    | LegacyDiscriminatorA
+    | LegacyDiscriminatorB
+    | LegacyDiscriminatorC;
+export function LegacyDiscriminatorNew(): LegacyDiscriminator {
+    return LegacyDiscriminatorANew();
+}
+export function LegacyDiscriminatorFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminator {
+    switch (input.typeName) {
+        case 'A':
+            return LegacyDiscriminatorAFromJson(input);
+        case 'B':
+            return LegacyDiscriminatorBFromJson(input);
+        case 'C':
+            return LegacyDiscriminatorCFromJson(input);
+        default:
+            return LegacyDiscriminatorANew();
+    }
+}
+export function LegacyDiscriminatorFromJsonString(
+    input: string,
+): LegacyDiscriminator {
+    return LegacyDiscriminatorFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorToJsonString(
+    input: LegacyDiscriminator,
+): string {
+    switch (input.typeName) {
+        case 'A':
+            return LegacyDiscriminatorAToJsonString(input);
+        case 'B':
+            return LegacyDiscriminatorBToJsonString(input);
+        case 'C':
+            return LegacyDiscriminatorCToJsonString(input);
+        default:
+            throw new Error(`Unhandled case "${(input as any).typeName}"`);
+    }
+}
+export function LegacyDiscriminatorToUrlSearchParams(
+    input: LegacyDiscriminator,
+): URLSearchParams {
+    switch (input.typeName) {
+        case 'A':
+            return LegacyDiscriminatorAToUrlSearchParams(input);
+        case 'B':
+            return LegacyDiscriminatorBToUrlSearchParams(input);
+        case 'C':
+            return LegacyDiscriminatorCToUrlSearchParams(input);
+        default:
+            throw new Error('Unhandled case');
+    }
+}
+export function LegacyDiscriminatorToUrlSearchParamsString(
+    input: LegacyDiscriminator,
+): string {
+    return LegacyDiscriminatorToUrlSearchParams(input).toString();
+}
+export interface LegacyDiscriminatorA {
+    typeName: `A`;
+    id: string;
+}
+export function LegacyDiscriminatorANew(): LegacyDiscriminatorA {
+    return {
+        typeName: `A`,
+        id: '',
+    };
+}
+export function LegacyDiscriminatorAFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorA {
+    const _typeName = `A`;
+    let _id: string;
+    _id = parseString(input.id);
+    return {
+        typeName: _typeName,
+        id: _id,
+    };
+}
+export function LegacyDiscriminatorAFromJsonString(
+    input: string,
+): LegacyDiscriminatorA {
+    return LegacyDiscriminatorAFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorAToJsonString(
+    input: LegacyDiscriminatorA,
+): string {
+    let json = '{';
+    json += '"typeName":"A"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += '}';
+    return json;
+}
+export function LegacyDiscriminatorAToUrlSearchParams(
+    input: LegacyDiscriminatorA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', `A`);
+    params.set('id', input.id);
+    return params;
+}
+export function LegacyDiscriminatorAToUrlSearchParamsString(
+    input: LegacyDiscriminatorA,
+): string {
+    return LegacyDiscriminatorAToUrlSearchParams(input).toString();
+}
+
+export interface LegacyDiscriminatorB {
+    typeName: `B`;
+    id: string;
+    name: string;
+}
+export function LegacyDiscriminatorBNew(): LegacyDiscriminatorB {
+    return {
+        typeName: `B`,
+        id: '',
+        name: '',
+    };
+}
+export function LegacyDiscriminatorBFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorB {
+    const _typeName = `B`;
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+    };
+}
+export function LegacyDiscriminatorBFromJsonString(
+    input: string,
+): LegacyDiscriminatorB {
+    return LegacyDiscriminatorBFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorBToJsonString(
+    input: LegacyDiscriminatorB,
+): string {
+    let json = '{';
+    json += '"typeName":"B"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += '}';
+    return json;
+}
+export function LegacyDiscriminatorBToUrlSearchParams(
+    input: LegacyDiscriminatorB,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', `B`);
+    params.set('id', input.id);
+    params.set('name', input.name);
+    return params;
+}
+export function LegacyDiscriminatorBToUrlSearchParamsString(
+    input: LegacyDiscriminatorB,
+): string {
+    return LegacyDiscriminatorBToUrlSearchParams(input).toString();
+}
+
+export interface LegacyDiscriminatorC {
+    typeName: `C`;
+    id: string;
+    name: string;
+    date: Date;
+}
+export function LegacyDiscriminatorCNew(): LegacyDiscriminatorC {
+    return {
+        typeName: `C`,
+        id: '',
+        name: '',
+        date: new Date(0),
+    };
+}
+export function LegacyDiscriminatorCFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorC {
+    const _typeName = `C`;
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    let _date: Date;
+    _date = parseTimestamp(input.date);
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+        date: _date,
+    };
+}
+export function LegacyDiscriminatorCFromJsonString(
+    input: string,
+): LegacyDiscriminatorC {
+    return LegacyDiscriminatorCFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorCToJsonString(
+    input: LegacyDiscriminatorC,
+): string {
+    let json = '{';
+    json += '"typeName":"C"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"date":';
+    json += `"${input.date.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function LegacyDiscriminatorCToUrlSearchParams(
+    input: LegacyDiscriminatorC,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', `C`);
+    params.set('id', input.id);
+    params.set('name', input.name);
+    params.set('date', input.date.toISOString());
+    return params;
+}
+export function LegacyDiscriminatorCToUrlSearchParamsString(
+    input: LegacyDiscriminatorC,
+): string {
+    return LegacyDiscriminatorCToUrlSearchParams(input).toString();
 }

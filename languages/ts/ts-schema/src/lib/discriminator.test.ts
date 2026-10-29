@@ -58,9 +58,9 @@ describe('Parsing', () => {
             id: '131241513',
             plan: 'PAID',
         };
-        expect(parse(createdInput));
-        expect(parse(deletedInput));
-        expect(parse(planChangedInput));
+        expect(parse(createdInput)).toBe(true);
+        expect(parse(deletedInput)).toBe(true);
+        expect(parse(planChangedInput)).toBe(true);
     });
     it('Rejects uncompliant objects', () => {
         const additionalFieldInput = {
@@ -71,8 +71,9 @@ describe('Parsing', () => {
         const missingFieldsInput = {
             id: '1234531',
         };
-        expect(!parse(additionalFieldInput));
-        expect(!parse(missingFieldsInput));
+        // objects aren't strict by default so additional fields are allowed
+        expect(parse(additionalFieldInput)).toBe(true);
+        expect(parse(missingFieldsInput)).toBe(false);
     });
 });
 
@@ -137,8 +138,8 @@ it('produces valid ATD', () => {
         ),
     );
     expect(result).toStrictEqual({
-        discriminator: 'type',
-        mapping: {
+        tagKey: 'type',
+        union: {
             TEXT: {
                 properties: {
                     content: {
