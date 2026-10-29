@@ -367,8 +367,8 @@ describe('UnionInternal', () => {
     test('UnionInternal_Rectangle.json', () => {
         const targetValue: UnionInternal = {
             shape: 'rectangle',
-            width: 50,
-            height: 25,
+            width: 10.7,
+            height: 5.3,
         };
         const jsonReference = testFile('UnionInternal_Rectangle.json');
         expect(UnionInternalFromJsonString(jsonReference)).toStrictEqual(

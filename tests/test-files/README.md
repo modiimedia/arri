@@ -285,7 +285,7 @@ Below are all of the contents of the test JSON files in an easier to read format
 ## UnionInternal_Rectangle.json
 
 ```json
-{ "shape": "rectangle", "width": 50, "height": 25 }
+{ "shape": "rectangle", "width": 10.7, "height": 5.3 }
 ```
 
 ## UnionAdjacent_Object.json

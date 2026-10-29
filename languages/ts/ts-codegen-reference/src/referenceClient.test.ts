@@ -427,8 +427,8 @@ describe('UnionExternal', () => {
 describe('UnionInternal', () => {
     const targetValue: UnionInternal = {
         shape: 'rectangle',
-        width: 50,
-        height: 25,
+        width: 10.7,
+        height: 5.3,
     };
     const jsonReference = testFile('UnionInternal_Rectangle.json');
     test('JSON Parsing', () => {
@@ -479,7 +479,7 @@ describe('UnionInternal', () => {
     });
     test('URL query string output', () => {
         expect($$UnionInternal.toUrlSearchParamsString(targetValue)).toBe(
-            'shape=rectangle&width=50&height=25',
+            'shape=rectangle&width=10.7&height=5.3',
         );
         expect(
             $$UnionInternal.toUrlSearchParamsString({

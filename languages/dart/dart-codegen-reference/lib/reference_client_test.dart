@@ -353,7 +353,7 @@ void main() {
   });
 
   group("UnionInternal", () {
-    final input = UnionInternalRectangle(width: 50, height: 25);
+    final input = UnionInternalRectangle(width: 10.7, height: 5.3);
     late String reference;
     setUpAll(() async {
       reference =
@@ -365,13 +365,12 @@ void main() {
       expect(UnionInternal.fromJsonString(reference), equals(input));
     });
     test("toJsonString()", () {
-      // dart always encodes doubles with a decimal (50.0) so compare the decoded values
-      expect(json.decode(input.toJsonString()), equals(json.decode(reference)));
+      expect(input.toJsonString(), equals(reference));
     });
     test("toUrlQueryParams()", () {
       expect(
         input.toUrlQueryParams(),
-        equals("shape=rectangle&width=50.0&height=25.0"),
+        equals("shape=rectangle&width=10.7&height=5.3"),
       );
     });
     test("unknown variant falls back to the first variant", () {

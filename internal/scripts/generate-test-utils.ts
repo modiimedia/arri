@@ -492,8 +492,8 @@ async function main() {
         filename: 'UnionInternal_Rectangle.json',
         content: a.serializeUnsafe(UnionInternal, {
             shape: 'rectangle',
-            width: 50,
-            height: 25,
+            width: 10.7,
+            height: 5.3,
         }),
     });
     files.push({
