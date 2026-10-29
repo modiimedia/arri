@@ -11,6 +11,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     isServiceDefinition,
     Schema,
@@ -44,6 +45,7 @@ import {
 } from './procedures';
 import { dartMapFromSchema } from './record';
 import { dartRefFromSchema } from './ref';
+import { dartUnionFromSchema } from './union';
 
 export interface DartClientGeneratorOptions {
     outputFile: string;
@@ -258,6 +260,10 @@ export function dartTypeFromSchema(
 
     if (isSchemaFormDiscriminator(schema)) {
         return dartSealedClassFromSchema(schema, context);
+    }
+
+    if (isSchemaFormUnion(schema)) {
+        return dartUnionFromSchema(schema, context);
     }
 
     if (isSchemaFormRef(schema)) {
