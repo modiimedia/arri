@@ -18,7 +18,7 @@ ATD schemas are not intended to be written by hand. Their intended workflow is t
 
 ## Schema Forms
 
-Arri Type Definitions are JSON documents that can take on one of eight forms.
+Arri Type Definitions are JSON documents that can take on one of nine forms.
 
 - The [empty form](#empty-schema-form)
 - The [type form](#type-schema-form)
@@ -26,7 +26,8 @@ Arri Type Definitions are JSON documents that can take on one of eight forms.
 - The [elements form](#elements-schema-form)
 - The [properties form](#properties-schema-form)
 - The [values form](#values-schema-form)
-- The [discriminator form](#discriminator-schema-form)
+- The [union form](#union-schema-form)
+- The [discriminator form](#discriminator-schema-form) (deprecated)
 - The [ref form](#ref-schema-form)
 
 ### "Empty" Schema Form
@@ -193,7 +194,102 @@ Accepts objects where all the values are booleans. So it would acccept `{}` or `
 
 Be aware that only string keys are supported.
 
+### "Union" Schema Form
+
+To describe a value that can be one of several variants (aka: "tagged union", "sum type", or "enum with associated values"), use a "union" schema.
+
+A "union" schema has up to three keywords:
+
+- `union` (required) which maps each variant's tag to the schema for that variant
+- `tagKey` (optional) which tells you what property holds the tag
+- `valueKey` (optional) which tells you what property holds the variant's value. This can only be used alongside `tagKey`.
+
+Which keywords are present determines how the union is represented in JSON. Given the following variants:
+
+```json
+{
+    "rectangle": {
+        "properties": {
+            "width": { "type": "float64" },
+            "height": { "type": "float64" }
+        }
+    },
+    "circle": {
+        "properties": {
+            "radius": { "type": "float64" }
+        }
+    }
+}
+```
+
+#### Externally Tagged (default)
+
+When there is no `tagKey` the variant's tag is used as the only key of a wrapping object.
+
+```json
+{
+    "union": {
+        "rectangle": { "properties": { ... } },
+        "circle": { "properties": { ... } }
+    }
+}
+```
+
+```json
+{ "rectangle": { "width": 50, "height": 25 } }
+{ "circle": { "radius": 2.5 } }
+```
+
+#### Internally Tagged
+
+When `tagKey` is set the tag is added as a property alongside the variant's own properties.
+
+```json
+{
+    "tagKey": "shape",
+    "union": {
+        "rectangle": { "properties": { ... } },
+        "circle": { "properties": { ... } }
+    }
+}
+```
+
+```json
+{ "shape": "rectangle", "width": 50, "height": 25 }
+{ "shape": "circle", "radius": 2.5 }
+```
+
+You can only use the ["Properties" Schema Form](#properties-schema-form) for the variants of an internally tagged union. Additionally the variants cannot have a property with the same name as the `tagKey`.
+
+#### Adjacently Tagged
+
+When both `tagKey` and `valueKey` are set the tag and the variant's value are placed side by side in a wrapping object.
+
+```json
+{
+    "tagKey": "kind",
+    "valueKey": "data",
+    "union": {
+        "rectangle": { "properties": { ... } },
+        "circle": { "properties": { ... } }
+    }
+}
+```
+
+```json
+{ "kind": "rectangle", "data": { "width": 50, "height": 25 } }
+{ "kind": "circle", "data": { "radius": 2.5 } }
+```
+
+#### Rules that apply to all unions
+
+- If the input doesn't match one of the variants specified in `union` then it is rejected. (Although clients should fallback to the first variant rather than rejecting the input. See [creating tolerant clients](../docs/creating-a-custom-generator.md#creating-tolerant-clients).)
+- Externally tagged and adjacently tagged unions can use any schema form for their variants. This includes `isNullable` variants.
+- The `tagKey` and `valueKey` are JSON keys. Code generators should convert them to the naming conventions of the target language while keeping the original key when serializing / deserializing.
+
 ### "Discriminator" Schema Form
+
+_This schema form is deprecated in favor of internally tagged [unions](#union-schema-form). Code generators should continue supporting it so that existing schemas keep working, but new schemas should not be produced using this form._
 
 To describe objects that work like a tagged union (aka: "discriminated union", or "sum type"), use a "discriminator" schema.
 
@@ -277,7 +373,7 @@ You can only use the ["Properties" Schema Form](#properties-schema-form) in the 
 
 ### "Ref" Schema Form
 
-The ref schema is used to close self-referential schemas in order to represent recursive types. The root parent of a ref schema must be a ["Properties" Schema Form](#properties-schema-form) or a ["Discriminator" Schema Form](#discriminator-schema-form). Additionally the root parent must have an `id` property in their metadata, or they must be defined at the root of the `definition` field. (See further down)
+The ref schema is used to close self-referential schemas in order to represent recursive types. The root parent of a ref schema must be a ["Properties" Schema Form](#properties-schema-form), a ["Union" Schema Form](#union-schema-form), or a ["Discriminator" Schema Form](#discriminator-schema-form). Additionally the root parent must have an `id` property in their metadata, or they must be defined at the root of the `definition` field. (See further down)
 
 Having a recursive schema of a different form is invalid ATD. For example,
 
@@ -331,7 +427,7 @@ For example,
 
 Will accept `"foo"` and `null`
 
-Note: you can't put `isNullable` on a schema in a [discriminator **mapping**](#discriminator-schema-form). If you want a discriminator to be nullable, you have to put it at the same level as the `discriminator` and `mapping` keywords.
+Note: you can't put `isNullable` on a variant of an [internally tagged union](#internally-tagged) or on a schema in a [discriminator **mapping**](#discriminator-schema-form). If you want the union / discriminator itself to be nullable, you have to put it at the same level as the `union` / `discriminator` keywords.
 
 ### The `metadata` keyword
 
@@ -339,7 +435,7 @@ The `metadata` keyword is legal on any schema, and if it's present it has to be 
 
 | key            | description                                                                                                                                                                        |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id             | A unique ID that will be used as the type name when running code generators. Used for "properties", "discriminator", and "enum" schemas only.                                      |
+| id             | A unique ID that will be used as the type name when running code generators. Used for "properties", "union", "discriminator", and "enum" schemas only.                             |
 | description    | A string that will be added as a code comment in the target code generator                                                                                                         |
 | isDeprecated   | A boolean that indicates that code generators should mark a field or type as "deprecate"                                                                                           |
 | deprecatedNote | A string that will be added as a deprecation message by code generators if deprecation messages are supported by the target language. This should be used alongside `isDeprecated` |
