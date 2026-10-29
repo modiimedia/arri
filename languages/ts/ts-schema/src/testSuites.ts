@@ -161,6 +161,7 @@ const UnionInternalTaggingWithValue = a.union(
             height: a.float64(),
         }),
         references: a.array(a.string()),
+        nullableText: a.nullable(a.string()),
     },
     {
         tagKey: 'type',
@@ -798,6 +799,8 @@ export const validationTestSuites: Record<
                 data: { url: 'https://example.com', width: 100, height: 50 },
             },
             { type: 'references', data: ['hello', 'world'] },
+            { type: 'nullableText', data: 'hello world' },
+            { type: 'nullableText', data: null },
         ] satisfies UnionInternalTaggingWithValue[],
         badInputs: [
             { type: 'text', data: null },

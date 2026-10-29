@@ -501,10 +501,8 @@ function serializeInternallyTaggedWithValueKey<T extends Record<string, any>>(
         maxDepth: context.maxDepth,
     };
     result +=
-        targetSchema[VALIDATOR_KEY].serialize(
-            input[valueKey] ?? {},
-            newContext,
-        ) ?? 'null';
+        targetSchema[VALIDATOR_KEY].serialize(input[valueKey], newContext) ??
+        'null';
     result += '}';
     return result;
 }
