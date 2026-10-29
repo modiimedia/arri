@@ -75,7 +75,6 @@ export class MinimalClient {
         this._options = config.options;
         this.books = new MinimalClientBooksService(config);
     }
-
     async sendObject(
         params: NestedObject,
         options?: ArriRequestOptions,
@@ -104,6 +103,7 @@ export class MinimalClientBooksService {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
+
     constructor(
         config: {
             baseUrl?: string;
@@ -216,6 +216,7 @@ export function EmptyObjectToUrlSearchParams(
     input: EmptyObject,
 ): URLSearchParams {
     const params = new URLSearchParams();
+
     return params;
 }
 export function EmptyObjectToUrlSearchParamsString(input: EmptyObject): string {
@@ -331,6 +332,7 @@ export function BookParamsToUrlSearchParams(
 export function BookParamsToUrlSearchParamsString(input: BookParams): string {
     return BookParamsToUrlSearchParams(input).toString();
 }
+
 export interface NestedObject {
     id: string;
     content: string;
@@ -397,10 +399,11 @@ export interface ObjectWithEveryType {
     object: NestedObject;
     array: boolean[];
     record: Record<string, boolean>;
-    union: Union;
+    unionExternal: UnionExternal;
+    unionInternal: UnionInternal;
+    unionAdjacent: UnionAdjacent;
     any: any;
 }
-
 export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
     return {
         string: '',
@@ -420,7 +423,9 @@ export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
         object: NestedObjectNew(),
         array: [],
         record: {},
-        union: UnionNew(),
+        unionExternal: UnionExternalNew(),
+        unionInternal: UnionInternalNew(),
+        unionAdjacent: UnionAdjacentNew(),
         any: undefined,
     };
 }
@@ -487,11 +492,23 @@ export function ObjectWithEveryTypeFromJson(
     } else {
         _record = {};
     }
-    let _union: Union;
-    if (isObject(input.union)) {
-        _union = UnionFromJson(input.union);
+    let _unionExternal: UnionExternal;
+    if (isObject(input.unionExternal)) {
+        _unionExternal = UnionExternalFromJson(input.unionExternal);
     } else {
-        _union = UnionNew();
+        _unionExternal = UnionExternalNew();
+    }
+    let _unionInternal: UnionInternal;
+    if (isObject(input.unionInternal)) {
+        _unionInternal = UnionInternalFromJson(input.unionInternal);
+    } else {
+        _unionInternal = UnionInternalNew();
+    }
+    let _unionAdjacent: UnionAdjacent;
+    if (isObject(input.unionAdjacent)) {
+        _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+    } else {
+        _unionAdjacent = UnionAdjacentNew();
     }
     let _any: any;
     _any = input.any;
@@ -513,7 +530,9 @@ export function ObjectWithEveryTypeFromJson(
         object: _object,
         array: _array,
         record: _record,
-        union: _union,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
         any: _any,
     };
 }
@@ -576,8 +595,13 @@ export function ObjectWithEveryTypeToJsonString(
         _recordPropertyCount++;
     }
     json += '}';
-    json += ',"union":';
-    json += UnionToJsonString(input.union);
+
+    json += ',"unionExternal":';
+    json += UnionExternalToJsonString(input.unionExternal);
+    json += ',"unionInternal":';
+    json += UnionInternalToJsonString(input.unionInternal);
+    json += ',"unionAdjacent":';
+    json += UnionAdjacentToJsonString(input.unionAdjacent);
     json += ',"any":';
     json += JSON.stringify(input.any);
     json += '}';
@@ -611,7 +635,13 @@ export function ObjectWithEveryTypeToUrlSearchParams(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
     );
     console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/union.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionExternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionInternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionAdjacent.',
     );
     console.warn(
         "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
@@ -646,20 +676,20 @@ export function EnumeratorFromSerialValue(input: string): Enumerator {
     }
     return 'FOO';
 }
-
-export type Union =
+export type UnionExternal =
     | { type: `object`; value: NestedObject }
     | { type: `array`; value: string[] }
     | { type: `boolean`; value: boolean }
     | { type: `nullable-timestamp`; value: Date | null };
-
-export function UnionNew(): Union {
+export function UnionExternalNew(): UnionExternal {
     return {
         type: `object`,
         value: NestedObjectNew(),
     };
 }
-export function UnionFromJson(input: Record<string, unknown>): Union {
+export function UnionExternalFromJson(
+    input: Record<string, unknown>,
+): UnionExternal {
     if (`object` in input) {
         let __value__: NestedObject;
         if (isObject(input[`object`])) {
@@ -672,6 +702,7 @@ export function UnionFromJson(input: Record<string, unknown>): Union {
             value: __value__,
         };
     }
+
     if (`array` in input) {
         let __value__: string[];
         if (Array.isArray(input[`array`])) {
@@ -689,6 +720,7 @@ export function UnionFromJson(input: Record<string, unknown>): Union {
             value: __value__,
         };
     }
+
     if (`boolean` in input) {
         let __value__: boolean;
         __value__ = parseBoolean(input[`boolean`]);
@@ -697,6 +729,7 @@ export function UnionFromJson(input: Record<string, unknown>): Union {
             value: __value__,
         };
     }
+
     if (`nullable-timestamp` in input) {
         let __value__: Date | null;
         __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
@@ -705,12 +738,12 @@ export function UnionFromJson(input: Record<string, unknown>): Union {
             value: __value__,
         };
     }
-    return UnionNew();
+    return UnionExternalNew();
 }
-export function UnionFromJsonString(input: string): Union {
-    return UnionFromJson(JSON.parse(input));
+export function UnionExternalFromJsonString(input: string): UnionExternal {
+    return UnionExternalFromJson(JSON.parse(input));
 }
-export function UnionToJsonString(input: Union): string {
+export function UnionExternalToJsonString(input: UnionExternal): string {
     switch (input.type) {
         case `object`: {
             let json = '{';
@@ -720,6 +753,7 @@ export function UnionToJsonString(input: Union): string {
             json += '}';
             return json;
         }
+
         case `array`: {
             let json = '{';
             json += serializeString(input.type);
@@ -734,6 +768,7 @@ export function UnionToJsonString(input: Union): string {
             json += '}';
             return json;
         }
+
         case `boolean`: {
             let json = '{';
             json += serializeString(input.type);
@@ -742,6 +777,7 @@ export function UnionToJsonString(input: Union): string {
             json += '}';
             return json;
         }
+
         case `nullable-timestamp`: {
             let json = '{';
             json += serializeString(input.type);
@@ -754,19 +790,329 @@ export function UnionToJsonString(input: Union): string {
             json += '}';
             return json;
         }
+
         default: {
             input satisfies never;
             throw new Error(`Unknown variant type: ${(input as any).type}`);
         }
     }
 }
-export function UnionToUrlSearchParams(input: Union): URLSearchParams {
+export function UnionExternalToUrlSearchParams(
+    input: UnionExternal,
+): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function UnionToUrlSearchParamsString(input: Union): string {
-    return UnionToUrlSearchParams(input).toString();
+export function UnionExternalToUrlSearchParamsString(
+    input: UnionExternal,
+): string {
+    return UnionExternalToUrlSearchParams(input).toString();
+}
+
+export type UnionInternal = UnionInternalRectangle | UnionInternalCircle;
+export function UnionInternalNew(): UnionInternal {
+    return UnionInternalRectangleNew();
+}
+export function UnionInternalFromJson(
+    input: Record<string, unknown>,
+): UnionInternal {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleFromJson(input);
+        }
+        case `circle`: {
+            return UnionInternalCircleFromJson(input);
+        }
+        default: {
+            return UnionInternalRectangleNew();
+        }
+    }
+}
+export function UnionInternalFromJsonString(input: string): UnionInternal {
+    return UnionInternalFromJson(JSON.parse(input));
+}
+export function UnionInternalToJsonString(input: UnionInternal): string {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleToJsonString(input);
+        }
+
+        case `circle`: {
+            return UnionInternalCircleToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalToUrlSearchParams(
+    input: UnionInternal,
+): URLSearchParams {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleToUrlSearchParams(input);
+        }
+        case `circle`: {
+            return UnionInternalCircleToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalToUrlSearchParamsString(
+    input: UnionInternal,
+): string {
+    return UnionInternalToUrlSearchParams(input).toString();
+}
+export interface UnionInternalRectangle {
+    shape: `rectangle`;
+    width: number;
+    height: number;
+}
+export function UnionInternalRectangleNew(): UnionInternalRectangle {
+    return {
+        shape: `rectangle`,
+        width: 0,
+        height: 0,
+    };
+}
+export function UnionInternalRectangleFromJson(
+    input: Record<string, unknown>,
+): UnionInternalRectangle {
+    const _shape = `rectangle`;
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    return {
+        shape: _shape,
+        width: _width,
+        height: _height,
+    };
+}
+export function UnionInternalRectangleFromJsonString(
+    input: string,
+): UnionInternalRectangle {
+    return UnionInternalRectangleFromJson(JSON.parse(input));
+}
+export function UnionInternalRectangleToJsonString(
+    input: UnionInternalRectangle,
+): string {
+    let json = '{';
+    json += '"shape":"rectangle"';
+    json += ',"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += '}';
+    return json;
+}
+export function UnionInternalRectangleToUrlSearchParams(
+    input: UnionInternalRectangle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `rectangle`);
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    return params;
+}
+export function UnionInternalRectangleToUrlSearchParamsString(
+    input: UnionInternalRectangle,
+): string {
+    return UnionInternalRectangleToUrlSearchParams(input).toString();
+}
+
+export interface UnionInternalCircle {
+    shape: `circle`;
+    radius: number;
+}
+export function UnionInternalCircleNew(): UnionInternalCircle {
+    return {
+        shape: `circle`,
+        radius: 0,
+    };
+}
+export function UnionInternalCircleFromJson(
+    input: Record<string, unknown>,
+): UnionInternalCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = parseNumberFloat(input.radius);
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionInternalCircleFromJsonString(
+    input: string,
+): UnionInternalCircle {
+    return UnionInternalCircleFromJson(JSON.parse(input));
+}
+export function UnionInternalCircleToJsonString(
+    input: UnionInternalCircle,
+): string {
+    let json = '{';
+    json += '"shape":"circle"';
+    json += ',"radius":';
+    json += `${input.radius}`;
+    json += '}';
+    return json;
+}
+export function UnionInternalCircleToUrlSearchParams(
+    input: UnionInternalCircle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `circle`);
+    params.set('radius', `${input.radius}`);
+    return params;
+}
+export function UnionInternalCircleToUrlSearchParamsString(
+    input: UnionInternalCircle,
+): string {
+    return UnionInternalCircleToUrlSearchParams(input).toString();
+}
+
+export type UnionAdjacent =
+    | { kind: `object`; data: NestedObject }
+    | { kind: `array`; data: string[] }
+    | { kind: `boolean`; data: boolean }
+    | { kind: `nullable-timestamp`; data: Date | null };
+export function UnionAdjacentNew(): UnionAdjacent {
+    return {
+        kind: `object`,
+        data: NestedObjectNew(),
+    };
+}
+export function UnionAdjacentFromJson(
+    input: Record<string, unknown>,
+): UnionAdjacent {
+    if (typeof input.kind !== 'string') {
+        return UnionAdjacentNew();
+    }
+    switch (input.kind) {
+        case `object`: {
+            let __value__: NestedObject;
+            if (isObject(input.data)) {
+                __value__ = NestedObjectFromJson(input.data);
+            } else {
+                __value__ = NestedObjectNew();
+            }
+            return {
+                kind: `object`,
+                data: __value__,
+            };
+        }
+        case `array`: {
+            let __value__: string[];
+            if (Array.isArray(input.data)) {
+                __value__ = [];
+                for (const __value__El of input.data) {
+                    let __value__ElValue: string;
+                    __value__ElValue = parseString(__value__El);
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = [];
+            }
+            return {
+                kind: `array`,
+                data: __value__,
+            };
+        }
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = parseBoolean(input.data);
+            return {
+                kind: `boolean`,
+                data: __value__,
+            };
+        }
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            __value__ = parseNullableTimestamp(input.data);
+            return {
+                kind: `nullable-timestamp`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionAdjacentNew();
+        }
+    }
+}
+export function UnionAdjacentFromJsonString(input: string): UnionAdjacent {
+    return UnionAdjacentFromJson(JSON.parse(input));
+}
+export function UnionAdjacentToJsonString(input: UnionAdjacent): string {
+    switch (input.kind) {
+        case `object`: {
+            let json = '{';
+            json += '"kind":"object"';
+            json += ',"data":';
+            json += NestedObjectToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `array`: {
+            let json = '{';
+            json += '"kind":"array"';
+            json += ',"data":';
+            json += '[';
+            for (let i = 0; i < input.data.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputDataEl = input.data[i]!;
+                json += serializeString(_inputDataEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `boolean`: {
+            let json = '{';
+            json += '"kind":"boolean"';
+            json += ',"data":';
+            json += `${input.data}`;
+            json += '}';
+            return json;
+        }
+
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += '"kind":"nullable-timestamp"';
+            json += ',"data":';
+            if (input.data instanceof Date) {
+                json += `"${input.data.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionAdjacentToUrlSearchParams(
+    input: UnionAdjacent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionAdjacentToUrlSearchParamsString(
+    input: UnionAdjacent,
+): string {
+    return UnionAdjacentToUrlSearchParams(input).toString();
 }
 
 export interface ObjectWithOptionalFields {
@@ -787,7 +1133,9 @@ export interface ObjectWithOptionalFields {
     object?: NestedObject;
     array?: boolean[];
     record?: Record<string, boolean>;
-    union?: Union;
+    unionExternal?: UnionExternal;
+    unionInternal?: UnionInternal;
+    unionAdjacent?: UnionAdjacent;
     any?: any;
 }
 export function ObjectWithOptionalFieldsNew(): ObjectWithOptionalFields {
@@ -890,12 +1238,28 @@ export function ObjectWithOptionalFieldsFromJson(
             _record = {};
         }
     }
-    let _union: Union | undefined;
-    if (typeof input.union !== 'undefined') {
-        if (isObject(input.union)) {
-            _union = UnionFromJson(input.union);
+    let _unionExternal: UnionExternal | undefined;
+    if (typeof input.unionExternal !== 'undefined') {
+        if (isObject(input.unionExternal)) {
+            _unionExternal = UnionExternalFromJson(input.unionExternal);
         } else {
-            _union = UnionNew();
+            _unionExternal = UnionExternalNew();
+        }
+    }
+    let _unionInternal: UnionInternal | undefined;
+    if (typeof input.unionInternal !== 'undefined') {
+        if (isObject(input.unionInternal)) {
+            _unionInternal = UnionInternalFromJson(input.unionInternal);
+        } else {
+            _unionInternal = UnionInternalNew();
+        }
+    }
+    let _unionAdjacent: UnionAdjacent | undefined;
+    if (typeof input.unionAdjacent !== 'undefined') {
+        if (isObject(input.unionAdjacent)) {
+            _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+        } else {
+            _unionAdjacent = UnionAdjacentNew();
         }
     }
     let _any: any | undefined;
@@ -920,7 +1284,9 @@ export function ObjectWithOptionalFieldsFromJson(
         object: _object,
         array: _array,
         record: _record,
-        union: _union,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
         any: _any,
     };
 }
@@ -1050,12 +1416,25 @@ export function ObjectWithOptionalFieldsToJsonString(
             _recordPropertyCount++;
         }
         json += '}';
+
         _hasKey = true;
     }
-    if (typeof input.union !== 'undefined') {
+    if (typeof input.unionExternal !== 'undefined') {
         if (_hasKey) json += ',';
-        json += '"union":';
-        json += UnionToJsonString(input.union);
+        json += '"unionExternal":';
+        json += UnionExternalToJsonString(input.unionExternal);
+        _hasKey = true;
+    }
+    if (typeof input.unionInternal !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionInternal":';
+        json += UnionInternalToJsonString(input.unionInternal);
+        _hasKey = true;
+    }
+    if (typeof input.unionAdjacent !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionAdjacent":';
+        json += UnionAdjacentToJsonString(input.unionAdjacent);
         _hasKey = true;
     }
     if (typeof input.any !== 'undefined') {
@@ -1128,9 +1507,19 @@ export function ObjectWithOptionalFieldsToUrlSearchParams(
             '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.',
         );
     }
-    if (typeof input.union !== 'undefined') {
+    if (typeof input.unionExternal !== 'undefined') {
         console.warn(
-            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/union.',
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionExternal.',
+        );
+    }
+    if (typeof input.unionInternal !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionInternal.',
+        );
+    }
+    if (typeof input.unionAdjacent !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionAdjacent.',
         );
     }
     if (typeof input.any !== 'undefined') {
@@ -1164,10 +1553,11 @@ export interface ObjectWithNullableFields {
     object: NestedObject | null;
     array: boolean[] | null;
     record: Record<string, boolean> | null;
-    union: Union | null;
+    unionExternal: UnionExternal | null;
+    unionInternal: UnionInternal | null;
+    unionAdjacent: UnionAdjacent | null;
     any: any;
 }
-
 export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
     return {
         string: null,
@@ -1187,7 +1577,9 @@ export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
         object: null,
         array: null,
         record: null,
-        union: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         any: null,
     };
 }
@@ -1254,11 +1646,23 @@ export function ObjectWithNullableFieldsFromJson(
     } else {
         _record = null;
     }
-    let _union: Union | null;
-    if (isObject(input.union)) {
-        _union = UnionFromJson(input.union);
+    let _unionExternal: UnionExternal | null;
+    if (isObject(input.unionExternal)) {
+        _unionExternal = UnionExternalFromJson(input.unionExternal);
     } else {
-        _union = null;
+        _unionExternal = null;
+    }
+    let _unionInternal: UnionInternal | null;
+    if (isObject(input.unionInternal)) {
+        _unionInternal = UnionInternalFromJson(input.unionInternal);
+    } else {
+        _unionInternal = null;
+    }
+    let _unionAdjacent: UnionAdjacent | null;
+    if (isObject(input.unionAdjacent)) {
+        _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+    } else {
+        _unionAdjacent = null;
     }
     let _any: any;
     _any = input.any;
@@ -1280,7 +1684,9 @@ export function ObjectWithNullableFieldsFromJson(
         object: _object,
         array: _array,
         record: _record,
-        union: _union,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
         any: _any,
     };
 }
@@ -1375,9 +1781,21 @@ export function ObjectWithNullableFieldsToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"union":';
-    if (input.union != null) {
-        json += UnionToJsonString(input.union);
+    json += ',"unionExternal":';
+    if (input.unionExternal != null) {
+        json += UnionExternalToJsonString(input.unionExternal);
+    } else {
+        json += 'null';
+    }
+    json += ',"unionInternal":';
+    if (input.unionInternal != null) {
+        json += UnionInternalToJsonString(input.unionInternal);
+    } else {
+        json += 'null';
+    }
+    json += ',"unionAdjacent":';
+    if (input.unionAdjacent != null) {
+        json += UnionAdjacentToJsonString(input.unionAdjacent);
     } else {
         json += 'null';
     }
@@ -1414,7 +1832,13 @@ export function ObjectWithNullableFieldsToUrlSearchParams(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.',
     );
     console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/union.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionExternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionInternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionAdjacent.',
     );
     console.warn(
         "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",
@@ -1554,7 +1978,6 @@ export function LegacyDiscriminatorToUrlSearchParamsString(
 ): string {
     return LegacyDiscriminatorToUrlSearchParams(input).toString();
 }
-
 export interface LegacyDiscriminatorA {
     typeName: `A`;
     id: string;
@@ -1604,6 +2027,7 @@ export function LegacyDiscriminatorAToUrlSearchParamsString(
 ): string {
     return LegacyDiscriminatorAToUrlSearchParams(input).toString();
 }
+
 export interface LegacyDiscriminatorB {
     typeName: `B`;
     id: string;
@@ -1661,6 +2085,7 @@ export function LegacyDiscriminatorBToUrlSearchParamsString(
 ): string {
     return LegacyDiscriminatorBToUrlSearchParams(input).toString();
 }
+
 export interface LegacyDiscriminatorC {
     typeName: `C`;
     id: string;
@@ -1725,527 +2150,4 @@ export function LegacyDiscriminatorCToUrlSearchParamsString(
     input: LegacyDiscriminatorC,
 ): string {
     return LegacyDiscriminatorCToUrlSearchParams(input).toString();
-}
-
-export type ShapeExternal =
-    | { type: `rectangle`; value: ShapeExternalRectangle }
-    | { type: `circle`; value: ShapeExternalCircle };
-export function ShapeExternalNew(): ShapeExternal {
-    return {
-        type: `rectangle`,
-        value: ShapeExternalRectangleNew(),
-    };
-}
-export function ShapeExternalFromJson(
-    input: Record<string, unknown>,
-): ShapeExternal {
-    if (`rectangle` in input) {
-        let __value__: ShapeExternalRectangle;
-        if (isObject(input[`rectangle`])) {
-            __value__ = ShapeExternalRectangleFromJson(input[`rectangle`]);
-        } else {
-            __value__ = ShapeExternalRectangleNew();
-        }
-        return {
-            type: `rectangle`,
-            value: __value__,
-        };
-    }
-    if (`circle` in input) {
-        let __value__: ShapeExternalCircle;
-        if (isObject(input[`circle`])) {
-            __value__ = ShapeExternalCircleFromJson(input[`circle`]);
-        } else {
-            __value__ = ShapeExternalCircleNew();
-        }
-        return {
-            type: `circle`,
-            value: __value__,
-        };
-    }
-    return ShapeExternalNew();
-}
-export function ShapeExternalFromJsonString(input: string): ShapeExternal {
-    return ShapeExternalFromJson(JSON.parse(input));
-}
-export function ShapeExternalToJsonString(input: ShapeExternal): string {
-    switch (input.type) {
-        case `rectangle`: {
-            let json = '{';
-            json += serializeString(input.type);
-            json += ':';
-            json += ShapeExternalRectangleToJsonString(input.value);
-            json += '}';
-            return json;
-        }
-        case `circle`: {
-            let json = '{';
-            json += serializeString(input.type);
-            json += ':';
-            json += ShapeExternalCircleToJsonString(input.value);
-            json += '}';
-            return json;
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function ShapeExternalToUrlSearchParams(
-    input: ShapeExternal,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    console.warn('[WARNING] Cannot serialize unions to query string.');
-    return params;
-}
-export function ShapeExternalToUrlSearchParamsString(
-    input: ShapeExternal,
-): string {
-    return ShapeExternalToUrlSearchParams(input).toString();
-}
-
-export interface ShapeExternalRectangle {
-    width: number;
-    height: number;
-}
-export function ShapeExternalRectangleNew(): ShapeExternalRectangle {
-    return {
-        width: 0,
-        height: 0,
-    };
-}
-export function ShapeExternalRectangleFromJson(
-    input: Record<string, unknown>,
-): ShapeExternalRectangle {
-    let _width: number;
-    _width = parseNumberFloat(input.width);
-    let _height: number;
-    _height = parseNumberFloat(input.height);
-    return {
-        width: _width,
-        height: _height,
-    };
-}
-export function ShapeExternalRectangleFromJsonString(
-    input: string,
-): ShapeExternalRectangle {
-    return ShapeExternalRectangleFromJson(JSON.parse(input));
-}
-export function ShapeExternalRectangleToJsonString(
-    input: ShapeExternalRectangle,
-): string {
-    let json = '{';
-    json += '"width":';
-    json += `${input.width}`;
-    json += ',"height":';
-    json += `${input.height}`;
-    json += '}';
-    return json;
-}
-export function ShapeExternalRectangleToUrlSearchParams(
-    input: ShapeExternalRectangle,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('width', `${input.width}`);
-    params.set('height', `${input.height}`);
-    return params;
-}
-export function ShapeExternalRectangleToUrlSearchParamsString(
-    input: ShapeExternalRectangle,
-): string {
-    return ShapeExternalRectangleToUrlSearchParams(input).toString();
-}
-
-export interface ShapeExternalCircle {
-    radius: number;
-}
-export function ShapeExternalCircleNew(): ShapeExternalCircle {
-    return {
-        radius: 0,
-    };
-}
-export function ShapeExternalCircleFromJson(
-    input: Record<string, unknown>,
-): ShapeExternalCircle {
-    let _radius: number;
-    _radius = parseNumberFloat(input.radius);
-    return {
-        radius: _radius,
-    };
-}
-export function ShapeExternalCircleFromJsonString(
-    input: string,
-): ShapeExternalCircle {
-    return ShapeExternalCircleFromJson(JSON.parse(input));
-}
-export function ShapeExternalCircleToJsonString(
-    input: ShapeExternalCircle,
-): string {
-    let json = '{';
-    json += '"radius":';
-    json += `${input.radius}`;
-    json += '}';
-    return json;
-}
-export function ShapeExternalCircleToUrlSearchParams(
-    input: ShapeExternalCircle,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('radius', `${input.radius}`);
-    return params;
-}
-export function ShapeExternalCircleToUrlSearchParamsString(
-    input: ShapeExternalCircle,
-): string {
-    return ShapeExternalCircleToUrlSearchParams(input).toString();
-}
-
-export type ShapeInternal = ShapeInternalRectangle | ShapeInternalCircle;
-export function ShapeInternalNew(): ShapeInternal {
-    return ShapeInternalRectangleNew();
-}
-export function ShapeInternalFromJson(
-    input: Record<string, unknown>,
-): ShapeInternal {
-    switch (input.shape) {
-        case `rectangle`: {
-            return ShapeInternalRectangleFromJson(input);
-        }
-        case `circle`: {
-            return ShapeInternalCircleFromJson(input);
-        }
-        default: {
-            return ShapeInternalRectangleNew();
-        }
-    }
-}
-export function ShapeInternalFromJsonString(input: string): ShapeInternal {
-    return ShapeInternalFromJson(JSON.parse(input));
-}
-export function ShapeInternalToJsonString(input: ShapeInternal): string {
-    switch (input.shape) {
-        case `rectangle`: {
-            return ShapeInternalRectangleToJsonString(input);
-        }
-        case `circle`: {
-            return ShapeInternalCircleToJsonString(input);
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).shape}`);
-        }
-    }
-}
-export function ShapeInternalToUrlSearchParams(
-    input: ShapeInternal,
-): URLSearchParams {
-    switch (input.shape) {
-        case `rectangle`: {
-            return ShapeInternalRectangleToUrlSearchParams(input);
-        }
-        case `circle`: {
-            return ShapeInternalCircleToUrlSearchParams(input);
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).shape}`);
-        }
-    }
-}
-export function ShapeInternalToUrlSearchParamsString(
-    input: ShapeInternal,
-): string {
-    return ShapeInternalToUrlSearchParams(input).toString();
-}
-
-export interface ShapeInternalRectangle {
-    shape: `rectangle`;
-    width: number;
-    height: number;
-}
-export function ShapeInternalRectangleNew(): ShapeInternalRectangle {
-    return {
-        shape: `rectangle`,
-        width: 0,
-        height: 0,
-    };
-}
-export function ShapeInternalRectangleFromJson(
-    input: Record<string, unknown>,
-): ShapeInternalRectangle {
-    const _shape = `rectangle`;
-    let _width: number;
-    _width = parseNumberFloat(input.width);
-    let _height: number;
-    _height = parseNumberFloat(input.height);
-    return {
-        shape: _shape,
-        width: _width,
-        height: _height,
-    };
-}
-export function ShapeInternalRectangleFromJsonString(
-    input: string,
-): ShapeInternalRectangle {
-    return ShapeInternalRectangleFromJson(JSON.parse(input));
-}
-export function ShapeInternalRectangleToJsonString(
-    input: ShapeInternalRectangle,
-): string {
-    let json = '{';
-    json += '"shape":"rectangle"';
-    json += ',"width":';
-    json += `${input.width}`;
-    json += ',"height":';
-    json += `${input.height}`;
-    json += '}';
-    return json;
-}
-export function ShapeInternalRectangleToUrlSearchParams(
-    input: ShapeInternalRectangle,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('shape', `rectangle`);
-    params.set('width', `${input.width}`);
-    params.set('height', `${input.height}`);
-    return params;
-}
-export function ShapeInternalRectangleToUrlSearchParamsString(
-    input: ShapeInternalRectangle,
-): string {
-    return ShapeInternalRectangleToUrlSearchParams(input).toString();
-}
-
-export interface ShapeInternalCircle {
-    shape: `circle`;
-    radius: number;
-}
-export function ShapeInternalCircleNew(): ShapeInternalCircle {
-    return {
-        shape: `circle`,
-        radius: 0,
-    };
-}
-export function ShapeInternalCircleFromJson(
-    input: Record<string, unknown>,
-): ShapeInternalCircle {
-    const _shape = `circle`;
-    let _radius: number;
-    _radius = parseNumberFloat(input.radius);
-
-    return {
-        shape: _shape,
-        radius: _radius,
-    };
-}
-export function ShapeInternalCircleFromJsonString(
-    input: string,
-): ShapeInternalCircle {
-    return ShapeInternalCircleFromJson(JSON.parse(input));
-}
-export function ShapeInternalCircleToJsonString(
-    input: ShapeInternalCircle,
-): string {
-    let json = '{';
-    json += '"shape":"circle"';
-    json += ',"radius":';
-    json += `${input.radius}`;
-    json += '}';
-    return json;
-}
-export function ShapeInternalCircleToUrlSearchParams(
-    input: ShapeInternalCircle,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('shape', `circle`);
-    params.set('radius', `${input.radius}`);
-    return params;
-}
-export function ShapeInternalCircleToUrlSearchParamsString(
-    input: ShapeInternalCircle,
-): string {
-    return ShapeInternalCircleToUrlSearchParams(input).toString();
-}
-
-export type ShapeAdjacent =
-    | { kind: `rectangle`; data: ShapeAdjacentRectangle }
-    | { kind: `circle`; data: ShapeAdjacentCircle };
-
-export function ShapeAdjacentNew(): ShapeAdjacent {
-    return {
-        kind: `rectangle`,
-        data: ShapeAdjacentRectangleNew(),
-    };
-}
-export function ShapeAdjacentFromJson(
-    input: Record<string, unknown>,
-): ShapeAdjacent {
-    if (typeof input.kind !== 'string') {
-        return ShapeAdjacentNew();
-    }
-    switch (input.kind) {
-        case `rectangle`: {
-            let __value__: ShapeAdjacentRectangle;
-            if (isObject(input.data)) {
-                __value__ = ShapeAdjacentRectangleFromJson(input.data);
-            } else {
-                __value__ = ShapeAdjacentRectangleNew();
-            }
-            return {
-                kind: `rectangle`,
-                data: __value__,
-            };
-        }
-        case `circle`: {
-            let __value__: ShapeAdjacentCircle;
-            if (isObject(input.data)) {
-                __value__ = ShapeAdjacentCircleFromJson(input.data);
-            } else {
-                __value__ = ShapeAdjacentCircleNew();
-            }
-            return {
-                kind: `circle`,
-                data: __value__,
-            };
-        }
-        default: {
-            return ShapeAdjacentNew();
-        }
-    }
-}
-export function ShapeAdjacentFromJsonString(input: string): ShapeAdjacent {
-    return ShapeAdjacentFromJson(JSON.parse(input));
-}
-export function ShapeAdjacentToJsonString(input: ShapeAdjacent): string {
-    switch (input.kind) {
-        case `rectangle`: {
-            let json = '{';
-            json += '"kind":"rectangle"';
-            json += ',"data":';
-            json += ShapeAdjacentRectangleToJsonString(input.data);
-            json += '}';
-            return json;
-        }
-        case `circle`: {
-            let json = '{';
-            json += '"kind":"circle"';
-            json += ',"data":';
-            json += ShapeAdjacentCircleToJsonString(input.data);
-            json += '}';
-            return json;
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).kind}`);
-        }
-    }
-}
-export function ShapeAdjacentToUrlSearchParams(
-    input: ShapeAdjacent,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    console.warn('[WARNING] Cannot serialize unions to query string.');
-    return params;
-}
-export function ShapeAdjacentToUrlSearchParamsString(
-    input: ShapeAdjacent,
-): string {
-    return ShapeAdjacentToUrlSearchParams(input).toString();
-}
-
-export interface ShapeAdjacentRectangle {
-    width: number;
-    height: number;
-}
-export function ShapeAdjacentRectangleNew(): ShapeAdjacentRectangle {
-    return {
-        width: 0,
-        height: 0,
-    };
-}
-export function ShapeAdjacentRectangleFromJson(
-    input: Record<string, unknown>,
-): ShapeAdjacentRectangle {
-    let _width: number;
-    _width = parseNumberFloat(input.width);
-    let _height: number;
-    _height = parseNumberFloat(input.height);
-    return {
-        width: _width,
-        height: _height,
-    };
-}
-export function ShapeAdjacentRectangleFromJsonString(
-    input: string,
-): ShapeAdjacentRectangle {
-    return ShapeAdjacentRectangleFromJson(JSON.parse(input));
-}
-export function ShapeAdjacentRectangleToJsonString(
-    input: ShapeAdjacentRectangle,
-): string {
-    let json = '{';
-    json += '"width":';
-    json += `${input.width}`;
-    json += ',"height":';
-    json += `${input.height}`;
-    json += '}';
-    return json;
-}
-export function ShapeAdjacentRectangleToUrlSearchParams(
-    input: ShapeAdjacentRectangle,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('width', `${input.width}`);
-    params.set('height', `${input.height}`);
-    return params;
-}
-export function ShapeAdjacentRectangleToUrlSearchParamsString(
-    input: ShapeAdjacentRectangle,
-): string {
-    return ShapeAdjacentRectangleToUrlSearchParams(input).toString();
-}
-
-export interface ShapeAdjacentCircle {
-    radius: number;
-}
-export function ShapeAdjacentCircleNew(): ShapeAdjacentCircle {
-    return {
-        radius: 0,
-    };
-}
-export function ShapeAdjacentCircleFromJson(
-    input: Record<string, unknown>,
-): ShapeAdjacentCircle {
-    let _radius: number;
-    _radius = parseNumberFloat(input.radius);
-    return {
-        radius: _radius,
-    };
-}
-export function ShapeAdjacentCircleFromJsonString(
-    input: string,
-): ShapeAdjacentCircle {
-    return ShapeAdjacentCircleFromJson(JSON.parse(input));
-}
-export function ShapeAdjacentCircleToJsonString(
-    input: ShapeAdjacentCircle,
-): string {
-    let json = '{';
-    json += '"radius":';
-    json += `${input.radius}`;
-    json += '}';
-    return json;
-}
-export function ShapeAdjacentCircleToUrlSearchParams(
-    input: ShapeAdjacentCircle,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('radius', `${input.radius}`);
-    return params;
-}
-export function ShapeAdjacentCircleToUrlSearchParamsString(
-    input: ShapeAdjacentCircle,
-): string {
-    return ShapeAdjacentCircleToUrlSearchParams(input).toString();
 }

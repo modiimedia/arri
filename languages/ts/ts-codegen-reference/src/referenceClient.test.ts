@@ -10,10 +10,9 @@ import {
     $$ObjectWithNullableFields,
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
-    $$ShapeAdjacent,
-    $$ShapeExternal,
-    $$ShapeInternal,
-    $$Union,
+    $$UnionAdjacent,
+    $$UnionExternal,
+    $$UnionInternal,
     Book,
     BookClone,
     Enumerator,
@@ -24,10 +23,9 @@ import {
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
     RecursiveObject,
-    ShapeAdjacent,
-    ShapeExternal,
-    ShapeInternal,
-    Union,
+    UnionAdjacent,
+    UnionExternal,
+    UnionInternal,
 } from './referenceClient';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -125,9 +123,17 @@ describe('ObjectWithEveryType', () => {
             A: true,
             B: false,
         },
-        union: {
+        unionExternal: {
             type: 'array',
             value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: testDate,
         },
         any: 'hello world',
     };
@@ -153,6 +159,11 @@ describe('ObjectWithEveryType', () => {
         expect(targetValue).toStrictEqual(output);
         output.array[0] = false;
         expect(targetValue).not.toStrictEqual(output);
+        const output2 = ObjectWithEveryTypeClone(targetValue);
+        if (output2.unionInternal.shape === 'circle') {
+            output2.unionInternal.radius = 100;
+        }
+        expect(targetValue).not.toStrictEqual(output2);
     });
 });
 
@@ -175,7 +186,9 @@ describe('ObjectWithOptionalFields', () => {
         object: undefined,
         array: undefined,
         record: undefined,
-        union: undefined,
+        unionExternal: undefined,
+        unionInternal: undefined,
+        unionAdjacent: undefined,
         any: undefined,
     };
     const noUndefinedTargetValue: ObjectWithOptionalFields = {
@@ -202,9 +215,17 @@ describe('ObjectWithOptionalFields', () => {
             A: true,
             B: false,
         },
-        union: {
+        unionExternal: {
             type: 'array',
             value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: testDate,
         },
         any: 'hello world',
     };
@@ -251,7 +272,9 @@ describe('ObjectWithNullableFields', () => {
         object: null,
         array: null,
         record: null,
-        union: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         any: null,
     };
     const noNullTargetValue: ObjectWithNullableFields = {
@@ -278,9 +301,17 @@ describe('ObjectWithNullableFields', () => {
             A: true,
             B: false,
         },
-        union: {
+        unionExternal: {
             type: 'array',
             value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'boolean',
+            data: true,
         },
         any: { message: 'hello world' },
     };
@@ -308,122 +339,99 @@ describe('ObjectWithNullableFields', () => {
     });
 });
 
-describe('Union', () => {
-    describe('object variant', () => {
-        const objectValue: Union = {
-            type: 'object',
+describe('UnionExternal', () => {
+    const emptyJsonReference = testFile(
+        'ObjectWithOptionalFields_AllUndefined.json',
+    );
+    const variants: { name: string; value: UnionExternal; file: string }[] = [
+        {
+            name: 'object',
             value: {
-                id: '1',
-                content: 'hello world',
+                type: 'object',
+                value: { id: '1', content: 'hello world' },
             },
-        };
-        const jsonReference = testFile('Union_Object.json');
-        const emptyJsonReference = testFile(
-            'ObjectWithOptionalFields_AllUndefined.json',
-        );
-        test('JSON Parsing', () => {
-            expect($$Union.fromJsonString(jsonReference)).toStrictEqual(
-                objectValue,
-            );
-            expect($$Union.fromJsonString(emptyJsonReference)).toStrictEqual(
-                $$Union.new(),
-            );
+            file: 'UnionExternal_Object.json',
+        },
+        {
+            name: 'array',
+            value: { type: 'array', value: ['hello', 'world'] },
+            file: 'UnionExternal_Array.json',
+        },
+        {
+            name: 'boolean',
+            value: { type: 'boolean', value: true },
+            file: 'UnionExternal_Boolean.json',
+        },
+        {
+            name: 'nullable-timestamp',
+            value: { type: 'nullable-timestamp', value: testDate },
+            file: 'UnionExternal_Timestamp.json',
+        },
+        {
+            name: 'nullable-timestamp (null)',
+            value: { type: 'nullable-timestamp', value: null },
+            file: 'UnionExternal_TimestampNull.json',
+        },
+    ];
+    for (const variant of variants) {
+        describe(`${variant.name} variant`, () => {
+            const jsonReference = testFile(variant.file);
+            test('JSON Parsing', () => {
+                expect(
+                    $$UnionExternal.fromJsonString(jsonReference),
+                ).toStrictEqual(variant.value);
+            });
+            test('JSON Output', () => {
+                expect($$UnionExternal.toJsonString(variant.value)).toBe(
+                    jsonReference,
+                );
+            });
+            test('Validation', () => {
+                expect($$UnionExternal.validate(variant.value)).toBe(true);
+            });
+            test('Cloning', () => {
+                const cloned = $$UnionExternal.clone(variant.value);
+                expect(cloned).toStrictEqual(variant.value);
+            });
         });
-        test('JSON Output', () => {
-            expect($$Union.toJsonString(objectValue)).toBe(jsonReference);
-        });
-        test('Cloning', () => {
-            const cloned = $$Union.clone(objectValue);
-            expect(objectValue).toStrictEqual(cloned);
-            expect(cloned.type).toBe('object');
-            if (cloned.type === 'object') {
-                cloned.value.content = 'hello world!!!';
-                expect(objectValue).not.toStrictEqual(cloned);
-            }
-        });
-    });
-    describe('array variant', () => {
-        const arrayValue: Union = {
-            type: 'array',
-            value: ['hello', 'world'],
-        };
-        const jsonReference = testFile('Union_Array.json');
-        const emptyJsonReference = '{}';
-        test('JSON Parsing', () => {
-            expect($$Union.fromJsonString(jsonReference)).toStrictEqual(
-                arrayValue,
-            );
-            expect($$Union.fromJsonString(emptyJsonReference)).toStrictEqual(
-                $$Union.new(),
-            );
-        });
-        test('JSON Output', () => {
-            expect($$Union.toJsonString(arrayValue)).toBe(jsonReference);
-        });
-        test('Cloning', () => {
-            const cloned = $$Union.clone(arrayValue);
-            expect(cloned).toStrictEqual(arrayValue);
-            expect(cloned.type === 'array');
-            if (cloned.type === 'array') {
-                cloned.value.push('!!!');
-            }
-            expect(cloned).not.toStrictEqual(arrayValue);
-        });
-    });
-});
-
-describe('ShapeExternal', () => {
-    const targetValue: ShapeExternal = {
-        type: 'rectangle',
-        value: { width: 50, height: 25 },
-    };
-    const jsonReference = testFile('ShapeExternal.json');
-    test('JSON Parsing', () => {
-        expect($$ShapeExternal.fromJsonString(jsonReference)).toStrictEqual(
-            targetValue,
-        );
-    });
-    test('JSON Output', () => {
-        expect($$ShapeExternal.toJsonString(targetValue)).toBe(jsonReference);
-    });
-    test('Validation', () => {
-        expect($$ShapeExternal.validate(targetValue)).toBe(true);
+    }
+    test('JSON parsing falls back to new() when no variant matches', () => {
         expect(
-            $$ShapeExternal.validate({
-                type: 'triangle',
-                value: { width: 50, height: 25 },
-            }),
-        ).toBe(false);
+            $$UnionExternal.fromJsonString(emptyJsonReference),
+        ).toStrictEqual($$UnionExternal.new());
     });
-    test('Cloning', () => {
-        const cloned = $$ShapeExternal.clone(targetValue);
-        expect(cloned).toStrictEqual(targetValue);
-        if (cloned.type === 'rectangle') {
-            cloned.value.width = 100;
+    test('Cloning is deep', () => {
+        const value: UnionExternal = {
+            type: 'object',
+            value: { id: '1', content: 'hello world' },
+        };
+        const cloned = $$UnionExternal.clone(value);
+        if (cloned.type === 'object') {
+            cloned.value.content = 'hello world!!!';
         }
-        expect(cloned).not.toStrictEqual(targetValue);
+        expect(cloned).not.toStrictEqual(value);
     });
 });
 
-describe('ShapeInternal', () => {
-    const targetValue: ShapeInternal = {
+describe('UnionInternal', () => {
+    const targetValue: UnionInternal = {
         shape: 'rectangle',
         width: 50,
         height: 25,
     };
-    const jsonReference = testFile('ShapeInternal.json');
+    const jsonReference = testFile('UnionInternal_Rectangle.json');
     test('JSON Parsing', () => {
-        expect($$ShapeInternal.fromJsonString(jsonReference)).toStrictEqual(
+        expect($$UnionInternal.fromJsonString(jsonReference)).toStrictEqual(
             targetValue,
         );
     });
     test('JSON Output', () => {
-        expect($$ShapeInternal.toJsonString(targetValue)).toBe(jsonReference);
+        expect($$UnionInternal.toJsonString(targetValue)).toBe(jsonReference);
     });
     test('Validation', () => {
-        expect($$ShapeInternal.validate(targetValue)).toBe(true);
+        expect($$UnionInternal.validate(targetValue)).toBe(true);
         expect(
-            $$ShapeInternal.validate({
+            $$UnionInternal.validate({
                 shape: 'triangle',
                 width: 50,
                 height: 25,
@@ -431,7 +439,7 @@ describe('ShapeInternal', () => {
         ).toBe(false);
     });
     test('Cloning', () => {
-        const cloned = $$ShapeInternal.clone(targetValue);
+        const cloned = $$UnionInternal.clone(targetValue);
         expect(cloned).toStrictEqual(targetValue);
         if (cloned.shape === 'rectangle') {
             cloned.width = 100;
@@ -440,36 +448,62 @@ describe('ShapeInternal', () => {
     });
 });
 
-describe('ShapeAdjacent', () => {
-    const targetValue: ShapeAdjacent = {
-        kind: 'rectangle',
-        data: { width: 50, height: 25 },
-    };
-    const jsonReference = testFile('ShapeAdjacent.json');
-    test('JSON Parsing', () => {
-        expect($$ShapeAdjacent.fromJsonString(jsonReference)).toStrictEqual(
-            targetValue,
-        );
-    });
-    test('JSON Output', () => {
-        expect($$ShapeAdjacent.toJsonString(targetValue)).toBe(jsonReference);
-    });
-    test('Validation', () => {
-        expect($$ShapeAdjacent.validate(targetValue)).toBe(true);
+describe('UnionAdjacent', () => {
+    const variants: { name: string; value: UnionAdjacent; file: string }[] = [
+        {
+            name: 'object',
+            value: {
+                kind: 'object',
+                data: { id: '1', content: 'hello world' },
+            },
+            file: 'UnionAdjacent_Object.json',
+        },
+        {
+            name: 'nullable-timestamp (null)',
+            value: { kind: 'nullable-timestamp', data: null },
+            file: 'UnionAdjacent_TimestampNull.json',
+        },
+    ];
+    for (const variant of variants) {
+        describe(`${variant.name} variant`, () => {
+            const jsonReference = testFile(variant.file);
+            test('JSON Parsing', () => {
+                expect(
+                    $$UnionAdjacent.fromJsonString(jsonReference),
+                ).toStrictEqual(variant.value);
+            });
+            test('JSON Output', () => {
+                expect($$UnionAdjacent.toJsonString(variant.value)).toBe(
+                    jsonReference,
+                );
+            });
+            test('Validation', () => {
+                expect($$UnionAdjacent.validate(variant.value)).toBe(true);
+            });
+            test('Cloning', () => {
+                const cloned = $$UnionAdjacent.clone(variant.value);
+                expect(cloned).toStrictEqual(variant.value);
+            });
+        });
+    }
+    test('Validation rejects mismatched tag and value', () => {
         expect(
-            $$ShapeAdjacent.validate({
-                kind: 'triangle',
-                data: { width: 50, height: 25 },
+            $$UnionAdjacent.validate({
+                kind: 'boolean',
+                data: { id: '1', content: 'hello world' },
             }),
         ).toBe(false);
     });
-    test('Cloning', () => {
-        const cloned = $$ShapeAdjacent.clone(targetValue);
-        expect(cloned).toStrictEqual(targetValue);
-        if (cloned.kind === 'rectangle') {
-            cloned.data.width = 100;
+    test('Cloning is deep', () => {
+        const value: UnionAdjacent = {
+            kind: 'object',
+            data: { id: '1', content: 'hello world' },
+        };
+        const cloned = $$UnionAdjacent.clone(value);
+        if (cloned.kind === 'object') {
+            cloned.data.content = 'hello world!!!';
         }
-        expect(cloned).not.toStrictEqual(targetValue);
+        expect(cloned).not.toStrictEqual(value);
     });
 });
 

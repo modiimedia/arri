@@ -59,7 +59,12 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
-  "union": { "array": ["hello", "world"] },
+  "unionExternal": { "array": ["hello", "world"] },
+  "unionInternal": { "shape": "circle", "radius": 2.5 },
+  "unionAdjacent": {
+    "kind": "nullable-timestamp",
+    "data": "2001-01-01T16:00:00.000Z"
+  },
   "any": "hello world"
 }
 ```
@@ -85,7 +90,12 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "B": false, "A": true },
-  "union": { "array": ["hello", "world"] },
+  "unionExternal": { "array": ["hello", "world"] },
+  "unionInternal": { "shape": "circle", "radius": 2.5 },
+  "unionAdjacent": {
+    "kind": "nullable-timestamp",
+    "data": "2001-01-01T16:00:00.000Z"
+  },
   "any": "hello world"
 }
 ```
@@ -117,7 +127,12 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
-  "union": { "array": ["hello", "world"] },
+  "unionExternal": { "array": ["hello", "world"] },
+  "unionInternal": { "shape": "circle", "radius": 2.5 },
+  "unionAdjacent": {
+    "kind": "nullable-timestamp",
+    "data": "2001-01-01T16:00:00.000Z"
+  },
   "any": "hello world"
 }
 ```
@@ -143,7 +158,12 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "B": false, "A": true },
-  "union": { "array": ["hello", "world"] },
+  "unionExternal": { "array": ["hello", "world"] },
+  "unionInternal": { "shape": "circle", "radius": 2.5 },
+  "unionAdjacent": {
+    "kind": "nullable-timestamp",
+    "data": "2001-01-01T16:00:00.000Z"
+  },
   "any": "hello world"
 }
 ```
@@ -169,7 +189,9 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": null,
   "array": null,
   "record": null,
-  "union": null,
+  "unionExternal": null,
+  "unionInternal": null,
+  "unionAdjacent": null,
   "any": null
 }
 ```
@@ -195,7 +217,9 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "", "content": "" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
-  "union": { "array": ["hello", "world"] },
+  "unionExternal": { "array": ["hello", "world"] },
+  "unionInternal": { "shape": "circle", "radius": 2.5 },
+  "unionAdjacent": { "kind": "boolean", "data": true },
   "any": { "message": "hello world" }
 }
 ```
@@ -221,39 +245,59 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "", "content": "" },
   "array": [true, false, false],
   "record": { "B": false, "A": true },
-  "union": { "array": ["hello", "world"] },
+  "unionExternal": { "array": ["hello", "world"] },
+  "unionInternal": { "shape": "circle", "radius": 2.5 },
+  "unionAdjacent": { "kind": "boolean", "data": true },
   "any": { "message": "hello world" }
 }
 ```
 
-## Union_Object.json
+## UnionExternal_Object.json
 
 ```json
 { "object": { "id": "1", "content": "hello world" } }
 ```
 
-## Union_Boolean.json
+## UnionExternal_Boolean.json
 
 ```json
 { "boolean": true }
 ```
 
-## Union_Array.json
+## UnionExternal_Array.json
 
 ```json
 { "array": ["hello", "world"] }
 ```
 
-## Union_Timestamp.json
+## UnionExternal_Timestamp.json
 
 ```json
 { "nullable-timestamp": "2001-01-01T16:00:00.000Z" }
 ```
 
-## Union_TimestampNull.json
+## UnionExternal_TimestampNull.json
 
 ```json
 { "nullable-timestamp": null }
+```
+
+## UnionInternal_Rectangle.json
+
+```json
+{ "shape": "rectangle", "width": 50, "height": 25 }
+```
+
+## UnionAdjacent_Object.json
+
+```json
+{ "kind": "object", "data": { "id": "1", "content": "hello world" } }
+```
+
+## UnionAdjacent_TimestampNull.json
+
+```json
+{ "kind": "nullable-timestamp", "data": null }
 ```
 
 ## RecursiveObject.json
@@ -277,22 +321,4 @@ Below are all of the contents of the test JSON files in an easier to read format
   "name": "John Doe",
   "date": "2001-01-01T16:00:00.000Z"
 }
-```
-
-## ShapeExternal.json
-
-```json
-{ "rectangle": { "width": 50, "height": 25 } }
-```
-
-## ShapeInternal.json
-
-```json
-{ "shape": "rectangle", "width": 50, "height": 25 }
-```
-
-## ShapeAdjacent.json
-
-```json
-{ "kind": "rectangle", "data": { "width": 50, "height": 25 } }
 ```

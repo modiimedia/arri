@@ -113,7 +113,7 @@
           "values": { "type": "boolean", "metadata": {} },
           "metadata": {}
         },
-        "union": {
+        "unionExternal": {
           "union": {
             "object": {
               "properties": {
@@ -133,7 +133,48 @@
               "isNullable": true
             }
           },
-          "metadata": { "id": "Union" }
+          "metadata": { "id": "UnionExternal" }
+        },
+        "unionInternal": {
+          "tagKey": "shape",
+          "union": {
+            "rectangle": {
+              "properties": {
+                "width": { "type": "float64", "metadata": {} },
+                "height": { "type": "float64", "metadata": {} }
+              },
+              "metadata": {}
+            },
+            "circle": {
+              "properties": { "radius": { "type": "float64", "metadata": {} } },
+              "metadata": {}
+            }
+          },
+          "metadata": { "id": "UnionInternal" }
+        },
+        "unionAdjacent": {
+          "tagKey": "kind",
+          "valueKey": "data",
+          "union": {
+            "object": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "content": { "type": "string", "metadata": {} }
+              },
+              "metadata": { "id": "NestedObject" }
+            },
+            "array": {
+              "elements": { "type": "string", "metadata": {} },
+              "metadata": {}
+            },
+            "boolean": { "type": "boolean", "metadata": {} },
+            "nullable-timestamp": {
+              "type": "timestamp",
+              "metadata": {},
+              "isNullable": true
+            }
+          },
+          "metadata": { "id": "UnionAdjacent" }
         },
         "any": { "metadata": {} }
       },
@@ -174,7 +215,7 @@
           "values": { "type": "boolean", "metadata": {} },
           "metadata": {}
         },
-        "union": {
+        "unionExternal": {
           "union": {
             "object": {
               "properties": {
@@ -194,7 +235,48 @@
               "isNullable": true
             }
           },
-          "metadata": { "id": "Union" }
+          "metadata": { "id": "UnionExternal" }
+        },
+        "unionInternal": {
+          "tagKey": "shape",
+          "union": {
+            "rectangle": {
+              "properties": {
+                "width": { "type": "float64", "metadata": {} },
+                "height": { "type": "float64", "metadata": {} }
+              },
+              "metadata": {}
+            },
+            "circle": {
+              "properties": { "radius": { "type": "float64", "metadata": {} } },
+              "metadata": {}
+            }
+          },
+          "metadata": { "id": "UnionInternal" }
+        },
+        "unionAdjacent": {
+          "tagKey": "kind",
+          "valueKey": "data",
+          "union": {
+            "object": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "content": { "type": "string", "metadata": {} }
+              },
+              "metadata": { "id": "NestedObject" }
+            },
+            "array": {
+              "elements": { "type": "string", "metadata": {} },
+              "metadata": {}
+            },
+            "boolean": { "type": "boolean", "metadata": {} },
+            "nullable-timestamp": {
+              "type": "timestamp",
+              "metadata": {},
+              "isNullable": true
+            }
+          },
+          "metadata": { "id": "UnionAdjacent" }
         },
         "any": { "metadata": {} }
       },
@@ -242,7 +324,7 @@
           "metadata": {},
           "isNullable": true
         },
-        "union": {
+        "unionExternal": {
           "union": {
             "object": {
               "properties": {
@@ -262,14 +344,57 @@
               "isNullable": true
             }
           },
-          "metadata": { "id": "Union" },
+          "metadata": { "id": "UnionExternal" },
+          "isNullable": true
+        },
+        "unionInternal": {
+          "tagKey": "shape",
+          "union": {
+            "rectangle": {
+              "properties": {
+                "width": { "type": "float64", "metadata": {} },
+                "height": { "type": "float64", "metadata": {} }
+              },
+              "metadata": {}
+            },
+            "circle": {
+              "properties": { "radius": { "type": "float64", "metadata": {} } },
+              "metadata": {}
+            }
+          },
+          "metadata": { "id": "UnionInternal" },
+          "isNullable": true
+        },
+        "unionAdjacent": {
+          "tagKey": "kind",
+          "valueKey": "data",
+          "union": {
+            "object": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "content": { "type": "string", "metadata": {} }
+              },
+              "metadata": { "id": "NestedObject" }
+            },
+            "array": {
+              "elements": { "type": "string", "metadata": {} },
+              "metadata": {}
+            },
+            "boolean": { "type": "boolean", "metadata": {} },
+            "nullable-timestamp": {
+              "type": "timestamp",
+              "metadata": {},
+              "isNullable": true
+            }
+          },
+          "metadata": { "id": "UnionAdjacent" },
           "isNullable": true
         },
         "any": { "metadata": {}, "isNullable": true }
       },
       "metadata": { "id": "ObjectWithNullableFields" }
     },
-    "Union": {
+    "UnionExternal": {
       "union": {
         "object": {
           "properties": {
@@ -289,7 +414,48 @@
           "isNullable": true
         }
       },
-      "metadata": { "id": "Union" }
+      "metadata": { "id": "UnionExternal" }
+    },
+    "UnionInternal": {
+      "tagKey": "shape",
+      "union": {
+        "rectangle": {
+          "properties": {
+            "width": { "type": "float64", "metadata": {} },
+            "height": { "type": "float64", "metadata": {} }
+          },
+          "metadata": {}
+        },
+        "circle": {
+          "properties": { "radius": { "type": "float64", "metadata": {} } },
+          "metadata": {}
+        }
+      },
+      "metadata": { "id": "UnionInternal" }
+    },
+    "UnionAdjacent": {
+      "tagKey": "kind",
+      "valueKey": "data",
+      "union": {
+        "object": {
+          "properties": {
+            "id": { "type": "string", "metadata": {} },
+            "content": { "type": "string", "metadata": {} }
+          },
+          "metadata": { "id": "NestedObject" }
+        },
+        "array": {
+          "elements": { "type": "string", "metadata": {} },
+          "metadata": {}
+        },
+        "boolean": { "type": "boolean", "metadata": {} },
+        "nullable-timestamp": {
+          "type": "timestamp",
+          "metadata": {},
+          "isNullable": true
+        }
+      },
+      "metadata": { "id": "UnionAdjacent" }
     },
     "RecursiveObject": {
       "properties": {
@@ -325,57 +491,6 @@
         }
       },
       "metadata": { "id": "LegacyDiscriminator" }
-    },
-    "ShapeExternal": {
-      "union": {
-        "rectangle": {
-          "properties": {
-            "width": { "type": "float64", "metadata": {} },
-            "height": { "type": "float64", "metadata": {} }
-          },
-          "metadata": {}
-        },
-        "circle": {
-          "properties": { "radius": { "type": "float64", "metadata": {} } },
-          "metadata": {}
-        }
-      },
-      "metadata": { "id": "ShapeExternal" }
-    },
-    "ShapeInternal": {
-      "tagKey": "shape",
-      "union": {
-        "rectangle": {
-          "properties": {
-            "width": { "type": "float64", "metadata": {} },
-            "height": { "type": "float64", "metadata": {} }
-          },
-          "metadata": {}
-        },
-        "circle": {
-          "properties": { "radius": { "type": "float64", "metadata": {} } },
-          "metadata": {}
-        }
-      },
-      "metadata": { "id": "ShapeInternal" }
-    },
-    "ShapeAdjacent": {
-      "tagKey": "kind",
-      "valueKey": "data",
-      "union": {
-        "rectangle": {
-          "properties": {
-            "width": { "type": "float64", "metadata": {} },
-            "height": { "type": "float64", "metadata": {} }
-          },
-          "metadata": {}
-        },
-        "circle": {
-          "properties": { "radius": { "type": "float64", "metadata": {} } },
-          "metadata": {}
-        }
-      },
-      "metadata": { "id": "ShapeAdjacent" }
     }
   }
 }

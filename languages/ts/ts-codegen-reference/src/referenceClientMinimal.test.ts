@@ -26,15 +26,15 @@ import {
     RecursiveObject,
     RecursiveObjectFromJsonString,
     RecursiveObjectToJsonString,
-    ShapeAdjacent,
-    ShapeAdjacentFromJsonString,
-    ShapeAdjacentToJsonString,
-    ShapeExternal,
-    ShapeExternalFromJsonString,
-    ShapeExternalToJsonString,
-    ShapeInternal,
-    ShapeInternalFromJsonString,
-    ShapeInternalToJsonString,
+    UnionAdjacent,
+    UnionAdjacentFromJsonString,
+    UnionAdjacentToJsonString,
+    UnionExternal,
+    UnionExternalFromJsonString,
+    UnionExternalToJsonString,
+    UnionInternal,
+    UnionInternalFromJsonString,
+    UnionInternalToJsonString,
 } from './referenceClientMinimal';
 
 const testDate = new Date('2001-01-01T16:00:00.000Z');
@@ -119,9 +119,17 @@ describe('ObjectWithEveryType', () => {
             A: true,
             B: false,
         },
-        union: {
+        unionExternal: {
             type: 'array',
             value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: testDate,
         },
         any: 'hello world',
     };
@@ -163,7 +171,9 @@ describe('ObjectWithOptionalFields', () => {
         object: undefined,
         array: undefined,
         record: undefined,
-        union: undefined,
+        unionExternal: undefined,
+        unionInternal: undefined,
+        unionAdjacent: undefined,
         any: undefined,
     };
     const noUndefinedTargetValue: ObjectWithOptionalFields = {
@@ -190,9 +200,17 @@ describe('ObjectWithOptionalFields', () => {
             A: true,
             B: false,
         },
-        union: {
+        unionExternal: {
             type: 'array',
             value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: testDate,
         },
         any: 'hello world',
     };
@@ -239,7 +257,9 @@ describe('ObjectWithNullableFields', () => {
         object: null,
         array: null,
         record: null,
-        union: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         any: null,
     };
     const noNullTargetValue: ObjectWithNullableFields = {
@@ -266,9 +286,17 @@ describe('ObjectWithNullableFields', () => {
             A: true,
             B: false,
         },
-        union: {
+        unionExternal: {
             type: 'array',
             value: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'boolean',
+            data: true,
         },
         any: { message: 'hello world' },
     };
@@ -296,53 +324,85 @@ describe('ObjectWithNullableFields', () => {
     });
 });
 
-describe('ShapeExternal', () => {
-    const targetValue: ShapeExternal = {
-        type: 'rectangle',
-        value: { width: 50, height: 25 },
-    };
-    const jsonReference = testFile('ShapeExternal.json');
-    test('JSON Parsing', () => {
-        expect(ShapeExternalFromJsonString(jsonReference)).toStrictEqual(
+describe('UnionExternal', () => {
+    const variants: { value: UnionExternal; file: string }[] = [
+        {
+            value: {
+                type: 'object',
+                value: { id: '1', content: 'hello world' },
+            },
+            file: 'UnionExternal_Object.json',
+        },
+        {
+            value: { type: 'array', value: ['hello', 'world'] },
+            file: 'UnionExternal_Array.json',
+        },
+        {
+            value: { type: 'boolean', value: true },
+            file: 'UnionExternal_Boolean.json',
+        },
+        {
+            value: { type: 'nullable-timestamp', value: testDate },
+            file: 'UnionExternal_Timestamp.json',
+        },
+        {
+            value: { type: 'nullable-timestamp', value: null },
+            file: 'UnionExternal_TimestampNull.json',
+        },
+    ];
+    for (const variant of variants) {
+        test(variant.file, () => {
+            const jsonReference = testFile(variant.file);
+            expect(UnionExternalFromJsonString(jsonReference)).toStrictEqual(
+                variant.value,
+            );
+            expect(UnionExternalToJsonString(variant.value)).toBe(
+                jsonReference,
+            );
+        });
+    }
+});
+
+describe('UnionInternal', () => {
+    test('UnionInternal_Rectangle.json', () => {
+        const targetValue: UnionInternal = {
+            shape: 'rectangle',
+            width: 50,
+            height: 25,
+        };
+        const jsonReference = testFile('UnionInternal_Rectangle.json');
+        expect(UnionInternalFromJsonString(jsonReference)).toStrictEqual(
             targetValue,
         );
-    });
-    test('JSON Output', () => {
-        expect(ShapeExternalToJsonString(targetValue)).toBe(jsonReference);
+        expect(UnionInternalToJsonString(targetValue)).toBe(jsonReference);
     });
 });
 
-describe('ShapeInternal', () => {
-    const targetValue: ShapeInternal = {
-        shape: 'rectangle',
-        width: 50,
-        height: 25,
-    };
-    const jsonReference = testFile('ShapeInternal.json');
-    test('JSON Parsing', () => {
-        expect(ShapeInternalFromJsonString(jsonReference)).toStrictEqual(
-            targetValue,
-        );
-    });
-    test('JSON Output', () => {
-        expect(ShapeInternalToJsonString(targetValue)).toBe(jsonReference);
-    });
-});
-
-describe('ShapeAdjacent', () => {
-    const targetValue: ShapeAdjacent = {
-        kind: 'rectangle',
-        data: { width: 50, height: 25 },
-    };
-    const jsonReference = testFile('ShapeAdjacent.json');
-    test('JSON Parsing', () => {
-        expect(ShapeAdjacentFromJsonString(jsonReference)).toStrictEqual(
-            targetValue,
-        );
-    });
-    test('JSON Output', () => {
-        expect(ShapeAdjacentToJsonString(targetValue)).toBe(jsonReference);
-    });
+describe('UnionAdjacent', () => {
+    const variants: { value: UnionAdjacent; file: string }[] = [
+        {
+            value: {
+                kind: 'object',
+                data: { id: '1', content: 'hello world' },
+            },
+            file: 'UnionAdjacent_Object.json',
+        },
+        {
+            value: { kind: 'nullable-timestamp', data: null },
+            file: 'UnionAdjacent_TimestampNull.json',
+        },
+    ];
+    for (const variant of variants) {
+        test(variant.file, () => {
+            const jsonReference = testFile(variant.file);
+            expect(UnionAdjacentFromJsonString(jsonReference)).toStrictEqual(
+                variant.value,
+            );
+            expect(UnionAdjacentToJsonString(variant.value)).toBe(
+                jsonReference,
+            );
+        });
+    }
 });
 
 describe('RecursiveObject', () => {
