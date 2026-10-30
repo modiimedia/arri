@@ -1,4 +1,7 @@
-import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
+import {
+    getUnionFallbackKey,
+    SchemaFormDiscriminator,
+} from '@arrirpc/codegen-utils';
 
 import {
     CodegenContext,
@@ -83,10 +86,17 @@ export function tsDiscriminatorFromSchema(
         });
         subTypes.push({ value: key, data: subType });
     }
+    const fallbackKey = getUnionFallbackKey(schema.mapping);
+    const fallback = subTypes.find((type) => type.value === fallbackKey);
+    if (!fallback) {
+        throw new Error(
+            `Error at ${context.schemaPath}: Discriminator schemas must have at least one mapping`,
+        );
+    }
     result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};`;
     result.content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
-    return ${subTypes[0]!.data.typeName}New();
+    return ${fallback.data.typeName}New();
 }`;
     if (context.features.validateFn) {
         result.content += `
@@ -136,7 +146,7 @@ ${subTypes
     )
     .join('\n')}
         default:
-            return ${subTypes[0]!.data.typeName}New();
+            return ${fallback.data.typeName}New();
     }
 }`;
 

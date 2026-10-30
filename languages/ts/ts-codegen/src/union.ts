@@ -1,4 +1,8 @@
-import { camelCase, SchemaFormUnion } from '@arrirpc/codegen-utils';
+import {
+    camelCase,
+    getUnionFallbackKey,
+    SchemaFormUnion,
+} from '@arrirpc/codegen-utils';
 
 import { tsTypeFromSchema } from './_index';
 import {
@@ -88,11 +92,19 @@ export function tsTaggedUnionFromSchema(
         });
         subTypes.push({ data: subType, key: key });
     }
+    const fallbackKey = getUnionFallbackKey(schema.union);
+    const fallback = subTypes.find((type) => type.key === fallbackKey);
+    if (!fallback) {
+        throw new Error(
+            `Error at ${context.schemaPath}: Union schemas must have at least one variant`,
+        );
+    }
     if (schema.tagKey && schema.valueKey) {
         result.content = _internallyTaggedWithValueKeyContent(
             typeName,
             prefixedTypeName,
             subTypes,
+            fallback,
             schema,
             context,
         );
@@ -101,7 +113,7 @@ export function tsTaggedUnionFromSchema(
             typeName,
             prefixedTypeName,
             subTypes,
-
+            fallback,
             schema,
             context,
         );
@@ -110,6 +122,7 @@ export function tsTaggedUnionFromSchema(
             typeName,
             prefixedTypeName,
             subTypes,
+            fallback,
             schema,
             context,
         );
@@ -121,6 +134,7 @@ function _externallyTaggedContent(
     typeName: string,
     prefixedTypeName: string,
     subTypes: { data: TsProperty; key: string }[],
+    fallback: { data: TsProperty; key: string },
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {
@@ -128,8 +142,8 @@ function _externallyTaggedContent(
     content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
     return {
-        type: \`${subTypes[0]?.key}\`,
-        value: ${subTypes[0]?.data.defaultValue},
+        type: \`${fallback.key}\`,
+        value: ${fallback.data.defaultValue},
     };
 }`;
     if (context.features.validateFn) {
@@ -259,6 +273,7 @@ function _internallyTaggedContent(
     typeName: string,
     prefixedTypeName: string,
     subTypes: { data: TsProperty; key: string }[],
+    fallback: { data: TsProperty; key: string },
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {
@@ -266,7 +281,7 @@ function _internallyTaggedContent(
     let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};`;
     content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
-    return ${subTypes[0]?.data.typeName}New();
+    return ${fallback.data.typeName}New();
 }`;
     if (context.features.validateFn) {
         content += `
@@ -310,7 +325,7 @@ ${subTypes
     )
     .join('\n')}
         default: {
-            return ${subTypes[0]?.data.typeName}New();
+            return ${fallback.data.typeName}New();
         }
     }
 }`;
@@ -381,6 +396,7 @@ function _internallyTaggedWithValueKeyContent(
     typeName: string,
     prefixedTypeName: string,
     subTypes: { data: TsProperty; key: string }[],
+    fallback: { data: TsProperty; key: string },
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {
@@ -390,8 +406,8 @@ function _internallyTaggedWithValueKeyContent(
     content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
     return {
-        ${tagField}: \`${subTypes[0]?.key}\`,
-        ${valueField}: ${subTypes[0]?.data.defaultValue},
+        ${tagField}: \`${fallback.key}\`,
+        ${valueField}: ${fallback.data.defaultValue},
     };
 }`;
     if (context.features.validateFn) {
