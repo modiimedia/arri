@@ -163,14 +163,15 @@ export function getCodeComment(
     valueField?: 'field' | 'method' | 'class',
 ) {
     if (!metadata?.description && !metadata?.isDeprecated) return '';
+    const indent = prefix ?? '';
     const descriptionPart = metadata.description
         ?.split('\n')
-        .map((line) => `${prefix ?? ''}* ${line}`)
+        .map((line) => `${indent} * ${line}`.trimEnd())
         .join('\n');
     const finalDescription = metadata.description
-        ? `${prefix ?? ''}/**\n${descriptionPart}${prefix ?? ''}\n*/`
+        ? `${indent}/**\n${descriptionPart}\n${indent} */`
         : '';
-    const deprecationMessage = `@Deprecated(message = "This ${valueField ?? 'item'} was marked as deprecated by the server")`;
+    const deprecationMessage = `${indent}@Deprecated(message = "This ${valueField ?? 'item'} was marked as deprecated by the server")`;
     if (metadata.description && metadata.isDeprecated) {
         return `${finalDescription}\n${deprecationMessage}\n`;
     }
@@ -181,4 +182,18 @@ export function getCodeComment(
         return `${finalDescription}\n`;
     }
     return '';
+}
+
+/**
+ * Indents every line of a multiline snippet except the first.
+ * Use it when interpolating a snippet into a template line that is already indented by `spaces`.
+ */
+export function indentTail(input: string, spaces: number): string {
+    const padding = ' '.repeat(spaces);
+    return input
+        .split('\n')
+        .map((line, i) =>
+            i === 0 || line.length === 0 ? line : `${padding}${line}`,
+        )
+        .join('\n');
 }

@@ -10,6 +10,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     isServiceDefinition,
     type Schema,
@@ -18,6 +19,7 @@ import {
 
 import {
     type CodegenContext,
+    indentTail,
     kotlinClassName,
     kotlinIdentifier,
 } from './_common';
@@ -45,8 +47,10 @@ import {
 import {
     kotlinProcedureFromSchema,
     kotlinServiceFromSchema,
+    kotlinSubServiceField,
 } from './procedures';
 import { kotlinRefFromSchema } from './ref';
+import { kotlinUnionFromSchema } from './union';
 
 export interface ServiceContext {
     clientName: string;
@@ -112,12 +116,9 @@ export function kotlinClientFromAppDefinition(
                 ...context,
                 instancePath: `${key}`,
             });
-            procedureParts.push(`val ${kotlinKey}: ${subService.name} = ${subService.name}(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )`);
+            procedureParts.push(
+                kotlinSubServiceField(kotlinKey, subService.name),
+            );
             if (subService.content) {
                 subServiceParts.push(subService.content);
             }
@@ -150,7 +151,7 @@ class ${clientName}(
     private val headers: __${clientName}HeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    ${procedureParts.join('\n\n    ')}
+    ${indentTail(procedureParts.join('\n\n'), 4)}
 }
 
 ${subServiceParts.join('\n\n')}
@@ -210,6 +211,9 @@ export function kotlinTypeFromSchema(schema: Schema, context: CodegenContext) {
     }
     if (isSchemaFormDiscriminator(schema)) {
         return kotlinDiscriminatorFromSchema(schema, context);
+    }
+    if (isSchemaFormUnion(schema)) {
+        return kotlinUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return kotlinRefFromSchema(schema, context);
@@ -558,7 +562,7 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        val err = ${clientName}Error.fromJson(httpResponse.bodyAsText()) 
+                        val err = ${clientName}Error.fromJson(httpResponse.bodyAsText())
                         onError(err)
                         onResponseError(err)
                     } else {

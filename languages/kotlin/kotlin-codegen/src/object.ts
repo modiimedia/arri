@@ -4,6 +4,7 @@ import {
     type CodegenContext,
     getClassName,
     getCodeComment,
+    indentTail,
     isNullable,
     kotlinIdentifier,
     type KotlinProperty,
@@ -24,23 +25,14 @@ export function kotlinObjectFromSchema(
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
-            if (nullable) {
-                return `when (${input}) {
-                    is JsonObject -> ${prefixedClassName}.fromJsonElement(
-                        ${input}!!,
-                        "$instancePath/${key}",
-                    )
-                    else -> null
-                }`;
-            }
             return `when (${input}) {
-                is JsonObject -> ${prefixedClassName}.fromJsonElement(
-                    ${input}!!,
-                    "$instancePath/${key}",
-                )
+    is JsonObject -> ${prefixedClassName}.fromJsonElement(
+        ${input}!!,
+        "$instancePath/${key}",
+    )
 
-                else -> ${prefixedClassName}.new()
-            }`;
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
@@ -110,9 +102,7 @@ export function kotlinObjectFromSchema(
         fromJsonParts.push(
             `val ${kotlinKey}: ${type.prefixedTypeName}${type.isNullable ? '?' : ''} = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
         );
-        defaultParts.push(
-            `                ${kotlinKey} = ${type.defaultValue},`,
-        );
+        defaultParts.push(`${kotlinKey} = ${type.defaultValue}`);
     }
 
     for (let i = 0; i < optionalKeys.length; i++) {
@@ -135,23 +125,25 @@ export function kotlinObjectFromSchema(
         if (type.content) {
             subContent.push(type.content);
         }
-        const addCommaPart = isFirst
-            ? ''
-            : `\n        if (hasProperties) output += ","\n`;
         fieldParts.push(
             `${getCodeComment(schema.optionalProperties![key]!.metadata, '    ', 'field')}    val ${kotlinKey}: ${type.prefixedTypeName}? = null,`,
         );
+        const optionalToJsonParts: string[] = [];
         if (hasKnownKeys) {
-            toJsonParts.push(`if (${kotlinKey} != null) {
-                output += ",\\"${key}\\":"
-                ${type.toJson(kotlinKey, 'output')}
-            }`);
+            optionalToJsonParts.push(`output += ",\\"${key}\\":"`);
         } else {
-            toJsonParts.push(`if (${kotlinKey} != null) {${addCommaPart}
-    output += "\\"${key}\\":"
-    ${type.toJson(kotlinKey, 'output')}
-${isLast ? '' : '    hasProperties = true'}\n}`);
+            if (!isFirst) {
+                optionalToJsonParts.push(`if (hasProperties) output += ","`);
+            }
+            optionalToJsonParts.push(`output += "\\"${key}\\":"`);
         }
+        optionalToJsonParts.push(type.toJson(kotlinKey, 'output'));
+        if (!hasKnownKeys && !isLast) {
+            optionalToJsonParts.push('hasProperties = true');
+        }
+        toJsonParts.push(`if (${kotlinKey} != null) {
+    ${indentTail(optionalToJsonParts.join('\n'), 4)}
+}`);
 
         toQueryParts.push(type.toQueryString(kotlinKey, 'queryParts', key));
         fromJsonParts.push(
@@ -174,19 +166,17 @@ ${isLast ? '' : '    hasProperties = true'}\n}`);
 ${fieldParts.join('\n')}${!hasProperties ? '    private val placeholderKey: Short = 0' : ''}
 ) : ${implementedClass} {${discriminatorField}
     override fun toJson(): String {
-${toJsonParts.join('\n')}    
+        ${indentTail(toJsonParts.join('\n'), 8)}
     }
 
     override fun toUrlQueryParams(): String {
-${toQueryParts.join('\n')}
+        ${indentTail(toQueryParts.join('\n'), 8)}
     }
 
     companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
         override fun new(): ${prefixedClassName} {
-            return ${prefixedClassName}(
-${defaultParts.join('\n')}
-            )
+            ${indentTail(constructorCall(prefixedClassName, defaultParts), 12)}
         }
 
         @JvmStatic
@@ -200,18 +190,22 @@ ${defaultParts.join('\n')}
                 __logError("[WARNING] ${prefixedClassName}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${prefixedClassName}.")
                 return new()
             }
-${fromJsonParts.join('\n')}
-            return ${prefixedClassName}(
-                ${kotlinKeys.join(',\n                ')}${hasProperties ? `,` : ''}
-            )
+            ${indentTail([...fromJsonParts, constructorCall(prefixedClassName, kotlinKeys)].join('\n'), 12)}
         }
     }
-}
-
-${subContent.join('\n\n')}`;
+}${subContent.length ? `\n\n${subContent.join('\n\n')}` : ''}`;
     context.existingTypeIds.push(className);
     return {
         ...result,
         content,
     };
+}
+
+function constructorCall(className: string, args: string[]): string {
+    if (args.length === 0) {
+        return `return ${className}()`;
+    }
+    return `return ${className}(
+    ${args.join(',\n    ')},
+)`;
 }

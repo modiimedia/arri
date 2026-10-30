@@ -14,8 +14,8 @@ function defaultToQueryString(
 ) {
     if (context.isOptional) {
         return `if (${input} != null) {
-            ${target}.add("${key}=$${input}")
-        }`;
+    ${target}.add("${key}=$${input}")
+}`;
     }
     return `${target}.add("${key}=$${input}")`;
 }
@@ -42,21 +42,21 @@ export function kotlinStringFromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull ?: ${defaultValue}
-                else -> ${defaultValue}
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull ?: ${defaultValue}
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
                 return `${target} += when (${input}) {
-                    is String -> buildString { printQuoted(${input}) }
-                    else -> "null"
-                }`;
+    is String -> buildString { printQuoted(${input}) }
+    else -> "null"
+}`;
             }
             return `${target} += buildString { printQuoted(${input}) }`;
         },
@@ -81,14 +81,14 @@ export function kotlinBooleanFromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.booleanOrNull
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.booleanOrNull ?: ${defaultValue}
-                else -> ${defaultValue}
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.booleanOrNull ?: ${defaultValue}
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -113,48 +113,49 @@ export function kotlinTimestampFromSchema(
         defaultValue,
         fromJson(input) {
             return `when (${input}) {
-                is JsonPrimitive ->
-                    if (${input}!!.jsonPrimitive.isString)
-                        Instant.parse(${input}!!.jsonPrimitive.content)
-                    else
-                        ${defaultValue}
-                else -> ${defaultValue}
-            }`;
+    is JsonPrimitive ->
+        if (${input}!!.jsonPrimitive.isString)
+            Instant.parse(${input}!!.jsonPrimitive.content)
+        else
+            ${defaultValue}
+
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
                 return `${target} += when (${input}) {
-                    is Instant -> "\\"\${timestampFormatter.format(${input})}\\""
-                    else -> "null"
-                }`;
+    is Instant -> "\\"\${timestampFormatter.format(${input})}\\""
+    else -> "null"
+}`;
             }
             return `${target} += "\\"\${timestampFormatter.format(${input})}\\""`;
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
                 return `if (${input} != null) {
-                    ${target}.add(
-                        "${key}=\${
-                            timestampFormatter.format(${input})
-                        }"
-                )
-            }`;
+    ${target}.add(
+        "${key}=\${
+            timestampFormatter.format(${input})
+        }"
+    )
+}`;
             }
             if (schema.isNullable) {
                 return `${target}.add(
-                    "${key}=\${
-                        when (${input}) {
-                            is Instant -> timestampFormatter.format(${input})
-                            else -> "null"
-                        }
-                    }"
-        )`;
+    "${key}=\${
+        when (${input}) {
+            is Instant -> timestampFormatter.format(${input})
+            else -> "null"
+        }
+    }"
+)`;
             }
             return `${target}.add(
-                "${key}=\${
-                    timestampFormatter.format(${input})
-                }"
-        )`;
+    "${key}=\${
+        timestampFormatter.format(${input})
+    }"
+)`;
         },
         content: '',
     };
@@ -174,14 +175,14 @@ export function kotlinFloat32FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.floatOrNull
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.floatOrNull
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.floatOrNull ?: ${defaultValue}
-                else -> ${defaultValue}
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.floatOrNull ?: ${defaultValue}
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -207,14 +208,14 @@ export function kotlinFloat64FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.doubleOrNull
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.doubleOrNull
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.doubleOrNull ?: 0.0
+    else -> 0.0
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -240,14 +241,14 @@ export function kotlinInt8FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toByteOrNull()
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toByteOrNull()
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toByteOrNull() ?: 0
-                else -> 0
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toByteOrNull() ?: 0
+    else -> 0
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -273,14 +274,14 @@ export function kotlinInt16FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toShortOrNull()
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toShortOrNull()
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toShortOrNull() ?: 0
-                else -> 0
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toShortOrNull() ?: 0
+    else -> 0
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -306,14 +307,14 @@ export function kotlinInt32FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.intOrNull
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.intOrNull
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.intOrNull ?: 0
-                else -> 0
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.intOrNull ?: 0
+    else -> 0
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -339,21 +340,21 @@ export function kotlinInt64FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.longOrNull
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.longOrNull
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.longOrNull ?: 0L
-                else -> 0L
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.longOrNull ?: 0L
+    else -> 0L
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
                 return `${target} += when (${input}) {
-                    is Long -> "\\"\${${input}}\\""
-                    else -> "null"
-                }`;
+    is Long -> "\\"\${${input}}\\""
+    else -> "null"
+}`;
             }
             return `${target} += "\\"\${${input}}\\""`;
         },
@@ -378,14 +379,14 @@ export function kotlinUint8FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUByteOrNull()
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUByteOrNull()
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
-                else -> 0u
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
+    else -> 0u
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -411,14 +412,14 @@ export function kotlinUint16FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUShortOrNull()
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUShortOrNull()
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
-                else -> 0u
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
+    else -> 0u
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -444,14 +445,14 @@ export function kotlinUint32FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUIntOrNull()
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUIntOrNull()
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUIntOrNull() ?: 0u
-                else -> 0u
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toUIntOrNull() ?: 0u
+    else -> 0u
+}`;
         },
         toJson(input, target) {
             return defaultToJsonString(context, input, target);
@@ -477,21 +478,21 @@ export function kotlinUint64FromSchema(
         fromJson(input) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toULongOrNull()
-                    else -> null
-                }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toULongOrNull()
+    else -> null
+}`;
             }
             return `when (${input}) {
-                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
-                else -> 0UL
-            }`;
+    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
+    else -> 0UL
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
                 return `${target} += when (${input}) {
-                    is ULong -> "\\"\${${input}}\\""
-                    else -> "null"
-                }`;
+    is ULong -> "\\"\${${input}}\\""
+    else -> "null"
+}`;
             }
             return `${target} += "\\"\${${input}}\\""`;
         },
