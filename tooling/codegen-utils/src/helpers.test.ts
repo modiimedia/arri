@@ -1,5 +1,7 @@
 import {
     AppDefinition,
+    getUnionFallbackKey,
+    isRecursiveSchema,
     matchSchemaForms,
     removeDisallowedChars,
     type RpcDefinition,
@@ -332,4 +334,75 @@ describe('matchSchemaForms()', () => {
             );
         });
     }
+});
+
+describe('isRecursiveSchema()', () => {
+    const ref: Schema = { ref: 'Parent' };
+    test('non-nullable refs are recursive', () => {
+        expect(isRecursiveSchema(ref)).toBe(true);
+        expect(isRecursiveSchema({ properties: { child: ref } })).toBe(true);
+        expect(
+            isRecursiveSchema({
+                properties: { nested: { properties: { child: ref } } },
+            }),
+        ).toBe(true);
+    });
+    test('refs that fall back to an empty value are not recursive', () => {
+        expect(isRecursiveSchema({ ref: 'Parent', isNullable: true })).toBe(
+            false,
+        );
+        expect(
+            isRecursiveSchema({
+                properties: { child: { ref: 'Parent', isNullable: true } },
+            }),
+        ).toBe(false);
+        expect(
+            isRecursiveSchema({
+                properties: {},
+                optionalProperties: { child: ref },
+            }),
+        ).toBe(false);
+        expect(isRecursiveSchema({ elements: ref })).toBe(false);
+        expect(isRecursiveSchema({ values: ref })).toBe(false);
+        expect(
+            isRecursiveSchema({ properties: { child: ref }, isNullable: true }),
+        ).toBe(false);
+    });
+    test('nested unions are recursive when every variant is recursive', () => {
+        expect(isRecursiveSchema({ union: { a: ref } })).toBe(true);
+        expect(
+            isRecursiveSchema({ union: { a: ref, b: { type: 'string' } } }),
+        ).toBe(false);
+        expect(
+            isRecursiveSchema({
+                discriminator: 'type',
+                mapping: { a: { properties: { child: ref } } },
+            }),
+        ).toBe(true);
+    });
+});
+
+describe('getUnionFallbackKey()', () => {
+    test('returns the first variant', () => {
+        expect(
+            getUnionFallbackKey({ a: { type: 'string' }, b: { ref: 'Union' } }),
+        ).toBe('a');
+    });
+    test('skips recursive variants', () => {
+        expect(
+            getUnionFallbackKey({
+                a: { ref: 'Union' },
+                b: { properties: { child: { ref: 'Union' } } },
+                c: { elements: { ref: 'Union' } },
+            }),
+        ).toBe('c');
+    });
+    test('returns the first variant when every variant is recursive', () => {
+        expect(
+            getUnionFallbackKey({ a: { ref: 'Union' }, b: { ref: 'Union' } }),
+        ).toBe('a');
+    });
+    test('returns undefined when there are no variants', () => {
+        expect(getUnionFallbackKey({})).toBe(undefined);
+    });
 });

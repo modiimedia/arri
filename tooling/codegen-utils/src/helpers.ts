@@ -136,3 +136,36 @@ export function matchSchemaForms<T = void>(
     if (isSchemaFormRef(schema)) return matcher.ref(schema);
     return matcher.empty(schema as any);
 }
+
+/**
+ * Returns the key of the variant that clients should fall back to when a union (or discriminator) can't be decoded.
+ * This is the first variant unless it's recursive, in which case it's the next non-recursive variant.
+ * If every variant is recursive the first variant is returned.
+ */
+export function getUnionFallbackKey(
+    variants: Record<string, Schema>,
+): string | undefined {
+    const keys = Object.keys(variants);
+    return keys.find((key) => !isRecursiveSchema(variants[key]!)) ?? keys[0];
+}
+
+/**
+ * A schema is recursive when building its fallback value would loop back to itself.
+ * Refs are only used for self-references, so this is the case when the fallback reaches a non-nullable ref.
+ * Nullable schemas, arrays, records, and optional properties fall back to an empty value so they never recurse.
+ */
+export function isRecursiveSchema(schema: Schema): boolean {
+    if (schema.isNullable) return false;
+    return matchSchemaForms(schema, {
+        type: () => false,
+        enum: () => false,
+        empty: () => false,
+        elements: () => false,
+        values: () => false,
+        ref: () => true,
+        properties: (s) => Object.values(s.properties).some(isRecursiveSchema),
+        // nested unions fall back to their first non-recursive variant
+        discriminator: (s) => Object.values(s.mapping).every(isRecursiveSchema),
+        union: (s) => Object.values(s.union).every(isRecursiveSchema),
+    });
+}
