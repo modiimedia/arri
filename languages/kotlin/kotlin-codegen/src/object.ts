@@ -69,7 +69,7 @@ export function kotlinObjectFromSchema(
             `output += "\\"${context.discriminatorKey}\\":\\"${context.discriminatorValue}\\""`,
         );
         toQueryParts.push(
-            `queryParts.add("${context.discriminatorKey}=${context.discriminatorValue}")`,
+            `queryParts.add("${encodeURIComponent(context.discriminatorKey)}=${encodeURIComponent(context.discriminatorValue)}")`,
         );
     }
     for (let i = 0; i < requiredKeys.length; i++) {

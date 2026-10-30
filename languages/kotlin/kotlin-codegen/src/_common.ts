@@ -197,3 +197,35 @@ export function indentTail(input: string, spaces: number): string {
         )
         .join('\n');
 }
+
+/**
+ * Query string part for values that may contain characters which need to be URL encoded
+ *
+ * @param toValue Returns a Kotlin String expression for a non-null input
+ */
+export function kotlinEncodedQueryString(
+    schema: Schema,
+    context: CodegenContext,
+    input: string,
+    target: string,
+    key: string,
+    toValue: (input: string) => string,
+): string {
+    const queryKey = encodeURIComponent(key);
+    if (context.isOptional) {
+        return `if (${input} != null) {
+    ${target}.add("${queryKey}=\${__encodeQueryValue(${toValue(input)})}")
+}`;
+    }
+    if (schema.isNullable) {
+        const value = toValue('it');
+        let nullableValue = `${input}?.let { ${value} }`;
+        if (value === 'it') {
+            nullableValue = input;
+        } else if (value.startsWith('it.')) {
+            nullableValue = `${input}?.${value.slice(3)}`;
+        }
+        return `${target}.add("${queryKey}=\${__encodeQueryValue(${nullableValue})}")`;
+    }
+    return `${target}.add("${queryKey}=\${__encodeQueryValue(${toValue(input)})}")`;
+}

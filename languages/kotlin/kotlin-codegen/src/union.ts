@@ -1,4 +1,5 @@
 import {
+    getUnionFallbackKey,
     isSchemaFormProperties,
     type Schema,
     type SchemaFormProperties,
@@ -87,6 +88,10 @@ export function kotlinInternallyTaggedSealedInterface(
     if (subTypes.length === 0) {
         throw new Error('Discriminator schemas must have at least one mapping');
     }
+    const fallbackKey = getUnionFallbackKey(variants);
+    const fallbackType = subTypes.find(
+        (type) => type.discriminatorValue === fallbackKey,
+    )!;
     const defaultValue = nullable ? 'null' : `${prefixedClassName}.new()`;
     const result: KotlinProperty = {
         typeName: className,
@@ -124,7 +129,7 @@ export function kotlinInternallyTaggedSealedInterface(
     companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
         override fun new(): ${prefixedClassName} {
-            return ${subTypes[0]!.prefixedTypeName}.new()
+            return ${fallbackType.prefixedTypeName}.new()
         }
 
         @JvmStatic
@@ -135,7 +140,7 @@ export function kotlinInternallyTaggedSealedInterface(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${prefixedClassName} {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${prefixedClassName}.")
+                __logError("[WARNING] ${prefixedClassName}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${prefixedClassName}.")
                 return new()
             }
             return when (__input.jsonObject["${tagKey}"]) {
@@ -280,6 +285,10 @@ function kotlinWrappedUnionFromSchema(
     }
 }`);
     }
+    const fallbackKey = getUnionFallbackKey(schema.union);
+    const fallbackVariant = variants.find(
+        (variant) => variant.key === fallbackKey,
+    )!;
     let fromJsonBody: string;
     if (tagKey && tagProp) {
         fromJsonBody = `            return when (__input.jsonObject["${tagKey}"]) {
@@ -301,7 +310,7 @@ function kotlinWrappedUnionFromSchema(
     companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
         override fun new(): ${prefixedClassName} {
-            return ${variants[0]!.prefixedClassName}.new()
+            return ${fallbackVariant.prefixedClassName}.new()
         }
 
         @JvmStatic

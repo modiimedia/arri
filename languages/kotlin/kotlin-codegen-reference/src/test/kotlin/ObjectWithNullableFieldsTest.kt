@@ -80,7 +80,7 @@ class ObjectWithNullableFieldsTest {
         )
         assertEquals(
             noNullValue.toUrlQueryParams(),
-            "string=&boolean=true&timestamp=2001-01-01T16:00:00.000Z&float32=1.5&float64=1.5&int8=1&uint8=1&int16=10&uint16=10&int32=100&uint32=100&int64=1000&uint64=1000&enum=BAZ"
+            "string=&boolean=true&timestamp=2001-01-01T16%3A00%3A00.000Z&float32=1.5&float64=1.5&int8=1&uint8=1&int16=10&uint16=10&int32=100&uint32=100&int64=1000&uint64=1000&enum=BAZ"
         )
     }
 

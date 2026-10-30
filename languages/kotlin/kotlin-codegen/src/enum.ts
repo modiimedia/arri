@@ -4,6 +4,7 @@ import {
     type CodegenContext,
     getClassName,
     isNullable,
+    kotlinEncodedQueryString,
     type KotlinProperty,
 } from './_common';
 
@@ -87,15 +88,14 @@ export function kotlinEnumFromSchema(
             return `${target} += "\\"\${${input}.serialValue}\\""`;
         },
         toQueryString(input, target, key) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-    ${target}.add("${key}=\${${input}.serialValue}")
-}`;
-            }
-            if (schema.isNullable) {
-                return `${target}.add("${key}=\${${input}?.serialValue}")`;
-            }
-            return `${target}.add("${key}=\${${input}.serialValue}")`;
+            return kotlinEncodedQueryString(
+                schema,
+                context,
+                input,
+                target,
+                key,
+                (value) => `${value}.serialValue`,
+            );
         },
         content,
     };

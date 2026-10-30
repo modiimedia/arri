@@ -3,6 +3,7 @@ import { type Schema, type SchemaFormType } from '@arrirpc/codegen-utils';
 import {
     type CodegenContext,
     isNullable,
+    kotlinEncodedQueryString,
     type KotlinProperty,
 } from './_common';
 
@@ -12,12 +13,13 @@ function defaultToQueryString(
     target: string,
     key: string,
 ) {
+    const queryKey = encodeURIComponent(key);
     if (context.isOptional) {
         return `if (${input} != null) {
-    ${target}.add("${key}=$${input}")
+    ${target}.add("${queryKey}=$${input}")
 }`;
     }
-    return `${target}.add("${key}=$${input}")`;
+    return `${target}.add("${queryKey}=$${input}")`;
 }
 
 function defaultToJsonString(
@@ -61,7 +63,14 @@ export function kotlinStringFromSchema(
             return `${target} += buildString { printQuoted(${input}) }`;
         },
         toQueryString(input, target, key) {
-            return defaultToQueryString(context, input, target, key);
+            return kotlinEncodedQueryString(
+                schema,
+                context,
+                input,
+                target,
+                key,
+                (value) => value,
+            );
         },
         content: '',
     };
@@ -132,30 +141,14 @@ export function kotlinTimestampFromSchema(
             return `${target} += "\\"\${timestampFormatter.format(${input})}\\""`;
         },
         toQueryString(input, target, key) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-    ${target}.add(
-        "${key}=\${
-            timestampFormatter.format(${input})
-        }"
-    )
-}`;
-            }
-            if (schema.isNullable) {
-                return `${target}.add(
-    "${key}=\${
-        when (${input}) {
-            is Instant -> timestampFormatter.format(${input})
-            else -> "null"
-        }
-    }"
-)`;
-            }
-            return `${target}.add(
-    "${key}=\${
-        timestampFormatter.format(${input})
-    }"
-)`;
+            return kotlinEncodedQueryString(
+                schema,
+                context,
+                input,
+                target,
+                key,
+                (value) => `timestampFormatter.format(${value})`,
+            );
         },
         content: '',
     };

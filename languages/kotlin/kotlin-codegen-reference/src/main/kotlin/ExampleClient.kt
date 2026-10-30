@@ -359,18 +359,10 @@ data class Book(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        queryParts.add("id=$id")
-        queryParts.add("name=$name")
-        queryParts.add(
-            "createdAt=${
-                timestampFormatter.format(createdAt)
-            }"
-        )
-        queryParts.add(
-            "updatedAt=${
-                timestampFormatter.format(updatedAt)
-            }"
-        )
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("name=${__encodeQueryValue(name)}")
+        queryParts.add("createdAt=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
+        queryParts.add("updatedAt=${__encodeQueryValue(timestampFormatter.format(updatedAt))}")
         return queryParts.joinToString("&")
     }
 
@@ -445,7 +437,7 @@ data class BookParams(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        queryParts.add("bookId=$bookId")
+        queryParts.add("bookId=${__encodeQueryValue(bookId)}")
         return queryParts.joinToString("&")
     }
 
@@ -495,8 +487,8 @@ data class NestedObject(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        queryParts.add("id=$id")
-        queryParts.add("content=$content")
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
         return queryParts.joinToString("&")
     }
 
@@ -624,13 +616,9 @@ data class ObjectWithEveryType(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        queryParts.add("string=$string")
+        queryParts.add("string=${__encodeQueryValue(string)}")
         queryParts.add("boolean=$boolean")
-        queryParts.add(
-            "timestamp=${
-                timestampFormatter.format(timestamp)
-            }"
-        )
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
         queryParts.add("float32=$float32")
         queryParts.add("float64=$float64")
         queryParts.add("int8=$int8")
@@ -641,7 +629,7 @@ data class ObjectWithEveryType(
         queryParts.add("uint32=$uint32")
         queryParts.add("int64=$int64")
         queryParts.add("uint64=$uint64")
-        queryParts.add("enum=${enum.serialValue}")
+        queryParts.add("enum=${__encodeQueryValue(enum.serialValue)}")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
@@ -1151,7 +1139,7 @@ sealed interface UnionInternal : ExampleClientModel {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): UnionInternal {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UnionInternal.")
+                __logError("[WARNING] UnionInternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UnionInternal.")
                 return new()
             }
             return when (__input.jsonObject["shape"]) {
@@ -1713,17 +1701,13 @@ data class ObjectWithOptionalFields(
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
         if (string != null) {
-            queryParts.add("string=$string")
+            queryParts.add("string=${__encodeQueryValue(string)}")
         }
         if (boolean != null) {
             queryParts.add("boolean=$boolean")
         }
         if (timestamp != null) {
-            queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-            )
+            queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
         }
         if (float32 != null) {
             queryParts.add("float32=$float32")
@@ -1756,7 +1740,7 @@ data class ObjectWithOptionalFields(
             queryParts.add("uint64=$uint64")
         }
         if (enum != null) {
-            queryParts.add("enum=${enum.serialValue}")
+            queryParts.add("enum=${__encodeQueryValue(enum.serialValue)}")
         }
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
@@ -2054,16 +2038,9 @@ data class ObjectWithNullableFields(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        queryParts.add("string=$string")
+        queryParts.add("string=${__encodeQueryValue(string)}")
         queryParts.add("boolean=$boolean")
-        queryParts.add(
-            "timestamp=${
-                when (timestamp) {
-                    is Instant -> timestampFormatter.format(timestamp)
-                    else -> "null"
-                }
-            }"
-        )
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
         queryParts.add("float32=$float32")
         queryParts.add("float64=$float64")
         queryParts.add("int8=$int8")
@@ -2074,7 +2051,7 @@ data class ObjectWithNullableFields(
         queryParts.add("uint32=$uint32")
         queryParts.add("int64=$int64")
         queryParts.add("uint64=$uint64")
-        queryParts.add("enum=${enum?.serialValue}")
+        queryParts.add("enum=${__encodeQueryValue(enum?.serialValue)}")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
@@ -2362,7 +2339,7 @@ sealed interface LegacyDiscriminator : ExampleClientModel {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): LegacyDiscriminator {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty LegacyDiscriminator.")
+                __logError("[WARNING] LegacyDiscriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty LegacyDiscriminator.")
                 return new()
             }
             return when (__input.jsonObject["typeName"]) {
@@ -2396,7 +2373,7 @@ data class LegacyDiscriminatorA(
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
         queryParts.add("typeName=A")
-        queryParts.add("id=$id")
+        queryParts.add("id=${__encodeQueryValue(id)}")
         return queryParts.joinToString("&")
     }
 
@@ -2450,8 +2427,8 @@ data class LegacyDiscriminatorB(
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
         queryParts.add("typeName=B")
-        queryParts.add("id=$id")
-        queryParts.add("name=$name")
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("name=${__encodeQueryValue(name)}")
         return queryParts.joinToString("&")
     }
 
@@ -2514,13 +2491,9 @@ data class LegacyDiscriminatorC(
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
         queryParts.add("typeName=C")
-        queryParts.add("id=$id")
-        queryParts.add("name=$name")
-        queryParts.add(
-            "date=${
-                timestampFormatter.format(date)
-            }"
-        )
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("name=${__encodeQueryValue(name)}")
+        queryParts.add("date=${__encodeQueryValue(timestampFormatter.format(date))}")
         return queryParts.joinToString("&")
     }
 
@@ -2629,6 +2602,13 @@ private fun StringBuilder.printQuoted(value: String) {
 
 private fun __logError(string: String) {
     System.err.println(string)
+}
+
+/**
+ * URL encodes a query param value. Null values are serialized as "null".
+ */
+private fun __encodeQueryValue(value: String?): String {
+    return value?.encodeURLParameter(spaceToPlus = true) ?: "null"
 }
 
 private suspend fun __prepareRequest(

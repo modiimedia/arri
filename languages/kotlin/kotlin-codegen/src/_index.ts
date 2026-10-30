@@ -395,6 +395,13 @@ private fun __logError(string: String) {
     System.err.println(string)
 }
 
+/**
+ * URL encodes a query param value. Null values are serialized as "null".
+ */
+private fun __encodeQueryValue(value: String?): String {
+    return value?.encodeURLParameter(spaceToPlus = true) ?: "null"
+}
+
 private suspend fun __prepareRequest(
     client: HttpClient,
     url: String,
