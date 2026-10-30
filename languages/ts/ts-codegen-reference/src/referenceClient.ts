@@ -2878,49 +2878,57 @@ export function LegacyDiscriminatorNew(): LegacyDiscriminator {
 export function LegacyDiscriminatorValidate(
     input: unknown,
 ): input is LegacyDiscriminator {
-    if (!isObject(input)) {
-        return false;
-    }
-    if (typeof input.typeName !== 'string') {
-        return false;
-    }
-    switch (input.typeName) {
-        case 'A':
-            return LegacyDiscriminatorAValidate(input);
-        case 'B':
-            return LegacyDiscriminatorBValidate(input);
-        case 'C':
-            return LegacyDiscriminatorCValidate(input);
-        default:
-            return false;
-    }
+    return (
+        LegacyDiscriminatorAValidate(input) ||
+        LegacyDiscriminatorBValidate(input) ||
+        LegacyDiscriminatorCValidate(input)
+    );
 }
 export function LegacyDiscriminatorClone(
     input: LegacyDiscriminator,
 ): LegacyDiscriminator {
     switch (input.typeName) {
-        case 'A':
-            return LegacyDiscriminatorAClone(input);
-        case 'B':
-            return LegacyDiscriminatorBClone(input);
-        case 'C':
-            return LegacyDiscriminatorCClone(input);
-        default:
-            throw new Error('Unimplemented');
+        case `A`: {
+            let __value__: LegacyDiscriminatorA;
+            __value__ = LegacyDiscriminatorAClone(input);
+            return __value__;
+        }
+
+        case `B`: {
+            let __value__: LegacyDiscriminatorB;
+            __value__ = LegacyDiscriminatorBClone(input);
+            return __value__;
+        }
+
+        case `C`: {
+            let __value__: LegacyDiscriminatorC;
+            __value__ = LegacyDiscriminatorCClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).typeName}`,
+            );
+        }
     }
 }
 export function LegacyDiscriminatorFromJson(
     input: Record<string, unknown>,
 ): LegacyDiscriminator {
     switch (input.typeName) {
-        case 'A':
+        case `A`: {
             return LegacyDiscriminatorAFromJson(input);
-        case 'B':
+        }
+        case `B`: {
             return LegacyDiscriminatorBFromJson(input);
-        case 'C':
+        }
+        case `C`: {
             return LegacyDiscriminatorCFromJson(input);
-        default:
+        }
+        default: {
             return LegacyDiscriminatorANew();
+        }
     }
 }
 export function LegacyDiscriminatorFromJsonString(
@@ -2932,28 +2940,41 @@ export function LegacyDiscriminatorToJsonString(
     input: LegacyDiscriminator,
 ): string {
     switch (input.typeName) {
-        case 'A':
+        case `A`: {
             return LegacyDiscriminatorAToJsonString(input);
-        case 'B':
+        }
+
+        case `B`: {
             return LegacyDiscriminatorBToJsonString(input);
-        case 'C':
+        }
+
+        case `C`: {
             return LegacyDiscriminatorCToJsonString(input);
-        default:
-            throw new Error(`Unhandled case "${(input as any).typeName}"`);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).typeName}`);
+        }
     }
 }
 export function LegacyDiscriminatorToUrlSearchParams(
     input: LegacyDiscriminator,
 ): URLSearchParams {
     switch (input.typeName) {
-        case 'A':
+        case `A`: {
             return LegacyDiscriminatorAToUrlSearchParams(input);
-        case 'B':
+        }
+        case `B`: {
             return LegacyDiscriminatorBToUrlSearchParams(input);
-        case 'C':
+        }
+        case `C`: {
             return LegacyDiscriminatorCToUrlSearchParams(input);
-        default:
-            throw new Error('Unhandled case');
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).typeName}`);
+        }
     }
 }
 export function LegacyDiscriminatorToUrlSearchParamsString(

@@ -1,6 +1,7 @@
 import {
     camelCase,
     getUnionFallbackKey,
+    Schema,
     SchemaFormUnion,
 } from '@arrirpc/codegen-utils';
 
@@ -14,16 +15,99 @@ import {
     validVarName,
 } from './common';
 
+type UnionVariant = { data: TsProperty; key: string };
+
 export function tsTaggedUnionFromSchema(
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): TsProperty {
+    if (schema.tagKey && !schema.valueKey) {
+        return tsInternallyTaggedUnionFromSchema(
+            schema,
+            schema.tagKey,
+            schema.union,
+            'union',
+            context,
+        );
+    }
     const typeName = getTsTypeName(schema, context);
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
+    const result = tsUnionProperty(schema, prefixedTypeName, context);
+    if (context.generatedTypes.includes(typeName)) return result;
+    const { subTypes, fallback } = tsUnionVariants(
+        schema.union,
+        typeName,
+        undefined,
+        'union',
+        context,
+    );
+    if (schema.tagKey && schema.valueKey) {
+        result.content = _internallyTaggedWithValueKeyContent(
+            typeName,
+            prefixedTypeName,
+            subTypes,
+            fallback,
+            schema,
+            context,
+        );
+    } else {
+        result.content = _externallyTaggedContent(
+            typeName,
+            prefixedTypeName,
+            subTypes,
+            fallback,
+            schema,
+            context,
+        );
+    }
+    return result;
+}
+
+/**
+ * Shared by internally tagged union schemas and legacy discriminator schemas.
+ * Each variant is an object type that has the tag injected into it.
+ *
+ * @param variantsSchemaKey The schema key that holds the variants. Used for error paths. ("mapping" for legacy discriminators)
+ */
+export function tsInternallyTaggedUnionFromSchema(
+    schema: Schema,
+    tagKey: string,
+    variants: Record<string, Schema>,
+    variantsSchemaKey: string,
+    context: CodegenContext,
+): TsProperty {
+    const typeName = getTsTypeName(schema, context);
+    const prefixedTypeName = `${context.typePrefix}${typeName}`;
+    const result = tsUnionProperty(schema, prefixedTypeName, context);
+    if (context.generatedTypes.includes(typeName)) return result;
+    const { subTypes, fallback } = tsUnionVariants(
+        variants,
+        typeName,
+        tagKey,
+        variantsSchemaKey,
+        context,
+    );
+    result.content = _internallyTaggedContent(
+        typeName,
+        prefixedTypeName,
+        subTypes,
+        fallback,
+        tagKey,
+        schema,
+        context,
+    );
+    return result;
+}
+
+function tsUnionProperty(
+    schema: Schema,
+    prefixedTypeName: string,
+    context: CodegenContext,
+): TsProperty {
     const defaultValue = schema.isNullable
         ? 'null'
         : `${prefixedTypeName}New()`;
-    const result: TsProperty = {
+    return {
         typeName: schema.isNullable
             ? `${prefixedTypeName} | null`
             : prefixedTypeName,
@@ -67,24 +151,30 @@ export function tsTaggedUnionFromSchema(
         },
         content: '',
     };
-    if (context.generatedTypes.includes(typeName)) return result;
-    const needsInjectedTagField =
-        (schema.tagKey?.length ?? 0) > 0 &&
-        (schema.valueKey?.length ?? 0) === 0;
-    const subTypes: { data: TsProperty; key: string }[] = [];
-    for (const key of Object.keys(schema.union)) {
-        const subSchema = schema.union[key]!;
+}
+
+/**
+ * @param injectedTagKey When set, each variant is generated as an object with this tag injected into it (internally tagged unions)
+ */
+function tsUnionVariants(
+    variants: Record<string, Schema>,
+    typeName: string,
+    injectedTagKey: string | undefined,
+    variantsSchemaKey: string,
+    context: CodegenContext,
+): { subTypes: UnionVariant[]; fallback: UnionVariant } {
+    const subTypes: UnionVariant[] = [];
+    for (const key of Object.keys(variants)) {
+        const subSchema = variants[key]!;
         const subType = tsTypeFromSchema(subSchema, {
             clientName: context.clientName,
             typePrefix: context.typePrefix,
             generatedTypes: context.generatedTypes,
             instancePath: `${context.instancePath}/${key}`,
-            schemaPath: `${context.schemaPath}/union/${key}`,
-            discriminatorParent: needsInjectedTagField ? typeName : '',
-            discriminatorKey: needsInjectedTagField
-                ? (schema.tagKey ?? '')
-                : '',
-            discriminatorValue: needsInjectedTagField ? key : '',
+            schemaPath: `${context.schemaPath}/${variantsSchemaKey}/${key}`,
+            discriminatorParent: injectedTagKey ? typeName : '',
+            discriminatorKey: injectedTagKey ?? '',
+            discriminatorValue: injectedTagKey ? key : '',
             versionNumber: context.versionNumber,
             useRpcTypes: context.useRpcTypes,
             rpcGenerators: context.rpcGenerators,
@@ -92,49 +182,21 @@ export function tsTaggedUnionFromSchema(
         });
         subTypes.push({ data: subType, key: key });
     }
-    const fallbackKey = getUnionFallbackKey(schema.union);
+    const fallbackKey = getUnionFallbackKey(variants);
     const fallback = subTypes.find((type) => type.key === fallbackKey);
     if (!fallback) {
         throw new Error(
             `Error at ${context.schemaPath}: Union schemas must have at least one variant`,
         );
     }
-    if (schema.tagKey && schema.valueKey) {
-        result.content = _internallyTaggedWithValueKeyContent(
-            typeName,
-            prefixedTypeName,
-            subTypes,
-            fallback,
-            schema,
-            context,
-        );
-    } else if (schema.tagKey) {
-        result.content = _internallyTaggedContent(
-            typeName,
-            prefixedTypeName,
-            subTypes,
-            fallback,
-            schema,
-            context,
-        );
-    } else {
-        result.content = _externallyTaggedContent(
-            typeName,
-            prefixedTypeName,
-            subTypes,
-            fallback,
-            schema,
-            context,
-        );
-    }
-    return result;
+    return { subTypes, fallback };
 }
 
 function _externallyTaggedContent(
     typeName: string,
     prefixedTypeName: string,
-    subTypes: { data: TsProperty; key: string }[],
-    fallback: { data: TsProperty; key: string },
+    subTypes: UnionVariant[],
+    fallback: UnionVariant,
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {
@@ -272,12 +334,13 @@ ${subTypes.map((type) => type.data.content).join('\n')}
 function _internallyTaggedContent(
     typeName: string,
     prefixedTypeName: string,
-    subTypes: { data: TsProperty; key: string }[],
-    fallback: { data: TsProperty; key: string },
-    schema: SchemaFormUnion,
+    subTypes: UnionVariant[],
+    fallback: UnionVariant,
+    tagKey: string,
+    schema: Schema,
     context: CodegenContext,
 ): string {
-    const tagField = tsFieldName(schema.tagKey!);
+    const tagField = tsFieldName(tagKey);
     let content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};`;
     content += `
 export function ${prefixedTypeName}New(): ${prefixedTypeName} {
@@ -316,7 +379,7 @@ ${subTypes
 
     content += `
 export function ${prefixedTypeName}FromJson(input: Record<string, unknown>): ${prefixedTypeName} {
-    switch (${jsonKeyAccessor('input', schema.tagKey!)}) {
+    switch (${jsonKeyAccessor('input', tagKey)}) {
 ${subTypes
     .map(
         (sub) => `       case \`${sub.key}\`: {
@@ -395,8 +458,8 @@ ${subTypes.map((type) => type.data.content).join('\n')}
 function _internallyTaggedWithValueKeyContent(
     typeName: string,
     prefixedTypeName: string,
-    subTypes: { data: TsProperty; key: string }[],
-    fallback: { data: TsProperty; key: string },
+    subTypes: UnionVariant[],
+    fallback: UnionVariant,
     schema: SchemaFormUnion,
     context: CodegenContext,
 ): string {

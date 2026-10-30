@@ -1930,14 +1930,18 @@ export function LegacyDiscriminatorFromJson(
     input: Record<string, unknown>,
 ): LegacyDiscriminator {
     switch (input.typeName) {
-        case 'A':
+        case `A`: {
             return LegacyDiscriminatorAFromJson(input);
-        case 'B':
+        }
+        case `B`: {
             return LegacyDiscriminatorBFromJson(input);
-        case 'C':
+        }
+        case `C`: {
             return LegacyDiscriminatorCFromJson(input);
-        default:
+        }
+        default: {
             return LegacyDiscriminatorANew();
+        }
     }
 }
 export function LegacyDiscriminatorFromJsonString(
@@ -1949,28 +1953,41 @@ export function LegacyDiscriminatorToJsonString(
     input: LegacyDiscriminator,
 ): string {
     switch (input.typeName) {
-        case 'A':
+        case `A`: {
             return LegacyDiscriminatorAToJsonString(input);
-        case 'B':
+        }
+
+        case `B`: {
             return LegacyDiscriminatorBToJsonString(input);
-        case 'C':
+        }
+
+        case `C`: {
             return LegacyDiscriminatorCToJsonString(input);
-        default:
-            throw new Error(`Unhandled case "${(input as any).typeName}"`);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).typeName}`);
+        }
     }
 }
 export function LegacyDiscriminatorToUrlSearchParams(
     input: LegacyDiscriminator,
 ): URLSearchParams {
     switch (input.typeName) {
-        case 'A':
+        case `A`: {
             return LegacyDiscriminatorAToUrlSearchParams(input);
-        case 'B':
+        }
+        case `B`: {
             return LegacyDiscriminatorBToUrlSearchParams(input);
-        case 'C':
+        }
+        case `C`: {
             return LegacyDiscriminatorCToUrlSearchParams(input);
-        default:
-            throw new Error('Unhandled case');
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).typeName}`);
+        }
     }
 }
 export function LegacyDiscriminatorToUrlSearchParamsString(
