@@ -1,4 +1,5 @@
 import {
+    getUnionFallbackKey,
     isSchemaFormProperties,
     Schema,
     SchemaFormProperties,
@@ -109,13 +110,17 @@ export function dartInternallyTaggedSealedClass(
     if (context.generatedTypes.includes(className)) {
         return result;
     }
+    const fallbackKey = getUnionFallbackKey(variants);
+    const fallbackType = subTypeParts.find(
+        (type) => type.value === fallbackKey,
+    );
     const discriminatorProp = validDartIdentifier(tagKey);
     result.content = `sealed class ${finalClassName} implements ArriModel {
     String get ${discriminatorProp};
     const ${finalClassName}();
 
     factory ${finalClassName}.empty() {
-        return ${subTypeParts[0]?.name}.empty();
+        return ${fallbackType?.name}.empty();
     }
 
     factory ${finalClassName}.fromJson(Map<String, dynamic> _input_) {
@@ -295,6 +300,10 @@ ${toJsonParts}
   }
 }`);
     }
+    const fallbackKey = getUnionFallbackKey(schema.union);
+    const fallbackVariant = variants.find(
+        (variant) => variant.key === fallbackKey,
+    );
     let fromJsonBody: string;
     if (tagKey && tagProp) {
         fromJsonBody = `    final ${tagProp} = typeFromDynamic<String>(_input_["${tagKey}"], "");
@@ -322,7 +331,7 @@ ${variants
   const ${finalClassName}();
 
   factory ${finalClassName}.empty() {
-    return ${variants[0]?.className}.empty();
+    return ${fallbackVariant?.className}.empty();
   }
 
   factory ${finalClassName}.fromJson(Map<String, dynamic> _input_) {
