@@ -23,13 +23,9 @@ final class ObjectWithEveryTypeTests: XCTestCase {
         object: NestedObject(id: "1", content: "hello world"),
         array: [true, false, false],
         record: Dictionary(dictionaryLiteral: ("A", true), ("B", false)),
-        discriminator: Discriminator.c(
-            DiscriminatorC(
-                id: "",
-                name: "",
-                date: targetDate
-            )
-        ),
+        unionExternal: UnionExternal.array(["hello", "world"]),
+        unionInternal: UnionInternal.circle(UnionInternalCircle(radius: 2.5)),
+        unionAdjacent: UnionAdjacent.nullableTimestamp(targetDate),
         any: "hello world")
 
     func testFromJson() throws {

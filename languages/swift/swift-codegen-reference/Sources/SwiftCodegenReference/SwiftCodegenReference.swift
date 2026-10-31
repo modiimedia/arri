@@ -350,7 +350,9 @@ public struct ObjectWithEveryType: ArriClientModel {
     public var object: NestedObject = NestedObject()
     public var array: [Bool] = []
     public var record: Dictionary<String, Bool> = Dictionary()
-    public var discriminator: Discriminator = Discriminator()
+    public var unionExternal: UnionExternal = UnionExternal()
+    public var unionInternal: UnionInternal = UnionInternal()
+    public var unionAdjacent: UnionAdjacent = UnionAdjacent()
     public var any: JSON = JSON()
 
     public init(
@@ -371,7 +373,9 @@ public struct ObjectWithEveryType: ArriClientModel {
         object: NestedObject,
         array: [Bool],
         record: Dictionary<String, Bool>,
-        discriminator: Discriminator,
+        unionExternal: UnionExternal,
+        unionInternal: UnionInternal,
+        unionAdjacent: UnionAdjacent,
         any: JSON
     ) {
         self.string = string
@@ -391,7 +395,9 @@ public struct ObjectWithEveryType: ArriClientModel {
         self.object = object
         self.array = array
         self.record = record
-        self.discriminator = discriminator
+        self.unionExternal = unionExternal
+        self.unionInternal = unionInternal
+        self.unionAdjacent = unionAdjacent
         self.any = any
     }
     public init() {}
@@ -423,7 +429,9 @@ public struct ObjectWithEveryType: ArriClientModel {
             __parsedValue = __value.bool ?? false
             self.record[__key] = __parsedValue
         }
-        self.discriminator = Discriminator(json: json["discriminator"])
+        self.unionExternal = UnionExternal(json: json["unionExternal"])
+        self.unionInternal = UnionInternal(json: json["unionInternal"])
+        self.unionAdjacent = UnionAdjacent(json: json["unionAdjacent"])
         self.any = json["any"]
     }
     public init(JSONData: Data) {
@@ -495,8 +503,12 @@ public struct ObjectWithEveryType: ArriClientModel {
             __json += "\(__value)"
         }
         __json += "}"
-        __json += ",\"discriminator\":"
-        __json += self.discriminator.toJSONString()
+        __json += ",\"unionExternal\":"
+        __json += self.unionExternal.toJSONString()
+        __json += ",\"unionInternal\":"
+        __json += self.unionInternal.toJSONString()
+        __json += ",\"unionAdjacent\":"
+        __json += self.unionAdjacent.toJSONString()
         __json += ",\"any\":"
         __json += serializeAny(input: self.any)
         __json += "}"
@@ -521,7 +533,9 @@ public struct ObjectWithEveryType: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
         return __queryParts
     }
@@ -552,7 +566,9 @@ public struct ObjectWithEveryType: ArriClientModel {
             object: self.object.clone(),
             array: __arrayCloned,
             record: __recordCloned,
-            discriminator: self.discriminator.clone(),
+            unionExternal: self.unionExternal.clone(),
+            unionInternal: self.unionInternal.clone(),
+            unionAdjacent: self.unionAdjacent.clone(),
             any: self.any
         )
     }
@@ -593,28 +609,133 @@ public enum Enumerator: ArriClientEnum {
     }
 }
 
-public enum Discriminator: ArriClientModel {
-    case a(DiscriminatorA)
-    case b(DiscriminatorB)
-    case c(DiscriminatorC)
-
+public enum UnionExternal: ArriClientModel {
+    case object(NestedObject)
+    case array([String])
+    case boolean(Bool)
+    case nullableTimestamp(Date?)
     public init() {
-        self = .a(DiscriminatorA())
+        self = .object(NestedObject())
     }
     public init(json: JSON) {
-        let discriminator = json["typeName"].string ?? ""
-        switch (discriminator) {
-            case "A":
-                self = .a(DiscriminatorA(json: json))
+        if json["object"].exists() {
+            var __variantValue: NestedObject
+            __variantValue = NestedObject(json: json["object"])
+            self = .object(__variantValue)
+        } else if json["array"].exists() {
+            var __variantValue: [String]
+            __variantValue = []
+            for __variantValueJsonElement in json["array"].array ?? [] {
+                var __variantValueJsonElementValue: String
+                __variantValueJsonElementValue = __variantValueJsonElement.string ?? ""
+                __variantValue.append(__variantValueJsonElementValue)
+            }
+            self = .array(__variantValue)
+        } else if json["boolean"].exists() {
+            var __variantValue: Bool
+            __variantValue = json["boolean"].bool ?? false
+            self = .boolean(__variantValue)
+        } else if json["nullable-timestamp"].exists() {
+            var __variantValue: Date?
+            if json["nullable-timestamp"].string != nil {
+                __variantValue = parseDate(json["nullable-timestamp"].string ?? "") ?? Date()
+            }
+            self = .nullableTimestamp(__variantValue)
+        } else {
+            self = .object(NestedObject())
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .object(let __variantValue):
+                __json += "\"object\":"
+                __json += __variantValue.toJSONString()
                 break
-            case "B":
-                self = .b(DiscriminatorB(json: json))
+            case .array(let __variantValue):
+                __json += "\"array\":"
+                __json += "["
+                for (__index, __element) in __variantValue.enumerated() {
+                    if __index > 0 {
+                        __json += ","
+                    }
+                    __json += serializeString(input: __element)
+                }
+                __json += "]"
                 break
-            case "C":
-                self = .c(DiscriminatorC(json: json))
+            case .boolean(let __variantValue):
+                __json += "\"boolean\":"
+                __json += "\(__variantValue)"
+                break
+            case .nullableTimestamp(let __variantValue):
+                __json += "\"nullable-timestamp\":"
+                if __variantValue != nil {
+                    __json += serializeDate(__variantValue!)
+                } else {
+                    __json += "null"
+                }
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionExternal.")
+        return []
+    }
+    public func clone() -> UnionExternal {
+        switch(self) {
+            case .object(let __variantValue):
+                return .object(__variantValue.clone())
+            case .array(let __variantValue):
+                var __variantValueCloned: [String] = []
+                for __variantValueElement in __variantValue {
+                    __variantValueCloned.append(__variantValueElement)
+                }
+                return .array(__variantValueCloned)
+            case .boolean(let __variantValue):
+                return .boolean(__variantValue)
+            case .nullableTimestamp(let __variantValue):
+                return .nullableTimestamp(__variantValue)
+        }
+    }
+}
+
+public enum UnionInternal: ArriClientModel {
+    case rectangle(UnionInternalRectangle)
+    case circle(UnionInternalCircle)
+    public init() {
+        self = .rectangle(UnionInternalRectangle())
+    }
+    public init(json: JSON) {
+        let __tag = json["shape"].string ?? ""
+        switch (__tag) {
+            case "rectangle":
+                self = .rectangle(UnionInternalRectangle(json: json))
+                break
+            case "circle":
+                self = .circle(UnionInternalCircle(json: json))
                 break
             default:
-                self = .a(DiscriminatorA())
+                self = .rectangle(UnionInternalRectangle())
                 break
         }
     }
@@ -638,170 +759,45 @@ public enum Discriminator: ArriClientModel {
     }
     public func toJSONString() -> String {
         switch(self) {
-            case .a(let __innerVal):
+            case .rectangle(let __innerVal):
                 return __innerVal.toJSONString()
-            case .b(let __innerVal):
+            case .circle(let __innerVal):
                 return __innerVal.toJSONString()
-            case .c(let __innerVal):
-                return __innerVal.toJSONString()
-        }        
+        }
     }
     public func toURLQueryParts() -> [URLQueryItem] {
         switch(self) {
-            case .a(let __innerVal):
+            case .rectangle(let __innerVal):
                 return __innerVal.toURLQueryParts()
-            case .b(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .c(let __innerVal):
+            case .circle(let __innerVal):
                 return __innerVal.toURLQueryParts()
         }
     }
-    public func clone() -> Discriminator {
+    public func clone() -> UnionInternal {
         switch(self) {
-            case .a(let __innerVal):
-                return .a(__innerVal.clone()) 
-            case .b(let __innerVal):
-                return .b(__innerVal.clone()) 
-            case .c(let __innerVal): 
-                return .c(__innerVal.clone())
+            case .rectangle(let __innerVal):
+                return .rectangle(__innerVal.clone())
+            case .circle(let __innerVal):
+                return .circle(__innerVal.clone())
         }
     }
 }
 
-public struct DiscriminatorA: ArriClientModel {
-    let typeName: String = "A"
-    public var id: String = ""
-
+public struct UnionInternalRectangle: ArriClientModel {
+    let shape: String = "rectangle"
+    public var width: Float64 = 0.0
+    public var height: Float64 = 0.0
     public init(
-        id: String
+    width: Float64,
+    height: Float64
     ) {
-        self.id = id
+        self.width = width
+        self.height = height
     }
     public init() {}
     public init(json: JSON) {
-        self.id = json["id"].string ?? ""
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-
-    public func toJSONString() -> String {
-        var __json = "{"
-        __json += "\"typeName\":\"A\""
-        __json += ",\"id\":"
-        __json += serializeString(input: self.id)
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "typeName", value: "A"))
-        __queryParts.append(URLQueryItem(name: "id", value: self.id))
-       return __queryParts
-    }
-    public func clone() -> DiscriminatorA {
-        return DiscriminatorA(
-            id: self.id
-        )
-    }
-}
-
-public struct DiscriminatorB: ArriClientModel {
-    let typeName: String = "B"
-    public var id: String = ""
-    public var name: String = ""
-
-    public init(
-        id: String,
-        name: String
-    ) {
-        self.id = id
-        self.name = name
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.id = json["id"].string ?? ""
-        self.name = json["name"].string ?? ""
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-    var __json = "{"
-    __json += "\"typeName\":\"B\""
-    __json += ",\"id\":"
-    __json += serializeString(input: self.id)
-    __json += ",\"name\":"
-    __json += serializeString(input: self.name)
-    __json += "}"
-    return __json
-    }
-
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "typeName", value: "B"))
-        __queryParts.append(URLQueryItem(name: "id", value: self.id))
-        __queryParts.append(URLQueryItem(name: "name", value: self.name))
-        return __queryParts
-    }
-    public func clone() -> DiscriminatorB {
-        return DiscriminatorB(
-            id: self.id,
-            name: self.name
-        )
-    }
-}
-
-public struct DiscriminatorC: ArriClientModel {
-    let typeName: String = "C"
-    public var id: String = ""
-    public var name: String = ""
-    public var date: Date = Date()
-
-    public init(
-        id: String,
-        name: String,
-        date: Date
-    ) {
-        self.id = id
-        self.name = name
-        self.date = date
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.id = json["id"].string ?? ""
-        self.name = json["name"].string ?? ""
-        self.date = parseDate(json["date"].string ?? "") ?? Date()
+        self.width = json["width"].double ?? 0.0
+        self.height = json["height"].double ?? 0.0
     }
     public init(JSONData: Data) {
         do {
@@ -823,30 +819,194 @@ public struct DiscriminatorC: ArriClientModel {
     }
     public func toJSONString() -> String {
         var __json = "{"
-        __json += "\"typeName\":\"C\""
-        __json += ",\"id\":"
-        __json += serializeString(input: self.id)
-        __json += ",\"name\":"
-        __json += serializeString(input: self.name)
-        __json += ",\"date\":"
-        __json += serializeDate(self.date)
+        __json += "\"shape\":\"rectangle\""
+        __json += ",\"width\":"
+        __json += "\(self.width)"
+        __json += ",\"height\":"
+        __json += "\(self.height)"
         __json += "}"
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
         var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "typeName", value: "C"))
-        __queryParts.append(URLQueryItem(name: "id", value: self.id))
-        __queryParts.append(URLQueryItem(name: "name", value: self.name))
-        __queryParts.append(URLQueryItem(name: "date", value: serializeDate(self.date, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "shape", value: "rectangle"))
+        __queryParts.append(URLQueryItem(name: "width", value: "\(self.width)"))
+        __queryParts.append(URLQueryItem(name: "height", value: "\(self.height)"))
         return __queryParts
     }
-    public func clone() -> DiscriminatorC {
-        return DiscriminatorC(
-            id: self.id,
-            name: self.name,
-            date: self.date
+    public func clone() -> UnionInternalRectangle {
+        return UnionInternalRectangle(
+        width: self.width,
+        height: self.height
         )
+    }
+}
+
+public struct UnionInternalCircle: ArriClientModel {
+    let shape: String = "circle"
+    public var radius: Float64 = 0.0
+    public init(
+    radius: Float64
+    ) {
+        self.radius = radius
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.radius = json["radius"].double ?? 0.0
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"shape\":\"circle\""
+        __json += ",\"radius\":"
+        __json += "\(self.radius)"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "shape", value: "circle"))
+        __queryParts.append(URLQueryItem(name: "radius", value: "\(self.radius)"))
+        return __queryParts
+    }
+    public func clone() -> UnionInternalCircle {
+        return UnionInternalCircle(
+        radius: self.radius
+        )
+    }
+}
+
+public enum UnionAdjacent: ArriClientModel {
+    case object(NestedObject)
+    case array([String])
+    case boolean(Bool)
+    case nullableTimestamp(Date?)
+    public init() {
+        self = .object(NestedObject())
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "object":
+                var __variantValue: NestedObject
+                __variantValue = NestedObject(json: json["data"])
+                self = .object(__variantValue)
+                break
+            case "array":
+                var __variantValue: [String]
+                __variantValue = []
+                for __variantValueJsonElement in json["data"].array ?? [] {
+                    var __variantValueJsonElementValue: String
+                    __variantValueJsonElementValue = __variantValueJsonElement.string ?? ""
+                    __variantValue.append(__variantValueJsonElementValue)
+                }
+                self = .array(__variantValue)
+                break
+            case "boolean":
+                var __variantValue: Bool
+                __variantValue = json["data"].bool ?? false
+                self = .boolean(__variantValue)
+                break
+            case "nullable-timestamp":
+                var __variantValue: Date?
+                if json["data"].string != nil {
+                    __variantValue = parseDate(json["data"].string ?? "") ?? Date()
+                }
+                self = .nullableTimestamp(__variantValue)
+                break
+            default:
+                self = .object(NestedObject())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .object(let __variantValue):
+                __json += "\"kind\":\"object\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .array(let __variantValue):
+                __json += "\"kind\":\"array\",\"data\":"
+                __json += "["
+                for (__index, __element) in __variantValue.enumerated() {
+                    if __index > 0 {
+                        __json += ","
+                    }
+                    __json += serializeString(input: __element)
+                }
+                __json += "]"
+                break
+            case .boolean(let __variantValue):
+                __json += "\"kind\":\"boolean\",\"data\":"
+                __json += "\(__variantValue)"
+                break
+            case .nullableTimestamp(let __variantValue):
+                __json += "\"kind\":\"nullable-timestamp\",\"data\":"
+                if __variantValue != nil {
+                    __json += serializeDate(__variantValue!)
+                } else {
+                    __json += "null"
+                }
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionAdjacent.")
+        return []
+    }
+    public func clone() -> UnionAdjacent {
+        switch(self) {
+            case .object(let __variantValue):
+                return .object(__variantValue.clone())
+            case .array(let __variantValue):
+                var __variantValueCloned: [String] = []
+                for __variantValueElement in __variantValue {
+                    __variantValueCloned.append(__variantValueElement)
+                }
+                return .array(__variantValueCloned)
+            case .boolean(let __variantValue):
+                return .boolean(__variantValue)
+            case .nullableTimestamp(let __variantValue):
+                return .nullableTimestamp(__variantValue)
+        }
     }
 }
 
@@ -868,7 +1028,9 @@ public struct ObjectWithOptionalFields: ArriClientModel {
     public var object: NestedObject?
     public var array: [Bool]?
     public var record: Dictionary<String, Bool>?
-    public var discriminator: Discriminator?
+    public var unionExternal: UnionExternal?
+    public var unionInternal: UnionInternal?
+    public var unionAdjacent: UnionAdjacent?
     public var any: JSON?
 
     public init(
@@ -889,7 +1051,9 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         object: NestedObject?,
         array: [Bool]?,
         record: Dictionary<String, Bool>?,
-        discriminator: Discriminator?,
+        unionExternal: UnionExternal?,
+        unionInternal: UnionInternal?,
+        unionAdjacent: UnionAdjacent?,
         any: JSON?
     ) {
         self.string = string
@@ -909,7 +1073,9 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         self.object = object
         self.array = array
         self.record = record
-        self.discriminator = discriminator
+        self.unionExternal = unionExternal
+        self.unionInternal = unionInternal
+        self.unionAdjacent = unionAdjacent
         self.any = any
     }
     public init() {}
@@ -975,8 +1141,14 @@ public struct ObjectWithOptionalFields: ArriClientModel {
                 self.record![__key] = __parsedValue
             }
         }
-        if json["discriminator"].exists() {
-            self.discriminator = Discriminator(json: json["discriminator"])
+        if json["unionExternal"].exists() {
+            self.unionExternal = UnionExternal(json: json["unionExternal"])
+        }
+        if json["unionInternal"].exists() {
+            self.unionInternal = UnionInternal(json: json["unionInternal"])
+        }
+        if json["unionAdjacent"].exists() {
+            self.unionAdjacent = UnionAdjacent(json: json["unionAdjacent"])
         }
         if json["any"].exists() {
             self.any = json["any"]
@@ -1151,12 +1323,28 @@ public struct ObjectWithOptionalFields: ArriClientModel {
             __json += "}"
             __numKeys += 1
         }
-        if self.discriminator != nil {
+        if self.unionExternal != nil {
             if __numKeys > 0 {
                 __json += ","
             }
-            __json += "\"discriminator\":"
-            __json += self.discriminator!.toJSONString()
+            __json += "\"unionExternal\":"
+            __json += self.unionExternal!.toJSONString()
+            __numKeys += 1
+        }
+        if self.unionInternal != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"unionInternal\":"
+            __json += self.unionInternal!.toJSONString()
+            __numKeys += 1
+        }
+        if self.unionAdjacent != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"unionAdjacent\":"
+            __json += self.unionAdjacent!.toJSONString()
             __numKeys += 1
         }
         if self.any != nil {
@@ -1217,7 +1405,9 @@ var __queryParts: [URLQueryItem] = []
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionExternal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionAdjacent.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.")
         return __queryParts
     }
@@ -1254,7 +1444,9 @@ var __queryParts: [URLQueryItem] = []
             object: self.object?.clone(),
             array: __arrayCloned,
             record: __recordCloned,
-            discriminator: self.discriminator?.clone(),
+            unionExternal: self.unionExternal?.clone(),
+            unionInternal: self.unionInternal?.clone(),
+            unionAdjacent: self.unionAdjacent?.clone(),
             any: self.any
         )
     }
@@ -1278,7 +1470,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
     public var object: NestedObject?
     public var array: [Bool]?
     public var record: Dictionary<String, Bool>?
-    public var discriminator: Discriminator?
+    public var unionExternal: UnionExternal?
+    public var unionInternal: UnionInternal?
+    public var unionAdjacent: UnionAdjacent?
     public var any: JSON = JSON(parseJSON: "null")
 
     public init(
@@ -1299,7 +1493,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
         object: NestedObject?,
         array: [Bool]?,
         record: Dictionary<String, Bool>?,
-        discriminator: Discriminator?,
+        unionExternal: UnionExternal?,
+        unionInternal: UnionInternal?,
+        unionAdjacent: UnionAdjacent?,
         any: JSON
     ) {
         self.string = string
@@ -1319,7 +1515,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
         self.object = object
         self.array = array
         self.record = record
-        self.discriminator = discriminator
+        self.unionExternal = unionExternal
+        self.unionInternal = unionInternal
+        self.unionAdjacent = unionAdjacent
         self.any = any
     }
     public init() {}
@@ -1385,8 +1583,14 @@ public struct ObjectWithNullableFields: ArriClientModel {
                 self.record![__key] = __parsedValue
             }
         }
-        if json["discriminator"].dictionary != nil {
-            self.discriminator = Discriminator(json: json["discriminator"])
+        if json["unionExternal"].dictionary != nil {
+            self.unionExternal = UnionExternal(json: json["unionExternal"])
+        }
+        if json["unionInternal"].dictionary != nil {
+            self.unionInternal = UnionInternal(json: json["unionInternal"])
+        }
+        if json["unionAdjacent"].dictionary != nil {
+            self.unionAdjacent = UnionAdjacent(json: json["unionAdjacent"])
         }
         if json["any"].exists() {
             self.any = json["any"]
@@ -1529,9 +1733,21 @@ public struct ObjectWithNullableFields: ArriClientModel {
         } else {
             __json += "null"
         }
-        __json += ",\"discriminator\":"
-        if self.discriminator != nil {
-            __json += self.discriminator!.toJSONString()
+        __json += ",\"unionExternal\":"
+        if self.unionExternal != nil {
+            __json += self.unionExternal!.toJSONString()
+        } else {
+            __json += "null"
+        }
+        __json += ",\"unionInternal\":"
+        if self.unionInternal != nil {
+            __json += self.unionInternal!.toJSONString()
+        } else {
+            __json += "null"
+        }
+        __json += ",\"unionAdjacent\":"
+        if self.unionAdjacent != nil {
+            __json += self.unionAdjacent!.toJSONString()
         } else {
             __json += "null"
         }
@@ -1615,7 +1831,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionExternal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionInternal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionAdjacent.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.")
         return __queryParts
     }
@@ -1652,7 +1870,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
             object: self.object?.clone(),
             array: __arrayCloned,
             record: __recordCloned,
-            discriminator: self.discriminator?.clone(),
+            unionExternal: self.unionExternal?.clone(),
+            unionInternal: self.unionInternal?.clone(),
+            unionAdjacent: self.unionAdjacent?.clone(),
             any: self.any
         )
     }
@@ -1727,5 +1947,262 @@ public final class RecursiveObject: ArriClientModel {
         return 
             lhs.left == rhs.left &&
             lhs.right == rhs.right
+    }
+}
+
+public enum LegacyDiscriminator: ArriClientModel {
+    case a(LegacyDiscriminatorA)
+    case b(LegacyDiscriminatorB)
+    case c(LegacyDiscriminatorC)
+
+    public init() {
+        self = .a(LegacyDiscriminatorA())
+    }
+    public init(json: JSON) {
+        let __tag = json["typeName"].string ?? ""
+        switch (__tag) {
+            case "A":
+                self = .a(LegacyDiscriminatorA(json: json))
+                break
+            case "B":
+                self = .b(LegacyDiscriminatorB(json: json))
+                break
+            case "C":
+                self = .c(LegacyDiscriminatorC(json: json))
+                break
+            default:
+                self = .a(LegacyDiscriminatorA())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .a(let __innerVal):
+                return __innerVal.toJSONString()
+            case .b(let __innerVal):
+                return __innerVal.toJSONString()
+            case .c(let __innerVal):
+                return __innerVal.toJSONString()
+        }        
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .a(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .b(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .c(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> LegacyDiscriminator {
+        switch(self) {
+            case .a(let __innerVal):
+                return .a(__innerVal.clone()) 
+            case .b(let __innerVal):
+                return .b(__innerVal.clone()) 
+            case .c(let __innerVal): 
+                return .c(__innerVal.clone())
+        }
+    }
+}
+
+public struct LegacyDiscriminatorA: ArriClientModel {
+    let typeName: String = "A"
+    public var id: String = ""
+
+    public init(
+        id: String
+    ) {
+        self.id = id
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"typeName\":\"A\""
+        __json += ",\"id\":"
+        __json += serializeString(input: self.id)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "typeName", value: "A"))
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+       return __queryParts
+    }
+    public func clone() -> LegacyDiscriminatorA {
+        return LegacyDiscriminatorA(
+            id: self.id
+        )
+    }
+}
+
+public struct LegacyDiscriminatorB: ArriClientModel {
+    let typeName: String = "B"
+    public var id: String = ""
+    public var name: String = ""
+
+    public init(
+        id: String,
+        name: String
+    ) {
+        self.id = id
+        self.name = name
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+        self.name = json["name"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+    var __json = "{"
+    __json += "\"typeName\":\"B\""
+    __json += ",\"id\":"
+    __json += serializeString(input: self.id)
+    __json += ",\"name\":"
+    __json += serializeString(input: self.name)
+    __json += "}"
+    return __json
+    }
+
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "typeName", value: "B"))
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        __queryParts.append(URLQueryItem(name: "name", value: self.name))
+        return __queryParts
+    }
+    public func clone() -> LegacyDiscriminatorB {
+        return LegacyDiscriminatorB(
+            id: self.id,
+            name: self.name
+        )
+    }
+}
+
+public struct LegacyDiscriminatorC: ArriClientModel {
+    let typeName: String = "C"
+    public var id: String = ""
+    public var name: String = ""
+    public var date: Date = Date()
+
+    public init(
+        id: String,
+        name: String,
+        date: Date
+    ) {
+        self.id = id
+        self.name = name
+        self.date = date
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+        self.name = json["name"].string ?? ""
+        self.date = parseDate(json["date"].string ?? "") ?? Date()
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"typeName\":\"C\""
+        __json += ",\"id\":"
+        __json += serializeString(input: self.id)
+        __json += ",\"name\":"
+        __json += serializeString(input: self.name)
+        __json += ",\"date\":"
+        __json += serializeDate(self.date)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "typeName", value: "C"))
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        __queryParts.append(URLQueryItem(name: "name", value: self.name))
+        __queryParts.append(URLQueryItem(name: "date", value: serializeDate(self.date, withQuotes: false)))
+        return __queryParts
+    }
+    public func clone() -> LegacyDiscriminatorC {
+        return LegacyDiscriminatorC(
+            id: self.id,
+            name: self.name,
+            date: self.date
+        )
     }
 }
