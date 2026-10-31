@@ -180,6 +180,15 @@ arri.Rpc(&app, SayHello, arri.RpcOptions{
 })
 ```
 
+#### GET Requests
+
+Procedures using the GET method receive their params through url query params instead of the request body. Because of this their params must be one of the following:
+
+- A struct where every field is a string, boolean, number, timestamp, or enum. (Fields can be optional or nullable.)
+- An internally tagged union where every variant meets the above requirement. The tag is passed as its own query param. For example: `?shape=rectangle&width=10&height=20`
+
+Arri will panic when registering a GET procedure that doesn't meet these requirements. Use a different HTTP method such as POST if you need to send nested objects, arrays, or other unions.
+
 ### Creating Event Stream Procedures
 
 First create your Event Stream RPC function
