@@ -33,6 +33,24 @@ const referenceDir = path.resolve(__dirname, '../../../../tests/test-files');
 const testFile = (filename: string) =>
     fs.readFileSync(path.resolve(referenceDir, filename), 'utf8');
 
+function assertValidation<T>(
+    validate: (input: unknown) => boolean,
+    inputs: { good: T[]; bad: unknown[] },
+) {
+    const label = (input: unknown) =>
+        JSON.stringify(input, (_, val) =>
+            typeof val === 'bigint' ? `${val}n` : val,
+        );
+    for (const input of inputs.good) {
+        expect(validate(input), `should accept ${label(input)}`).toBe(true);
+    }
+    for (const input of inputs.bad) {
+        expect(validate(input), `should reject ${label(input)}`).toBe(false);
+    }
+}
+
+const nonObjects = [null, undefined, 'hello world', 1, true, []];
+
 describe('Book', () => {
     const targetValue: Book = {
         id: '1',
@@ -66,6 +84,19 @@ describe('Book', () => {
         input.createdAt = new Date('01/01/2001 10:01 AM');
         expect(input).not.toStrictEqual(output);
     });
+    test('Validation', () => {
+        assertValidation($$Book.validate, {
+            good: [targetValue],
+            bad: [
+                ...nonObjects,
+                {},
+                { ...targetValue, id: 1 },
+                { ...targetValue, name: null },
+                { ...targetValue, createdAt: '2001-01-01T16:00:00.000Z' },
+                { ...targetValue, updatedAt: undefined },
+            ],
+        });
+    });
 });
 
 describe('NestedObject', () => {
@@ -95,6 +126,18 @@ describe('NestedObject', () => {
         expect($$NestedObject.toJsonString(specialCharsTargetValue)).toEqual(
             specialCharsJson,
         );
+    });
+    test('Validation', () => {
+        assertValidation($$NestedObject.validate, {
+            good: [noSpecialCharsTargetValue, specialCharsTargetValue],
+            bad: [
+                ...nonObjects,
+                {},
+                { id: '1' },
+                { ...noSpecialCharsTargetValue, id: 1 },
+                { ...noSpecialCharsTargetValue, content: null },
+            ],
+        });
     });
 });
 
@@ -164,6 +207,71 @@ describe('ObjectWithEveryType', () => {
             output2.unionInternal.radius = 100;
         }
         expect(targetValue).not.toStrictEqual(output2);
+    });
+    test('Validation', () => {
+        const withField = (field: keyof ObjectWithEveryType, val: unknown) => ({
+            ...targetValue,
+            [field]: val,
+        });
+        assertValidation($$ObjectWithEveryType.validate, {
+            good: [
+                targetValue,
+                $$ObjectWithEveryType.new(),
+                withField('int8', -128),
+                withField('int8', 127),
+                withField('uint8', 0),
+                withField('uint8', 255),
+                withField('int16', -32768),
+                withField('int16', 32767),
+                withField('uint16', 0),
+                withField('uint16', 65535),
+                withField('int32', -2147483648),
+                withField('int32', 2147483647),
+                withField('uint32', 0),
+                withField('uint32', 4294967295),
+                withField('int64', -9223372036854775808n),
+                withField('int64', 9223372036854775807n),
+                withField('uint64', 0n),
+                withField('uint64', 18446744073709551615n),
+            ],
+            bad: [
+                ...nonObjects,
+                {},
+                withField('string', 1),
+                withField('boolean', 'true'),
+                withField('timestamp', '2001-01-01T16:00:00.000Z'),
+                withField('float32', '1.5'),
+                withField('float64', '1.5'),
+                withField('int8', -129),
+                withField('int8', 128),
+                withField('int8', 1.5),
+                withField('uint8', -1),
+                withField('uint8', 256),
+                withField('int16', -32769),
+                withField('int16', 32768),
+                withField('uint16', -1),
+                withField('uint16', 65536),
+                withField('int32', -2147483649),
+                withField('int32', 2147483648),
+                withField('uint32', -1),
+                withField('uint32', 4294967296),
+                withField('int64', 1),
+                withField('int64', '1'),
+                withField('int64', -9223372036854775809n),
+                withField('int64', 9223372036854775808n),
+                withField('uint64', 1),
+                withField('uint64', '1'),
+                withField('uint64', -1n),
+                withField('uint64', 18446744073709551616n),
+                withField('enum', 'UNKNOWN'),
+                withField('object', { id: '1' }),
+                withField('array', ['true']),
+                withField('record', { A: 'true' }),
+                withField('unionExternal', { type: 'unknown', value: true }),
+                withField('unionInternal', { shape: 'unknown' }),
+                withField('unionAdjacent', { kind: 'unknown', data: true }),
+            ],
+        });
     });
 });
 
@@ -251,6 +359,37 @@ describe('ObjectWithOptionalFields', () => {
             $$ObjectWithOptionalFields.toJsonString(noUndefinedTargetValue),
         ).toEqual(noUndefinedJson);
     });
+    test('Validation', () => {
+        const withField = (
+            field: keyof ObjectWithOptionalFields,
+            val: unknown,
+        ) => ({
+            ...noUndefinedTargetValue,
+            [field]: val,
+        });
+        assertValidation($$ObjectWithOptionalFields.validate, {
+            good: [
+                {},
+                allUndefinedTargetValue,
+                noUndefinedTargetValue,
+                withField('int64', -9223372036854775808n),
+                withField('int64', undefined),
+            ],
+            bad: [
+                // an empty array currently passes since every field is optional and isObject() allows arrays
+                ...nonObjects.filter((input) => !Array.isArray(input)),
+                withField('string', 1),
+                withField('string', null),
+                withField('timestamp', '2001-01-01T16:00:00.000Z'),
+                withField('int8', 128),
+                withField('int64', 1),
+                withField('int64', 9223372036854775808n),
+                withField('uint64', -1n),
+                withField('enum', 'UNKNOWN'),
+                withField('object', {}),
+            ],
+        });
+    });
 });
 
 describe('ObjectWithNullableFields', () => {
@@ -336,6 +475,36 @@ describe('ObjectWithNullableFields', () => {
         expect(
             $$ObjectWithNullableFields.toJsonString(noNullTargetValue),
         ).toEqual(noNullJsonReference);
+    });
+    test('Validation', () => {
+        const withField = (
+            field: keyof ObjectWithNullableFields,
+            val: unknown,
+        ) => ({
+            ...noNullTargetValue,
+            [field]: val,
+        });
+        assertValidation($$ObjectWithNullableFields.validate, {
+            good: [
+                allNullTargetValue,
+                noNullTargetValue,
+                withField('int64', -9223372036854775808n),
+                withField('int64', null),
+            ],
+            bad: [
+                ...nonObjects,
+                {},
+                withField('string', undefined),
+                withField('string', 1),
+                withField('timestamp', '2001-01-01T16:00:00.000Z'),
+                withField('int8', 128),
+                withField('int64', 1),
+                withField('int64', 9223372036854775808n),
+                withField('uint64', -1n),
+                withField('enum', 'UNKNOWN'),
+                withField('object', {}),
+            ],
+        });
     });
 });
 
@@ -585,6 +754,19 @@ describe('RecursiveObject', () => {
         expect($$RecursiveObject.toJsonString(targetValue)).toEqual(
             jsonReference,
         );
+    });
+    test('Validation', () => {
+        assertValidation($$RecursiveObject.validate, {
+            good: [{ left: null, right: null }, targetValue],
+            bad: [
+                ...nonObjects,
+                {},
+                { left: null },
+                { left: 'hello world', right: null },
+                { left: { left: null }, right: null },
+                { left: null, right: { left: null, right: 1 } },
+            ],
+        });
     });
 });
 
