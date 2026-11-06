@@ -183,6 +183,11 @@ type RecursiveObjectWithTimestamp = {
     child: RecursiveObjectWithTimestamp | null;
 };
 
+type RecursiveUnionAdjacent =
+    | { kind: 'child'; data: RecursiveUnionAdjacent }
+    | { kind: 'children'; data: RecursiveUnionAdjacent[] }
+    | { kind: 'text'; data: string };
+
 export const validationTestSuites: Record<
     string,
     {
@@ -421,6 +426,45 @@ export const validationTestSuites: Record<
                 date: new Date(),
                 child: { date: 'hello world', child: null },
             },
+        ],
+    },
+    'recursive adjacently tagged union': {
+        schema: a.recursive<RecursiveUnionAdjacent>(
+            'RecursiveUnionAdjacent',
+            (self) =>
+                a.union(
+                    {
+                        child: self,
+                        children: a.array(self),
+                        text: a.string(),
+                    },
+                    { tagKey: 'kind', valueKey: 'data' },
+                ),
+        ),
+        goodInputs: [
+            { kind: 'text', data: 'hello world' },
+            { kind: 'child', data: { kind: 'text', data: 'hello world' } },
+            {
+                kind: 'children',
+                data: [
+                    { kind: 'text', data: 'hello world' },
+                    {
+                        kind: 'child',
+                        data: {
+                            kind: 'children',
+                            data: [{ kind: 'text', data: 'hello world' }],
+                        },
+                    },
+                ],
+            },
+        ],
+        badInputs: [
+            {},
+            { kind: 'unknown', data: 'hello world' },
+            { kind: 'text', data: 1 },
+            { kind: 'child', data: { kind: 'unknown', data: 'hello world' } },
+            { kind: 'child', data: { kind: 'text', data: 1 } },
+            { kind: 'children', data: [{ kind: 'text', data: 1 }] },
         ],
     },
     'simple object': {

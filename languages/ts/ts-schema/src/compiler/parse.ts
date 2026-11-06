@@ -799,7 +799,7 @@ export function unionTemplateInternallyTaggedWithValueKey(
         const parsingParts: string[] = [];
         const unionKeys = Object.keys(input.schema.union);
         parsingParts.push(`${targetName} = {};`);
-        parsingParts.push(`switch (${input.val}[\`${tagKey}\`]) {`);
+        parsingParts.push(`switch (${inputName}[\`${tagKey}\`]) {`);
         for (let i = 0; i < unionKeys.length; i++) {
             const key = unionKeys[i]!;
             const variantSchema = input.schema.union[key]!;
