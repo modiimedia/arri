@@ -11,6 +11,7 @@ import { manualRouter, manualTestService } from './routes/other';
 
 const app = new ArriApp({
     rpcRoutePrefix: 'rpcs',
+    strictValidatorCompilation: true,
     appInfo: {
         version: '10',
     },

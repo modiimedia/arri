@@ -1,4 +1,5 @@
 import { a } from '@arrirpc/schema';
+import type { MockInstance } from 'vitest';
 
 import { ArriApp } from './app';
 import { defineEventStreamRpc } from './eventStreamRpc';
@@ -133,5 +134,142 @@ describe('union params on GET procedures', () => {
         expect(() => rpc('adjacent', 'post', Adjacent)).not.toThrow();
         expect(() => stream('external', 'post', External)).not.toThrow();
         expect(() => stream('external', undefined, External)).not.toThrow();
+    });
+});
+
+describe('validator compilation failures', () => {
+    const Params = a.object({ id: a.string() });
+    let warn: MockInstance;
+    beforeEach(() => {
+        vi.resetModules();
+        warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    async function setup() {
+        const { getSchemaValidator } = await import('./rpc');
+        const { a: schema } = await import('@arrirpc/schema');
+        return { getSchemaValidator, compile: vi.spyOn(schema, 'compile') };
+    }
+    function errorNamed(name: string) {
+        const err = new Error('compilation failed');
+        err.name = name;
+        return err;
+    }
+
+    it('only falls back for the failing rpc when the generated code is invalid', async () => {
+        const { getSchemaValidator, compile } = await setup();
+        compile.mockImplementationOnce(() => {
+            throw new SyntaxError('Invalid left-hand side in assignment');
+        });
+        const failing = getSchemaValidator('failing', 'params', Params)!;
+        expect(failing.parse({ id: '1' }).success).toBe(true);
+        expect(failing.parse({ id: 1 }).success).toBe(false);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(warn.mock.calls[0]![0]).toContain('failing');
+        expect(warn.mock.calls[0]![0]).toContain(
+            'Invalid left-hand side in assignment',
+        );
+
+        getSchemaValidator('other', 'params', Params);
+        expect(compile).toHaveBeenCalledTimes(2);
+        expect(warn).toHaveBeenCalledTimes(1);
+    });
+    it('stops compiling and warns once when the runtime blocks code generation', async () => {
+        const { getSchemaValidator, compile } = await setup();
+        compile.mockImplementation(() => {
+            throw new EvalError(
+                'Code generation from strings disallowed for this context',
+            );
+        });
+        const first = getSchemaValidator('first', 'params', Params)!;
+        const second = getSchemaValidator('second', 'params', Params)!;
+        const third = getSchemaValidator('third', 'response', Params)!;
+        expect(compile).toHaveBeenCalledTimes(1);
+        expect(warn).toHaveBeenCalledTimes(1);
+        for (const validator of [first, second, third]) {
+            expect(validator.parse({ id: '1' }).success).toBe(true);
+            expect(validator.parse({ id: 1 }).success).toBe(false);
+        }
+    });
+    it('detects blocked code generation by name since errors can come from another realm', async () => {
+        const { getSchemaValidator, compile } = await setup();
+        compile.mockImplementation(() => {
+            throw errorNamed('EvalError');
+        });
+        getSchemaValidator('first', 'params', Params);
+        getSchemaValidator('second', 'params', Params);
+        expect(compile).toHaveBeenCalledTimes(1);
+    });
+    it('falls back for each rpc when a runtime blocks code generation with another error', async () => {
+        const { getSchemaValidator, compile } = await setup();
+        compile.mockImplementation(() => {
+            throw new Error('Dynamic code evaluation is not allowed');
+        });
+        const validator = getSchemaValidator('first', 'params', Params)!;
+        getSchemaValidator('second', 'params', Params);
+        expect(validator.parse({ id: '1' }).success).toBe(true);
+        expect(compile).toHaveBeenCalledTimes(2);
+        expect(warn).toHaveBeenCalledTimes(2);
+    });
+
+    describe('strictValidatorCompilation', () => {
+        const strict = { strictValidatorCompilation: true };
+
+        it('throws when compilation fails', async () => {
+            const { getSchemaValidator, compile } = await setup();
+            compile.mockImplementation(() => {
+                throw new SyntaxError('Invalid left-hand side in assignment');
+            });
+            expect(() =>
+                getSchemaValidator('failing', 'params', Params, strict),
+            ).toThrow(/failing.*Invalid left-hand side in assignment/);
+            expect(warn).not.toHaveBeenCalled();
+        });
+        it('does not throw when the runtime blocks code generation', async () => {
+            const { getSchemaValidator, compile } = await setup();
+            compile.mockImplementation(() => {
+                throw new EvalError(
+                    'Code generation from strings disallowed for this context',
+                );
+            });
+            const validator = getSchemaValidator(
+                'first',
+                'params',
+                Params,
+                strict,
+            )!;
+            expect(validator.parse({ id: '1' }).success).toBe(true);
+            expect(warn).toHaveBeenCalledTimes(1);
+        });
+        it('is passed through from ArriApp', () => {
+            vi.spyOn(a, 'compile').mockImplementation(() => {
+                throw new SyntaxError('Invalid left-hand side in assignment');
+            });
+            const rpc = defineRpc({
+                params: Params,
+                response: undefined,
+                handler() {},
+            });
+            expect(() =>
+                new ArriApp({ strictValidatorCompilation: true }).rpc(
+                    'failing',
+                    rpc,
+                ),
+            ).toThrow(/failing/);
+            expect(() =>
+                new ArriApp({ strictValidatorCompilation: true }).rpc(
+                    'failing',
+                    defineEventStreamRpc({
+                        params: Params,
+                        response: Params,
+                        handler() {},
+                    }),
+                ),
+            ).toThrow(/failing/);
+            expect(() => new ArriApp().rpc('failing', rpc)).not.toThrow();
+        });
     });
 });

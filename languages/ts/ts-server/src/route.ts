@@ -80,6 +80,7 @@ export type RouteOptions = Pick<
     | 'onRequest'
     | 'debug'
     | 'heartbeatMs'
+    | 'strictValidatorCompilation'
 > & { middleware: Middleware[] };
 
 export function registerRoute(

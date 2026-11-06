@@ -71,6 +71,7 @@ export class ArriApp {
     private readonly _onBeforeResponse: ArriOptions['onBeforeResponse'];
     private readonly _onError: ArriOptions['onError'];
     private readonly _debug: boolean;
+    private readonly _strictValidatorCompilation: boolean;
     readonly definitionPath: string;
 
     private readonly _heartbeatMs: number;
@@ -81,6 +82,8 @@ export class ArriApp {
             debug: opts?.debug,
         });
         this._debug = opts.debug ?? false;
+        this._strictValidatorCompilation =
+            opts.strictValidatorCompilation ?? false;
         this._onRequest = opts.onRequest;
         this._onError = opts.onError;
         this._onAfterResponse = opts.onAfterResponse;
@@ -230,6 +233,8 @@ export class ArriApp {
                     onBeforeResponse: this._onBeforeResponse,
                     debug: this._debug,
                     heartbeatMs: this._heartbeatMs,
+                    strictValidatorCompilation:
+                        this._strictValidatorCompilation,
                 });
                 return;
             }
@@ -240,6 +245,7 @@ export class ArriApp {
                 onAfterResponse: this._onAfterResponse,
                 onBeforeResponse: this._onBeforeResponse,
                 debug: this._debug,
+                strictValidatorCompilation: this._strictValidatorCompilation,
             });
             return;
         }
@@ -427,6 +433,14 @@ export interface ArriOptions {
     disableDefaultRoute?: boolean;
     disableDefinitionRoute?: boolean;
     heartbeatMs?: number;
+    /**
+     * Procedures use compiled validators when possible. By default, if a validator fails to compile
+     * a warning is logged and that procedure falls back to the slower runtime validator.
+     * When this is enabled the failure is thrown instead, which stops the server from starting.
+     *
+     * Runtimes that don't allow code generation are not affected by this option. They will always use runtime validators.
+     */
+    strictValidatorCompilation?: boolean;
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
     onAfterResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;
