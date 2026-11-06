@@ -1,4 +1,4 @@
-import { AppDefinition, SchemaFormUnion } from '@arrirpc/codegen-utils';
+import { AppDefinition, Schema, SchemaFormUnion } from '@arrirpc/codegen-utils';
 import fs from 'fs';
 import path from 'pathe';
 import { beforeAll, describe, expect, test } from 'vitest';
@@ -38,6 +38,16 @@ const AdjacentKebabCase: SchemaFormUnion = {
     metadata: { id: 'AdjacentKebabCase' },
 };
 
+const ObjectKebabCase: Schema = {
+    properties: {
+        'display-name': { type: 'string' },
+    },
+    optionalProperties: {
+        'email-address': { type: 'string' },
+    },
+    metadata: { id: 'ObjectKebabCase' },
+};
+
 const appDef: AppDefinition = {
     schemaVersion: '0.0.8',
     procedures: {},
@@ -45,6 +55,7 @@ const appDef: AppDefinition = {
         InternalSnakeCase,
         AdjacentSnakeCase,
         AdjacentKebabCase,
+        ObjectKebabCase,
     },
 };
 
@@ -159,3 +170,21 @@ for (const { name, tagKey, valueKey } of [
         });
     });
 }
+
+describe('object with kebab-case keys', () => {
+    const json = '{"display-name":"john","email-address":"john@example.com"}';
+    const value = { displayName: 'john', emailAddress: 'john@example.com' };
+    test('JSON parsing', () => {
+        expect(client.$$ObjectKebabCase.fromJsonString(json)).toStrictEqual(
+            value,
+        );
+    });
+    test('JSON parsing with omitted optional property', () => {
+        expect(
+            client.$$ObjectKebabCase.fromJsonString('{"display-name":"john"}'),
+        ).toStrictEqual({ displayName: 'john', emailAddress: undefined });
+    });
+    test('JSON output', () => {
+        expect(client.$$ObjectKebabCase.toJsonString(value)).toBe(json);
+    });
+});
