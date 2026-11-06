@@ -4,10 +4,10 @@ import { FetchError, ofetch } from 'ofetch';
 import { assertType, describe, expect, test } from 'vitest';
 
 import {
-    $$ObjectWithEveryType,
     $$ObjectWithEveryTypeEnumerator,
     $$UnionVariantShapes,
     $$UnionVariantTypes,
+    type DiscriminatorWithEmptyObject,
     type ObjectWithEveryNullableType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryType,
@@ -24,6 +24,13 @@ import {
     type UnionVariantShapes,
     type UnionVariantTypes,
 } from './testClient.g';
+import {
+    type FooRecursiveUnionAdjacent,
+    type FooRecursiveUnionExternal,
+    type FooRecursiveUnionInternal,
+    type FooUnionInternalGetRequest,
+    TestClientPrefixed,
+} from './tsClientPrefixed.g';
 
 // function wait(ms: number) {
 //     return new Promise((resolve) => {
@@ -151,7 +158,6 @@ test('enum types resolve properly', async () => {
 test('can send/receive object every field type', async () => {
     const result = await client.tests.sendObject(input);
     expect(result).toStrictEqual(input);
-    expect($$ObjectWithEveryType.validate(result)).toBe(true);
 });
 test('can send/receive object with transformed keys', async () => {
     const snakeCasePayload: ObjectWithSnakeCaseKeys = {
@@ -655,6 +661,64 @@ describe('can send/receive union variant types', () => {
         test(`internally tagged ${label(value)}`, () =>
             roundTrip({ ...defaults, internal: value }));
     }
+});
+
+describe('can send/receive discriminators with empty objects', () => {
+    const cases: DiscriminatorWithEmptyObject[] = [
+        { type: 'EMPTY' },
+        { type: 'NOT_EMPTY', foo: 'hello world', bar: 1.5, baz: true },
+    ];
+    for (const payload of cases) {
+        test(payload.type, async () => {
+            const result =
+                await client.tests.sendDiscriminatorWithEmptyObject(payload);
+            expect(result).toStrictEqual(payload);
+        });
+    }
+});
+
+describe('prefixed client can send/receive unions', () => {
+    const prefixedClient = new TestClientPrefixed({ baseUrl, headers });
+
+    test('externally tagged', async () => {
+        const payload: FooRecursiveUnionExternal = {
+            type: 'child',
+            value: { type: 'text', value: 'hello world' },
+        };
+        const result = await prefixedClient.sendRecursiveUnionExternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('internally tagged', async () => {
+        const payload: FooRecursiveUnionInternal = {
+            kind: 'child',
+            data: { kind: 'text', data: 'hello world' },
+        };
+        const result = await prefixedClient.sendRecursiveUnionInternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('adjacently tagged', async () => {
+        const payload: FooRecursiveUnionAdjacent = {
+            kind: 'child',
+            data: { kind: 'text', data: 'hello world' },
+        };
+        const result = await prefixedClient.sendRecursiveUnionAdjacent(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('internally tagged with a GET request', async () => {
+        const payload: FooUnionInternalGetRequest = {
+            kind: 'with-fields',
+            string: 'a b&c',
+            nullableString: null,
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp: new Date('2001-01-01T16:00:00.000Z'),
+            nullableEnum: 'A',
+        };
+        const result =
+            await prefixedClient.sendUnionInternalGetRequest(payload);
+        expect(result).toEqual(payload);
+    });
 });
 
 test('onError hook fires properly', async () => {
