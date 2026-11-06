@@ -24,6 +24,7 @@ export const ObjectWithEveryType = a.object('ObjectWithEveryType', {
         timestamp: a.timestamp(),
     }),
     record: a.record(a.uint64()),
+
     /**
      * @deprecated
      */
@@ -36,15 +37,42 @@ export const ObjectWithEveryType = a.object('ObjectWithEveryType', {
             description: a.string(),
         }),
     }),
-    union: a.union({
-        A: a.object({
-            title: a.string(),
-            description: a.string(),
+    unionExternal: a.union({
+        object: a.object({
+            id: a.string(),
+            content: a.string(),
         }),
-        B: a.stringEnum(['A', 'B', 'C']),
-        C: a.nullable(a.timestamp()),
-        D: a.record(a.boolean()),
+        array: a.array(a.string()),
+        boolean: a.boolean(),
+        'nullable-timestamp': a.nullable(a.timestamp()),
     }),
+    unionInternal: a.union(
+        {
+            rectangle: a.object({
+                width: a.float64(),
+                height: a.float64(),
+            }),
+            circle: a.object({
+                radius: a.float64(),
+            }),
+        },
+        { tagKey: 'shape' },
+    ),
+    unionAdjacent: a.union(
+        {
+            object: a.object({
+                id: a.string(),
+                content: a.string(),
+            }),
+            array: a.array(a.string()),
+            boolean: a.boolean(),
+            'nullable-timestamp': a.nullable(a.timestamp()),
+        },
+        {
+            tagKey: 'kind',
+            valueKey: 'data',
+        },
+    ),
     nestedObject: a.object({
         id: a.string(),
         timestamp: a.timestamp(),

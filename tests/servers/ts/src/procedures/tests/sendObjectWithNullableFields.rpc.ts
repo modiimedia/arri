@@ -40,16 +40,47 @@ export const ObjectWithEveryNullableType = a.object(
                 }),
             }),
         ),
-        union: a.nullable(
+        unionExternal: a.nullable(
             a.union({
-                A: a.object({
-                    title: a.string(),
-                    description: a.string(),
+                object: a.object({
+                    id: a.string(),
+                    content: a.string(),
                 }),
-                B: a.stringEnum(['A', 'B', 'C']),
-                C: a.nullable(a.timestamp()),
-                D: a.record(a.boolean()),
+                array: a.array(a.string()),
+                boolean: a.boolean(),
+                'nullable-timestamp': a.nullable(a.timestamp()),
             }),
+        ),
+        unionInternal: a.nullable(
+            a.union(
+                {
+                    rectangle: a.object({
+                        width: a.float64(),
+                        height: a.float64(),
+                    }),
+                    circle: a.object({
+                        radius: a.float64(),
+                    }),
+                },
+                { tagKey: 'shape' },
+            ),
+        ),
+        unionAdjacent: a.nullable(
+            a.union(
+                {
+                    object: a.object({
+                        id: a.string(),
+                        content: a.string(),
+                    }),
+                    array: a.array(a.string()),
+                    boolean: a.boolean(),
+                    'nullable-timestamp': a.nullable(a.timestamp()),
+                },
+                {
+                    tagKey: 'kind',
+                    valueKey: 'data',
+                },
+            ),
         ),
         nestedObject: a.nullable(
             a.object({

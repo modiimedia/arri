@@ -910,7 +910,9 @@ pub struct ObjectWithEveryType {
     pub object: ObjectWithEveryTypeObject,
     pub record: BTreeMap<String, u64>,
     pub discriminator: ObjectWithEveryTypeDiscriminator,
-    pub r#union: serde_json::Value,
+    pub union_external: ObjectWithEveryTypeUnionExternal,
+    pub union_internal: ObjectWithEveryTypeUnionInternal,
+    pub union_adjacent: ObjectWithEveryTypeUnionAdjacent,
     pub nested_object: ObjectWithEveryTypeNestedObject,
     pub nested_array: Vec<Vec<ObjectWithEveryTypeNestedArrayElementElement>>,
 }
@@ -937,7 +939,9 @@ impl ArriModel for ObjectWithEveryType {
             object: ObjectWithEveryTypeObject::new(),
             record: BTreeMap::new(),
             discriminator: ObjectWithEveryTypeDiscriminator::new(),
-            r#union: serde_json::Value::Null,
+            union_external: ObjectWithEveryTypeUnionExternal::new(),
+            union_internal: ObjectWithEveryTypeUnionInternal::new(),
+            union_adjacent: ObjectWithEveryTypeUnionAdjacent::new(),
             nested_object: ObjectWithEveryTypeNestedObject::new(),
             nested_array: Vec::new(),
         }
@@ -1078,9 +1082,38 @@ impl ArriModel for ObjectWithEveryType {
                     },
                     _ => ObjectWithEveryTypeDiscriminator::new(),
                 };
-                let r#union = match _val_.get("union") {
-                    Some(union_val) => union_val.to_owned(),
-                    _ => serde_json::Value::Null,
+                let union_external = match _val_.get("unionExternal") {
+                    Some(union_external_val) => match union_external_val {
+                        serde_json::Value::Object(_) => {
+                            ObjectWithEveryTypeUnionExternal::from_json(
+                                union_external_val.to_owned(),
+                            )
+                        }
+                        _ => ObjectWithEveryTypeUnionExternal::new(),
+                    },
+                    _ => ObjectWithEveryTypeUnionExternal::new(),
+                };
+                let union_internal = match _val_.get("unionInternal") {
+                    Some(union_internal_val) => match union_internal_val {
+                        serde_json::Value::Object(_) => {
+                            ObjectWithEveryTypeUnionInternal::from_json(
+                                union_internal_val.to_owned(),
+                            )
+                        }
+                        _ => ObjectWithEveryTypeUnionInternal::new(),
+                    },
+                    _ => ObjectWithEveryTypeUnionInternal::new(),
+                };
+                let union_adjacent = match _val_.get("unionAdjacent") {
+                    Some(union_adjacent_val) => match union_adjacent_val {
+                        serde_json::Value::Object(_) => {
+                            ObjectWithEveryTypeUnionAdjacent::from_json(
+                                union_adjacent_val.to_owned(),
+                            )
+                        }
+                        _ => ObjectWithEveryTypeUnionAdjacent::new(),
+                    },
+                    _ => ObjectWithEveryTypeUnionAdjacent::new(),
                 };
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => {
@@ -1132,7 +1165,9 @@ impl ArriModel for ObjectWithEveryType {
                     object,
                     record,
                     discriminator,
-                    r#union,
+                    union_external,
+                    union_internal,
+                    union_adjacent,
                     nested_object,
                     nested_array,
                 }
@@ -1206,12 +1241,12 @@ impl ArriModel for ObjectWithEveryType {
         _json_output_.push('}');
         _json_output_.push_str(",\"discriminator\":");
         _json_output_.push_str(&self.discriminator.to_json_string().as_str());
-        _json_output_.push_str(",\"union\":");
-        _json_output_.push_str(
-            serde_json::to_string(&self.r#union)
-                .unwrap_or("null".to_string())
-                .as_str(),
-        );
+        _json_output_.push_str(",\"unionExternal\":");
+        _json_output_.push_str(&self.union_external.to_json_string().as_str());
+        _json_output_.push_str(",\"unionInternal\":");
+        _json_output_.push_str(&self.union_internal.to_json_string().as_str());
+        _json_output_.push_str(",\"unionAdjacent\":");
+        _json_output_.push_str(&self.union_adjacent.to_json_string().as_str());
         _json_output_.push_str(",\"nestedObject\":");
         _json_output_.push_str(&self.nested_object.to_json_string().as_str());
         _json_output_.push_str(",\"nestedArray\":");
@@ -1257,7 +1292,9 @@ impl ArriModel for ObjectWithEveryType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator.");
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/union.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionExternal.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/nestedArray.");
         _query_parts_.join("&")
@@ -1452,6 +1489,466 @@ impl ArriModel for ObjectWithEveryTypeDiscriminator {
                 _query_parts_.push(format!("description={}", description));
             }
         }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryTypeUnionExternal {
+    Object(ObjectWithEveryTypeUnionExternalObjectValue),
+    Array(Vec<String>),
+    Boolean(bool),
+    NullableTimestamp(Option<DateTime<FixedOffset>>),
+}
+
+impl ArriModel for ObjectWithEveryTypeUnionExternal {
+    fn new() -> Self {
+        Self::Object(ObjectWithEveryTypeUnionExternalObjectValue::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("object") {
+                    let value = match _val_.get("object") {
+                        Some(value_val) => ObjectWithEveryTypeUnionExternalObjectValue::from_json(
+                            value_val.to_owned(),
+                        ),
+                        _ => ObjectWithEveryTypeUnionExternalObjectValue::new(),
+                    };
+                    return Self::Object(value);
+                }
+                if _val_.contains_key("array") {
+                    let value = match _val_.get("array") {
+                        Some(serde_json::Value::Array(value_val)) => {
+                            let mut value_val_result: Vec<String> = Vec::new();
+                            for value_val_element in value_val {
+                                value_val_result.push(match Some(value_val_element) {
+                                    Some(serde_json::Value::String(value_val_element_val)) => {
+                                        value_val_element_val.to_owned()
+                                    }
+                                    _ => "".to_string(),
+                                });
+                            }
+                            value_val_result
+                        }
+                        _ => Vec::new(),
+                    };
+                    return Self::Array(value);
+                }
+                if _val_.contains_key("boolean") {
+                    let value = match _val_.get("boolean") {
+                        Some(serde_json::Value::Bool(value_val)) => value_val.to_owned(),
+                        _ => false,
+                    };
+                    return Self::Boolean(value);
+                }
+                if _val_.contains_key("nullable-timestamp") {
+                    let value = match _val_.get("nullable-timestamp") {
+                        Some(serde_json::Value::String(value_val)) => {
+                            match DateTime::<FixedOffset>::parse_from_rfc3339(value_val) {
+                                Ok(value_val_result) => Some(value_val_result),
+                                Err(_) => None,
+                            }
+                        }
+                        _ => None,
+                    };
+                    return Self::NullableTimestamp(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Object(value) => {
+                _json_output_.push_str("\"object\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::Array(value) => {
+                _json_output_.push_str("\"array\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in value.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(serialize_string(_element_).as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Boolean(value) => {
+                _json_output_.push_str("\"boolean\":");
+                _json_output_.push_str(value.to_string().as_str());
+            }
+            Self::NullableTimestamp(value) => {
+                _json_output_.push_str("\"nullable-timestamp\":");
+                match value {
+                    Some(value_val) => {
+                        _json_output_.push_str(serialize_date_time(value_val, true).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping ObjectWithEveryTypeUnionExternal.");
+        "".to_string()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithEveryTypeUnionExternalObjectValue {
+    pub id: String,
+    pub content: String,
+}
+
+impl ArriModel for ObjectWithEveryTypeUnionExternalObjectValue {
+    fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            content: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                let content = match _val_.get("content") {
+                    Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { id, content }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(",\"content\":");
+        _json_output_.push_str(serialize_string(&self.content).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryTypeUnionInternal {
+    Rectangle { width: f64, height: f64 },
+    Circle { radius: f64 },
+}
+
+impl ArriModel for ObjectWithEveryTypeUnionInternal {
+    fn new() -> Self {
+        Self::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let shape = match _val_.get("shape") {
+                    Some(serde_json::Value::String(shape_val)) => shape_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match shape.as_str() {
+                    "rectangle" => {
+                        let width = match _val_.get("width") {
+                            Some(serde_json::Value::Number(width_val)) => {
+                                width_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        let height = match _val_.get("height") {
+                            Some(serde_json::Value::Number(height_val)) => {
+                                height_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        Self::Rectangle { width, height }
+                    }
+                    "circle" => {
+                        let radius = match _val_.get("radius") {
+                            Some(serde_json::Value::Number(radius_val)) => {
+                                radius_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        Self::Circle { radius }
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Rectangle { width, height } => {
+                _json_output_.push_str("\"shape\":\"rectangle\"");
+                _json_output_.push_str(",\"width\":");
+                _json_output_.push_str(width.to_string().as_str());
+                _json_output_.push_str(",\"height\":");
+                _json_output_.push_str(height.to_string().as_str());
+            }
+            Self::Circle { radius } => {
+                _json_output_.push_str("\"shape\":\"circle\"");
+                _json_output_.push_str(",\"radius\":");
+                _json_output_.push_str(radius.to_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::Rectangle { width, height } => {
+                _query_parts_.push(format!("shape=rectangle"));
+                _query_parts_.push(format!("width={}", width));
+                _query_parts_.push(format!("height={}", height));
+            }
+            Self::Circle { radius } => {
+                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push(format!("radius={}", radius));
+            }
+        }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryTypeUnionAdjacent {
+    Object(ObjectWithEveryTypeUnionAdjacentObjectData),
+    Array(Vec<String>),
+    Boolean(bool),
+    NullableTimestamp(Option<DateTime<FixedOffset>>),
+}
+
+impl ArriModel for ObjectWithEveryTypeUnionAdjacent {
+    fn new() -> Self {
+        Self::Object(ObjectWithEveryTypeUnionAdjacentObjectData::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let kind = match _val_.get("kind") {
+                    Some(serde_json::Value::String(kind_val)) => kind_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match kind.as_str() {
+                    "object" => {
+                        let data = match _val_.get("data") {
+                            Some(data_val) => {
+                                ObjectWithEveryTypeUnionAdjacentObjectData::from_json(
+                                    data_val.to_owned(),
+                                )
+                            }
+                            _ => ObjectWithEveryTypeUnionAdjacentObjectData::new(),
+                        };
+                        Self::Object(data)
+                    }
+                    "array" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Array(data_val)) => {
+                                let mut data_val_result: Vec<String> = Vec::new();
+                                for data_val_element in data_val {
+                                    data_val_result.push(match Some(data_val_element) {
+                                        Some(serde_json::Value::String(data_val_element_val)) => {
+                                            data_val_element_val.to_owned()
+                                        }
+                                        _ => "".to_string(),
+                                    });
+                                }
+                                data_val_result
+                            }
+                            _ => Vec::new(),
+                        };
+                        Self::Array(data)
+                    }
+                    "boolean" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Bool(data_val)) => data_val.to_owned(),
+                            _ => false,
+                        };
+                        Self::Boolean(data)
+                    }
+                    "nullable-timestamp" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::String(data_val)) => {
+                                match DateTime::<FixedOffset>::parse_from_rfc3339(data_val) {
+                                    Ok(data_val_result) => Some(data_val_result),
+                                    Err(_) => None,
+                                }
+                            }
+                            _ => None,
+                        };
+                        Self::NullableTimestamp(data)
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Object(data) => {
+                _json_output_.push_str("\"kind\":\"object\",\"data\":");
+                _json_output_.push_str(data.to_json_string().as_str());
+            }
+            Self::Array(data) => {
+                _json_output_.push_str("\"kind\":\"array\",\"data\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in data.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(serialize_string(_element_).as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Boolean(data) => {
+                _json_output_.push_str("\"kind\":\"boolean\",\"data\":");
+                _json_output_.push_str(data.to_string().as_str());
+            }
+            Self::NullableTimestamp(data) => {
+                _json_output_.push_str("\"kind\":\"nullable-timestamp\",\"data\":");
+                match data {
+                    Some(data_val) => {
+                        _json_output_.push_str(serialize_date_time(data_val, true).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping ObjectWithEveryTypeUnionAdjacent.");
+        "".to_string()
+    }
+}
+
+impl ObjectWithEveryTypeUnionAdjacent {
+    pub fn kind(&self) -> &'static str {
+        match &self {
+            Self::Object(_) => "object",
+            Self::Array(_) => "array",
+            Self::Boolean(_) => "boolean",
+            Self::NullableTimestamp(_) => "nullable-timestamp",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithEveryTypeUnionAdjacentObjectData {
+    pub id: String,
+    pub content: String,
+}
+
+impl ArriModel for ObjectWithEveryTypeUnionAdjacentObjectData {
+    fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            content: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                let content = match _val_.get("content") {
+                    Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { id, content }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(",\"content\":");
+        _json_output_.push_str(serialize_string(&self.content).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("content={}", &self.content));
         _query_parts_.join("&")
     }
 }
@@ -1743,7 +2240,9 @@ pub struct ObjectWithEveryNullableType {
     pub object: Option<ObjectWithEveryNullableTypeObject>,
     pub record: Option<BTreeMap<String, Option<u64>>>,
     pub discriminator: Option<ObjectWithEveryNullableTypeDiscriminator>,
-    pub r#union: serde_json::Value,
+    pub union_external: Option<ObjectWithEveryNullableTypeUnionExternal>,
+    pub union_internal: Option<ObjectWithEveryNullableTypeUnionInternal>,
+    pub union_adjacent: Option<ObjectWithEveryNullableTypeUnionAdjacent>,
     pub nested_object: Option<ObjectWithEveryNullableTypeNestedObject>,
     pub nested_array:
         Option<Vec<Option<Vec<Option<ObjectWithEveryNullableTypeNestedArrayElementElement>>>>>,
@@ -1771,7 +2270,9 @@ impl ArriModel for ObjectWithEveryNullableType {
             object: None,
             record: None,
             discriminator: None,
-            r#union: serde_json::Value::Null,
+            union_external: None,
+            union_internal: None,
+            union_adjacent: None,
             nested_object: None,
             nested_array: None,
         }
@@ -1954,9 +2455,38 @@ impl ArriModel for ObjectWithEveryNullableType {
                     },
                     _ => None,
                 };
-                let r#union = match _val_.get("union") {
-                    Some(union_val) => union_val.to_owned(),
-                    _ => serde_json::Value::Null,
+                let union_external = match _val_.get("unionExternal") {
+                    Some(union_external_val) => match union_external_val {
+                        serde_json::Value::Object(_) => {
+                            Some(ObjectWithEveryNullableTypeUnionExternal::from_json(
+                                union_external_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let union_internal = match _val_.get("unionInternal") {
+                    Some(union_internal_val) => match union_internal_val {
+                        serde_json::Value::Object(_) => {
+                            Some(ObjectWithEveryNullableTypeUnionInternal::from_json(
+                                union_internal_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let union_adjacent = match _val_.get("unionAdjacent") {
+                    Some(union_adjacent_val) => match union_adjacent_val {
+                        serde_json::Value::Object(_) => {
+                            Some(ObjectWithEveryNullableTypeUnionAdjacent::from_json(
+                                union_adjacent_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
                 };
                 let nested_object = match _val_.get("nestedObject") {
                     Some(nested_object_val) => match nested_object_val {
@@ -2020,7 +2550,9 @@ impl ArriModel for ObjectWithEveryNullableType {
                     object,
                     record,
                     discriminator,
-                    r#union,
+                    union_external,
+                    union_internal,
+                    union_adjacent,
                     nested_object,
                     nested_array,
                 }
@@ -2234,12 +2766,33 @@ impl ArriModel for ObjectWithEveryNullableType {
                 _json_output_.push_str("null");
             }
         };
-        _json_output_.push_str(",\"union\":");
-        _json_output_.push_str(
-            serde_json::to_string(&self.r#union)
-                .unwrap_or("null".to_string())
-                .as_str(),
-        );
+        _json_output_.push_str(",\"unionExternal\":");
+        match &self.union_external {
+            Some(union_external_val) => {
+                _json_output_.push_str(union_external_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"unionInternal\":");
+        match &self.union_internal {
+            Some(union_internal_val) => {
+                _json_output_.push_str(union_internal_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"unionAdjacent\":");
+        match &self.union_adjacent {
+            Some(union_adjacent_val) => {
+                _json_output_.push_str(union_adjacent_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
         _json_output_.push_str(",\"nestedObject\":");
         match &self.nested_object {
             Some(nested_object_val) => {
@@ -2412,7 +2965,9 @@ impl ArriModel for ObjectWithEveryNullableType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/record.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.");
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryNullableType/union.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.");
         _query_parts_.join("&")
@@ -2700,6 +3255,468 @@ impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
                 };
             }
         }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryNullableTypeUnionExternal {
+    Object(ObjectWithEveryNullableTypeUnionExternalObjectValue),
+    Array(Vec<String>),
+    Boolean(bool),
+    NullableTimestamp(Option<DateTime<FixedOffset>>),
+}
+
+impl ArriModel for ObjectWithEveryNullableTypeUnionExternal {
+    fn new() -> Self {
+        Self::Object(ObjectWithEveryNullableTypeUnionExternalObjectValue::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("object") {
+                    let value = match _val_.get("object") {
+                        Some(value_val) => {
+                            ObjectWithEveryNullableTypeUnionExternalObjectValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => ObjectWithEveryNullableTypeUnionExternalObjectValue::new(),
+                    };
+                    return Self::Object(value);
+                }
+                if _val_.contains_key("array") {
+                    let value = match _val_.get("array") {
+                        Some(serde_json::Value::Array(value_val)) => {
+                            let mut value_val_result: Vec<String> = Vec::new();
+                            for value_val_element in value_val {
+                                value_val_result.push(match Some(value_val_element) {
+                                    Some(serde_json::Value::String(value_val_element_val)) => {
+                                        value_val_element_val.to_owned()
+                                    }
+                                    _ => "".to_string(),
+                                });
+                            }
+                            value_val_result
+                        }
+                        _ => Vec::new(),
+                    };
+                    return Self::Array(value);
+                }
+                if _val_.contains_key("boolean") {
+                    let value = match _val_.get("boolean") {
+                        Some(serde_json::Value::Bool(value_val)) => value_val.to_owned(),
+                        _ => false,
+                    };
+                    return Self::Boolean(value);
+                }
+                if _val_.contains_key("nullable-timestamp") {
+                    let value = match _val_.get("nullable-timestamp") {
+                        Some(serde_json::Value::String(value_val)) => {
+                            match DateTime::<FixedOffset>::parse_from_rfc3339(value_val) {
+                                Ok(value_val_result) => Some(value_val_result),
+                                Err(_) => None,
+                            }
+                        }
+                        _ => None,
+                    };
+                    return Self::NullableTimestamp(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Object(value) => {
+                _json_output_.push_str("\"object\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::Array(value) => {
+                _json_output_.push_str("\"array\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in value.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(serialize_string(_element_).as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Boolean(value) => {
+                _json_output_.push_str("\"boolean\":");
+                _json_output_.push_str(value.to_string().as_str());
+            }
+            Self::NullableTimestamp(value) => {
+                _json_output_.push_str("\"nullable-timestamp\":");
+                match value {
+                    Some(value_val) => {
+                        _json_output_.push_str(serialize_date_time(value_val, true).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping ObjectWithEveryNullableTypeUnionExternal.");
+        "".to_string()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithEveryNullableTypeUnionExternalObjectValue {
+    pub id: String,
+    pub content: String,
+}
+
+impl ArriModel for ObjectWithEveryNullableTypeUnionExternalObjectValue {
+    fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            content: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                let content = match _val_.get("content") {
+                    Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { id, content }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(",\"content\":");
+        _json_output_.push_str(serialize_string(&self.content).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryNullableTypeUnionInternal {
+    Rectangle { width: f64, height: f64 },
+    Circle { radius: f64 },
+}
+
+impl ArriModel for ObjectWithEveryNullableTypeUnionInternal {
+    fn new() -> Self {
+        Self::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let shape = match _val_.get("shape") {
+                    Some(serde_json::Value::String(shape_val)) => shape_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match shape.as_str() {
+                    "rectangle" => {
+                        let width = match _val_.get("width") {
+                            Some(serde_json::Value::Number(width_val)) => {
+                                width_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        let height = match _val_.get("height") {
+                            Some(serde_json::Value::Number(height_val)) => {
+                                height_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        Self::Rectangle { width, height }
+                    }
+                    "circle" => {
+                        let radius = match _val_.get("radius") {
+                            Some(serde_json::Value::Number(radius_val)) => {
+                                radius_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        Self::Circle { radius }
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Rectangle { width, height } => {
+                _json_output_.push_str("\"shape\":\"rectangle\"");
+                _json_output_.push_str(",\"width\":");
+                _json_output_.push_str(width.to_string().as_str());
+                _json_output_.push_str(",\"height\":");
+                _json_output_.push_str(height.to_string().as_str());
+            }
+            Self::Circle { radius } => {
+                _json_output_.push_str("\"shape\":\"circle\"");
+                _json_output_.push_str(",\"radius\":");
+                _json_output_.push_str(radius.to_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::Rectangle { width, height } => {
+                _query_parts_.push(format!("shape=rectangle"));
+                _query_parts_.push(format!("width={}", width));
+                _query_parts_.push(format!("height={}", height));
+            }
+            Self::Circle { radius } => {
+                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push(format!("radius={}", radius));
+            }
+        }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryNullableTypeUnionAdjacent {
+    Object(ObjectWithEveryNullableTypeUnionAdjacentObjectData),
+    Array(Vec<String>),
+    Boolean(bool),
+    NullableTimestamp(Option<DateTime<FixedOffset>>),
+}
+
+impl ArriModel for ObjectWithEveryNullableTypeUnionAdjacent {
+    fn new() -> Self {
+        Self::Object(ObjectWithEveryNullableTypeUnionAdjacentObjectData::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let kind = match _val_.get("kind") {
+                    Some(serde_json::Value::String(kind_val)) => kind_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match kind.as_str() {
+                    "object" => {
+                        let data = match _val_.get("data") {
+                            Some(data_val) => {
+                                ObjectWithEveryNullableTypeUnionAdjacentObjectData::from_json(
+                                    data_val.to_owned(),
+                                )
+                            }
+                            _ => ObjectWithEveryNullableTypeUnionAdjacentObjectData::new(),
+                        };
+                        Self::Object(data)
+                    }
+                    "array" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Array(data_val)) => {
+                                let mut data_val_result: Vec<String> = Vec::new();
+                                for data_val_element in data_val {
+                                    data_val_result.push(match Some(data_val_element) {
+                                        Some(serde_json::Value::String(data_val_element_val)) => {
+                                            data_val_element_val.to_owned()
+                                        }
+                                        _ => "".to_string(),
+                                    });
+                                }
+                                data_val_result
+                            }
+                            _ => Vec::new(),
+                        };
+                        Self::Array(data)
+                    }
+                    "boolean" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Bool(data_val)) => data_val.to_owned(),
+                            _ => false,
+                        };
+                        Self::Boolean(data)
+                    }
+                    "nullable-timestamp" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::String(data_val)) => {
+                                match DateTime::<FixedOffset>::parse_from_rfc3339(data_val) {
+                                    Ok(data_val_result) => Some(data_val_result),
+                                    Err(_) => None,
+                                }
+                            }
+                            _ => None,
+                        };
+                        Self::NullableTimestamp(data)
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Object(data) => {
+                _json_output_.push_str("\"kind\":\"object\",\"data\":");
+                _json_output_.push_str(data.to_json_string().as_str());
+            }
+            Self::Array(data) => {
+                _json_output_.push_str("\"kind\":\"array\",\"data\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in data.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(serialize_string(_element_).as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Boolean(data) => {
+                _json_output_.push_str("\"kind\":\"boolean\",\"data\":");
+                _json_output_.push_str(data.to_string().as_str());
+            }
+            Self::NullableTimestamp(data) => {
+                _json_output_.push_str("\"kind\":\"nullable-timestamp\",\"data\":");
+                match data {
+                    Some(data_val) => {
+                        _json_output_.push_str(serialize_date_time(data_val, true).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacent.");
+        "".to_string()
+    }
+}
+
+impl ObjectWithEveryNullableTypeUnionAdjacent {
+    pub fn kind(&self) -> &'static str {
+        match &self {
+            Self::Object(_) => "object",
+            Self::Array(_) => "array",
+            Self::Boolean(_) => "boolean",
+            Self::NullableTimestamp(_) => "nullable-timestamp",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithEveryNullableTypeUnionAdjacentObjectData {
+    pub id: String,
+    pub content: String,
+}
+
+impl ArriModel for ObjectWithEveryNullableTypeUnionAdjacentObjectData {
+    fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            content: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                let content = match _val_.get("content") {
+                    Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { id, content }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(",\"content\":");
+        _json_output_.push_str(serialize_string(&self.content).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("content={}", &self.content));
         _query_parts_.join("&")
     }
 }
@@ -3399,7 +4416,9 @@ pub struct ObjectWithEveryOptionalType {
     pub object: Option<ObjectWithEveryOptionalTypeObject>,
     pub record: Option<BTreeMap<String, u64>>,
     pub discriminator: Option<ObjectWithEveryOptionalTypeDiscriminator>,
-    pub r#union: Option<serde_json::Value>,
+    pub union_external: Option<ObjectWithEveryOptionalTypeUnionExternal>,
+    pub union_internal: Option<ObjectWithEveryOptionalTypeUnionInternal>,
+    pub union_adjacent: Option<ObjectWithEveryOptionalTypeUnionAdjacent>,
     pub nested_object: Option<ObjectWithEveryOptionalTypeNestedObject>,
     pub nested_array: Option<Vec<Vec<ObjectWithEveryOptionalTypeNestedArrayElementElement>>>,
 }
@@ -3426,7 +4445,9 @@ impl ArriModel for ObjectWithEveryOptionalType {
             object: None,
             record: None,
             discriminator: None,
-            r#union: None,
+            union_external: None,
+            union_internal: None,
+            union_adjacent: None,
             nested_object: None,
             nested_array: None,
         }
@@ -3606,8 +4627,37 @@ impl ArriModel for ObjectWithEveryOptionalType {
                     },
                     _ => None,
                 };
-                let r#union = match _val_.get("union") {
-                    Some(union_val) => Some(union_val.to_owned()),
+                let union_external = match _val_.get("unionExternal") {
+                    Some(union_external_val) => match union_external_val {
+                        serde_json::Value::Object(_) => {
+                            Some(ObjectWithEveryOptionalTypeUnionExternal::from_json(
+                                union_external_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let union_internal = match _val_.get("unionInternal") {
+                    Some(union_internal_val) => match union_internal_val {
+                        serde_json::Value::Object(_) => {
+                            Some(ObjectWithEveryOptionalTypeUnionInternal::from_json(
+                                union_internal_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let union_adjacent = match _val_.get("unionAdjacent") {
+                    Some(union_adjacent_val) => match union_adjacent_val {
+                        serde_json::Value::Object(_) => {
+                            Some(ObjectWithEveryOptionalTypeUnionAdjacent::from_json(
+                                union_adjacent_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
                     _ => None,
                 };
                 let nested_object = match _val_.get("nestedObject") {
@@ -3665,7 +4715,9 @@ impl ArriModel for ObjectWithEveryOptionalType {
                     object,
                     record,
                     discriminator,
-                    r#union,
+                    union_external,
+                    union_internal,
+                    union_adjacent,
                     nested_object,
                     nested_array,
                 }
@@ -3907,17 +4959,35 @@ impl ArriModel for ObjectWithEveryOptionalType {
             }
             _ => {}
         };
-        match &self.r#union {
-            Some(union_val) => {
+        match &self.union_external {
+            Some(union_external_val) => {
                 if _has_keys_ {
                     _json_output_.push(',');
                 }
-                _json_output_.push_str("\"union\":");
-                _json_output_.push_str(
-                    serde_json::to_string(union_val)
-                        .unwrap_or("null".to_string())
-                        .as_str(),
-                );
+                _json_output_.push_str("\"unionExternal\":");
+                _json_output_.push_str(union_external_val.to_json_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        };
+        match &self.union_internal {
+            Some(union_internal_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"unionInternal\":");
+                _json_output_.push_str(union_internal_val.to_json_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        };
+        match &self.union_adjacent {
+            Some(union_adjacent_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"unionAdjacent\":");
+                _json_output_.push_str(union_adjacent_val.to_json_string().as_str());
                 _has_keys_ = true;
             }
             _ => {}
@@ -4054,7 +5124,9 @@ impl ArriModel for ObjectWithEveryOptionalType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/record.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.");
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryOptionalType/union.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.");
         _query_parts_.join("&")
@@ -4249,6 +5321,468 @@ impl ArriModel for ObjectWithEveryOptionalTypeDiscriminator {
                 _query_parts_.push(format!("description={}", description));
             }
         }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryOptionalTypeUnionExternal {
+    Object(ObjectWithEveryOptionalTypeUnionExternalObjectValue),
+    Array(Vec<String>),
+    Boolean(bool),
+    NullableTimestamp(Option<DateTime<FixedOffset>>),
+}
+
+impl ArriModel for ObjectWithEveryOptionalTypeUnionExternal {
+    fn new() -> Self {
+        Self::Object(ObjectWithEveryOptionalTypeUnionExternalObjectValue::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("object") {
+                    let value = match _val_.get("object") {
+                        Some(value_val) => {
+                            ObjectWithEveryOptionalTypeUnionExternalObjectValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => ObjectWithEveryOptionalTypeUnionExternalObjectValue::new(),
+                    };
+                    return Self::Object(value);
+                }
+                if _val_.contains_key("array") {
+                    let value = match _val_.get("array") {
+                        Some(serde_json::Value::Array(value_val)) => {
+                            let mut value_val_result: Vec<String> = Vec::new();
+                            for value_val_element in value_val {
+                                value_val_result.push(match Some(value_val_element) {
+                                    Some(serde_json::Value::String(value_val_element_val)) => {
+                                        value_val_element_val.to_owned()
+                                    }
+                                    _ => "".to_string(),
+                                });
+                            }
+                            value_val_result
+                        }
+                        _ => Vec::new(),
+                    };
+                    return Self::Array(value);
+                }
+                if _val_.contains_key("boolean") {
+                    let value = match _val_.get("boolean") {
+                        Some(serde_json::Value::Bool(value_val)) => value_val.to_owned(),
+                        _ => false,
+                    };
+                    return Self::Boolean(value);
+                }
+                if _val_.contains_key("nullable-timestamp") {
+                    let value = match _val_.get("nullable-timestamp") {
+                        Some(serde_json::Value::String(value_val)) => {
+                            match DateTime::<FixedOffset>::parse_from_rfc3339(value_val) {
+                                Ok(value_val_result) => Some(value_val_result),
+                                Err(_) => None,
+                            }
+                        }
+                        _ => None,
+                    };
+                    return Self::NullableTimestamp(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Object(value) => {
+                _json_output_.push_str("\"object\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::Array(value) => {
+                _json_output_.push_str("\"array\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in value.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(serialize_string(_element_).as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Boolean(value) => {
+                _json_output_.push_str("\"boolean\":");
+                _json_output_.push_str(value.to_string().as_str());
+            }
+            Self::NullableTimestamp(value) => {
+                _json_output_.push_str("\"nullable-timestamp\":");
+                match value {
+                    Some(value_val) => {
+                        _json_output_.push_str(serialize_date_time(value_val, true).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping ObjectWithEveryOptionalTypeUnionExternal.");
+        "".to_string()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithEveryOptionalTypeUnionExternalObjectValue {
+    pub id: String,
+    pub content: String,
+}
+
+impl ArriModel for ObjectWithEveryOptionalTypeUnionExternalObjectValue {
+    fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            content: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                let content = match _val_.get("content") {
+                    Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { id, content }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(",\"content\":");
+        _json_output_.push_str(serialize_string(&self.content).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryOptionalTypeUnionInternal {
+    Rectangle { width: f64, height: f64 },
+    Circle { radius: f64 },
+}
+
+impl ArriModel for ObjectWithEveryOptionalTypeUnionInternal {
+    fn new() -> Self {
+        Self::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let shape = match _val_.get("shape") {
+                    Some(serde_json::Value::String(shape_val)) => shape_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match shape.as_str() {
+                    "rectangle" => {
+                        let width = match _val_.get("width") {
+                            Some(serde_json::Value::Number(width_val)) => {
+                                width_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        let height = match _val_.get("height") {
+                            Some(serde_json::Value::Number(height_val)) => {
+                                height_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        Self::Rectangle { width, height }
+                    }
+                    "circle" => {
+                        let radius = match _val_.get("radius") {
+                            Some(serde_json::Value::Number(radius_val)) => {
+                                radius_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        Self::Circle { radius }
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Rectangle { width, height } => {
+                _json_output_.push_str("\"shape\":\"rectangle\"");
+                _json_output_.push_str(",\"width\":");
+                _json_output_.push_str(width.to_string().as_str());
+                _json_output_.push_str(",\"height\":");
+                _json_output_.push_str(height.to_string().as_str());
+            }
+            Self::Circle { radius } => {
+                _json_output_.push_str("\"shape\":\"circle\"");
+                _json_output_.push_str(",\"radius\":");
+                _json_output_.push_str(radius.to_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::Rectangle { width, height } => {
+                _query_parts_.push(format!("shape=rectangle"));
+                _query_parts_.push(format!("width={}", width));
+                _query_parts_.push(format!("height={}", height));
+            }
+            Self::Circle { radius } => {
+                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push(format!("radius={}", radius));
+            }
+        }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ObjectWithEveryOptionalTypeUnionAdjacent {
+    Object(ObjectWithEveryOptionalTypeUnionAdjacentObjectData),
+    Array(Vec<String>),
+    Boolean(bool),
+    NullableTimestamp(Option<DateTime<FixedOffset>>),
+}
+
+impl ArriModel for ObjectWithEveryOptionalTypeUnionAdjacent {
+    fn new() -> Self {
+        Self::Object(ObjectWithEveryOptionalTypeUnionAdjacentObjectData::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let kind = match _val_.get("kind") {
+                    Some(serde_json::Value::String(kind_val)) => kind_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match kind.as_str() {
+                    "object" => {
+                        let data = match _val_.get("data") {
+                            Some(data_val) => {
+                                ObjectWithEveryOptionalTypeUnionAdjacentObjectData::from_json(
+                                    data_val.to_owned(),
+                                )
+                            }
+                            _ => ObjectWithEveryOptionalTypeUnionAdjacentObjectData::new(),
+                        };
+                        Self::Object(data)
+                    }
+                    "array" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Array(data_val)) => {
+                                let mut data_val_result: Vec<String> = Vec::new();
+                                for data_val_element in data_val {
+                                    data_val_result.push(match Some(data_val_element) {
+                                        Some(serde_json::Value::String(data_val_element_val)) => {
+                                            data_val_element_val.to_owned()
+                                        }
+                                        _ => "".to_string(),
+                                    });
+                                }
+                                data_val_result
+                            }
+                            _ => Vec::new(),
+                        };
+                        Self::Array(data)
+                    }
+                    "boolean" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Bool(data_val)) => data_val.to_owned(),
+                            _ => false,
+                        };
+                        Self::Boolean(data)
+                    }
+                    "nullable-timestamp" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::String(data_val)) => {
+                                match DateTime::<FixedOffset>::parse_from_rfc3339(data_val) {
+                                    Ok(data_val_result) => Some(data_val_result),
+                                    Err(_) => None,
+                                }
+                            }
+                            _ => None,
+                        };
+                        Self::NullableTimestamp(data)
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Object(data) => {
+                _json_output_.push_str("\"kind\":\"object\",\"data\":");
+                _json_output_.push_str(data.to_json_string().as_str());
+            }
+            Self::Array(data) => {
+                _json_output_.push_str("\"kind\":\"array\",\"data\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in data.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(serialize_string(_element_).as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Boolean(data) => {
+                _json_output_.push_str("\"kind\":\"boolean\",\"data\":");
+                _json_output_.push_str(data.to_string().as_str());
+            }
+            Self::NullableTimestamp(data) => {
+                _json_output_.push_str("\"kind\":\"nullable-timestamp\",\"data\":");
+                match data {
+                    Some(data_val) => {
+                        _json_output_.push_str(serialize_date_time(data_val, true).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacent.");
+        "".to_string()
+    }
+}
+
+impl ObjectWithEveryOptionalTypeUnionAdjacent {
+    pub fn kind(&self) -> &'static str {
+        match &self {
+            Self::Object(_) => "object",
+            Self::Array(_) => "array",
+            Self::Boolean(_) => "boolean",
+            Self::NullableTimestamp(_) => "nullable-timestamp",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithEveryOptionalTypeUnionAdjacentObjectData {
+    pub id: String,
+    pub content: String,
+}
+
+impl ArriModel for ObjectWithEveryOptionalTypeUnionAdjacentObjectData {
+    fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            content: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
+                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                let content = match _val_.get("content") {
+                    Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { id, content }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(serialize_string(&self.id).as_str());
+        _json_output_.push_str(",\"content\":");
+        _json_output_.push_str(serialize_string(&self.content).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("content={}", &self.content));
         _query_parts_.join("&")
     }
 }
@@ -4619,9 +6153,7 @@ pub enum RecursiveUnion {
 
 impl ArriModel for RecursiveUnion {
     fn new() -> Self {
-        Self::Child {
-            data: Box::new(RecursiveUnion::new()),
-        }
+        Self::Children { data: Vec::new() }
     }
 
     fn from_json(input: serde_json::Value) -> Self {
@@ -4766,6 +6298,197 @@ pub struct RecursiveUnionDataShape {
 }
 
 impl ArriModel for RecursiveUnionDataShape {
+    fn new() -> Self {
+        Self {
+            width: 0.0,
+            height: 0.0,
+            color: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let width = match _val_.get("width") {
+                    Some(serde_json::Value::Number(width_val)) => width_val.as_f64().unwrap_or(0.0),
+                    _ => 0.0,
+                };
+                let height = match _val_.get("height") {
+                    Some(serde_json::Value::Number(height_val)) => {
+                        height_val.as_f64().unwrap_or(0.0)
+                    }
+                    _ => 0.0,
+                };
+                let color = match _val_.get("color") {
+                    Some(serde_json::Value::String(color_val)) => color_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self {
+                    width,
+                    height,
+                    color,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"width\":");
+        _json_output_.push_str(&self.width.to_string().as_str());
+        _json_output_.push_str(",\"height\":");
+        _json_output_.push_str(&self.height.to_string().as_str());
+        _json_output_.push_str(",\"color\":");
+        _json_output_.push_str(serialize_string(&self.color).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("width={}", &self.width));
+        _query_parts_.push(format!("height={}", &self.height));
+        _query_parts_.push(format!("color={}", &self.color));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum RecursiveUnionV2 {
+    Child(Box<RecursiveUnionV2>),
+    /// List of children nodes
+    Children(Vec<Box<RecursiveUnionV2>>),
+    /// Text node
+    Text(String),
+    /// Shape node
+    Shape(RecursiveUnionV2ShapeValue),
+}
+
+impl ArriModel for RecursiveUnionV2 {
+    fn new() -> Self {
+        Self::Children(Vec::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("child") {
+                    let value = match _val_.get("child") {
+                        Some(value_val) => match value_val {
+                            serde_json::Value::Object(_) => {
+                                Box::new(RecursiveUnionV2::from_json(value_val.to_owned()))
+                            }
+                            _ => Box::new(RecursiveUnionV2::from_json(value_val.to_owned())),
+                        },
+                        _ => Box::new(RecursiveUnionV2::new()),
+                    };
+                    return Self::Child(value);
+                }
+                if _val_.contains_key("children") {
+                    let value = match _val_.get("children") {
+                        Some(serde_json::Value::Array(value_val)) => {
+                            let mut value_val_result: Vec<Box<RecursiveUnionV2>> = Vec::new();
+                            for value_val_element in value_val {
+                                value_val_result.push(match Some(value_val_element) {
+                                    Some(value_val_element_val) => match value_val_element_val {
+                                        serde_json::Value::Object(_) => {
+                                            Box::new(RecursiveUnionV2::from_json(
+                                                value_val_element_val.to_owned(),
+                                            ))
+                                        }
+                                        _ => Box::new(RecursiveUnionV2::from_json(
+                                            value_val_element_val.to_owned(),
+                                        )),
+                                    },
+                                    _ => Box::new(RecursiveUnionV2::new()),
+                                });
+                            }
+                            value_val_result
+                        }
+                        _ => Vec::new(),
+                    };
+                    return Self::Children(value);
+                }
+                if _val_.contains_key("text") {
+                    let value = match _val_.get("text") {
+                        Some(serde_json::Value::String(value_val)) => value_val.to_owned(),
+                        _ => "".to_string(),
+                    };
+                    return Self::Text(value);
+                }
+                if _val_.contains_key("shape") {
+                    let value = match _val_.get("shape") {
+                        Some(value_val) => {
+                            RecursiveUnionV2ShapeValue::from_json(value_val.to_owned())
+                        }
+                        _ => RecursiveUnionV2ShapeValue::new(),
+                    };
+                    return Self::Shape(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Child(value) => {
+                _json_output_.push_str("\"child\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::Children(value) => {
+                _json_output_.push_str("\"children\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in value.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(_element_.to_json_string().as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Text(value) => {
+                _json_output_.push_str("\"text\":");
+                _json_output_.push_str(serialize_string(value).as_str());
+            }
+            Self::Shape(value) => {
+                _json_output_.push_str("\"shape\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping RecursiveUnionV2.");
+        "".to_string()
+    }
+}
+
+/// Shape node
+#[derive(Clone, Debug, PartialEq)]
+pub struct RecursiveUnionV2ShapeValue {
+    pub width: f64,
+    pub height: f64,
+    pub color: String,
+}
+
+impl ArriModel for RecursiveUnionV2ShapeValue {
     fn new() -> Self {
         Self {
             width: 0.0,
