@@ -763,9 +763,9 @@ export function unionTemplateInternallyTagged(
             default:
                 $fallback("${input.instancePath}", "${
                     input.schemaPath
-                }/union", "${input.val}[\`${
+                }/union", "${input.instancePath}/${
                     tagKey
-                }\`] did not match one of the specified values");
+                } did not match one of the specified values");
                 break;
         }
     } else {

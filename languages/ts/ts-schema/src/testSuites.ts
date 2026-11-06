@@ -1471,6 +1471,66 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    'unions nested under non-identifier keys': {
+        schema: a.object({
+            'internal-union': a.union(
+                {
+                    'my-variant': a.object({ 'inner-key': a.string() }),
+                },
+                { tagKey: 'my-tag' },
+            ),
+            'adjacent-union': a.union(
+                { 'my-variant': a.string() },
+                { tagKey: 'my-tag', valueKey: 'my-value' },
+            ),
+            'external-union': a.union({ 'my-variant': a.string() }),
+            'nullable-internal-union': a.nullable(
+                a.union(
+                    { 'my-variant': a.object({ 'inner-key': a.string() }) },
+                    { tagKey: 'my-tag' },
+                ),
+            ),
+            'union-array': a.array(
+                a.union(
+                    { 'my-variant': a.object({ 'inner-key': a.string() }) },
+                    { tagKey: 'my-tag' },
+                ),
+            ),
+        }),
+        goodInputs: [
+            {
+                'internal-union': { 'my-tag': 'my-variant', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'my-variant', 'my-value': 'a' },
+                'external-union': { 'my-variant': 'a' },
+                'nullable-internal-union': null,
+                'union-array': [{ 'my-tag': 'my-variant', 'inner-key': 'a' }],
+            },
+        ],
+        badInputs: [
+            {},
+            {
+                'internal-union': { 'my-tag': 'unknown', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'my-variant', 'my-value': 'a' },
+                'external-union': { 'my-variant': 'a' },
+                'nullable-internal-union': null,
+                'union-array': [],
+            },
+            {
+                'internal-union': { 'my-tag': 'my-variant', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'unknown', 'my-value': 'a' },
+                'external-union': { 'my-variant': 'a' },
+                'nullable-internal-union': null,
+                'union-array': [],
+            },
+            {
+                'internal-union': { 'my-tag': 'my-variant', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'my-variant', 'my-value': 'a' },
+                'external-union': { unknown: 'a' },
+                'nullable-internal-union': null,
+                'union-array': [],
+            },
+        ],
+    },
     'external union with non-identifier keys': {
         schema: a.union({
             'nullable-timestamp': a.nullable(a.timestamp()),
