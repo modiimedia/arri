@@ -110,6 +110,18 @@ export function createParsingTemplate(
 }
 
 export function schemaTemplate(input: TemplateInput): string {
+    const template = schemaFormTemplate(input);
+    if (input.shouldCoerce && input.schema.isNullable) {
+        return `if (${input.val} === 'null') {
+            ${input.targetVal} = null;
+        } else {
+            ${template}
+        }`;
+    }
+    return template;
+}
+
+function schemaFormTemplate(input: TemplateInput): string {
     if (isSchemaFormType(input.schema)) {
         switch (input.schema.type) {
             case 'boolean':

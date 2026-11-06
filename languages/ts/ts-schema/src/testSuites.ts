@@ -2199,6 +2199,80 @@ export const coercionTestSuites: Record<
         badInputs: any[];
     }
 > = {
+    'nullable fields set to the string "null"': {
+        schema: a.object({
+            string: a.nullable(a.string()),
+            nonNullableString: a.string(),
+            optionalString: a.optional(a.nullable(a.string())),
+            boolean: a.nullable(a.boolean()),
+            float64: a.nullable(a.float64()),
+            int32: a.nullable(a.int32()),
+            int64: a.nullable(a.int64()),
+            timestamp: a.nullable(a.timestamp()),
+            enum: a.nullable(a.enumerator(['A', 'B'])),
+            any: a.nullable(a.any()),
+            array: a.nullable(a.array(a.string())),
+            arrayItems: a.array(a.nullable(a.string())),
+            object: a.nullable(a.object({ id: a.string() })),
+            record: a.nullable(a.record(a.string())),
+            unionExternal: a.nullable(a.union({ id: a.string() })),
+            unionInternal: a.nullable(
+                a.union(
+                    { circle: a.object({ radius: a.float64() }) },
+                    { tagKey: 'shape' },
+                ),
+            ),
+            unionAdjacent: a.nullable(
+                a.union(
+                    { id: a.string() },
+                    { tagKey: 'kind', valueKey: 'data' },
+                ),
+            ),
+        }),
+        goodInputs: [
+            {
+                string: 'null',
+                nonNullableString: 'null',
+                optionalString: 'null',
+                boolean: 'null',
+                float64: 'null',
+                int32: 'null',
+                int64: 'null',
+                timestamp: 'null',
+                enum: 'null',
+                any: 'null',
+                array: 'null',
+                arrayItems: ['null', 'hello world'],
+                object: 'null',
+                record: 'null',
+                unionExternal: 'null',
+                unionInternal: 'null',
+                unionAdjacent: 'null',
+            },
+        ],
+        expectedResults: [
+            {
+                string: null,
+                nonNullableString: 'null',
+                optionalString: null,
+                boolean: null,
+                float64: null,
+                int32: null,
+                int64: null,
+                timestamp: null,
+                enum: null,
+                any: null,
+                array: null,
+                arrayItems: [null, 'hello world'],
+                object: null,
+                record: null,
+                unionExternal: null,
+                unionInternal: null,
+                unionAdjacent: null,
+            },
+        ],
+        badInputs: [{ enum: 'NULL' }],
+    },
     'object with non-identifier keys': {
         schema: a.object({
             'my-float': a.float64(),
