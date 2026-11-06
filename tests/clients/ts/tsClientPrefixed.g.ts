@@ -152,6 +152,27 @@ export class TestClientPrefixed {
             options: options ?? this._options,
         });
     }
+    async sendObjectWithKebabCaseKeys(
+        params: FooObjectWithKebabCaseKeys,
+        options?: ArriRequestOptions,
+    ): Promise<FooObjectWithKebabCaseKeys> {
+        return arriRequest<
+            FooObjectWithKebabCaseKeys,
+            FooObjectWithKebabCaseKeys
+        >({
+            url: `${this._baseUrl}/rpcs/tests/send-object-with-kebab-case-keys`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: FooObjectWithKebabCaseKeysFromJson,
+            responseFromString: FooObjectWithKebabCaseKeysFromJsonString,
+            serializer: FooObjectWithKebabCaseKeysToJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
     async sendObjectWithNullableFields(
         params: FooObjectWithEveryNullableType,
         options?: ArriRequestOptions,
@@ -943,7 +964,6 @@ export interface FooObjectWithEveryType {
     array: boolean[];
     object: FooObjectWithEveryTypeObject;
     record: Record<string, bigint>;
-    discriminator: FooObjectWithEveryTypeDiscriminator;
     unionExternal: FooObjectWithEveryTypeUnionExternal;
     unionInternal: FooObjectWithEveryTypeUnionInternal;
     unionAdjacent: FooObjectWithEveryTypeUnionAdjacent;
@@ -970,7 +990,6 @@ export function FooObjectWithEveryTypeNew(): FooObjectWithEveryType {
         array: [],
         object: FooObjectWithEveryTypeObjectNew(),
         record: {},
-        discriminator: FooObjectWithEveryTypeDiscriminatorNew(),
         unionExternal: FooObjectWithEveryTypeUnionExternalNew(),
         unionInternal: FooObjectWithEveryTypeUnionInternalNew(),
         unionAdjacent: FooObjectWithEveryTypeUnionAdjacentNew(),
@@ -1044,14 +1063,6 @@ export function FooObjectWithEveryTypeFromJson(
         }
     } else {
         _record = {};
-    }
-    let _discriminator: FooObjectWithEveryTypeDiscriminator;
-    if (isObject(input.discriminator)) {
-        _discriminator = FooObjectWithEveryTypeDiscriminatorFromJson(
-            input.discriminator,
-        );
-    } else {
-        _discriminator = FooObjectWithEveryTypeDiscriminatorNew();
     }
     let _unionExternal: FooObjectWithEveryTypeUnionExternal;
     if (isObject(input.unionExternal)) {
@@ -1132,7 +1143,6 @@ export function FooObjectWithEveryTypeFromJson(
         array: _array,
         object: _object,
         record: _record,
-        discriminator: _discriminator,
         unionExternal: _unionExternal,
         unionInternal: _unionInternal,
         unionAdjacent: _unionAdjacent,
@@ -1202,10 +1212,6 @@ export function FooObjectWithEveryTypeToJsonString(
     }
     json += '}';
 
-    json += ',"discriminator":';
-    json += FooObjectWithEveryTypeDiscriminatorToJsonString(
-        input.discriminator,
-    );
     json += ',"unionExternal":';
     json += FooObjectWithEveryTypeUnionExternalToJsonString(
         input.unionExternal,
@@ -1268,9 +1274,6 @@ export function FooObjectWithEveryTypeToUrlSearchParams(
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
-    );
-    console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/discriminator.',
     );
     console.warn(
         '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionExternal.',
@@ -1385,185 +1388,6 @@ export function FooObjectWithEveryTypeObjectToUrlSearchParamsString(
     input: FooObjectWithEveryTypeObject,
 ): string {
     return FooObjectWithEveryTypeObjectToUrlSearchParams(input).toString();
-}
-
-export type FooObjectWithEveryTypeDiscriminator =
-    | FooObjectWithEveryTypeDiscriminatorA
-    | FooObjectWithEveryTypeDiscriminatorB;
-export function FooObjectWithEveryTypeDiscriminatorNew(): FooObjectWithEveryTypeDiscriminator {
-    return FooObjectWithEveryTypeDiscriminatorANew();
-}
-export function FooObjectWithEveryTypeDiscriminatorFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryTypeDiscriminator {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryTypeDiscriminatorAFromJson(input);
-        }
-        case `B`: {
-            return FooObjectWithEveryTypeDiscriminatorBFromJson(input);
-        }
-        default: {
-            return FooObjectWithEveryTypeDiscriminatorANew();
-        }
-    }
-}
-export function FooObjectWithEveryTypeDiscriminatorFromJsonString(
-    input: string,
-): FooObjectWithEveryTypeDiscriminator {
-    return FooObjectWithEveryTypeDiscriminatorFromJson(JSON.parse(input));
-}
-export function FooObjectWithEveryTypeDiscriminatorToJsonString(
-    input: FooObjectWithEveryTypeDiscriminator,
-): string {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryTypeDiscriminatorAToJsonString(input);
-        }
-
-        case `B`: {
-            return FooObjectWithEveryTypeDiscriminatorBToJsonString(input);
-        }
-
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function FooObjectWithEveryTypeDiscriminatorToUrlSearchParams(
-    input: FooObjectWithEveryTypeDiscriminator,
-): URLSearchParams {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams(input);
-        }
-        case `B`: {
-            return FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams(input);
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function FooObjectWithEveryTypeDiscriminatorToUrlSearchParamsString(
-    input: FooObjectWithEveryTypeDiscriminator,
-): string {
-    return FooObjectWithEveryTypeDiscriminatorToUrlSearchParams(
-        input,
-    ).toString();
-}
-export interface FooObjectWithEveryTypeDiscriminatorA {
-    type: `A`;
-    title: string;
-}
-export function FooObjectWithEveryTypeDiscriminatorANew(): FooObjectWithEveryTypeDiscriminatorA {
-    return {
-        type: `A`,
-        title: '',
-    };
-}
-export function FooObjectWithEveryTypeDiscriminatorAFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryTypeDiscriminatorA {
-    const _type = `A`;
-    let _title: string;
-    _title = parseString(input.title);
-    return {
-        type: _type,
-        title: _title,
-    };
-}
-export function FooObjectWithEveryTypeDiscriminatorAFromJsonString(
-    input: string,
-): FooObjectWithEveryTypeDiscriminatorA {
-    return FooObjectWithEveryTypeDiscriminatorAFromJson(JSON.parse(input));
-}
-export function FooObjectWithEveryTypeDiscriminatorAToJsonString(
-    input: FooObjectWithEveryTypeDiscriminatorA,
-): string {
-    let json = '{';
-    json += '"type":"A"';
-    json += ',"title":';
-    json += serializeString(input.title);
-    json += '}';
-    return json;
-}
-export function FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams(
-    input: FooObjectWithEveryTypeDiscriminatorA,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `A`);
-    params.set('title', input.title);
-    return params;
-}
-export function FooObjectWithEveryTypeDiscriminatorAToUrlSearchParamsString(
-    input: FooObjectWithEveryTypeDiscriminatorA,
-): string {
-    return FooObjectWithEveryTypeDiscriminatorAToUrlSearchParams(
-        input,
-    ).toString();
-}
-
-export interface FooObjectWithEveryTypeDiscriminatorB {
-    type: `B`;
-    title: string;
-    description: string;
-}
-export function FooObjectWithEveryTypeDiscriminatorBNew(): FooObjectWithEveryTypeDiscriminatorB {
-    return {
-        type: `B`,
-        title: '',
-        description: '',
-    };
-}
-export function FooObjectWithEveryTypeDiscriminatorBFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryTypeDiscriminatorB {
-    const _type = `B`;
-    let _title: string;
-    _title = parseString(input.title);
-    let _description: string;
-    _description = parseString(input.description);
-    return {
-        type: _type,
-        title: _title,
-        description: _description,
-    };
-}
-export function FooObjectWithEveryTypeDiscriminatorBFromJsonString(
-    input: string,
-): FooObjectWithEveryTypeDiscriminatorB {
-    return FooObjectWithEveryTypeDiscriminatorBFromJson(JSON.parse(input));
-}
-export function FooObjectWithEveryTypeDiscriminatorBToJsonString(
-    input: FooObjectWithEveryTypeDiscriminatorB,
-): string {
-    let json = '{';
-    json += '"type":"B"';
-    json += ',"title":';
-    json += serializeString(input.title);
-    json += ',"description":';
-    json += serializeString(input.description);
-    json += '}';
-    return json;
-}
-export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams(
-    input: FooObjectWithEveryTypeDiscriminatorB,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `B`);
-    params.set('title', input.title);
-    params.set('description', input.description);
-    return params;
-}
-export function FooObjectWithEveryTypeDiscriminatorBToUrlSearchParamsString(
-    input: FooObjectWithEveryTypeDiscriminatorB,
-): string {
-    return FooObjectWithEveryTypeDiscriminatorBToUrlSearchParams(
-        input,
-    ).toString();
 }
 
 export type FooObjectWithEveryTypeUnionExternal =
@@ -2399,6 +2223,392 @@ export function FooObjectWithEveryTypeNestedArrayElementElementToUrlSearchParams
     ).toString();
 }
 
+export interface FooObjectWithKebabCaseKeys {
+    createdAt: Date;
+    displayName: string;
+    phoneNumber: string | null;
+    lastEvent: FooObjectWithKebabCaseKeysLastEvent | null;
+    emailAddress?: string;
+    isAdmin?: boolean;
+}
+export function FooObjectWithKebabCaseKeysNew(): FooObjectWithKebabCaseKeys {
+    return {
+        createdAt: new Date(0),
+        displayName: '',
+        phoneNumber: null,
+        lastEvent: null,
+    };
+}
+export function FooObjectWithKebabCaseKeysFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithKebabCaseKeys {
+    let _createdat: Date;
+    _createdat = parseTimestamp(input['created-at']);
+    let _displayname: string;
+    _displayname = parseString(input['display-name']);
+    let _phonenumber: string | null;
+    _phonenumber = parseNullableString(input['phone-number']);
+    let _lastevent: FooObjectWithKebabCaseKeysLastEvent | null;
+    if (isObject(input['last-event'])) {
+        _lastevent = FooObjectWithKebabCaseKeysLastEventFromJson(
+            input['last-event'],
+        );
+    } else {
+        _lastevent = null;
+    }
+    let _emailaddress: string | undefined;
+    if (typeof input['email-address'] !== 'undefined') {
+        _emailaddress = parseString(input['email-address']);
+    }
+    let _isadmin: boolean | undefined;
+    if (typeof input['is-admin'] !== 'undefined') {
+        _isadmin = parseBoolean(input['is-admin']);
+    }
+    return {
+        createdAt: _createdat,
+        displayName: _displayname,
+        phoneNumber: _phonenumber,
+        lastEvent: _lastevent,
+        emailAddress: _emailaddress,
+        isAdmin: _isadmin,
+    };
+}
+export function FooObjectWithKebabCaseKeysFromJsonString(
+    input: string,
+): FooObjectWithKebabCaseKeys {
+    return FooObjectWithKebabCaseKeysFromJson(JSON.parse(input));
+}
+export function FooObjectWithKebabCaseKeysToJsonString(
+    input: FooObjectWithKebabCaseKeys,
+): string {
+    let json = '{';
+    json += '"created-at":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"display-name":';
+    json += serializeString(input.displayName);
+    json += ',"phone-number":';
+    if (typeof input.phoneNumber === 'string') {
+        json += serializeString(input.phoneNumber);
+    } else {
+        json += 'null';
+    }
+    json += ',"last-event":';
+    if (input.lastEvent != null) {
+        json += FooObjectWithKebabCaseKeysLastEventToJsonString(
+            input.lastEvent,
+        );
+    } else {
+        json += 'null';
+    }
+    if (typeof input.emailAddress !== 'undefined') {
+        json += `,"email-address":`;
+        json += serializeString(input.emailAddress);
+    }
+    if (typeof input.isAdmin !== 'undefined') {
+        json += `,"is-admin":`;
+        json += `${input.isAdmin}`;
+    }
+    json += '}';
+    return json;
+}
+export function FooObjectWithKebabCaseKeysToUrlSearchParams(
+    input: FooObjectWithKebabCaseKeys,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('created-at', input.createdAt.toISOString());
+    params.set('display-name', input.displayName);
+    params.set('phone-number', `${input.phoneNumber}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithKebabCaseKeys/last-event.',
+    );
+    if (typeof input.emailAddress !== 'undefined') {
+        params.set('email-address', input.emailAddress);
+    }
+    if (typeof input.isAdmin !== 'undefined') {
+        params.set('is-admin', `${input.isAdmin}`);
+    }
+    return params;
+}
+export function FooObjectWithKebabCaseKeysToUrlSearchParamsString(
+    input: FooObjectWithKebabCaseKeys,
+): string {
+    return FooObjectWithKebabCaseKeysToUrlSearchParams(input).toString();
+}
+
+export type FooObjectWithKebabCaseKeysLastEvent =
+    | {
+          type: `user-created`;
+          value: FooObjectWithKebabCaseKeysLastEventUserCreated;
+      }
+    | {
+          type: `user-updated`;
+          value: FooObjectWithKebabCaseKeysLastEventUserUpdated;
+      }
+    | {
+          type: `user-deleted`;
+          value: FooObjectWithKebabCaseKeysLastEventUserDeleted;
+      };
+export function FooObjectWithKebabCaseKeysLastEventNew(): FooObjectWithKebabCaseKeysLastEvent {
+    return {
+        type: `user-created`,
+        value: FooObjectWithKebabCaseKeysLastEventUserCreatedNew(),
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithKebabCaseKeysLastEvent {
+    if (`user-created` in input) {
+        let __value__: FooObjectWithKebabCaseKeysLastEventUserCreated;
+        if (isObject(input[`user-created`])) {
+            __value__ = FooObjectWithKebabCaseKeysLastEventUserCreatedFromJson(
+                input[`user-created`],
+            );
+        } else {
+            __value__ = FooObjectWithKebabCaseKeysLastEventUserCreatedNew();
+        }
+        return {
+            type: `user-created`,
+            value: __value__,
+        };
+    }
+
+    if (`user-updated` in input) {
+        let __value__: FooObjectWithKebabCaseKeysLastEventUserUpdated;
+        if (isObject(input[`user-updated`])) {
+            __value__ = FooObjectWithKebabCaseKeysLastEventUserUpdatedFromJson(
+                input[`user-updated`],
+            );
+        } else {
+            __value__ = FooObjectWithKebabCaseKeysLastEventUserUpdatedNew();
+        }
+        return {
+            type: `user-updated`,
+            value: __value__,
+        };
+    }
+
+    if (`user-deleted` in input) {
+        let __value__: FooObjectWithKebabCaseKeysLastEventUserDeleted;
+        if (isObject(input[`user-deleted`])) {
+            __value__ = FooObjectWithKebabCaseKeysLastEventUserDeletedFromJson(
+                input[`user-deleted`],
+            );
+        } else {
+            __value__ = FooObjectWithKebabCaseKeysLastEventUserDeletedNew();
+        }
+        return {
+            type: `user-deleted`,
+            value: __value__,
+        };
+    }
+    return FooObjectWithKebabCaseKeysLastEventNew();
+}
+export function FooObjectWithKebabCaseKeysLastEventFromJsonString(
+    input: string,
+): FooObjectWithKebabCaseKeysLastEvent {
+    return FooObjectWithKebabCaseKeysLastEventFromJson(JSON.parse(input));
+}
+export function FooObjectWithKebabCaseKeysLastEventToJsonString(
+    input: FooObjectWithKebabCaseKeysLastEvent,
+): string {
+    switch (input.type) {
+        case `user-created`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithKebabCaseKeysLastEventUserCreatedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `user-updated`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithKebabCaseKeysLastEventUserUpdatedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `user-deleted`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithKebabCaseKeysLastEventUserDeletedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooObjectWithKebabCaseKeysLastEventToUrlSearchParams(
+    input: FooObjectWithKebabCaseKeysLastEvent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function FooObjectWithKebabCaseKeysLastEventToUrlSearchParamsString(
+    input: FooObjectWithKebabCaseKeysLastEvent,
+): string {
+    return FooObjectWithKebabCaseKeysLastEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export interface FooObjectWithKebabCaseKeysLastEventUserCreated {
+    userId: string;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserCreatedNew(): FooObjectWithKebabCaseKeysLastEventUserCreated {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithKebabCaseKeysLastEventUserCreated {
+    let _userid: string;
+    _userid = parseString(input['user-id']);
+    return {
+        userId: _userid,
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventUserCreatedFromJsonString(
+    input: string,
+): FooObjectWithKebabCaseKeysLastEventUserCreated {
+    return FooObjectWithKebabCaseKeysLastEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithKebabCaseKeysLastEventUserCreatedToJsonString(
+    input: FooObjectWithKebabCaseKeysLastEventUserCreated,
+): string {
+    let json = '{';
+    json += '"user-id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParams(
+    input: FooObjectWithKebabCaseKeysLastEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user-id', input.userId);
+    return params;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParamsString(
+    input: FooObjectWithKebabCaseKeysLastEventUserCreated,
+): string {
+    return FooObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface FooObjectWithKebabCaseKeysLastEventUserUpdated {
+    userId: string;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserUpdatedNew(): FooObjectWithKebabCaseKeysLastEventUserUpdated {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventUserUpdatedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithKebabCaseKeysLastEventUserUpdated {
+    let _userid: string;
+    _userid = parseString(input['user-id']);
+    return {
+        userId: _userid,
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventUserUpdatedFromJsonString(
+    input: string,
+): FooObjectWithKebabCaseKeysLastEventUserUpdated {
+    return FooObjectWithKebabCaseKeysLastEventUserUpdatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithKebabCaseKeysLastEventUserUpdatedToJsonString(
+    input: FooObjectWithKebabCaseKeysLastEventUserUpdated,
+): string {
+    let json = '{';
+    json += '"user-id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParams(
+    input: FooObjectWithKebabCaseKeysLastEventUserUpdated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user-id', input.userId);
+    return params;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParamsString(
+    input: FooObjectWithKebabCaseKeysLastEventUserUpdated,
+): string {
+    return FooObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface FooObjectWithKebabCaseKeysLastEventUserDeleted {
+    userId: string;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserDeletedNew(): FooObjectWithKebabCaseKeysLastEventUserDeleted {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventUserDeletedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithKebabCaseKeysLastEventUserDeleted {
+    let _userid: string;
+    _userid = parseString(input['user-id']);
+    return {
+        userId: _userid,
+    };
+}
+export function FooObjectWithKebabCaseKeysLastEventUserDeletedFromJsonString(
+    input: string,
+): FooObjectWithKebabCaseKeysLastEventUserDeleted {
+    return FooObjectWithKebabCaseKeysLastEventUserDeletedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithKebabCaseKeysLastEventUserDeletedToJsonString(
+    input: FooObjectWithKebabCaseKeysLastEventUserDeleted,
+): string {
+    let json = '{';
+    json += '"user-id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParams(
+    input: FooObjectWithKebabCaseKeysLastEventUserDeleted,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user-id', input.userId);
+    return params;
+}
+export function FooObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParamsString(
+    input: FooObjectWithKebabCaseKeysLastEventUserDeleted,
+): string {
+    return FooObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
 export interface FooObjectWithEveryNullableType {
     any: any;
     boolean: boolean | null;
@@ -2418,7 +2628,6 @@ export interface FooObjectWithEveryNullableType {
     array: (boolean | null)[] | null;
     object: FooObjectWithEveryNullableTypeObject | null;
     record: Record<string, bigint | null> | null;
-    discriminator: FooObjectWithEveryNullableTypeDiscriminator | null;
     unionExternal: FooObjectWithEveryNullableTypeUnionExternal | null;
     unionInternal: FooObjectWithEveryNullableTypeUnionInternal | null;
     unionAdjacent: FooObjectWithEveryNullableTypeUnionAdjacent | null;
@@ -2450,7 +2659,6 @@ export function FooObjectWithEveryNullableTypeNew(): FooObjectWithEveryNullableT
         array: null,
         object: null,
         record: null,
-        discriminator: null,
         unionExternal: null,
         unionInternal: null,
         unionAdjacent: null,
@@ -2524,14 +2732,6 @@ export function FooObjectWithEveryNullableTypeFromJson(
         }
     } else {
         _record = null;
-    }
-    let _discriminator: FooObjectWithEveryNullableTypeDiscriminator | null;
-    if (isObject(input.discriminator)) {
-        _discriminator = FooObjectWithEveryNullableTypeDiscriminatorFromJson(
-            input.discriminator,
-        );
-    } else {
-        _discriminator = null;
     }
     let _unionExternal: FooObjectWithEveryNullableTypeUnionExternal | null;
     if (isObject(input.unionExternal)) {
@@ -2618,7 +2818,6 @@ export function FooObjectWithEveryNullableTypeFromJson(
         array: _array,
         object: _object,
         record: _record,
-        discriminator: _discriminator,
         unionExternal: _unionExternal,
         unionInternal: _unionInternal,
         unionAdjacent: _unionAdjacent,
@@ -2723,14 +2922,6 @@ export function FooObjectWithEveryNullableTypeToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"discriminator":';
-    if (input.discriminator != null) {
-        json += FooObjectWithEveryNullableTypeDiscriminatorToJsonString(
-            input.discriminator,
-        );
-    } else {
-        json += 'null';
-    }
     json += ',"unionExternal":';
     if (input.unionExternal != null) {
         json += FooObjectWithEveryNullableTypeUnionExternalToJsonString(
@@ -2824,9 +3015,6 @@ export function FooObjectWithEveryNullableTypeToUrlSearchParams(
     );
     console.warn(
         '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryNullableType/record.',
-    );
-    console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryNullableType/discriminator.',
     );
     console.warn(
         '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryNullableType/unionExternal.',
@@ -2953,211 +3141,6 @@ export function FooObjectWithEveryNullableTypeObjectToUrlSearchParamsString(
     input: FooObjectWithEveryNullableTypeObject,
 ): string {
     return FooObjectWithEveryNullableTypeObjectToUrlSearchParams(
-        input,
-    ).toString();
-}
-
-export type FooObjectWithEveryNullableTypeDiscriminator =
-    | FooObjectWithEveryNullableTypeDiscriminatorA
-    | FooObjectWithEveryNullableTypeDiscriminatorB;
-export function FooObjectWithEveryNullableTypeDiscriminatorNew(): FooObjectWithEveryNullableTypeDiscriminator {
-    return FooObjectWithEveryNullableTypeDiscriminatorANew();
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryNullableTypeDiscriminator {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryNullableTypeDiscriminatorAFromJson(input);
-        }
-        case `B`: {
-            return FooObjectWithEveryNullableTypeDiscriminatorBFromJson(input);
-        }
-        default: {
-            return FooObjectWithEveryNullableTypeDiscriminatorANew();
-        }
-    }
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorFromJsonString(
-    input: string,
-): FooObjectWithEveryNullableTypeDiscriminator {
-    return FooObjectWithEveryNullableTypeDiscriminatorFromJson(
-        JSON.parse(input),
-    );
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorToJsonString(
-    input: FooObjectWithEveryNullableTypeDiscriminator,
-): string {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryNullableTypeDiscriminatorAToJsonString(
-                input,
-            );
-        }
-
-        case `B`: {
-            return FooObjectWithEveryNullableTypeDiscriminatorBToJsonString(
-                input,
-            );
-        }
-
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParams(
-    input: FooObjectWithEveryNullableTypeDiscriminator,
-): URLSearchParams {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams(
-                input,
-            );
-        }
-        case `B`: {
-            return FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
-                input,
-            );
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParamsString(
-    input: FooObjectWithEveryNullableTypeDiscriminator,
-): string {
-    return FooObjectWithEveryNullableTypeDiscriminatorToUrlSearchParams(
-        input,
-    ).toString();
-}
-export interface FooObjectWithEveryNullableTypeDiscriminatorA {
-    type: `A`;
-    title: string | null;
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorANew(): FooObjectWithEveryNullableTypeDiscriminatorA {
-    return {
-        type: `A`,
-        title: null,
-    };
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorAFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryNullableTypeDiscriminatorA {
-    const _type = `A`;
-    let _title: string | null;
-    _title = parseNullableString(input.title);
-    return {
-        type: _type,
-        title: _title,
-    };
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorAFromJsonString(
-    input: string,
-): FooObjectWithEveryNullableTypeDiscriminatorA {
-    return FooObjectWithEveryNullableTypeDiscriminatorAFromJson(
-        JSON.parse(input),
-    );
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorAToJsonString(
-    input: FooObjectWithEveryNullableTypeDiscriminatorA,
-): string {
-    let json = '{';
-    json += '"type":"A"';
-    json += ',"title":';
-    if (typeof input.title === 'string') {
-        json += serializeString(input.title);
-    } else {
-        json += 'null';
-    }
-    json += '}';
-    return json;
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams(
-    input: FooObjectWithEveryNullableTypeDiscriminatorA,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `A`);
-    params.set('title', `${input.title}`);
-    return params;
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParamsString(
-    input: FooObjectWithEveryNullableTypeDiscriminatorA,
-): string {
-    return FooObjectWithEveryNullableTypeDiscriminatorAToUrlSearchParams(
-        input,
-    ).toString();
-}
-
-export interface FooObjectWithEveryNullableTypeDiscriminatorB {
-    type: `B`;
-    title: string | null;
-    description: string | null;
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBNew(): FooObjectWithEveryNullableTypeDiscriminatorB {
-    return {
-        type: `B`,
-        title: null,
-        description: null,
-    };
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryNullableTypeDiscriminatorB {
-    const _type = `B`;
-    let _title: string | null;
-    _title = parseNullableString(input.title);
-    let _description: string | null;
-    _description = parseNullableString(input.description);
-    return {
-        type: _type,
-        title: _title,
-        description: _description,
-    };
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBFromJsonString(
-    input: string,
-): FooObjectWithEveryNullableTypeDiscriminatorB {
-    return FooObjectWithEveryNullableTypeDiscriminatorBFromJson(
-        JSON.parse(input),
-    );
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBToJsonString(
-    input: FooObjectWithEveryNullableTypeDiscriminatorB,
-): string {
-    let json = '{';
-    json += '"type":"B"';
-    json += ',"title":';
-    if (typeof input.title === 'string') {
-        json += serializeString(input.title);
-    } else {
-        json += 'null';
-    }
-    json += ',"description":';
-    if (typeof input.description === 'string') {
-        json += serializeString(input.description);
-    } else {
-        json += 'null';
-    }
-    json += '}';
-    return json;
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
-    input: FooObjectWithEveryNullableTypeDiscriminatorB,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `B`);
-    params.set('title', `${input.title}`);
-    params.set('description', `${input.description}`);
-    return params;
-}
-export function FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParamsString(
-    input: FooObjectWithEveryNullableTypeDiscriminatorB,
-): string {
-    return FooObjectWithEveryNullableTypeDiscriminatorBToUrlSearchParams(
         input,
     ).toString();
 }
@@ -4080,6 +4063,7 @@ export interface FooObjectWithPascalCaseKeys {
     createdAt: Date;
     displayName: string;
     phoneNumber: string | null;
+    lastEvent: FooObjectWithPascalCaseKeysLastEvent | null;
     emailAddress?: string;
     isAdmin?: boolean;
 }
@@ -4088,6 +4072,7 @@ export function FooObjectWithPascalCaseKeysNew(): FooObjectWithPascalCaseKeys {
         createdAt: new Date(0),
         displayName: '',
         phoneNumber: null,
+        lastEvent: null,
     };
 }
 export function FooObjectWithPascalCaseKeysFromJson(
@@ -4099,6 +4084,14 @@ export function FooObjectWithPascalCaseKeysFromJson(
     _DisplayName = parseString(input.DisplayName);
     let _PhoneNumber: string | null;
     _PhoneNumber = parseNullableString(input.PhoneNumber);
+    let _LastEvent: FooObjectWithPascalCaseKeysLastEvent | null;
+    if (isObject(input.LastEvent)) {
+        _LastEvent = FooObjectWithPascalCaseKeysLastEventFromJson(
+            input.LastEvent,
+        );
+    } else {
+        _LastEvent = null;
+    }
     let _EmailAddress: string | undefined;
     if (typeof input.EmailAddress !== 'undefined') {
         _EmailAddress = parseString(input.EmailAddress);
@@ -4111,6 +4104,7 @@ export function FooObjectWithPascalCaseKeysFromJson(
         createdAt: _CreatedAt,
         displayName: _DisplayName,
         phoneNumber: _PhoneNumber,
+        lastEvent: _LastEvent,
         emailAddress: _EmailAddress,
         isAdmin: _IsAdmin,
     };
@@ -4134,6 +4128,14 @@ export function FooObjectWithPascalCaseKeysToJsonString(
     } else {
         json += 'null';
     }
+    json += ',"LastEvent":';
+    if (input.lastEvent != null) {
+        json += FooObjectWithPascalCaseKeysLastEventToJsonString(
+            input.lastEvent,
+        );
+    } else {
+        json += 'null';
+    }
     if (typeof input.emailAddress !== 'undefined') {
         json += `,"EmailAddress":`;
         json += serializeString(input.emailAddress);
@@ -4152,6 +4154,9 @@ export function FooObjectWithPascalCaseKeysToUrlSearchParams(
     params.set('CreatedAt', input.createdAt.toISOString());
     params.set('DisplayName', input.displayName);
     params.set('PhoneNumber', `${input.phoneNumber}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithPascalCaseKeys/LastEvent.',
+    );
     if (typeof input.emailAddress !== 'undefined') {
         params.set('EmailAddress', input.emailAddress);
     }
@@ -4166,10 +4171,285 @@ export function FooObjectWithPascalCaseKeysToUrlSearchParamsString(
     return FooObjectWithPascalCaseKeysToUrlSearchParams(input).toString();
 }
 
+export type FooObjectWithPascalCaseKeysLastEvent =
+    | {
+          type: `UserCreated`;
+          value: FooObjectWithPascalCaseKeysLastEventUserCreated;
+      }
+    | {
+          type: `UserUpdated`;
+          value: FooObjectWithPascalCaseKeysLastEventUserUpdated;
+      }
+    | {
+          type: `UserDeleted`;
+          value: FooObjectWithPascalCaseKeysLastEventUserDeleted;
+      };
+export function FooObjectWithPascalCaseKeysLastEventNew(): FooObjectWithPascalCaseKeysLastEvent {
+    return {
+        type: `UserCreated`,
+        value: FooObjectWithPascalCaseKeysLastEventUserCreatedNew(),
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithPascalCaseKeysLastEvent {
+    if (`UserCreated` in input) {
+        let __value__: FooObjectWithPascalCaseKeysLastEventUserCreated;
+        if (isObject(input[`UserCreated`])) {
+            __value__ = FooObjectWithPascalCaseKeysLastEventUserCreatedFromJson(
+                input[`UserCreated`],
+            );
+        } else {
+            __value__ = FooObjectWithPascalCaseKeysLastEventUserCreatedNew();
+        }
+        return {
+            type: `UserCreated`,
+            value: __value__,
+        };
+    }
+
+    if (`UserUpdated` in input) {
+        let __value__: FooObjectWithPascalCaseKeysLastEventUserUpdated;
+        if (isObject(input[`UserUpdated`])) {
+            __value__ = FooObjectWithPascalCaseKeysLastEventUserUpdatedFromJson(
+                input[`UserUpdated`],
+            );
+        } else {
+            __value__ = FooObjectWithPascalCaseKeysLastEventUserUpdatedNew();
+        }
+        return {
+            type: `UserUpdated`,
+            value: __value__,
+        };
+    }
+
+    if (`UserDeleted` in input) {
+        let __value__: FooObjectWithPascalCaseKeysLastEventUserDeleted;
+        if (isObject(input[`UserDeleted`])) {
+            __value__ = FooObjectWithPascalCaseKeysLastEventUserDeletedFromJson(
+                input[`UserDeleted`],
+            );
+        } else {
+            __value__ = FooObjectWithPascalCaseKeysLastEventUserDeletedNew();
+        }
+        return {
+            type: `UserDeleted`,
+            value: __value__,
+        };
+    }
+    return FooObjectWithPascalCaseKeysLastEventNew();
+}
+export function FooObjectWithPascalCaseKeysLastEventFromJsonString(
+    input: string,
+): FooObjectWithPascalCaseKeysLastEvent {
+    return FooObjectWithPascalCaseKeysLastEventFromJson(JSON.parse(input));
+}
+export function FooObjectWithPascalCaseKeysLastEventToJsonString(
+    input: FooObjectWithPascalCaseKeysLastEvent,
+): string {
+    switch (input.type) {
+        case `UserCreated`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithPascalCaseKeysLastEventUserCreatedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `UserUpdated`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithPascalCaseKeysLastEventUserUpdatedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `UserDeleted`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithPascalCaseKeysLastEventUserDeletedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooObjectWithPascalCaseKeysLastEventToUrlSearchParams(
+    input: FooObjectWithPascalCaseKeysLastEvent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function FooObjectWithPascalCaseKeysLastEventToUrlSearchParamsString(
+    input: FooObjectWithPascalCaseKeysLastEvent,
+): string {
+    return FooObjectWithPascalCaseKeysLastEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export interface FooObjectWithPascalCaseKeysLastEventUserCreated {
+    userId: string;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserCreatedNew(): FooObjectWithPascalCaseKeysLastEventUserCreated {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithPascalCaseKeysLastEventUserCreated {
+    let _UserId: string;
+    _UserId = parseString(input.UserId);
+    return {
+        userId: _UserId,
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventUserCreatedFromJsonString(
+    input: string,
+): FooObjectWithPascalCaseKeysLastEventUserCreated {
+    return FooObjectWithPascalCaseKeysLastEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithPascalCaseKeysLastEventUserCreatedToJsonString(
+    input: FooObjectWithPascalCaseKeysLastEventUserCreated,
+): string {
+    let json = '{';
+    json += '"UserId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParams(
+    input: FooObjectWithPascalCaseKeysLastEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('UserId', input.userId);
+    return params;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParamsString(
+    input: FooObjectWithPascalCaseKeysLastEventUserCreated,
+): string {
+    return FooObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface FooObjectWithPascalCaseKeysLastEventUserUpdated {
+    userId: string;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserUpdatedNew(): FooObjectWithPascalCaseKeysLastEventUserUpdated {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventUserUpdatedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithPascalCaseKeysLastEventUserUpdated {
+    let _UserId: string;
+    _UserId = parseString(input.UserId);
+    return {
+        userId: _UserId,
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventUserUpdatedFromJsonString(
+    input: string,
+): FooObjectWithPascalCaseKeysLastEventUserUpdated {
+    return FooObjectWithPascalCaseKeysLastEventUserUpdatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithPascalCaseKeysLastEventUserUpdatedToJsonString(
+    input: FooObjectWithPascalCaseKeysLastEventUserUpdated,
+): string {
+    let json = '{';
+    json += '"UserId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParams(
+    input: FooObjectWithPascalCaseKeysLastEventUserUpdated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('UserId', input.userId);
+    return params;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParamsString(
+    input: FooObjectWithPascalCaseKeysLastEventUserUpdated,
+): string {
+    return FooObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface FooObjectWithPascalCaseKeysLastEventUserDeleted {
+    userId: string;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserDeletedNew(): FooObjectWithPascalCaseKeysLastEventUserDeleted {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventUserDeletedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithPascalCaseKeysLastEventUserDeleted {
+    let _UserId: string;
+    _UserId = parseString(input.UserId);
+    return {
+        userId: _UserId,
+    };
+}
+export function FooObjectWithPascalCaseKeysLastEventUserDeletedFromJsonString(
+    input: string,
+): FooObjectWithPascalCaseKeysLastEventUserDeleted {
+    return FooObjectWithPascalCaseKeysLastEventUserDeletedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithPascalCaseKeysLastEventUserDeletedToJsonString(
+    input: FooObjectWithPascalCaseKeysLastEventUserDeleted,
+): string {
+    let json = '{';
+    json += '"UserId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParams(
+    input: FooObjectWithPascalCaseKeysLastEventUserDeleted,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('UserId', input.userId);
+    return params;
+}
+export function FooObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParamsString(
+    input: FooObjectWithPascalCaseKeysLastEventUserDeleted,
+): string {
+    return FooObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
 export interface FooObjectWithSnakeCaseKeys {
     createdAt: Date;
     displayName: string;
     phoneNumber: string | null;
+    lastEvent: FooObjectWithSnakeCaseKeysLastEvent | null;
     emailAddress?: string;
     isAdmin?: boolean;
 }
@@ -4178,6 +4458,7 @@ export function FooObjectWithSnakeCaseKeysNew(): FooObjectWithSnakeCaseKeys {
         createdAt: new Date(0),
         displayName: '',
         phoneNumber: null,
+        lastEvent: null,
     };
 }
 export function FooObjectWithSnakeCaseKeysFromJson(
@@ -4189,6 +4470,14 @@ export function FooObjectWithSnakeCaseKeysFromJson(
     _display_name = parseString(input.display_name);
     let _phone_number: string | null;
     _phone_number = parseNullableString(input.phone_number);
+    let _last_event: FooObjectWithSnakeCaseKeysLastEvent | null;
+    if (isObject(input.last_event)) {
+        _last_event = FooObjectWithSnakeCaseKeysLastEventFromJson(
+            input.last_event,
+        );
+    } else {
+        _last_event = null;
+    }
     let _email_address: string | undefined;
     if (typeof input.email_address !== 'undefined') {
         _email_address = parseString(input.email_address);
@@ -4201,6 +4490,7 @@ export function FooObjectWithSnakeCaseKeysFromJson(
         createdAt: _created_at,
         displayName: _display_name,
         phoneNumber: _phone_number,
+        lastEvent: _last_event,
         emailAddress: _email_address,
         isAdmin: _is_admin,
     };
@@ -4224,6 +4514,14 @@ export function FooObjectWithSnakeCaseKeysToJsonString(
     } else {
         json += 'null';
     }
+    json += ',"last_event":';
+    if (input.lastEvent != null) {
+        json += FooObjectWithSnakeCaseKeysLastEventToJsonString(
+            input.lastEvent,
+        );
+    } else {
+        json += 'null';
+    }
     if (typeof input.emailAddress !== 'undefined') {
         json += `,"email_address":`;
         json += serializeString(input.emailAddress);
@@ -4242,6 +4540,9 @@ export function FooObjectWithSnakeCaseKeysToUrlSearchParams(
     params.set('created_at', input.createdAt.toISOString());
     params.set('display_name', input.displayName);
     params.set('phone_number', `${input.phoneNumber}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithSnakeCaseKeys/last_event.',
+    );
     if (typeof input.emailAddress !== 'undefined') {
         params.set('email_address', input.emailAddress);
     }
@@ -4254,6 +4555,280 @@ export function FooObjectWithSnakeCaseKeysToUrlSearchParamsString(
     input: FooObjectWithSnakeCaseKeys,
 ): string {
     return FooObjectWithSnakeCaseKeysToUrlSearchParams(input).toString();
+}
+
+export type FooObjectWithSnakeCaseKeysLastEvent =
+    | {
+          type: `user_created`;
+          value: FooObjectWithSnakeCaseKeysLastEventUserCreated;
+      }
+    | {
+          type: `user_updated`;
+          value: FooObjectWithSnakeCaseKeysLastEventUserUpdated;
+      }
+    | {
+          type: `user_deleted`;
+          value: FooObjectWithSnakeCaseKeysLastEventUserDeleted;
+      };
+export function FooObjectWithSnakeCaseKeysLastEventNew(): FooObjectWithSnakeCaseKeysLastEvent {
+    return {
+        type: `user_created`,
+        value: FooObjectWithSnakeCaseKeysLastEventUserCreatedNew(),
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithSnakeCaseKeysLastEvent {
+    if (`user_created` in input) {
+        let __value__: FooObjectWithSnakeCaseKeysLastEventUserCreated;
+        if (isObject(input[`user_created`])) {
+            __value__ = FooObjectWithSnakeCaseKeysLastEventUserCreatedFromJson(
+                input[`user_created`],
+            );
+        } else {
+            __value__ = FooObjectWithSnakeCaseKeysLastEventUserCreatedNew();
+        }
+        return {
+            type: `user_created`,
+            value: __value__,
+        };
+    }
+
+    if (`user_updated` in input) {
+        let __value__: FooObjectWithSnakeCaseKeysLastEventUserUpdated;
+        if (isObject(input[`user_updated`])) {
+            __value__ = FooObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson(
+                input[`user_updated`],
+            );
+        } else {
+            __value__ = FooObjectWithSnakeCaseKeysLastEventUserUpdatedNew();
+        }
+        return {
+            type: `user_updated`,
+            value: __value__,
+        };
+    }
+
+    if (`user_deleted` in input) {
+        let __value__: FooObjectWithSnakeCaseKeysLastEventUserDeleted;
+        if (isObject(input[`user_deleted`])) {
+            __value__ = FooObjectWithSnakeCaseKeysLastEventUserDeletedFromJson(
+                input[`user_deleted`],
+            );
+        } else {
+            __value__ = FooObjectWithSnakeCaseKeysLastEventUserDeletedNew();
+        }
+        return {
+            type: `user_deleted`,
+            value: __value__,
+        };
+    }
+    return FooObjectWithSnakeCaseKeysLastEventNew();
+}
+export function FooObjectWithSnakeCaseKeysLastEventFromJsonString(
+    input: string,
+): FooObjectWithSnakeCaseKeysLastEvent {
+    return FooObjectWithSnakeCaseKeysLastEventFromJson(JSON.parse(input));
+}
+export function FooObjectWithSnakeCaseKeysLastEventToJsonString(
+    input: FooObjectWithSnakeCaseKeysLastEvent,
+): string {
+    switch (input.type) {
+        case `user_created`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithSnakeCaseKeysLastEventUserCreatedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `user_updated`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithSnakeCaseKeysLastEventUserUpdatedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `user_deleted`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += FooObjectWithSnakeCaseKeysLastEventUserDeletedToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function FooObjectWithSnakeCaseKeysLastEventToUrlSearchParams(
+    input: FooObjectWithSnakeCaseKeysLastEvent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function FooObjectWithSnakeCaseKeysLastEventToUrlSearchParamsString(
+    input: FooObjectWithSnakeCaseKeysLastEvent,
+): string {
+    return FooObjectWithSnakeCaseKeysLastEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export interface FooObjectWithSnakeCaseKeysLastEventUserCreated {
+    userId: string;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserCreatedNew(): FooObjectWithSnakeCaseKeysLastEventUserCreated {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithSnakeCaseKeysLastEventUserCreated {
+    let _user_id: string;
+    _user_id = parseString(input.user_id);
+    return {
+        userId: _user_id,
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserCreatedFromJsonString(
+    input: string,
+): FooObjectWithSnakeCaseKeysLastEventUserCreated {
+    return FooObjectWithSnakeCaseKeysLastEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserCreatedToJsonString(
+    input: FooObjectWithSnakeCaseKeysLastEventUserCreated,
+): string {
+    let json = '{';
+    json += '"user_id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParams(
+    input: FooObjectWithSnakeCaseKeysLastEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user_id', input.userId);
+    return params;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParamsString(
+    input: FooObjectWithSnakeCaseKeysLastEventUserCreated,
+): string {
+    return FooObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+    userId: string;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserUpdatedNew(): FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+    let _user_id: string;
+    _user_id = parseString(input.user_id);
+    return {
+        userId: _user_id,
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserUpdatedFromJsonString(
+    input: string,
+): FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+    return FooObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserUpdatedToJsonString(
+    input: FooObjectWithSnakeCaseKeysLastEventUserUpdated,
+): string {
+    let json = '{';
+    json += '"user_id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParams(
+    input: FooObjectWithSnakeCaseKeysLastEventUserUpdated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user_id', input.userId);
+    return params;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParamsString(
+    input: FooObjectWithSnakeCaseKeysLastEventUserUpdated,
+): string {
+    return FooObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+    userId: string;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserDeletedNew(): FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+    return {
+        userId: '',
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserDeletedFromJson(
+    input: Record<string, unknown>,
+): FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+    let _user_id: string;
+    _user_id = parseString(input.user_id);
+    return {
+        userId: _user_id,
+    };
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserDeletedFromJsonString(
+    input: string,
+): FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+    return FooObjectWithSnakeCaseKeysLastEventUserDeletedFromJson(
+        JSON.parse(input),
+    );
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserDeletedToJsonString(
+    input: FooObjectWithSnakeCaseKeysLastEventUserDeleted,
+): string {
+    let json = '{';
+    json += '"user_id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParams(
+    input: FooObjectWithSnakeCaseKeysLastEventUserDeleted,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user_id', input.userId);
+    return params;
+}
+export function FooObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParamsString(
+    input: FooObjectWithSnakeCaseKeysLastEventUserDeleted,
+): string {
+    return FooObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParams(
+        input,
+    ).toString();
 }
 
 export interface FooObjectWithEveryOptionalType {
@@ -4275,7 +4850,6 @@ export interface FooObjectWithEveryOptionalType {
     array?: boolean[];
     object?: FooObjectWithEveryOptionalTypeObject;
     record?: Record<string, bigint>;
-    discriminator?: FooObjectWithEveryOptionalTypeDiscriminator;
     unionExternal?: FooObjectWithEveryOptionalTypeUnionExternal;
     unionInternal?: FooObjectWithEveryOptionalTypeUnionInternal;
     unionAdjacent?: FooObjectWithEveryOptionalTypeUnionAdjacent;
@@ -4391,17 +4965,6 @@ export function FooObjectWithEveryOptionalTypeFromJson(
             _record = {};
         }
     }
-    let _discriminator: FooObjectWithEveryOptionalTypeDiscriminator | undefined;
-    if (typeof input.discriminator !== 'undefined') {
-        if (isObject(input.discriminator)) {
-            _discriminator =
-                FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
-                    input.discriminator,
-                );
-        } else {
-            _discriminator = FooObjectWithEveryOptionalTypeDiscriminatorNew();
-        }
-    }
     let _unionExternal: FooObjectWithEveryOptionalTypeUnionExternal | undefined;
     if (typeof input.unionExternal !== 'undefined') {
         if (isObject(input.unionExternal)) {
@@ -4496,7 +5059,6 @@ export function FooObjectWithEveryOptionalTypeFromJson(
         array: _array,
         object: _object,
         record: _record,
-        discriminator: _discriminator,
         unionExternal: _unionExternal,
         unionInternal: _unionInternal,
         unionAdjacent: _unionAdjacent,
@@ -4639,14 +5201,6 @@ export function FooObjectWithEveryOptionalTypeToJsonString(
 
         _hasKey = true;
     }
-    if (typeof input.discriminator !== 'undefined') {
-        if (_hasKey) json += ',';
-        json += '"discriminator":';
-        json += FooObjectWithEveryOptionalTypeDiscriminatorToJsonString(
-            input.discriminator,
-        );
-        _hasKey = true;
-    }
     if (typeof input.unionExternal !== 'undefined') {
         if (_hasKey) json += ',';
         json += '"unionExternal":';
@@ -4767,11 +5321,6 @@ export function FooObjectWithEveryOptionalTypeToUrlSearchParams(
     if (typeof input.record !== 'undefined') {
         console.warn(
             '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryOptionalType/record.',
-        );
-    }
-    if (typeof input.discriminator !== 'undefined') {
-        console.warn(
-            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryOptionalType/discriminator.',
         );
     }
     if (typeof input.unionExternal !== 'undefined') {
@@ -4901,199 +5450,6 @@ export function FooObjectWithEveryOptionalTypeObjectToUrlSearchParamsString(
     input: FooObjectWithEveryOptionalTypeObject,
 ): string {
     return FooObjectWithEveryOptionalTypeObjectToUrlSearchParams(
-        input,
-    ).toString();
-}
-
-export type FooObjectWithEveryOptionalTypeDiscriminator =
-    | FooObjectWithEveryOptionalTypeDiscriminatorA
-    | FooObjectWithEveryOptionalTypeDiscriminatorB;
-export function FooObjectWithEveryOptionalTypeDiscriminatorNew(): FooObjectWithEveryOptionalTypeDiscriminator {
-    return FooObjectWithEveryOptionalTypeDiscriminatorANew();
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryOptionalTypeDiscriminator {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(input);
-        }
-        case `B`: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(input);
-        }
-        default: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorANew();
-        }
-    }
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorFromJsonString(
-    input: string,
-): FooObjectWithEveryOptionalTypeDiscriminator {
-    return FooObjectWithEveryOptionalTypeDiscriminatorFromJson(
-        JSON.parse(input),
-    );
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorToJsonString(
-    input: FooObjectWithEveryOptionalTypeDiscriminator,
-): string {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorAToJsonString(
-                input,
-            );
-        }
-
-        case `B`: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorBToJsonString(
-                input,
-            );
-        }
-
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParams(
-    input: FooObjectWithEveryOptionalTypeDiscriminator,
-): URLSearchParams {
-    switch (input.type) {
-        case `A`: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams(
-                input,
-            );
-        }
-        case `B`: {
-            return FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
-                input,
-            );
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParamsString(
-    input: FooObjectWithEveryOptionalTypeDiscriminator,
-): string {
-    return FooObjectWithEveryOptionalTypeDiscriminatorToUrlSearchParams(
-        input,
-    ).toString();
-}
-export interface FooObjectWithEveryOptionalTypeDiscriminatorA {
-    type: `A`;
-    title: string;
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorANew(): FooObjectWithEveryOptionalTypeDiscriminatorA {
-    return {
-        type: `A`,
-        title: '',
-    };
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryOptionalTypeDiscriminatorA {
-    const _type = `A`;
-    let _title: string;
-    _title = parseString(input.title);
-    return {
-        type: _type,
-        title: _title,
-    };
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorAFromJsonString(
-    input: string,
-): FooObjectWithEveryOptionalTypeDiscriminatorA {
-    return FooObjectWithEveryOptionalTypeDiscriminatorAFromJson(
-        JSON.parse(input),
-    );
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorAToJsonString(
-    input: FooObjectWithEveryOptionalTypeDiscriminatorA,
-): string {
-    let json = '{';
-    json += '"type":"A"';
-    json += ',"title":';
-    json += serializeString(input.title);
-    json += '}';
-    return json;
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams(
-    input: FooObjectWithEveryOptionalTypeDiscriminatorA,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `A`);
-    params.set('title', input.title);
-    return params;
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParamsString(
-    input: FooObjectWithEveryOptionalTypeDiscriminatorA,
-): string {
-    return FooObjectWithEveryOptionalTypeDiscriminatorAToUrlSearchParams(
-        input,
-    ).toString();
-}
-
-export interface FooObjectWithEveryOptionalTypeDiscriminatorB {
-    type: `B`;
-    title: string;
-    description: string;
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBNew(): FooObjectWithEveryOptionalTypeDiscriminatorB {
-    return {
-        type: `B`,
-        title: '',
-        description: '',
-    };
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(
-    input: Record<string, unknown>,
-): FooObjectWithEveryOptionalTypeDiscriminatorB {
-    const _type = `B`;
-    let _title: string;
-    _title = parseString(input.title);
-    let _description: string;
-    _description = parseString(input.description);
-    return {
-        type: _type,
-        title: _title,
-        description: _description,
-    };
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBFromJsonString(
-    input: string,
-): FooObjectWithEveryOptionalTypeDiscriminatorB {
-    return FooObjectWithEveryOptionalTypeDiscriminatorBFromJson(
-        JSON.parse(input),
-    );
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBToJsonString(
-    input: FooObjectWithEveryOptionalTypeDiscriminatorB,
-): string {
-    let json = '{';
-    json += '"type":"B"';
-    json += ',"title":';
-    json += serializeString(input.title);
-    json += ',"description":';
-    json += serializeString(input.description);
-    json += '}';
-    return json;
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
-    input: FooObjectWithEveryOptionalTypeDiscriminatorB,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `B`);
-    params.set('title', input.title);
-    params.set('description', input.description);
-    return params;
-}
-export function FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParamsString(
-    input: FooObjectWithEveryOptionalTypeDiscriminatorB,
-): string {
-    return FooObjectWithEveryOptionalTypeDiscriminatorBToUrlSearchParams(
         input,
     ).toString();
 }

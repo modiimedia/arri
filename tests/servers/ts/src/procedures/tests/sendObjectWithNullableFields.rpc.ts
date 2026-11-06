@@ -28,18 +28,6 @@ export const ObjectWithEveryNullableType = a.object(
             }),
         ),
         record: a.nullable(a.record(a.nullable(a.uint64()))),
-        /** @deprecated */
-        discriminator: a.nullable(
-            a.discriminator('type', {
-                A: a.object({
-                    title: a.nullable(a.string()),
-                }),
-                B: a.object({
-                    title: a.nullable(a.string()),
-                    description: a.nullable(a.string()),
-                }),
-            }),
-        ),
         unionExternal: a.nullable(
             a.union({
                 object: a.object({

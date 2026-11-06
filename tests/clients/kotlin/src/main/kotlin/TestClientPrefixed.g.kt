@@ -141,6 +141,33 @@ class TestClientPrefixed(
         }
     }
 
+    suspend fun sendObjectWithKebabCaseKeys(params: FooObjectWithKebabCaseKeys): FooObjectWithKebabCaseKeys {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-kebab-case-keys",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw TestClientPrefixedError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return FooObjectWithKebabCaseKeys.fromJson(response.bodyAsText())
+            }
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
     suspend fun sendObjectWithNullableFields(params: FooObjectWithEveryNullableType): FooObjectWithEveryNullableType {
         try {
             val response = __prepareRequest(
@@ -1146,7 +1173,6 @@ data class FooObjectWithEveryType(
     val array: MutableList<Boolean>,
     val `object`: FooObjectWithEveryTypeObject,
     val record: MutableMap<String, ULong>,
-    val discriminator: FooObjectWithEveryTypeDiscriminator,
     val unionExternal: FooObjectWithEveryTypeUnionExternal,
     val unionInternal: FooObjectWithEveryTypeUnionInternal,
     val unionAdjacent: FooObjectWithEveryTypeUnionAdjacent,
@@ -1206,8 +1232,6 @@ data class FooObjectWithEveryType(
             output += "\"${__entry.value}\""
         }
         output += "}"
-        output += ",\"discriminator\":"
-        output += discriminator.toJson()
         output += ",\"unionExternal\":"
         output += unionExternal.toJson()
         output += ",\"unionInternal\":"
@@ -1256,7 +1280,6 @@ data class FooObjectWithEveryType(
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
@@ -1287,7 +1310,6 @@ data class FooObjectWithEveryType(
                 array = mutableListOf(),
                 `object` = FooObjectWithEveryTypeObject.new(),
                 record = mutableMapOf(),
-                discriminator = FooObjectWithEveryTypeDiscriminator.new(),
                 unionExternal = FooObjectWithEveryTypeUnionExternal.new(),
                 unionInternal = FooObjectWithEveryTypeUnionInternal.new(),
                 unionAdjacent = FooObjectWithEveryTypeUnionAdjacent.new(),
@@ -1411,14 +1433,6 @@ data class FooObjectWithEveryType(
 
                 else -> mutableMapOf()
             }
-            val discriminator: FooObjectWithEveryTypeDiscriminator = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> FooObjectWithEveryTypeDiscriminator.fromJsonElement(
-                    __input.jsonObject["discriminator"]!!,
-                    "$instancePath/discriminator",
-                )
-
-                else -> FooObjectWithEveryTypeDiscriminator.new()
-            }
             val unionExternal: FooObjectWithEveryTypeUnionExternal = when (__input.jsonObject["unionExternal"]) {
                 is JsonObject -> FooObjectWithEveryTypeUnionExternal.fromJsonElement(
                     __input.jsonObject["unionExternal"]!!,
@@ -1502,7 +1516,6 @@ data class FooObjectWithEveryType(
                 array,
                 `object`,
                 record,
-                discriminator,
                 unionExternal,
                 unionInternal,
                 unionAdjacent,
@@ -1624,151 +1637,6 @@ data class FooObjectWithEveryTypeObject(
                 string,
                 boolean,
                 timestamp,
-            )
-        }
-    }
-}
-
-sealed interface FooObjectWithEveryTypeDiscriminator : TestClientPrefixedModel {
-    val type: String
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeDiscriminator> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryTypeDiscriminator {
-            return FooObjectWithEveryTypeDiscriminatorA.new()
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryTypeDiscriminator {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeDiscriminator {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryTypeDiscriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeDiscriminator.")
-                return new()
-            }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> FooObjectWithEveryTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-                    "B" -> FooObjectWithEveryTypeDiscriminatorB.fromJsonElement(__input, instancePath)
-                    else -> new()
-                }
-
-                else -> new()
-            }
-        }
-    }
-}
-
-data class FooObjectWithEveryTypeDiscriminatorA(
-    val title: String,
-) : FooObjectWithEveryTypeDiscriminator {
-    override val type get() = "A"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"A\""
-        output += ",\"title\":"
-        output += buildString { printQuoted(title) }
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=A")
-        queryParts.add("title=${__encodeQueryValue(title)}")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeDiscriminatorA> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryTypeDiscriminatorA {
-            return FooObjectWithEveryTypeDiscriminatorA(
-                title = "",
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryTypeDiscriminatorA {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeDiscriminatorA {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeDiscriminatorA.")
-                return new()
-            }
-            val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return FooObjectWithEveryTypeDiscriminatorA(
-                title,
-            )
-        }
-    }
-}
-
-data class FooObjectWithEveryTypeDiscriminatorB(
-    val title: String,
-    val description: String,
-) : FooObjectWithEveryTypeDiscriminator {
-    override val type get() = "B"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"B\""
-        output += ",\"title\":"
-        output += buildString { printQuoted(title) }
-        output += ",\"description\":"
-        output += buildString { printQuoted(description) }
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=B")
-        queryParts.add("title=${__encodeQueryValue(title)}")
-        queryParts.add("description=${__encodeQueryValue(description)}")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryTypeDiscriminatorB> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryTypeDiscriminatorB {
-            return FooObjectWithEveryTypeDiscriminatorB(
-                title = "",
-                description = "",
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryTypeDiscriminatorB {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryTypeDiscriminatorB {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryTypeDiscriminatorB.")
-                return new()
-            }
-            val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            val description: String = when (__input.jsonObject["description"]) {
-                is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return FooObjectWithEveryTypeDiscriminatorB(
-                title,
-                description,
             )
         }
     }
@@ -2815,6 +2683,440 @@ data class FooObjectWithEveryTypeNestedArrayElementElement(
     }
 }
 
+data class FooObjectWithKebabCaseKeys(
+    val createdAt: Instant,
+    val displayName: String,
+    val phoneNumber: String?,
+    val lastEvent: FooObjectWithKebabCaseKeysLastEvent?,
+    val emailAddress: String? = null,
+    val isAdmin: Boolean? = null,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"created-at\":"
+        output += "\"${timestampFormatter.format(createdAt)}\""
+        output += ",\"display-name\":"
+        output += buildString { printQuoted(displayName) }
+        output += ",\"phone-number\":"
+        output += when (phoneNumber) {
+            is String -> buildString { printQuoted(phoneNumber) }
+            else -> "null"
+        }
+        output += ",\"last-event\":"
+        output += lastEvent?.toJson()
+        if (emailAddress != null) {
+            output += ",\"email-address\":"
+            output += buildString { printQuoted(emailAddress) }
+        }
+        if (isAdmin != null) {
+            output += ",\"is-admin\":"
+            output += isAdmin
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("created-at=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
+        queryParts.add("display-name=${__encodeQueryValue(displayName)}")
+        queryParts.add("phone-number=${__encodeQueryValue(phoneNumber)}")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.")
+        if (emailAddress != null) {
+            queryParts.add("email-address=${__encodeQueryValue(emailAddress)}")
+        }
+        if (isAdmin != null) {
+            queryParts.add("is-admin=$isAdmin")
+        }
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeys> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeys {
+            return FooObjectWithKebabCaseKeys(
+                createdAt = Instant.now(),
+                displayName = "",
+                phoneNumber = null,
+                lastEvent = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeys {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeys {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeys.")
+                return new()
+            }
+            val createdAt: Instant = when (__input.jsonObject["created-at"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["created-at"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["created-at"]!!.jsonPrimitive.content)
+                    else
+                        Instant.now()
+
+                else -> Instant.now()
+            }
+            val displayName: String = when (__input.jsonObject["display-name"]) {
+                is JsonPrimitive -> __input.jsonObject["display-name"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val phoneNumber: String? = when (__input.jsonObject["phone-number"]) {
+                is JsonPrimitive -> __input.jsonObject["phone-number"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val lastEvent: FooObjectWithKebabCaseKeysLastEvent? = when (__input.jsonObject["last-event"]) {
+                is JsonObject -> FooObjectWithKebabCaseKeysLastEvent.fromJsonElement(
+                    __input.jsonObject["last-event"]!!,
+                    "$instancePath/last-event",
+                )
+
+                else -> null
+            }
+            val emailAddress: String? = when (__input.jsonObject["email-address"]) {
+                is JsonPrimitive -> __input.jsonObject["email-address"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val isAdmin: Boolean? = when (__input.jsonObject["is-admin"]) {
+                is JsonPrimitive -> __input.jsonObject["is-admin"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
+            return FooObjectWithKebabCaseKeys(
+                createdAt,
+                displayName,
+                phoneNumber,
+                lastEvent,
+                emailAddress,
+                isAdmin,
+            )
+        }
+    }
+}
+
+sealed interface FooObjectWithKebabCaseKeysLastEvent : TestClientPrefixedModel {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEvent> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEvent {
+            return FooObjectWithKebabCaseKeysLastEventUserCreated.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEvent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEvent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEvent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEvent.")
+                return new()
+            }
+            return when {
+                "user-created" in __input -> FooObjectWithKebabCaseKeysLastEventUserCreated.fromJsonElement(__input, instancePath)
+                "user-updated" in __input -> FooObjectWithKebabCaseKeysLastEventUserUpdated.fromJsonElement(__input, instancePath)
+                "user-deleted" in __input -> FooObjectWithKebabCaseKeysLastEventUserDeleted.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class FooObjectWithKebabCaseKeysLastEventUserCreated(
+    val value: FooObjectWithKebabCaseKeysLastEventUserCreatedValue,
+) : FooObjectWithKebabCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-created\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysLastEventUserCreated.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEventUserCreated> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEventUserCreated {
+            return FooObjectWithKebabCaseKeysLastEventUserCreated(
+                value = FooObjectWithKebabCaseKeysLastEventUserCreatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEventUserCreated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEventUserCreated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEventUserCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEventUserCreated.")
+                return new()
+            }
+            val value: FooObjectWithKebabCaseKeysLastEventUserCreatedValue = when (__input.jsonObject["user-created"]) {
+                is JsonObject -> FooObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJsonElement(
+                    __input.jsonObject["user-created"]!!,
+                    "$instancePath/user-created",
+                )
+
+                else -> FooObjectWithKebabCaseKeysLastEventUserCreatedValue.new()
+            }
+            return FooObjectWithKebabCaseKeysLastEventUserCreated(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithKebabCaseKeysLastEventUserUpdated(
+    val value: FooObjectWithKebabCaseKeysLastEventUserUpdatedValue,
+) : FooObjectWithKebabCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-updated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysLastEventUserUpdated.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEventUserUpdated> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEventUserUpdated {
+            return FooObjectWithKebabCaseKeysLastEventUserUpdated(
+                value = FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEventUserUpdated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEventUserUpdated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEventUserUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEventUserUpdated.")
+                return new()
+            }
+            val value: FooObjectWithKebabCaseKeysLastEventUserUpdatedValue = when (__input.jsonObject["user-updated"]) {
+                is JsonObject -> FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJsonElement(
+                    __input.jsonObject["user-updated"]!!,
+                    "$instancePath/user-updated",
+                )
+
+                else -> FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.new()
+            }
+            return FooObjectWithKebabCaseKeysLastEventUserUpdated(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithKebabCaseKeysLastEventUserDeleted(
+    val value: FooObjectWithKebabCaseKeysLastEventUserDeletedValue,
+) : FooObjectWithKebabCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-deleted\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysLastEventUserDeleted.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEventUserDeleted> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEventUserDeleted {
+            return FooObjectWithKebabCaseKeysLastEventUserDeleted(
+                value = FooObjectWithKebabCaseKeysLastEventUserDeletedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEventUserDeleted {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEventUserDeleted {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEventUserDeleted.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEventUserDeleted.")
+                return new()
+            }
+            val value: FooObjectWithKebabCaseKeysLastEventUserDeletedValue = when (__input.jsonObject["user-deleted"]) {
+                is JsonObject -> FooObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJsonElement(
+                    __input.jsonObject["user-deleted"]!!,
+                    "$instancePath/user-deleted",
+                )
+
+                else -> FooObjectWithKebabCaseKeysLastEventUserDeletedValue.new()
+            }
+            return FooObjectWithKebabCaseKeysLastEventUserDeleted(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithKebabCaseKeysLastEventUserCreatedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user-id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEventUserCreatedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEventUserCreatedValue {
+            return FooObjectWithKebabCaseKeysLastEventUserCreatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEventUserCreatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEventUserCreatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEventUserCreatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user-id"]) {
+                is JsonPrimitive -> __input.jsonObject["user-id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithKebabCaseKeysLastEventUserCreatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class FooObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user-id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEventUserUpdatedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+            return FooObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user-id"]) {
+                is JsonPrimitive -> __input.jsonObject["user-id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class FooObjectWithKebabCaseKeysLastEventUserDeletedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user-id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithKebabCaseKeysLastEventUserDeletedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithKebabCaseKeysLastEventUserDeletedValue {
+            return FooObjectWithKebabCaseKeysLastEventUserDeletedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithKebabCaseKeysLastEventUserDeletedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithKebabCaseKeysLastEventUserDeletedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithKebabCaseKeysLastEventUserDeletedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user-id"]) {
+                is JsonPrimitive -> __input.jsonObject["user-id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithKebabCaseKeysLastEventUserDeletedValue(
+                userId,
+            )
+        }
+    }
+}
+
 data class FooObjectWithEveryNullableType(
     val any: JsonElement?,
     val boolean: Boolean?,
@@ -2834,7 +3136,6 @@ data class FooObjectWithEveryNullableType(
     val array: MutableList<Boolean?>?,
     val `object`: FooObjectWithEveryNullableTypeObject?,
     val record: MutableMap<String, ULong?>?,
-    val discriminator: FooObjectWithEveryNullableTypeDiscriminator?,
     val unionExternal: FooObjectWithEveryNullableTypeUnionExternal?,
     val unionInternal: FooObjectWithEveryNullableTypeUnionInternal?,
     val unionAdjacent: FooObjectWithEveryNullableTypeUnionAdjacent?,
@@ -2923,8 +3224,6 @@ data class FooObjectWithEveryNullableType(
             }
             output += "}"
         }
-        output += ",\"discriminator\":"
-        output += discriminator?.toJson()
         output += ",\"unionExternal\":"
         output += unionExternal?.toJson()
         output += ",\"unionInternal\":"
@@ -2981,7 +3280,6 @@ data class FooObjectWithEveryNullableType(
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.")
@@ -3012,7 +3310,6 @@ data class FooObjectWithEveryNullableType(
                 array = null,
                 `object` = null,
                 record = null,
-                discriminator = null,
                 unionExternal = null,
                 unionInternal = null,
                 unionAdjacent = null,
@@ -3137,14 +3434,6 @@ data class FooObjectWithEveryNullableType(
 
                 else -> null
             }
-            val discriminator: FooObjectWithEveryNullableTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> FooObjectWithEveryNullableTypeDiscriminator.fromJsonElement(
-                    __input.jsonObject["discriminator"]!!,
-                    "$instancePath/discriminator",
-                )
-
-                else -> null
-            }
             val unionExternal: FooObjectWithEveryNullableTypeUnionExternal? = when (__input.jsonObject["unionExternal"]) {
                 is JsonObject -> FooObjectWithEveryNullableTypeUnionExternal.fromJsonElement(
                     __input.jsonObject["unionExternal"]!!,
@@ -3228,7 +3517,6 @@ data class FooObjectWithEveryNullableType(
                 array,
                 `object`,
                 record,
-                discriminator,
                 unionExternal,
                 unionInternal,
                 unionAdjacent,
@@ -3356,160 +3644,6 @@ data class FooObjectWithEveryNullableTypeObject(
                 string,
                 boolean,
                 timestamp,
-            )
-        }
-    }
-}
-
-sealed interface FooObjectWithEveryNullableTypeDiscriminator : TestClientPrefixedModel {
-    val type: String
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeDiscriminator> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryNullableTypeDiscriminator {
-            return FooObjectWithEveryNullableTypeDiscriminatorA.new()
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryNullableTypeDiscriminator {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeDiscriminator {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryNullableTypeDiscriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeDiscriminator.")
-                return new()
-            }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> FooObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-                    "B" -> FooObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement(__input, instancePath)
-                    else -> new()
-                }
-
-                else -> new()
-            }
-        }
-    }
-}
-
-data class FooObjectWithEveryNullableTypeDiscriminatorA(
-    val title: String?,
-) : FooObjectWithEveryNullableTypeDiscriminator {
-    override val type get() = "A"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"A\""
-        output += ",\"title\":"
-        output += when (title) {
-            is String -> buildString { printQuoted(title) }
-            else -> "null"
-        }
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=A")
-        queryParts.add("title=${__encodeQueryValue(title)}")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeDiscriminatorA> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryNullableTypeDiscriminatorA {
-            return FooObjectWithEveryNullableTypeDiscriminatorA(
-                title = null,
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryNullableTypeDiscriminatorA {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeDiscriminatorA {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeDiscriminatorA.")
-                return new()
-            }
-            val title: String? = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull
-                else -> null
-            }
-            return FooObjectWithEveryNullableTypeDiscriminatorA(
-                title,
-            )
-        }
-    }
-}
-
-data class FooObjectWithEveryNullableTypeDiscriminatorB(
-    val title: String?,
-    val description: String?,
-) : FooObjectWithEveryNullableTypeDiscriminator {
-    override val type get() = "B"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"B\""
-        output += ",\"title\":"
-        output += when (title) {
-            is String -> buildString { printQuoted(title) }
-            else -> "null"
-        }
-        output += ",\"description\":"
-        output += when (description) {
-            is String -> buildString { printQuoted(description) }
-            else -> "null"
-        }
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=B")
-        queryParts.add("title=${__encodeQueryValue(title)}")
-        queryParts.add("description=${__encodeQueryValue(description)}")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryNullableTypeDiscriminatorB> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryNullableTypeDiscriminatorB {
-            return FooObjectWithEveryNullableTypeDiscriminatorB(
-                title = null,
-                description = null,
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryNullableTypeDiscriminatorB {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryNullableTypeDiscriminatorB {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryNullableTypeDiscriminatorB.")
-                return new()
-            }
-            val title: String? = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull
-                else -> null
-            }
-            val description: String? = when (__input.jsonObject["description"]) {
-                is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull
-                else -> null
-            }
-            return FooObjectWithEveryNullableTypeDiscriminatorB(
-                title,
-                description,
             )
         }
     }
@@ -4584,6 +4718,7 @@ data class FooObjectWithPascalCaseKeys(
     val createdAt: Instant,
     val displayName: String,
     val phoneNumber: String?,
+    val lastEvent: FooObjectWithPascalCaseKeysLastEvent?,
     val emailAddress: String? = null,
     val isAdmin: Boolean? = null,
 ) : TestClientPrefixedModel {
@@ -4598,6 +4733,8 @@ data class FooObjectWithPascalCaseKeys(
             is String -> buildString { printQuoted(phoneNumber) }
             else -> "null"
         }
+        output += ",\"LastEvent\":"
+        output += lastEvent?.toJson()
         if (emailAddress != null) {
             output += ",\"EmailAddress\":"
             output += buildString { printQuoted(emailAddress) }
@@ -4615,6 +4752,7 @@ data class FooObjectWithPascalCaseKeys(
         queryParts.add("CreatedAt=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
         queryParts.add("DisplayName=${__encodeQueryValue(displayName)}")
         queryParts.add("PhoneNumber=${__encodeQueryValue(phoneNumber)}")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.")
         if (emailAddress != null) {
             queryParts.add("EmailAddress=${__encodeQueryValue(emailAddress)}")
         }
@@ -4631,6 +4769,7 @@ data class FooObjectWithPascalCaseKeys(
                 createdAt = Instant.now(),
                 displayName = "",
                 phoneNumber = null,
+                lastEvent = null,
             )
         }
 
@@ -4662,6 +4801,14 @@ data class FooObjectWithPascalCaseKeys(
                 is JsonPrimitive -> __input.jsonObject["PhoneNumber"]!!.jsonPrimitive.contentOrNull
                 else -> null
             }
+            val lastEvent: FooObjectWithPascalCaseKeysLastEvent? = when (__input.jsonObject["LastEvent"]) {
+                is JsonObject -> FooObjectWithPascalCaseKeysLastEvent.fromJsonElement(
+                    __input.jsonObject["LastEvent"]!!,
+                    "$instancePath/LastEvent",
+                )
+
+                else -> null
+            }
             val emailAddress: String? = when (__input.jsonObject["EmailAddress"]) {
                 is JsonPrimitive -> __input.jsonObject["EmailAddress"]!!.jsonPrimitive.contentOrNull
                 else -> null
@@ -4674,8 +4821,328 @@ data class FooObjectWithPascalCaseKeys(
                 createdAt,
                 displayName,
                 phoneNumber,
+                lastEvent,
                 emailAddress,
                 isAdmin,
+            )
+        }
+    }
+}
+
+sealed interface FooObjectWithPascalCaseKeysLastEvent : TestClientPrefixedModel {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEvent> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEvent {
+            return FooObjectWithPascalCaseKeysLastEventUserCreated.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEvent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEvent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEvent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEvent.")
+                return new()
+            }
+            return when {
+                "UserCreated" in __input -> FooObjectWithPascalCaseKeysLastEventUserCreated.fromJsonElement(__input, instancePath)
+                "UserUpdated" in __input -> FooObjectWithPascalCaseKeysLastEventUserUpdated.fromJsonElement(__input, instancePath)
+                "UserDeleted" in __input -> FooObjectWithPascalCaseKeysLastEventUserDeleted.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class FooObjectWithPascalCaseKeysLastEventUserCreated(
+    val value: FooObjectWithPascalCaseKeysLastEventUserCreatedValue,
+) : FooObjectWithPascalCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserCreated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysLastEventUserCreated.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEventUserCreated> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEventUserCreated {
+            return FooObjectWithPascalCaseKeysLastEventUserCreated(
+                value = FooObjectWithPascalCaseKeysLastEventUserCreatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEventUserCreated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEventUserCreated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEventUserCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEventUserCreated.")
+                return new()
+            }
+            val value: FooObjectWithPascalCaseKeysLastEventUserCreatedValue = when (__input.jsonObject["UserCreated"]) {
+                is JsonObject -> FooObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJsonElement(
+                    __input.jsonObject["UserCreated"]!!,
+                    "$instancePath/UserCreated",
+                )
+
+                else -> FooObjectWithPascalCaseKeysLastEventUserCreatedValue.new()
+            }
+            return FooObjectWithPascalCaseKeysLastEventUserCreated(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithPascalCaseKeysLastEventUserUpdated(
+    val value: FooObjectWithPascalCaseKeysLastEventUserUpdatedValue,
+) : FooObjectWithPascalCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserUpdated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysLastEventUserUpdated.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEventUserUpdated> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEventUserUpdated {
+            return FooObjectWithPascalCaseKeysLastEventUserUpdated(
+                value = FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEventUserUpdated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEventUserUpdated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEventUserUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEventUserUpdated.")
+                return new()
+            }
+            val value: FooObjectWithPascalCaseKeysLastEventUserUpdatedValue = when (__input.jsonObject["UserUpdated"]) {
+                is JsonObject -> FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJsonElement(
+                    __input.jsonObject["UserUpdated"]!!,
+                    "$instancePath/UserUpdated",
+                )
+
+                else -> FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.new()
+            }
+            return FooObjectWithPascalCaseKeysLastEventUserUpdated(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithPascalCaseKeysLastEventUserDeleted(
+    val value: FooObjectWithPascalCaseKeysLastEventUserDeletedValue,
+) : FooObjectWithPascalCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserDeleted\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysLastEventUserDeleted.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEventUserDeleted> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEventUserDeleted {
+            return FooObjectWithPascalCaseKeysLastEventUserDeleted(
+                value = FooObjectWithPascalCaseKeysLastEventUserDeletedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEventUserDeleted {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEventUserDeleted {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEventUserDeleted.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEventUserDeleted.")
+                return new()
+            }
+            val value: FooObjectWithPascalCaseKeysLastEventUserDeletedValue = when (__input.jsonObject["UserDeleted"]) {
+                is JsonObject -> FooObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJsonElement(
+                    __input.jsonObject["UserDeleted"]!!,
+                    "$instancePath/UserDeleted",
+                )
+
+                else -> FooObjectWithPascalCaseKeysLastEventUserDeletedValue.new()
+            }
+            return FooObjectWithPascalCaseKeysLastEventUserDeleted(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithPascalCaseKeysLastEventUserCreatedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("UserId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEventUserCreatedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEventUserCreatedValue {
+            return FooObjectWithPascalCaseKeysLastEventUserCreatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEventUserCreatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEventUserCreatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEventUserCreatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["UserId"]) {
+                is JsonPrimitive -> __input.jsonObject["UserId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithPascalCaseKeysLastEventUserCreatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class FooObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("UserId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEventUserUpdatedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+            return FooObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["UserId"]) {
+                is JsonPrimitive -> __input.jsonObject["UserId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class FooObjectWithPascalCaseKeysLastEventUserDeletedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("UserId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithPascalCaseKeysLastEventUserDeletedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithPascalCaseKeysLastEventUserDeletedValue {
+            return FooObjectWithPascalCaseKeysLastEventUserDeletedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithPascalCaseKeysLastEventUserDeletedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithPascalCaseKeysLastEventUserDeletedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithPascalCaseKeysLastEventUserDeletedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["UserId"]) {
+                is JsonPrimitive -> __input.jsonObject["UserId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithPascalCaseKeysLastEventUserDeletedValue(
+                userId,
             )
         }
     }
@@ -4685,6 +5152,7 @@ data class FooObjectWithSnakeCaseKeys(
     val createdAt: Instant,
     val displayName: String,
     val phoneNumber: String?,
+    val lastEvent: FooObjectWithSnakeCaseKeysLastEvent?,
     val emailAddress: String? = null,
     val isAdmin: Boolean? = null,
 ) : TestClientPrefixedModel {
@@ -4699,6 +5167,8 @@ data class FooObjectWithSnakeCaseKeys(
             is String -> buildString { printQuoted(phoneNumber) }
             else -> "null"
         }
+        output += ",\"last_event\":"
+        output += lastEvent?.toJson()
         if (emailAddress != null) {
             output += ",\"email_address\":"
             output += buildString { printQuoted(emailAddress) }
@@ -4716,6 +5186,7 @@ data class FooObjectWithSnakeCaseKeys(
         queryParts.add("created_at=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
         queryParts.add("display_name=${__encodeQueryValue(displayName)}")
         queryParts.add("phone_number=${__encodeQueryValue(phoneNumber)}")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.")
         if (emailAddress != null) {
             queryParts.add("email_address=${__encodeQueryValue(emailAddress)}")
         }
@@ -4732,6 +5203,7 @@ data class FooObjectWithSnakeCaseKeys(
                 createdAt = Instant.now(),
                 displayName = "",
                 phoneNumber = null,
+                lastEvent = null,
             )
         }
 
@@ -4763,6 +5235,14 @@ data class FooObjectWithSnakeCaseKeys(
                 is JsonPrimitive -> __input.jsonObject["phone_number"]!!.jsonPrimitive.contentOrNull
                 else -> null
             }
+            val lastEvent: FooObjectWithSnakeCaseKeysLastEvent? = when (__input.jsonObject["last_event"]) {
+                is JsonObject -> FooObjectWithSnakeCaseKeysLastEvent.fromJsonElement(
+                    __input.jsonObject["last_event"]!!,
+                    "$instancePath/last_event",
+                )
+
+                else -> null
+            }
             val emailAddress: String? = when (__input.jsonObject["email_address"]) {
                 is JsonPrimitive -> __input.jsonObject["email_address"]!!.jsonPrimitive.contentOrNull
                 else -> null
@@ -4775,8 +5255,328 @@ data class FooObjectWithSnakeCaseKeys(
                 createdAt,
                 displayName,
                 phoneNumber,
+                lastEvent,
                 emailAddress,
                 isAdmin,
+            )
+        }
+    }
+}
+
+sealed interface FooObjectWithSnakeCaseKeysLastEvent : TestClientPrefixedModel {
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEvent> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEvent {
+            return FooObjectWithSnakeCaseKeysLastEventUserCreated.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEvent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEvent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEvent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEvent.")
+                return new()
+            }
+            return when {
+                "user_created" in __input -> FooObjectWithSnakeCaseKeysLastEventUserCreated.fromJsonElement(__input, instancePath)
+                "user_updated" in __input -> FooObjectWithSnakeCaseKeysLastEventUserUpdated.fromJsonElement(__input, instancePath)
+                "user_deleted" in __input -> FooObjectWithSnakeCaseKeysLastEventUserDeleted.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class FooObjectWithSnakeCaseKeysLastEventUserCreated(
+    val value: FooObjectWithSnakeCaseKeysLastEventUserCreatedValue,
+) : FooObjectWithSnakeCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_created\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysLastEventUserCreated.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEventUserCreated> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEventUserCreated {
+            return FooObjectWithSnakeCaseKeysLastEventUserCreated(
+                value = FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEventUserCreated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEventUserCreated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEventUserCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEventUserCreated.")
+                return new()
+            }
+            val value: FooObjectWithSnakeCaseKeysLastEventUserCreatedValue = when (__input.jsonObject["user_created"]) {
+                is JsonObject -> FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJsonElement(
+                    __input.jsonObject["user_created"]!!,
+                    "$instancePath/user_created",
+                )
+
+                else -> FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.new()
+            }
+            return FooObjectWithSnakeCaseKeysLastEventUserCreated(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithSnakeCaseKeysLastEventUserUpdated(
+    val value: FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue,
+) : FooObjectWithSnakeCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_updated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysLastEventUserUpdated.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEventUserUpdated> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+            return FooObjectWithSnakeCaseKeysLastEventUserUpdated(
+                value = FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEventUserUpdated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEventUserUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEventUserUpdated.")
+                return new()
+            }
+            val value: FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue = when (__input.jsonObject["user_updated"]) {
+                is JsonObject -> FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJsonElement(
+                    __input.jsonObject["user_updated"]!!,
+                    "$instancePath/user_updated",
+                )
+
+                else -> FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.new()
+            }
+            return FooObjectWithSnakeCaseKeysLastEventUserUpdated(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithSnakeCaseKeysLastEventUserDeleted(
+    val value: FooObjectWithSnakeCaseKeysLastEventUserDeletedValue,
+) : FooObjectWithSnakeCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_deleted\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysLastEventUserDeleted.")
+        return ""
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEventUserDeleted> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+            return FooObjectWithSnakeCaseKeysLastEventUserDeleted(
+                value = FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEventUserDeleted {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEventUserDeleted.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEventUserDeleted.")
+                return new()
+            }
+            val value: FooObjectWithSnakeCaseKeysLastEventUserDeletedValue = when (__input.jsonObject["user_deleted"]) {
+                is JsonObject -> FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJsonElement(
+                    __input.jsonObject["user_deleted"]!!,
+                    "$instancePath/user_deleted",
+                )
+
+                else -> FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.new()
+            }
+            return FooObjectWithSnakeCaseKeysLastEventUserDeleted(
+                value,
+            )
+        }
+    }
+}
+
+data class FooObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user_id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEventUserCreatedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+            return FooObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user_id"]) {
+                is JsonPrimitive -> __input.jsonObject["user_id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user_id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+            return FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user_id"]) {
+                is JsonPrimitive -> __input.jsonObject["user_id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class FooObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+    val userId: String,
+) : TestClientPrefixedModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user_id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithSnakeCaseKeysLastEventUserDeletedValue> {
+        @JvmStatic
+        override fun new(): FooObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+            return FooObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user_id"]) {
+                is JsonPrimitive -> __input.jsonObject["user_id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return FooObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+                userId,
             )
         }
     }
@@ -4801,7 +5601,6 @@ data class FooObjectWithEveryOptionalType(
     val array: MutableList<Boolean>? = null,
     val `object`: FooObjectWithEveryOptionalTypeObject? = null,
     val record: MutableMap<String, ULong>? = null,
-    val discriminator: FooObjectWithEveryOptionalTypeDiscriminator? = null,
     val unionExternal: FooObjectWithEveryOptionalTypeUnionExternal? = null,
     val unionInternal: FooObjectWithEveryOptionalTypeUnionInternal? = null,
     val unionAdjacent: FooObjectWithEveryOptionalTypeUnionAdjacent? = null,
@@ -4933,12 +5732,6 @@ data class FooObjectWithEveryOptionalType(
             output += "}"
             hasProperties = true
         }
-        if (discriminator != null) {
-            if (hasProperties) output += ","
-            output += "\"discriminator\":"
-            output += discriminator.toJson()
-            hasProperties = true
-        }
         if (unionExternal != null) {
             if (hasProperties) output += ","
             output += "\"unionExternal\":"
@@ -5034,7 +5827,6 @@ data class FooObjectWithEveryOptionalType(
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.")
@@ -5164,14 +5956,6 @@ data class FooObjectWithEveryOptionalType(
 
                 else -> null
             }
-            val discriminator: FooObjectWithEveryOptionalTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> FooObjectWithEveryOptionalTypeDiscriminator.fromJsonElement(
-                    __input.jsonObject["discriminator"]!!,
-                    "$instancePath/discriminator",
-                )
-
-                else -> null
-            }
             val unionExternal: FooObjectWithEveryOptionalTypeUnionExternal? = when (__input.jsonObject["unionExternal"]) {
                 is JsonObject -> FooObjectWithEveryOptionalTypeUnionExternal.fromJsonElement(
                     __input.jsonObject["unionExternal"]!!,
@@ -5255,7 +6039,6 @@ data class FooObjectWithEveryOptionalType(
                 array,
                 `object`,
                 record,
-                discriminator,
                 unionExternal,
                 unionInternal,
                 unionAdjacent,
@@ -5377,151 +6160,6 @@ data class FooObjectWithEveryOptionalTypeObject(
                 string,
                 boolean,
                 timestamp,
-            )
-        }
-    }
-}
-
-sealed interface FooObjectWithEveryOptionalTypeDiscriminator : TestClientPrefixedModel {
-    val type: String
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeDiscriminator> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryOptionalTypeDiscriminator {
-            return FooObjectWithEveryOptionalTypeDiscriminatorA.new()
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeDiscriminator {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeDiscriminator {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryOptionalTypeDiscriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeDiscriminator.")
-                return new()
-            }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> FooObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-                    "B" -> FooObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement(__input, instancePath)
-                    else -> new()
-                }
-
-                else -> new()
-            }
-        }
-    }
-}
-
-data class FooObjectWithEveryOptionalTypeDiscriminatorA(
-    val title: String,
-) : FooObjectWithEveryOptionalTypeDiscriminator {
-    override val type get() = "A"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"A\""
-        output += ",\"title\":"
-        output += buildString { printQuoted(title) }
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=A")
-        queryParts.add("title=${__encodeQueryValue(title)}")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeDiscriminatorA> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryOptionalTypeDiscriminatorA {
-            return FooObjectWithEveryOptionalTypeDiscriminatorA(
-                title = "",
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeDiscriminatorA {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeDiscriminatorA {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeDiscriminatorA.")
-                return new()
-            }
-            val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return FooObjectWithEveryOptionalTypeDiscriminatorA(
-                title,
-            )
-        }
-    }
-}
-
-data class FooObjectWithEveryOptionalTypeDiscriminatorB(
-    val title: String,
-    val description: String,
-) : FooObjectWithEveryOptionalTypeDiscriminator {
-    override val type get() = "B"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"B\""
-        output += ",\"title\":"
-        output += buildString { printQuoted(title) }
-        output += ",\"description\":"
-        output += buildString { printQuoted(description) }
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=B")
-        queryParts.add("title=${__encodeQueryValue(title)}")
-        queryParts.add("description=${__encodeQueryValue(description)}")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientPrefixedModelFactory<FooObjectWithEveryOptionalTypeDiscriminatorB> {
-        @JvmStatic
-        override fun new(): FooObjectWithEveryOptionalTypeDiscriminatorB {
-            return FooObjectWithEveryOptionalTypeDiscriminatorB(
-                title = "",
-                description = "",
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): FooObjectWithEveryOptionalTypeDiscriminatorB {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooObjectWithEveryOptionalTypeDiscriminatorB {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] FooObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooObjectWithEveryOptionalTypeDiscriminatorB.")
-                return new()
-            }
-            val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            val description: String = when (__input.jsonObject["description"]) {
-                is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return FooObjectWithEveryOptionalTypeDiscriminatorB(
-                title,
-                description,
             )
         }
     }

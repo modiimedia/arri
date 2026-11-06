@@ -106,6 +106,26 @@ impl TestClientPrefixed {
         )
         .await
     }
+    pub async fn send_object_with_kebab_case_keys(
+        &self,
+        params: FooObjectWithKebabCaseKeys,
+    ) -> Result<FooObjectWithKebabCaseKeys, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-object-with-kebab-case-keys",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return FooObjectWithKebabCaseKeys::from_json_string(body),
+        )
+        .await
+    }
     pub async fn send_object_with_nullable_fields(
         &self,
         params: FooObjectWithEveryNullableType,
@@ -838,7 +858,6 @@ pub struct FooObjectWithEveryType {
     pub array: Vec<bool>,
     pub object: FooObjectWithEveryTypeObject,
     pub record: BTreeMap<String, u64>,
-    pub discriminator: FooObjectWithEveryTypeDiscriminator,
     pub union_external: FooObjectWithEveryTypeUnionExternal,
     pub union_internal: FooObjectWithEveryTypeUnionInternal,
     pub union_adjacent: FooObjectWithEveryTypeUnionAdjacent,
@@ -867,7 +886,6 @@ impl ArriModel for FooObjectWithEveryType {
             array: Vec::new(),
             object: FooObjectWithEveryTypeObject::new(),
             record: BTreeMap::new(),
-            discriminator: FooObjectWithEveryTypeDiscriminator::new(),
             union_external: FooObjectWithEveryTypeUnionExternal::new(),
             union_internal: FooObjectWithEveryTypeUnionInternal::new(),
             union_adjacent: FooObjectWithEveryTypeUnionAdjacent::new(),
@@ -1002,17 +1020,6 @@ impl ArriModel for FooObjectWithEveryType {
                     }
                     _ => BTreeMap::new(),
                 };
-                let discriminator = match _val_.get("discriminator") {
-                    Some(discriminator_val) => match discriminator_val {
-                        serde_json::Value::Object(_) => {
-                            FooObjectWithEveryTypeDiscriminator::from_json(
-                                discriminator_val.to_owned(),
-                            )
-                        }
-                        _ => FooObjectWithEveryTypeDiscriminator::new(),
-                    },
-                    _ => FooObjectWithEveryTypeDiscriminator::new(),
-                };
                 let union_external = match _val_.get("unionExternal") {
                     Some(union_external_val) => match union_external_val {
                         serde_json::Value::Object(_) => {
@@ -1095,7 +1102,6 @@ impl ArriModel for FooObjectWithEveryType {
                     array,
                     object,
                     record,
-                    discriminator,
                     union_external,
                     union_internal,
                     union_adjacent,
@@ -1170,8 +1176,6 @@ impl ArriModel for FooObjectWithEveryType {
             _json_output_.push_str(format!("\"{}\"", _value_).as_str());
         }
         _json_output_.push('}');
-        _json_output_.push_str(",\"discriminator\":");
-        _json_output_.push_str(&self.discriminator.to_json_string().as_str());
         _json_output_.push_str(",\"unionExternal\":");
         _json_output_.push_str(&self.union_external.to_json_string().as_str());
         _json_output_.push_str(",\"unionInternal\":");
@@ -1222,7 +1226,6 @@ impl ArriModel for FooObjectWithEveryType {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionExternal.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.");
@@ -1328,98 +1331,6 @@ impl ArriModel for FooObjectWithEveryTypeObject {
             "timestamp={}",
             serialize_date_time(&self.timestamp, false)
         ));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum FooObjectWithEveryTypeDiscriminator {
-    A { title: String },
-    B { title: String, description: String },
-}
-
-impl ArriModel for FooObjectWithEveryTypeDiscriminator {
-    fn new() -> Self {
-        Self::A {
-            title: "".to_string(),
-        }
-    }
-
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let r#type = match _val_.get("type") {
-                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                match r#type.as_str() {
-                    "A" => {
-                        let title = match _val_.get("title") {
-                            Some(serde_json::Value::String(title_val)) => title_val.to_owned(),
-                            _ => "".to_string(),
-                        };
-                        Self::A { title }
-                    }
-                    "B" => {
-                        let title = match _val_.get("title") {
-                            Some(serde_json::Value::String(title_val)) => title_val.to_owned(),
-                            _ => "".to_string(),
-                        };
-                        let description = match _val_.get("description") {
-                            Some(serde_json::Value::String(description_val)) => {
-                                description_val.to_owned()
-                            }
-                            _ => "".to_string(),
-                        };
-                        Self::B { title, description }
-                    }
-                    _ => Self::new(),
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        match &self {
-            Self::A { title } => {
-                _json_output_.push_str("\"type\":\"A\"");
-                _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
-            }
-            Self::B { title, description } => {
-                _json_output_.push_str("\"type\":\"B\"");
-                _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
-                _json_output_.push_str(",\"description\":");
-                _json_output_.push_str(serialize_string(description).as_str());
-            }
-        }
-        _json_output_.push('}');
-        _json_output_
-    }
-
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self {
-            Self::A { title } => {
-                _query_parts_.push(format!("type=A"));
-                _query_parts_.push(format!("title={}", title));
-            }
-            Self::B { title, description } => {
-                _query_parts_.push(format!("type=B"));
-                _query_parts_.push(format!("title={}", title));
-                _query_parts_.push(format!("description={}", description));
-            }
-        }
         _query_parts_.join("&")
     }
 }
@@ -2153,6 +2064,381 @@ impl ArriModel for FooObjectWithEveryTypeNestedArrayElementElement {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithKebabCaseKeys {
+    pub created_at: DateTime<FixedOffset>,
+    pub display_name: String,
+    pub phone_number: Option<String>,
+    pub last_event: Option<FooObjectWithKebabCaseKeysLastEvent>,
+    pub email_address: Option<String>,
+    pub is_admin: Option<bool>,
+}
+
+impl ArriModel for FooObjectWithKebabCaseKeys {
+    fn new() -> Self {
+        Self {
+            created_at: DateTime::default(),
+            display_name: "".to_string(),
+            phone_number: None,
+            last_event: None,
+            email_address: None,
+            is_admin: None,
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let created_at = match _val_.get("created-at") {
+                    Some(serde_json::Value::String(created_at_val)) => {
+                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
+                            .unwrap_or(DateTime::default())
+                    }
+                    _ => DateTime::default(),
+                };
+                let display_name = match _val_.get("display-name") {
+                    Some(serde_json::Value::String(display_name_val)) => {
+                        display_name_val.to_owned()
+                    }
+                    _ => "".to_string(),
+                };
+                let phone_number = match _val_.get("phone-number") {
+                    Some(serde_json::Value::String(phone_number_val)) => {
+                        Some(phone_number_val.to_owned())
+                    }
+                    _ => None,
+                };
+                let last_event = match _val_.get("last-event") {
+                    Some(last_event_val) => match last_event_val {
+                        serde_json::Value::Object(_) => {
+                            Some(FooObjectWithKebabCaseKeysLastEvent::from_json(
+                                last_event_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let email_address = match _val_.get("email-address") {
+                    Some(serde_json::Value::String(email_address_val)) => {
+                        Some(email_address_val.to_owned())
+                    }
+                    _ => None,
+                };
+                let is_admin = match _val_.get("is-admin") {
+                    Some(serde_json::Value::Bool(is_admin_val)) => Some(is_admin_val.to_owned()),
+                    _ => None,
+                };
+                Self {
+                    created_at,
+                    display_name,
+                    phone_number,
+                    last_event,
+                    email_address,
+                    is_admin,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"created-at\":");
+        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
+        _json_output_.push_str(",\"display-name\":");
+        _json_output_.push_str(serialize_string(&self.display_name).as_str());
+        _json_output_.push_str(",\"phone-number\":");
+        match &self.phone_number {
+            Some(phone_number_val) => {
+                _json_output_.push_str(serialize_string(phone_number_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"last-event\":");
+        match &self.last_event {
+            Some(last_event_val) => {
+                _json_output_.push_str(last_event_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        match &self.email_address {
+            Some(email_address_val) => {
+                _json_output_.push_str(",\"email-address\":");
+                _json_output_.push_str(serialize_string(email_address_val).as_str())
+            }
+            _ => {}
+        };
+        match &self.is_admin {
+            Some(is_admin_val) => {
+                _json_output_.push_str(",\"is-admin\":");
+                _json_output_.push_str(is_admin_val.to_string().as_str())
+            }
+            _ => {}
+        };
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!(
+            "created-at={}",
+            serialize_date_time(&self.created_at, false)
+        ));
+        _query_parts_.push(format!("display-name={}", &self.display_name));
+        match &self.phone_number {
+            Some(phone_number_val) => {
+                _query_parts_.push(format!("phone-number={}", phone_number_val));
+            }
+            _ => {
+                _query_parts_.push("phone-number=null".to_string());
+            }
+        };
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.");
+        match &self.email_address {
+            Some(email_address_val) => {
+                _query_parts_.push(format!("email-address={}", email_address_val));
+            }
+            _ => {}
+        };
+        match &self.is_admin {
+            Some(is_admin_val) => {
+                _query_parts_.push(format!("is-admin={}", is_admin_val));
+            }
+            _ => {}
+        };
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FooObjectWithKebabCaseKeysLastEvent {
+    UserCreated(FooObjectWithKebabCaseKeysLastEventUserCreatedValue),
+    UserUpdated(FooObjectWithKebabCaseKeysLastEventUserUpdatedValue),
+    UserDeleted(FooObjectWithKebabCaseKeysLastEventUserDeletedValue),
+}
+
+impl ArriModel for FooObjectWithKebabCaseKeysLastEvent {
+    fn new() -> Self {
+        Self::UserCreated(FooObjectWithKebabCaseKeysLastEventUserCreatedValue::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("user-created") {
+                    let value = match _val_.get("user-created") {
+                        Some(value_val) => {
+                            FooObjectWithKebabCaseKeysLastEventUserCreatedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithKebabCaseKeysLastEventUserCreatedValue::new(),
+                    };
+                    return Self::UserCreated(value);
+                }
+                if _val_.contains_key("user-updated") {
+                    let value = match _val_.get("user-updated") {
+                        Some(value_val) => {
+                            FooObjectWithKebabCaseKeysLastEventUserUpdatedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithKebabCaseKeysLastEventUserUpdatedValue::new(),
+                    };
+                    return Self::UserUpdated(value);
+                }
+                if _val_.contains_key("user-deleted") {
+                    let value = match _val_.get("user-deleted") {
+                        Some(value_val) => {
+                            FooObjectWithKebabCaseKeysLastEventUserDeletedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithKebabCaseKeysLastEventUserDeletedValue::new(),
+                    };
+                    return Self::UserDeleted(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::UserCreated(value) => {
+                _json_output_.push_str("\"user-created\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::UserUpdated(value) => {
+                _json_output_.push_str("\"user-updated\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::UserDeleted(value) => {
+                _json_output_.push_str("\"user-deleted\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping FooObjectWithKebabCaseKeysLastEvent.");
+        "".to_string()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithKebabCaseKeysLastEventUserCreatedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithKebabCaseKeysLastEventUserCreatedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("user-id") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"user-id\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("user-id") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"user-id\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithKebabCaseKeysLastEventUserDeletedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithKebabCaseKeysLastEventUserDeletedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("user-id") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"user-id\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct FooObjectWithEveryNullableType {
     pub any: serde_json::Value,
     pub boolean: Option<bool>,
@@ -2172,7 +2458,6 @@ pub struct FooObjectWithEveryNullableType {
     pub array: Option<Vec<Option<bool>>>,
     pub object: Option<FooObjectWithEveryNullableTypeObject>,
     pub record: Option<BTreeMap<String, Option<u64>>>,
-    pub discriminator: Option<FooObjectWithEveryNullableTypeDiscriminator>,
     pub union_external: Option<FooObjectWithEveryNullableTypeUnionExternal>,
     pub union_internal: Option<FooObjectWithEveryNullableTypeUnionInternal>,
     pub union_adjacent: Option<FooObjectWithEveryNullableTypeUnionAdjacent>,
@@ -2202,7 +2487,6 @@ impl ArriModel for FooObjectWithEveryNullableType {
             array: None,
             object: None,
             record: None,
-            discriminator: None,
             union_external: None,
             union_internal: None,
             union_adjacent: None,
@@ -2377,17 +2661,6 @@ impl ArriModel for FooObjectWithEveryNullableType {
                     }
                     _ => None,
                 };
-                let discriminator = match _val_.get("discriminator") {
-                    Some(discriminator_val) => match discriminator_val {
-                        serde_json::Value::Object(_) => {
-                            Some(FooObjectWithEveryNullableTypeDiscriminator::from_json(
-                                discriminator_val.to_owned(),
-                            ))
-                        }
-                        _ => None,
-                    },
-                    _ => None,
-                };
                 let union_external = match _val_.get("unionExternal") {
                     Some(union_external_val) => match union_external_val {
                         serde_json::Value::Object(_) => {
@@ -2484,7 +2757,6 @@ impl ArriModel for FooObjectWithEveryNullableType {
                     array,
                     object,
                     record,
-                    discriminator,
                     union_external,
                     union_internal,
                     union_adjacent,
@@ -2692,15 +2964,6 @@ impl ArriModel for FooObjectWithEveryNullableType {
                 _json_output_.push_str("null");
             }
         };
-        _json_output_.push_str(",\"discriminator\":");
-        match &self.discriminator {
-            Some(discriminator_val) => {
-                _json_output_.push_str(discriminator_val.to_json_string().as_str());
-            }
-            _ => {
-                _json_output_.push_str("null");
-            }
-        };
         _json_output_.push_str(",\"unionExternal\":");
         match &self.union_external {
             Some(union_external_val) => {
@@ -2899,7 +3162,6 @@ impl ArriModel for FooObjectWithEveryNullableType {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryNullableType/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/record.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.");
@@ -3049,147 +3311,6 @@ impl ArriModel for FooObjectWithEveryNullableTypeObject {
                 _query_parts_.push("timestamp=null".to_string());
             }
         };
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum FooObjectWithEveryNullableTypeDiscriminator {
-    A {
-        title: Option<String>,
-    },
-    B {
-        title: Option<String>,
-        description: Option<String>,
-    },
-}
-
-impl ArriModel for FooObjectWithEveryNullableTypeDiscriminator {
-    fn new() -> Self {
-        Self::A { title: None }
-    }
-
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let r#type = match _val_.get("type") {
-                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                match r#type.as_str() {
-                    "A" => {
-                        let title = match _val_.get("title") {
-                            Some(serde_json::Value::String(title_val)) => {
-                                Some(title_val.to_owned())
-                            }
-                            _ => None,
-                        };
-                        Self::A { title }
-                    }
-                    "B" => {
-                        let title = match _val_.get("title") {
-                            Some(serde_json::Value::String(title_val)) => {
-                                Some(title_val.to_owned())
-                            }
-                            _ => None,
-                        };
-                        let description = match _val_.get("description") {
-                            Some(serde_json::Value::String(description_val)) => {
-                                Some(description_val.to_owned())
-                            }
-                            _ => None,
-                        };
-                        Self::B { title, description }
-                    }
-                    _ => Self::new(),
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        match &self {
-            Self::A { title } => {
-                _json_output_.push_str("\"type\":\"A\"");
-                _json_output_.push_str(",\"title\":");
-                match title {
-                    Some(title_val) => {
-                        _json_output_.push_str(serialize_string(title_val).as_str());
-                    }
-                    _ => {
-                        _json_output_.push_str("null");
-                    }
-                };
-            }
-            Self::B { title, description } => {
-                _json_output_.push_str("\"type\":\"B\"");
-                _json_output_.push_str(",\"title\":");
-                match title {
-                    Some(title_val) => {
-                        _json_output_.push_str(serialize_string(title_val).as_str());
-                    }
-                    _ => {
-                        _json_output_.push_str("null");
-                    }
-                };
-                _json_output_.push_str(",\"description\":");
-                match description {
-                    Some(description_val) => {
-                        _json_output_.push_str(serialize_string(description_val).as_str());
-                    }
-                    _ => {
-                        _json_output_.push_str("null");
-                    }
-                };
-            }
-        }
-        _json_output_.push('}');
-        _json_output_
-    }
-
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self {
-            Self::A { title } => {
-                _query_parts_.push(format!("type=A"));
-                match title {
-                    Some(title_val) => {
-                        _query_parts_.push(format!("title={}", title_val));
-                    }
-                    _ => {
-                        _query_parts_.push("title=null".to_string());
-                    }
-                };
-            }
-            Self::B { title, description } => {
-                _query_parts_.push(format!("type=B"));
-                match title {
-                    Some(title_val) => {
-                        _query_parts_.push(format!("title={}", title_val));
-                    }
-                    _ => {
-                        _query_parts_.push("title=null".to_string());
-                    }
-                };
-                match description {
-                    Some(description_val) => {
-                        _query_parts_.push(format!("description={}", description_val));
-                    }
-                    _ => {
-                        _query_parts_.push("description=null".to_string());
-                    }
-                };
-            }
-        }
         _query_parts_.join("&")
     }
 }
@@ -4071,6 +4192,7 @@ pub struct FooObjectWithPascalCaseKeys {
     pub created_at: DateTime<FixedOffset>,
     pub display_name: String,
     pub phone_number: Option<String>,
+    pub last_event: Option<FooObjectWithPascalCaseKeysLastEvent>,
     pub email_address: Option<String>,
     pub is_admin: Option<bool>,
 }
@@ -4081,6 +4203,7 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
             created_at: DateTime::default(),
             display_name: "".to_string(),
             phone_number: None,
+            last_event: None,
             email_address: None,
             is_admin: None,
         }
@@ -4107,6 +4230,17 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
                     }
                     _ => None,
                 };
+                let last_event = match _val_.get("LastEvent") {
+                    Some(last_event_val) => match last_event_val {
+                        serde_json::Value::Object(_) => {
+                            Some(FooObjectWithPascalCaseKeysLastEvent::from_json(
+                                last_event_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
                 let email_address = match _val_.get("EmailAddress") {
                     Some(serde_json::Value::String(email_address_val)) => {
                         Some(email_address_val.to_owned())
@@ -4121,6 +4255,7 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
                     created_at,
                     display_name,
                     phone_number,
+                    last_event,
                     email_address,
                     is_admin,
                 }
@@ -4145,6 +4280,15 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
         match &self.phone_number {
             Some(phone_number_val) => {
                 _json_output_.push_str(serialize_string(phone_number_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"LastEvent\":");
+        match &self.last_event {
+            Some(last_event_val) => {
+                _json_output_.push_str(last_event_val.to_json_string().as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -4182,6 +4326,7 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
                 _query_parts_.push("PhoneNumber=null".to_string());
             }
         };
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.");
         match &self.email_address {
             Some(email_address_val) => {
                 _query_parts_.push(format!("EmailAddress={}", email_address_val));
@@ -4199,10 +4344,230 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub enum FooObjectWithPascalCaseKeysLastEvent {
+    UserCreated(FooObjectWithPascalCaseKeysLastEventUserCreatedValue),
+    UserUpdated(FooObjectWithPascalCaseKeysLastEventUserUpdatedValue),
+    UserDeleted(FooObjectWithPascalCaseKeysLastEventUserDeletedValue),
+}
+
+impl ArriModel for FooObjectWithPascalCaseKeysLastEvent {
+    fn new() -> Self {
+        Self::UserCreated(FooObjectWithPascalCaseKeysLastEventUserCreatedValue::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("UserCreated") {
+                    let value = match _val_.get("UserCreated") {
+                        Some(value_val) => {
+                            FooObjectWithPascalCaseKeysLastEventUserCreatedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithPascalCaseKeysLastEventUserCreatedValue::new(),
+                    };
+                    return Self::UserCreated(value);
+                }
+                if _val_.contains_key("UserUpdated") {
+                    let value = match _val_.get("UserUpdated") {
+                        Some(value_val) => {
+                            FooObjectWithPascalCaseKeysLastEventUserUpdatedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithPascalCaseKeysLastEventUserUpdatedValue::new(),
+                    };
+                    return Self::UserUpdated(value);
+                }
+                if _val_.contains_key("UserDeleted") {
+                    let value = match _val_.get("UserDeleted") {
+                        Some(value_val) => {
+                            FooObjectWithPascalCaseKeysLastEventUserDeletedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithPascalCaseKeysLastEventUserDeletedValue::new(),
+                    };
+                    return Self::UserDeleted(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::UserCreated(value) => {
+                _json_output_.push_str("\"UserCreated\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::UserUpdated(value) => {
+                _json_output_.push_str("\"UserUpdated\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::UserDeleted(value) => {
+                _json_output_.push_str("\"UserDeleted\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping FooObjectWithPascalCaseKeysLastEvent.");
+        "".to_string()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithPascalCaseKeysLastEventUserCreatedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithPascalCaseKeysLastEventUserCreatedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("UserId") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"UserId\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("UserId") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"UserId\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithPascalCaseKeysLastEventUserDeletedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithPascalCaseKeysLastEventUserDeletedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("UserId") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"UserId\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct FooObjectWithSnakeCaseKeys {
     pub created_at: DateTime<FixedOffset>,
     pub display_name: String,
     pub phone_number: Option<String>,
+    pub last_event: Option<FooObjectWithSnakeCaseKeysLastEvent>,
     pub email_address: Option<String>,
     pub is_admin: Option<bool>,
 }
@@ -4213,6 +4578,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
             created_at: DateTime::default(),
             display_name: "".to_string(),
             phone_number: None,
+            last_event: None,
             email_address: None,
             is_admin: None,
         }
@@ -4239,6 +4605,17 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
                     }
                     _ => None,
                 };
+                let last_event = match _val_.get("last_event") {
+                    Some(last_event_val) => match last_event_val {
+                        serde_json::Value::Object(_) => {
+                            Some(FooObjectWithSnakeCaseKeysLastEvent::from_json(
+                                last_event_val.to_owned(),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
                 let email_address = match _val_.get("email_address") {
                     Some(serde_json::Value::String(email_address_val)) => {
                         Some(email_address_val.to_owned())
@@ -4253,6 +4630,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
                     created_at,
                     display_name,
                     phone_number,
+                    last_event,
                     email_address,
                     is_admin,
                 }
@@ -4277,6 +4655,15 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
         match &self.phone_number {
             Some(phone_number_val) => {
                 _json_output_.push_str(serialize_string(phone_number_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"last_event\":");
+        match &self.last_event {
+            Some(last_event_val) => {
+                _json_output_.push_str(last_event_val.to_json_string().as_str());
             }
             _ => {
                 _json_output_.push_str("null");
@@ -4314,6 +4701,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
                 _query_parts_.push("phone_number=null".to_string());
             }
         };
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.");
         match &self.email_address {
             Some(email_address_val) => {
                 _query_parts_.push(format!("email_address={}", email_address_val));
@@ -4326,6 +4714,225 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
             }
             _ => {}
         };
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FooObjectWithSnakeCaseKeysLastEvent {
+    UserCreated(FooObjectWithSnakeCaseKeysLastEventUserCreatedValue),
+    UserUpdated(FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue),
+    UserDeleted(FooObjectWithSnakeCaseKeysLastEventUserDeletedValue),
+}
+
+impl ArriModel for FooObjectWithSnakeCaseKeysLastEvent {
+    fn new() -> Self {
+        Self::UserCreated(FooObjectWithSnakeCaseKeysLastEventUserCreatedValue::new())
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                if _val_.contains_key("user_created") {
+                    let value = match _val_.get("user_created") {
+                        Some(value_val) => {
+                            FooObjectWithSnakeCaseKeysLastEventUserCreatedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithSnakeCaseKeysLastEventUserCreatedValue::new(),
+                    };
+                    return Self::UserCreated(value);
+                }
+                if _val_.contains_key("user_updated") {
+                    let value = match _val_.get("user_updated") {
+                        Some(value_val) => {
+                            FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue::new(),
+                    };
+                    return Self::UserUpdated(value);
+                }
+                if _val_.contains_key("user_deleted") {
+                    let value = match _val_.get("user_deleted") {
+                        Some(value_val) => {
+                            FooObjectWithSnakeCaseKeysLastEventUserDeletedValue::from_json(
+                                value_val.to_owned(),
+                            )
+                        }
+                        _ => FooObjectWithSnakeCaseKeysLastEventUserDeletedValue::new(),
+                    };
+                    return Self::UserDeleted(value);
+                }
+                Self::new()
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::UserCreated(value) => {
+                _json_output_.push_str("\"user_created\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::UserUpdated(value) => {
+                _json_output_.push_str("\"user_updated\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+            Self::UserDeleted(value) => {
+                _json_output_.push_str("\"user_deleted\":");
+                _json_output_.push_str(value.to_json_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        println!("[WARNING] cannot serialize unions to query params. Skipping FooObjectWithSnakeCaseKeysLastEvent.");
+        "".to_string()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("user_id") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"user_id\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("user_id={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("user_id") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"user_id\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("user_id={}", &self.user_id));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+    pub user_id: String,
+}
+
+impl ArriModel for FooObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+    fn new() -> Self {
+        Self {
+            user_id: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let user_id = match _val_.get("user_id") {
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { user_id }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"user_id\":");
+        _json_output_.push_str(serialize_string(&self.user_id).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("user_id={}", &self.user_id));
         _query_parts_.join("&")
     }
 }
@@ -4350,7 +4957,6 @@ pub struct FooObjectWithEveryOptionalType {
     pub array: Option<Vec<bool>>,
     pub object: Option<FooObjectWithEveryOptionalTypeObject>,
     pub record: Option<BTreeMap<String, u64>>,
-    pub discriminator: Option<FooObjectWithEveryOptionalTypeDiscriminator>,
     pub union_external: Option<FooObjectWithEveryOptionalTypeUnionExternal>,
     pub union_internal: Option<FooObjectWithEveryOptionalTypeUnionInternal>,
     pub union_adjacent: Option<FooObjectWithEveryOptionalTypeUnionAdjacent>,
@@ -4379,7 +4985,6 @@ impl ArriModel for FooObjectWithEveryOptionalType {
             array: None,
             object: None,
             record: None,
-            discriminator: None,
             union_external: None,
             union_internal: None,
             union_adjacent: None,
@@ -4551,17 +5156,6 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                     }
                     _ => None,
                 };
-                let discriminator = match _val_.get("discriminator") {
-                    Some(discriminator_val) => match discriminator_val {
-                        serde_json::Value::Object(_) => {
-                            Some(FooObjectWithEveryOptionalTypeDiscriminator::from_json(
-                                discriminator_val.to_owned(),
-                            ))
-                        }
-                        _ => None,
-                    },
-                    _ => None,
-                };
                 let union_external = match _val_.get("unionExternal") {
                     Some(union_external_val) => match union_external_val {
                         serde_json::Value::Object(_) => {
@@ -4649,7 +5243,6 @@ impl ArriModel for FooObjectWithEveryOptionalType {
                     array,
                     object,
                     record,
-                    discriminator,
                     union_external,
                     union_internal,
                     union_adjacent,
@@ -4883,17 +5476,6 @@ impl ArriModel for FooObjectWithEveryOptionalType {
             }
             _ => {}
         };
-        match &self.discriminator {
-            Some(discriminator_val) => {
-                if _has_keys_ {
-                    _json_output_.push(',');
-                }
-                _json_output_.push_str("\"discriminator\":");
-                _json_output_.push_str(discriminator_val.to_json_string().as_str());
-                _has_keys_ = true;
-            }
-            _ => {}
-        };
         match &self.union_external {
             Some(union_external_val) => {
                 if _has_keys_ {
@@ -5058,7 +5640,6 @@ impl ArriModel for FooObjectWithEveryOptionalType {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryOptionalType/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/record.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.");
@@ -5164,98 +5745,6 @@ impl ArriModel for FooObjectWithEveryOptionalTypeObject {
             "timestamp={}",
             serialize_date_time(&self.timestamp, false)
         ));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum FooObjectWithEveryOptionalTypeDiscriminator {
-    A { title: String },
-    B { title: String, description: String },
-}
-
-impl ArriModel for FooObjectWithEveryOptionalTypeDiscriminator {
-    fn new() -> Self {
-        Self::A {
-            title: "".to_string(),
-        }
-    }
-
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let r#type = match _val_.get("type") {
-                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                match r#type.as_str() {
-                    "A" => {
-                        let title = match _val_.get("title") {
-                            Some(serde_json::Value::String(title_val)) => title_val.to_owned(),
-                            _ => "".to_string(),
-                        };
-                        Self::A { title }
-                    }
-                    "B" => {
-                        let title = match _val_.get("title") {
-                            Some(serde_json::Value::String(title_val)) => title_val.to_owned(),
-                            _ => "".to_string(),
-                        };
-                        let description = match _val_.get("description") {
-                            Some(serde_json::Value::String(description_val)) => {
-                                description_val.to_owned()
-                            }
-                            _ => "".to_string(),
-                        };
-                        Self::B { title, description }
-                    }
-                    _ => Self::new(),
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        match &self {
-            Self::A { title } => {
-                _json_output_.push_str("\"type\":\"A\"");
-                _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
-            }
-            Self::B { title, description } => {
-                _json_output_.push_str("\"type\":\"B\"");
-                _json_output_.push_str(",\"title\":");
-                _json_output_.push_str(serialize_string(title).as_str());
-                _json_output_.push_str(",\"description\":");
-                _json_output_.push_str(serialize_string(description).as_str());
-            }
-        }
-        _json_output_.push('}');
-        _json_output_
-    }
-
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self {
-            Self::A { title } => {
-                _query_parts_.push(format!("type=A"));
-                _query_parts_.push(format!("title={}", title));
-            }
-            Self::B { title, description } => {
-                _query_parts_.push(format!("type=B"));
-                _query_parts_.push(format!("title={}", title));
-                _query_parts_.push(format!("description={}", description));
-            }
-        }
         _query_parts_.join("&")
     }
 }

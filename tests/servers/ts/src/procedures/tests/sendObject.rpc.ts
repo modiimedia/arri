@@ -24,19 +24,6 @@ export const ObjectWithEveryType = a.object('ObjectWithEveryType', {
         timestamp: a.timestamp(),
     }),
     record: a.record(a.uint64()),
-
-    /**
-     * @deprecated
-     */
-    discriminator: a.discriminator('type', {
-        A: a.object({
-            title: a.string(),
-        }),
-        B: a.object({
-            title: a.string(),
-            description: a.string(),
-        }),
-    }),
     unionExternal: a.union({
         object: a.object({
             id: a.string(),
