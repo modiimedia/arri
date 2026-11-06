@@ -311,38 +311,56 @@ export class TestClientTestsService {
             options: options ?? this._options,
         });
     }
-    async sendRecursiveUnion(
-        params: RecursiveUnion,
+    async sendRecursiveUnionAdjacent(
+        params: RecursiveUnionAdjacent,
         options?: ArriRequestOptions,
-    ): Promise<RecursiveUnion> {
-        return arriRequest<RecursiveUnion, RecursiveUnion>({
-            url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
+    ): Promise<RecursiveUnionAdjacent> {
+        return arriRequest<RecursiveUnionAdjacent, RecursiveUnionAdjacent>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-union-adjacent`,
             method: 'post',
             ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: RecursiveUnionFromJson,
-            responseFromString: RecursiveUnionFromJsonString,
-            serializer: RecursiveUnionToJsonString,
+            responseFromJson: RecursiveUnionAdjacentFromJson,
+            responseFromString: RecursiveUnionAdjacentFromJsonString,
+            serializer: RecursiveUnionAdjacentToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
     }
-    async sendRecursiveUnionV2(
-        params: RecursiveUnionV2,
+    async sendRecursiveUnionExternal(
+        params: RecursiveUnionExternal,
         options?: ArriRequestOptions,
-    ): Promise<RecursiveUnionV2> {
-        return arriRequest<RecursiveUnionV2, RecursiveUnionV2>({
-            url: `${this._baseUrl}/rpcs/tests/send-recursive-union-v2`,
+    ): Promise<RecursiveUnionExternal> {
+        return arriRequest<RecursiveUnionExternal, RecursiveUnionExternal>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-union-external`,
             method: 'post',
             ofetch: this._fetch,
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: RecursiveUnionV2FromJson,
-            responseFromString: RecursiveUnionV2FromJsonString,
-            serializer: RecursiveUnionV2ToJsonString,
+            responseFromJson: RecursiveUnionExternalFromJson,
+            responseFromString: RecursiveUnionExternalFromJsonString,
+            serializer: RecursiveUnionExternalToJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
+    async sendRecursiveUnionInternal(
+        params: RecursiveUnionInternal,
+        options?: ArriRequestOptions,
+    ): Promise<RecursiveUnionInternal> {
+        return arriRequest<RecursiveUnionInternal, RecursiveUnionInternal>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-union-internal`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: RecursiveUnionInternalFromJson,
+            responseFromString: RecursiveUnionInternalFromJsonString,
+            serializer: RecursiveUnionInternalToJsonString,
             clientVersion: '10',
             options: options ?? this._options,
         });
@@ -9669,486 +9687,263 @@ export const $$RecursiveObject: TestClientValidator<RecursiveObject> = {
     toUrlSearchParamsString: RecursiveObjectToUrlSearchParamsString,
 };
 
-export type RecursiveUnion =
-    | RecursiveUnionChild
-    | RecursiveUnionChildren
-    | RecursiveUnionText
-    | RecursiveUnionShape;
-export function RecursiveUnionNew(): RecursiveUnion {
-    return RecursiveUnionChildrenNew();
-}
-export function RecursiveUnionValidate(
-    input: unknown,
-): input is RecursiveUnion {
-    return (
-        RecursiveUnionChildValidate(input) ||
-        RecursiveUnionChildrenValidate(input) ||
-        RecursiveUnionTextValidate(input) ||
-        RecursiveUnionShapeValidate(input)
-    );
-}
-export function RecursiveUnionClone(input: RecursiveUnion): RecursiveUnion {
-    switch (input.type) {
-        case `CHILD`: {
-            let __value__: RecursiveUnionChild;
-            __value__ = RecursiveUnionChildClone(input);
-            return __value__;
-        }
-
-        case `CHILDREN`: {
-            let __value__: RecursiveUnionChildren;
-            __value__ = RecursiveUnionChildrenClone(input);
-            return __value__;
-        }
-
-        case `TEXT`: {
-            let __value__: RecursiveUnionText;
-            __value__ = RecursiveUnionTextClone(input);
-            return __value__;
-        }
-
-        case `SHAPE`: {
-            let __value__: RecursiveUnionShape;
-            __value__ = RecursiveUnionShapeClone(input);
-            return __value__;
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown union variant: ${(input as any).type}`);
-        }
-    }
-}
-export function RecursiveUnionFromJson(
-    input: Record<string, unknown>,
-): RecursiveUnion {
-    switch (input.type) {
-        case `CHILD`: {
-            return RecursiveUnionChildFromJson(input);
-        }
-        case `CHILDREN`: {
-            return RecursiveUnionChildrenFromJson(input);
-        }
-        case `TEXT`: {
-            return RecursiveUnionTextFromJson(input);
-        }
-        case `SHAPE`: {
-            return RecursiveUnionShapeFromJson(input);
-        }
-        default: {
-            return RecursiveUnionChildrenNew();
-        }
-    }
-}
-export function RecursiveUnionFromJsonString(input: string): RecursiveUnion {
-    return RecursiveUnionFromJson(JSON.parse(input));
-}
-export function RecursiveUnionToJsonString(input: RecursiveUnion): string {
-    switch (input.type) {
-        case `CHILD`: {
-            return RecursiveUnionChildToJsonString(input);
-        }
-
-        case `CHILDREN`: {
-            return RecursiveUnionChildrenToJsonString(input);
-        }
-
-        case `TEXT`: {
-            return RecursiveUnionTextToJsonString(input);
-        }
-
-        case `SHAPE`: {
-            return RecursiveUnionShapeToJsonString(input);
-        }
-
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function RecursiveUnionToUrlSearchParams(
-    input: RecursiveUnion,
-): URLSearchParams {
-    switch (input.type) {
-        case `CHILD`: {
-            return RecursiveUnionChildToUrlSearchParams(input);
-        }
-        case `CHILDREN`: {
-            return RecursiveUnionChildrenToUrlSearchParams(input);
-        }
-        case `TEXT`: {
-            return RecursiveUnionTextToUrlSearchParams(input);
-        }
-        case `SHAPE`: {
-            return RecursiveUnionShapeToUrlSearchParams(input);
-        }
-        default: {
-            input satisfies never;
-            throw new Error(`Unknown variant type: ${(input as any).type}`);
-        }
-    }
-}
-export function RecursiveUnionToUrlSearchParamsString(
-    input: RecursiveUnion,
-): string {
-    return RecursiveUnionToUrlSearchParams(input).toString();
-}
-export const $$RecursiveUnion: TestClientValidator<RecursiveUnion> = {
-    new: RecursiveUnionNew,
-    validate: RecursiveUnionValidate,
-    clone: RecursiveUnionClone,
-    fromJson: RecursiveUnionFromJson,
-    fromJsonString: RecursiveUnionFromJsonString,
-    toJsonString: RecursiveUnionToJsonString,
-    toUrlSearchParams: RecursiveUnionToUrlSearchParams,
-    toUrlSearchParamsString: RecursiveUnionToUrlSearchParamsString,
-};
-/**
- * Child node
- */
-export interface RecursiveUnionChild {
-    type: `CHILD`;
-    data: RecursiveUnion;
-}
-export function RecursiveUnionChildNew(): RecursiveUnionChild {
+export type RecursiveUnionAdjacent =
+    | { kind: `child`; data: RecursiveUnionAdjacent }
+    | { kind: `children`; data: RecursiveUnionAdjacent[] }
+    | { kind: `text`; data: string }
+    | { kind: `shape`; data: RecursiveUnionAdjacentShape };
+export function RecursiveUnionAdjacentNew(): RecursiveUnionAdjacent {
     return {
-        type: `CHILD`,
-        data: RecursiveUnionNew(),
-    };
-}
-export function RecursiveUnionChildValidate(
-    input: unknown,
-): input is RecursiveUnionChild {
-    return (
-        isObject(input) &&
-        input.type === `CHILD` &&
-        RecursiveUnionValidate(input.data)
-    );
-}
-export function RecursiveUnionChildClone(
-    input: RecursiveUnionChild,
-): RecursiveUnionChild {
-    const _type = `CHILD`;
-    let _data: RecursiveUnion;
-    _data = RecursiveUnionClone(input.data);
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionChildFromJson(
-    input: Record<string, unknown>,
-): RecursiveUnionChild {
-    const _type = `CHILD`;
-    let _data: RecursiveUnion;
-    if (isObject(input.data)) {
-        _data = RecursiveUnionFromJson(input.data);
-    } else {
-        _data = RecursiveUnionNew();
-    }
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionChildFromJsonString(
-    input: string,
-): RecursiveUnionChild {
-    return RecursiveUnionChildFromJson(JSON.parse(input));
-}
-export function RecursiveUnionChildToJsonString(
-    input: RecursiveUnionChild,
-): string {
-    let json = '{';
-    json += '"type":"CHILD"';
-    json += ',"data":';
-    json += RecursiveUnionToJsonString(input.data);
-    json += '}';
-    return json;
-}
-export function RecursiveUnionChildToUrlSearchParams(
-    input: RecursiveUnionChild,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `CHILD`);
-    console.warn(
-        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveUnionChild/data.',
-    );
-    return params;
-}
-export function RecursiveUnionChildToUrlSearchParamsString(
-    input: RecursiveUnionChild,
-): string {
-    return RecursiveUnionChildToUrlSearchParams(input).toString();
-}
-
-/**
- * List of children node
- */
-export interface RecursiveUnionChildren {
-    type: `CHILDREN`;
-    data: RecursiveUnion[];
-}
-export function RecursiveUnionChildrenNew(): RecursiveUnionChildren {
-    return {
-        type: `CHILDREN`,
+        kind: `children`,
         data: [],
     };
 }
-export function RecursiveUnionChildrenValidate(
+export function RecursiveUnionAdjacentValidate(
     input: unknown,
-): input is RecursiveUnionChildren {
-    return (
-        isObject(input) &&
-        input.type === `CHILDREN` &&
-        Array.isArray(input.data) &&
-        input.data.every((_element) => RecursiveUnionValidate(_element))
-    );
-}
-export function RecursiveUnionChildrenClone(
-    input: RecursiveUnionChildren,
-): RecursiveUnionChildren {
-    const _type = `CHILDREN`;
-    let _data: RecursiveUnion[];
-    _data = [];
-    for (const _dataEl of input.data) {
-        let _dataElValue: RecursiveUnion;
-        _dataElValue = RecursiveUnionClone(_dataEl);
-        _data.push(_dataElValue);
+): input is RecursiveUnionAdjacent {
+    if (!isObject(input)) {
+        return false;
     }
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionChildrenFromJson(
-    input: Record<string, unknown>,
-): RecursiveUnionChildren {
-    const _type = `CHILDREN`;
-    let _data: RecursiveUnion[];
-    if (Array.isArray(input.data)) {
-        _data = [];
-        for (const _dataEl of input.data) {
-            let _dataElValue: RecursiveUnion;
-            if (isObject(_dataEl)) {
-                _dataElValue = RecursiveUnionFromJson(_dataEl);
-            } else {
-                _dataElValue = RecursiveUnionNew();
-            }
-            _data.push(_dataElValue);
-        }
-    } else {
-        _data = [];
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
     }
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionChildrenFromJsonString(
-    input: string,
-): RecursiveUnionChildren {
-    return RecursiveUnionChildrenFromJson(JSON.parse(input));
-}
-export function RecursiveUnionChildrenToJsonString(
-    input: RecursiveUnionChildren,
-): string {
-    let json = '{';
-    json += '"type":"CHILDREN"';
-    json += ',"data":';
-    json += '[';
-    for (let i = 0; i < input.data.length; i++) {
-        if (i !== 0) json += ',';
-        const _inputDataEl = input.data[i]!;
-        json += RecursiveUnionToJsonString(_inputDataEl);
-    }
-    json += ']';
-    json += '}';
-    return json;
-}
-export function RecursiveUnionChildrenToUrlSearchParams(
-    input: RecursiveUnionChildren,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `CHILDREN`);
-    console.warn(
-        '[WARNING] Cannot serialize arrays to query string. Skipping property at /RecursiveUnionChildren/data.',
-    );
-    return params;
-}
-export function RecursiveUnionChildrenToUrlSearchParamsString(
-    input: RecursiveUnionChildren,
-): string {
-    return RecursiveUnionChildrenToUrlSearchParams(input).toString();
-}
+    switch (input.kind) {
+        case `child`:
+            return RecursiveUnionAdjacentValidate(input.data);
 
-/**
- * Text node
- */
-export interface RecursiveUnionText {
-    type: `TEXT`;
-    data: string;
+        case `children`:
+            return (
+                Array.isArray(input.data) &&
+                input.data.every((_element) =>
+                    RecursiveUnionAdjacentValidate(_element),
+                )
+            );
+
+        case `text`:
+            return typeof input.data === 'string';
+
+        case `shape`:
+            return RecursiveUnionAdjacentShapeValidate(input.data);
+
+        default:
+            return false;
+    }
 }
-export function RecursiveUnionTextNew(): RecursiveUnionText {
-    return {
-        type: `TEXT`,
-        data: '',
-    };
+export function RecursiveUnionAdjacentClone(
+    input: RecursiveUnionAdjacent,
+): RecursiveUnionAdjacent {
+    switch (input.kind) {
+        case `child`: {
+            let __value__: RecursiveUnionAdjacent;
+            __value__ = RecursiveUnionAdjacentClone(input.data);
+            return {
+                kind: `child`,
+                data: __value__,
+            };
+        }
+
+        case `children`: {
+            let __value__: RecursiveUnionAdjacent[];
+            __value__ = [];
+            for (const __value__El of input.data) {
+                let __value__ElValue: RecursiveUnionAdjacent;
+                __value__ElValue = RecursiveUnionAdjacentClone(__value__El);
+                __value__.push(__value__ElValue);
+            }
+            return {
+                kind: `children`,
+                data: __value__,
+            };
+        }
+
+        case `text`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+
+        case `shape`: {
+            let __value__: RecursiveUnionAdjacentShape;
+            __value__ = RecursiveUnionAdjacentShapeClone(input.data);
+            return {
+                kind: `shape`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
 }
-export function RecursiveUnionTextValidate(
-    input: unknown,
-): input is RecursiveUnionText {
-    return (
-        isObject(input) &&
-        input.type === `TEXT` &&
-        typeof input.data === 'string'
-    );
-}
-export function RecursiveUnionTextClone(
-    input: RecursiveUnionText,
-): RecursiveUnionText {
-    const _type = `TEXT`;
-    let _data: string;
-    _data = input.data;
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionTextFromJson(
+export function RecursiveUnionAdjacentFromJson(
     input: Record<string, unknown>,
-): RecursiveUnionText {
-    const _type = `TEXT`;
-    let _data: string;
-    _data = parseString(input.data);
-    return {
-        type: _type,
-        data: _data,
-    };
+): RecursiveUnionAdjacent {
+    if (typeof input.kind !== 'string') {
+        return RecursiveUnionAdjacentNew();
+    }
+    switch (input.kind) {
+        case `child`: {
+            let __value__: RecursiveUnionAdjacent;
+            if (isObject(input.data)) {
+                __value__ = RecursiveUnionAdjacentFromJson(input.data);
+            } else {
+                __value__ = RecursiveUnionAdjacentNew();
+            }
+            return {
+                kind: `child`,
+                data: __value__,
+            };
+        }
+        case `children`: {
+            let __value__: RecursiveUnionAdjacent[];
+            if (Array.isArray(input.data)) {
+                __value__ = [];
+                for (const __value__El of input.data) {
+                    let __value__ElValue: RecursiveUnionAdjacent;
+                    if (isObject(__value__El)) {
+                        __value__ElValue =
+                            RecursiveUnionAdjacentFromJson(__value__El);
+                    } else {
+                        __value__ElValue = RecursiveUnionAdjacentNew();
+                    }
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = [];
+            }
+            return {
+                kind: `children`,
+                data: __value__,
+            };
+        }
+        case `text`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        case `shape`: {
+            let __value__: RecursiveUnionAdjacentShape;
+            if (isObject(input.data)) {
+                __value__ = RecursiveUnionAdjacentShapeFromJson(input.data);
+            } else {
+                __value__ = RecursiveUnionAdjacentShapeNew();
+            }
+            return {
+                kind: `shape`,
+                data: __value__,
+            };
+        }
+        default: {
+            return RecursiveUnionAdjacentNew();
+        }
+    }
 }
-export function RecursiveUnionTextFromJsonString(
+export function RecursiveUnionAdjacentFromJsonString(
     input: string,
-): RecursiveUnionText {
-    return RecursiveUnionTextFromJson(JSON.parse(input));
+): RecursiveUnionAdjacent {
+    return RecursiveUnionAdjacentFromJson(JSON.parse(input));
 }
-export function RecursiveUnionTextToJsonString(
-    input: RecursiveUnionText,
+export function RecursiveUnionAdjacentToJsonString(
+    input: RecursiveUnionAdjacent,
 ): string {
-    let json = '{';
-    json += '"type":"TEXT"';
-    json += ',"data":';
-    json += serializeString(input.data);
-    json += '}';
-    return json;
+    switch (input.kind) {
+        case `child`: {
+            let json = '{';
+            json += '"kind":"child"';
+            json += ',"data":';
+            json += RecursiveUnionAdjacentToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `children`: {
+            let json = '{';
+            json += '"kind":"children"';
+            json += ',"data":';
+            json += '[';
+            for (let i = 0; i < input.data.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputDataEl = input.data[i]!;
+                json += RecursiveUnionAdjacentToJsonString(_inputDataEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `text`: {
+            let json = '{';
+            json += '"kind":"text"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `shape`: {
+            let json = '{';
+            json += '"kind":"shape"';
+            json += ',"data":';
+            json += RecursiveUnionAdjacentShapeToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
 }
-export function RecursiveUnionTextToUrlSearchParams(
-    input: RecursiveUnionText,
+export function RecursiveUnionAdjacentToUrlSearchParams(
+    input: RecursiveUnionAdjacent,
 ): URLSearchParams {
     const params = new URLSearchParams();
-    params.set('type', `TEXT`);
-    params.set('data', input.data);
+    console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function RecursiveUnionTextToUrlSearchParamsString(
-    input: RecursiveUnionText,
+export function RecursiveUnionAdjacentToUrlSearchParamsString(
+    input: RecursiveUnionAdjacent,
 ): string {
-    return RecursiveUnionTextToUrlSearchParams(input).toString();
+    return RecursiveUnionAdjacentToUrlSearchParams(input).toString();
 }
+export const $$RecursiveUnionAdjacent: TestClientValidator<RecursiveUnionAdjacent> =
+    {
+        new: RecursiveUnionAdjacentNew,
+        validate: RecursiveUnionAdjacentValidate,
+        clone: RecursiveUnionAdjacentClone,
+        fromJson: RecursiveUnionAdjacentFromJson,
+        fromJsonString: RecursiveUnionAdjacentFromJsonString,
+        toJsonString: RecursiveUnionAdjacentToJsonString,
+        toUrlSearchParams: RecursiveUnionAdjacentToUrlSearchParams,
+        toUrlSearchParamsString: RecursiveUnionAdjacentToUrlSearchParamsString,
+    };
 
 /**
  * Shape node
  */
-export interface RecursiveUnionShape {
-    type: `SHAPE`;
-    data: RecursiveUnionShapeData;
-}
-export function RecursiveUnionShapeNew(): RecursiveUnionShape {
-    return {
-        type: `SHAPE`,
-        data: RecursiveUnionShapeDataNew(),
-    };
-}
-export function RecursiveUnionShapeValidate(
-    input: unknown,
-): input is RecursiveUnionShape {
-    return (
-        isObject(input) &&
-        input.type === `SHAPE` &&
-        RecursiveUnionShapeDataValidate(input.data)
-    );
-}
-export function RecursiveUnionShapeClone(
-    input: RecursiveUnionShape,
-): RecursiveUnionShape {
-    const _type = `SHAPE`;
-    let _data: RecursiveUnionShapeData;
-    _data = RecursiveUnionShapeDataClone(input.data);
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionShapeFromJson(
-    input: Record<string, unknown>,
-): RecursiveUnionShape {
-    const _type = `SHAPE`;
-    let _data: RecursiveUnionShapeData;
-    if (isObject(input.data)) {
-        _data = RecursiveUnionShapeDataFromJson(input.data);
-    } else {
-        _data = RecursiveUnionShapeDataNew();
-    }
-    return {
-        type: _type,
-        data: _data,
-    };
-}
-export function RecursiveUnionShapeFromJsonString(
-    input: string,
-): RecursiveUnionShape {
-    return RecursiveUnionShapeFromJson(JSON.parse(input));
-}
-export function RecursiveUnionShapeToJsonString(
-    input: RecursiveUnionShape,
-): string {
-    let json = '{';
-    json += '"type":"SHAPE"';
-    json += ',"data":';
-    json += RecursiveUnionShapeDataToJsonString(input.data);
-    json += '}';
-    return json;
-}
-export function RecursiveUnionShapeToUrlSearchParams(
-    input: RecursiveUnionShape,
-): URLSearchParams {
-    const params = new URLSearchParams();
-    params.set('type', `SHAPE`);
-    console.warn(
-        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /RecursiveUnionShape/data.',
-    );
-    return params;
-}
-export function RecursiveUnionShapeToUrlSearchParamsString(
-    input: RecursiveUnionShape,
-): string {
-    return RecursiveUnionShapeToUrlSearchParams(input).toString();
-}
-
-export interface RecursiveUnionShapeData {
+export interface RecursiveUnionAdjacentShape {
     width: number;
     height: number;
     color: string;
 }
-export function RecursiveUnionShapeDataNew(): RecursiveUnionShapeData {
+export function RecursiveUnionAdjacentShapeNew(): RecursiveUnionAdjacentShape {
     return {
         width: 0,
         height: 0,
         color: '',
     };
 }
-export function RecursiveUnionShapeDataValidate(
+export function RecursiveUnionAdjacentShapeValidate(
     input: unknown,
-): input is RecursiveUnionShapeData {
+): input is RecursiveUnionAdjacentShape {
     return (
         isObject(input) &&
         typeof input.width === 'number' &&
@@ -10156,9 +9951,9 @@ export function RecursiveUnionShapeDataValidate(
         typeof input.color === 'string'
     );
 }
-export function RecursiveUnionShapeDataClone(
-    input: RecursiveUnionShapeData,
-): RecursiveUnionShapeData {
+export function RecursiveUnionAdjacentShapeClone(
+    input: RecursiveUnionAdjacentShape,
+): RecursiveUnionAdjacentShape {
     let _width: number;
     _width = input.width;
     let _height: number;
@@ -10171,9 +9966,9 @@ export function RecursiveUnionShapeDataClone(
         color: _color,
     };
 }
-export function RecursiveUnionShapeDataFromJson(
+export function RecursiveUnionAdjacentShapeFromJson(
     input: Record<string, unknown>,
-): RecursiveUnionShapeData {
+): RecursiveUnionAdjacentShape {
     let _width: number;
     _width = parseNumberFloat(input.width);
     let _height: number;
@@ -10186,13 +9981,13 @@ export function RecursiveUnionShapeDataFromJson(
         color: _color,
     };
 }
-export function RecursiveUnionShapeDataFromJsonString(
+export function RecursiveUnionAdjacentShapeFromJsonString(
     input: string,
-): RecursiveUnionShapeData {
-    return RecursiveUnionShapeDataFromJson(JSON.parse(input));
+): RecursiveUnionAdjacentShape {
+    return RecursiveUnionAdjacentShapeFromJson(JSON.parse(input));
 }
-export function RecursiveUnionShapeDataToJsonString(
-    input: RecursiveUnionShapeData,
+export function RecursiveUnionAdjacentShapeToJsonString(
+    input: RecursiveUnionAdjacentShape,
 ): string {
     let json = '{';
     json += '"width":';
@@ -10204,8 +9999,8 @@ export function RecursiveUnionShapeDataToJsonString(
     json += '}';
     return json;
 }
-export function RecursiveUnionShapeDataToUrlSearchParams(
-    input: RecursiveUnionShapeData,
+export function RecursiveUnionAdjacentShapeToUrlSearchParams(
+    input: RecursiveUnionAdjacentShape,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('width', `${input.width}`);
@@ -10213,37 +10008,38 @@ export function RecursiveUnionShapeDataToUrlSearchParams(
     params.set('color', input.color);
     return params;
 }
-export function RecursiveUnionShapeDataToUrlSearchParamsString(
-    input: RecursiveUnionShapeData,
+export function RecursiveUnionAdjacentShapeToUrlSearchParamsString(
+    input: RecursiveUnionAdjacentShape,
 ): string {
-    return RecursiveUnionShapeDataToUrlSearchParams(input).toString();
+    return RecursiveUnionAdjacentShapeToUrlSearchParams(input).toString();
 }
-export const $$RecursiveUnionShapeData: TestClientValidator<RecursiveUnionShapeData> =
+export const $$RecursiveUnionAdjacentShape: TestClientValidator<RecursiveUnionAdjacentShape> =
     {
-        new: RecursiveUnionShapeDataNew,
-        validate: RecursiveUnionShapeDataValidate,
-        clone: RecursiveUnionShapeDataClone,
-        fromJson: RecursiveUnionShapeDataFromJson,
-        fromJsonString: RecursiveUnionShapeDataFromJsonString,
-        toJsonString: RecursiveUnionShapeDataToJsonString,
-        toUrlSearchParams: RecursiveUnionShapeDataToUrlSearchParams,
-        toUrlSearchParamsString: RecursiveUnionShapeDataToUrlSearchParamsString,
+        new: RecursiveUnionAdjacentShapeNew,
+        validate: RecursiveUnionAdjacentShapeValidate,
+        clone: RecursiveUnionAdjacentShapeClone,
+        fromJson: RecursiveUnionAdjacentShapeFromJson,
+        fromJsonString: RecursiveUnionAdjacentShapeFromJsonString,
+        toJsonString: RecursiveUnionAdjacentShapeToJsonString,
+        toUrlSearchParams: RecursiveUnionAdjacentShapeToUrlSearchParams,
+        toUrlSearchParamsString:
+            RecursiveUnionAdjacentShapeToUrlSearchParamsString,
     };
 
-export type RecursiveUnionV2 =
-    | { type: `child`; value: RecursiveUnionV2 }
-    | { type: `children`; value: RecursiveUnionV2[] }
+export type RecursiveUnionExternal =
+    | { type: `child`; value: RecursiveUnionExternal }
+    | { type: `children`; value: RecursiveUnionExternal[] }
     | { type: `text`; value: string }
-    | { type: `shape`; value: RecursiveUnionV2Shape };
-export function RecursiveUnionV2New(): RecursiveUnionV2 {
+    | { type: `shape`; value: RecursiveUnionExternalShape };
+export function RecursiveUnionExternalNew(): RecursiveUnionExternal {
     return {
         type: `children`,
         value: [],
     };
 }
-export function RecursiveUnionV2Validate(
+export function RecursiveUnionExternalValidate(
     input: unknown,
-): input is RecursiveUnionV2 {
+): input is RecursiveUnionExternal {
     if (!isObject(input)) {
         return false;
     }
@@ -10252,13 +10048,13 @@ export function RecursiveUnionV2Validate(
     }
     switch (input.type) {
         case `child`:
-            return RecursiveUnionV2Validate(input.value);
+            return RecursiveUnionExternalValidate(input.value);
 
         case `children`:
             return (
                 Array.isArray(input.value) &&
                 input.value.every((_element) =>
-                    RecursiveUnionV2Validate(_element),
+                    RecursiveUnionExternalValidate(_element),
                 )
             );
 
@@ -10266,19 +10062,19 @@ export function RecursiveUnionV2Validate(
             return typeof input.value === 'string';
 
         case `shape`:
-            return RecursiveUnionV2ShapeValidate(input.value);
+            return RecursiveUnionExternalShapeValidate(input.value);
 
         default:
             return false;
     }
 }
-export function RecursiveUnionV2Clone(
-    input: RecursiveUnionV2,
-): RecursiveUnionV2 {
+export function RecursiveUnionExternalClone(
+    input: RecursiveUnionExternal,
+): RecursiveUnionExternal {
     switch (input.type) {
         case `child`: {
-            let __value__: RecursiveUnionV2;
-            __value__ = RecursiveUnionV2Clone(input.value);
+            let __value__: RecursiveUnionExternal;
+            __value__ = RecursiveUnionExternalClone(input.value);
             return {
                 type: `child`,
                 value: __value__,
@@ -10286,11 +10082,11 @@ export function RecursiveUnionV2Clone(
         }
 
         case `children`: {
-            let __value__: RecursiveUnionV2[];
+            let __value__: RecursiveUnionExternal[];
             __value__ = [];
             for (const __value__El of input.value) {
-                let __value__ElValue: RecursiveUnionV2;
-                __value__ElValue = RecursiveUnionV2Clone(__value__El);
+                let __value__ElValue: RecursiveUnionExternal;
+                __value__ElValue = RecursiveUnionExternalClone(__value__El);
                 __value__.push(__value__ElValue);
             }
             return {
@@ -10309,8 +10105,8 @@ export function RecursiveUnionV2Clone(
         }
 
         case `shape`: {
-            let __value__: RecursiveUnionV2Shape;
-            __value__ = RecursiveUnionV2ShapeClone(input.value);
+            let __value__: RecursiveUnionExternalShape;
+            __value__ = RecursiveUnionExternalShapeClone(input.value);
             return {
                 type: `shape`,
                 value: __value__,
@@ -10321,15 +10117,15 @@ export function RecursiveUnionV2Clone(
             throw new Error(`Unknown union variant: ${(input as any).type}`);
     }
 }
-export function RecursiveUnionV2FromJson(
+export function RecursiveUnionExternalFromJson(
     input: Record<string, unknown>,
-): RecursiveUnionV2 {
+): RecursiveUnionExternal {
     if (`child` in input) {
-        let __value__: RecursiveUnionV2;
+        let __value__: RecursiveUnionExternal;
         if (isObject(input[`child`])) {
-            __value__ = RecursiveUnionV2FromJson(input[`child`]);
+            __value__ = RecursiveUnionExternalFromJson(input[`child`]);
         } else {
-            __value__ = RecursiveUnionV2New();
+            __value__ = RecursiveUnionExternalNew();
         }
         return {
             type: `child`,
@@ -10338,15 +10134,16 @@ export function RecursiveUnionV2FromJson(
     }
 
     if (`children` in input) {
-        let __value__: RecursiveUnionV2[];
+        let __value__: RecursiveUnionExternal[];
         if (Array.isArray(input[`children`])) {
             __value__ = [];
             for (const __value__El of input[`children`]) {
-                let __value__ElValue: RecursiveUnionV2;
+                let __value__ElValue: RecursiveUnionExternal;
                 if (isObject(__value__El)) {
-                    __value__ElValue = RecursiveUnionV2FromJson(__value__El);
+                    __value__ElValue =
+                        RecursiveUnionExternalFromJson(__value__El);
                 } else {
-                    __value__ElValue = RecursiveUnionV2New();
+                    __value__ElValue = RecursiveUnionExternalNew();
                 }
                 __value__.push(__value__ElValue);
             }
@@ -10369,31 +10166,33 @@ export function RecursiveUnionV2FromJson(
     }
 
     if (`shape` in input) {
-        let __value__: RecursiveUnionV2Shape;
+        let __value__: RecursiveUnionExternalShape;
         if (isObject(input[`shape`])) {
-            __value__ = RecursiveUnionV2ShapeFromJson(input[`shape`]);
+            __value__ = RecursiveUnionExternalShapeFromJson(input[`shape`]);
         } else {
-            __value__ = RecursiveUnionV2ShapeNew();
+            __value__ = RecursiveUnionExternalShapeNew();
         }
         return {
             type: `shape`,
             value: __value__,
         };
     }
-    return RecursiveUnionV2New();
+    return RecursiveUnionExternalNew();
 }
-export function RecursiveUnionV2FromJsonString(
+export function RecursiveUnionExternalFromJsonString(
     input: string,
-): RecursiveUnionV2 {
-    return RecursiveUnionV2FromJson(JSON.parse(input));
+): RecursiveUnionExternal {
+    return RecursiveUnionExternalFromJson(JSON.parse(input));
 }
-export function RecursiveUnionV2ToJsonString(input: RecursiveUnionV2): string {
+export function RecursiveUnionExternalToJsonString(
+    input: RecursiveUnionExternal,
+): string {
     switch (input.type) {
         case `child`: {
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += RecursiveUnionV2ToJsonString(input.value);
+            json += RecursiveUnionExternalToJsonString(input.value);
             json += '}';
             return json;
         }
@@ -10406,7 +10205,7 @@ export function RecursiveUnionV2ToJsonString(input: RecursiveUnionV2): string {
             for (let i = 0; i < input.value.length; i++) {
                 if (i !== 0) json += ',';
                 const _inputValueEl = input.value[i]!;
-                json += RecursiveUnionV2ToJsonString(_inputValueEl);
+                json += RecursiveUnionExternalToJsonString(_inputValueEl);
             }
             json += ']';
             json += '}';
@@ -10426,7 +10225,7 @@ export function RecursiveUnionV2ToJsonString(input: RecursiveUnionV2): string {
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += RecursiveUnionV2ShapeToJsonString(input.value);
+            json += RecursiveUnionExternalShapeToJsonString(input.value);
             json += '}';
             return json;
         }
@@ -10437,47 +10236,48 @@ export function RecursiveUnionV2ToJsonString(input: RecursiveUnionV2): string {
         }
     }
 }
-export function RecursiveUnionV2ToUrlSearchParams(
-    input: RecursiveUnionV2,
+export function RecursiveUnionExternalToUrlSearchParams(
+    input: RecursiveUnionExternal,
 ): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function RecursiveUnionV2ToUrlSearchParamsString(
-    input: RecursiveUnionV2,
+export function RecursiveUnionExternalToUrlSearchParamsString(
+    input: RecursiveUnionExternal,
 ): string {
-    return RecursiveUnionV2ToUrlSearchParams(input).toString();
+    return RecursiveUnionExternalToUrlSearchParams(input).toString();
 }
-export const $$RecursiveUnionV2: TestClientValidator<RecursiveUnionV2> = {
-    new: RecursiveUnionV2New,
-    validate: RecursiveUnionV2Validate,
-    clone: RecursiveUnionV2Clone,
-    fromJson: RecursiveUnionV2FromJson,
-    fromJsonString: RecursiveUnionV2FromJsonString,
-    toJsonString: RecursiveUnionV2ToJsonString,
-    toUrlSearchParams: RecursiveUnionV2ToUrlSearchParams,
-    toUrlSearchParamsString: RecursiveUnionV2ToUrlSearchParamsString,
-};
+export const $$RecursiveUnionExternal: TestClientValidator<RecursiveUnionExternal> =
+    {
+        new: RecursiveUnionExternalNew,
+        validate: RecursiveUnionExternalValidate,
+        clone: RecursiveUnionExternalClone,
+        fromJson: RecursiveUnionExternalFromJson,
+        fromJsonString: RecursiveUnionExternalFromJsonString,
+        toJsonString: RecursiveUnionExternalToJsonString,
+        toUrlSearchParams: RecursiveUnionExternalToUrlSearchParams,
+        toUrlSearchParamsString: RecursiveUnionExternalToUrlSearchParamsString,
+    };
 
 /**
  * Shape node
  */
-export interface RecursiveUnionV2Shape {
+export interface RecursiveUnionExternalShape {
     width: number;
     height: number;
     color: string;
 }
-export function RecursiveUnionV2ShapeNew(): RecursiveUnionV2Shape {
+export function RecursiveUnionExternalShapeNew(): RecursiveUnionExternalShape {
     return {
         width: 0,
         height: 0,
         color: '',
     };
 }
-export function RecursiveUnionV2ShapeValidate(
+export function RecursiveUnionExternalShapeValidate(
     input: unknown,
-): input is RecursiveUnionV2Shape {
+): input is RecursiveUnionExternalShape {
     return (
         isObject(input) &&
         typeof input.width === 'number' &&
@@ -10485,9 +10285,9 @@ export function RecursiveUnionV2ShapeValidate(
         typeof input.color === 'string'
     );
 }
-export function RecursiveUnionV2ShapeClone(
-    input: RecursiveUnionV2Shape,
-): RecursiveUnionV2Shape {
+export function RecursiveUnionExternalShapeClone(
+    input: RecursiveUnionExternalShape,
+): RecursiveUnionExternalShape {
     let _width: number;
     _width = input.width;
     let _height: number;
@@ -10500,9 +10300,9 @@ export function RecursiveUnionV2ShapeClone(
         color: _color,
     };
 }
-export function RecursiveUnionV2ShapeFromJson(
+export function RecursiveUnionExternalShapeFromJson(
     input: Record<string, unknown>,
-): RecursiveUnionV2Shape {
+): RecursiveUnionExternalShape {
     let _width: number;
     _width = parseNumberFloat(input.width);
     let _height: number;
@@ -10515,13 +10315,13 @@ export function RecursiveUnionV2ShapeFromJson(
         color: _color,
     };
 }
-export function RecursiveUnionV2ShapeFromJsonString(
+export function RecursiveUnionExternalShapeFromJsonString(
     input: string,
-): RecursiveUnionV2Shape {
-    return RecursiveUnionV2ShapeFromJson(JSON.parse(input));
+): RecursiveUnionExternalShape {
+    return RecursiveUnionExternalShapeFromJson(JSON.parse(input));
 }
-export function RecursiveUnionV2ShapeToJsonString(
-    input: RecursiveUnionV2Shape,
+export function RecursiveUnionExternalShapeToJsonString(
+    input: RecursiveUnionExternalShape,
 ): string {
     let json = '{';
     json += '"width":';
@@ -10533,8 +10333,8 @@ export function RecursiveUnionV2ShapeToJsonString(
     json += '}';
     return json;
 }
-export function RecursiveUnionV2ShapeToUrlSearchParams(
-    input: RecursiveUnionV2Shape,
+export function RecursiveUnionExternalShapeToUrlSearchParams(
+    input: RecursiveUnionExternalShape,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('width', `${input.width}`);
@@ -10542,21 +10342,591 @@ export function RecursiveUnionV2ShapeToUrlSearchParams(
     params.set('color', input.color);
     return params;
 }
-export function RecursiveUnionV2ShapeToUrlSearchParamsString(
-    input: RecursiveUnionV2Shape,
+export function RecursiveUnionExternalShapeToUrlSearchParamsString(
+    input: RecursiveUnionExternalShape,
 ): string {
-    return RecursiveUnionV2ShapeToUrlSearchParams(input).toString();
+    return RecursiveUnionExternalShapeToUrlSearchParams(input).toString();
 }
-export const $$RecursiveUnionV2Shape: TestClientValidator<RecursiveUnionV2Shape> =
+export const $$RecursiveUnionExternalShape: TestClientValidator<RecursiveUnionExternalShape> =
     {
-        new: RecursiveUnionV2ShapeNew,
-        validate: RecursiveUnionV2ShapeValidate,
-        clone: RecursiveUnionV2ShapeClone,
-        fromJson: RecursiveUnionV2ShapeFromJson,
-        fromJsonString: RecursiveUnionV2ShapeFromJsonString,
-        toJsonString: RecursiveUnionV2ShapeToJsonString,
-        toUrlSearchParams: RecursiveUnionV2ShapeToUrlSearchParams,
-        toUrlSearchParamsString: RecursiveUnionV2ShapeToUrlSearchParamsString,
+        new: RecursiveUnionExternalShapeNew,
+        validate: RecursiveUnionExternalShapeValidate,
+        clone: RecursiveUnionExternalShapeClone,
+        fromJson: RecursiveUnionExternalShapeFromJson,
+        fromJsonString: RecursiveUnionExternalShapeFromJsonString,
+        toJsonString: RecursiveUnionExternalShapeToJsonString,
+        toUrlSearchParams: RecursiveUnionExternalShapeToUrlSearchParams,
+        toUrlSearchParamsString:
+            RecursiveUnionExternalShapeToUrlSearchParamsString,
+    };
+
+export type RecursiveUnionInternal =
+    | RecursiveUnionInternalChild
+    | RecursiveUnionInternalChildren
+    | RecursiveUnionInternalText
+    | RecursiveUnionInternalShape;
+export function RecursiveUnionInternalNew(): RecursiveUnionInternal {
+    return RecursiveUnionInternalChildrenNew();
+}
+export function RecursiveUnionInternalValidate(
+    input: unknown,
+): input is RecursiveUnionInternal {
+    return (
+        RecursiveUnionInternalChildValidate(input) ||
+        RecursiveUnionInternalChildrenValidate(input) ||
+        RecursiveUnionInternalTextValidate(input) ||
+        RecursiveUnionInternalShapeValidate(input)
+    );
+}
+export function RecursiveUnionInternalClone(
+    input: RecursiveUnionInternal,
+): RecursiveUnionInternal {
+    switch (input.kind) {
+        case `child`: {
+            let __value__: RecursiveUnionInternalChild;
+            __value__ = RecursiveUnionInternalChildClone(input);
+            return __value__;
+        }
+
+        case `children`: {
+            let __value__: RecursiveUnionInternalChildren;
+            __value__ = RecursiveUnionInternalChildrenClone(input);
+            return __value__;
+        }
+
+        case `text`: {
+            let __value__: RecursiveUnionInternalText;
+            __value__ = RecursiveUnionInternalTextClone(input);
+            return __value__;
+        }
+
+        case `shape`: {
+            let __value__: RecursiveUnionInternalShape;
+            __value__ = RecursiveUnionInternalShapeClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function RecursiveUnionInternalFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionInternal {
+    switch (input.kind) {
+        case `child`: {
+            return RecursiveUnionInternalChildFromJson(input);
+        }
+        case `children`: {
+            return RecursiveUnionInternalChildrenFromJson(input);
+        }
+        case `text`: {
+            return RecursiveUnionInternalTextFromJson(input);
+        }
+        case `shape`: {
+            return RecursiveUnionInternalShapeFromJson(input);
+        }
+        default: {
+            return RecursiveUnionInternalChildrenNew();
+        }
+    }
+}
+export function RecursiveUnionInternalFromJsonString(
+    input: string,
+): RecursiveUnionInternal {
+    return RecursiveUnionInternalFromJson(JSON.parse(input));
+}
+export function RecursiveUnionInternalToJsonString(
+    input: RecursiveUnionInternal,
+): string {
+    switch (input.kind) {
+        case `child`: {
+            return RecursiveUnionInternalChildToJsonString(input);
+        }
+
+        case `children`: {
+            return RecursiveUnionInternalChildrenToJsonString(input);
+        }
+
+        case `text`: {
+            return RecursiveUnionInternalTextToJsonString(input);
+        }
+
+        case `shape`: {
+            return RecursiveUnionInternalShapeToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function RecursiveUnionInternalToUrlSearchParams(
+    input: RecursiveUnionInternal,
+): URLSearchParams {
+    switch (input.kind) {
+        case `child`: {
+            return RecursiveUnionInternalChildToUrlSearchParams(input);
+        }
+        case `children`: {
+            return RecursiveUnionInternalChildrenToUrlSearchParams(input);
+        }
+        case `text`: {
+            return RecursiveUnionInternalTextToUrlSearchParams(input);
+        }
+        case `shape`: {
+            return RecursiveUnionInternalShapeToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function RecursiveUnionInternalToUrlSearchParamsString(
+    input: RecursiveUnionInternal,
+): string {
+    return RecursiveUnionInternalToUrlSearchParams(input).toString();
+}
+export const $$RecursiveUnionInternal: TestClientValidator<RecursiveUnionInternal> =
+    {
+        new: RecursiveUnionInternalNew,
+        validate: RecursiveUnionInternalValidate,
+        clone: RecursiveUnionInternalClone,
+        fromJson: RecursiveUnionInternalFromJson,
+        fromJsonString: RecursiveUnionInternalFromJsonString,
+        toJsonString: RecursiveUnionInternalToJsonString,
+        toUrlSearchParams: RecursiveUnionInternalToUrlSearchParams,
+        toUrlSearchParamsString: RecursiveUnionInternalToUrlSearchParamsString,
+    };
+export interface RecursiveUnionInternalChild {
+    kind: `child`;
+    data: RecursiveUnionInternal;
+}
+export function RecursiveUnionInternalChildNew(): RecursiveUnionInternalChild {
+    return {
+        kind: `child`,
+        data: RecursiveUnionInternalNew(),
+    };
+}
+export function RecursiveUnionInternalChildValidate(
+    input: unknown,
+): input is RecursiveUnionInternalChild {
+    return (
+        isObject(input) &&
+        input.kind === `child` &&
+        RecursiveUnionInternalValidate(input.data)
+    );
+}
+export function RecursiveUnionInternalChildClone(
+    input: RecursiveUnionInternalChild,
+): RecursiveUnionInternalChild {
+    const _kind = `child`;
+    let _data: RecursiveUnionInternal;
+    _data = RecursiveUnionInternalClone(input.data);
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalChildFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionInternalChild {
+    const _kind = `child`;
+    let _data: RecursiveUnionInternal;
+    if (isObject(input.data)) {
+        _data = RecursiveUnionInternalFromJson(input.data);
+    } else {
+        _data = RecursiveUnionInternalNew();
+    }
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalChildFromJsonString(
+    input: string,
+): RecursiveUnionInternalChild {
+    return RecursiveUnionInternalChildFromJson(JSON.parse(input));
+}
+export function RecursiveUnionInternalChildToJsonString(
+    input: RecursiveUnionInternalChild,
+): string {
+    let json = '{';
+    json += '"kind":"child"';
+    json += ',"data":';
+    json += RecursiveUnionInternalToJsonString(input.data);
+    json += '}';
+    return json;
+}
+export function RecursiveUnionInternalChildToUrlSearchParams(
+    input: RecursiveUnionInternalChild,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `child`);
+    console.warn(
+        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveUnionInternalChild/data.',
+    );
+    return params;
+}
+export function RecursiveUnionInternalChildToUrlSearchParamsString(
+    input: RecursiveUnionInternalChild,
+): string {
+    return RecursiveUnionInternalChildToUrlSearchParams(input).toString();
+}
+
+export interface RecursiveUnionInternalChildren {
+    kind: `children`;
+    /**
+     * an array of child nodes
+     */
+    data: RecursiveUnionInternal[];
+}
+export function RecursiveUnionInternalChildrenNew(): RecursiveUnionInternalChildren {
+    return {
+        kind: `children`,
+        data: [],
+    };
+}
+export function RecursiveUnionInternalChildrenValidate(
+    input: unknown,
+): input is RecursiveUnionInternalChildren {
+    return (
+        isObject(input) &&
+        input.kind === `children` &&
+        Array.isArray(input.data) &&
+        input.data.every((_element) => RecursiveUnionInternalValidate(_element))
+    );
+}
+export function RecursiveUnionInternalChildrenClone(
+    input: RecursiveUnionInternalChildren,
+): RecursiveUnionInternalChildren {
+    const _kind = `children`;
+    let _data: RecursiveUnionInternal[];
+    _data = [];
+    for (const _dataEl of input.data) {
+        let _dataElValue: RecursiveUnionInternal;
+        _dataElValue = RecursiveUnionInternalClone(_dataEl);
+        _data.push(_dataElValue);
+    }
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalChildrenFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionInternalChildren {
+    const _kind = `children`;
+    let _data: RecursiveUnionInternal[];
+    if (Array.isArray(input.data)) {
+        _data = [];
+        for (const _dataEl of input.data) {
+            let _dataElValue: RecursiveUnionInternal;
+            if (isObject(_dataEl)) {
+                _dataElValue = RecursiveUnionInternalFromJson(_dataEl);
+            } else {
+                _dataElValue = RecursiveUnionInternalNew();
+            }
+            _data.push(_dataElValue);
+        }
+    } else {
+        _data = [];
+    }
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalChildrenFromJsonString(
+    input: string,
+): RecursiveUnionInternalChildren {
+    return RecursiveUnionInternalChildrenFromJson(JSON.parse(input));
+}
+export function RecursiveUnionInternalChildrenToJsonString(
+    input: RecursiveUnionInternalChildren,
+): string {
+    let json = '{';
+    json += '"kind":"children"';
+    json += ',"data":';
+    json += '[';
+    for (let i = 0; i < input.data.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputDataEl = input.data[i]!;
+        json += RecursiveUnionInternalToJsonString(_inputDataEl);
+    }
+    json += ']';
+    json += '}';
+    return json;
+}
+export function RecursiveUnionInternalChildrenToUrlSearchParams(
+    input: RecursiveUnionInternalChildren,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `children`);
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /RecursiveUnionInternalChildren/data.',
+    );
+    return params;
+}
+export function RecursiveUnionInternalChildrenToUrlSearchParamsString(
+    input: RecursiveUnionInternalChildren,
+): string {
+    return RecursiveUnionInternalChildrenToUrlSearchParams(input).toString();
+}
+
+export interface RecursiveUnionInternalText {
+    kind: `text`;
+    /**
+     * Text node
+     */
+    data: string;
+}
+export function RecursiveUnionInternalTextNew(): RecursiveUnionInternalText {
+    return {
+        kind: `text`,
+        data: '',
+    };
+}
+export function RecursiveUnionInternalTextValidate(
+    input: unknown,
+): input is RecursiveUnionInternalText {
+    return (
+        isObject(input) &&
+        input.kind === `text` &&
+        typeof input.data === 'string'
+    );
+}
+export function RecursiveUnionInternalTextClone(
+    input: RecursiveUnionInternalText,
+): RecursiveUnionInternalText {
+    const _kind = `text`;
+    let _data: string;
+    _data = input.data;
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalTextFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionInternalText {
+    const _kind = `text`;
+    let _data: string;
+    _data = parseString(input.data);
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalTextFromJsonString(
+    input: string,
+): RecursiveUnionInternalText {
+    return RecursiveUnionInternalTextFromJson(JSON.parse(input));
+}
+export function RecursiveUnionInternalTextToJsonString(
+    input: RecursiveUnionInternalText,
+): string {
+    let json = '{';
+    json += '"kind":"text"';
+    json += ',"data":';
+    json += serializeString(input.data);
+    json += '}';
+    return json;
+}
+export function RecursiveUnionInternalTextToUrlSearchParams(
+    input: RecursiveUnionInternalText,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `text`);
+    params.set('data', input.data);
+    return params;
+}
+export function RecursiveUnionInternalTextToUrlSearchParamsString(
+    input: RecursiveUnionInternalText,
+): string {
+    return RecursiveUnionInternalTextToUrlSearchParams(input).toString();
+}
+
+export interface RecursiveUnionInternalShape {
+    kind: `shape`;
+    /**
+     * Shape node
+     */
+    data: RecursiveUnionInternalShapeData;
+}
+export function RecursiveUnionInternalShapeNew(): RecursiveUnionInternalShape {
+    return {
+        kind: `shape`,
+        data: RecursiveUnionInternalShapeDataNew(),
+    };
+}
+export function RecursiveUnionInternalShapeValidate(
+    input: unknown,
+): input is RecursiveUnionInternalShape {
+    return (
+        isObject(input) &&
+        input.kind === `shape` &&
+        RecursiveUnionInternalShapeDataValidate(input.data)
+    );
+}
+export function RecursiveUnionInternalShapeClone(
+    input: RecursiveUnionInternalShape,
+): RecursiveUnionInternalShape {
+    const _kind = `shape`;
+    let _data: RecursiveUnionInternalShapeData;
+    _data = RecursiveUnionInternalShapeDataClone(input.data);
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalShapeFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionInternalShape {
+    const _kind = `shape`;
+    let _data: RecursiveUnionInternalShapeData;
+    if (isObject(input.data)) {
+        _data = RecursiveUnionInternalShapeDataFromJson(input.data);
+    } else {
+        _data = RecursiveUnionInternalShapeDataNew();
+    }
+    return {
+        kind: _kind,
+        data: _data,
+    };
+}
+export function RecursiveUnionInternalShapeFromJsonString(
+    input: string,
+): RecursiveUnionInternalShape {
+    return RecursiveUnionInternalShapeFromJson(JSON.parse(input));
+}
+export function RecursiveUnionInternalShapeToJsonString(
+    input: RecursiveUnionInternalShape,
+): string {
+    let json = '{';
+    json += '"kind":"shape"';
+    json += ',"data":';
+    json += RecursiveUnionInternalShapeDataToJsonString(input.data);
+    json += '}';
+    return json;
+}
+export function RecursiveUnionInternalShapeToUrlSearchParams(
+    input: RecursiveUnionInternalShape,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `shape`);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /RecursiveUnionInternalShape/data.',
+    );
+    return params;
+}
+export function RecursiveUnionInternalShapeToUrlSearchParamsString(
+    input: RecursiveUnionInternalShape,
+): string {
+    return RecursiveUnionInternalShapeToUrlSearchParams(input).toString();
+}
+
+/**
+ * Shape node
+ */
+export interface RecursiveUnionInternalShapeData {
+    width: number;
+    height: number;
+    color: string;
+}
+export function RecursiveUnionInternalShapeDataNew(): RecursiveUnionInternalShapeData {
+    return {
+        width: 0,
+        height: 0,
+        color: '',
+    };
+}
+export function RecursiveUnionInternalShapeDataValidate(
+    input: unknown,
+): input is RecursiveUnionInternalShapeData {
+    return (
+        isObject(input) &&
+        typeof input.width === 'number' &&
+        typeof input.height === 'number' &&
+        typeof input.color === 'string'
+    );
+}
+export function RecursiveUnionInternalShapeDataClone(
+    input: RecursiveUnionInternalShapeData,
+): RecursiveUnionInternalShapeData {
+    let _width: number;
+    _width = input.width;
+    let _height: number;
+    _height = input.height;
+    let _color: string;
+    _color = input.color;
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
+}
+export function RecursiveUnionInternalShapeDataFromJson(
+    input: Record<string, unknown>,
+): RecursiveUnionInternalShapeData {
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    let _color: string;
+    _color = parseString(input.color);
+    return {
+        width: _width,
+        height: _height,
+        color: _color,
+    };
+}
+export function RecursiveUnionInternalShapeDataFromJsonString(
+    input: string,
+): RecursiveUnionInternalShapeData {
+    return RecursiveUnionInternalShapeDataFromJson(JSON.parse(input));
+}
+export function RecursiveUnionInternalShapeDataToJsonString(
+    input: RecursiveUnionInternalShapeData,
+): string {
+    let json = '{';
+    json += '"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += ',"color":';
+    json += serializeString(input.color);
+    json += '}';
+    return json;
+}
+export function RecursiveUnionInternalShapeDataToUrlSearchParams(
+    input: RecursiveUnionInternalShapeData,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    params.set('color', input.color);
+    return params;
+}
+export function RecursiveUnionInternalShapeDataToUrlSearchParamsString(
+    input: RecursiveUnionInternalShapeData,
+): string {
+    return RecursiveUnionInternalShapeDataToUrlSearchParams(input).toString();
+}
+export const $$RecursiveUnionInternalShapeData: TestClientValidator<RecursiveUnionInternalShapeData> =
+    {
+        new: RecursiveUnionInternalShapeDataNew,
+        validate: RecursiveUnionInternalShapeDataValidate,
+        clone: RecursiveUnionInternalShapeDataClone,
+        fromJson: RecursiveUnionInternalShapeDataFromJson,
+        fromJsonString: RecursiveUnionInternalShapeDataFromJsonString,
+        toJsonString: RecursiveUnionInternalShapeDataToJsonString,
+        toUrlSearchParams: RecursiveUnionInternalShapeDataToUrlSearchParams,
+        toUrlSearchParamsString:
+            RecursiveUnionInternalShapeDataToUrlSearchParamsString,
     };
 
 export interface AutoReconnectParams {

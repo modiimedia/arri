@@ -13,7 +13,9 @@ import {
     ObjectWithPascalCaseKeys,
     ObjectWithSnakeCaseKeys,
     type RecursiveObject,
-    type RecursiveUnion,
+    RecursiveUnionAdjacent,
+    RecursiveUnionExternal,
+    RecursiveUnionInternal,
     TestClient,
 } from './testClient.g';
 
@@ -342,38 +344,106 @@ test('can send/receive recursive objects', async () => {
     expect(result).toStrictEqual(payload);
 });
 
-test('can send/receive recursive unions', async () => {
-    const payload: RecursiveUnion = {
-        type: 'CHILDREN',
-        data: [
-            {
-                type: 'CHILD',
-                data: {
-                    type: 'TEXT',
-                    data: 'Hello world',
+describe('can send/receive recursive unions', () => {
+    test('externally tagged', async () => {
+        const payload: RecursiveUnionExternal = {
+            type: 'children',
+            value: [
+                {
+                    type: 'child',
+                    value: {
+                        type: 'text',
+                        value: 'Hello world',
+                    },
                 },
-            },
-            {
-                type: 'SHAPE',
-                data: {
-                    width: 1,
-                    height: 2,
-                    color: 'blue',
+                {
+                    type: 'shape',
+                    value: {
+                        width: 1,
+                        height: 2,
+                        color: 'blue',
+                    },
                 },
-            },
-            {
-                type: 'CHILDREN',
-                data: [
-                    {
-                        type: 'TEXT',
+                {
+                    type: 'children',
+                    value: [
+                        {
+                            type: 'text',
+                            value: 'Hello world',
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.tests.sendRecursiveUnionExternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('internally tagged', async () => {
+        const payload: RecursiveUnionInternal = {
+            kind: 'children',
+            data: [
+                {
+                    kind: 'child',
+                    data: {
+                        kind: 'text',
                         data: 'Hello world',
                     },
-                ],
-            },
-        ],
-    };
-    const result = await client.tests.sendRecursiveUnion(payload);
-    expect(result).toStrictEqual(payload);
+                },
+                {
+                    kind: 'shape',
+                    data: {
+                        width: 1,
+                        height: 2,
+                        color: 'blue',
+                    },
+                },
+                {
+                    kind: 'children',
+                    data: [
+                        {
+                            kind: 'text',
+                            data: 'Hello world',
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.tests.sendRecursiveUnionInternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('adjacently tagged', async () => {
+        const payload: RecursiveUnionAdjacent = {
+            kind: 'children',
+            data: [
+                {
+                    kind: 'child',
+                    data: {
+                        kind: 'text',
+                        data: 'Hello world',
+                    },
+                },
+                {
+                    kind: 'shape',
+                    data: {
+                        width: 1,
+                        height: 2,
+                        color: 'blue',
+                    },
+                },
+                {
+                    kind: 'children',
+                    data: [
+                        {
+                            kind: 'text',
+                            data: 'Hello world',
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.tests.sendRecursiveUnionAdjacent(payload);
+        expect(result).toStrictEqual(payload);
+    });
 });
 
 test('onError hook fires properly', async () => {

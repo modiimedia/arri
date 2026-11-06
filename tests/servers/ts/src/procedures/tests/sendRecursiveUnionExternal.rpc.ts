@@ -1,18 +1,20 @@
 import { a } from '@arrirpc/schema';
 import { defineRpc } from '@arrirpc/server';
 
-type RecursiveUnionV2 =
-    | { child: RecursiveUnionV2 }
-    | { children: RecursiveUnionV2[] }
+type RecursiveUnionExternal =
+    | { child: RecursiveUnionExternal }
+    | { children: RecursiveUnionExternal[] }
     | { text: string }
     | { shape: { width: number; height: number; color: string } };
 
-const RecursiveUnionV2 = a.recursive<RecursiveUnionV2>(
-    'RecursiveUnionV2',
+const RecursiveUnionExternal = a.recursive<RecursiveUnionExternal>(
+    'RecursiveUnionExternal',
     (self) =>
         a.union({
             child: self,
-            children: a.array(self, { description: 'List of children nodes' }),
+            children: a.array(self, {
+                description: 'an array of child nodes',
+            }),
             text: a.string({ description: 'Text node' }),
             shape: a.object(
                 {
@@ -20,14 +22,16 @@ const RecursiveUnionV2 = a.recursive<RecursiveUnionV2>(
                     height: a.float64(),
                     color: a.string(),
                 },
-                { description: 'Shape node' },
+                {
+                    description: 'Shape node',
+                },
             ),
         }),
 );
 
 export default defineRpc({
-    params: RecursiveUnionV2,
-    response: RecursiveUnionV2,
+    params: RecursiveUnionExternal,
+    response: RecursiveUnionExternal,
     async handler({ params }) {
         return params;
     },

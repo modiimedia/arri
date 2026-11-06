@@ -223,32 +223,15 @@ impl TestClientPrefixed {
         )
         .await
     }
-    pub async fn send_recursive_union(
+    pub async fn send_recursive_union_adjacent(
         &self,
-        params: FooRecursiveUnion,
-    ) -> Result<FooRecursiveUnion, ArriError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/tests/send-recursive-union", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return FooRecursiveUnion::from_json_string(body),
-        )
-        .await
-    }
-    pub async fn send_recursive_union_v2(
-        &self,
-        params: FooRecursiveUnionV2,
-    ) -> Result<FooRecursiveUnionV2, ArriError> {
+        params: FooRecursiveUnionAdjacent,
+    ) -> Result<FooRecursiveUnionAdjacent, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
                 url: format!(
-                    "{}/rpcs/tests/send-recursive-union-v2",
+                    "{}/rpcs/tests/send-recursive-union-adjacent",
                     &self._config.base_url
                 ),
                 method: reqwest::Method::POST,
@@ -256,7 +239,47 @@ impl TestClientPrefixed {
                 client_version: "10".to_string(),
             },
             Some(params),
-            |body| return FooRecursiveUnionV2::from_json_string(body),
+            |body| return FooRecursiveUnionAdjacent::from_json_string(body),
+        )
+        .await
+    }
+    pub async fn send_recursive_union_external(
+        &self,
+        params: FooRecursiveUnionExternal,
+    ) -> Result<FooRecursiveUnionExternal, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-recursive-union-external",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return FooRecursiveUnionExternal::from_json_string(body),
+        )
+        .await
+    }
+    pub async fn send_recursive_union_internal(
+        &self,
+        params: FooRecursiveUnionInternal,
+    ) -> Result<FooRecursiveUnionInternal, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-recursive-union-internal",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return FooRecursiveUnionInternal::from_json_string(body),
         )
         .await
     }
@@ -6566,82 +6589,84 @@ impl ArriModel for FooRecursiveObject {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooRecursiveUnion {
-    /// Child node
-    Child { data: Box<FooRecursiveUnion> },
-    /// List of children node
-    Children { data: Vec<Box<FooRecursiveUnion>> },
+pub enum FooRecursiveUnionAdjacent {
+    Child(Box<FooRecursiveUnionAdjacent>),
+    /// an array of child nodes
+    Children(Vec<Box<FooRecursiveUnionAdjacent>>),
     /// Text node
-    Text { data: String },
+    Text(String),
     /// Shape node
-    Shape { data: FooRecursiveUnionDataShape },
+    Shape(FooRecursiveUnionAdjacentShapeData),
 }
 
-impl ArriModel for FooRecursiveUnion {
+impl ArriModel for FooRecursiveUnionAdjacent {
     fn new() -> Self {
-        Self::Children { data: Vec::new() }
+        Self::Children(Vec::new())
     }
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::Object(_val_) => {
-                let r#type = match _val_.get("type") {
-                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
+                let kind = match _val_.get("kind") {
+                    Some(serde_json::Value::String(kind_val)) => kind_val.to_owned(),
                     _ => "".to_string(),
                 };
-                match r#type.as_str() {
-                    "CHILD" => {
+                match kind.as_str() {
+                    "child" => {
                         let data = match _val_.get("data") {
                             Some(data_val) => match data_val {
-                                serde_json::Value::Object(_) => {
-                                    Box::new(FooRecursiveUnion::from_json(data_val.to_owned()))
-                                }
-                                _ => Box::new(FooRecursiveUnion::from_json(data_val.to_owned())),
+                                serde_json::Value::Object(_) => Box::new(
+                                    FooRecursiveUnionAdjacent::from_json(data_val.to_owned()),
+                                ),
+                                _ => Box::new(FooRecursiveUnionAdjacent::from_json(
+                                    data_val.to_owned(),
+                                )),
                             },
-                            _ => Box::new(FooRecursiveUnion::new()),
+                            _ => Box::new(FooRecursiveUnionAdjacent::new()),
                         };
-                        Self::Child { data }
+                        Self::Child(data)
                     }
-                    "CHILDREN" => {
+                    "children" => {
                         let data = match _val_.get("data") {
                             Some(serde_json::Value::Array(data_val)) => {
-                                let mut data_val_result: Vec<Box<FooRecursiveUnion>> = Vec::new();
+                                let mut data_val_result: Vec<Box<FooRecursiveUnionAdjacent>> =
+                                    Vec::new();
                                 for data_val_element in data_val {
                                     data_val_result.push(match Some(data_val_element) {
                                         Some(data_val_element_val) => match data_val_element_val {
                                             serde_json::Value::Object(_) => {
-                                                Box::new(FooRecursiveUnion::from_json(
+                                                Box::new(FooRecursiveUnionAdjacent::from_json(
                                                     data_val_element_val.to_owned(),
                                                 ))
                                             }
-                                            _ => Box::new(FooRecursiveUnion::from_json(
+                                            _ => Box::new(FooRecursiveUnionAdjacent::from_json(
                                                 data_val_element_val.to_owned(),
                                             )),
                                         },
-                                        _ => Box::new(FooRecursiveUnion::new()),
+                                        _ => Box::new(FooRecursiveUnionAdjacent::new()),
                                     });
                                 }
                                 data_val_result
                             }
                             _ => Vec::new(),
                         };
-                        Self::Children { data }
+                        Self::Children(data)
                     }
-                    "TEXT" => {
+                    "text" => {
                         let data = match _val_.get("data") {
                             Some(serde_json::Value::String(data_val)) => data_val.to_owned(),
                             _ => "".to_string(),
                         };
-                        Self::Text { data }
+                        Self::Text(data)
                     }
-                    "SHAPE" => {
+                    "shape" => {
                         let data = match _val_.get("data") {
                             Some(data_val) => {
-                                FooRecursiveUnionDataShape::from_json(data_val.to_owned())
+                                FooRecursiveUnionAdjacentShapeData::from_json(data_val.to_owned())
                             }
-                            _ => FooRecursiveUnionDataShape::new(),
+                            _ => FooRecursiveUnionAdjacentShapeData::new(),
                         };
-                        Self::Shape { data }
+                        Self::Shape(data)
                     }
                     _ => Self::new(),
                 }
@@ -6660,14 +6685,12 @@ impl ArriModel for FooRecursiveUnion {
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
         match &self {
-            Self::Child { data } => {
-                _json_output_.push_str("\"type\":\"CHILD\"");
-                _json_output_.push_str(",\"data\":");
+            Self::Child(data) => {
+                _json_output_.push_str("\"kind\":\"child\",\"data\":");
                 _json_output_.push_str(data.to_json_string().as_str());
             }
-            Self::Children { data } => {
-                _json_output_.push_str("\"type\":\"CHILDREN\"");
-                _json_output_.push_str(",\"data\":");
+            Self::Children(data) => {
+                _json_output_.push_str("\"kind\":\"children\",\"data\":");
                 _json_output_.push('[');
                 for (_index_, _element_) in data.iter().enumerate() {
                     if _index_ != 0 {
@@ -6677,14 +6700,12 @@ impl ArriModel for FooRecursiveUnion {
                 }
                 _json_output_.push(']');
             }
-            Self::Text { data } => {
-                _json_output_.push_str("\"type\":\"TEXT\"");
-                _json_output_.push_str(",\"data\":");
+            Self::Text(data) => {
+                _json_output_.push_str("\"kind\":\"text\",\"data\":");
                 _json_output_.push_str(serialize_string(data).as_str());
             }
-            Self::Shape { data } => {
-                _json_output_.push_str("\"type\":\"SHAPE\"");
-                _json_output_.push_str(",\"data\":");
+            Self::Shape(data) => {
+                _json_output_.push_str("\"kind\":\"shape\",\"data\":");
                 _json_output_.push_str(data.to_json_string().as_str());
             }
         }
@@ -6693,37 +6714,31 @@ impl ArriModel for FooRecursiveUnion {
     }
 
     fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self {
-            Self::Child { data } => {
-                _query_parts_.push(format!("type=CHILD"));
-                println!("[WARNING] cannot serialize nested objects to query params. Skipping field at RecursiveUnion/data.");
-            }
-            Self::Children { data } => {
-                _query_parts_.push(format!("type=CHILDREN"));
-                println!("[WARNING] cannot serialize arrays to query params. Skipping field at RecursiveUnion/data.");
-            }
-            Self::Text { data } => {
-                _query_parts_.push(format!("type=TEXT"));
-                _query_parts_.push(format!("data={}", data));
-            }
-            Self::Shape { data } => {
-                _query_parts_.push(format!("type=SHAPE"));
-                println!("[WARNING] cannot serialize nested objects to query params. Skipping field at RecursiveUnion/data.");
-            }
-        }
-        _query_parts_.join("&")
+        println!("[WARNING] cannot serialize unions to query params. Skipping FooRecursiveUnionAdjacent.");
+        "".to_string()
     }
 }
 
+impl FooRecursiveUnionAdjacent {
+    pub fn kind(&self) -> &'static str {
+        match &self {
+            Self::Child(_) => "child",
+            Self::Children(_) => "children",
+            Self::Text(_) => "text",
+            Self::Shape(_) => "shape",
+        }
+    }
+}
+
+/// Shape node
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooRecursiveUnionDataShape {
+pub struct FooRecursiveUnionAdjacentShapeData {
     pub width: f64,
     pub height: f64,
     pub color: String,
 }
 
-impl ArriModel for FooRecursiveUnionDataShape {
+impl ArriModel for FooRecursiveUnionAdjacentShapeData {
     fn new() -> Self {
         Self {
             width: 0.0,
@@ -6785,17 +6800,17 @@ impl ArriModel for FooRecursiveUnionDataShape {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FooRecursiveUnionV2 {
-    Child(Box<FooRecursiveUnionV2>),
-    /// List of children nodes
-    Children(Vec<Box<FooRecursiveUnionV2>>),
+pub enum FooRecursiveUnionExternal {
+    Child(Box<FooRecursiveUnionExternal>),
+    /// an array of child nodes
+    Children(Vec<Box<FooRecursiveUnionExternal>>),
     /// Text node
     Text(String),
     /// Shape node
-    Shape(FooRecursiveUnionV2ShapeValue),
+    Shape(FooRecursiveUnionExternalShapeValue),
 }
 
-impl ArriModel for FooRecursiveUnionV2 {
+impl ArriModel for FooRecursiveUnionExternal {
     fn new() -> Self {
         Self::Children(Vec::new())
     }
@@ -6807,31 +6822,34 @@ impl ArriModel for FooRecursiveUnionV2 {
                     let value = match _val_.get("child") {
                         Some(value_val) => match value_val {
                             serde_json::Value::Object(_) => {
-                                Box::new(FooRecursiveUnionV2::from_json(value_val.to_owned()))
+                                Box::new(FooRecursiveUnionExternal::from_json(value_val.to_owned()))
                             }
-                            _ => Box::new(FooRecursiveUnionV2::from_json(value_val.to_owned())),
+                            _ => {
+                                Box::new(FooRecursiveUnionExternal::from_json(value_val.to_owned()))
+                            }
                         },
-                        _ => Box::new(FooRecursiveUnionV2::new()),
+                        _ => Box::new(FooRecursiveUnionExternal::new()),
                     };
                     return Self::Child(value);
                 }
                 if _val_.contains_key("children") {
                     let value = match _val_.get("children") {
                         Some(serde_json::Value::Array(value_val)) => {
-                            let mut value_val_result: Vec<Box<FooRecursiveUnionV2>> = Vec::new();
+                            let mut value_val_result: Vec<Box<FooRecursiveUnionExternal>> =
+                                Vec::new();
                             for value_val_element in value_val {
                                 value_val_result.push(match Some(value_val_element) {
                                     Some(value_val_element_val) => match value_val_element_val {
                                         serde_json::Value::Object(_) => {
-                                            Box::new(FooRecursiveUnionV2::from_json(
+                                            Box::new(FooRecursiveUnionExternal::from_json(
                                                 value_val_element_val.to_owned(),
                                             ))
                                         }
-                                        _ => Box::new(FooRecursiveUnionV2::from_json(
+                                        _ => Box::new(FooRecursiveUnionExternal::from_json(
                                             value_val_element_val.to_owned(),
                                         )),
                                     },
-                                    _ => Box::new(FooRecursiveUnionV2::new()),
+                                    _ => Box::new(FooRecursiveUnionExternal::new()),
                                 });
                             }
                             value_val_result
@@ -6850,9 +6868,9 @@ impl ArriModel for FooRecursiveUnionV2 {
                 if _val_.contains_key("shape") {
                     let value = match _val_.get("shape") {
                         Some(value_val) => {
-                            FooRecursiveUnionV2ShapeValue::from_json(value_val.to_owned())
+                            FooRecursiveUnionExternalShapeValue::from_json(value_val.to_owned())
                         }
-                        _ => FooRecursiveUnionV2ShapeValue::new(),
+                        _ => FooRecursiveUnionExternalShapeValue::new(),
                     };
                     return Self::Shape(value);
                 }
@@ -6901,22 +6919,250 @@ impl ArriModel for FooRecursiveUnionV2 {
     }
 
     fn to_query_params_string(&self) -> String {
-        println!(
-            "[WARNING] cannot serialize unions to query params. Skipping FooRecursiveUnionV2."
-        );
+        println!("[WARNING] cannot serialize unions to query params. Skipping FooRecursiveUnionExternal.");
         "".to_string()
     }
 }
 
 /// Shape node
 #[derive(Clone, Debug, PartialEq)]
-pub struct FooRecursiveUnionV2ShapeValue {
+pub struct FooRecursiveUnionExternalShapeValue {
     pub width: f64,
     pub height: f64,
     pub color: String,
 }
 
-impl ArriModel for FooRecursiveUnionV2ShapeValue {
+impl ArriModel for FooRecursiveUnionExternalShapeValue {
+    fn new() -> Self {
+        Self {
+            width: 0.0,
+            height: 0.0,
+            color: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let width = match _val_.get("width") {
+                    Some(serde_json::Value::Number(width_val)) => width_val.as_f64().unwrap_or(0.0),
+                    _ => 0.0,
+                };
+                let height = match _val_.get("height") {
+                    Some(serde_json::Value::Number(height_val)) => {
+                        height_val.as_f64().unwrap_or(0.0)
+                    }
+                    _ => 0.0,
+                };
+                let color = match _val_.get("color") {
+                    Some(serde_json::Value::String(color_val)) => color_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self {
+                    width,
+                    height,
+                    color,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"width\":");
+        _json_output_.push_str(&self.width.to_string().as_str());
+        _json_output_.push_str(",\"height\":");
+        _json_output_.push_str(&self.height.to_string().as_str());
+        _json_output_.push_str(",\"color\":");
+        _json_output_.push_str(serialize_string(&self.color).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("width={}", &self.width));
+        _query_parts_.push(format!("height={}", &self.height));
+        _query_parts_.push(format!("color={}", &self.color));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FooRecursiveUnionInternal {
+    Child {
+        data: Box<FooRecursiveUnionInternal>,
+    },
+    Children {
+        /// an array of child nodes
+        data: Vec<Box<FooRecursiveUnionInternal>>,
+    },
+    Text {
+        /// Text node
+        data: String,
+    },
+    Shape {
+        /// Shape node
+        data: FooRecursiveUnionInternalDataShape,
+    },
+}
+
+impl ArriModel for FooRecursiveUnionInternal {
+    fn new() -> Self {
+        Self::Children { data: Vec::new() }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let kind = match _val_.get("kind") {
+                    Some(serde_json::Value::String(kind_val)) => kind_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match kind.as_str() {
+                    "child" => {
+                        let data = match _val_.get("data") {
+                            Some(data_val) => match data_val {
+                                serde_json::Value::Object(_) => Box::new(
+                                    FooRecursiveUnionInternal::from_json(data_val.to_owned()),
+                                ),
+                                _ => Box::new(FooRecursiveUnionInternal::from_json(
+                                    data_val.to_owned(),
+                                )),
+                            },
+                            _ => Box::new(FooRecursiveUnionInternal::new()),
+                        };
+                        Self::Child { data }
+                    }
+                    "children" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::Array(data_val)) => {
+                                let mut data_val_result: Vec<Box<FooRecursiveUnionInternal>> =
+                                    Vec::new();
+                                for data_val_element in data_val {
+                                    data_val_result.push(match Some(data_val_element) {
+                                        Some(data_val_element_val) => match data_val_element_val {
+                                            serde_json::Value::Object(_) => {
+                                                Box::new(FooRecursiveUnionInternal::from_json(
+                                                    data_val_element_val.to_owned(),
+                                                ))
+                                            }
+                                            _ => Box::new(FooRecursiveUnionInternal::from_json(
+                                                data_val_element_val.to_owned(),
+                                            )),
+                                        },
+                                        _ => Box::new(FooRecursiveUnionInternal::new()),
+                                    });
+                                }
+                                data_val_result
+                            }
+                            _ => Vec::new(),
+                        };
+                        Self::Children { data }
+                    }
+                    "text" => {
+                        let data = match _val_.get("data") {
+                            Some(serde_json::Value::String(data_val)) => data_val.to_owned(),
+                            _ => "".to_string(),
+                        };
+                        Self::Text { data }
+                    }
+                    "shape" => {
+                        let data = match _val_.get("data") {
+                            Some(data_val) => {
+                                FooRecursiveUnionInternalDataShape::from_json(data_val.to_owned())
+                            }
+                            _ => FooRecursiveUnionInternalDataShape::new(),
+                        };
+                        Self::Shape { data }
+                    }
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::Child { data } => {
+                _json_output_.push_str("\"kind\":\"child\"");
+                _json_output_.push_str(",\"data\":");
+                _json_output_.push_str(data.to_json_string().as_str());
+            }
+            Self::Children { data } => {
+                _json_output_.push_str("\"kind\":\"children\"");
+                _json_output_.push_str(",\"data\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in data.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(_element_.to_json_string().as_str());
+                }
+                _json_output_.push(']');
+            }
+            Self::Text { data } => {
+                _json_output_.push_str("\"kind\":\"text\"");
+                _json_output_.push_str(",\"data\":");
+                _json_output_.push_str(serialize_string(data).as_str());
+            }
+            Self::Shape { data } => {
+                _json_output_.push_str("\"kind\":\"shape\"");
+                _json_output_.push_str(",\"data\":");
+                _json_output_.push_str(data.to_json_string().as_str());
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::Child { data } => {
+                _query_parts_.push(format!("kind=child"));
+                println!("[WARNING] cannot serialize nested objects to query params. Skipping field at RecursiveUnionInternal/data.");
+            }
+            Self::Children { data } => {
+                _query_parts_.push(format!("kind=children"));
+                println!("[WARNING] cannot serialize arrays to query params. Skipping field at RecursiveUnionInternal/data.");
+            }
+            Self::Text { data } => {
+                _query_parts_.push(format!("kind=text"));
+                _query_parts_.push(format!("data={}", data));
+            }
+            Self::Shape { data } => {
+                _query_parts_.push(format!("kind=shape"));
+                println!("[WARNING] cannot serialize nested objects to query params. Skipping field at RecursiveUnionInternal/data.");
+            }
+        }
+        _query_parts_.join("&")
+    }
+}
+
+/// Shape node
+#[derive(Clone, Debug, PartialEq)]
+pub struct FooRecursiveUnionInternalDataShape {
+    pub width: f64,
+    pub height: f64,
+    pub color: String,
+}
+
+impl ArriModel for FooRecursiveUnionInternalDataShape {
     fn new() -> Self {
         Self {
             width: 0.0,

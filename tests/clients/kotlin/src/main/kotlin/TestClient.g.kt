@@ -324,11 +324,11 @@ class TestClientTestsService(
         }
     }
 
-    suspend fun sendRecursiveUnion(params: RecursiveUnion): RecursiveUnion {
+    suspend fun sendRecursiveUnionAdjacent(params: RecursiveUnionAdjacent): RecursiveUnionAdjacent {
         try {
             val response = __prepareRequest(
                 client = httpClient,
-                url = "$baseUrl/rpcs/tests/send-recursive-union",
+                url = "$baseUrl/rpcs/tests/send-recursive-union-adjacent",
                 method = HttpMethod.Post,
                 params = params,
                 headers = headers?.invoke(),
@@ -342,7 +342,7 @@ class TestClientTestsService(
                 )
             }
             if (response.status.value in 200..299) {
-                return RecursiveUnion.fromJson(response.bodyAsText())
+                return RecursiveUnionAdjacent.fromJson(response.bodyAsText())
             }
             throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
@@ -351,11 +351,11 @@ class TestClientTestsService(
         }
     }
 
-    suspend fun sendRecursiveUnionV2(params: RecursiveUnionV2): RecursiveUnionV2 {
+    suspend fun sendRecursiveUnionExternal(params: RecursiveUnionExternal): RecursiveUnionExternal {
         try {
             val response = __prepareRequest(
                 client = httpClient,
-                url = "$baseUrl/rpcs/tests/send-recursive-union-v2",
+                url = "$baseUrl/rpcs/tests/send-recursive-union-external",
                 method = HttpMethod.Post,
                 params = params,
                 headers = headers?.invoke(),
@@ -369,7 +369,34 @@ class TestClientTestsService(
                 )
             }
             if (response.status.value in 200..299) {
-                return RecursiveUnionV2.fromJson(response.bodyAsText())
+                return RecursiveUnionExternal.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendRecursiveUnionInternal(params: RecursiveUnionInternal): RecursiveUnionInternal {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-recursive-union-internal",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return RecursiveUnionInternal.fromJson(response.bodyAsText())
             }
             throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
@@ -7342,32 +7369,32 @@ data class RecursiveObject(
     }
 }
 
-sealed interface RecursiveUnion : TestClientModel {
-    val type: String
+sealed interface RecursiveUnionAdjacent : TestClientModel {
+    val kind: String
 
-    companion object Factory : TestClientModelFactory<RecursiveUnion> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionAdjacent> {
         @JvmStatic
-        override fun new(): RecursiveUnion {
-            return RecursiveUnionChildren.new()
+        override fun new(): RecursiveUnionAdjacent {
+            return RecursiveUnionAdjacentChildren.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnion {
+        override fun fromJson(input: String): RecursiveUnionAdjacent {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnion {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionAdjacent {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnion.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnion.")
+                __logError("[WARNING] RecursiveUnionAdjacent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionAdjacent.")
                 return new()
             }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "CHILD" -> RecursiveUnionChild.fromJsonElement(__input, instancePath)
-                    "CHILDREN" -> RecursiveUnionChildren.fromJsonElement(__input, instancePath)
-                    "TEXT" -> RecursiveUnionText.fromJsonElement(__input, instancePath)
-                    "SHAPE" -> RecursiveUnionShape.fromJsonElement(__input, instancePath)
+            return when (__input.jsonObject["kind"]) {
+                is JsonPrimitive -> when (__input.jsonObject["kind"]!!.jsonPrimitive.contentOrNull) {
+                    "child" -> RecursiveUnionAdjacentChild.fromJsonElement(__input, instancePath)
+                    "children" -> RecursiveUnionAdjacentChildren.fromJsonElement(__input, instancePath)
+                    "text" -> RecursiveUnionAdjacentText.fromJsonElement(__input, instancePath)
+                    "shape" -> RecursiveUnionAdjacentShape.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -7377,17 +7404,14 @@ sealed interface RecursiveUnion : TestClientModel {
     }
 }
 
-/**
- * Child node
- */
-data class RecursiveUnionChild(
-    val data: RecursiveUnion,
-) : RecursiveUnion {
-    override val type get() = "CHILD"
+data class RecursiveUnionAdjacentChild(
+    val data: RecursiveUnionAdjacent,
+) : RecursiveUnionAdjacent {
+    override val kind get() = "child"
 
     override fun toJson(): String {
         var output = "{"
-        output += "\"type\":\"CHILD\""
+        output += "\"kind\":\"child\""
         output += ",\"data\":"
         output += data.toJson()
         output += "}"
@@ -7395,57 +7419,52 @@ data class RecursiveUnionChild(
     }
 
     override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=CHILD")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionChild/data.")
-        return queryParts.joinToString("&")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentChild.")
+        return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionChild> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionAdjacentChild> {
         @JvmStatic
-        override fun new(): RecursiveUnionChild {
-            return RecursiveUnionChild(
-                data = RecursiveUnion.new(),
+        override fun new(): RecursiveUnionAdjacentChild {
+            return RecursiveUnionAdjacentChild(
+                data = RecursiveUnionAdjacent.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionChild {
+        override fun fromJson(input: String): RecursiveUnionAdjacentChild {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionChild {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionAdjacentChild {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionChild.")
+                __logError("[WARNING] RecursiveUnionAdjacentChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionAdjacentChild.")
                 return new()
             }
-            val data: RecursiveUnion = when (__input.jsonObject["data"]) {
-                is JsonObject -> RecursiveUnion.fromJsonElement(
+            val data: RecursiveUnionAdjacent = when (__input.jsonObject["data"]) {
+                is JsonObject -> RecursiveUnionAdjacent.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
 
-                else -> RecursiveUnion.new()
+                else -> RecursiveUnionAdjacent.new()
             }
-            return RecursiveUnionChild(
+            return RecursiveUnionAdjacentChild(
                 data,
             )
         }
     }
 }
 
-/**
- * List of children node
- */
-data class RecursiveUnionChildren(
-    val data: MutableList<RecursiveUnion>,
-) : RecursiveUnion {
-    override val type get() = "CHILDREN"
+data class RecursiveUnionAdjacentChildren(
+    val data: MutableList<RecursiveUnionAdjacent>,
+) : RecursiveUnionAdjacent {
+    override val kind get() = "children"
 
     override fun toJson(): String {
         var output = "{"
-        output += "\"type\":\"CHILDREN\""
+        output += "\"kind\":\"children\""
         output += ",\"data\":"
         output += "["
         for ((__index, __element) in data.withIndex()) {
@@ -7460,43 +7479,41 @@ data class RecursiveUnionChildren(
     }
 
     override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=CHILDREN")
-        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionChildren/data.")
-        return queryParts.joinToString("&")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentChildren.")
+        return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionChildren> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionAdjacentChildren> {
         @JvmStatic
-        override fun new(): RecursiveUnionChildren {
-            return RecursiveUnionChildren(
+        override fun new(): RecursiveUnionAdjacentChildren {
+            return RecursiveUnionAdjacentChildren(
                 data = mutableListOf(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionChildren {
+        override fun fromJson(input: String): RecursiveUnionAdjacentChildren {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionChildren {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionAdjacentChildren {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionChildren.")
+                __logError("[WARNING] RecursiveUnionAdjacentChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionAdjacentChildren.")
                 return new()
             }
-            val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
+            val data: MutableList<RecursiveUnionAdjacent> = when (__input.jsonObject["data"]) {
                 is JsonArray -> {
-                    val __value: MutableList<RecursiveUnion> = mutableListOf()
+                    val __value: MutableList<RecursiveUnionAdjacent> = mutableListOf()
                     for (__element in __input.jsonObject["data"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                                is JsonObject -> RecursiveUnion.fromJsonElement(
+                                is JsonObject -> RecursiveUnionAdjacent.fromJsonElement(
                                     __element!!,
                                     "$instancePath/undefined",
                                 )
 
-                                else -> RecursiveUnion.new()
+                                else -> RecursiveUnionAdjacent.new()
                             }
                         )
                     }
@@ -7505,24 +7522,21 @@ data class RecursiveUnionChildren(
 
                 else -> mutableListOf()
             }
-            return RecursiveUnionChildren(
+            return RecursiveUnionAdjacentChildren(
                 data,
             )
         }
     }
 }
 
-/**
- * Text node
- */
-data class RecursiveUnionText(
+data class RecursiveUnionAdjacentText(
     val data: String,
-) : RecursiveUnion {
-    override val type get() = "TEXT"
+) : RecursiveUnionAdjacent {
+    override val kind get() = "text"
 
     override fun toJson(): String {
         var output = "{"
-        output += "\"type\":\"TEXT\""
+        output += "\"kind\":\"text\""
         output += ",\"data\":"
         output += buildString { printQuoted(data) }
         output += "}"
@@ -7530,36 +7544,87 @@ data class RecursiveUnionText(
     }
 
     override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=TEXT")
-        queryParts.add("data=${__encodeQueryValue(data)}")
-        return queryParts.joinToString("&")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentText.")
+        return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionText> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionAdjacentText> {
         @JvmStatic
-        override fun new(): RecursiveUnionText {
-            return RecursiveUnionText(
+        override fun new(): RecursiveUnionAdjacentText {
+            return RecursiveUnionAdjacentText(
                 data = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionText {
+        override fun fromJson(input: String): RecursiveUnionAdjacentText {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionText {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionAdjacentText {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionText.")
+                __logError("[WARNING] RecursiveUnionAdjacentText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionAdjacentText.")
                 return new()
             }
             val data: String = when (__input.jsonObject["data"]) {
                 is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveUnionText(
+            return RecursiveUnionAdjacentText(
+                data,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionAdjacentShape(
+    val data: RecursiveUnionAdjacentShapeData,
+) : RecursiveUnionAdjacent {
+    override val kind get() = "shape"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"shape\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentShape.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionAdjacentShape> {
+        @JvmStatic
+        override fun new(): RecursiveUnionAdjacentShape {
+            return RecursiveUnionAdjacentShape(
+                data = RecursiveUnionAdjacentShapeData.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionAdjacentShape {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionAdjacentShape {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionAdjacentShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionAdjacentShape.")
+                return new()
+            }
+            val data: RecursiveUnionAdjacentShapeData = when (__input.jsonObject["data"]) {
+                is JsonObject -> RecursiveUnionAdjacentShapeData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> RecursiveUnionAdjacentShapeData.new()
+            }
+            return RecursiveUnionAdjacentShape(
                 data,
             )
         }
@@ -7569,62 +7634,7 @@ data class RecursiveUnionText(
 /**
  * Shape node
  */
-data class RecursiveUnionShape(
-    val data: RecursiveUnionShapeData,
-) : RecursiveUnion {
-    override val type get() = "SHAPE"
-
-    override fun toJson(): String {
-        var output = "{"
-        output += "\"type\":\"SHAPE\""
-        output += ",\"data\":"
-        output += data.toJson()
-        output += "}"
-        return output
-    }
-
-    override fun toUrlQueryParams(): String {
-        val queryParts = mutableListOf<String>()
-        queryParts.add("type=SHAPE")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionShape/data.")
-        return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientModelFactory<RecursiveUnionShape> {
-        @JvmStatic
-        override fun new(): RecursiveUnionShape {
-            return RecursiveUnionShape(
-                data = RecursiveUnionShapeData.new(),
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionShape {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionShape {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionShape.")
-                return new()
-            }
-            val data: RecursiveUnionShapeData = when (__input.jsonObject["data"]) {
-                is JsonObject -> RecursiveUnionShapeData.fromJsonElement(
-                    __input.jsonObject["data"]!!,
-                    "$instancePath/data",
-                )
-
-                else -> RecursiveUnionShapeData.new()
-            }
-            return RecursiveUnionShape(
-                data,
-            )
-        }
-    }
-}
-
-data class RecursiveUnionShapeData(
+data class RecursiveUnionAdjacentShapeData(
     val width: Double,
     val height: Double,
     val color: String,
@@ -7649,10 +7659,10 @@ data class RecursiveUnionShapeData(
         return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionShapeData> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionAdjacentShapeData> {
         @JvmStatic
-        override fun new(): RecursiveUnionShapeData {
-            return RecursiveUnionShapeData(
+        override fun new(): RecursiveUnionAdjacentShapeData {
+            return RecursiveUnionAdjacentShapeData(
                 width = 0.0,
                 height = 0.0,
                 color = "",
@@ -7660,14 +7670,14 @@ data class RecursiveUnionShapeData(
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionShapeData {
+        override fun fromJson(input: String): RecursiveUnionAdjacentShapeData {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionShapeData {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionAdjacentShapeData {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionShapeData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionShapeData.")
+                __logError("[WARNING] RecursiveUnionAdjacentShapeData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionAdjacentShapeData.")
                 return new()
             }
             val width: Double = when (__input.jsonObject["width"]) {
@@ -7682,7 +7692,7 @@ data class RecursiveUnionShapeData(
                 is JsonPrimitive -> __input.jsonObject["color"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveUnionShapeData(
+            return RecursiveUnionAdjacentShapeData(
                 width,
                 height,
                 color,
@@ -7691,38 +7701,38 @@ data class RecursiveUnionShapeData(
     }
 }
 
-sealed interface RecursiveUnionV2 : TestClientModel {
-    companion object Factory : TestClientModelFactory<RecursiveUnionV2> {
+sealed interface RecursiveUnionExternal : TestClientModel {
+    companion object Factory : TestClientModelFactory<RecursiveUnionExternal> {
         @JvmStatic
-        override fun new(): RecursiveUnionV2 {
-            return RecursiveUnionV2Children.new()
+        override fun new(): RecursiveUnionExternal {
+            return RecursiveUnionExternalChildren.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionV2 {
+        override fun fromJson(input: String): RecursiveUnionExternal {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2 {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionExternal {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionV2.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2.")
+                __logError("[WARNING] RecursiveUnionExternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionExternal.")
                 return new()
             }
             return when {
-                "child" in __input -> RecursiveUnionV2Child.fromJsonElement(__input, instancePath)
-                "children" in __input -> RecursiveUnionV2Children.fromJsonElement(__input, instancePath)
-                "text" in __input -> RecursiveUnionV2Text.fromJsonElement(__input, instancePath)
-                "shape" in __input -> RecursiveUnionV2Shape.fromJsonElement(__input, instancePath)
+                "child" in __input -> RecursiveUnionExternalChild.fromJsonElement(__input, instancePath)
+                "children" in __input -> RecursiveUnionExternalChildren.fromJsonElement(__input, instancePath)
+                "text" in __input -> RecursiveUnionExternalText.fromJsonElement(__input, instancePath)
+                "shape" in __input -> RecursiveUnionExternalShape.fromJsonElement(__input, instancePath)
                 else -> new()
             }
         }
     }
 }
 
-data class RecursiveUnionV2Child(
-    val value: RecursiveUnionV2,
-) : RecursiveUnionV2 {
+data class RecursiveUnionExternalChild(
+    val value: RecursiveUnionExternal,
+) : RecursiveUnionExternal {
     override fun toJson(): String {
         var output = "{"
         output += "\"child\":"
@@ -7732,47 +7742,47 @@ data class RecursiveUnionV2Child(
     }
 
     override fun toUrlQueryParams(): String {
-        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Child.")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalChild.")
         return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionV2Child> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionExternalChild> {
         @JvmStatic
-        override fun new(): RecursiveUnionV2Child {
-            return RecursiveUnionV2Child(
-                value = RecursiveUnionV2.new(),
+        override fun new(): RecursiveUnionExternalChild {
+            return RecursiveUnionExternalChild(
+                value = RecursiveUnionExternal.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionV2Child {
+        override fun fromJson(input: String): RecursiveUnionExternalChild {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Child {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionExternalChild {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionV2Child.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Child.")
+                __logError("[WARNING] RecursiveUnionExternalChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionExternalChild.")
                 return new()
             }
-            val value: RecursiveUnionV2 = when (__input.jsonObject["child"]) {
-                is JsonObject -> RecursiveUnionV2.fromJsonElement(
+            val value: RecursiveUnionExternal = when (__input.jsonObject["child"]) {
+                is JsonObject -> RecursiveUnionExternal.fromJsonElement(
                     __input.jsonObject["child"]!!,
                     "$instancePath/child",
                 )
 
-                else -> RecursiveUnionV2.new()
+                else -> RecursiveUnionExternal.new()
             }
-            return RecursiveUnionV2Child(
+            return RecursiveUnionExternalChild(
                 value,
             )
         }
     }
 }
 
-data class RecursiveUnionV2Children(
-    val value: MutableList<RecursiveUnionV2>,
-) : RecursiveUnionV2 {
+data class RecursiveUnionExternalChildren(
+    val value: MutableList<RecursiveUnionExternal>,
+) : RecursiveUnionExternal {
     override fun toJson(): String {
         var output = "{"
         output += "\"children\":"
@@ -7789,41 +7799,41 @@ data class RecursiveUnionV2Children(
     }
 
     override fun toUrlQueryParams(): String {
-        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Children.")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalChildren.")
         return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionV2Children> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionExternalChildren> {
         @JvmStatic
-        override fun new(): RecursiveUnionV2Children {
-            return RecursiveUnionV2Children(
+        override fun new(): RecursiveUnionExternalChildren {
+            return RecursiveUnionExternalChildren(
                 value = mutableListOf(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionV2Children {
+        override fun fromJson(input: String): RecursiveUnionExternalChildren {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Children {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionExternalChildren {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionV2Children.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Children.")
+                __logError("[WARNING] RecursiveUnionExternalChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionExternalChildren.")
                 return new()
             }
-            val value: MutableList<RecursiveUnionV2> = when (__input.jsonObject["children"]) {
+            val value: MutableList<RecursiveUnionExternal> = when (__input.jsonObject["children"]) {
                 is JsonArray -> {
-                    val __value: MutableList<RecursiveUnionV2> = mutableListOf()
+                    val __value: MutableList<RecursiveUnionExternal> = mutableListOf()
                     for (__element in __input.jsonObject["children"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                                is JsonObject -> RecursiveUnionV2.fromJsonElement(
+                                is JsonObject -> RecursiveUnionExternal.fromJsonElement(
                                     __element!!,
                                     "$instancePath/undefined",
                                 )
 
-                                else -> RecursiveUnionV2.new()
+                                else -> RecursiveUnionExternal.new()
                             }
                         )
                     }
@@ -7832,16 +7842,16 @@ data class RecursiveUnionV2Children(
 
                 else -> mutableListOf()
             }
-            return RecursiveUnionV2Children(
+            return RecursiveUnionExternalChildren(
                 value,
             )
         }
     }
 }
 
-data class RecursiveUnionV2Text(
+data class RecursiveUnionExternalText(
     val value: String,
-) : RecursiveUnionV2 {
+) : RecursiveUnionExternal {
     override fun toJson(): String {
         var output = "{"
         output += "\"text\":"
@@ -7851,43 +7861,43 @@ data class RecursiveUnionV2Text(
     }
 
     override fun toUrlQueryParams(): String {
-        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Text.")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalText.")
         return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionV2Text> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionExternalText> {
         @JvmStatic
-        override fun new(): RecursiveUnionV2Text {
-            return RecursiveUnionV2Text(
+        override fun new(): RecursiveUnionExternalText {
+            return RecursiveUnionExternalText(
                 value = "",
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionV2Text {
+        override fun fromJson(input: String): RecursiveUnionExternalText {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Text {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionExternalText {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionV2Text.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Text.")
+                __logError("[WARNING] RecursiveUnionExternalText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionExternalText.")
                 return new()
             }
             val value: String = when (__input.jsonObject["text"]) {
                 is JsonPrimitive -> __input.jsonObject["text"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveUnionV2Text(
+            return RecursiveUnionExternalText(
                 value,
             )
         }
     }
 }
 
-data class RecursiveUnionV2Shape(
-    val value: RecursiveUnionV2ShapeValue,
-) : RecursiveUnionV2 {
+data class RecursiveUnionExternalShape(
+    val value: RecursiveUnionExternalShapeValue,
+) : RecursiveUnionExternal {
     override fun toJson(): String {
         var output = "{"
         output += "\"shape\":"
@@ -7897,38 +7907,38 @@ data class RecursiveUnionV2Shape(
     }
 
     override fun toUrlQueryParams(): String {
-        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Shape.")
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalShape.")
         return ""
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionV2Shape> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionExternalShape> {
         @JvmStatic
-        override fun new(): RecursiveUnionV2Shape {
-            return RecursiveUnionV2Shape(
-                value = RecursiveUnionV2ShapeValue.new(),
+        override fun new(): RecursiveUnionExternalShape {
+            return RecursiveUnionExternalShape(
+                value = RecursiveUnionExternalShapeValue.new(),
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionV2Shape {
+        override fun fromJson(input: String): RecursiveUnionExternalShape {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Shape {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionExternalShape {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionV2Shape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Shape.")
+                __logError("[WARNING] RecursiveUnionExternalShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionExternalShape.")
                 return new()
             }
-            val value: RecursiveUnionV2ShapeValue = when (__input.jsonObject["shape"]) {
-                is JsonObject -> RecursiveUnionV2ShapeValue.fromJsonElement(
+            val value: RecursiveUnionExternalShapeValue = when (__input.jsonObject["shape"]) {
+                is JsonObject -> RecursiveUnionExternalShapeValue.fromJsonElement(
                     __input.jsonObject["shape"]!!,
                     "$instancePath/shape",
                 )
 
-                else -> RecursiveUnionV2ShapeValue.new()
+                else -> RecursiveUnionExternalShapeValue.new()
             }
-            return RecursiveUnionV2Shape(
+            return RecursiveUnionExternalShape(
                 value,
             )
         }
@@ -7938,7 +7948,7 @@ data class RecursiveUnionV2Shape(
 /**
  * Shape node
  */
-data class RecursiveUnionV2ShapeValue(
+data class RecursiveUnionExternalShapeValue(
     val width: Double,
     val height: Double,
     val color: String,
@@ -7963,10 +7973,10 @@ data class RecursiveUnionV2ShapeValue(
         return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<RecursiveUnionV2ShapeValue> {
+    companion object Factory : TestClientModelFactory<RecursiveUnionExternalShapeValue> {
         @JvmStatic
-        override fun new(): RecursiveUnionV2ShapeValue {
-            return RecursiveUnionV2ShapeValue(
+        override fun new(): RecursiveUnionExternalShapeValue {
+            return RecursiveUnionExternalShapeValue(
                 width = 0.0,
                 height = 0.0,
                 color = "",
@@ -7974,14 +7984,14 @@ data class RecursiveUnionV2ShapeValue(
         }
 
         @JvmStatic
-        override fun fromJson(input: String): RecursiveUnionV2ShapeValue {
+        override fun fromJson(input: String): RecursiveUnionExternalShapeValue {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2ShapeValue {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionExternalShapeValue {
             if (__input !is JsonObject) {
-                __logError("[WARNING] RecursiveUnionV2ShapeValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2ShapeValue.")
+                __logError("[WARNING] RecursiveUnionExternalShapeValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionExternalShapeValue.")
                 return new()
             }
             val width: Double = when (__input.jsonObject["width"]) {
@@ -7996,7 +8006,356 @@ data class RecursiveUnionV2ShapeValue(
                 is JsonPrimitive -> __input.jsonObject["color"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-            return RecursiveUnionV2ShapeValue(
+            return RecursiveUnionExternalShapeValue(
+                width,
+                height,
+                color,
+            )
+        }
+    }
+}
+
+sealed interface RecursiveUnionInternal : TestClientModel {
+    val kind: String
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionInternal> {
+        @JvmStatic
+        override fun new(): RecursiveUnionInternal {
+            return RecursiveUnionInternalChildren.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionInternal {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionInternal {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionInternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionInternal.")
+                return new()
+            }
+            return when (__input.jsonObject["kind"]) {
+                is JsonPrimitive -> when (__input.jsonObject["kind"]!!.jsonPrimitive.contentOrNull) {
+                    "child" -> RecursiveUnionInternalChild.fromJsonElement(__input, instancePath)
+                    "children" -> RecursiveUnionInternalChildren.fromJsonElement(__input, instancePath)
+                    "text" -> RecursiveUnionInternalText.fromJsonElement(__input, instancePath)
+                    "shape" -> RecursiveUnionInternalShape.fromJsonElement(__input, instancePath)
+                    else -> new()
+                }
+
+                else -> new()
+            }
+        }
+    }
+}
+
+data class RecursiveUnionInternalChild(
+    val data: RecursiveUnionInternal,
+) : RecursiveUnionInternal {
+    override val kind get() = "child"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"child\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("kind=child")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChild/data.")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionInternalChild> {
+        @JvmStatic
+        override fun new(): RecursiveUnionInternalChild {
+            return RecursiveUnionInternalChild(
+                data = RecursiveUnionInternal.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionInternalChild {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionInternalChild {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionInternalChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionInternalChild.")
+                return new()
+            }
+            val data: RecursiveUnionInternal = when (__input.jsonObject["data"]) {
+                is JsonObject -> RecursiveUnionInternal.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> RecursiveUnionInternal.new()
+            }
+            return RecursiveUnionInternalChild(
+                data,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionInternalChildren(
+    /**
+     * an array of child nodes
+     */
+    val data: MutableList<RecursiveUnionInternal>,
+) : RecursiveUnionInternal {
+    override val kind get() = "children"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"children\""
+        output += ",\"data\":"
+        output += "["
+        for ((__index, __element) in data.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += __element.toJson()
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("kind=children")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChildren/data.")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionInternalChildren> {
+        @JvmStatic
+        override fun new(): RecursiveUnionInternalChildren {
+            return RecursiveUnionInternalChildren(
+                data = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionInternalChildren {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionInternalChildren {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionInternalChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionInternalChildren.")
+                return new()
+            }
+            val data: MutableList<RecursiveUnionInternal> = when (__input.jsonObject["data"]) {
+                is JsonArray -> {
+                    val __value: MutableList<RecursiveUnionInternal> = mutableListOf()
+                    for (__element in __input.jsonObject["data"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonObject -> RecursiveUnionInternal.fromJsonElement(
+                                    __element!!,
+                                    "$instancePath/undefined",
+                                )
+
+                                else -> RecursiveUnionInternal.new()
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return RecursiveUnionInternalChildren(
+                data,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionInternalText(
+    /**
+     * Text node
+     */
+    val data: String,
+) : RecursiveUnionInternal {
+    override val kind get() = "text"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"text\""
+        output += ",\"data\":"
+        output += buildString { printQuoted(data) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("kind=text")
+        queryParts.add("data=${__encodeQueryValue(data)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionInternalText> {
+        @JvmStatic
+        override fun new(): RecursiveUnionInternalText {
+            return RecursiveUnionInternalText(
+                data = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionInternalText {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionInternalText {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionInternalText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionInternalText.")
+                return new()
+            }
+            val data: String = when (__input.jsonObject["data"]) {
+                is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return RecursiveUnionInternalText(
+                data,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionInternalShape(
+    /**
+     * Shape node
+     */
+    val data: RecursiveUnionInternalShapeData,
+) : RecursiveUnionInternal {
+    override val kind get() = "shape"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"shape\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("kind=shape")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalShape/data.")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionInternalShape> {
+        @JvmStatic
+        override fun new(): RecursiveUnionInternalShape {
+            return RecursiveUnionInternalShape(
+                data = RecursiveUnionInternalShapeData.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionInternalShape {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionInternalShape {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionInternalShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionInternalShape.")
+                return new()
+            }
+            val data: RecursiveUnionInternalShapeData = when (__input.jsonObject["data"]) {
+                is JsonObject -> RecursiveUnionInternalShapeData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> RecursiveUnionInternalShapeData.new()
+            }
+            return RecursiveUnionInternalShape(
+                data,
+            )
+        }
+    }
+}
+
+/**
+ * Shape node
+ */
+data class RecursiveUnionInternalShapeData(
+    val width: Double,
+    val height: Double,
+    val color: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += ",\"color\":"
+        output += buildString { printQuoted(color) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        queryParts.add("color=${__encodeQueryValue(color)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionInternalShapeData> {
+        @JvmStatic
+        override fun new(): RecursiveUnionInternalShapeData {
+            return RecursiveUnionInternalShapeData(
+                width = 0.0,
+                height = 0.0,
+                color = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionInternalShapeData {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionInternalShapeData {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionInternalShapeData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionInternalShapeData.")
+                return new()
+            }
+            val width: Double = when (__input.jsonObject["width"]) {
+                is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val height: Double = when (__input.jsonObject["height"]) {
+                is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val color: String = when (__input.jsonObject["color"]) {
+                is JsonPrimitive -> __input.jsonObject["color"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return RecursiveUnionInternalShapeData(
                 width,
                 height,
                 color,

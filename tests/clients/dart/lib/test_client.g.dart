@@ -2,7 +2,6 @@
 // ignore_for_file: type=lint, unused_field, unnecessary_cast
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:arri_client/arri_client.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,30 +20,30 @@ class TestClient {
     Function(Object)? onError,
     int? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
-       _headers = headers,
-       _onError = onError,
-       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl,
+        _headers = headers,
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   TestClientTestsService get tests => TestClientTestsService(
-    baseUrl: _baseUrl,
-    headers: _headers,
-    httpClient: _httpClient,
-    onError: _onError,
-    heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
-    timeout: _timeout,
-  );
+        baseUrl: _baseUrl,
+        headers: _headers,
+        httpClient: _httpClient,
+        onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
+      );
 
   TestClientUsersService get users => TestClientUsersService(
-    baseUrl: _baseUrl,
-    headers: _headers,
-    httpClient: _httpClient,
-    onError: _onError,
-    heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
-    timeout: _timeout,
-  );
+        baseUrl: _baseUrl,
+        headers: _headers,
+        httpClient: _httpClient,
+        onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
+      );
 }
 
 class TestClientTestsService {
@@ -62,12 +61,12 @@ class TestClientTestsService {
     Function(Object)? onError,
     int? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
-       _headers = headers,
-       _onError = onError,
-       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl,
+        _headers = headers,
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   /// If the target language supports it. Generated code should mark this procedure as deprecated.
   @deprecated
@@ -86,8 +85,7 @@ class TestClientTestsService {
   }
 
   Future<DiscriminatorWithEmptyObject> sendDiscriminatorWithEmptyObject(
-    DiscriminatorWithEmptyObject params,
-  ) async {
+      DiscriminatorWithEmptyObject params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-discriminator-with-empty-object",
       method: HttpMethod.post,
@@ -130,8 +128,7 @@ class TestClientTestsService {
   }
 
   Future<ObjectWithKebabCaseKeys> sendObjectWithKebabCaseKeys(
-    ObjectWithKebabCaseKeys params,
-  ) async {
+      ObjectWithKebabCaseKeys params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-object-with-kebab-case-keys",
       method: HttpMethod.post,
@@ -146,8 +143,7 @@ class TestClientTestsService {
   }
 
   Future<ObjectWithEveryNullableType> sendObjectWithNullableFields(
-    ObjectWithEveryNullableType params,
-  ) async {
+      ObjectWithEveryNullableType params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-object-with-nullable-fields",
       method: HttpMethod.post,
@@ -162,8 +158,7 @@ class TestClientTestsService {
   }
 
   Future<ObjectWithPascalCaseKeys> sendObjectWithPascalCaseKeys(
-    ObjectWithPascalCaseKeys params,
-  ) async {
+      ObjectWithPascalCaseKeys params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
       method: HttpMethod.post,
@@ -178,8 +173,7 @@ class TestClientTestsService {
   }
 
   Future<ObjectWithSnakeCaseKeys> sendObjectWithSnakeCaseKeys(
-    ObjectWithSnakeCaseKeys params,
-  ) async {
+      ObjectWithSnakeCaseKeys params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-object-with-snake-case-keys",
       method: HttpMethod.post,
@@ -194,8 +188,7 @@ class TestClientTestsService {
   }
 
   Future<ObjectWithEveryOptionalType> sendPartialObject(
-    ObjectWithEveryOptionalType params,
-  ) async {
+      ObjectWithEveryOptionalType params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-partial-object",
       method: HttpMethod.post,
@@ -223,29 +216,46 @@ class TestClientTestsService {
     );
   }
 
-  Future<RecursiveUnion> sendRecursiveUnion(RecursiveUnion params) async {
+  Future<RecursiveUnionAdjacent> sendRecursiveUnionAdjacent(
+      RecursiveUnionAdjacent params) async {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-recursive-union",
+      "$_baseUrl/rpcs/tests/send-recursive-union-adjacent",
       method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
       params: params.toJson(),
-      parser: (body) => RecursiveUnion.fromJsonString(body),
+      parser: (body) => RecursiveUnionAdjacent.fromJsonString(body),
       onError: _onError,
       timeout: _timeout,
     );
   }
 
-  Future<RecursiveUnionV2> sendRecursiveUnionV2(RecursiveUnionV2 params) async {
+  Future<RecursiveUnionExternal> sendRecursiveUnionExternal(
+      RecursiveUnionExternal params) async {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/tests/send-recursive-union-v2",
+      "$_baseUrl/rpcs/tests/send-recursive-union-external",
       method: HttpMethod.post,
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
       params: params.toJson(),
-      parser: (body) => RecursiveUnionV2.fromJsonString(body),
+      parser: (body) => RecursiveUnionExternal.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
+  Future<RecursiveUnionInternal> sendRecursiveUnionInternal(
+      RecursiveUnionInternal params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-recursive-union-internal",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => RecursiveUnionInternal.fromJsonString(body),
       onError: _onError,
       timeout: _timeout,
     );
@@ -253,22 +263,16 @@ class TestClientTestsService {
 
   EventSource<AutoReconnectResponse> streamAutoReconnect(
     AutoReconnectParams params, {
-    void Function(
-      AutoReconnectResponse data,
-      EventSource<AutoReconnectResponse> connection,
-    )?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<AutoReconnectResponse> connection,
-    )?
-    onOpen,
+    void Function(AutoReconnectResponse data,
+            EventSource<AutoReconnectResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<AutoReconnectResponse> connection)?
+        onOpen,
     void Function(EventSource<AutoReconnectResponse> connection)? onClose,
     void Function(
-      ArriError error,
-      EventSource<AutoReconnectResponse> connection,
-    )?
-    onError,
+            ArriError error, EventSource<AutoReconnectResponse> connection)?
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -297,33 +301,27 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
   /// This route will always return an error. The client should automatically retry with exponential backoff.
   EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
     StreamConnectionErrorTestParams params, {
-    void Function(
-      StreamConnectionErrorTestResponse data,
-      EventSource<StreamConnectionErrorTestResponse> connection,
-    )?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<StreamConnectionErrorTestResponse> connection,
-    )?
-    onOpen,
+    void Function(StreamConnectionErrorTestResponse data,
+            EventSource<StreamConnectionErrorTestResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<StreamConnectionErrorTestResponse> connection)?
+        onOpen,
     void Function(EventSource<StreamConnectionErrorTestResponse> connection)?
-    onClose,
-    void Function(
-      ArriError error,
-      EventSource<StreamConnectionErrorTestResponse> connection,
-    )?
-    onError,
+        onClose,
+    void Function(ArriError error,
+            EventSource<StreamConnectionErrorTestResponse> connection)?
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -352,10 +350,10 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
@@ -363,25 +361,19 @@ class TestClientTestsService {
   /// When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
   /// When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
   EventSource<StreamHeartbeatDetectionTestResponse>
-  streamHeartbeatDetectionTest(
+      streamHeartbeatDetectionTest(
     StreamHeartbeatDetectionTestParams params, {
-    void Function(
-      StreamHeartbeatDetectionTestResponse data,
-      EventSource<StreamHeartbeatDetectionTestResponse> connection,
-    )?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<StreamHeartbeatDetectionTestResponse> connection,
-    )?
-    onOpen,
+    void Function(StreamHeartbeatDetectionTestResponse data,
+            EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onOpen,
     void Function(EventSource<StreamHeartbeatDetectionTestResponse> connection)?
-    onClose,
-    void Function(
-      ArriError error,
-      EventSource<StreamHeartbeatDetectionTestResponse> connection,
-    )?
-    onError,
+        onClose,
+    void Function(ArriError error,
+            EventSource<StreamHeartbeatDetectionTestResponse> connection)?
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -411,31 +403,25 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
   /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
   EventSource<StreamLargeObjectsResponse> streamLargeObjects({
-    void Function(
-      StreamLargeObjectsResponse data,
-      EventSource<StreamLargeObjectsResponse> connection,
-    )?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<StreamLargeObjectsResponse> connection,
-    )?
-    onOpen,
+    void Function(StreamLargeObjectsResponse data,
+            EventSource<StreamLargeObjectsResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<StreamLargeObjectsResponse> connection)?
+        onOpen,
     void Function(EventSource<StreamLargeObjectsResponse> connection)? onClose,
-    void Function(
-      ArriError error,
-      EventSource<StreamLargeObjectsResponse> connection,
-    )?
-    onError,
+    void Function(ArriError error,
+            EventSource<StreamLargeObjectsResponse> connection)?
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -453,7 +439,6 @@ class TestClientTestsService {
       heartbeatTimeoutMultiplier:
           heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
       timeout: _timeout,
-
       parser: (body) => StreamLargeObjectsResponse.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -464,25 +449,23 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
   EventSource<ChatMessage> streamMessages(
     ChatMessageParams params, {
     void Function(ChatMessage data, EventSource<ChatMessage> connection)?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<ChatMessage> connection,
-    )?
-    onOpen,
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<ChatMessage> connection)?
+        onOpen,
     void Function(EventSource<ChatMessage> connection)? onClose,
     void Function(ArriError error, EventSource<ChatMessage> connection)?
-    onError,
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -511,34 +494,27 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
   EventSource<TestsStreamRetryWithNewCredentialsResponse>
-  streamRetryWithNewCredentials({
+      streamRetryWithNewCredentials({
+    void Function(TestsStreamRetryWithNewCredentialsResponse data,
+            EventSource<TestsStreamRetryWithNewCredentialsResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<TestsStreamRetryWithNewCredentialsResponse> connection)?
+        onOpen,
     void Function(
-      TestsStreamRetryWithNewCredentialsResponse data,
-      EventSource<TestsStreamRetryWithNewCredentialsResponse> connection,
-    )?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<TestsStreamRetryWithNewCredentialsResponse> connection,
-    )?
-    onOpen,
-    void Function(
-      EventSource<TestsStreamRetryWithNewCredentialsResponse> connection,
-    )?
-    onClose,
-    void Function(
-      ArriError error,
-      EventSource<TestsStreamRetryWithNewCredentialsResponse> connection,
-    )?
-    onError,
+            EventSource<TestsStreamRetryWithNewCredentialsResponse> connection)?
+        onClose,
+    void Function(ArriError error,
+            EventSource<TestsStreamRetryWithNewCredentialsResponse> connection)?
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -556,7 +532,6 @@ class TestClientTestsService {
       heartbeatTimeoutMultiplier:
           heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
       timeout: _timeout,
-
       parser: (body) =>
           TestsStreamRetryWithNewCredentialsResponse.fromJsonString(body),
       onMessage: onMessage,
@@ -568,25 +543,23 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
   /// When the client receives the 'done' event, it should close the connection and NOT reconnect
   EventSource<ChatMessage> streamTenEventsThenEnd({
     void Function(ChatMessage data, EventSource<ChatMessage> connection)?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<ChatMessage> connection,
-    )?
-    onOpen,
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<ChatMessage> connection)?
+        onOpen,
     void Function(EventSource<ChatMessage> connection)? onClose,
     void Function(ArriError error, EventSource<ChatMessage> connection)?
-    onError,
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -604,7 +577,6 @@ class TestClientTestsService {
       heartbeatTimeoutMultiplier:
           heartbeatTimeoutMultiplier ?? this._heartbeatTimeoutMultiplier,
       timeout: _timeout,
-
       parser: (body) => ChatMessage.fromJsonString(body),
       onMessage: onMessage,
       onOpen: onOpen,
@@ -615,21 +587,21 @@ class TestClientTestsService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 
   TestClientTestsNestedService get nested => TestClientTestsNestedService(
-    baseUrl: _baseUrl,
-    headers: _headers,
-    httpClient: _httpClient,
-    onError: _onError,
-    heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
-    timeout: _timeout,
-  );
+        baseUrl: _baseUrl,
+        headers: _headers,
+        httpClient: _httpClient,
+        onError: _onError,
+        heartbeatTimeoutMultiplier: _heartbeatTimeoutMultiplier,
+        timeout: _timeout,
+      );
 }
 
 class TestClientTestsNestedService {
@@ -647,12 +619,12 @@ class TestClientTestsNestedService {
     Function(Object)? onError,
     int? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
-       _headers = headers,
-       _onError = onError,
-       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl,
+        _headers = headers,
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   Future<DefaultPayload> emptyParamsGetRequest() async {
     return parsedArriRequest(
@@ -661,7 +633,6 @@ class TestClientTestsNestedService {
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
-
       parser: (body) => DefaultPayload.fromJsonString(body),
       onError: _onError,
       timeout: _timeout,
@@ -675,7 +646,6 @@ class TestClientTestsNestedService {
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
-
       parser: (body) => DefaultPayload.fromJsonString(body),
       onError: _onError,
       timeout: _timeout,
@@ -726,31 +696,25 @@ class TestClientUsersService {
     Function(Object)? onError,
     int? heartbeatTimeoutMultiplier,
     Duration? timeout,
-  }) : _httpClient = httpClient,
-       _baseUrl = baseUrl,
-       _headers = headers,
-       _onError = onError,
-       _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
-       _timeout = timeout;
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl,
+        _headers = headers,
+        _onError = onError,
+        _heartbeatTimeoutMultiplier = heartbeatTimeoutMultiplier,
+        _timeout = timeout;
 
   EventSource<UsersWatchUserResponse> watchUser(
     UsersWatchUserParams params, {
-    void Function(
-      UsersWatchUserResponse data,
-      EventSource<UsersWatchUserResponse> connection,
-    )?
-    onMessage,
-    void Function(
-      http.StreamedResponse response,
-      EventSource<UsersWatchUserResponse> connection,
-    )?
-    onOpen,
+    void Function(UsersWatchUserResponse data,
+            EventSource<UsersWatchUserResponse> connection)?
+        onMessage,
+    void Function(http.StreamedResponse response,
+            EventSource<UsersWatchUserResponse> connection)?
+        onOpen,
     void Function(EventSource<UsersWatchUserResponse> connection)? onClose,
     void Function(
-      ArriError error,
-      EventSource<UsersWatchUserResponse> connection,
-    )?
-    onError,
+            ArriError error, EventSource<UsersWatchUserResponse> connection)?
+        onError,
     Duration? retryDelay,
     int? maxRetryCount,
     String? lastEventId,
@@ -779,25 +743,31 @@ class TestClientUsersService {
               return onError(err, es);
             }
           : onError != null
-          ? onError
-          : _onError != null
-          ? (err, _) => _onError.call(err)
-          : null,
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError.call(err)
+                  : null,
     );
   }
 }
 
 class ManuallyAddedModel implements ArriModel {
   final String hello;
-  const ManuallyAddedModel({required this.hello});
+  const ManuallyAddedModel({
+    required this.hello,
+  });
 
   factory ManuallyAddedModel.empty() {
-    return ManuallyAddedModel(hello: "");
+    return ManuallyAddedModel(
+      hello: "",
+    );
   }
 
   factory ManuallyAddedModel.fromJson(Map<String, dynamic> _input_) {
     final hello = typeFromDynamic<String>(_input_["hello"], "");
-    return ManuallyAddedModel(hello: hello);
+    return ManuallyAddedModel(
+      hello: hello,
+    );
   }
 
   factory ManuallyAddedModel.fromJsonString(String input) {
@@ -806,7 +776,9 @@ class ManuallyAddedModel implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"hello": hello};
+    final _output_ = <String, dynamic>{
+      "hello": hello,
+    };
 
     return _output_;
   }
@@ -824,12 +796,18 @@ class ManuallyAddedModel implements ArriModel {
   }
 
   @override
-  ManuallyAddedModel copyWith({String? hello}) {
-    return ManuallyAddedModel(hello: hello ?? this.hello);
+  ManuallyAddedModel copyWith({
+    String? hello,
+  }) {
+    return ManuallyAddedModel(
+      hello: hello ?? this.hello,
+    );
   }
 
   @override
-  List<Object?> get props => [hello];
+  List<Object?> get props => [
+        hello,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -847,15 +825,21 @@ class ManuallyAddedModel implements ArriModel {
 
 class DefaultPayload implements ArriModel {
   final String message;
-  const DefaultPayload({required this.message});
+  const DefaultPayload({
+    required this.message,
+  });
 
   factory DefaultPayload.empty() {
-    return DefaultPayload(message: "");
+    return DefaultPayload(
+      message: "",
+    );
   }
 
   factory DefaultPayload.fromJson(Map<String, dynamic> _input_) {
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return DefaultPayload(message: message);
+    return DefaultPayload(
+      message: message,
+    );
   }
 
   factory DefaultPayload.fromJsonString(String input) {
@@ -864,7 +848,9 @@ class DefaultPayload implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"message": message};
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
 
     return _output_;
   }
@@ -882,12 +868,18 @@ class DefaultPayload implements ArriModel {
   }
 
   @override
-  DefaultPayload copyWith({String? message}) {
-    return DefaultPayload(message: message ?? this.message);
+  DefaultPayload copyWith({
+    String? message,
+  }) {
+    return DefaultPayload(
+      message: message ?? this.message,
+    );
   }
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [
+        message,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -907,18 +899,22 @@ class DefaultPayload implements ArriModel {
 class DeprecatedRpcParams implements ArriModel {
   @deprecated
   final String deprecatedField;
-  const DeprecatedRpcParams({required this.deprecatedField});
+  const DeprecatedRpcParams({
+    required this.deprecatedField,
+  });
 
   factory DeprecatedRpcParams.empty() {
-    return DeprecatedRpcParams(deprecatedField: "");
+    return DeprecatedRpcParams(
+      deprecatedField: "",
+    );
   }
 
   factory DeprecatedRpcParams.fromJson(Map<String, dynamic> _input_) {
-    final deprecatedField = typeFromDynamic<String>(
-      _input_["deprecatedField"],
-      "",
+    final deprecatedField =
+        typeFromDynamic<String>(_input_["deprecatedField"], "");
+    return DeprecatedRpcParams(
+      deprecatedField: deprecatedField,
     );
-    return DeprecatedRpcParams(deprecatedField: deprecatedField);
   }
 
   factory DeprecatedRpcParams.fromJsonString(String input) {
@@ -927,7 +923,9 @@ class DeprecatedRpcParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"deprecatedField": deprecatedField};
+    final _output_ = <String, dynamic>{
+      "deprecatedField": deprecatedField,
+    };
 
     return _output_;
   }
@@ -945,14 +943,18 @@ class DeprecatedRpcParams implements ArriModel {
   }
 
   @override
-  DeprecatedRpcParams copyWith({String? deprecatedField}) {
+  DeprecatedRpcParams copyWith({
+    String? deprecatedField,
+  }) {
     return DeprecatedRpcParams(
       deprecatedField: deprecatedField ?? this.deprecatedField,
     );
   }
 
   @override
-  List<Object?> get props => [deprecatedField];
+  List<Object?> get props => [
+        deprecatedField,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1005,8 +1007,7 @@ class DiscriminatorWithEmptyObjectEmpty
   }
 
   factory DiscriminatorWithEmptyObjectEmpty.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     return DiscriminatorWithEmptyObjectEmpty();
   }
 
@@ -1016,7 +1017,9 @@ class DiscriminatorWithEmptyObjectEmpty
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"type": type};
+    final _output_ = <String, dynamic>{
+      "type": type,
+    };
 
     return _output_;
   }
@@ -1071,16 +1074,23 @@ class DiscriminatorWithEmptyObjectNotEmpty
   String get type => "NOT_EMPTY";
 
   factory DiscriminatorWithEmptyObjectNotEmpty.empty() {
-    return DiscriminatorWithEmptyObjectNotEmpty(foo: "", bar: 0.0, baz: false);
+    return DiscriminatorWithEmptyObjectNotEmpty(
+      foo: "",
+      bar: 0.0,
+      baz: false,
+    );
   }
 
   factory DiscriminatorWithEmptyObjectNotEmpty.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final foo = typeFromDynamic<String>(_input_["foo"], "");
     final bar = doubleFromDynamic(_input_["bar"], 0.0);
     final baz = typeFromDynamic<bool>(_input_["baz"], false);
-    return DiscriminatorWithEmptyObjectNotEmpty(foo: foo, bar: bar, baz: baz);
+    return DiscriminatorWithEmptyObjectNotEmpty(
+      foo: foo,
+      bar: bar,
+      baz: baz,
+    );
   }
 
   factory DiscriminatorWithEmptyObjectNotEmpty.fromJsonString(String input) {
@@ -1128,7 +1138,11 @@ class DiscriminatorWithEmptyObjectNotEmpty
   }
 
   @override
-  List<Object?> get props => [foo, bar, baz];
+  List<Object?> get props => [
+        foo,
+        bar,
+        baz,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1148,16 +1162,25 @@ class DiscriminatorWithEmptyObjectNotEmpty
 class SendErrorParams implements ArriModel {
   final int code;
   final String message;
-  const SendErrorParams({required this.code, required this.message});
+  const SendErrorParams({
+    required this.code,
+    required this.message,
+  });
 
   factory SendErrorParams.empty() {
-    return SendErrorParams(code: 0, message: "");
+    return SendErrorParams(
+      code: 0,
+      message: "",
+    );
   }
 
   factory SendErrorParams.fromJson(Map<String, dynamic> _input_) {
     final code = intFromDynamic(_input_["code"], 0);
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return SendErrorParams(code: code, message: message);
+    return SendErrorParams(
+      code: code,
+      message: message,
+    );
   }
 
   factory SendErrorParams.fromJsonString(String input) {
@@ -1166,7 +1189,10 @@ class SendErrorParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"code": code, "message": message};
+    final _output_ = <String, dynamic>{
+      "code": code,
+      "message": message,
+    };
 
     return _output_;
   }
@@ -1185,7 +1211,10 @@ class SendErrorParams implements ArriModel {
   }
 
   @override
-  SendErrorParams copyWith({int? code, String? message}) {
+  SendErrorParams copyWith({
+    int? code,
+    String? message,
+  }) {
     return SendErrorParams(
       code: code ?? this.code,
       message: message ?? this.message,
@@ -1193,7 +1222,10 @@ class SendErrorParams implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [code, message];
+  List<Object?> get props => [
+        code,
+        message,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1303,20 +1335,21 @@ class ObjectWithEveryType implements ArriModel {
     final int64 = bigIntFromDynamic(_input_["int64"], BigInt.zero);
     final uint64 = bigIntFromDynamic(_input_["uint64"], BigInt.zero);
     final enumerator = ObjectWithEveryTypeEnumerator.fromString(
-      typeFromDynamic<String>(_input_["enumerator"], ""),
-    );
+        typeFromDynamic<String>(_input_["enumerator"], ""));
     final array = _input_["array"] is List
         ? (_input_["array"] as List)
-              .map((_el_) => typeFromDynamic<bool>(_el_, false))
-              .toList()
+            .map((_el_) => typeFromDynamic<bool>(_el_, false))
+            .toList()
         : <bool>[];
     final object = _input_["object"] is Map<String, dynamic>
         ? ObjectWithEveryTypeObject.fromJson(_input_["object"])
         : ObjectWithEveryTypeObject.empty();
     final record = _input_["record"] is Map<String, dynamic>
         ? (_input_["record"] as Map<String, dynamic>).map(
-            (_key_, _val_) =>
-                MapEntry(_key_, bigIntFromDynamic(_val_, BigInt.zero)),
+            (_key_, _val_) => MapEntry(
+              _key_,
+              bigIntFromDynamic(_val_, BigInt.zero),
+            ),
           )
         : <String, BigInt>{};
     final unionExternal = _input_["unionExternal"] is Map<String, dynamic>
@@ -1333,20 +1366,15 @@ class ObjectWithEveryType implements ArriModel {
         : ObjectWithEveryTypeNestedObject.empty();
     final nestedArray = _input_["nestedArray"] is List
         ? (_input_["nestedArray"] as List)
-              .map(
-                (_el_) => _el_ is List
-                    ? (_el_ as List)
-                          .map(
-                            (_el_) => _el_ is Map<String, dynamic>
-                                ? ObjectWithEveryTypeNestedArrayElementElement.fromJson(
-                                    _el_,
-                                  )
-                                : ObjectWithEveryTypeNestedArrayElementElement.empty(),
-                          )
-                          .toList()
-                    : <ObjectWithEveryTypeNestedArrayElementElement>[],
-              )
-              .toList()
+            .map((_el_) => _el_ is List
+                ? (_el_ as List)
+                    .map((_el_) => _el_ is Map<String, dynamic>
+                        ? ObjectWithEveryTypeNestedArrayElementElement.fromJson(
+                            _el_)
+                        : ObjectWithEveryTypeNestedArrayElementElement.empty())
+                    .toList()
+                : <ObjectWithEveryTypeNestedArrayElementElement>[])
+            .toList()
         : <List<ObjectWithEveryTypeNestedArrayElementElement>>[];
     return ObjectWithEveryType(
       any: any,
@@ -1399,7 +1427,12 @@ class ObjectWithEveryType implements ArriModel {
       "enumerator": enumerator.serialValue,
       "array": array.map((_el_) => _el_).toList(),
       "object": object.toJson(),
-      "record": record.map((_key_, _val_) => MapEntry(_key_, _val_.toString())),
+      "record": record.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_.toString(),
+        ),
+      ),
       "unionExternal": unionExternal.toJson(),
       "unionInternal": unionInternal.toJson(),
       "unionAdjacent": unionAdjacent.toJson(),
@@ -1421,8 +1454,7 @@ class ObjectWithEveryType implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-      "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.",
-    );
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.");
     _queryParts_.add("boolean=$boolean");
     _queryParts_.add("string=$string");
     _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
@@ -1438,29 +1470,21 @@ class ObjectWithEveryType implements ArriModel {
     _queryParts_.add("uint64=$uint64");
     _queryParts_.add("enumerator=${enumerator.serialValue}");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.");
     return _queryParts_.join("&");
   }
 
@@ -1519,30 +1543,30 @@ class ObjectWithEveryType implements ArriModel {
 
   @override
   List<Object?> get props => [
-    any,
-    boolean,
-    string,
-    timestamp,
-    float32,
-    float64,
-    int8,
-    uint8,
-    int16,
-    uint16,
-    int32,
-    uint32,
-    int64,
-    uint64,
-    enumerator,
-    array,
-    object,
-    record,
-    unionExternal,
-    unionInternal,
-    unionAdjacent,
-    nestedObject,
-    nestedArray,
-  ];
+        any,
+        boolean,
+        string,
+        timestamp,
+        float32,
+        float64,
+        int8,
+        uint8,
+        int16,
+        uint16,
+        int32,
+        uint32,
+        int64,
+        uint64,
+        enumerator,
+        array,
+        object,
+        record,
+        unionExternal,
+        unionInternal,
+        unionAdjacent,
+        nestedObject,
+        nestedArray,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1653,7 +1677,11 @@ class ObjectWithEveryTypeObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [string, boolean, timestamp];
+  List<Object?> get props => [
+        string,
+        boolean,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1678,8 +1706,7 @@ sealed class ObjectWithEveryTypeUnionExternal implements ArriModel {
   }
 
   factory ObjectWithEveryTypeUnionExternal.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     if (_input_.containsKey("object")) {
       return ObjectWithEveryTypeUnionExternalObject.fromJson(_input_);
     }
@@ -1691,8 +1718,7 @@ sealed class ObjectWithEveryTypeUnionExternal implements ArriModel {
     }
     if (_input_.containsKey("nullable-timestamp")) {
       return ObjectWithEveryTypeUnionExternalNullableTimestamp.fromJson(
-        _input_,
-      );
+          _input_);
     }
     return ObjectWithEveryTypeUnionExternal.empty();
   }
@@ -1705,7 +1731,9 @@ sealed class ObjectWithEveryTypeUnionExternal implements ArriModel {
 class ObjectWithEveryTypeUnionExternalObject
     implements ObjectWithEveryTypeUnionExternal {
   final ObjectWithEveryTypeUnionExternalObjectValue value;
-  const ObjectWithEveryTypeUnionExternalObject({required this.value});
+  const ObjectWithEveryTypeUnionExternalObject({
+    required this.value,
+  });
 
   factory ObjectWithEveryTypeUnionExternalObject.empty() {
     return ObjectWithEveryTypeUnionExternalObject(
@@ -1714,14 +1742,14 @@ class ObjectWithEveryTypeUnionExternalObject
   }
 
   factory ObjectWithEveryTypeUnionExternalObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["object"] is Map<String, dynamic>
         ? ObjectWithEveryTypeUnionExternalObjectValue.fromJson(
-            _input_["object"],
-          )
+            _input_["object"])
         : ObjectWithEveryTypeUnionExternalObjectValue.empty();
-    return ObjectWithEveryTypeUnionExternalObject(value: value);
+    return ObjectWithEveryTypeUnionExternalObject(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalObject.fromJsonString(String input) {
@@ -1730,7 +1758,9 @@ class ObjectWithEveryTypeUnionExternalObject
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"object": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "object": value.toJson(),
+    };
     return _output_;
   }
 
@@ -1742,8 +1772,7 @@ class ObjectWithEveryTypeUnionExternalObject
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalObject.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalObject.");
     return "";
   }
 
@@ -1751,11 +1780,15 @@ class ObjectWithEveryTypeUnionExternalObject
   ObjectWithEveryTypeUnionExternalObject copyWith({
     ObjectWithEveryTypeUnionExternalObjectValue? value,
   }) {
-    return ObjectWithEveryTypeUnionExternalObject(value: value ?? this.value);
+    return ObjectWithEveryTypeUnionExternalObject(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1775,21 +1808,26 @@ class ObjectWithEveryTypeUnionExternalObject
 class ObjectWithEveryTypeUnionExternalArray
     implements ObjectWithEveryTypeUnionExternal {
   final List<String> value;
-  const ObjectWithEveryTypeUnionExternalArray({required this.value});
+  const ObjectWithEveryTypeUnionExternalArray({
+    required this.value,
+  });
 
   factory ObjectWithEveryTypeUnionExternalArray.empty() {
-    return ObjectWithEveryTypeUnionExternalArray(value: []);
+    return ObjectWithEveryTypeUnionExternalArray(
+      value: [],
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalArray.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["array"] is List
         ? (_input_["array"] as List)
-              .map((_el_) => typeFromDynamic<String>(_el_, ""))
-              .toList()
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
         : <String>[];
-    return ObjectWithEveryTypeUnionExternalArray(value: value);
+    return ObjectWithEveryTypeUnionExternalArray(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalArray.fromJsonString(String input) {
@@ -1812,18 +1850,23 @@ class ObjectWithEveryTypeUnionExternalArray
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalArray.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalArray.");
     return "";
   }
 
   @override
-  ObjectWithEveryTypeUnionExternalArray copyWith({List<String>? value}) {
-    return ObjectWithEveryTypeUnionExternalArray(value: value ?? this.value);
+  ObjectWithEveryTypeUnionExternalArray copyWith({
+    List<String>? value,
+  }) {
+    return ObjectWithEveryTypeUnionExternalArray(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1843,17 +1886,22 @@ class ObjectWithEveryTypeUnionExternalArray
 class ObjectWithEveryTypeUnionExternalBoolean
     implements ObjectWithEveryTypeUnionExternal {
   final bool value;
-  const ObjectWithEveryTypeUnionExternalBoolean({required this.value});
+  const ObjectWithEveryTypeUnionExternalBoolean({
+    required this.value,
+  });
 
   factory ObjectWithEveryTypeUnionExternalBoolean.empty() {
-    return ObjectWithEveryTypeUnionExternalBoolean(value: false);
+    return ObjectWithEveryTypeUnionExternalBoolean(
+      value: false,
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalBoolean.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = typeFromDynamic<bool>(_input_["boolean"], false);
-    return ObjectWithEveryTypeUnionExternalBoolean(value: value);
+    return ObjectWithEveryTypeUnionExternalBoolean(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalBoolean.fromJsonString(String input) {
@@ -1862,7 +1910,9 @@ class ObjectWithEveryTypeUnionExternalBoolean
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"boolean": value};
+    final _output_ = <String, dynamic>{
+      "boolean": value,
+    };
     return _output_;
   }
 
@@ -1874,18 +1924,23 @@ class ObjectWithEveryTypeUnionExternalBoolean
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalBoolean.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalBoolean.");
     return "";
   }
 
   @override
-  ObjectWithEveryTypeUnionExternalBoolean copyWith({bool? value}) {
-    return ObjectWithEveryTypeUnionExternalBoolean(value: value ?? this.value);
+  ObjectWithEveryTypeUnionExternalBoolean copyWith({
+    bool? value,
+  }) {
+    return ObjectWithEveryTypeUnionExternalBoolean(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1910,22 +1965,23 @@ class ObjectWithEveryTypeUnionExternalNullableTimestamp
   });
 
   factory ObjectWithEveryTypeUnionExternalNullableTimestamp.empty() {
-    return ObjectWithEveryTypeUnionExternalNullableTimestamp(value: null);
+    return ObjectWithEveryTypeUnionExternalNullableTimestamp(
+      value: null,
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalNullableTimestamp.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = nullableDateTimeFromDynamic(_input_["nullable-timestamp"]);
-    return ObjectWithEveryTypeUnionExternalNullableTimestamp(value: value);
+    return ObjectWithEveryTypeUnionExternalNullableTimestamp(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalNullableTimestamp.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryTypeUnionExternalNullableTimestamp.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -1944,8 +2000,7 @@ class ObjectWithEveryTypeUnionExternalNullableTimestamp
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalNullableTimestamp.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalNullableTimestamp.");
     return "";
   }
 
@@ -1959,7 +2014,9 @@ class ObjectWithEveryTypeUnionExternalNullableTimestamp
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -1985,12 +2042,14 @@ class ObjectWithEveryTypeUnionExternalObjectValue implements ArriModel {
   });
 
   factory ObjectWithEveryTypeUnionExternalObjectValue.empty() {
-    return ObjectWithEveryTypeUnionExternalObjectValue(id: "", content: "");
+    return ObjectWithEveryTypeUnionExternalObjectValue(
+      id: "",
+      content: "",
+    );
   }
 
   factory ObjectWithEveryTypeUnionExternalObjectValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
     return ObjectWithEveryTypeUnionExternalObjectValue(
@@ -2000,16 +2059,17 @@ class ObjectWithEveryTypeUnionExternalObjectValue implements ArriModel {
   }
 
   factory ObjectWithEveryTypeUnionExternalObjectValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryTypeUnionExternalObjectValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "content": content};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "content": content,
+    };
 
     return _output_;
   }
@@ -2039,7 +2099,10 @@ class ObjectWithEveryTypeUnionExternalObjectValue implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, content];
+  List<Object?> get props => [
+        id,
+        content,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2065,8 +2128,7 @@ sealed class ObjectWithEveryTypeUnionInternal implements ArriModel {
   }
 
   factory ObjectWithEveryTypeUnionInternal.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final shape = typeFromDynamic<String>(_input_["shape"], "");
     switch (shape) {
       case "rectangle":
@@ -2096,12 +2158,14 @@ class ObjectWithEveryTypeUnionInternalRectangle
   String get shape => "rectangle";
 
   factory ObjectWithEveryTypeUnionInternalRectangle.empty() {
-    return ObjectWithEveryTypeUnionInternalRectangle(width: 0.0, height: 0.0);
+    return ObjectWithEveryTypeUnionInternalRectangle(
+      width: 0.0,
+      height: 0.0,
+    );
   }
 
   factory ObjectWithEveryTypeUnionInternalRectangle.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final width = doubleFromDynamic(_input_["width"], 0.0);
     final height = doubleFromDynamic(_input_["height"], 0.0);
     return ObjectWithEveryTypeUnionInternalRectangle(
@@ -2111,11 +2175,9 @@ class ObjectWithEveryTypeUnionInternalRectangle
   }
 
   factory ObjectWithEveryTypeUnionInternalRectangle.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryTypeUnionInternalRectangle.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -2155,7 +2217,10 @@ class ObjectWithEveryTypeUnionInternalRectangle
   }
 
   @override
-  List<Object?> get props => [width, height];
+  List<Object?> get props => [
+        width,
+        height,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2175,20 +2240,25 @@ class ObjectWithEveryTypeUnionInternalRectangle
 class ObjectWithEveryTypeUnionInternalCircle
     implements ObjectWithEveryTypeUnionInternal {
   final double radius;
-  const ObjectWithEveryTypeUnionInternalCircle({required this.radius});
+  const ObjectWithEveryTypeUnionInternalCircle({
+    required this.radius,
+  });
 
   @override
   String get shape => "circle";
 
   factory ObjectWithEveryTypeUnionInternalCircle.empty() {
-    return ObjectWithEveryTypeUnionInternalCircle(radius: 0.0);
+    return ObjectWithEveryTypeUnionInternalCircle(
+      radius: 0.0,
+    );
   }
 
   factory ObjectWithEveryTypeUnionInternalCircle.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final radius = doubleFromDynamic(_input_["radius"], 0.0);
-    return ObjectWithEveryTypeUnionInternalCircle(radius: radius);
+    return ObjectWithEveryTypeUnionInternalCircle(
+      radius: radius,
+    );
   }
 
   factory ObjectWithEveryTypeUnionInternalCircle.fromJsonString(String input) {
@@ -2197,7 +2267,10 @@ class ObjectWithEveryTypeUnionInternalCircle
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"shape": shape, "radius": radius};
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "radius": radius,
+    };
 
     return _output_;
   }
@@ -2216,14 +2289,18 @@ class ObjectWithEveryTypeUnionInternalCircle
   }
 
   @override
-  ObjectWithEveryTypeUnionInternalCircle copyWith({double? radius}) {
+  ObjectWithEveryTypeUnionInternalCircle copyWith({
+    double? radius,
+  }) {
     return ObjectWithEveryTypeUnionInternalCircle(
       radius: radius ?? this.radius,
     );
   }
 
   @override
-  List<Object?> get props => [radius];
+  List<Object?> get props => [
+        radius,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2249,8 +2326,7 @@ sealed class ObjectWithEveryTypeUnionAdjacent implements ArriModel {
   }
 
   factory ObjectWithEveryTypeUnionAdjacent.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final kind = typeFromDynamic<String>(_input_["kind"], "");
     switch (kind) {
       case "object":
@@ -2261,8 +2337,7 @@ sealed class ObjectWithEveryTypeUnionAdjacent implements ArriModel {
         return ObjectWithEveryTypeUnionAdjacentBoolean.fromJson(_input_);
       case "nullable-timestamp":
         return ObjectWithEveryTypeUnionAdjacentNullableTimestamp.fromJson(
-          _input_,
-        );
+            _input_);
       default:
         return ObjectWithEveryTypeUnionAdjacent.empty();
     }
@@ -2276,7 +2351,9 @@ sealed class ObjectWithEveryTypeUnionAdjacent implements ArriModel {
 class ObjectWithEveryTypeUnionAdjacentObject
     implements ObjectWithEveryTypeUnionAdjacent {
   final ObjectWithEveryTypeUnionAdjacentObjectData data;
-  const ObjectWithEveryTypeUnionAdjacentObject({required this.data});
+  const ObjectWithEveryTypeUnionAdjacentObject({
+    required this.data,
+  });
 
   @override
   String get kind => "object";
@@ -2288,12 +2365,13 @@ class ObjectWithEveryTypeUnionAdjacentObject
   }
 
   factory ObjectWithEveryTypeUnionAdjacentObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = _input_["data"] is Map<String, dynamic>
         ? ObjectWithEveryTypeUnionAdjacentObjectData.fromJson(_input_["data"])
         : ObjectWithEveryTypeUnionAdjacentObjectData.empty();
-    return ObjectWithEveryTypeUnionAdjacentObject(data: data);
+    return ObjectWithEveryTypeUnionAdjacentObject(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentObject.fromJsonString(String input) {
@@ -2302,7 +2380,10 @@ class ObjectWithEveryTypeUnionAdjacentObject
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"kind": kind, "data": data.toJson()};
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
     return _output_;
   }
 
@@ -2314,8 +2395,7 @@ class ObjectWithEveryTypeUnionAdjacentObject
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentObject.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentObject.");
     return "";
   }
 
@@ -2323,11 +2403,15 @@ class ObjectWithEveryTypeUnionAdjacentObject
   ObjectWithEveryTypeUnionAdjacentObject copyWith({
     ObjectWithEveryTypeUnionAdjacentObjectData? data,
   }) {
-    return ObjectWithEveryTypeUnionAdjacentObject(data: data ?? this.data);
+    return ObjectWithEveryTypeUnionAdjacentObject(
+      data: data ?? this.data,
+    );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2347,24 +2431,29 @@ class ObjectWithEveryTypeUnionAdjacentObject
 class ObjectWithEveryTypeUnionAdjacentArray
     implements ObjectWithEveryTypeUnionAdjacent {
   final List<String> data;
-  const ObjectWithEveryTypeUnionAdjacentArray({required this.data});
+  const ObjectWithEveryTypeUnionAdjacentArray({
+    required this.data,
+  });
 
   @override
   String get kind => "array";
 
   factory ObjectWithEveryTypeUnionAdjacentArray.empty() {
-    return ObjectWithEveryTypeUnionAdjacentArray(data: []);
+    return ObjectWithEveryTypeUnionAdjacentArray(
+      data: [],
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentArray.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = _input_["data"] is List
         ? (_input_["data"] as List)
-              .map((_el_) => typeFromDynamic<String>(_el_, ""))
-              .toList()
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
         : <String>[];
-    return ObjectWithEveryTypeUnionAdjacentArray(data: data);
+    return ObjectWithEveryTypeUnionAdjacentArray(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentArray.fromJsonString(String input) {
@@ -2388,18 +2477,23 @@ class ObjectWithEveryTypeUnionAdjacentArray
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentArray.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentArray.");
     return "";
   }
 
   @override
-  ObjectWithEveryTypeUnionAdjacentArray copyWith({List<String>? data}) {
-    return ObjectWithEveryTypeUnionAdjacentArray(data: data ?? this.data);
+  ObjectWithEveryTypeUnionAdjacentArray copyWith({
+    List<String>? data,
+  }) {
+    return ObjectWithEveryTypeUnionAdjacentArray(
+      data: data ?? this.data,
+    );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2419,20 +2513,25 @@ class ObjectWithEveryTypeUnionAdjacentArray
 class ObjectWithEveryTypeUnionAdjacentBoolean
     implements ObjectWithEveryTypeUnionAdjacent {
   final bool data;
-  const ObjectWithEveryTypeUnionAdjacentBoolean({required this.data});
+  const ObjectWithEveryTypeUnionAdjacentBoolean({
+    required this.data,
+  });
 
   @override
   String get kind => "boolean";
 
   factory ObjectWithEveryTypeUnionAdjacentBoolean.empty() {
-    return ObjectWithEveryTypeUnionAdjacentBoolean(data: false);
+    return ObjectWithEveryTypeUnionAdjacentBoolean(
+      data: false,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentBoolean.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = typeFromDynamic<bool>(_input_["data"], false);
-    return ObjectWithEveryTypeUnionAdjacentBoolean(data: data);
+    return ObjectWithEveryTypeUnionAdjacentBoolean(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentBoolean.fromJsonString(String input) {
@@ -2441,7 +2540,10 @@ class ObjectWithEveryTypeUnionAdjacentBoolean
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"kind": kind, "data": data};
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
     return _output_;
   }
 
@@ -2453,18 +2555,23 @@ class ObjectWithEveryTypeUnionAdjacentBoolean
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentBoolean.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentBoolean.");
     return "";
   }
 
   @override
-  ObjectWithEveryTypeUnionAdjacentBoolean copyWith({bool? data}) {
-    return ObjectWithEveryTypeUnionAdjacentBoolean(data: data ?? this.data);
+  ObjectWithEveryTypeUnionAdjacentBoolean copyWith({
+    bool? data,
+  }) {
+    return ObjectWithEveryTypeUnionAdjacentBoolean(
+      data: data ?? this.data,
+    );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2484,28 +2591,31 @@ class ObjectWithEveryTypeUnionAdjacentBoolean
 class ObjectWithEveryTypeUnionAdjacentNullableTimestamp
     implements ObjectWithEveryTypeUnionAdjacent {
   final DateTime? data;
-  const ObjectWithEveryTypeUnionAdjacentNullableTimestamp({required this.data});
+  const ObjectWithEveryTypeUnionAdjacentNullableTimestamp({
+    required this.data,
+  });
 
   @override
   String get kind => "nullable-timestamp";
 
   factory ObjectWithEveryTypeUnionAdjacentNullableTimestamp.empty() {
-    return ObjectWithEveryTypeUnionAdjacentNullableTimestamp(data: null);
+    return ObjectWithEveryTypeUnionAdjacentNullableTimestamp(
+      data: null,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentNullableTimestamp.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = nullableDateTimeFromDynamic(_input_["data"]);
-    return ObjectWithEveryTypeUnionAdjacentNullableTimestamp(data: data);
+    return ObjectWithEveryTypeUnionAdjacentNullableTimestamp(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentNullableTimestamp.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryTypeUnionAdjacentNullableTimestamp.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -2525,8 +2635,7 @@ class ObjectWithEveryTypeUnionAdjacentNullableTimestamp
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentNullableTimestamp.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentNullableTimestamp.");
     return "";
   }
 
@@ -2540,7 +2649,9 @@ class ObjectWithEveryTypeUnionAdjacentNullableTimestamp
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2566,28 +2677,34 @@ class ObjectWithEveryTypeUnionAdjacentObjectData implements ArriModel {
   });
 
   factory ObjectWithEveryTypeUnionAdjacentObjectData.empty() {
-    return ObjectWithEveryTypeUnionAdjacentObjectData(id: "", content: "");
+    return ObjectWithEveryTypeUnionAdjacentObjectData(
+      id: "",
+      content: "",
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentObjectData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
-    return ObjectWithEveryTypeUnionAdjacentObjectData(id: id, content: content);
+    return ObjectWithEveryTypeUnionAdjacentObjectData(
+      id: id,
+      content: content,
+    );
   }
 
   factory ObjectWithEveryTypeUnionAdjacentObjectData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryTypeUnionAdjacentObjectData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "content": content};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "content": content,
+    };
 
     return _output_;
   }
@@ -2617,7 +2734,10 @@ class ObjectWithEveryTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, content];
+  List<Object?> get props => [
+        id,
+        content,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2653,8 +2773,7 @@ class ObjectWithEveryTypeNestedObject implements ArriModel {
   }
 
   factory ObjectWithEveryTypeNestedObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
@@ -2693,8 +2812,7 @@ class ObjectWithEveryTypeNestedObject implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.");
     return _queryParts_.join("&");
   }
 
@@ -2712,7 +2830,11 @@ class ObjectWithEveryTypeNestedObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp, data];
+  List<Object?> get props => [
+        id,
+        timestamp,
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2748,8 +2870,7 @@ class ObjectWithEveryTypeNestedObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryTypeNestedObjectData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
@@ -2788,8 +2909,7 @@ class ObjectWithEveryTypeNestedObjectData implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.");
     return _queryParts_.join("&");
   }
 
@@ -2807,7 +2927,11 @@ class ObjectWithEveryTypeNestedObjectData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp, data];
+  List<Object?> get props => [
+        id,
+        timestamp,
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2840,8 +2964,7 @@ class ObjectWithEveryTypeNestedObjectDataData implements ArriModel {
   }
 
   factory ObjectWithEveryTypeNestedObjectDataData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return ObjectWithEveryTypeNestedObjectDataData(
@@ -2889,7 +3012,10 @@ class ObjectWithEveryTypeNestedObjectDataData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp];
+  List<Object?> get props => [
+        id,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -2922,8 +3048,7 @@ class ObjectWithEveryTypeNestedArrayElementElement implements ArriModel {
   }
 
   factory ObjectWithEveryTypeNestedArrayElementElement.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return ObjectWithEveryTypeNestedArrayElementElement(
@@ -2933,11 +3058,9 @@ class ObjectWithEveryTypeNestedArrayElementElement implements ArriModel {
   }
 
   factory ObjectWithEveryTypeNestedArrayElementElement.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryTypeNestedArrayElementElement.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -2975,7 +3098,10 @@ class ObjectWithEveryTypeNestedArrayElementElement implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp];
+  List<Object?> get props => [
+        id,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3020,15 +3146,13 @@ class ObjectWithKebabCaseKeys implements ArriModel {
   factory ObjectWithKebabCaseKeys.fromJson(Map<String, dynamic> _input_) {
     final createdAt = dateTimeFromDynamic(_input_["created-at"], DateTime(0));
     final displayName = typeFromDynamic<String>(_input_["display-name"], "");
-    final phoneNumber = nullableTypeFromDynamic<String>(
-      _input_["phone-number"],
-    );
+    final phoneNumber =
+        nullableTypeFromDynamic<String>(_input_["phone-number"]);
     final lastEvent = _input_["last-event"] is Map<String, dynamic>
         ? ObjectWithKebabCaseKeysLastEvent.fromJson(_input_["last-event"])
         : null;
-    final emailAddress = nullableTypeFromDynamic<String>(
-      _input_["email-address"],
-    );
+    final emailAddress =
+        nullableTypeFromDynamic<String>(_input_["email-address"]);
     final isAdmin = nullableTypeFromDynamic<bool>(_input_["is-admin"]);
     return ObjectWithKebabCaseKeys(
       createdAt: createdAt,
@@ -3069,8 +3193,7 @@ class ObjectWithKebabCaseKeys implements ArriModel {
     _queryParts_.add("display-name=$displayName");
     _queryParts_.add("phone-number=$phoneNumber");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.");
     if (emailAddress != null) _queryParts_.add("email-address=$emailAddress");
     if (isAdmin != null) _queryParts_.add("is-admin=$isAdmin");
     return _queryParts_.join("&");
@@ -3097,13 +3220,13 @@ class ObjectWithKebabCaseKeys implements ArriModel {
 
   @override
   List<Object?> get props => [
-    createdAt,
-    displayName,
-    phoneNumber,
-    lastEvent,
-    emailAddress,
-    isAdmin,
-  ];
+        createdAt,
+        displayName,
+        phoneNumber,
+        lastEvent,
+        emailAddress,
+        isAdmin,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3128,8 +3251,7 @@ sealed class ObjectWithKebabCaseKeysLastEvent implements ArriModel {
   }
 
   factory ObjectWithKebabCaseKeysLastEvent.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     if (_input_.containsKey("user-created")) {
       return ObjectWithKebabCaseKeysLastEventUserCreated.fromJson(_input_);
     }
@@ -3150,7 +3272,9 @@ sealed class ObjectWithKebabCaseKeysLastEvent implements ArriModel {
 class ObjectWithKebabCaseKeysLastEventUserCreated
     implements ObjectWithKebabCaseKeysLastEvent {
   final ObjectWithKebabCaseKeysLastEventUserCreatedValue value;
-  const ObjectWithKebabCaseKeysLastEventUserCreated({required this.value});
+  const ObjectWithKebabCaseKeysLastEventUserCreated({
+    required this.value,
+  });
 
   factory ObjectWithKebabCaseKeysLastEventUserCreated.empty() {
     return ObjectWithKebabCaseKeysLastEventUserCreated(
@@ -3159,27 +3283,27 @@ class ObjectWithKebabCaseKeysLastEventUserCreated
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserCreated.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["user-created"] is Map<String, dynamic>
         ? ObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJson(
-            _input_["user-created"],
-          )
+            _input_["user-created"])
         : ObjectWithKebabCaseKeysLastEventUserCreatedValue.empty();
-    return ObjectWithKebabCaseKeysLastEventUserCreated(value: value);
+    return ObjectWithKebabCaseKeysLastEventUserCreated(
+      value: value,
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserCreated.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithKebabCaseKeysLastEventUserCreated.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user-created": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "user-created": value.toJson(),
+    };
     return _output_;
   }
 
@@ -3191,8 +3315,7 @@ class ObjectWithKebabCaseKeysLastEventUserCreated
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserCreated.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserCreated.");
     return "";
   }
 
@@ -3206,7 +3329,9 @@ class ObjectWithKebabCaseKeysLastEventUserCreated
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3226,7 +3351,9 @@ class ObjectWithKebabCaseKeysLastEventUserCreated
 class ObjectWithKebabCaseKeysLastEventUserUpdated
     implements ObjectWithKebabCaseKeysLastEvent {
   final ObjectWithKebabCaseKeysLastEventUserUpdatedValue value;
-  const ObjectWithKebabCaseKeysLastEventUserUpdated({required this.value});
+  const ObjectWithKebabCaseKeysLastEventUserUpdated({
+    required this.value,
+  });
 
   factory ObjectWithKebabCaseKeysLastEventUserUpdated.empty() {
     return ObjectWithKebabCaseKeysLastEventUserUpdated(
@@ -3235,27 +3362,27 @@ class ObjectWithKebabCaseKeysLastEventUserUpdated
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserUpdated.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["user-updated"] is Map<String, dynamic>
         ? ObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJson(
-            _input_["user-updated"],
-          )
+            _input_["user-updated"])
         : ObjectWithKebabCaseKeysLastEventUserUpdatedValue.empty();
-    return ObjectWithKebabCaseKeysLastEventUserUpdated(value: value);
+    return ObjectWithKebabCaseKeysLastEventUserUpdated(
+      value: value,
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserUpdated.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithKebabCaseKeysLastEventUserUpdated.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user-updated": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "user-updated": value.toJson(),
+    };
     return _output_;
   }
 
@@ -3267,8 +3394,7 @@ class ObjectWithKebabCaseKeysLastEventUserUpdated
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserUpdated.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserUpdated.");
     return "";
   }
 
@@ -3282,7 +3408,9 @@ class ObjectWithKebabCaseKeysLastEventUserUpdated
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3302,7 +3430,9 @@ class ObjectWithKebabCaseKeysLastEventUserUpdated
 class ObjectWithKebabCaseKeysLastEventUserDeleted
     implements ObjectWithKebabCaseKeysLastEvent {
   final ObjectWithKebabCaseKeysLastEventUserDeletedValue value;
-  const ObjectWithKebabCaseKeysLastEventUserDeleted({required this.value});
+  const ObjectWithKebabCaseKeysLastEventUserDeleted({
+    required this.value,
+  });
 
   factory ObjectWithKebabCaseKeysLastEventUserDeleted.empty() {
     return ObjectWithKebabCaseKeysLastEventUserDeleted(
@@ -3311,27 +3441,27 @@ class ObjectWithKebabCaseKeysLastEventUserDeleted
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserDeleted.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["user-deleted"] is Map<String, dynamic>
         ? ObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJson(
-            _input_["user-deleted"],
-          )
+            _input_["user-deleted"])
         : ObjectWithKebabCaseKeysLastEventUserDeletedValue.empty();
-    return ObjectWithKebabCaseKeysLastEventUserDeleted(value: value);
+    return ObjectWithKebabCaseKeysLastEventUserDeleted(
+      value: value,
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserDeleted.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithKebabCaseKeysLastEventUserDeleted.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user-deleted": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "user-deleted": value.toJson(),
+    };
     return _output_;
   }
 
@@ -3343,8 +3473,7 @@ class ObjectWithKebabCaseKeysLastEventUserDeleted
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserDeleted.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserDeleted.");
     return "";
   }
 
@@ -3358,7 +3487,9 @@ class ObjectWithKebabCaseKeysLastEventUserDeleted
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3382,27 +3513,30 @@ class ObjectWithKebabCaseKeysLastEventUserCreatedValue implements ArriModel {
   });
 
   factory ObjectWithKebabCaseKeysLastEventUserCreatedValue.empty() {
-    return ObjectWithKebabCaseKeysLastEventUserCreatedValue(userId: "");
+    return ObjectWithKebabCaseKeysLastEventUserCreatedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user-id"], "");
-    return ObjectWithKebabCaseKeysLastEventUserCreatedValue(userId: userId);
+    return ObjectWithKebabCaseKeysLastEventUserCreatedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user-id": userId};
+    final _output_ = <String, dynamic>{
+      "user-id": userId,
+    };
 
     return _output_;
   }
@@ -3420,14 +3554,18 @@ class ObjectWithKebabCaseKeysLastEventUserCreatedValue implements ArriModel {
   }
 
   @override
-  ObjectWithKebabCaseKeysLastEventUserCreatedValue copyWith({String? userId}) {
+  ObjectWithKebabCaseKeysLastEventUserCreatedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithKebabCaseKeysLastEventUserCreatedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3451,27 +3589,30 @@ class ObjectWithKebabCaseKeysLastEventUserUpdatedValue implements ArriModel {
   });
 
   factory ObjectWithKebabCaseKeysLastEventUserUpdatedValue.empty() {
-    return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(userId: "");
+    return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user-id"], "");
-    return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(userId: userId);
+    return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user-id": userId};
+    final _output_ = <String, dynamic>{
+      "user-id": userId,
+    };
 
     return _output_;
   }
@@ -3489,14 +3630,18 @@ class ObjectWithKebabCaseKeysLastEventUserUpdatedValue implements ArriModel {
   }
 
   @override
-  ObjectWithKebabCaseKeysLastEventUserUpdatedValue copyWith({String? userId}) {
+  ObjectWithKebabCaseKeysLastEventUserUpdatedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3520,27 +3665,30 @@ class ObjectWithKebabCaseKeysLastEventUserDeletedValue implements ArriModel {
   });
 
   factory ObjectWithKebabCaseKeysLastEventUserDeletedValue.empty() {
-    return ObjectWithKebabCaseKeysLastEventUserDeletedValue(userId: "");
+    return ObjectWithKebabCaseKeysLastEventUserDeletedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user-id"], "");
-    return ObjectWithKebabCaseKeysLastEventUserDeletedValue(userId: userId);
+    return ObjectWithKebabCaseKeysLastEventUserDeletedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user-id": userId};
+    final _output_ = <String, dynamic>{
+      "user-id": userId,
+    };
 
     return _output_;
   }
@@ -3558,14 +3706,18 @@ class ObjectWithKebabCaseKeysLastEventUserDeletedValue implements ArriModel {
   }
 
   @override
-  ObjectWithKebabCaseKeysLastEventUserDeletedValue copyWith({String? userId}) {
+  ObjectWithKebabCaseKeysLastEventUserDeletedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithKebabCaseKeysLastEventUserDeletedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3606,7 +3758,7 @@ class ObjectWithEveryNullableType implements ArriModel {
   final ObjectWithEveryNullableTypeUnionAdjacent? unionAdjacent;
   final ObjectWithEveryNullableTypeNestedObject? nestedObject;
   final List<List<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?
-  nestedArray;
+      nestedArray;
   const ObjectWithEveryNullableType({
     required this.any,
     required this.boolean,
@@ -3678,58 +3830,51 @@ class ObjectWithEveryNullableType implements ArriModel {
     final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
     final enumerator = _input_["enumerator"] is String
         ? ObjectWithEveryNullableTypeEnumerator.fromString(
-            _input_["enumerator"],
-          )
+            _input_["enumerator"])
         : null;
     final array = _input_["array"] is List
         ? (_input_["array"] as List)
-              .map((_el_) => nullableTypeFromDynamic<bool>(_el_))
-              .toList()
+            .map((_el_) => nullableTypeFromDynamic<bool>(_el_))
+            .toList()
         : null;
     final object = _input_["object"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeObject.fromJson(_input_["object"])
         : null;
     final record = _input_["record"] is Map<String, dynamic>
         ? (_input_["record"] as Map<String, dynamic>).map(
-            (_key_, _val_) => MapEntry(_key_, nullableBigIntFromDynamic(_val_)),
+            (_key_, _val_) => MapEntry(
+              _key_,
+              nullableBigIntFromDynamic(_val_),
+            ),
           )
         : null;
     final unionExternal = _input_["unionExternal"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeUnionExternal.fromJson(
-            _input_["unionExternal"],
-          )
+            _input_["unionExternal"])
         : null;
     final unionInternal = _input_["unionInternal"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeUnionInternal.fromJson(
-            _input_["unionInternal"],
-          )
+            _input_["unionInternal"])
         : null;
     final unionAdjacent = _input_["unionAdjacent"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeUnionAdjacent.fromJson(
-            _input_["unionAdjacent"],
-          )
+            _input_["unionAdjacent"])
         : null;
     final nestedObject = _input_["nestedObject"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeNestedObject.fromJson(
-            _input_["nestedObject"],
-          )
+            _input_["nestedObject"])
         : null;
     final nestedArray = _input_["nestedArray"] is List
         ? (_input_["nestedArray"] as List)
-              .map(
-                (_el_) => _el_ is List
-                    ? (_el_ as List)
-                          .map(
-                            (_el_) => _el_ is Map<String, dynamic>
-                                ? ObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
-                                    _el_,
-                                  )
-                                : null,
-                          )
-                          .toList()
-                    : null,
-              )
-              .toList()
+            .map((_el_) => _el_ is List
+                ? (_el_ as List)
+                    .map((_el_) => _el_ is Map<String, dynamic>
+                        ? ObjectWithEveryNullableTypeNestedArrayElementElement
+                            .fromJson(_el_)
+                        : null)
+                    .toList()
+                : null)
+            .toList()
         : null;
     return ObjectWithEveryNullableType(
       any: any,
@@ -3783,7 +3928,10 @@ class ObjectWithEveryNullableType implements ArriModel {
       "array": array?.map((_el_) => _el_).toList(),
       "object": object?.toJson(),
       "record": record?.map(
-        (_key_, _val_) => MapEntry(_key_, _val_?.toString()),
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_?.toString(),
+        ),
       ),
       "unionExternal": unionExternal?.toJson(),
       "unionInternal": unionInternal?.toJson(),
@@ -3806,8 +3954,7 @@ class ObjectWithEveryNullableType implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-      "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/any.",
-    );
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/any.");
     _queryParts_.add("boolean=$boolean");
     _queryParts_.add("string=$string");
     _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
@@ -3823,29 +3970,21 @@ class ObjectWithEveryNullableType implements ArriModel {
     _queryParts_.add("uint64=$uint64");
     _queryParts_.add("enumerator=${enumerator?.serialValue}");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.");
     return _queryParts_.join("&");
   }
 
@@ -3874,8 +4013,8 @@ class ObjectWithEveryNullableType implements ArriModel {
     ObjectWithEveryNullableTypeUnionAdjacent? Function()? unionAdjacent,
     ObjectWithEveryNullableTypeNestedObject? Function()? nestedObject,
     List<List<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?
-    Function()?
-    nestedArray,
+            Function()?
+        nestedArray,
   }) {
     return ObjectWithEveryNullableType(
       any: any != null ? any() : this.any,
@@ -3896,15 +4035,12 @@ class ObjectWithEveryNullableType implements ArriModel {
       array: array != null ? array() : this.array,
       object: object != null ? object() : this.object,
       record: record != null ? record() : this.record,
-      unionExternal: unionExternal != null
-          ? unionExternal()
-          : this.unionExternal,
-      unionInternal: unionInternal != null
-          ? unionInternal()
-          : this.unionInternal,
-      unionAdjacent: unionAdjacent != null
-          ? unionAdjacent()
-          : this.unionAdjacent,
+      unionExternal:
+          unionExternal != null ? unionExternal() : this.unionExternal,
+      unionInternal:
+          unionInternal != null ? unionInternal() : this.unionInternal,
+      unionAdjacent:
+          unionAdjacent != null ? unionAdjacent() : this.unionAdjacent,
       nestedObject: nestedObject != null ? nestedObject() : this.nestedObject,
       nestedArray: nestedArray != null ? nestedArray() : this.nestedArray,
     );
@@ -3912,30 +4048,30 @@ class ObjectWithEveryNullableType implements ArriModel {
 
   @override
   List<Object?> get props => [
-    any,
-    boolean,
-    string,
-    timestamp,
-    float32,
-    float64,
-    int8,
-    uint8,
-    int16,
-    uint16,
-    int32,
-    uint32,
-    int64,
-    uint64,
-    enumerator,
-    array,
-    object,
-    record,
-    unionExternal,
-    unionInternal,
-    unionAdjacent,
-    nestedObject,
-    nestedArray,
-  ];
+        any,
+        boolean,
+        string,
+        timestamp,
+        float32,
+        float64,
+        int8,
+        uint8,
+        int16,
+        uint16,
+        int32,
+        uint32,
+        int64,
+        uint64,
+        enumerator,
+        array,
+        object,
+        record,
+        unionExternal,
+        unionInternal,
+        unionAdjacent,
+        nestedObject,
+        nestedArray,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -3994,8 +4130,7 @@ class ObjectWithEveryNullableTypeObject implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final string = nullableTypeFromDynamic<String>(_input_["string"]);
     final boolean = nullableTypeFromDynamic<bool>(_input_["boolean"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
@@ -4049,7 +4184,11 @@ class ObjectWithEveryNullableTypeObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [string, boolean, timestamp];
+  List<Object?> get props => [
+        string,
+        boolean,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4074,8 +4213,7 @@ sealed class ObjectWithEveryNullableTypeUnionExternal implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionExternal.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     if (_input_.containsKey("object")) {
       return ObjectWithEveryNullableTypeUnionExternalObject.fromJson(_input_);
     }
@@ -4087,25 +4225,24 @@ sealed class ObjectWithEveryNullableTypeUnionExternal implements ArriModel {
     }
     if (_input_.containsKey("nullable-timestamp")) {
       return ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.fromJson(
-        _input_,
-      );
+          _input_);
     }
     return ObjectWithEveryNullableTypeUnionExternal.empty();
   }
 
   factory ObjectWithEveryNullableTypeUnionExternal.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionExternal.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
 class ObjectWithEveryNullableTypeUnionExternalObject
     implements ObjectWithEveryNullableTypeUnionExternal {
   final ObjectWithEveryNullableTypeUnionExternalObjectValue value;
-  const ObjectWithEveryNullableTypeUnionExternalObject({required this.value});
+  const ObjectWithEveryNullableTypeUnionExternalObject({
+    required this.value,
+  });
 
   factory ObjectWithEveryNullableTypeUnionExternalObject.empty() {
     return ObjectWithEveryNullableTypeUnionExternalObject(
@@ -4114,27 +4251,27 @@ class ObjectWithEveryNullableTypeUnionExternalObject
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["object"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeUnionExternalObjectValue.fromJson(
-            _input_["object"],
-          )
+            _input_["object"])
         : ObjectWithEveryNullableTypeUnionExternalObjectValue.empty();
-    return ObjectWithEveryNullableTypeUnionExternalObject(value: value);
+    return ObjectWithEveryNullableTypeUnionExternalObject(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalObject.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionExternalObject.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"object": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "object": value.toJson(),
+    };
     return _output_;
   }
 
@@ -4146,8 +4283,7 @@ class ObjectWithEveryNullableTypeUnionExternalObject
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalObject.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalObject.");
     return "";
   }
 
@@ -4161,7 +4297,9 @@ class ObjectWithEveryNullableTypeUnionExternalObject
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4181,29 +4319,32 @@ class ObjectWithEveryNullableTypeUnionExternalObject
 class ObjectWithEveryNullableTypeUnionExternalArray
     implements ObjectWithEveryNullableTypeUnionExternal {
   final List<String> value;
-  const ObjectWithEveryNullableTypeUnionExternalArray({required this.value});
+  const ObjectWithEveryNullableTypeUnionExternalArray({
+    required this.value,
+  });
 
   factory ObjectWithEveryNullableTypeUnionExternalArray.empty() {
-    return ObjectWithEveryNullableTypeUnionExternalArray(value: []);
+    return ObjectWithEveryNullableTypeUnionExternalArray(
+      value: [],
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalArray.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["array"] is List
         ? (_input_["array"] as List)
-              .map((_el_) => typeFromDynamic<String>(_el_, ""))
-              .toList()
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
         : <String>[];
-    return ObjectWithEveryNullableTypeUnionExternalArray(value: value);
+    return ObjectWithEveryNullableTypeUnionExternalArray(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalArray.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionExternalArray.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -4222,8 +4363,7 @@ class ObjectWithEveryNullableTypeUnionExternalArray
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalArray.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalArray.");
     return "";
   }
 
@@ -4237,7 +4377,9 @@ class ObjectWithEveryNullableTypeUnionExternalArray
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4257,30 +4399,35 @@ class ObjectWithEveryNullableTypeUnionExternalArray
 class ObjectWithEveryNullableTypeUnionExternalBoolean
     implements ObjectWithEveryNullableTypeUnionExternal {
   final bool value;
-  const ObjectWithEveryNullableTypeUnionExternalBoolean({required this.value});
+  const ObjectWithEveryNullableTypeUnionExternalBoolean({
+    required this.value,
+  });
 
   factory ObjectWithEveryNullableTypeUnionExternalBoolean.empty() {
-    return ObjectWithEveryNullableTypeUnionExternalBoolean(value: false);
+    return ObjectWithEveryNullableTypeUnionExternalBoolean(
+      value: false,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalBoolean.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = typeFromDynamic<bool>(_input_["boolean"], false);
-    return ObjectWithEveryNullableTypeUnionExternalBoolean(value: value);
+    return ObjectWithEveryNullableTypeUnionExternalBoolean(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalBoolean.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionExternalBoolean.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"boolean": value};
+    final _output_ = <String, dynamic>{
+      "boolean": value,
+    };
     return _output_;
   }
 
@@ -4292,20 +4439,23 @@ class ObjectWithEveryNullableTypeUnionExternalBoolean
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalBoolean.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalBoolean.");
     return "";
   }
 
   @override
-  ObjectWithEveryNullableTypeUnionExternalBoolean copyWith({bool? value}) {
+  ObjectWithEveryNullableTypeUnionExternalBoolean copyWith({
+    bool? value,
+  }) {
     return ObjectWithEveryNullableTypeUnionExternalBoolean(
       value: value ?? this.value,
     );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4336,8 +4486,7 @@ class ObjectWithEveryNullableTypeUnionExternalNullableTimestamp
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = nullableDateTimeFromDynamic(_input_["nullable-timestamp"]);
     return ObjectWithEveryNullableTypeUnionExternalNullableTimestamp(
       value: value,
@@ -4345,11 +4494,9 @@ class ObjectWithEveryNullableTypeUnionExternalNullableTimestamp
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -4368,8 +4515,7 @@ class ObjectWithEveryNullableTypeUnionExternalNullableTimestamp
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.");
     return "";
   }
 
@@ -4383,7 +4529,9 @@ class ObjectWithEveryNullableTypeUnionExternalNullableTimestamp
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4416,8 +4564,7 @@ class ObjectWithEveryNullableTypeUnionExternalObjectValue implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalObjectValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
     return ObjectWithEveryNullableTypeUnionExternalObjectValue(
@@ -4427,16 +4574,17 @@ class ObjectWithEveryNullableTypeUnionExternalObjectValue implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionExternalObjectValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionExternalObjectValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "content": content};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "content": content,
+    };
 
     return _output_;
   }
@@ -4466,7 +4614,10 @@ class ObjectWithEveryNullableTypeUnionExternalObjectValue implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, content];
+  List<Object?> get props => [
+        id,
+        content,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4492,14 +4643,12 @@ sealed class ObjectWithEveryNullableTypeUnionInternal implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionInternal.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final shape = typeFromDynamic<String>(_input_["shape"], "");
     switch (shape) {
       case "rectangle":
         return ObjectWithEveryNullableTypeUnionInternalRectangle.fromJson(
-          _input_,
-        );
+            _input_);
       case "circle":
         return ObjectWithEveryNullableTypeUnionInternalCircle.fromJson(_input_);
       default:
@@ -4508,11 +4657,9 @@ sealed class ObjectWithEveryNullableTypeUnionInternal implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionInternal.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionInternal.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
@@ -4536,8 +4683,7 @@ class ObjectWithEveryNullableTypeUnionInternalRectangle
   }
 
   factory ObjectWithEveryNullableTypeUnionInternalRectangle.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final width = doubleFromDynamic(_input_["width"], 0.0);
     final height = doubleFromDynamic(_input_["height"], 0.0);
     return ObjectWithEveryNullableTypeUnionInternalRectangle(
@@ -4547,11 +4693,9 @@ class ObjectWithEveryNullableTypeUnionInternalRectangle
   }
 
   factory ObjectWithEveryNullableTypeUnionInternalRectangle.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionInternalRectangle.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -4591,7 +4735,10 @@ class ObjectWithEveryNullableTypeUnionInternalRectangle
   }
 
   @override
-  List<Object?> get props => [width, height];
+  List<Object?> get props => [
+        width,
+        height,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4611,33 +4758,39 @@ class ObjectWithEveryNullableTypeUnionInternalRectangle
 class ObjectWithEveryNullableTypeUnionInternalCircle
     implements ObjectWithEveryNullableTypeUnionInternal {
   final double radius;
-  const ObjectWithEveryNullableTypeUnionInternalCircle({required this.radius});
+  const ObjectWithEveryNullableTypeUnionInternalCircle({
+    required this.radius,
+  });
 
   @override
   String get shape => "circle";
 
   factory ObjectWithEveryNullableTypeUnionInternalCircle.empty() {
-    return ObjectWithEveryNullableTypeUnionInternalCircle(radius: 0.0);
+    return ObjectWithEveryNullableTypeUnionInternalCircle(
+      radius: 0.0,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionInternalCircle.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final radius = doubleFromDynamic(_input_["radius"], 0.0);
-    return ObjectWithEveryNullableTypeUnionInternalCircle(radius: radius);
+    return ObjectWithEveryNullableTypeUnionInternalCircle(
+      radius: radius,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionInternalCircle.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionInternalCircle.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"shape": shape, "radius": radius};
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "radius": radius,
+    };
 
     return _output_;
   }
@@ -4656,14 +4809,18 @@ class ObjectWithEveryNullableTypeUnionInternalCircle
   }
 
   @override
-  ObjectWithEveryNullableTypeUnionInternalCircle copyWith({double? radius}) {
+  ObjectWithEveryNullableTypeUnionInternalCircle copyWith({
+    double? radius,
+  }) {
     return ObjectWithEveryNullableTypeUnionInternalCircle(
       radius: radius ?? this.radius,
     );
   }
 
   @override
-  List<Object?> get props => [radius];
+  List<Object?> get props => [
+        radius,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4689,8 +4846,7 @@ sealed class ObjectWithEveryNullableTypeUnionAdjacent implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacent.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final kind = typeFromDynamic<String>(_input_["kind"], "");
     switch (kind) {
       case "object":
@@ -4699,30 +4855,28 @@ sealed class ObjectWithEveryNullableTypeUnionAdjacent implements ArriModel {
         return ObjectWithEveryNullableTypeUnionAdjacentArray.fromJson(_input_);
       case "boolean":
         return ObjectWithEveryNullableTypeUnionAdjacentBoolean.fromJson(
-          _input_,
-        );
+            _input_);
       case "nullable-timestamp":
-        return ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.fromJson(
-          _input_,
-        );
+        return ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp
+            .fromJson(_input_);
       default:
         return ObjectWithEveryNullableTypeUnionAdjacent.empty();
     }
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacent.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionAdjacent.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
 class ObjectWithEveryNullableTypeUnionAdjacentObject
     implements ObjectWithEveryNullableTypeUnionAdjacent {
   final ObjectWithEveryNullableTypeUnionAdjacentObjectData data;
-  const ObjectWithEveryNullableTypeUnionAdjacentObject({required this.data});
+  const ObjectWithEveryNullableTypeUnionAdjacentObject({
+    required this.data,
+  });
 
   @override
   String get kind => "object";
@@ -4734,27 +4888,28 @@ class ObjectWithEveryNullableTypeUnionAdjacentObject
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = _input_["data"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeUnionAdjacentObjectData.fromJson(
-            _input_["data"],
-          )
+            _input_["data"])
         : ObjectWithEveryNullableTypeUnionAdjacentObjectData.empty();
-    return ObjectWithEveryNullableTypeUnionAdjacentObject(data: data);
+    return ObjectWithEveryNullableTypeUnionAdjacentObject(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentObject.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionAdjacentObject.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"kind": kind, "data": data.toJson()};
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
     return _output_;
   }
 
@@ -4766,8 +4921,7 @@ class ObjectWithEveryNullableTypeUnionAdjacentObject
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentObject.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentObject.");
     return "";
   }
 
@@ -4781,7 +4935,9 @@ class ObjectWithEveryNullableTypeUnionAdjacentObject
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4801,32 +4957,35 @@ class ObjectWithEveryNullableTypeUnionAdjacentObject
 class ObjectWithEveryNullableTypeUnionAdjacentArray
     implements ObjectWithEveryNullableTypeUnionAdjacent {
   final List<String> data;
-  const ObjectWithEveryNullableTypeUnionAdjacentArray({required this.data});
+  const ObjectWithEveryNullableTypeUnionAdjacentArray({
+    required this.data,
+  });
 
   @override
   String get kind => "array";
 
   factory ObjectWithEveryNullableTypeUnionAdjacentArray.empty() {
-    return ObjectWithEveryNullableTypeUnionAdjacentArray(data: []);
+    return ObjectWithEveryNullableTypeUnionAdjacentArray(
+      data: [],
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentArray.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = _input_["data"] is List
         ? (_input_["data"] as List)
-              .map((_el_) => typeFromDynamic<String>(_el_, ""))
-              .toList()
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
         : <String>[];
-    return ObjectWithEveryNullableTypeUnionAdjacentArray(data: data);
+    return ObjectWithEveryNullableTypeUnionAdjacentArray(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentArray.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionAdjacentArray.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -4846,20 +5005,23 @@ class ObjectWithEveryNullableTypeUnionAdjacentArray
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentArray.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentArray.");
     return "";
   }
 
   @override
-  ObjectWithEveryNullableTypeUnionAdjacentArray copyWith({List<String>? data}) {
+  ObjectWithEveryNullableTypeUnionAdjacentArray copyWith({
+    List<String>? data,
+  }) {
     return ObjectWithEveryNullableTypeUnionAdjacentArray(
       data: data ?? this.data,
     );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4879,33 +5041,39 @@ class ObjectWithEveryNullableTypeUnionAdjacentArray
 class ObjectWithEveryNullableTypeUnionAdjacentBoolean
     implements ObjectWithEveryNullableTypeUnionAdjacent {
   final bool data;
-  const ObjectWithEveryNullableTypeUnionAdjacentBoolean({required this.data});
+  const ObjectWithEveryNullableTypeUnionAdjacentBoolean({
+    required this.data,
+  });
 
   @override
   String get kind => "boolean";
 
   factory ObjectWithEveryNullableTypeUnionAdjacentBoolean.empty() {
-    return ObjectWithEveryNullableTypeUnionAdjacentBoolean(data: false);
+    return ObjectWithEveryNullableTypeUnionAdjacentBoolean(
+      data: false,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentBoolean.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = typeFromDynamic<bool>(_input_["data"], false);
-    return ObjectWithEveryNullableTypeUnionAdjacentBoolean(data: data);
+    return ObjectWithEveryNullableTypeUnionAdjacentBoolean(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentBoolean.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionAdjacentBoolean.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"kind": kind, "data": data};
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
     return _output_;
   }
 
@@ -4917,20 +5085,23 @@ class ObjectWithEveryNullableTypeUnionAdjacentBoolean
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentBoolean.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentBoolean.");
     return "";
   }
 
   @override
-  ObjectWithEveryNullableTypeUnionAdjacentBoolean copyWith({bool? data}) {
+  ObjectWithEveryNullableTypeUnionAdjacentBoolean copyWith({
+    bool? data,
+  }) {
     return ObjectWithEveryNullableTypeUnionAdjacentBoolean(
       data: data ?? this.data,
     );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -4964,8 +5135,7 @@ class ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = nullableDateTimeFromDynamic(_input_["data"]);
     return ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp(
       data: data,
@@ -4973,11 +5143,9 @@ class ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -4997,8 +5165,7 @@ class ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.");
     return "";
   }
 
@@ -5012,7 +5179,9 @@ class ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5045,8 +5214,7 @@ class ObjectWithEveryNullableTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentObjectData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
     return ObjectWithEveryNullableTypeUnionAdjacentObjectData(
@@ -5056,16 +5224,17 @@ class ObjectWithEveryNullableTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeUnionAdjacentObjectData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeUnionAdjacentObjectData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "content": content};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "content": content,
+    };
 
     return _output_;
   }
@@ -5095,7 +5264,10 @@ class ObjectWithEveryNullableTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, content];
+  List<Object?> get props => [
+        id,
+        content,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5131,8 +5303,7 @@ class ObjectWithEveryNullableTypeNestedObject implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeNestedObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = nullableTypeFromDynamic<String>(_input_["id"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
     final data = _input_["data"] is Map<String, dynamic>
@@ -5171,8 +5342,7 @@ class ObjectWithEveryNullableTypeNestedObject implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObject/data.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObject/data.");
     return _queryParts_.join("&");
   }
 
@@ -5190,7 +5360,11 @@ class ObjectWithEveryNullableTypeNestedObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp, data];
+  List<Object?> get props => [
+        id,
+        timestamp,
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5226,14 +5400,12 @@ class ObjectWithEveryNullableTypeNestedObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeNestedObjectData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = nullableTypeFromDynamic<String>(_input_["id"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
     final data = _input_["data"] is Map<String, dynamic>
         ? ObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
-            _input_["data"],
-          )
+            _input_["data"])
         : null;
     return ObjectWithEveryNullableTypeNestedObjectData(
       id: id,
@@ -5243,11 +5415,9 @@ class ObjectWithEveryNullableTypeNestedObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeNestedObjectData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeNestedObjectData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -5272,8 +5442,7 @@ class ObjectWithEveryNullableTypeNestedObjectData implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObjectData/data.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObjectData/data.");
     return _queryParts_.join("&");
   }
 
@@ -5291,7 +5460,11 @@ class ObjectWithEveryNullableTypeNestedObjectData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp, data];
+  List<Object?> get props => [
+        id,
+        timestamp,
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5324,8 +5497,7 @@ class ObjectWithEveryNullableTypeNestedObjectDataData implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = nullableTypeFromDynamic<String>(_input_["id"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
     return ObjectWithEveryNullableTypeNestedObjectDataData(
@@ -5335,11 +5507,9 @@ class ObjectWithEveryNullableTypeNestedObjectDataData implements ArriModel {
   }
 
   factory ObjectWithEveryNullableTypeNestedObjectDataData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -5377,7 +5547,10 @@ class ObjectWithEveryNullableTypeNestedObjectDataData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp];
+  List<Object?> get props => [
+        id,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5411,8 +5584,7 @@ class ObjectWithEveryNullableTypeNestedArrayElementElement
   }
 
   factory ObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = nullableTypeFromDynamic<String>(_input_["id"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
     return ObjectWithEveryNullableTypeNestedArrayElementElement(
@@ -5422,11 +5594,9 @@ class ObjectWithEveryNullableTypeNestedArrayElementElement
   }
 
   factory ObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -5464,7 +5634,10 @@ class ObjectWithEveryNullableTypeNestedArrayElementElement
   }
 
   @override
-  List<Object?> get props => [id, timestamp];
+  List<Object?> get props => [
+        id,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5513,9 +5686,8 @@ class ObjectWithPascalCaseKeys implements ArriModel {
     final lastEvent = _input_["LastEvent"] is Map<String, dynamic>
         ? ObjectWithPascalCaseKeysLastEvent.fromJson(_input_["LastEvent"])
         : null;
-    final emailAddress = nullableTypeFromDynamic<String>(
-      _input_["EmailAddress"],
-    );
+    final emailAddress =
+        nullableTypeFromDynamic<String>(_input_["EmailAddress"]);
     final isAdmin = nullableTypeFromDynamic<bool>(_input_["IsAdmin"]);
     return ObjectWithPascalCaseKeys(
       createdAt: createdAt,
@@ -5556,8 +5728,7 @@ class ObjectWithPascalCaseKeys implements ArriModel {
     _queryParts_.add("DisplayName=$displayName");
     _queryParts_.add("PhoneNumber=$phoneNumber");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.");
     if (emailAddress != null) _queryParts_.add("EmailAddress=$emailAddress");
     if (isAdmin != null) _queryParts_.add("IsAdmin=$isAdmin");
     return _queryParts_.join("&");
@@ -5584,13 +5755,13 @@ class ObjectWithPascalCaseKeys implements ArriModel {
 
   @override
   List<Object?> get props => [
-    createdAt,
-    displayName,
-    phoneNumber,
-    lastEvent,
-    emailAddress,
-    isAdmin,
-  ];
+        createdAt,
+        displayName,
+        phoneNumber,
+        lastEvent,
+        emailAddress,
+        isAdmin,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5615,8 +5786,7 @@ sealed class ObjectWithPascalCaseKeysLastEvent implements ArriModel {
   }
 
   factory ObjectWithPascalCaseKeysLastEvent.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     if (_input_.containsKey("UserCreated")) {
       return ObjectWithPascalCaseKeysLastEventUserCreated.fromJson(_input_);
     }
@@ -5637,7 +5807,9 @@ sealed class ObjectWithPascalCaseKeysLastEvent implements ArriModel {
 class ObjectWithPascalCaseKeysLastEventUserCreated
     implements ObjectWithPascalCaseKeysLastEvent {
   final ObjectWithPascalCaseKeysLastEventUserCreatedValue value;
-  const ObjectWithPascalCaseKeysLastEventUserCreated({required this.value});
+  const ObjectWithPascalCaseKeysLastEventUserCreated({
+    required this.value,
+  });
 
   factory ObjectWithPascalCaseKeysLastEventUserCreated.empty() {
     return ObjectWithPascalCaseKeysLastEventUserCreated(
@@ -5646,27 +5818,27 @@ class ObjectWithPascalCaseKeysLastEventUserCreated
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserCreated.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["UserCreated"] is Map<String, dynamic>
         ? ObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJson(
-            _input_["UserCreated"],
-          )
+            _input_["UserCreated"])
         : ObjectWithPascalCaseKeysLastEventUserCreatedValue.empty();
-    return ObjectWithPascalCaseKeysLastEventUserCreated(value: value);
+    return ObjectWithPascalCaseKeysLastEventUserCreated(
+      value: value,
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserCreated.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithPascalCaseKeysLastEventUserCreated.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"UserCreated": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "UserCreated": value.toJson(),
+    };
     return _output_;
   }
 
@@ -5678,8 +5850,7 @@ class ObjectWithPascalCaseKeysLastEventUserCreated
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserCreated.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserCreated.");
     return "";
   }
 
@@ -5693,7 +5864,9 @@ class ObjectWithPascalCaseKeysLastEventUserCreated
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5713,7 +5886,9 @@ class ObjectWithPascalCaseKeysLastEventUserCreated
 class ObjectWithPascalCaseKeysLastEventUserUpdated
     implements ObjectWithPascalCaseKeysLastEvent {
   final ObjectWithPascalCaseKeysLastEventUserUpdatedValue value;
-  const ObjectWithPascalCaseKeysLastEventUserUpdated({required this.value});
+  const ObjectWithPascalCaseKeysLastEventUserUpdated({
+    required this.value,
+  });
 
   factory ObjectWithPascalCaseKeysLastEventUserUpdated.empty() {
     return ObjectWithPascalCaseKeysLastEventUserUpdated(
@@ -5722,27 +5897,27 @@ class ObjectWithPascalCaseKeysLastEventUserUpdated
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserUpdated.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["UserUpdated"] is Map<String, dynamic>
         ? ObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJson(
-            _input_["UserUpdated"],
-          )
+            _input_["UserUpdated"])
         : ObjectWithPascalCaseKeysLastEventUserUpdatedValue.empty();
-    return ObjectWithPascalCaseKeysLastEventUserUpdated(value: value);
+    return ObjectWithPascalCaseKeysLastEventUserUpdated(
+      value: value,
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserUpdated.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithPascalCaseKeysLastEventUserUpdated.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"UserUpdated": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "UserUpdated": value.toJson(),
+    };
     return _output_;
   }
 
@@ -5754,8 +5929,7 @@ class ObjectWithPascalCaseKeysLastEventUserUpdated
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserUpdated.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserUpdated.");
     return "";
   }
 
@@ -5769,7 +5943,9 @@ class ObjectWithPascalCaseKeysLastEventUserUpdated
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5789,7 +5965,9 @@ class ObjectWithPascalCaseKeysLastEventUserUpdated
 class ObjectWithPascalCaseKeysLastEventUserDeleted
     implements ObjectWithPascalCaseKeysLastEvent {
   final ObjectWithPascalCaseKeysLastEventUserDeletedValue value;
-  const ObjectWithPascalCaseKeysLastEventUserDeleted({required this.value});
+  const ObjectWithPascalCaseKeysLastEventUserDeleted({
+    required this.value,
+  });
 
   factory ObjectWithPascalCaseKeysLastEventUserDeleted.empty() {
     return ObjectWithPascalCaseKeysLastEventUserDeleted(
@@ -5798,27 +5976,27 @@ class ObjectWithPascalCaseKeysLastEventUserDeleted
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserDeleted.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["UserDeleted"] is Map<String, dynamic>
         ? ObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJson(
-            _input_["UserDeleted"],
-          )
+            _input_["UserDeleted"])
         : ObjectWithPascalCaseKeysLastEventUserDeletedValue.empty();
-    return ObjectWithPascalCaseKeysLastEventUserDeleted(value: value);
+    return ObjectWithPascalCaseKeysLastEventUserDeleted(
+      value: value,
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserDeleted.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithPascalCaseKeysLastEventUserDeleted.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"UserDeleted": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "UserDeleted": value.toJson(),
+    };
     return _output_;
   }
 
@@ -5830,8 +6008,7 @@ class ObjectWithPascalCaseKeysLastEventUserDeleted
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserDeleted.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserDeleted.");
     return "";
   }
 
@@ -5845,7 +6022,9 @@ class ObjectWithPascalCaseKeysLastEventUserDeleted
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5869,27 +6048,30 @@ class ObjectWithPascalCaseKeysLastEventUserCreatedValue implements ArriModel {
   });
 
   factory ObjectWithPascalCaseKeysLastEventUserCreatedValue.empty() {
-    return ObjectWithPascalCaseKeysLastEventUserCreatedValue(userId: "");
+    return ObjectWithPascalCaseKeysLastEventUserCreatedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["UserId"], "");
-    return ObjectWithPascalCaseKeysLastEventUserCreatedValue(userId: userId);
+    return ObjectWithPascalCaseKeysLastEventUserCreatedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"UserId": userId};
+    final _output_ = <String, dynamic>{
+      "UserId": userId,
+    };
 
     return _output_;
   }
@@ -5907,14 +6089,18 @@ class ObjectWithPascalCaseKeysLastEventUserCreatedValue implements ArriModel {
   }
 
   @override
-  ObjectWithPascalCaseKeysLastEventUserCreatedValue copyWith({String? userId}) {
+  ObjectWithPascalCaseKeysLastEventUserCreatedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithPascalCaseKeysLastEventUserCreatedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -5938,27 +6124,30 @@ class ObjectWithPascalCaseKeysLastEventUserUpdatedValue implements ArriModel {
   });
 
   factory ObjectWithPascalCaseKeysLastEventUserUpdatedValue.empty() {
-    return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(userId: "");
+    return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["UserId"], "");
-    return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(userId: userId);
+    return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"UserId": userId};
+    final _output_ = <String, dynamic>{
+      "UserId": userId,
+    };
 
     return _output_;
   }
@@ -5976,14 +6165,18 @@ class ObjectWithPascalCaseKeysLastEventUserUpdatedValue implements ArriModel {
   }
 
   @override
-  ObjectWithPascalCaseKeysLastEventUserUpdatedValue copyWith({String? userId}) {
+  ObjectWithPascalCaseKeysLastEventUserUpdatedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6007,27 +6200,30 @@ class ObjectWithPascalCaseKeysLastEventUserDeletedValue implements ArriModel {
   });
 
   factory ObjectWithPascalCaseKeysLastEventUserDeletedValue.empty() {
-    return ObjectWithPascalCaseKeysLastEventUserDeletedValue(userId: "");
+    return ObjectWithPascalCaseKeysLastEventUserDeletedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["UserId"], "");
-    return ObjectWithPascalCaseKeysLastEventUserDeletedValue(userId: userId);
+    return ObjectWithPascalCaseKeysLastEventUserDeletedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"UserId": userId};
+    final _output_ = <String, dynamic>{
+      "UserId": userId,
+    };
 
     return _output_;
   }
@@ -6045,14 +6241,18 @@ class ObjectWithPascalCaseKeysLastEventUserDeletedValue implements ArriModel {
   }
 
   @override
-  ObjectWithPascalCaseKeysLastEventUserDeletedValue copyWith({String? userId}) {
+  ObjectWithPascalCaseKeysLastEventUserDeletedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithPascalCaseKeysLastEventUserDeletedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6097,15 +6297,13 @@ class ObjectWithSnakeCaseKeys implements ArriModel {
   factory ObjectWithSnakeCaseKeys.fromJson(Map<String, dynamic> _input_) {
     final createdAt = dateTimeFromDynamic(_input_["created_at"], DateTime(0));
     final displayName = typeFromDynamic<String>(_input_["display_name"], "");
-    final phoneNumber = nullableTypeFromDynamic<String>(
-      _input_["phone_number"],
-    );
+    final phoneNumber =
+        nullableTypeFromDynamic<String>(_input_["phone_number"]);
     final lastEvent = _input_["last_event"] is Map<String, dynamic>
         ? ObjectWithSnakeCaseKeysLastEvent.fromJson(_input_["last_event"])
         : null;
-    final emailAddress = nullableTypeFromDynamic<String>(
-      _input_["email_address"],
-    );
+    final emailAddress =
+        nullableTypeFromDynamic<String>(_input_["email_address"]);
     final isAdmin = nullableTypeFromDynamic<bool>(_input_["is_admin"]);
     return ObjectWithSnakeCaseKeys(
       createdAt: createdAt,
@@ -6146,8 +6344,7 @@ class ObjectWithSnakeCaseKeys implements ArriModel {
     _queryParts_.add("display_name=$displayName");
     _queryParts_.add("phone_number=$phoneNumber");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.");
     if (emailAddress != null) _queryParts_.add("email_address=$emailAddress");
     if (isAdmin != null) _queryParts_.add("is_admin=$isAdmin");
     return _queryParts_.join("&");
@@ -6174,13 +6371,13 @@ class ObjectWithSnakeCaseKeys implements ArriModel {
 
   @override
   List<Object?> get props => [
-    createdAt,
-    displayName,
-    phoneNumber,
-    lastEvent,
-    emailAddress,
-    isAdmin,
-  ];
+        createdAt,
+        displayName,
+        phoneNumber,
+        lastEvent,
+        emailAddress,
+        isAdmin,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6205,8 +6402,7 @@ sealed class ObjectWithSnakeCaseKeysLastEvent implements ArriModel {
   }
 
   factory ObjectWithSnakeCaseKeysLastEvent.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     if (_input_.containsKey("user_created")) {
       return ObjectWithSnakeCaseKeysLastEventUserCreated.fromJson(_input_);
     }
@@ -6227,7 +6423,9 @@ sealed class ObjectWithSnakeCaseKeysLastEvent implements ArriModel {
 class ObjectWithSnakeCaseKeysLastEventUserCreated
     implements ObjectWithSnakeCaseKeysLastEvent {
   final ObjectWithSnakeCaseKeysLastEventUserCreatedValue value;
-  const ObjectWithSnakeCaseKeysLastEventUserCreated({required this.value});
+  const ObjectWithSnakeCaseKeysLastEventUserCreated({
+    required this.value,
+  });
 
   factory ObjectWithSnakeCaseKeysLastEventUserCreated.empty() {
     return ObjectWithSnakeCaseKeysLastEventUserCreated(
@@ -6236,27 +6434,27 @@ class ObjectWithSnakeCaseKeysLastEventUserCreated
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserCreated.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["user_created"] is Map<String, dynamic>
         ? ObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJson(
-            _input_["user_created"],
-          )
+            _input_["user_created"])
         : ObjectWithSnakeCaseKeysLastEventUserCreatedValue.empty();
-    return ObjectWithSnakeCaseKeysLastEventUserCreated(value: value);
+    return ObjectWithSnakeCaseKeysLastEventUserCreated(
+      value: value,
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserCreated.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithSnakeCaseKeysLastEventUserCreated.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user_created": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "user_created": value.toJson(),
+    };
     return _output_;
   }
 
@@ -6268,8 +6466,7 @@ class ObjectWithSnakeCaseKeysLastEventUserCreated
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserCreated.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserCreated.");
     return "";
   }
 
@@ -6283,7 +6480,9 @@ class ObjectWithSnakeCaseKeysLastEventUserCreated
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6303,7 +6502,9 @@ class ObjectWithSnakeCaseKeysLastEventUserCreated
 class ObjectWithSnakeCaseKeysLastEventUserUpdated
     implements ObjectWithSnakeCaseKeysLastEvent {
   final ObjectWithSnakeCaseKeysLastEventUserUpdatedValue value;
-  const ObjectWithSnakeCaseKeysLastEventUserUpdated({required this.value});
+  const ObjectWithSnakeCaseKeysLastEventUserUpdated({
+    required this.value,
+  });
 
   factory ObjectWithSnakeCaseKeysLastEventUserUpdated.empty() {
     return ObjectWithSnakeCaseKeysLastEventUserUpdated(
@@ -6312,27 +6513,27 @@ class ObjectWithSnakeCaseKeysLastEventUserUpdated
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserUpdated.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["user_updated"] is Map<String, dynamic>
         ? ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJson(
-            _input_["user_updated"],
-          )
+            _input_["user_updated"])
         : ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.empty();
-    return ObjectWithSnakeCaseKeysLastEventUserUpdated(value: value);
+    return ObjectWithSnakeCaseKeysLastEventUserUpdated(
+      value: value,
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserUpdated.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithSnakeCaseKeysLastEventUserUpdated.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user_updated": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "user_updated": value.toJson(),
+    };
     return _output_;
   }
 
@@ -6344,8 +6545,7 @@ class ObjectWithSnakeCaseKeysLastEventUserUpdated
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserUpdated.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserUpdated.");
     return "";
   }
 
@@ -6359,7 +6559,9 @@ class ObjectWithSnakeCaseKeysLastEventUserUpdated
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6379,7 +6581,9 @@ class ObjectWithSnakeCaseKeysLastEventUserUpdated
 class ObjectWithSnakeCaseKeysLastEventUserDeleted
     implements ObjectWithSnakeCaseKeysLastEvent {
   final ObjectWithSnakeCaseKeysLastEventUserDeletedValue value;
-  const ObjectWithSnakeCaseKeysLastEventUserDeleted({required this.value});
+  const ObjectWithSnakeCaseKeysLastEventUserDeleted({
+    required this.value,
+  });
 
   factory ObjectWithSnakeCaseKeysLastEventUserDeleted.empty() {
     return ObjectWithSnakeCaseKeysLastEventUserDeleted(
@@ -6388,27 +6592,27 @@ class ObjectWithSnakeCaseKeysLastEventUserDeleted
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserDeleted.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["user_deleted"] is Map<String, dynamic>
         ? ObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJson(
-            _input_["user_deleted"],
-          )
+            _input_["user_deleted"])
         : ObjectWithSnakeCaseKeysLastEventUserDeletedValue.empty();
-    return ObjectWithSnakeCaseKeysLastEventUserDeleted(value: value);
+    return ObjectWithSnakeCaseKeysLastEventUserDeleted(
+      value: value,
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserDeleted.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithSnakeCaseKeysLastEventUserDeleted.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user_deleted": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "user_deleted": value.toJson(),
+    };
     return _output_;
   }
 
@@ -6420,8 +6624,7 @@ class ObjectWithSnakeCaseKeysLastEventUserDeleted
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserDeleted.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserDeleted.");
     return "";
   }
 
@@ -6435,7 +6638,9 @@ class ObjectWithSnakeCaseKeysLastEventUserDeleted
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6459,27 +6664,30 @@ class ObjectWithSnakeCaseKeysLastEventUserCreatedValue implements ArriModel {
   });
 
   factory ObjectWithSnakeCaseKeysLastEventUserCreatedValue.empty() {
-    return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(userId: "");
+    return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user_id"], "");
-    return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(userId: userId);
+    return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user_id": userId};
+    final _output_ = <String, dynamic>{
+      "user_id": userId,
+    };
 
     return _output_;
   }
@@ -6497,14 +6705,18 @@ class ObjectWithSnakeCaseKeysLastEventUserCreatedValue implements ArriModel {
   }
 
   @override
-  ObjectWithSnakeCaseKeysLastEventUserCreatedValue copyWith({String? userId}) {
+  ObjectWithSnakeCaseKeysLastEventUserCreatedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6528,27 +6740,30 @@ class ObjectWithSnakeCaseKeysLastEventUserUpdatedValue implements ArriModel {
   });
 
   factory ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.empty() {
-    return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(userId: "");
+    return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user_id"], "");
-    return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(userId: userId);
+    return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user_id": userId};
+    final _output_ = <String, dynamic>{
+      "user_id": userId,
+    };
 
     return _output_;
   }
@@ -6566,14 +6781,18 @@ class ObjectWithSnakeCaseKeysLastEventUserUpdatedValue implements ArriModel {
   }
 
   @override
-  ObjectWithSnakeCaseKeysLastEventUserUpdatedValue copyWith({String? userId}) {
+  ObjectWithSnakeCaseKeysLastEventUserUpdatedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6597,27 +6816,30 @@ class ObjectWithSnakeCaseKeysLastEventUserDeletedValue implements ArriModel {
   });
 
   factory ObjectWithSnakeCaseKeysLastEventUserDeletedValue.empty() {
-    return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(userId: "");
+    return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+      userId: "",
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user_id"], "");
-    return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(userId: userId);
+    return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+      userId: userId,
+    );
   }
 
   factory ObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"user_id": userId};
+    final _output_ = <String, dynamic>{
+      "user_id": userId,
+    };
 
     return _output_;
   }
@@ -6635,14 +6857,18 @@ class ObjectWithSnakeCaseKeysLastEventUserDeletedValue implements ArriModel {
   }
 
   @override
-  ObjectWithSnakeCaseKeysLastEventUserDeletedValue copyWith({String? userId}) {
+  ObjectWithSnakeCaseKeysLastEventUserDeletedValue copyWith({
+    String? userId,
+  }) {
     return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(
       userId: userId ?? this.userId,
     );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -6683,7 +6909,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
   final ObjectWithEveryOptionalTypeUnionAdjacent? unionAdjacent;
   final ObjectWithEveryOptionalTypeNestedObject? nestedObject;
   final List<List<ObjectWithEveryOptionalTypeNestedArrayElementElement>>?
-  nestedArray;
+      nestedArray;
   const ObjectWithEveryOptionalType({
     this.any,
     this.boolean,
@@ -6731,59 +6957,52 @@ class ObjectWithEveryOptionalType implements ArriModel {
     final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
     final enumerator = _input_["enumerator"] is String
         ? ObjectWithEveryOptionalTypeEnumerator.fromString(
-            _input_["enumerator"],
-          )
+            _input_["enumerator"])
         : null;
     final array = _input_["array"] is List
         ? (_input_["array"] as List)
-              .map((_el_) => typeFromDynamic<bool>(_el_, false))
-              .toList()
+            .map((_el_) => typeFromDynamic<bool>(_el_, false))
+            .toList()
         : null;
     final object = _input_["object"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeObject.fromJson(_input_["object"])
         : null;
     final record = _input_["record"] is Map<String, dynamic>
         ? (_input_["record"] as Map<String, dynamic>).map(
-            (_key_, _val_) =>
-                MapEntry(_key_, bigIntFromDynamic(_val_, BigInt.zero)),
+            (_key_, _val_) => MapEntry(
+              _key_,
+              bigIntFromDynamic(_val_, BigInt.zero),
+            ),
           )
         : null;
     final unionExternal = _input_["unionExternal"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeUnionExternal.fromJson(
-            _input_["unionExternal"],
-          )
+            _input_["unionExternal"])
         : null;
     final unionInternal = _input_["unionInternal"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeUnionInternal.fromJson(
-            _input_["unionInternal"],
-          )
+            _input_["unionInternal"])
         : null;
     final unionAdjacent = _input_["unionAdjacent"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeUnionAdjacent.fromJson(
-            _input_["unionAdjacent"],
-          )
+            _input_["unionAdjacent"])
         : null;
     final nestedObject = _input_["nestedObject"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeNestedObject.fromJson(
-            _input_["nestedObject"],
-          )
+            _input_["nestedObject"])
         : null;
     final nestedArray = _input_["nestedArray"] is List
         ? (_input_["nestedArray"] as List)
-              .map(
-                (_el_) => _el_ is List
-                    ? (_el_ as List)
-                          .map(
-                            (_el_) => _el_ is Map<String, dynamic>
-                                ? ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
-                                    _el_,
-                                  )
-                                : ObjectWithEveryOptionalTypeNestedArrayElementElement.empty(),
-                          )
-                          .toList()
-                    : <ObjectWithEveryOptionalTypeNestedArrayElementElement>[],
-              )
-              .toList()
+            .map((_el_) => _el_ is List
+                ? (_el_ as List)
+                    .map((_el_) => _el_ is Map<String, dynamic>
+                        ? ObjectWithEveryOptionalTypeNestedArrayElementElement
+                            .fromJson(_el_)
+                        : ObjectWithEveryOptionalTypeNestedArrayElementElement
+                            .empty())
+                    .toList()
+                : <ObjectWithEveryOptionalTypeNestedArrayElementElement>[])
+            .toList()
         : null;
     return ObjectWithEveryOptionalType(
       any: any,
@@ -6839,7 +7058,10 @@ class ObjectWithEveryOptionalType implements ArriModel {
     if (object != null) _output_["object"] = object!.toJson();
     if (record != null)
       _output_["record"] = record!.map(
-        (_key_, _val_) => MapEntry(_key_, _val_.toString()),
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_.toString(),
+        ),
       );
     if (unionExternal != null)
       _output_["unionExternal"] = unionExternal!.toJson();
@@ -6864,8 +7086,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-      "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/any.",
-    );
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/any.");
     if (boolean != null) _queryParts_.add("boolean=$boolean");
     if (string != null) _queryParts_.add("string=$string");
     if (timestamp != null)
@@ -6883,29 +7104,21 @@ class ObjectWithEveryOptionalType implements ArriModel {
     if (enumerator != null)
       _queryParts_.add("enumerator=${enumerator!.serialValue}");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.");
     print(
-      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.",
-    );
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.");
     return _queryParts_.join("&");
   }
 
@@ -6934,8 +7147,8 @@ class ObjectWithEveryOptionalType implements ArriModel {
     ObjectWithEveryOptionalTypeUnionAdjacent? Function()? unionAdjacent,
     ObjectWithEveryOptionalTypeNestedObject? Function()? nestedObject,
     List<List<ObjectWithEveryOptionalTypeNestedArrayElementElement>>?
-    Function()?
-    nestedArray,
+            Function()?
+        nestedArray,
   }) {
     return ObjectWithEveryOptionalType(
       any: any != null ? any() : this.any,
@@ -6956,15 +7169,12 @@ class ObjectWithEveryOptionalType implements ArriModel {
       array: array != null ? array() : this.array,
       object: object != null ? object() : this.object,
       record: record != null ? record() : this.record,
-      unionExternal: unionExternal != null
-          ? unionExternal()
-          : this.unionExternal,
-      unionInternal: unionInternal != null
-          ? unionInternal()
-          : this.unionInternal,
-      unionAdjacent: unionAdjacent != null
-          ? unionAdjacent()
-          : this.unionAdjacent,
+      unionExternal:
+          unionExternal != null ? unionExternal() : this.unionExternal,
+      unionInternal:
+          unionInternal != null ? unionInternal() : this.unionInternal,
+      unionAdjacent:
+          unionAdjacent != null ? unionAdjacent() : this.unionAdjacent,
       nestedObject: nestedObject != null ? nestedObject() : this.nestedObject,
       nestedArray: nestedArray != null ? nestedArray() : this.nestedArray,
     );
@@ -6972,30 +7182,30 @@ class ObjectWithEveryOptionalType implements ArriModel {
 
   @override
   List<Object?> get props => [
-    any,
-    boolean,
-    string,
-    timestamp,
-    float32,
-    float64,
-    int8,
-    uint8,
-    int16,
-    uint16,
-    int32,
-    uint32,
-    int64,
-    uint64,
-    enumerator,
-    array,
-    object,
-    record,
-    unionExternal,
-    unionInternal,
-    unionAdjacent,
-    nestedObject,
-    nestedArray,
-  ];
+        any,
+        boolean,
+        string,
+        timestamp,
+        float32,
+        float64,
+        int8,
+        uint8,
+        int16,
+        uint16,
+        int32,
+        uint32,
+        int64,
+        uint64,
+        enumerator,
+        array,
+        object,
+        record,
+        unionExternal,
+        unionInternal,
+        unionAdjacent,
+        nestedObject,
+        nestedArray,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7054,8 +7264,7 @@ class ObjectWithEveryOptionalTypeObject implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
@@ -7109,7 +7318,11 @@ class ObjectWithEveryOptionalTypeObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [string, boolean, timestamp];
+  List<Object?> get props => [
+        string,
+        boolean,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7134,8 +7347,7 @@ sealed class ObjectWithEveryOptionalTypeUnionExternal implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternal.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     if (_input_.containsKey("object")) {
       return ObjectWithEveryOptionalTypeUnionExternalObject.fromJson(_input_);
     }
@@ -7147,25 +7359,24 @@ sealed class ObjectWithEveryOptionalTypeUnionExternal implements ArriModel {
     }
     if (_input_.containsKey("nullable-timestamp")) {
       return ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.fromJson(
-        _input_,
-      );
+          _input_);
     }
     return ObjectWithEveryOptionalTypeUnionExternal.empty();
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternal.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionExternal.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
 class ObjectWithEveryOptionalTypeUnionExternalObject
     implements ObjectWithEveryOptionalTypeUnionExternal {
   final ObjectWithEveryOptionalTypeUnionExternalObjectValue value;
-  const ObjectWithEveryOptionalTypeUnionExternalObject({required this.value});
+  const ObjectWithEveryOptionalTypeUnionExternalObject({
+    required this.value,
+  });
 
   factory ObjectWithEveryOptionalTypeUnionExternalObject.empty() {
     return ObjectWithEveryOptionalTypeUnionExternalObject(
@@ -7174,27 +7385,27 @@ class ObjectWithEveryOptionalTypeUnionExternalObject
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["object"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeUnionExternalObjectValue.fromJson(
-            _input_["object"],
-          )
+            _input_["object"])
         : ObjectWithEveryOptionalTypeUnionExternalObjectValue.empty();
-    return ObjectWithEveryOptionalTypeUnionExternalObject(value: value);
+    return ObjectWithEveryOptionalTypeUnionExternalObject(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalObject.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionExternalObject.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"object": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "object": value.toJson(),
+    };
     return _output_;
   }
 
@@ -7206,8 +7417,7 @@ class ObjectWithEveryOptionalTypeUnionExternalObject
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalObject.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalObject.");
     return "";
   }
 
@@ -7221,7 +7431,9 @@ class ObjectWithEveryOptionalTypeUnionExternalObject
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7241,29 +7453,32 @@ class ObjectWithEveryOptionalTypeUnionExternalObject
 class ObjectWithEveryOptionalTypeUnionExternalArray
     implements ObjectWithEveryOptionalTypeUnionExternal {
   final List<String> value;
-  const ObjectWithEveryOptionalTypeUnionExternalArray({required this.value});
+  const ObjectWithEveryOptionalTypeUnionExternalArray({
+    required this.value,
+  });
 
   factory ObjectWithEveryOptionalTypeUnionExternalArray.empty() {
-    return ObjectWithEveryOptionalTypeUnionExternalArray(value: []);
+    return ObjectWithEveryOptionalTypeUnionExternalArray(
+      value: [],
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalArray.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = _input_["array"] is List
         ? (_input_["array"] as List)
-              .map((_el_) => typeFromDynamic<String>(_el_, ""))
-              .toList()
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
         : <String>[];
-    return ObjectWithEveryOptionalTypeUnionExternalArray(value: value);
+    return ObjectWithEveryOptionalTypeUnionExternalArray(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalArray.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionExternalArray.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -7282,8 +7497,7 @@ class ObjectWithEveryOptionalTypeUnionExternalArray
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalArray.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalArray.");
     return "";
   }
 
@@ -7297,7 +7511,9 @@ class ObjectWithEveryOptionalTypeUnionExternalArray
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7317,30 +7533,35 @@ class ObjectWithEveryOptionalTypeUnionExternalArray
 class ObjectWithEveryOptionalTypeUnionExternalBoolean
     implements ObjectWithEveryOptionalTypeUnionExternal {
   final bool value;
-  const ObjectWithEveryOptionalTypeUnionExternalBoolean({required this.value});
+  const ObjectWithEveryOptionalTypeUnionExternalBoolean({
+    required this.value,
+  });
 
   factory ObjectWithEveryOptionalTypeUnionExternalBoolean.empty() {
-    return ObjectWithEveryOptionalTypeUnionExternalBoolean(value: false);
+    return ObjectWithEveryOptionalTypeUnionExternalBoolean(
+      value: false,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalBoolean.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = typeFromDynamic<bool>(_input_["boolean"], false);
-    return ObjectWithEveryOptionalTypeUnionExternalBoolean(value: value);
+    return ObjectWithEveryOptionalTypeUnionExternalBoolean(
+      value: value,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalBoolean.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionExternalBoolean.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"boolean": value};
+    final _output_ = <String, dynamic>{
+      "boolean": value,
+    };
     return _output_;
   }
 
@@ -7352,20 +7573,23 @@ class ObjectWithEveryOptionalTypeUnionExternalBoolean
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalBoolean.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalBoolean.");
     return "";
   }
 
   @override
-  ObjectWithEveryOptionalTypeUnionExternalBoolean copyWith({bool? value}) {
+  ObjectWithEveryOptionalTypeUnionExternalBoolean copyWith({
+    bool? value,
+  }) {
     return ObjectWithEveryOptionalTypeUnionExternalBoolean(
       value: value ?? this.value,
     );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7396,8 +7620,7 @@ class ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final value = nullableDateTimeFromDynamic(_input_["nullable-timestamp"]);
     return ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp(
       value: value,
@@ -7405,11 +7628,9 @@ class ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -7428,8 +7649,7 @@ class ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.");
     return "";
   }
 
@@ -7443,7 +7663,9 @@ class ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7476,8 +7698,7 @@ class ObjectWithEveryOptionalTypeUnionExternalObjectValue implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalObjectValue.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
     return ObjectWithEveryOptionalTypeUnionExternalObjectValue(
@@ -7487,16 +7708,17 @@ class ObjectWithEveryOptionalTypeUnionExternalObjectValue implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionExternalObjectValue.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionExternalObjectValue.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "content": content};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "content": content,
+    };
 
     return _output_;
   }
@@ -7526,7 +7748,10 @@ class ObjectWithEveryOptionalTypeUnionExternalObjectValue implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, content];
+  List<Object?> get props => [
+        id,
+        content,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7552,14 +7777,12 @@ sealed class ObjectWithEveryOptionalTypeUnionInternal implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionInternal.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final shape = typeFromDynamic<String>(_input_["shape"], "");
     switch (shape) {
       case "rectangle":
         return ObjectWithEveryOptionalTypeUnionInternalRectangle.fromJson(
-          _input_,
-        );
+            _input_);
       case "circle":
         return ObjectWithEveryOptionalTypeUnionInternalCircle.fromJson(_input_);
       default:
@@ -7568,11 +7791,9 @@ sealed class ObjectWithEveryOptionalTypeUnionInternal implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionInternal.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionInternal.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
@@ -7596,8 +7817,7 @@ class ObjectWithEveryOptionalTypeUnionInternalRectangle
   }
 
   factory ObjectWithEveryOptionalTypeUnionInternalRectangle.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final width = doubleFromDynamic(_input_["width"], 0.0);
     final height = doubleFromDynamic(_input_["height"], 0.0);
     return ObjectWithEveryOptionalTypeUnionInternalRectangle(
@@ -7607,11 +7827,9 @@ class ObjectWithEveryOptionalTypeUnionInternalRectangle
   }
 
   factory ObjectWithEveryOptionalTypeUnionInternalRectangle.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionInternalRectangle.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -7651,7 +7869,10 @@ class ObjectWithEveryOptionalTypeUnionInternalRectangle
   }
 
   @override
-  List<Object?> get props => [width, height];
+  List<Object?> get props => [
+        width,
+        height,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7671,33 +7892,39 @@ class ObjectWithEveryOptionalTypeUnionInternalRectangle
 class ObjectWithEveryOptionalTypeUnionInternalCircle
     implements ObjectWithEveryOptionalTypeUnionInternal {
   final double radius;
-  const ObjectWithEveryOptionalTypeUnionInternalCircle({required this.radius});
+  const ObjectWithEveryOptionalTypeUnionInternalCircle({
+    required this.radius,
+  });
 
   @override
   String get shape => "circle";
 
   factory ObjectWithEveryOptionalTypeUnionInternalCircle.empty() {
-    return ObjectWithEveryOptionalTypeUnionInternalCircle(radius: 0.0);
+    return ObjectWithEveryOptionalTypeUnionInternalCircle(
+      radius: 0.0,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionInternalCircle.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final radius = doubleFromDynamic(_input_["radius"], 0.0);
-    return ObjectWithEveryOptionalTypeUnionInternalCircle(radius: radius);
+    return ObjectWithEveryOptionalTypeUnionInternalCircle(
+      radius: radius,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionInternalCircle.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionInternalCircle.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"shape": shape, "radius": radius};
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "radius": radius,
+    };
 
     return _output_;
   }
@@ -7716,14 +7943,18 @@ class ObjectWithEveryOptionalTypeUnionInternalCircle
   }
 
   @override
-  ObjectWithEveryOptionalTypeUnionInternalCircle copyWith({double? radius}) {
+  ObjectWithEveryOptionalTypeUnionInternalCircle copyWith({
+    double? radius,
+  }) {
     return ObjectWithEveryOptionalTypeUnionInternalCircle(
       radius: radius ?? this.radius,
     );
   }
 
   @override
-  List<Object?> get props => [radius];
+  List<Object?> get props => [
+        radius,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7749,8 +7980,7 @@ sealed class ObjectWithEveryOptionalTypeUnionAdjacent implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacent.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final kind = typeFromDynamic<String>(_input_["kind"], "");
     switch (kind) {
       case "object":
@@ -7759,30 +7989,28 @@ sealed class ObjectWithEveryOptionalTypeUnionAdjacent implements ArriModel {
         return ObjectWithEveryOptionalTypeUnionAdjacentArray.fromJson(_input_);
       case "boolean":
         return ObjectWithEveryOptionalTypeUnionAdjacentBoolean.fromJson(
-          _input_,
-        );
+            _input_);
       case "nullable-timestamp":
-        return ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.fromJson(
-          _input_,
-        );
+        return ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp
+            .fromJson(_input_);
       default:
         return ObjectWithEveryOptionalTypeUnionAdjacent.empty();
     }
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacent.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionAdjacent.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
 class ObjectWithEveryOptionalTypeUnionAdjacentObject
     implements ObjectWithEveryOptionalTypeUnionAdjacent {
   final ObjectWithEveryOptionalTypeUnionAdjacentObjectData data;
-  const ObjectWithEveryOptionalTypeUnionAdjacentObject({required this.data});
+  const ObjectWithEveryOptionalTypeUnionAdjacentObject({
+    required this.data,
+  });
 
   @override
   String get kind => "object";
@@ -7794,27 +8022,28 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObject
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = _input_["data"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeUnionAdjacentObjectData.fromJson(
-            _input_["data"],
-          )
+            _input_["data"])
         : ObjectWithEveryOptionalTypeUnionAdjacentObjectData.empty();
-    return ObjectWithEveryOptionalTypeUnionAdjacentObject(data: data);
+    return ObjectWithEveryOptionalTypeUnionAdjacentObject(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentObject.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionAdjacentObject.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"kind": kind, "data": data.toJson()};
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
     return _output_;
   }
 
@@ -7826,8 +8055,7 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObject
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentObject.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentObject.");
     return "";
   }
 
@@ -7841,7 +8069,9 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObject
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7861,32 +8091,35 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObject
 class ObjectWithEveryOptionalTypeUnionAdjacentArray
     implements ObjectWithEveryOptionalTypeUnionAdjacent {
   final List<String> data;
-  const ObjectWithEveryOptionalTypeUnionAdjacentArray({required this.data});
+  const ObjectWithEveryOptionalTypeUnionAdjacentArray({
+    required this.data,
+  });
 
   @override
   String get kind => "array";
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentArray.empty() {
-    return ObjectWithEveryOptionalTypeUnionAdjacentArray(data: []);
+    return ObjectWithEveryOptionalTypeUnionAdjacentArray(
+      data: [],
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentArray.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = _input_["data"] is List
         ? (_input_["data"] as List)
-              .map((_el_) => typeFromDynamic<String>(_el_, ""))
-              .toList()
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
         : <String>[];
-    return ObjectWithEveryOptionalTypeUnionAdjacentArray(data: data);
+    return ObjectWithEveryOptionalTypeUnionAdjacentArray(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentArray.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionAdjacentArray.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -7906,20 +8139,23 @@ class ObjectWithEveryOptionalTypeUnionAdjacentArray
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentArray.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentArray.");
     return "";
   }
 
   @override
-  ObjectWithEveryOptionalTypeUnionAdjacentArray copyWith({List<String>? data}) {
+  ObjectWithEveryOptionalTypeUnionAdjacentArray copyWith({
+    List<String>? data,
+  }) {
     return ObjectWithEveryOptionalTypeUnionAdjacentArray(
       data: data ?? this.data,
     );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -7939,33 +8175,39 @@ class ObjectWithEveryOptionalTypeUnionAdjacentArray
 class ObjectWithEveryOptionalTypeUnionAdjacentBoolean
     implements ObjectWithEveryOptionalTypeUnionAdjacent {
   final bool data;
-  const ObjectWithEveryOptionalTypeUnionAdjacentBoolean({required this.data});
+  const ObjectWithEveryOptionalTypeUnionAdjacentBoolean({
+    required this.data,
+  });
 
   @override
   String get kind => "boolean";
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentBoolean.empty() {
-    return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(data: false);
+    return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(
+      data: false,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentBoolean.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = typeFromDynamic<bool>(_input_["data"], false);
-    return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(data: data);
+    return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(
+      data: data,
+    );
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentBoolean.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionAdjacentBoolean.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"kind": kind, "data": data};
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
     return _output_;
   }
 
@@ -7977,20 +8219,23 @@ class ObjectWithEveryOptionalTypeUnionAdjacentBoolean
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentBoolean.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentBoolean.");
     return "";
   }
 
   @override
-  ObjectWithEveryOptionalTypeUnionAdjacentBoolean copyWith({bool? data}) {
+  ObjectWithEveryOptionalTypeUnionAdjacentBoolean copyWith({
+    bool? data,
+  }) {
     return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(
       data: data ?? this.data,
     );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8024,8 +8269,7 @@ class ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final data = nullableDateTimeFromDynamic(_input_["data"]);
     return ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp(
       data: data,
@@ -8033,11 +8277,9 @@ class ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -8057,8 +8299,7 @@ class ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.");
     return "";
   }
 
@@ -8072,7 +8313,9 @@ class ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8105,8 +8348,7 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentObjectData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final content = typeFromDynamic<String>(_input_["content"], "");
     return ObjectWithEveryOptionalTypeUnionAdjacentObjectData(
@@ -8116,16 +8358,17 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeUnionAdjacentObjectData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeUnionAdjacentObjectData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "content": content};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "content": content,
+    };
 
     return _output_;
   }
@@ -8155,7 +8398,10 @@ class ObjectWithEveryOptionalTypeUnionAdjacentObjectData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, content];
+  List<Object?> get props => [
+        id,
+        content,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8191,8 +8437,7 @@ class ObjectWithEveryOptionalTypeNestedObject implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeNestedObject.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
@@ -8231,8 +8476,7 @@ class ObjectWithEveryOptionalTypeNestedObject implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.");
     return _queryParts_.join("&");
   }
 
@@ -8250,7 +8494,11 @@ class ObjectWithEveryOptionalTypeNestedObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp, data];
+  List<Object?> get props => [
+        id,
+        timestamp,
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8286,14 +8534,12 @@ class ObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeNestedObjectData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     final data = _input_["data"] is Map<String, dynamic>
         ? ObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
-            _input_["data"],
-          )
+            _input_["data"])
         : ObjectWithEveryOptionalTypeNestedObjectDataData.empty();
     return ObjectWithEveryOptionalTypeNestedObjectData(
       id: id,
@@ -8303,11 +8549,9 @@ class ObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeNestedObjectData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeNestedObjectData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -8332,8 +8576,7 @@ class ObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.");
     return _queryParts_.join("&");
   }
 
@@ -8351,7 +8594,11 @@ class ObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp, data];
+  List<Object?> get props => [
+        id,
+        timestamp,
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8384,8 +8631,7 @@ class ObjectWithEveryOptionalTypeNestedObjectDataData implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return ObjectWithEveryOptionalTypeNestedObjectDataData(
@@ -8395,11 +8641,9 @@ class ObjectWithEveryOptionalTypeNestedObjectDataData implements ArriModel {
   }
 
   factory ObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -8437,7 +8681,10 @@ class ObjectWithEveryOptionalTypeNestedObjectDataData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, timestamp];
+  List<Object?> get props => [
+        id,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8471,8 +8718,7 @@ class ObjectWithEveryOptionalTypeNestedArrayElementElement
   }
 
   factory ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
     return ObjectWithEveryOptionalTypeNestedArrayElementElement(
@@ -8482,11 +8728,9 @@ class ObjectWithEveryOptionalTypeNestedArrayElementElement
   }
 
   factory ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -8524,7 +8768,10 @@ class ObjectWithEveryOptionalTypeNestedArrayElementElement
   }
 
   @override
-  List<Object?> get props => [id, timestamp];
+  List<Object?> get props => [
+        id,
+        timestamp,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8552,7 +8799,11 @@ class RecursiveObject implements ArriModel {
   });
 
   factory RecursiveObject.empty() {
-    return RecursiveObject(left: null, right: null, value: "");
+    return RecursiveObject(
+      left: null,
+      right: null,
+      value: "",
+    );
   }
 
   factory RecursiveObject.fromJson(Map<String, dynamic> _input_) {
@@ -8563,7 +8814,11 @@ class RecursiveObject implements ArriModel {
         ? RecursiveObject.fromJson(_input_["right"])
         : null;
     final value = typeFromDynamic<String>(_input_["value"], "");
-    return RecursiveObject(left: left, right: right, value: value);
+    return RecursiveObject(
+      left: left,
+      right: right,
+      value: value,
+    );
   }
 
   factory RecursiveObject.fromJsonString(String input) {
@@ -8590,11 +8845,9 @@ class RecursiveObject implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.");
     _queryParts_.add("value=$value");
     return _queryParts_.join("&");
   }
@@ -8613,7 +8866,11 @@ class RecursiveObject implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [left, right, value];
+  List<Object?> get props => [
+        left,
+        right,
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -8629,138 +8886,69 @@ class RecursiveObject implements ArriModel {
   }
 }
 
-sealed class RecursiveUnion implements ArriModel {
-  String get type;
-  const RecursiveUnion();
+sealed class RecursiveUnionAdjacent implements ArriModel {
+  String get kind;
+  const RecursiveUnionAdjacent();
 
-  factory RecursiveUnion.empty() {
-    return RecursiveUnionChildren.empty();
+  factory RecursiveUnionAdjacent.empty() {
+    return RecursiveUnionAdjacentChildren.empty();
   }
 
-  factory RecursiveUnion.fromJson(Map<String, dynamic> _input_) {
-    final type = typeFromDynamic<String>(_input_["type"], "");
-    switch (type) {
-      case "CHILD":
-        return RecursiveUnionChild.fromJson(_input_);
-      case "CHILDREN":
-        return RecursiveUnionChildren.fromJson(_input_);
-      case "TEXT":
-        return RecursiveUnionText.fromJson(_input_);
-      case "SHAPE":
-        return RecursiveUnionShape.fromJson(_input_);
+  factory RecursiveUnionAdjacent.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "child":
+        return RecursiveUnionAdjacentChild.fromJson(_input_);
+      case "children":
+        return RecursiveUnionAdjacentChildren.fromJson(_input_);
+      case "text":
+        return RecursiveUnionAdjacentText.fromJson(_input_);
+      case "shape":
+        return RecursiveUnionAdjacentShape.fromJson(_input_);
       default:
-        return RecursiveUnion.empty();
+        return RecursiveUnionAdjacent.empty();
     }
   }
 
-  factory RecursiveUnion.fromJsonString(String input) {
-    return RecursiveUnion.fromJson(json.decode(input));
+  factory RecursiveUnionAdjacent.fromJsonString(String input) {
+    return RecursiveUnionAdjacent.fromJson(json.decode(input));
   }
 }
 
-/// Child node
-class RecursiveUnionChild implements RecursiveUnion {
-  final RecursiveUnion data;
-  const RecursiveUnionChild({required this.data});
+class RecursiveUnionAdjacentChild implements RecursiveUnionAdjacent {
+  final RecursiveUnionAdjacent data;
+  const RecursiveUnionAdjacentChild({
+    required this.data,
+  });
 
   @override
-  String get type => "CHILD";
+  String get kind => "child";
 
-  factory RecursiveUnionChild.empty() {
-    return RecursiveUnionChild(data: RecursiveUnion.empty());
-  }
-
-  factory RecursiveUnionChild.fromJson(Map<String, dynamic> _input_) {
-    final data = _input_["data"] is Map<String, dynamic>
-        ? RecursiveUnion.fromJson(_input_["data"])
-        : RecursiveUnion.empty();
-    return RecursiveUnionChild(data: data);
-  }
-
-  factory RecursiveUnionChild.fromJsonString(String input) {
-    return RecursiveUnionChild.fromJson(json.decode(input));
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"type": type, "data": data.toJson()};
-
-    return _output_;
-  }
-
-  @override
-  String toJsonString() {
-    return json.encode(toJson());
-  }
-
-  @override
-  String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("type=$type");
-    print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionChild/data.",
+  factory RecursiveUnionAdjacentChild.empty() {
+    return RecursiveUnionAdjacentChild(
+      data: RecursiveUnionAdjacent.empty(),
     );
-    return _queryParts_.join("&");
   }
 
-  @override
-  RecursiveUnionChild copyWith({RecursiveUnion? data}) {
-    return RecursiveUnionChild(data: data ?? this.data);
+  factory RecursiveUnionAdjacentChild.fromJson(Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? RecursiveUnionAdjacent.fromJson(_input_["data"])
+        : RecursiveUnionAdjacent.empty();
+    return RecursiveUnionAdjacentChild(
+      data: data,
+    );
   }
 
-  @override
-  List<Object?> get props => [data];
-
-  @override
-  bool operator ==(Object other) {
-    return other is RecursiveUnionChild && listsAreEqual(props, other.props);
-  }
-
-  @override
-  int get hashCode => listToHashCode(props);
-
-  @override
-  String toString() {
-    return "RecursiveUnionChild ${toJsonString()}";
-  }
-}
-
-/// List of children node
-class RecursiveUnionChildren implements RecursiveUnion {
-  final List<RecursiveUnion> data;
-  const RecursiveUnionChildren({required this.data});
-
-  @override
-  String get type => "CHILDREN";
-
-  factory RecursiveUnionChildren.empty() {
-    return RecursiveUnionChildren(data: []);
-  }
-
-  factory RecursiveUnionChildren.fromJson(Map<String, dynamic> _input_) {
-    final data = _input_["data"] is List
-        ? (_input_["data"] as List)
-              .map(
-                (_el_) => _el_ is Map<String, dynamic>
-                    ? RecursiveUnion.fromJson(_el_)
-                    : RecursiveUnion.empty(),
-              )
-              .toList()
-        : <RecursiveUnion>[];
-    return RecursiveUnionChildren(data: data);
-  }
-
-  factory RecursiveUnionChildren.fromJsonString(String input) {
-    return RecursiveUnionChildren.fromJson(json.decode(input));
+  factory RecursiveUnionAdjacentChild.fromJsonString(String input) {
+    return RecursiveUnionAdjacentChild.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
-      "type": type,
-      "data": data.map((_el_) => _el_.toJson()).toList(),
+      "kind": kind,
+      "data": data.toJson(),
     };
-
     return _output_;
   }
 
@@ -8771,25 +8959,29 @@ class RecursiveUnionChildren implements RecursiveUnion {
 
   @override
   String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("type=$type");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionChildren/data.",
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentChild.");
+    return "";
+  }
+
+  @override
+  RecursiveUnionAdjacentChild copyWith({
+    RecursiveUnionAdjacent? data,
+  }) {
+    return RecursiveUnionAdjacentChild(
+      data: data ?? this.data,
     );
-    return _queryParts_.join("&");
   }
 
   @override
-  RecursiveUnionChildren copyWith({List<RecursiveUnion>? data}) {
-    return RecursiveUnionChildren(data: data ?? this.data);
-  }
-
-  @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionChildren && listsAreEqual(props, other.props);
+    return other is RecursiveUnionAdjacentChild &&
+        listsAreEqual(props, other.props);
   }
 
   @override
@@ -8797,35 +8989,49 @@ class RecursiveUnionChildren implements RecursiveUnion {
 
   @override
   String toString() {
-    return "RecursiveUnionChildren ${toJsonString()}";
+    return "RecursiveUnionAdjacentChild ${toJsonString()}";
   }
 }
 
-/// Text node
-class RecursiveUnionText implements RecursiveUnion {
-  final String data;
-  const RecursiveUnionText({required this.data});
+class RecursiveUnionAdjacentChildren implements RecursiveUnionAdjacent {
+  final List<RecursiveUnionAdjacent> data;
+  const RecursiveUnionAdjacentChildren({
+    required this.data,
+  });
 
   @override
-  String get type => "TEXT";
+  String get kind => "children";
 
-  factory RecursiveUnionText.empty() {
-    return RecursiveUnionText(data: "");
+  factory RecursiveUnionAdjacentChildren.empty() {
+    return RecursiveUnionAdjacentChildren(
+      data: [],
+    );
   }
 
-  factory RecursiveUnionText.fromJson(Map<String, dynamic> _input_) {
-    final data = typeFromDynamic<String>(_input_["data"], "");
-    return RecursiveUnionText(data: data);
+  factory RecursiveUnionAdjacentChildren.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is List
+        ? (_input_["data"] as List)
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? RecursiveUnionAdjacent.fromJson(_el_)
+                : RecursiveUnionAdjacent.empty())
+            .toList()
+        : <RecursiveUnionAdjacent>[];
+    return RecursiveUnionAdjacentChildren(
+      data: data,
+    );
   }
 
-  factory RecursiveUnionText.fromJsonString(String input) {
-    return RecursiveUnionText.fromJson(json.decode(input));
+  factory RecursiveUnionAdjacentChildren.fromJsonString(String input) {
+    return RecursiveUnionAdjacentChildren.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"type": type, "data": data};
-
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.map((_el_) => _el_.toJson()).toList(),
+    };
     return _output_;
   }
 
@@ -8836,23 +9042,29 @@ class RecursiveUnionText implements RecursiveUnion {
 
   @override
   String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("type=$type");
-    _queryParts_.add("data=$data");
-    return _queryParts_.join("&");
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentChildren.");
+    return "";
   }
 
   @override
-  RecursiveUnionText copyWith({String? data}) {
-    return RecursiveUnionText(data: data ?? this.data);
+  RecursiveUnionAdjacentChildren copyWith({
+    List<RecursiveUnionAdjacent>? data,
+  }) {
+    return RecursiveUnionAdjacentChildren(
+      data: data ?? this.data,
+    );
   }
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [
+        data,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionText && listsAreEqual(props, other.props);
+    return other is RecursiveUnionAdjacentChildren &&
+        listsAreEqual(props, other.props);
   }
 
   @override
@@ -8860,100 +9072,197 @@ class RecursiveUnionText implements RecursiveUnion {
 
   @override
   String toString() {
-    return "RecursiveUnionText ${toJsonString()}";
+    return "RecursiveUnionAdjacentChildren ${toJsonString()}";
+  }
+}
+
+class RecursiveUnionAdjacentText implements RecursiveUnionAdjacent {
+  final String data;
+  const RecursiveUnionAdjacentText({
+    required this.data,
+  });
+
+  @override
+  String get kind => "text";
+
+  factory RecursiveUnionAdjacentText.empty() {
+    return RecursiveUnionAdjacentText(
+      data: "",
+    );
+  }
+
+  factory RecursiveUnionAdjacentText.fromJson(Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return RecursiveUnionAdjacentText(
+      data: data,
+    );
+  }
+
+  factory RecursiveUnionAdjacentText.fromJsonString(String input) {
+    return RecursiveUnionAdjacentText.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentText.");
+    return "";
+  }
+
+  @override
+  RecursiveUnionAdjacentText copyWith({
+    String? data,
+  }) {
+    return RecursiveUnionAdjacentText(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionAdjacentText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionAdjacentText ${toJsonString()}";
+  }
+}
+
+class RecursiveUnionAdjacentShape implements RecursiveUnionAdjacent {
+  final RecursiveUnionAdjacentShapeData data;
+  const RecursiveUnionAdjacentShape({
+    required this.data,
+  });
+
+  @override
+  String get kind => "shape";
+
+  factory RecursiveUnionAdjacentShape.empty() {
+    return RecursiveUnionAdjacentShape(
+      data: RecursiveUnionAdjacentShapeData.empty(),
+    );
+  }
+
+  factory RecursiveUnionAdjacentShape.fromJson(Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? RecursiveUnionAdjacentShapeData.fromJson(_input_["data"])
+        : RecursiveUnionAdjacentShapeData.empty();
+    return RecursiveUnionAdjacentShape(
+      data: data,
+    );
+  }
+
+  factory RecursiveUnionAdjacentShape.fromJsonString(String input) {
+    return RecursiveUnionAdjacentShape.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionAdjacentShape.");
+    return "";
+  }
+
+  @override
+  RecursiveUnionAdjacentShape copyWith({
+    RecursiveUnionAdjacentShapeData? data,
+  }) {
+    return RecursiveUnionAdjacentShape(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionAdjacentShape &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionAdjacentShape ${toJsonString()}";
   }
 }
 
 /// Shape node
-class RecursiveUnionShape implements RecursiveUnion {
-  final RecursiveUnionShapeData data;
-  const RecursiveUnionShape({required this.data});
-
-  @override
-  String get type => "SHAPE";
-
-  factory RecursiveUnionShape.empty() {
-    return RecursiveUnionShape(data: RecursiveUnionShapeData.empty());
-  }
-
-  factory RecursiveUnionShape.fromJson(Map<String, dynamic> _input_) {
-    final data = _input_["data"] is Map<String, dynamic>
-        ? RecursiveUnionShapeData.fromJson(_input_["data"])
-        : RecursiveUnionShapeData.empty();
-    return RecursiveUnionShape(data: data);
-  }
-
-  factory RecursiveUnionShape.fromJsonString(String input) {
-    return RecursiveUnionShape.fromJson(json.decode(input));
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"type": type, "data": data.toJson()};
-
-    return _output_;
-  }
-
-  @override
-  String toJsonString() {
-    return json.encode(toJson());
-  }
-
-  @override
-  String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("type=$type");
-    print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionShape/data.",
-    );
-    return _queryParts_.join("&");
-  }
-
-  @override
-  RecursiveUnionShape copyWith({RecursiveUnionShapeData? data}) {
-    return RecursiveUnionShape(data: data ?? this.data);
-  }
-
-  @override
-  List<Object?> get props => [data];
-
-  @override
-  bool operator ==(Object other) {
-    return other is RecursiveUnionShape && listsAreEqual(props, other.props);
-  }
-
-  @override
-  int get hashCode => listToHashCode(props);
-
-  @override
-  String toString() {
-    return "RecursiveUnionShape ${toJsonString()}";
-  }
-}
-
-class RecursiveUnionShapeData implements ArriModel {
+class RecursiveUnionAdjacentShapeData implements ArriModel {
   final double width;
   final double height;
   final String color;
-  const RecursiveUnionShapeData({
+  const RecursiveUnionAdjacentShapeData({
     required this.width,
     required this.height,
     required this.color,
   });
 
-  factory RecursiveUnionShapeData.empty() {
-    return RecursiveUnionShapeData(width: 0.0, height: 0.0, color: "");
+  factory RecursiveUnionAdjacentShapeData.empty() {
+    return RecursiveUnionAdjacentShapeData(
+      width: 0.0,
+      height: 0.0,
+      color: "",
+    );
   }
 
-  factory RecursiveUnionShapeData.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionAdjacentShapeData.fromJson(
+      Map<String, dynamic> _input_) {
     final width = doubleFromDynamic(_input_["width"], 0.0);
     final height = doubleFromDynamic(_input_["height"], 0.0);
     final color = typeFromDynamic<String>(_input_["color"], "");
-    return RecursiveUnionShapeData(width: width, height: height, color: color);
+    return RecursiveUnionAdjacentShapeData(
+      width: width,
+      height: height,
+      color: color,
+    );
   }
 
-  factory RecursiveUnionShapeData.fromJsonString(String input) {
-    return RecursiveUnionShapeData.fromJson(json.decode(input));
+  factory RecursiveUnionAdjacentShapeData.fromJsonString(String input) {
+    return RecursiveUnionAdjacentShapeData.fromJson(json.decode(input));
   }
 
   @override
@@ -8982,12 +9291,12 @@ class RecursiveUnionShapeData implements ArriModel {
   }
 
   @override
-  RecursiveUnionShapeData copyWith({
+  RecursiveUnionAdjacentShapeData copyWith({
     double? width,
     double? height,
     String? color,
   }) {
-    return RecursiveUnionShapeData(
+    return RecursiveUnionAdjacentShapeData(
       width: width ?? this.width,
       height: height ?? this.height,
       color: color ?? this.color,
@@ -8995,11 +9304,15 @@ class RecursiveUnionShapeData implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [width, height, color];
+  List<Object?> get props => [
+        width,
+        height,
+        color,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionShapeData &&
+    return other is RecursiveUnionAdjacentShapeData &&
         listsAreEqual(props, other.props);
   }
 
@@ -9008,60 +9321,68 @@ class RecursiveUnionShapeData implements ArriModel {
 
   @override
   String toString() {
-    return "RecursiveUnionShapeData ${toJsonString()}";
+    return "RecursiveUnionAdjacentShapeData ${toJsonString()}";
   }
 }
 
-sealed class RecursiveUnionV2 implements ArriModel {
-  const RecursiveUnionV2();
+sealed class RecursiveUnionExternal implements ArriModel {
+  const RecursiveUnionExternal();
 
-  factory RecursiveUnionV2.empty() {
-    return RecursiveUnionV2Children.empty();
+  factory RecursiveUnionExternal.empty() {
+    return RecursiveUnionExternalChildren.empty();
   }
 
-  factory RecursiveUnionV2.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionExternal.fromJson(Map<String, dynamic> _input_) {
     if (_input_.containsKey("child")) {
-      return RecursiveUnionV2Child.fromJson(_input_);
+      return RecursiveUnionExternalChild.fromJson(_input_);
     }
     if (_input_.containsKey("children")) {
-      return RecursiveUnionV2Children.fromJson(_input_);
+      return RecursiveUnionExternalChildren.fromJson(_input_);
     }
     if (_input_.containsKey("text")) {
-      return RecursiveUnionV2Text.fromJson(_input_);
+      return RecursiveUnionExternalText.fromJson(_input_);
     }
     if (_input_.containsKey("shape")) {
-      return RecursiveUnionV2Shape.fromJson(_input_);
+      return RecursiveUnionExternalShape.fromJson(_input_);
     }
-    return RecursiveUnionV2.empty();
+    return RecursiveUnionExternal.empty();
   }
 
-  factory RecursiveUnionV2.fromJsonString(String input) {
-    return RecursiveUnionV2.fromJson(json.decode(input));
+  factory RecursiveUnionExternal.fromJsonString(String input) {
+    return RecursiveUnionExternal.fromJson(json.decode(input));
   }
 }
 
-class RecursiveUnionV2Child implements RecursiveUnionV2 {
-  final RecursiveUnionV2 value;
-  const RecursiveUnionV2Child({required this.value});
+class RecursiveUnionExternalChild implements RecursiveUnionExternal {
+  final RecursiveUnionExternal value;
+  const RecursiveUnionExternalChild({
+    required this.value,
+  });
 
-  factory RecursiveUnionV2Child.empty() {
-    return RecursiveUnionV2Child(value: RecursiveUnionV2.empty());
+  factory RecursiveUnionExternalChild.empty() {
+    return RecursiveUnionExternalChild(
+      value: RecursiveUnionExternal.empty(),
+    );
   }
 
-  factory RecursiveUnionV2Child.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionExternalChild.fromJson(Map<String, dynamic> _input_) {
     final value = _input_["child"] is Map<String, dynamic>
-        ? RecursiveUnionV2.fromJson(_input_["child"])
-        : RecursiveUnionV2.empty();
-    return RecursiveUnionV2Child(value: value);
+        ? RecursiveUnionExternal.fromJson(_input_["child"])
+        : RecursiveUnionExternal.empty();
+    return RecursiveUnionExternalChild(
+      value: value,
+    );
   }
 
-  factory RecursiveUnionV2Child.fromJsonString(String input) {
-    return RecursiveUnionV2Child.fromJson(json.decode(input));
+  factory RecursiveUnionExternalChild.fromJsonString(String input) {
+    return RecursiveUnionExternalChild.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"child": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "child": value.toJson(),
+    };
     return _output_;
   }
 
@@ -9073,22 +9394,28 @@ class RecursiveUnionV2Child implements RecursiveUnionV2 {
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Child.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalChild.");
     return "";
   }
 
   @override
-  RecursiveUnionV2Child copyWith({RecursiveUnionV2? value}) {
-    return RecursiveUnionV2Child(value: value ?? this.value);
+  RecursiveUnionExternalChild copyWith({
+    RecursiveUnionExternal? value,
+  }) {
+    return RecursiveUnionExternalChild(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionV2Child && listsAreEqual(props, other.props);
+    return other is RecursiveUnionExternalChild &&
+        listsAreEqual(props, other.props);
   }
 
   @override
@@ -9096,33 +9423,38 @@ class RecursiveUnionV2Child implements RecursiveUnionV2 {
 
   @override
   String toString() {
-    return "RecursiveUnionV2Child ${toJsonString()}";
+    return "RecursiveUnionExternalChild ${toJsonString()}";
   }
 }
 
-class RecursiveUnionV2Children implements RecursiveUnionV2 {
-  final List<RecursiveUnionV2> value;
-  const RecursiveUnionV2Children({required this.value});
+class RecursiveUnionExternalChildren implements RecursiveUnionExternal {
+  final List<RecursiveUnionExternal> value;
+  const RecursiveUnionExternalChildren({
+    required this.value,
+  });
 
-  factory RecursiveUnionV2Children.empty() {
-    return RecursiveUnionV2Children(value: []);
+  factory RecursiveUnionExternalChildren.empty() {
+    return RecursiveUnionExternalChildren(
+      value: [],
+    );
   }
 
-  factory RecursiveUnionV2Children.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionExternalChildren.fromJson(
+      Map<String, dynamic> _input_) {
     final value = _input_["children"] is List
         ? (_input_["children"] as List)
-              .map(
-                (_el_) => _el_ is Map<String, dynamic>
-                    ? RecursiveUnionV2.fromJson(_el_)
-                    : RecursiveUnionV2.empty(),
-              )
-              .toList()
-        : <RecursiveUnionV2>[];
-    return RecursiveUnionV2Children(value: value);
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? RecursiveUnionExternal.fromJson(_el_)
+                : RecursiveUnionExternal.empty())
+            .toList()
+        : <RecursiveUnionExternal>[];
+    return RecursiveUnionExternalChildren(
+      value: value,
+    );
   }
 
-  factory RecursiveUnionV2Children.fromJsonString(String input) {
-    return RecursiveUnionV2Children.fromJson(json.decode(input));
+  factory RecursiveUnionExternalChildren.fromJsonString(String input) {
+    return RecursiveUnionExternalChildren.fromJson(json.decode(input));
   }
 
   @override
@@ -9141,22 +9473,27 @@ class RecursiveUnionV2Children implements RecursiveUnionV2 {
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Children.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalChildren.");
     return "";
   }
 
   @override
-  RecursiveUnionV2Children copyWith({List<RecursiveUnionV2>? value}) {
-    return RecursiveUnionV2Children(value: value ?? this.value);
+  RecursiveUnionExternalChildren copyWith({
+    List<RecursiveUnionExternal>? value,
+  }) {
+    return RecursiveUnionExternalChildren(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionV2Children &&
+    return other is RecursiveUnionExternalChildren &&
         listsAreEqual(props, other.props);
   }
 
@@ -9165,30 +9502,38 @@ class RecursiveUnionV2Children implements RecursiveUnionV2 {
 
   @override
   String toString() {
-    return "RecursiveUnionV2Children ${toJsonString()}";
+    return "RecursiveUnionExternalChildren ${toJsonString()}";
   }
 }
 
-class RecursiveUnionV2Text implements RecursiveUnionV2 {
+class RecursiveUnionExternalText implements RecursiveUnionExternal {
   final String value;
-  const RecursiveUnionV2Text({required this.value});
+  const RecursiveUnionExternalText({
+    required this.value,
+  });
 
-  factory RecursiveUnionV2Text.empty() {
-    return RecursiveUnionV2Text(value: "");
+  factory RecursiveUnionExternalText.empty() {
+    return RecursiveUnionExternalText(
+      value: "",
+    );
   }
 
-  factory RecursiveUnionV2Text.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionExternalText.fromJson(Map<String, dynamic> _input_) {
     final value = typeFromDynamic<String>(_input_["text"], "");
-    return RecursiveUnionV2Text(value: value);
+    return RecursiveUnionExternalText(
+      value: value,
+    );
   }
 
-  factory RecursiveUnionV2Text.fromJsonString(String input) {
-    return RecursiveUnionV2Text.fromJson(json.decode(input));
+  factory RecursiveUnionExternalText.fromJsonString(String input) {
+    return RecursiveUnionExternalText.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"text": value};
+    final _output_ = <String, dynamic>{
+      "text": value,
+    };
     return _output_;
   }
 
@@ -9200,22 +9545,28 @@ class RecursiveUnionV2Text implements RecursiveUnionV2 {
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Text.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalText.");
     return "";
   }
 
   @override
-  RecursiveUnionV2Text copyWith({String? value}) {
-    return RecursiveUnionV2Text(value: value ?? this.value);
+  RecursiveUnionExternalText copyWith({
+    String? value,
+  }) {
+    return RecursiveUnionExternalText(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionV2Text && listsAreEqual(props, other.props);
+    return other is RecursiveUnionExternalText &&
+        listsAreEqual(props, other.props);
   }
 
   @override
@@ -9223,32 +9574,40 @@ class RecursiveUnionV2Text implements RecursiveUnionV2 {
 
   @override
   String toString() {
-    return "RecursiveUnionV2Text ${toJsonString()}";
+    return "RecursiveUnionExternalText ${toJsonString()}";
   }
 }
 
-class RecursiveUnionV2Shape implements RecursiveUnionV2 {
-  final RecursiveUnionV2ShapeValue value;
-  const RecursiveUnionV2Shape({required this.value});
+class RecursiveUnionExternalShape implements RecursiveUnionExternal {
+  final RecursiveUnionExternalShapeValue value;
+  const RecursiveUnionExternalShape({
+    required this.value,
+  });
 
-  factory RecursiveUnionV2Shape.empty() {
-    return RecursiveUnionV2Shape(value: RecursiveUnionV2ShapeValue.empty());
+  factory RecursiveUnionExternalShape.empty() {
+    return RecursiveUnionExternalShape(
+      value: RecursiveUnionExternalShapeValue.empty(),
+    );
   }
 
-  factory RecursiveUnionV2Shape.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionExternalShape.fromJson(Map<String, dynamic> _input_) {
     final value = _input_["shape"] is Map<String, dynamic>
-        ? RecursiveUnionV2ShapeValue.fromJson(_input_["shape"])
-        : RecursiveUnionV2ShapeValue.empty();
-    return RecursiveUnionV2Shape(value: value);
+        ? RecursiveUnionExternalShapeValue.fromJson(_input_["shape"])
+        : RecursiveUnionExternalShapeValue.empty();
+    return RecursiveUnionExternalShape(
+      value: value,
+    );
   }
 
-  factory RecursiveUnionV2Shape.fromJsonString(String input) {
-    return RecursiveUnionV2Shape.fromJson(json.decode(input));
+  factory RecursiveUnionExternalShape.fromJsonString(String input) {
+    return RecursiveUnionExternalShape.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"shape": value.toJson()};
+    final _output_ = <String, dynamic>{
+      "shape": value.toJson(),
+    };
     return _output_;
   }
 
@@ -9260,22 +9619,28 @@ class RecursiveUnionV2Shape implements RecursiveUnionV2 {
   @override
   String toUrlQueryParams() {
     print(
-      "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Shape.",
-    );
+        "[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionExternalShape.");
     return "";
   }
 
   @override
-  RecursiveUnionV2Shape copyWith({RecursiveUnionV2ShapeValue? value}) {
-    return RecursiveUnionV2Shape(value: value ?? this.value);
+  RecursiveUnionExternalShape copyWith({
+    RecursiveUnionExternalShapeValue? value,
+  }) {
+    return RecursiveUnionExternalShape(
+      value: value ?? this.value,
+    );
   }
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [
+        value,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionV2Shape && listsAreEqual(props, other.props);
+    return other is RecursiveUnionExternalShape &&
+        listsAreEqual(props, other.props);
   }
 
   @override
@@ -9283,38 +9648,43 @@ class RecursiveUnionV2Shape implements RecursiveUnionV2 {
 
   @override
   String toString() {
-    return "RecursiveUnionV2Shape ${toJsonString()}";
+    return "RecursiveUnionExternalShape ${toJsonString()}";
   }
 }
 
 /// Shape node
-class RecursiveUnionV2ShapeValue implements ArriModel {
+class RecursiveUnionExternalShapeValue implements ArriModel {
   final double width;
   final double height;
   final String color;
-  const RecursiveUnionV2ShapeValue({
+  const RecursiveUnionExternalShapeValue({
     required this.width,
     required this.height,
     required this.color,
   });
 
-  factory RecursiveUnionV2ShapeValue.empty() {
-    return RecursiveUnionV2ShapeValue(width: 0.0, height: 0.0, color: "");
+  factory RecursiveUnionExternalShapeValue.empty() {
+    return RecursiveUnionExternalShapeValue(
+      width: 0.0,
+      height: 0.0,
+      color: "",
+    );
   }
 
-  factory RecursiveUnionV2ShapeValue.fromJson(Map<String, dynamic> _input_) {
+  factory RecursiveUnionExternalShapeValue.fromJson(
+      Map<String, dynamic> _input_) {
     final width = doubleFromDynamic(_input_["width"], 0.0);
     final height = doubleFromDynamic(_input_["height"], 0.0);
     final color = typeFromDynamic<String>(_input_["color"], "");
-    return RecursiveUnionV2ShapeValue(
+    return RecursiveUnionExternalShapeValue(
       width: width,
       height: height,
       color: color,
     );
   }
 
-  factory RecursiveUnionV2ShapeValue.fromJsonString(String input) {
-    return RecursiveUnionV2ShapeValue.fromJson(json.decode(input));
+  factory RecursiveUnionExternalShapeValue.fromJsonString(String input) {
+    return RecursiveUnionExternalShapeValue.fromJson(json.decode(input));
   }
 
   @override
@@ -9343,12 +9713,12 @@ class RecursiveUnionV2ShapeValue implements ArriModel {
   }
 
   @override
-  RecursiveUnionV2ShapeValue copyWith({
+  RecursiveUnionExternalShapeValue copyWith({
     double? width,
     double? height,
     String? color,
   }) {
-    return RecursiveUnionV2ShapeValue(
+    return RecursiveUnionExternalShapeValue(
       width: width ?? this.width,
       height: height ?? this.height,
       color: color ?? this.color,
@@ -9356,11 +9726,15 @@ class RecursiveUnionV2ShapeValue implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [width, height, color];
+  List<Object?> get props => [
+        width,
+        height,
+        color,
+      ];
 
   @override
   bool operator ==(Object other) {
-    return other is RecursiveUnionV2ShapeValue &&
+    return other is RecursiveUnionExternalShapeValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -9369,21 +9743,480 @@ class RecursiveUnionV2ShapeValue implements ArriModel {
 
   @override
   String toString() {
-    return "RecursiveUnionV2ShapeValue ${toJsonString()}";
+    return "RecursiveUnionExternalShapeValue ${toJsonString()}";
+  }
+}
+
+sealed class RecursiveUnionInternal implements ArriModel {
+  String get kind;
+  const RecursiveUnionInternal();
+
+  factory RecursiveUnionInternal.empty() {
+    return RecursiveUnionInternalChildren.empty();
+  }
+
+  factory RecursiveUnionInternal.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "child":
+        return RecursiveUnionInternalChild.fromJson(_input_);
+      case "children":
+        return RecursiveUnionInternalChildren.fromJson(_input_);
+      case "text":
+        return RecursiveUnionInternalText.fromJson(_input_);
+      case "shape":
+        return RecursiveUnionInternalShape.fromJson(_input_);
+      default:
+        return RecursiveUnionInternal.empty();
+    }
+  }
+
+  factory RecursiveUnionInternal.fromJsonString(String input) {
+    return RecursiveUnionInternal.fromJson(json.decode(input));
+  }
+}
+
+class RecursiveUnionInternalChild implements RecursiveUnionInternal {
+  final RecursiveUnionInternal data;
+  const RecursiveUnionInternalChild({
+    required this.data,
+  });
+
+  @override
+  String get kind => "child";
+
+  factory RecursiveUnionInternalChild.empty() {
+    return RecursiveUnionInternalChild(
+      data: RecursiveUnionInternal.empty(),
+    );
+  }
+
+  factory RecursiveUnionInternalChild.fromJson(Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? RecursiveUnionInternal.fromJson(_input_["data"])
+        : RecursiveUnionInternal.empty();
+    return RecursiveUnionInternalChild(
+      data: data,
+    );
+  }
+
+  factory RecursiveUnionInternalChild.fromJsonString(String input) {
+    return RecursiveUnionInternalChild.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChild/data.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  RecursiveUnionInternalChild copyWith({
+    RecursiveUnionInternal? data,
+  }) {
+    return RecursiveUnionInternalChild(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionInternalChild &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionInternalChild ${toJsonString()}";
+  }
+}
+
+class RecursiveUnionInternalChildren implements RecursiveUnionInternal {
+  /// an array of child nodes
+  final List<RecursiveUnionInternal> data;
+  const RecursiveUnionInternalChildren({
+    required this.data,
+  });
+
+  @override
+  String get kind => "children";
+
+  factory RecursiveUnionInternalChildren.empty() {
+    return RecursiveUnionInternalChildren(
+      data: [],
+    );
+  }
+
+  factory RecursiveUnionInternalChildren.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is List
+        ? (_input_["data"] as List)
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? RecursiveUnionInternal.fromJson(_el_)
+                : RecursiveUnionInternal.empty())
+            .toList()
+        : <RecursiveUnionInternal>[];
+    return RecursiveUnionInternalChildren(
+      data: data,
+    );
+  }
+
+  factory RecursiveUnionInternalChildren.fromJsonString(String input) {
+    return RecursiveUnionInternalChildren.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.map((_el_) => _el_.toJson()).toList(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChildren/data.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  RecursiveUnionInternalChildren copyWith({
+    List<RecursiveUnionInternal>? data,
+  }) {
+    return RecursiveUnionInternalChildren(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionInternalChildren &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionInternalChildren ${toJsonString()}";
+  }
+}
+
+class RecursiveUnionInternalText implements RecursiveUnionInternal {
+  /// Text node
+  final String data;
+  const RecursiveUnionInternalText({
+    required this.data,
+  });
+
+  @override
+  String get kind => "text";
+
+  factory RecursiveUnionInternalText.empty() {
+    return RecursiveUnionInternalText(
+      data: "",
+    );
+  }
+
+  factory RecursiveUnionInternalText.fromJson(Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return RecursiveUnionInternalText(
+      data: data,
+    );
+  }
+
+  factory RecursiveUnionInternalText.fromJsonString(String input) {
+    return RecursiveUnionInternalText.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    _queryParts_.add("data=$data");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  RecursiveUnionInternalText copyWith({
+    String? data,
+  }) {
+    return RecursiveUnionInternalText(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionInternalText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionInternalText ${toJsonString()}";
+  }
+}
+
+class RecursiveUnionInternalShape implements RecursiveUnionInternal {
+  /// Shape node
+  final RecursiveUnionInternalShapeData data;
+  const RecursiveUnionInternalShape({
+    required this.data,
+  });
+
+  @override
+  String get kind => "shape";
+
+  factory RecursiveUnionInternalShape.empty() {
+    return RecursiveUnionInternalShape(
+      data: RecursiveUnionInternalShapeData.empty(),
+    );
+  }
+
+  factory RecursiveUnionInternalShape.fromJson(Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? RecursiveUnionInternalShapeData.fromJson(_input_["data"])
+        : RecursiveUnionInternalShapeData.empty();
+    return RecursiveUnionInternalShape(
+      data: data,
+    );
+  }
+
+  factory RecursiveUnionInternalShape.fromJsonString(String input) {
+    return RecursiveUnionInternalShape.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalShape/data.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  RecursiveUnionInternalShape copyWith({
+    RecursiveUnionInternalShapeData? data,
+  }) {
+    return RecursiveUnionInternalShape(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionInternalShape &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionInternalShape ${toJsonString()}";
+  }
+}
+
+/// Shape node
+class RecursiveUnionInternalShapeData implements ArriModel {
+  final double width;
+  final double height;
+  final String color;
+  const RecursiveUnionInternalShapeData({
+    required this.width,
+    required this.height,
+    required this.color,
+  });
+
+  factory RecursiveUnionInternalShapeData.empty() {
+    return RecursiveUnionInternalShapeData(
+      width: 0.0,
+      height: 0.0,
+      color: "",
+    );
+  }
+
+  factory RecursiveUnionInternalShapeData.fromJson(
+      Map<String, dynamic> _input_) {
+    final width = doubleFromDynamic(_input_["width"], 0.0);
+    final height = doubleFromDynamic(_input_["height"], 0.0);
+    final color = typeFromDynamic<String>(_input_["color"], "");
+    return RecursiveUnionInternalShapeData(
+      width: width,
+      height: height,
+      color: color,
+    );
+  }
+
+  factory RecursiveUnionInternalShapeData.fromJsonString(String input) {
+    return RecursiveUnionInternalShapeData.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "width": width,
+      "height": height,
+      "color": color,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("width=$width");
+    _queryParts_.add("height=$height");
+    _queryParts_.add("color=$color");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  RecursiveUnionInternalShapeData copyWith({
+    double? width,
+    double? height,
+    String? color,
+  }) {
+    return RecursiveUnionInternalShapeData(
+      width: width ?? this.width,
+      height: height ?? this.height,
+      color: color ?? this.color,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        width,
+        height,
+        color,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecursiveUnionInternalShapeData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "RecursiveUnionInternalShapeData ${toJsonString()}";
   }
 }
 
 class AutoReconnectParams implements ArriModel {
   final int messageCount;
-  const AutoReconnectParams({required this.messageCount});
+  const AutoReconnectParams({
+    required this.messageCount,
+  });
 
   factory AutoReconnectParams.empty() {
-    return AutoReconnectParams(messageCount: 0);
+    return AutoReconnectParams(
+      messageCount: 0,
+    );
   }
 
   factory AutoReconnectParams.fromJson(Map<String, dynamic> _input_) {
     final messageCount = intFromDynamic(_input_["messageCount"], 0);
-    return AutoReconnectParams(messageCount: messageCount);
+    return AutoReconnectParams(
+      messageCount: messageCount,
+    );
   }
 
   factory AutoReconnectParams.fromJsonString(String input) {
@@ -9392,7 +10225,9 @@ class AutoReconnectParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"messageCount": messageCount};
+    final _output_ = <String, dynamic>{
+      "messageCount": messageCount,
+    };
 
     return _output_;
   }
@@ -9410,12 +10245,18 @@ class AutoReconnectParams implements ArriModel {
   }
 
   @override
-  AutoReconnectParams copyWith({int? messageCount}) {
-    return AutoReconnectParams(messageCount: messageCount ?? this.messageCount);
+  AutoReconnectParams copyWith({
+    int? messageCount,
+  }) {
+    return AutoReconnectParams(
+      messageCount: messageCount ?? this.messageCount,
+    );
   }
 
   @override
-  List<Object?> get props => [messageCount];
+  List<Object?> get props => [
+        messageCount,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9434,16 +10275,25 @@ class AutoReconnectParams implements ArriModel {
 class AutoReconnectResponse implements ArriModel {
   final int count;
   final String message;
-  const AutoReconnectResponse({required this.count, required this.message});
+  const AutoReconnectResponse({
+    required this.count,
+    required this.message,
+  });
 
   factory AutoReconnectResponse.empty() {
-    return AutoReconnectResponse(count: 0, message: "");
+    return AutoReconnectResponse(
+      count: 0,
+      message: "",
+    );
   }
 
   factory AutoReconnectResponse.fromJson(Map<String, dynamic> _input_) {
     final count = intFromDynamic(_input_["count"], 0);
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return AutoReconnectResponse(count: count, message: message);
+    return AutoReconnectResponse(
+      count: count,
+      message: message,
+    );
   }
 
   factory AutoReconnectResponse.fromJsonString(String input) {
@@ -9452,7 +10302,10 @@ class AutoReconnectResponse implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"count": count, "message": message};
+    final _output_ = <String, dynamic>{
+      "count": count,
+      "message": message,
+    };
 
     return _output_;
   }
@@ -9471,7 +10324,10 @@ class AutoReconnectResponse implements ArriModel {
   }
 
   @override
-  AutoReconnectResponse copyWith({int? count, String? message}) {
+  AutoReconnectResponse copyWith({
+    int? count,
+    String? message,
+  }) {
     return AutoReconnectResponse(
       count: count ?? this.count,
       message: message ?? this.message,
@@ -9479,7 +10335,10 @@ class AutoReconnectResponse implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [count, message];
+  List<Object?> get props => [
+        count,
+        message,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9504,12 +10363,14 @@ class StreamConnectionErrorTestParams implements ArriModel {
   });
 
   factory StreamConnectionErrorTestParams.empty() {
-    return StreamConnectionErrorTestParams(statusCode: 0, statusMessage: "");
+    return StreamConnectionErrorTestParams(
+      statusCode: 0,
+      statusMessage: "",
+    );
   }
 
   factory StreamConnectionErrorTestParams.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final statusCode = intFromDynamic(_input_["statusCode"], 0);
     final statusMessage = typeFromDynamic<String>(_input_["statusMessage"], "");
     return StreamConnectionErrorTestParams(
@@ -9557,7 +10418,10 @@ class StreamConnectionErrorTestParams implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [statusCode, statusMessage];
+  List<Object?> get props => [
+        statusCode,
+        statusMessage,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9576,17 +10440,22 @@ class StreamConnectionErrorTestParams implements ArriModel {
 
 class StreamConnectionErrorTestResponse implements ArriModel {
   final String message;
-  const StreamConnectionErrorTestResponse({required this.message});
+  const StreamConnectionErrorTestResponse({
+    required this.message,
+  });
 
   factory StreamConnectionErrorTestResponse.empty() {
-    return StreamConnectionErrorTestResponse(message: "");
+    return StreamConnectionErrorTestResponse(
+      message: "",
+    );
   }
 
   factory StreamConnectionErrorTestResponse.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return StreamConnectionErrorTestResponse(message: message);
+    return StreamConnectionErrorTestResponse(
+      message: message,
+    );
   }
 
   factory StreamConnectionErrorTestResponse.fromJsonString(String input) {
@@ -9595,7 +10464,9 @@ class StreamConnectionErrorTestResponse implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"message": message};
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
 
     return _output_;
   }
@@ -9613,12 +10484,18 @@ class StreamConnectionErrorTestResponse implements ArriModel {
   }
 
   @override
-  StreamConnectionErrorTestResponse copyWith({String? message}) {
-    return StreamConnectionErrorTestResponse(message: message ?? this.message);
+  StreamConnectionErrorTestResponse copyWith({
+    String? message,
+  }) {
+    return StreamConnectionErrorTestResponse(
+      message: message ?? this.message,
+    );
   }
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [
+        message,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9637,19 +10514,20 @@ class StreamConnectionErrorTestResponse implements ArriModel {
 
 class StreamHeartbeatDetectionTestParams implements ArriModel {
   final bool heartbeatEnabled;
-  const StreamHeartbeatDetectionTestParams({required this.heartbeatEnabled});
+  const StreamHeartbeatDetectionTestParams({
+    required this.heartbeatEnabled,
+  });
 
   factory StreamHeartbeatDetectionTestParams.empty() {
-    return StreamHeartbeatDetectionTestParams(heartbeatEnabled: false);
+    return StreamHeartbeatDetectionTestParams(
+      heartbeatEnabled: false,
+    );
   }
 
   factory StreamHeartbeatDetectionTestParams.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
-    final heartbeatEnabled = typeFromDynamic<bool>(
-      _input_["heartbeatEnabled"],
-      false,
-    );
+      Map<String, dynamic> _input_) {
+    final heartbeatEnabled =
+        typeFromDynamic<bool>(_input_["heartbeatEnabled"], false);
     return StreamHeartbeatDetectionTestParams(
       heartbeatEnabled: heartbeatEnabled,
     );
@@ -9661,7 +10539,9 @@ class StreamHeartbeatDetectionTestParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"heartbeatEnabled": heartbeatEnabled};
+    final _output_ = <String, dynamic>{
+      "heartbeatEnabled": heartbeatEnabled,
+    };
 
     return _output_;
   }
@@ -9679,14 +10559,18 @@ class StreamHeartbeatDetectionTestParams implements ArriModel {
   }
 
   @override
-  StreamHeartbeatDetectionTestParams copyWith({bool? heartbeatEnabled}) {
+  StreamHeartbeatDetectionTestParams copyWith({
+    bool? heartbeatEnabled,
+  }) {
     return StreamHeartbeatDetectionTestParams(
       heartbeatEnabled: heartbeatEnabled ?? this.heartbeatEnabled,
     );
   }
 
   @override
-  List<Object?> get props => [heartbeatEnabled];
+  List<Object?> get props => [
+        heartbeatEnabled,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9705,17 +10589,22 @@ class StreamHeartbeatDetectionTestParams implements ArriModel {
 
 class StreamHeartbeatDetectionTestResponse implements ArriModel {
   final String message;
-  const StreamHeartbeatDetectionTestResponse({required this.message});
+  const StreamHeartbeatDetectionTestResponse({
+    required this.message,
+  });
 
   factory StreamHeartbeatDetectionTestResponse.empty() {
-    return StreamHeartbeatDetectionTestResponse(message: "");
+    return StreamHeartbeatDetectionTestResponse(
+      message: "",
+    );
   }
 
   factory StreamHeartbeatDetectionTestResponse.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return StreamHeartbeatDetectionTestResponse(message: message);
+    return StreamHeartbeatDetectionTestResponse(
+      message: message,
+    );
   }
 
   factory StreamHeartbeatDetectionTestResponse.fromJsonString(String input) {
@@ -9724,7 +10613,9 @@ class StreamHeartbeatDetectionTestResponse implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"message": message};
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
 
     return _output_;
   }
@@ -9742,14 +10633,18 @@ class StreamHeartbeatDetectionTestResponse implements ArriModel {
   }
 
   @override
-  StreamHeartbeatDetectionTestResponse copyWith({String? message}) {
+  StreamHeartbeatDetectionTestResponse copyWith({
+    String? message,
+  }) {
     return StreamHeartbeatDetectionTestResponse(
       message: message ?? this.message,
     );
   }
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [
+        message,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9775,25 +10670,29 @@ class StreamLargeObjectsResponse implements ArriModel {
   });
 
   factory StreamLargeObjectsResponse.empty() {
-    return StreamLargeObjectsResponse(numbers: [], objects: []);
+    return StreamLargeObjectsResponse(
+      numbers: [],
+      objects: [],
+    );
   }
 
   factory StreamLargeObjectsResponse.fromJson(Map<String, dynamic> _input_) {
     final numbers = _input_["numbers"] is List
         ? (_input_["numbers"] as List)
-              .map((_el_) => doubleFromDynamic(_el_, 0.0))
-              .toList()
+            .map((_el_) => doubleFromDynamic(_el_, 0.0))
+            .toList()
         : <double>[];
     final objects = _input_["objects"] is List
         ? (_input_["objects"] as List)
-              .map(
-                (_el_) => _el_ is Map<String, dynamic>
-                    ? StreamLargeObjectsResponseObjectsElement.fromJson(_el_)
-                    : StreamLargeObjectsResponseObjectsElement.empty(),
-              )
-              .toList()
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? StreamLargeObjectsResponseObjectsElement.fromJson(_el_)
+                : StreamLargeObjectsResponseObjectsElement.empty())
+            .toList()
         : <StreamLargeObjectsResponseObjectsElement>[];
-    return StreamLargeObjectsResponse(numbers: numbers, objects: objects);
+    return StreamLargeObjectsResponse(
+      numbers: numbers,
+      objects: objects,
+    );
   }
 
   factory StreamLargeObjectsResponse.fromJsonString(String input) {
@@ -9819,11 +10718,9 @@ class StreamLargeObjectsResponse implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/numbers.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/numbers.");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/objects.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/objects.");
     return _queryParts_.join("&");
   }
 
@@ -9839,7 +10736,10 @@ class StreamLargeObjectsResponse implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [numbers, objects];
+  List<Object?> get props => [
+        numbers,
+        objects,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9875,8 +10775,7 @@ class StreamLargeObjectsResponseObjectsElement implements ArriModel {
   }
 
   factory StreamLargeObjectsResponseObjectsElement.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
     final email = typeFromDynamic<String>(_input_["email"], "");
@@ -9888,16 +10787,18 @@ class StreamLargeObjectsResponseObjectsElement implements ArriModel {
   }
 
   factory StreamLargeObjectsResponseObjectsElement.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return StreamLargeObjectsResponseObjectsElement.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"id": id, "name": name, "email": email};
+    final _output_ = <String, dynamic>{
+      "id": id,
+      "name": name,
+      "email": email,
+    };
 
     return _output_;
   }
@@ -9930,7 +10831,11 @@ class StreamLargeObjectsResponseObjectsElement implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [id, name, email];
+  List<Object?> get props => [
+        id,
+        name,
+        email,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -9949,15 +10854,21 @@ class StreamLargeObjectsResponseObjectsElement implements ArriModel {
 
 class ChatMessageParams implements ArriModel {
   final String channelId;
-  const ChatMessageParams({required this.channelId});
+  const ChatMessageParams({
+    required this.channelId,
+  });
 
   factory ChatMessageParams.empty() {
-    return ChatMessageParams(channelId: "");
+    return ChatMessageParams(
+      channelId: "",
+    );
   }
 
   factory ChatMessageParams.fromJson(Map<String, dynamic> _input_) {
     final channelId = typeFromDynamic<String>(_input_["channelId"], "");
-    return ChatMessageParams(channelId: channelId);
+    return ChatMessageParams(
+      channelId: channelId,
+    );
   }
 
   factory ChatMessageParams.fromJsonString(String input) {
@@ -9966,7 +10877,9 @@ class ChatMessageParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"channelId": channelId};
+    final _output_ = <String, dynamic>{
+      "channelId": channelId,
+    };
 
     return _output_;
   }
@@ -9984,12 +10897,18 @@ class ChatMessageParams implements ArriModel {
   }
 
   @override
-  ChatMessageParams copyWith({String? channelId}) {
-    return ChatMessageParams(channelId: channelId ?? this.channelId);
+  ChatMessageParams copyWith({
+    String? channelId,
+  }) {
+    return ChatMessageParams(
+      channelId: channelId ?? this.channelId,
+    );
   }
 
   @override
-  List<Object?> get props => [channelId];
+  List<Object?> get props => [
+        channelId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10127,7 +11046,13 @@ class ChatMessageText implements ChatMessage {
   }
 
   @override
-  List<Object?> get props => [id, channelId, userId, date, text];
+  List<Object?> get props => [
+        id,
+        channelId,
+        userId,
+        date,
+        text,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10238,7 +11163,13 @@ class ChatMessageImage implements ChatMessage {
   }
 
   @override
-  List<Object?> get props => [id, channelId, userId, date, image];
+  List<Object?> get props => [
+        id,
+        channelId,
+        userId,
+        date,
+        image,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10349,7 +11280,13 @@ class ChatMessageUrl implements ChatMessage {
   }
 
   @override
-  List<Object?> get props => [id, channelId, userId, date, url];
+  List<Object?> get props => [
+        id,
+        channelId,
+        userId,
+        date,
+        url,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10367,30 +11304,35 @@ class ChatMessageUrl implements ChatMessage {
 
 class TestsStreamRetryWithNewCredentialsResponse implements ArriModel {
   final String message;
-  const TestsStreamRetryWithNewCredentialsResponse({required this.message});
+  const TestsStreamRetryWithNewCredentialsResponse({
+    required this.message,
+  });
 
   factory TestsStreamRetryWithNewCredentialsResponse.empty() {
-    return TestsStreamRetryWithNewCredentialsResponse(message: "");
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: "",
+    );
   }
 
   factory TestsStreamRetryWithNewCredentialsResponse.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final message = typeFromDynamic<String>(_input_["message"], "");
-    return TestsStreamRetryWithNewCredentialsResponse(message: message);
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: message,
+    );
   }
 
   factory TestsStreamRetryWithNewCredentialsResponse.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return TestsStreamRetryWithNewCredentialsResponse.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"message": message};
+    final _output_ = <String, dynamic>{
+      "message": message,
+    };
 
     return _output_;
   }
@@ -10408,14 +11350,18 @@ class TestsStreamRetryWithNewCredentialsResponse implements ArriModel {
   }
 
   @override
-  TestsStreamRetryWithNewCredentialsResponse copyWith({String? message}) {
+  TestsStreamRetryWithNewCredentialsResponse copyWith({
+    String? message,
+  }) {
     return TestsStreamRetryWithNewCredentialsResponse(
       message: message ?? this.message,
     );
   }
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [
+        message,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10434,15 +11380,21 @@ class TestsStreamRetryWithNewCredentialsResponse implements ArriModel {
 
 class UsersWatchUserParams implements ArriModel {
   final String userId;
-  const UsersWatchUserParams({required this.userId});
+  const UsersWatchUserParams({
+    required this.userId,
+  });
 
   factory UsersWatchUserParams.empty() {
-    return UsersWatchUserParams(userId: "");
+    return UsersWatchUserParams(
+      userId: "",
+    );
   }
 
   factory UsersWatchUserParams.fromJson(Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["userId"], "");
-    return UsersWatchUserParams(userId: userId);
+    return UsersWatchUserParams(
+      userId: userId,
+    );
   }
 
   factory UsersWatchUserParams.fromJsonString(String input) {
@@ -10451,7 +11403,9 @@ class UsersWatchUserParams implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"userId": userId};
+    final _output_ = <String, dynamic>{
+      "userId": userId,
+    };
 
     return _output_;
   }
@@ -10469,12 +11423,18 @@ class UsersWatchUserParams implements ArriModel {
   }
 
   @override
-  UsersWatchUserParams copyWith({String? userId}) {
-    return UsersWatchUserParams(userId: userId ?? this.userId);
+  UsersWatchUserParams copyWith({
+    String? userId,
+  }) {
+    return UsersWatchUserParams(
+      userId: userId ?? this.userId,
+    );
   }
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10500,7 +11460,7 @@ class UsersWatchUserResponse implements ArriModel {
   final int numFollowers;
   final UserSettings settings;
   final List<UsersWatchUserResponseRecentNotificationsElement>
-  recentNotifications;
+      recentNotifications;
   final Map<String, UsersWatchUserResponseBookmarksentry> bookmarks;
   final Map<String, dynamic> metadata;
   final List<dynamic> randomList;
@@ -10537,8 +11497,7 @@ class UsersWatchUserResponse implements ArriModel {
   factory UsersWatchUserResponse.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final role = UsersWatchUserResponseRole.fromString(
-      typeFromDynamic<String>(_input_["role"], ""),
-    );
+        typeFromDynamic<String>(_input_["role"], ""));
     final photo = _input_["photo"] is Map<String, dynamic>
         ? UserPhoto.fromJson(_input_["photo"])
         : null;
@@ -10549,14 +11508,11 @@ class UsersWatchUserResponse implements ArriModel {
         : UserSettings.empty();
     final recentNotifications = _input_["recentNotifications"] is List
         ? (_input_["recentNotifications"] as List)
-              .map(
-                (_el_) => _el_ is Map<String, dynamic>
-                    ? UsersWatchUserResponseRecentNotificationsElement.fromJson(
-                        _el_,
-                      )
-                    : UsersWatchUserResponseRecentNotificationsElement.empty(),
-              )
-              .toList()
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? UsersWatchUserResponseRecentNotificationsElement.fromJson(
+                    _el_)
+                : UsersWatchUserResponseRecentNotificationsElement.empty())
+            .toList()
         : <UsersWatchUserResponseRecentNotificationsElement>[];
     final bookmarks = _input_["bookmarks"] is Map<String, dynamic>
         ? (_input_["bookmarks"] as Map<String, dynamic>).map(
@@ -10570,7 +11526,10 @@ class UsersWatchUserResponse implements ArriModel {
         : <String, UsersWatchUserResponseBookmarksentry>{};
     final metadata = _input_["metadata"] is Map<String, dynamic>
         ? (_input_["metadata"] as Map<String, dynamic>).map(
-            (_key_, _val_) => MapEntry(_key_, _val_),
+            (_key_, _val_) => MapEntry(
+              _key_,
+              _val_,
+            ),
           )
         : <String, dynamic>{};
     final randomList = _input_["randomList"] is List
@@ -10605,13 +11564,20 @@ class UsersWatchUserResponse implements ArriModel {
       "createdAt": createdAt.toUtc().toIso8601String(),
       "numFollowers": numFollowers,
       "settings": settings.toJson(),
-      "recentNotifications": recentNotifications
-          .map((_el_) => _el_.toJson())
-          .toList(),
+      "recentNotifications":
+          recentNotifications.map((_el_) => _el_.toJson()).toList(),
       "bookmarks": bookmarks.map(
-        (_key_, _val_) => MapEntry(_key_, _val_.toJson()),
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_.toJson(),
+        ),
       ),
-      "metadata": metadata.map((_key_, _val_) => MapEntry(_key_, _val_)),
+      "metadata": metadata.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_,
+        ),
+      ),
       "randomList": randomList.map((_el_) => _el_).toList(),
     };
     if (bio != null) _output_["bio"] = bio;
@@ -10629,25 +11595,19 @@ class UsersWatchUserResponse implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("role=${role.serialValue}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/photo.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/photo.");
     _queryParts_.add("createdAt=${createdAt.toUtc().toIso8601String()}");
     _queryParts_.add("numFollowers=$numFollowers");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/settings.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/settings.");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/recentNotifications.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/recentNotifications.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/bookmarks.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/bookmarks.");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/metadata.",
-    );
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/metadata.");
     print(
-      "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/randomList.",
-    );
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/randomList.");
     if (bio != null) _queryParts_.add("bio=$bio");
     return _queryParts_.join("&");
   }
@@ -10683,18 +11643,18 @@ class UsersWatchUserResponse implements ArriModel {
 
   @override
   List<Object?> get props => [
-    id,
-    role,
-    photo,
-    createdAt,
-    numFollowers,
-    settings,
-    recentNotifications,
-    bookmarks,
-    metadata,
-    randomList,
-    bio,
-  ];
+        id,
+        role,
+        photo,
+        createdAt,
+        numFollowers,
+        settings,
+        recentNotifications,
+        bookmarks,
+        metadata,
+        randomList,
+        bio,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10824,7 +11784,13 @@ class UserPhoto implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [url, width, height, bytes, nanoseconds];
+  List<Object?> get props => [
+        url,
+        width,
+        height,
+        bytes,
+        nanoseconds,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10856,13 +11822,10 @@ class UserSettings implements ArriModel {
   }
 
   factory UserSettings.fromJson(Map<String, dynamic> _input_) {
-    final notificationsEnabled = typeFromDynamic<bool>(
-      _input_["notificationsEnabled"],
-      false,
-    );
+    final notificationsEnabled =
+        typeFromDynamic<bool>(_input_["notificationsEnabled"], false);
     final preferredTheme = UserSettingsPreferredTheme.fromString(
-      typeFromDynamic<String>(_input_["preferredTheme"], ""),
-    );
+        typeFromDynamic<String>(_input_["preferredTheme"], ""));
     return UserSettings(
       notificationsEnabled: notificationsEnabled,
       preferredTheme: preferredTheme,
@@ -10908,7 +11871,10 @@ class UserSettings implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [notificationsEnabled, preferredTheme];
+  List<Object?> get props => [
+        notificationsEnabled,
+        preferredTheme,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -10956,32 +11922,25 @@ sealed class UsersWatchUserResponseRecentNotificationsElement
   }
 
   factory UsersWatchUserResponseRecentNotificationsElement.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
-    final notificationType = typeFromDynamic<String>(
-      _input_["notificationType"],
-      "",
-    );
+      Map<String, dynamic> _input_) {
+    final notificationType =
+        typeFromDynamic<String>(_input_["notificationType"], "");
     switch (notificationType) {
       case "POST_LIKE":
-        return UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
-          _input_,
-        );
+        return UsersWatchUserResponseRecentNotificationsElementPostLike
+            .fromJson(_input_);
       case "POST_COMMENT":
-        return UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
-          _input_,
-        );
+        return UsersWatchUserResponseRecentNotificationsElementPostComment
+            .fromJson(_input_);
       default:
         return UsersWatchUserResponseRecentNotificationsElement.empty();
     }
   }
 
   factory UsersWatchUserResponseRecentNotificationsElement.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return UsersWatchUserResponseRecentNotificationsElement.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 }
 
@@ -11005,8 +11964,7 @@ class UsersWatchUserResponseRecentNotificationsElementPostLike
   }
 
   factory UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final postId = typeFromDynamic<String>(_input_["postId"], "");
     final userId = typeFromDynamic<String>(_input_["userId"], "");
     return UsersWatchUserResponseRecentNotificationsElementPostLike(
@@ -11016,11 +11974,9 @@ class UsersWatchUserResponseRecentNotificationsElementPostLike
   }
 
   factory UsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -11060,7 +12016,10 @@ class UsersWatchUserResponseRecentNotificationsElementPostLike
   }
 
   @override
-  List<Object?> get props => [postId, userId];
+  List<Object?> get props => [
+        postId,
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -11100,8 +12059,7 @@ class UsersWatchUserResponseRecentNotificationsElementPostComment
   }
 
   factory UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final postId = typeFromDynamic<String>(_input_["postId"], "");
     final userId = typeFromDynamic<String>(_input_["userId"], "");
     final commentText = typeFromDynamic<String>(_input_["commentText"], "");
@@ -11113,11 +12071,9 @@ class UsersWatchUserResponseRecentNotificationsElementPostComment
   }
 
   factory UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonString(
-    String input,
-  ) {
+      String input) {
     return UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
-      json.decode(input),
-    );
+        json.decode(input));
   }
 
   @override
@@ -11161,7 +12117,11 @@ class UsersWatchUserResponseRecentNotificationsElementPostComment
   }
 
   @override
-  List<Object?> get props => [postId, userId, commentText];
+  List<Object?> get props => [
+        postId,
+        userId,
+        commentText,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -11188,15 +12148,20 @@ class UsersWatchUserResponseBookmarksentry implements ArriModel {
   });
 
   factory UsersWatchUserResponseBookmarksentry.empty() {
-    return UsersWatchUserResponseBookmarksentry(postId: "", userId: "");
+    return UsersWatchUserResponseBookmarksentry(
+      postId: "",
+      userId: "",
+    );
   }
 
   factory UsersWatchUserResponseBookmarksentry.fromJson(
-    Map<String, dynamic> _input_,
-  ) {
+      Map<String, dynamic> _input_) {
     final postId = typeFromDynamic<String>(_input_["postId"], "");
     final userId = typeFromDynamic<String>(_input_["userId"], "");
-    return UsersWatchUserResponseBookmarksentry(postId: postId, userId: userId);
+    return UsersWatchUserResponseBookmarksentry(
+      postId: postId,
+      userId: userId,
+    );
   }
 
   factory UsersWatchUserResponseBookmarksentry.fromJsonString(String input) {
@@ -11205,7 +12170,10 @@ class UsersWatchUserResponseBookmarksentry implements ArriModel {
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"postId": postId, "userId": userId};
+    final _output_ = <String, dynamic>{
+      "postId": postId,
+      "userId": userId,
+    };
 
     return _output_;
   }
@@ -11235,7 +12203,10 @@ class UsersWatchUserResponseBookmarksentry implements ArriModel {
   }
 
   @override
-  List<Object?> get props => [postId, userId];
+  List<Object?> get props => [
+        postId,
+        userId,
+      ];
 
   @override
   bool operator ==(Object other) {

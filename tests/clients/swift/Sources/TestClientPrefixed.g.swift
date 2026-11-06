@@ -147,10 +147,10 @@ public class TestClientPrefixed {
         )
         return result
     }
-    public func sendRecursiveUnion(_ params: FooRecursiveUnion) async throws -> FooRecursiveUnion {
-        let result: FooRecursiveUnion = try await parsedArriHttpRequest(
+    public func sendRecursiveUnionAdjacent(_ params: FooRecursiveUnionAdjacent) async throws -> FooRecursiveUnionAdjacent {
+        let result: FooRecursiveUnionAdjacent = try await parsedArriHttpRequest(
             delegate: self.delegate,
-            url: "\(self.baseURL)/rpcs/tests/send-recursive-union",
+            url: "\(self.baseURL)/rpcs/tests/send-recursive-union-adjacent",
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
@@ -159,10 +159,22 @@ public class TestClientPrefixed {
         )
         return result
     }
-    public func sendRecursiveUnionV2(_ params: FooRecursiveUnionV2) async throws -> FooRecursiveUnionV2 {
-        let result: FooRecursiveUnionV2 = try await parsedArriHttpRequest(
+    public func sendRecursiveUnionExternal(_ params: FooRecursiveUnionExternal) async throws -> FooRecursiveUnionExternal {
+        let result: FooRecursiveUnionExternal = try await parsedArriHttpRequest(
             delegate: self.delegate,
-            url: "\(self.baseURL)/rpcs/tests/send-recursive-union-v2",
+            url: "\(self.baseURL)/rpcs/tests/send-recursive-union-external",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        return result
+    }
+    public func sendRecursiveUnionInternal(_ params: FooRecursiveUnionInternal) async throws -> FooRecursiveUnionInternal {
+        let result: FooRecursiveUnionInternal = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-recursive-union-internal",
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
@@ -6050,35 +6062,47 @@ print("[WARNING] nested objects cannot be serialized to query params. Skipping f
 }
     
 
-public enum FooRecursiveUnion: ArriClientModel {
-    /// Child node
-    case child(FooRecursiveUnionChild)
-    /// List of children node
-    case children(FooRecursiveUnionChildren)
+public indirect enum FooRecursiveUnionAdjacent: ArriClientModel {
+    case child(FooRecursiveUnionAdjacent)
+    /// an array of child nodes
+    case children([FooRecursiveUnionAdjacent])
     /// Text node
-    case text(FooRecursiveUnionText)
+    case text(String)
     /// Shape node
-    case shape(FooRecursiveUnionShape)
+    case shape(FooRecursiveUnionAdjacentShape)
     public init() {
-        self = .children(FooRecursiveUnionChildren())
+        self = .children([])
     }
     public init(json: JSON) {
-        let __tag = json["type"].string ?? ""
+        let __tag = json["kind"].string ?? ""
         switch (__tag) {
-            case "CHILD":
-                self = .child(FooRecursiveUnionChild(json: json))
+            case "child":
+                var __variantValue: FooRecursiveUnionAdjacent
+        __variantValue = FooRecursiveUnionAdjacent(json: json["data"])
+                self = .child(__variantValue)
                 break
-            case "CHILDREN":
-                self = .children(FooRecursiveUnionChildren(json: json))
+            case "children":
+                var __variantValue: [FooRecursiveUnionAdjacent]
+                __variantValue = []
+            for __variantValueJsonElement in json["data"].array ?? [] {
+                var __variantValueJsonElementValue: FooRecursiveUnionAdjacent
+                __variantValueJsonElementValue = FooRecursiveUnionAdjacent(json: __variantValueJsonElement)
+                __variantValue.append(__variantValueJsonElementValue)
+            }
+                self = .children(__variantValue)
                 break
-            case "TEXT":
-                self = .text(FooRecursiveUnionText(json: json))
+            case "text":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .text(__variantValue)
                 break
-            case "SHAPE":
-                self = .shape(FooRecursiveUnionShape(json: json))
+            case "shape":
+                var __variantValue: FooRecursiveUnionAdjacentShape
+                __variantValue = FooRecursiveUnionAdjacentShape(json: json["data"])
+                self = .shape(__variantValue)
                 break
             default:
-                self = .children(FooRecursiveUnionChildren())
+                self = .children([])
                 break
         }
     }
@@ -6101,287 +6125,63 @@ public enum FooRecursiveUnion: ArriClientModel {
         }
     }
     public func toJSONString() -> String {
-        switch(self) {
-            case .child(let __innerVal):
-                return __innerVal.toJSONString()
-            case .children(let __innerVal):
-                return __innerVal.toJSONString()
-            case .text(let __innerVal):
-                return __innerVal.toJSONString()
-            case .shape(let __innerVal):
-                return __innerVal.toJSONString()
-        }
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        switch(self) {
-            case .child(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .children(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .text(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .shape(let __innerVal):
-                return __innerVal.toURLQueryParts()
-        }
-    }
-    public func clone() -> FooRecursiveUnion {
-        switch(self) {
-            case .child(let __innerVal):
-                return .child(__innerVal.clone())
-            case .children(let __innerVal):
-                return .children(__innerVal.clone())
-            case .text(let __innerVal):
-                return .text(__innerVal.clone())
-            case .shape(let __innerVal):
-                return .shape(__innerVal.clone())
-        }
-    }
-}
-
-/// Child node
-public final class FooRecursiveUnionChild: ArriClientModel {
-    let type: String = "CHILD"
-    public var data: FooRecursiveUnion = FooRecursiveUnion()
-    public required init(
-        data: FooRecursiveUnion
-    ) {
-            self.data = data
-    }
-    public required init() {}
-    public required init(json: JSON) {
-self.data = FooRecursiveUnion(json: json["data"])
-    }
-    public required convenience init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public required convenience init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
         var __json = "{"
-
-        __json += "\"type\":\"CHILD\""
-        __json += ",\"data\":"
-__json += self.data.toJSONString()
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "CHILD"))
-print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionChild/data.")
-        return __queryParts
-    }
-    public func clone() -> FooRecursiveUnionChild {
-
-        return FooRecursiveUnionChild(
-            data: self.data.clone()
-        )
-    }
-    public static func == (lhs: FooRecursiveUnionChild, rhs: FooRecursiveUnionChild) -> Bool {
-            return
-               lhs.type == rhs.type &&
-               lhs.data == rhs.data
-        }
-}
-    
-
-/// List of children node
-public struct FooRecursiveUnionChildren: ArriClientModel {
-    let type: String = "CHILDREN"
-    public var data: [FooRecursiveUnion] = []
-    public init(
-        data: [FooRecursiveUnion]
-    ) {
-            self.data = data
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.data = []
-            for __dataJsonElement in json["data"].array ?? [] {
-                var __dataJsonElementValue: FooRecursiveUnion
-                __dataJsonElementValue = FooRecursiveUnion(json: __dataJsonElement)
-                self.data.append(__dataJsonElementValue)
-            }
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"CHILDREN\""
-        __json += ",\"data\":"
-       __json += "["
-            for (__index, __element) in self.data.enumerated() {
+        switch(self) {
+            case .child(let __variantValue):
+                __json += "\"kind\":\"child\",\"data\":"
+        __json += __variantValue.toJSONString()
+                break
+            case .children(let __variantValue):
+                __json += "\"kind\":\"children\",\"data\":"
+               __json += "["
+            for (__index, __element) in __variantValue.enumerated() {
                 if __index > 0 {
                     __json += ","
                 }
                 __json += __element.toJSONString()
             }
             __json += "]"
+                break
+            case .text(let __variantValue):
+                __json += "\"kind\":\"text\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+            case .shape(let __variantValue):
+                __json += "\"kind\":\"shape\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+        }
         __json += "}"
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "CHILDREN"))
-        print("[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionChildren/data.")
-        return __queryParts
+        print("[WARNING] unions cannot be serialized to query params. Skipping FooRecursiveUnionAdjacent.")
+        return []
     }
-    public func clone() -> FooRecursiveUnionChildren {
-var __dataCloned: [FooRecursiveUnion] = []
-                for __dataElement in self.data {
+    public func clone() -> FooRecursiveUnionAdjacent {
+        switch(self) {
+            case .child(let __variantValue):
+                
+                return .child(__variantValue.clone())
+            case .children(let __variantValue):
+                var __variantValueCloned: [FooRecursiveUnionAdjacent] = []
+                for __variantValueElement in __variantValue {
                     
-                    __dataCloned.append(__dataElement.clone())
+                    __variantValueCloned.append(__variantValueElement.clone())
                 }
-        return FooRecursiveUnionChildren(
-            data: __dataCloned
-        )
-    }
-    
-}
-    
-
-/// Text node
-public struct FooRecursiveUnionText: ArriClientModel {
-    let type: String = "TEXT"
-    public var data: String = ""
-    public init(
-        data: String
-    ) {
-            self.data = data
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.data = json["data"].string ?? ""
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
+                return .children(__variantValueCloned)
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+            case .shape(let __variantValue):
+                
+                return .shape(__variantValue.clone())
         }
     }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"TEXT\""
-        __json += ",\"data\":"
-        __json += serializeString(input: self.data)
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "TEXT"))
-        __queryParts.append(URLQueryItem(name: "data", value: self.data))
-        return __queryParts
-    }
-    public func clone() -> FooRecursiveUnionText {
-
-        return FooRecursiveUnionText(
-            data: self.data
-        )
-    }
-    
 }
-    
 
 /// Shape node
-public struct FooRecursiveUnionShape: ArriClientModel {
-    let type: String = "SHAPE"
-    public var data: FooRecursiveUnionShapeData = FooRecursiveUnionShapeData()
-    public init(
-        data: FooRecursiveUnionShapeData
-    ) {
-            self.data = data
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.data = FooRecursiveUnionShapeData(json: json["data"])
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"SHAPE\""
-        __json += ",\"data\":"
-        __json += self.data.toJSONString()
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "SHAPE"))
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionShape/data.")
-        return __queryParts
-    }
-    public func clone() -> FooRecursiveUnionShape {
-
-        return FooRecursiveUnionShape(
-            data: self.data.clone()
-        )
-    }
-    
-}
-    
-public struct FooRecursiveUnionShapeData: ArriClientModel {
+public struct FooRecursiveUnionAdjacentShape: ArriClientModel {
     public var width: Float64 = 0.0
     public var height: Float64 = 0.0
     public var color: String = ""
@@ -6437,9 +6237,9 @@ public struct FooRecursiveUnionShapeData: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "color", value: self.color))
         return __queryParts
     }
-    public func clone() -> FooRecursiveUnionShapeData {
+    public func clone() -> FooRecursiveUnionAdjacentShape {
 
-        return FooRecursiveUnionShapeData(
+        return FooRecursiveUnionAdjacentShape(
             width: self.width,
             height: self.height,
             color: self.color
@@ -6449,28 +6249,28 @@ public struct FooRecursiveUnionShapeData: ArriClientModel {
 }
     
 
-public indirect enum FooRecursiveUnionV2: ArriClientModel {
-    case child(FooRecursiveUnionV2)
-    /// List of children nodes
-    case children([FooRecursiveUnionV2])
+public indirect enum FooRecursiveUnionExternal: ArriClientModel {
+    case child(FooRecursiveUnionExternal)
+    /// an array of child nodes
+    case children([FooRecursiveUnionExternal])
     /// Text node
     case text(String)
     /// Shape node
-    case shape(FooRecursiveUnionV2Shape)
+    case shape(FooRecursiveUnionExternalShape)
     public init() {
         self = .children([])
     }
     public init(json: JSON) {
         if json["child"].exists() {
-                var __variantValue: FooRecursiveUnionV2
-        __variantValue = FooRecursiveUnionV2(json: json["child"])
+                var __variantValue: FooRecursiveUnionExternal
+        __variantValue = FooRecursiveUnionExternal(json: json["child"])
                 self = .child(__variantValue)
         } else if json["children"].exists() {
-                var __variantValue: [FooRecursiveUnionV2]
+                var __variantValue: [FooRecursiveUnionExternal]
                 __variantValue = []
             for __variantValueJsonElement in json["children"].array ?? [] {
-                var __variantValueJsonElementValue: FooRecursiveUnionV2
-                __variantValueJsonElementValue = FooRecursiveUnionV2(json: __variantValueJsonElement)
+                var __variantValueJsonElementValue: FooRecursiveUnionExternal
+                __variantValueJsonElementValue = FooRecursiveUnionExternal(json: __variantValueJsonElement)
                 __variantValue.append(__variantValueJsonElementValue)
             }
                 self = .children(__variantValue)
@@ -6479,8 +6279,8 @@ public indirect enum FooRecursiveUnionV2: ArriClientModel {
                 __variantValue = json["text"].string ?? ""
                 self = .text(__variantValue)
         } else if json["shape"].exists() {
-                var __variantValue: FooRecursiveUnionV2Shape
-                __variantValue = FooRecursiveUnionV2Shape(json: json["shape"])
+                var __variantValue: FooRecursiveUnionExternalShape
+                __variantValue = FooRecursiveUnionExternalShape(json: json["shape"])
                 self = .shape(__variantValue)
         } else {
             self = .children([])
@@ -6535,16 +6335,16 @@ public indirect enum FooRecursiveUnionV2: ArriClientModel {
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
-        print("[WARNING] unions cannot be serialized to query params. Skipping FooRecursiveUnionV2.")
+        print("[WARNING] unions cannot be serialized to query params. Skipping FooRecursiveUnionExternal.")
         return []
     }
-    public func clone() -> FooRecursiveUnionV2 {
+    public func clone() -> FooRecursiveUnionExternal {
         switch(self) {
             case .child(let __variantValue):
                 
                 return .child(__variantValue.clone())
             case .children(let __variantValue):
-                var __variantValueCloned: [FooRecursiveUnionV2] = []
+                var __variantValueCloned: [FooRecursiveUnionExternal] = []
                 for __variantValueElement in __variantValue {
                     
                     __variantValueCloned.append(__variantValueElement.clone())
@@ -6561,7 +6361,7 @@ public indirect enum FooRecursiveUnionV2: ArriClientModel {
 }
 
 /// Shape node
-public struct FooRecursiveUnionV2Shape: ArriClientModel {
+public struct FooRecursiveUnionExternalShape: ArriClientModel {
     public var width: Float64 = 0.0
     public var height: Float64 = 0.0
     public var color: String = ""
@@ -6617,9 +6417,404 @@ public struct FooRecursiveUnionV2Shape: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "color", value: self.color))
         return __queryParts
     }
-    public func clone() -> FooRecursiveUnionV2Shape {
+    public func clone() -> FooRecursiveUnionExternalShape {
 
-        return FooRecursiveUnionV2Shape(
+        return FooRecursiveUnionExternalShape(
+            width: self.width,
+            height: self.height,
+            color: self.color
+        )
+    }
+    
+}
+    
+
+public enum FooRecursiveUnionInternal: ArriClientModel {
+    case child(FooRecursiveUnionInternalChild)
+    case children(FooRecursiveUnionInternalChildren)
+    case text(FooRecursiveUnionInternalText)
+    case shape(FooRecursiveUnionInternalShape)
+    public init() {
+        self = .children(FooRecursiveUnionInternalChildren())
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "child":
+                self = .child(FooRecursiveUnionInternalChild(json: json))
+                break
+            case "children":
+                self = .children(FooRecursiveUnionInternalChildren(json: json))
+                break
+            case "text":
+                self = .text(FooRecursiveUnionInternalText(json: json))
+                break
+            case "shape":
+                self = .shape(FooRecursiveUnionInternalShape(json: json))
+                break
+            default:
+                self = .children(FooRecursiveUnionInternalChildren())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .child(let __innerVal):
+                return __innerVal.toJSONString()
+            case .children(let __innerVal):
+                return __innerVal.toJSONString()
+            case .text(let __innerVal):
+                return __innerVal.toJSONString()
+            case .shape(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .child(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .children(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .text(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .shape(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> FooRecursiveUnionInternal {
+        switch(self) {
+            case .child(let __innerVal):
+                return .child(__innerVal.clone())
+            case .children(let __innerVal):
+                return .children(__innerVal.clone())
+            case .text(let __innerVal):
+                return .text(__innerVal.clone())
+            case .shape(let __innerVal):
+                return .shape(__innerVal.clone())
+        }
+    }
+}
+
+public final class FooRecursiveUnionInternalChild: ArriClientModel {
+    let kind: String = "child"
+    public var data: FooRecursiveUnionInternal = FooRecursiveUnionInternal()
+    public required init(
+        data: FooRecursiveUnionInternal
+    ) {
+            self.data = data
+    }
+    public required init() {}
+    public required init(json: JSON) {
+self.data = FooRecursiveUnionInternal(json: json["data"])
+    }
+    public required convenience init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public required convenience init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"child\""
+        __json += ",\"data\":"
+__json += self.data.toJSONString()
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "child"))
+print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChild/data.")
+        return __queryParts
+    }
+    public func clone() -> FooRecursiveUnionInternalChild {
+
+        return FooRecursiveUnionInternalChild(
+            data: self.data.clone()
+        )
+    }
+    public static func == (lhs: FooRecursiveUnionInternalChild, rhs: FooRecursiveUnionInternalChild) -> Bool {
+            return
+               lhs.kind == rhs.kind &&
+               lhs.data == rhs.data
+        }
+}
+    
+
+public struct FooRecursiveUnionInternalChildren: ArriClientModel {
+    let kind: String = "children"
+    /// an array of child nodes
+    public var data: [FooRecursiveUnionInternal] = []
+    public init(
+        data: [FooRecursiveUnionInternal]
+    ) {
+            self.data = data
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.data = []
+            for __dataJsonElement in json["data"].array ?? [] {
+                var __dataJsonElementValue: FooRecursiveUnionInternal
+                __dataJsonElementValue = FooRecursiveUnionInternal(json: __dataJsonElement)
+                self.data.append(__dataJsonElementValue)
+            }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"children\""
+        __json += ",\"data\":"
+       __json += "["
+            for (__index, __element) in self.data.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += __element.toJSONString()
+            }
+            __json += "]"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "children"))
+        print("[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChildren/data.")
+        return __queryParts
+    }
+    public func clone() -> FooRecursiveUnionInternalChildren {
+var __dataCloned: [FooRecursiveUnionInternal] = []
+                for __dataElement in self.data {
+                    
+                    __dataCloned.append(__dataElement.clone())
+                }
+        return FooRecursiveUnionInternalChildren(
+            data: __dataCloned
+        )
+    }
+    
+}
+    
+
+public struct FooRecursiveUnionInternalText: ArriClientModel {
+    let kind: String = "text"
+    /// Text node
+    public var data: String = ""
+    public init(
+        data: String
+    ) {
+            self.data = data
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.data = json["data"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"text\""
+        __json += ",\"data\":"
+        __json += serializeString(input: self.data)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "text"))
+        __queryParts.append(URLQueryItem(name: "data", value: self.data))
+        return __queryParts
+    }
+    public func clone() -> FooRecursiveUnionInternalText {
+
+        return FooRecursiveUnionInternalText(
+            data: self.data
+        )
+    }
+    
+}
+    
+
+public struct FooRecursiveUnionInternalShape: ArriClientModel {
+    let kind: String = "shape"
+    /// Shape node
+    public var data: FooRecursiveUnionInternalShapeData = FooRecursiveUnionInternalShapeData()
+    public init(
+        data: FooRecursiveUnionInternalShapeData
+    ) {
+            self.data = data
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.data = FooRecursiveUnionInternalShapeData(json: json["data"])
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"shape\""
+        __json += ",\"data\":"
+        __json += self.data.toJSONString()
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "shape"))
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalShape/data.")
+        return __queryParts
+    }
+    public func clone() -> FooRecursiveUnionInternalShape {
+
+        return FooRecursiveUnionInternalShape(
+            data: self.data.clone()
+        )
+    }
+    
+}
+    
+/// Shape node
+public struct FooRecursiveUnionInternalShapeData: ArriClientModel {
+    public var width: Float64 = 0.0
+    public var height: Float64 = 0.0
+    public var color: String = ""
+    public init(
+        width: Float64,
+        height: Float64,
+        color: String
+    ) {
+            self.width = width
+            self.height = height
+            self.color = color
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.width = json["width"].double ?? 0.0
+        self.height = json["height"].double ?? 0.0
+        self.color = json["color"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"width\":"
+        __json += "\(self.width)"
+        __json += ",\"height\":"
+        __json += "\(self.height)"
+        __json += ",\"color\":"
+        __json += serializeString(input: self.color)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "width", value: "\(self.width)"))
+        __queryParts.append(URLQueryItem(name: "height", value: "\(self.height)"))
+        __queryParts.append(URLQueryItem(name: "color", value: self.color))
+        return __queryParts
+    }
+    public func clone() -> FooRecursiveUnionInternalShapeData {
+
+        return FooRecursiveUnionInternalShapeData(
             width: self.width,
             height: self.height,
             color: self.color
