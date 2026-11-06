@@ -16,6 +16,7 @@ import { handleH3Error } from './errors';
 import { type MiddlewareEvent } from './middleware';
 import { type RouteOptions } from './route';
 import {
+    assertValidGetParams,
     getSchemaValidator,
     type HttpRpc,
     isRpc,
@@ -227,6 +228,7 @@ export function registerEventStreamRpc(
         ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
     const httpMethod = procedure.method ?? 'post';
+    assertValidGetParams(procedure.name, httpMethod, procedure.params);
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {

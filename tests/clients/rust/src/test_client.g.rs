@@ -308,6 +308,27 @@ impl TestClientTestsService {
         )
         .await
     }
+    /// GET requests send params through url query params. Only internally tagged unions can be represented this way.
+    pub async fn send_union_internal_get_request(
+        &self,
+        params: UnionInternalGetRequest,
+    ) -> Result<UnionInternalGetRequest, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-union-internal-get-request",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return UnionInternalGetRequest::from_json_string(body),
+        )
+        .await
+    }
     pub async fn stream_auto_reconnect<OnEvent>(
         &self,
         params: AutoReconnectParams,
@@ -7278,6 +7299,255 @@ impl ArriModel for RecursiveUnionInternalDataShape {
         _query_parts_.push(format!("height={}", &self.height));
         _query_parts_.push(format!("color={}", &self.color));
         _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum UnionInternalGetRequest {
+    WithFields {
+        string: String,
+        nullable_string: Option<String>,
+        float64: f64,
+        int64: i64,
+        boolean: bool,
+        timestamp: DateTime<FixedOffset>,
+        nullable_enum: Option<UnionInternalGetRequestNullableEnumWithFields>,
+        optional_string: Option<String>,
+    },
+    Empty {},
+}
+
+impl ArriModel for UnionInternalGetRequest {
+    fn new() -> Self {
+        Self::WithFields {
+            string: "".to_string(),
+            nullable_string: None,
+            float64: 0.0,
+            int64: 0,
+            boolean: false,
+            timestamp: DateTime::default(),
+            nullable_enum: None,
+            optional_string: None,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let kind = match _val_.get("kind") {
+                    Some(serde_json::Value::String(kind_val)) => kind_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                match kind.as_str() {
+                    "with-fields" => {
+                        let string = match _val_.get("string") {
+                            Some(serde_json::Value::String(string_val)) => string_val.to_owned(),
+                            _ => "".to_string(),
+                        };
+                        let nullable_string = match _val_.get("nullableString") {
+                            Some(serde_json::Value::String(nullable_string_val)) => {
+                                Some(nullable_string_val.to_owned())
+                            }
+                            _ => None,
+                        };
+                        let float64 = match _val_.get("float64") {
+                            Some(serde_json::Value::Number(float64_val)) => {
+                                float64_val.as_f64().unwrap_or(0.0)
+                            }
+                            _ => 0.0,
+                        };
+                        let int64 = match _val_.get("int64") {
+                            Some(serde_json::Value::String(int64_val)) => {
+                                int64_val.parse::<i64>().unwrap_or(0)
+                            }
+                            _ => 0,
+                        };
+                        let boolean = match _val_.get("boolean") {
+                            Some(serde_json::Value::Bool(boolean_val)) => boolean_val.to_owned(),
+                            _ => false,
+                        };
+                        let timestamp = match _val_.get("timestamp") {
+                            Some(serde_json::Value::String(timestamp_val)) => {
+                                DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
+                                    .unwrap_or(DateTime::default())
+                            }
+                            _ => DateTime::default(),
+                        };
+                        let nullable_enum = match _val_.get("nullableEnum") {
+                            Some(serde_json::Value::String(nullable_enum_val)) => {
+                                Some(UnionInternalGetRequestNullableEnumWithFields::from_string(
+                                    nullable_enum_val.to_owned(),
+                                ))
+                            }
+                            _ => None,
+                        };
+                        let optional_string = match _val_.get("optionalString") {
+                            Some(serde_json::Value::String(optional_string_val)) => {
+                                Some(optional_string_val.to_owned())
+                            }
+                            _ => None,
+                        };
+                        Self::WithFields {
+                            string,
+                            nullable_string,
+                            float64,
+                            int64,
+                            boolean,
+                            timestamp,
+                            nullable_enum,
+                            optional_string,
+                        }
+                    }
+                    "empty" => Self::Empty {},
+                    _ => Self::new(),
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        match &self {
+            Self::WithFields {
+                string,
+                nullable_string,
+                float64,
+                int64,
+                boolean,
+                timestamp,
+                nullable_enum,
+                optional_string,
+            } => {
+                _json_output_.push_str("\"kind\":\"with-fields\"");
+                _json_output_.push_str(",\"string\":");
+                _json_output_.push_str(serialize_string(string).as_str());
+                _json_output_.push_str(",\"nullableString\":");
+                match nullable_string {
+                    Some(nullable_string_val) => {
+                        _json_output_.push_str(serialize_string(nullable_string_val).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+                _json_output_.push_str(",\"float64\":");
+                _json_output_.push_str(float64.to_string().as_str());
+                _json_output_.push_str(",\"int64\":");
+                _json_output_.push_str(format!("\"{}\"", int64).as_str());
+                _json_output_.push_str(",\"boolean\":");
+                _json_output_.push_str(boolean.to_string().as_str());
+                _json_output_.push_str(",\"timestamp\":");
+                _json_output_.push_str(serialize_date_time(timestamp, true).as_str());
+                _json_output_.push_str(",\"nullableEnum\":");
+                match nullable_enum {
+                    Some(nullable_enum_val) => {
+                        _json_output_
+                            .push_str(format!("\"{}\"", nullable_enum_val.serial_value()).as_str());
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };
+                match optional_string {
+                    Some(optional_string_val) => {
+                        _json_output_.push_str(",\"optionalString\":");
+                        _json_output_.push_str(serialize_string(optional_string_val).as_str());
+                    }
+                    _ => {}
+                };
+            }
+            Self::Empty {} => {
+                _json_output_.push_str("\"kind\":\"empty\"");
+            }
+        }
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self {
+            Self::WithFields {
+                string,
+                nullable_string,
+                float64,
+                int64,
+                boolean,
+                timestamp,
+                nullable_enum,
+                optional_string,
+            } => {
+                _query_parts_.push(format!("kind=with-fields"));
+                _query_parts_.push(format!("string={}", string));
+                match nullable_string {
+                    Some(nullable_string_val) => {
+                        _query_parts_.push(format!("nullableString={}", nullable_string_val));
+                    }
+                    _ => {
+                        _query_parts_.push("nullableString=null".to_string());
+                    }
+                };
+                _query_parts_.push(format!("float64={}", float64));
+                _query_parts_.push(format!("int64={}", int64));
+                _query_parts_.push(format!("boolean={}", boolean));
+                _query_parts_.push(format!(
+                    "timestamp={}",
+                    serialize_date_time(timestamp, false)
+                ));
+                match nullable_enum {
+                    Some(nullable_enum_val) => {
+                        _query_parts_
+                            .push(format!("nullableEnum={}", nullable_enum_val.serial_value()));
+                    }
+                    _ => {
+                        _query_parts_.push("nullableEnum=null".to_string());
+                    }
+                };
+                match optional_string {
+                    Some(optional_string_val) => {
+                        _query_parts_.push(format!("optionalString={}", optional_string_val));
+                    }
+                    _ => {}
+                };
+            }
+            Self::Empty {} => {
+                _query_parts_.push(format!("kind=empty"));
+            }
+        }
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum UnionInternalGetRequestNullableEnumWithFields {
+    A,
+    B,
+}
+
+impl ArriEnum for UnionInternalGetRequestNullableEnumWithFields {
+    fn default() -> Self {
+        UnionInternalGetRequestNullableEnumWithFields::A
+    }
+    fn from_string(input: String) -> Self {
+        match input.as_str() {
+            "A" => Self::A,
+            "B" => Self::B,
+            _ => Self::default(),
+        }
+    }
+    fn serial_value(&self) -> String {
+        match &self {
+            UnionInternalGetRequestNullableEnumWithFields::A => "A".to_string(),
+            UnionInternalGetRequestNullableEnumWithFields::B => "B".to_string(),
+        }
     }
 }
 

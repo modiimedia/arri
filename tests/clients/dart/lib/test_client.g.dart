@@ -261,6 +261,22 @@ class TestClientTestsService {
     );
   }
 
+  /// GET requests send params through url query params. Only internally tagged unions can be represented this way.
+  Future<UnionInternalGetRequest> sendUnionInternalGetRequest(
+      UnionInternalGetRequest params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-union-internal-get-request",
+      method: HttpMethod.get,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => UnionInternalGetRequest.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
   EventSource<AutoReconnectResponse> streamAutoReconnect(
     AutoReconnectParams params, {
     void Function(AutoReconnectResponse data,
@@ -10197,6 +10213,271 @@ class RecursiveUnionInternalShapeData implements ArriModel {
   @override
   String toString() {
     return "RecursiveUnionInternalShapeData ${toJsonString()}";
+  }
+}
+
+sealed class UnionInternalGetRequest implements ArriModel {
+  String get kind;
+  const UnionInternalGetRequest();
+
+  factory UnionInternalGetRequest.empty() {
+    return UnionInternalGetRequestWithFields.empty();
+  }
+
+  factory UnionInternalGetRequest.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "with-fields":
+        return UnionInternalGetRequestWithFields.fromJson(_input_);
+      case "empty":
+        return UnionInternalGetRequestEmpty.fromJson(_input_);
+      default:
+        return UnionInternalGetRequest.empty();
+    }
+  }
+
+  factory UnionInternalGetRequest.fromJsonString(String input) {
+    return UnionInternalGetRequest.fromJson(json.decode(input));
+  }
+}
+
+class UnionInternalGetRequestWithFields implements UnionInternalGetRequest {
+  final String string;
+  final String? nullableString;
+  final double float64;
+  final BigInt int64;
+  final bool boolean;
+  final DateTime timestamp;
+  final UnionInternalGetRequestWithFieldsNullableEnum? nullableEnum;
+  final String? optionalString;
+  const UnionInternalGetRequestWithFields({
+    required this.string,
+    required this.nullableString,
+    required this.float64,
+    required this.int64,
+    required this.boolean,
+    required this.timestamp,
+    required this.nullableEnum,
+    this.optionalString,
+  });
+
+  @override
+  String get kind => "with-fields";
+
+  factory UnionInternalGetRequestWithFields.empty() {
+    return UnionInternalGetRequestWithFields(
+      string: "",
+      nullableString: null,
+      float64: 0.0,
+      int64: BigInt.zero,
+      boolean: false,
+      timestamp: DateTime(0),
+      nullableEnum: null,
+    );
+  }
+
+  factory UnionInternalGetRequestWithFields.fromJson(
+      Map<String, dynamic> _input_) {
+    final string = typeFromDynamic<String>(_input_["string"], "");
+    final nullableString =
+        nullableTypeFromDynamic<String>(_input_["nullableString"]);
+    final float64 = doubleFromDynamic(_input_["float64"], 0.0);
+    final int64 = bigIntFromDynamic(_input_["int64"], BigInt.zero);
+    final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
+    final nullableEnum = _input_["nullableEnum"] is String
+        ? UnionInternalGetRequestWithFieldsNullableEnum.fromString(
+            _input_["nullableEnum"])
+        : null;
+    final optionalString =
+        nullableTypeFromDynamic<String>(_input_["optionalString"]);
+    return UnionInternalGetRequestWithFields(
+      string: string,
+      nullableString: nullableString,
+      float64: float64,
+      int64: int64,
+      boolean: boolean,
+      timestamp: timestamp,
+      nullableEnum: nullableEnum,
+      optionalString: optionalString,
+    );
+  }
+
+  factory UnionInternalGetRequestWithFields.fromJsonString(String input) {
+    return UnionInternalGetRequestWithFields.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "string": string,
+      "nullableString": nullableString,
+      "float64": float64,
+      "int64": int64.toString(),
+      "boolean": boolean,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "nullableEnum": nullableEnum?.serialValue,
+    };
+    if (optionalString != null) _output_["optionalString"] = optionalString;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    _queryParts_.add("string=$string");
+    _queryParts_.add("nullableString=$nullableString");
+    _queryParts_.add("float64=$float64");
+    _queryParts_.add("int64=$int64");
+    _queryParts_.add("boolean=$boolean");
+    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("nullableEnum=${nullableEnum?.serialValue}");
+    if (optionalString != null)
+      _queryParts_.add("optionalString=$optionalString");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  UnionInternalGetRequestWithFields copyWith({
+    String? string,
+    String? Function()? nullableString,
+    double? float64,
+    BigInt? int64,
+    bool? boolean,
+    DateTime? timestamp,
+    UnionInternalGetRequestWithFieldsNullableEnum? Function()? nullableEnum,
+    String? Function()? optionalString,
+  }) {
+    return UnionInternalGetRequestWithFields(
+      string: string ?? this.string,
+      nullableString:
+          nullableString != null ? nullableString() : this.nullableString,
+      float64: float64 ?? this.float64,
+      int64: int64 ?? this.int64,
+      boolean: boolean ?? this.boolean,
+      timestamp: timestamp ?? this.timestamp,
+      nullableEnum: nullableEnum != null ? nullableEnum() : this.nullableEnum,
+      optionalString:
+          optionalString != null ? optionalString() : this.optionalString,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        string,
+        nullableString,
+        float64,
+        int64,
+        boolean,
+        timestamp,
+        nullableEnum,
+        optionalString,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionInternalGetRequestWithFields &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionInternalGetRequestWithFields ${toJsonString()}";
+  }
+}
+
+enum UnionInternalGetRequestWithFieldsNullableEnum
+    implements Comparable<UnionInternalGetRequestWithFieldsNullableEnum> {
+  a("A"),
+  b("B");
+
+  const UnionInternalGetRequestWithFieldsNullableEnum(this.serialValue);
+  final String serialValue;
+
+  factory UnionInternalGetRequestWithFieldsNullableEnum.fromString(
+      String input) {
+    for (final val in values) {
+      if (val.serialValue == input) {
+        return val;
+      }
+    }
+    return a;
+  }
+
+  @override
+  int compareTo(UnionInternalGetRequestWithFieldsNullableEnum other) =>
+      name.compareTo(other.name);
+}
+
+class UnionInternalGetRequestEmpty implements UnionInternalGetRequest {
+  const UnionInternalGetRequestEmpty();
+
+  @override
+  String get kind => "empty";
+
+  factory UnionInternalGetRequestEmpty.empty() {
+    return UnionInternalGetRequestEmpty();
+  }
+
+  factory UnionInternalGetRequestEmpty.fromJson(Map<String, dynamic> _input_) {
+    return UnionInternalGetRequestEmpty();
+  }
+
+  factory UnionInternalGetRequestEmpty.fromJsonString(String input) {
+    return UnionInternalGetRequestEmpty.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  UnionInternalGetRequestEmpty copyWith() {
+    return UnionInternalGetRequestEmpty();
+  }
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionInternalGetRequestEmpty &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionInternalGetRequestEmpty ${toJsonString()}";
   }
 }
 

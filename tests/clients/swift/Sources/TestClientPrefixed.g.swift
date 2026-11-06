@@ -183,6 +183,19 @@ public class TestClientPrefixed {
         )
         return result
     }
+    /// GET requests send params through url query params. Only internally tagged unions can be represented this way.
+    public func sendUnionInternalGetRequest(_ params: FooUnionInternalGetRequest) async throws -> FooUnionInternalGetRequest {
+        let result: FooUnionInternalGetRequest = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-union-internal-get-request",
+            method: "GET",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        return result
+    }
     public func streamAutoReconnect(_ params: FooAutoReconnectParams, options: EventSourceOptions<FooAutoReconnectResponse>) -> Task<(), Never> {
         let task = Task {
             var eventSource = EventSource<FooAutoReconnectResponse>(
@@ -6818,6 +6831,284 @@ public struct FooRecursiveUnionInternalShapeData: ArriClientModel {
             width: self.width,
             height: self.height,
             color: self.color
+        )
+    }
+    
+}
+    
+
+public enum FooUnionInternalGetRequest: ArriClientModel {
+    case withFields(FooUnionInternalGetRequestWithFields)
+    case empty(FooUnionInternalGetRequestEmpty)
+    public init() {
+        self = .withFields(FooUnionInternalGetRequestWithFields())
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "with-fields":
+                self = .withFields(FooUnionInternalGetRequestWithFields(json: json))
+                break
+            case "empty":
+                self = .empty(FooUnionInternalGetRequestEmpty(json: json))
+                break
+            default:
+                self = .withFields(FooUnionInternalGetRequestWithFields())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .withFields(let __innerVal):
+                return __innerVal.toJSONString()
+            case .empty(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .withFields(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .empty(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> FooUnionInternalGetRequest {
+        switch(self) {
+            case .withFields(let __innerVal):
+                return .withFields(__innerVal.clone())
+            case .empty(let __innerVal):
+                return .empty(__innerVal.clone())
+        }
+    }
+}
+
+public struct FooUnionInternalGetRequestWithFields: ArriClientModel {
+    let kind: String = "with-fields"
+    public var string: String = ""
+    public var nullableString: String?
+    public var float64: Float64 = 0.0
+    public var int64: Int64 = 0
+    public var boolean: Bool = false
+    public var timestamp: Date = Date()
+    public var nullableEnum: FooUnionInternalGetRequestWithFieldsNullableEnum?
+    public var optionalString: String?
+    public init(
+        string: String,
+        nullableString: String?,
+        float64: Float64,
+        int64: Int64,
+        boolean: Bool,
+        timestamp: Date,
+        nullableEnum: FooUnionInternalGetRequestWithFieldsNullableEnum?,
+        optionalString: String?
+    ) {
+            self.string = string
+            self.nullableString = nullableString
+            self.float64 = float64
+            self.int64 = int64
+            self.boolean = boolean
+            self.timestamp = timestamp
+            self.nullableEnum = nullableEnum
+            self.optionalString = optionalString
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.string = json["string"].string ?? ""
+        if json["nullableString"].string != nil {
+            self.nullableString = json["nullableString"].string
+        }
+        self.float64 = json["float64"].double ?? 0.0
+        self.int64 = Int64(json["int64"].string ?? "0") ?? 0
+        self.boolean = json["boolean"].bool ?? false
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        if json["nullableEnum"].string != nil {
+                    self.nullableEnum = FooUnionInternalGetRequestWithFieldsNullableEnum(serialValue: json["nullableEnum"].string ?? "")
+                }
+        if json["optionalString"].exists() {
+            self.optionalString = json["optionalString"].string    
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"with-fields\""
+        __json += ",\"string\":"
+        __json += serializeString(input: self.string)
+        __json += ",\"nullableString\":"
+        if self.nullableString != nil {
+                    __json += serializeString(input: self.nullableString!)
+                } else {
+                    __json += "null" 
+                }
+        __json += ",\"float64\":"
+        __json += "\(self.float64)"
+        __json += ",\"int64\":"
+        __json += "\"\(self.int64)\""
+        __json += ",\"boolean\":"
+        __json += "\(self.boolean)"
+        __json += ",\"timestamp\":"
+        __json += serializeDate(self.timestamp)
+        __json += ",\"nullableEnum\":"
+        if self.nullableEnum != nil {
+                    __json += "\"\(self.nullableEnum!.serialValue())\""
+                } else {
+                    __json += "null" 
+                }
+        if self.optionalString != nil {
+                    __json += ",\"optionalString\":"
+        __json += serializeString(input: self.optionalString!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "with-fields"))
+        __queryParts.append(URLQueryItem(name: "string", value: self.string))
+        if self.nullableString != nil {
+                    __queryParts.append(URLQueryItem(name: "nullableString", value: self.nullableString!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "nullableString", value: "null")) 
+                }
+        __queryParts.append(URLQueryItem(name: "float64", value: "\(self.float64)"))
+        __queryParts.append(URLQueryItem(name: "int64", value: "\(self.int64)"))
+        __queryParts.append(URLQueryItem(name: "boolean", value: "\(self.boolean)"))
+        __queryParts.append(URLQueryItem(name: "timestamp", value: serializeDate(self.timestamp, withQuotes: false)))
+        if self.nullableEnum != nil {
+                    __queryParts.append(URLQueryItem(name: "nullableEnum", value: self.nullableEnum!.serialValue()))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "nullableEnum", value: "null")) 
+                }
+        if self.optionalString != nil {
+                    __queryParts.append(URLQueryItem(name: "optionalString", value: self.optionalString!))
+                }
+        return __queryParts
+    }
+    public func clone() -> FooUnionInternalGetRequestWithFields {
+
+        return FooUnionInternalGetRequestWithFields(
+            string: self.string,
+            nullableString: self.nullableString,
+            float64: self.float64,
+            int64: self.int64,
+            boolean: self.boolean,
+            timestamp: self.timestamp,
+            nullableEnum: self.nullableEnum,
+            optionalString: self.optionalString
+        )
+    }
+    
+}
+    
+public enum FooUnionInternalGetRequestWithFieldsNullableEnum: ArriClientEnum {
+    case a
+    case b
+    public init() {
+        self = .a
+    }
+    public init(serialValue: String) {
+        switch(serialValue) {
+            case "A":
+                self = .a
+                break;
+            case "B":
+                self = .b
+                break;
+            default:
+                self = .a
+        }
+    }
+    public func serialValue() -> String {
+        switch (self) {
+            case .a:
+                return "A"
+            case .b:
+                return "B"
+        }
+    }
+}
+public struct FooUnionInternalGetRequestEmpty: ArriClientModel {
+    let kind: String = "empty"
+    public init(
+
+    ) {
+
+    }
+    
+    public init(json: JSON) {
+
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"empty\""
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "empty"))
+        return __queryParts
+    }
+    public func clone() -> FooUnionInternalGetRequestEmpty {
+
+        return FooUnionInternalGetRequestEmpty(
+
         )
     }
     

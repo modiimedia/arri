@@ -365,6 +365,27 @@ export class TestClientTestsService {
             options: options ?? this._options,
         });
     }
+    /**
+     * GET requests send params through url query params. Only internally tagged unions can be represented this way.
+     */
+    async sendUnionInternalGetRequest(
+        params: UnionInternalGetRequest,
+        options?: ArriRequestOptions,
+    ): Promise<UnionInternalGetRequest> {
+        return arriRequest<UnionInternalGetRequest, UnionInternalGetRequest>({
+            url: `${this._baseUrl}/rpcs/tests/send-union-internal-get-request`,
+            method: 'get',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: UnionInternalGetRequestFromJson,
+            responseFromString: UnionInternalGetRequestFromJsonString,
+            serializer: UnionInternalGetRequestToUrlSearchParamsString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
     streamAutoReconnect(
         params: AutoReconnectParams,
         options: SseOptions<AutoReconnectResponse> = {},
@@ -10928,6 +10949,405 @@ export const $$RecursiveUnionInternalShapeData: TestClientValidator<RecursiveUni
         toUrlSearchParamsString:
             RecursiveUnionInternalShapeDataToUrlSearchParamsString,
     };
+
+export type UnionInternalGetRequest =
+    | UnionInternalGetRequestWithFields
+    | UnionInternalGetRequestEmpty;
+export function UnionInternalGetRequestNew(): UnionInternalGetRequest {
+    return UnionInternalGetRequestWithFieldsNew();
+}
+export function UnionInternalGetRequestValidate(
+    input: unknown,
+): input is UnionInternalGetRequest {
+    return (
+        UnionInternalGetRequestWithFieldsValidate(input) ||
+        UnionInternalGetRequestEmptyValidate(input)
+    );
+}
+export function UnionInternalGetRequestClone(
+    input: UnionInternalGetRequest,
+): UnionInternalGetRequest {
+    switch (input.kind) {
+        case `with-fields`: {
+            let __value__: UnionInternalGetRequestWithFields;
+            __value__ = UnionInternalGetRequestWithFieldsClone(input);
+            return __value__;
+        }
+
+        case `empty`: {
+            let __value__: UnionInternalGetRequestEmpty;
+            __value__ = UnionInternalGetRequestEmptyClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionInternalGetRequestFromJson(
+    input: Record<string, unknown>,
+): UnionInternalGetRequest {
+    switch (input.kind) {
+        case `with-fields`: {
+            return UnionInternalGetRequestWithFieldsFromJson(input);
+        }
+        case `empty`: {
+            return UnionInternalGetRequestEmptyFromJson(input);
+        }
+        default: {
+            return UnionInternalGetRequestWithFieldsNew();
+        }
+    }
+}
+export function UnionInternalGetRequestFromJsonString(
+    input: string,
+): UnionInternalGetRequest {
+    return UnionInternalGetRequestFromJson(JSON.parse(input));
+}
+export function UnionInternalGetRequestToJsonString(
+    input: UnionInternalGetRequest,
+): string {
+    switch (input.kind) {
+        case `with-fields`: {
+            return UnionInternalGetRequestWithFieldsToJsonString(input);
+        }
+
+        case `empty`: {
+            return UnionInternalGetRequestEmptyToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionInternalGetRequestToUrlSearchParams(
+    input: UnionInternalGetRequest,
+): URLSearchParams {
+    switch (input.kind) {
+        case `with-fields`: {
+            return UnionInternalGetRequestWithFieldsToUrlSearchParams(input);
+        }
+        case `empty`: {
+            return UnionInternalGetRequestEmptyToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionInternalGetRequestToUrlSearchParamsString(
+    input: UnionInternalGetRequest,
+): string {
+    return UnionInternalGetRequestToUrlSearchParams(input).toString();
+}
+export const $$UnionInternalGetRequest: TestClientValidator<UnionInternalGetRequest> =
+    {
+        new: UnionInternalGetRequestNew,
+        validate: UnionInternalGetRequestValidate,
+        clone: UnionInternalGetRequestClone,
+        fromJson: UnionInternalGetRequestFromJson,
+        fromJsonString: UnionInternalGetRequestFromJsonString,
+        toJsonString: UnionInternalGetRequestToJsonString,
+        toUrlSearchParams: UnionInternalGetRequestToUrlSearchParams,
+        toUrlSearchParamsString: UnionInternalGetRequestToUrlSearchParamsString,
+    };
+export interface UnionInternalGetRequestWithFields {
+    kind: `with-fields`;
+    string: string;
+    nullableString: string | null;
+    float64: number;
+    int64: bigint;
+    boolean: boolean;
+    timestamp: Date;
+    nullableEnum: UnionInternalGetRequestWithFieldsNullableEnum | null;
+    optionalString?: string;
+}
+export function UnionInternalGetRequestWithFieldsNew(): UnionInternalGetRequestWithFields {
+    return {
+        kind: `with-fields`,
+        string: '',
+        nullableString: null,
+        float64: 0,
+        int64: BigInt(0),
+        boolean: false,
+        timestamp: new Date(0),
+        nullableEnum: null,
+    };
+}
+export function UnionInternalGetRequestWithFieldsValidate(
+    input: unknown,
+): input is UnionInternalGetRequestWithFields {
+    return (
+        isObject(input) &&
+        input.kind === `with-fields` &&
+        typeof input.string === 'string' &&
+        (typeof input.nullableString === 'string' ||
+            input.nullableString === null) &&
+        typeof input.float64 === 'number' &&
+        typeof input.int64 === 'bigint' &&
+        input.int64 >= INT64_MIN &&
+        input.int64 <= INT64_MAX &&
+        typeof input.boolean === 'boolean' &&
+        input.timestamp instanceof Date &&
+        (UnionInternalGetRequestWithFieldsNullableEnumValidate(
+            input.nullableEnum,
+        ) ||
+            input.nullableEnum === null) &&
+        (typeof input.optionalString === 'string' ||
+            typeof input.optionalString === 'undefined')
+    );
+}
+export function UnionInternalGetRequestWithFieldsClone(
+    input: UnionInternalGetRequestWithFields,
+): UnionInternalGetRequestWithFields {
+    const _kind = `with-fields`;
+    let _string: string;
+    _string = input.string;
+    let _nullableString: string | null;
+    _nullableString = input.nullableString;
+    let _float64: number;
+    _float64 = input.float64;
+    let _int64: bigint;
+    _int64 = input.int64;
+    let _boolean: boolean;
+    _boolean = input.boolean;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _nullableEnum: UnionInternalGetRequestWithFieldsNullableEnum | null;
+    _nullableEnum = input.nullableEnum;
+    let _optionalString: string | undefined;
+    if (typeof input.optionalString !== 'undefined') {
+        _optionalString = input.optionalString;
+    }
+    return {
+        kind: _kind,
+        string: _string,
+        nullableString: _nullableString,
+        float64: _float64,
+        int64: _int64,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        nullableEnum: _nullableEnum,
+        optionalString: _optionalString,
+    };
+}
+export function UnionInternalGetRequestWithFieldsFromJson(
+    input: Record<string, unknown>,
+): UnionInternalGetRequestWithFields {
+    const _kind = `with-fields`;
+    let _string: string;
+    _string = parseString(input.string);
+    let _nullableString: string | null;
+    _nullableString = parseNullableString(input.nullableString);
+    let _float64: number;
+    _float64 = parseNumberFloat(input.float64);
+    let _int64: bigint;
+    _int64 = parseNumberBigInt(input.int64);
+    let _boolean: boolean;
+    _boolean = parseBoolean(input.boolean);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _nullableEnum: UnionInternalGetRequestWithFieldsNullableEnum | null;
+    if (typeof input.nullableEnum === 'string') {
+        _nullableEnum =
+            UnionInternalGetRequestWithFieldsNullableEnumFromSerialValue(
+                input.nullableEnum,
+            );
+    } else {
+        _nullableEnum = null;
+    }
+    let _optionalString: string | undefined;
+    if (typeof input.optionalString !== 'undefined') {
+        _optionalString = parseString(input.optionalString);
+    }
+    return {
+        kind: _kind,
+        string: _string,
+        nullableString: _nullableString,
+        float64: _float64,
+        int64: _int64,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        nullableEnum: _nullableEnum,
+        optionalString: _optionalString,
+    };
+}
+export function UnionInternalGetRequestWithFieldsFromJsonString(
+    input: string,
+): UnionInternalGetRequestWithFields {
+    return UnionInternalGetRequestWithFieldsFromJson(JSON.parse(input));
+}
+export function UnionInternalGetRequestWithFieldsToJsonString(
+    input: UnionInternalGetRequestWithFields,
+): string {
+    let json = '{';
+    json += '"kind":"with-fields"';
+    json += ',"string":';
+    json += serializeString(input.string);
+    json += ',"nullableString":';
+    if (typeof input.nullableString === 'string') {
+        json += serializeString(input.nullableString);
+    } else {
+        json += 'null';
+    }
+    json += ',"float64":';
+    json += `${input.float64}`;
+    json += ',"int64":';
+    json += `"${input.int64}"`;
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"nullableEnum":';
+    if (typeof input.nullableEnum === 'string') {
+        json += `"${input.nullableEnum}"`;
+    } else {
+        json += 'null';
+    }
+    if (typeof input.optionalString !== 'undefined') {
+        json += `,"optionalString":`;
+        json += serializeString(input.optionalString);
+    }
+    json += '}';
+    return json;
+}
+export function UnionInternalGetRequestWithFieldsToUrlSearchParams(
+    input: UnionInternalGetRequestWithFields,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `with-fields`);
+    params.set('string', input.string);
+    params.set('nullableString', `${input.nullableString}`);
+    params.set('float64', `${input.float64}`);
+    params.set('int64', `${input.int64}`);
+    params.set('boolean', `${input.boolean}`);
+    params.set('timestamp', input.timestamp.toISOString());
+    params.set('nullableEnum', `${input.nullableEnum}`);
+    if (typeof input.optionalString !== 'undefined') {
+        params.set('optionalString', input.optionalString);
+    }
+    return params;
+}
+export function UnionInternalGetRequestWithFieldsToUrlSearchParamsString(
+    input: UnionInternalGetRequestWithFields,
+): string {
+    return UnionInternalGetRequestWithFieldsToUrlSearchParams(input).toString();
+}
+
+export type UnionInternalGetRequestWithFieldsNullableEnum = 'A' | 'B';
+export const UnionInternalGetRequestWithFieldsNullableEnum = {
+    A: 'A',
+    B: 'B',
+} as const;
+export const UnionInternalGetRequestWithFieldsNullableEnumValues = [
+    'A',
+    'B',
+] as const;
+export function UnionInternalGetRequestWithFieldsNullableEnumNew(): UnionInternalGetRequestWithFieldsNullableEnum {
+    return UnionInternalGetRequestWithFieldsNullableEnumValues[0];
+}
+export function UnionInternalGetRequestWithFieldsNullableEnumValidate(
+    input: unknown,
+): input is UnionInternalGetRequestWithFieldsNullableEnum {
+    return (
+        typeof input === 'string' &&
+        UnionInternalGetRequestWithFieldsNullableEnumValues.includes(
+            input as any,
+        )
+    );
+}
+export function UnionInternalGetRequestWithFieldsNullableEnumFromSerialValue(
+    input: string,
+): UnionInternalGetRequestWithFieldsNullableEnum {
+    if (
+        UnionInternalGetRequestWithFieldsNullableEnumValues.includes(
+            input as any,
+        )
+    ) {
+        return input as UnionInternalGetRequestWithFieldsNullableEnum;
+    }
+    if (
+        UnionInternalGetRequestWithFieldsNullableEnumValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as UnionInternalGetRequestWithFieldsNullableEnum;
+    }
+    if (
+        UnionInternalGetRequestWithFieldsNullableEnumValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as UnionInternalGetRequestWithFieldsNullableEnum;
+    }
+    return 'A';
+}
+export const $$UnionInternalGetRequestWithFieldsNullableEnum: TestClientEnumValidator<UnionInternalGetRequestWithFieldsNullableEnum> =
+    {
+        new: UnionInternalGetRequestWithFieldsNullableEnumNew,
+        validate: UnionInternalGetRequestWithFieldsNullableEnumValidate,
+        values: UnionInternalGetRequestWithFieldsNullableEnumValues,
+        fromSerialValue:
+            UnionInternalGetRequestWithFieldsNullableEnumFromSerialValue,
+    };
+export interface UnionInternalGetRequestEmpty {
+    kind: `empty`;
+}
+export function UnionInternalGetRequestEmptyNew(): UnionInternalGetRequestEmpty {
+    return {
+        kind: `empty`,
+    };
+}
+export function UnionInternalGetRequestEmptyValidate(
+    input: unknown,
+): input is UnionInternalGetRequestEmpty {
+    return isObject(input) && input.kind === `empty`;
+}
+export function UnionInternalGetRequestEmptyClone(
+    input: UnionInternalGetRequestEmpty,
+): UnionInternalGetRequestEmpty {
+    const _kind = `empty`;
+    return {
+        kind: _kind,
+    };
+}
+export function UnionInternalGetRequestEmptyFromJson(
+    input: Record<string, unknown>,
+): UnionInternalGetRequestEmpty {
+    const _kind = `empty`;
+    return {
+        kind: _kind,
+    };
+}
+export function UnionInternalGetRequestEmptyFromJsonString(
+    input: string,
+): UnionInternalGetRequestEmpty {
+    return UnionInternalGetRequestEmptyFromJson(JSON.parse(input));
+}
+export function UnionInternalGetRequestEmptyToJsonString(
+    input: UnionInternalGetRequestEmpty,
+): string {
+    let json = '{';
+    json += '"kind":"empty"';
+    json += '}';
+    return json;
+}
+export function UnionInternalGetRequestEmptyToUrlSearchParams(
+    input: UnionInternalGetRequestEmpty,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `empty`);
+    return params;
+}
+export function UnionInternalGetRequestEmptyToUrlSearchParamsString(
+    input: UnionInternalGetRequestEmpty,
+): string {
+    return UnionInternalGetRequestEmptyToUrlSearchParams(input).toString();
+}
 
 export interface AutoReconnectParams {
     messageCount: number;

@@ -232,6 +232,22 @@ function getRpcResponseDefinition(
     return name;
 }
 
+/**
+ * GET requests receive params through url query params.
+ * Only internally tagged unions keep all of their fields at the top level, so it's the only union style that can be represented.
+ */
+export function assertValidGetParams(
+    rpcName: string,
+    httpMethod: RpcHttpMethod,
+    params: unknown,
+) {
+    if (httpMethod !== 'get' || !isAUnionSchema(params)) return;
+    if (params.tagKey && !params.valueKey) return;
+    throw new Error(
+        `Error registering ${rpcName}. GET requests receive params through url query params and only internally tagged unions can be used as url query params. Use a different http method such as POST for these params.`,
+    );
+}
+
 export function registerRpc(
     router: Router,
     path: string,
@@ -245,6 +261,7 @@ export function registerRpc(
         ? getSchemaValidator(procedure.name, 'response', procedure.response)
         : undefined;
     const httpMethod = procedure.method ?? 'post';
+    assertValidGetParams(procedure.name, httpMethod, procedure.params);
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {

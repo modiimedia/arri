@@ -4,6 +4,7 @@ import { FetchError, ofetch } from 'ofetch';
 import { assertType, describe, expect, test } from 'vitest';
 
 import {
+    $$ObjectWithEveryType,
     $$ObjectWithEveryTypeEnumerator,
     type ObjectWithEveryNullableType,
     type ObjectWithEveryOptionalType,
@@ -17,6 +18,7 @@ import {
     RecursiveUnionExternal,
     RecursiveUnionInternal,
     TestClient,
+    type UnionInternalGetRequest,
 } from './testClient.g';
 
 // function wait(ms: number) {
@@ -145,6 +147,7 @@ test('enum types resolve properly', async () => {
 test('can send/receive object every field type', async () => {
     const result = await client.tests.sendObject(input);
     expect(result).toStrictEqual(input);
+    expect($$ObjectWithEveryType.validate(result)).toBe(true);
 });
 test('can send/receive object with transformed keys', async () => {
     const snakeCasePayload: ObjectWithSnakeCaseKeys = {
@@ -444,6 +447,63 @@ describe('can send/receive recursive unions', () => {
         const result = await client.tests.sendRecursiveUnionAdjacent(payload);
         expect(result).toStrictEqual(payload);
     });
+});
+
+describe('can send/receive internally tagged unions with GET requests', () => {
+    const timestamp = new Date('2001-01-01T16:00:00.000Z');
+    const cases: Record<string, UnionInternalGetRequest> = {
+        'empty variant': { kind: 'empty' },
+        'null values': {
+            kind: 'with-fields',
+            string: 'hello world',
+            nullableString: null,
+            float64: 1.5,
+            int64: BigInt('-5'),
+            boolean: false,
+            timestamp,
+            nullableEnum: null,
+        },
+        'all values set': {
+            kind: 'with-fields',
+            string: 'hello world',
+            nullableString: 'hello world',
+            optionalString: 'hello world',
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp,
+            nullableEnum: 'B',
+        },
+        'values that need to be url encoded': {
+            kind: 'with-fields',
+            string: 'a b&c=d/\u00e9?#+',
+            nullableString: 'a b&c=d/\u00e9?#+',
+            optionalString: 'a b&c=d/\u00e9?#+',
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp,
+            nullableEnum: 'A',
+        },
+        'non-nullable string set to "null"': {
+            kind: 'with-fields',
+            string: 'null',
+            nullableString: null,
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp,
+            nullableEnum: null,
+        },
+    };
+    for (const name of Object.keys(cases)) {
+        test(name, async () => {
+            const payload = cases[name]!;
+            const result =
+                await client.tests.sendUnionInternalGetRequest(payload);
+            expect(result).toEqual(payload);
+        });
+    }
 });
 
 test('onError hook fires properly', async () => {

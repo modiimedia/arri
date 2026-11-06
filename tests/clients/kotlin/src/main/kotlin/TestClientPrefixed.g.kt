@@ -384,6 +384,36 @@ class TestClientPrefixed(
         }
     }
 
+    /**
+     * GET requests send params through url query params. Only internally tagged unions can be represented this way.
+     */
+    suspend fun sendUnionInternalGetRequest(params: FooUnionInternalGetRequest): FooUnionInternalGetRequest {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-union-internal-get-request",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw TestClientPrefixedError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return FooUnionInternalGetRequest.fromJson(response.bodyAsText())
+            }
+            throw TestClientPrefixedError.fromJson(response.bodyAsText())
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
     suspend fun streamAutoReconnect(
         params: FooAutoReconnectParams,
         lastEventId: String? = null,
@@ -8299,6 +8329,255 @@ data class FooRecursiveUnionInternalShapeData(
                 height,
                 color,
             )
+        }
+    }
+}
+
+sealed interface FooUnionInternalGetRequest : TestClientPrefixedModel {
+    val kind: String
+
+    companion object Factory : TestClientPrefixedModelFactory<FooUnionInternalGetRequest> {
+        @JvmStatic
+        override fun new(): FooUnionInternalGetRequest {
+            return FooUnionInternalGetRequestWithFields.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooUnionInternalGetRequest {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUnionInternalGetRequest {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooUnionInternalGetRequest.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUnionInternalGetRequest.")
+                return new()
+            }
+            return when (__input.jsonObject["kind"]) {
+                is JsonPrimitive -> when (__input.jsonObject["kind"]!!.jsonPrimitive.contentOrNull) {
+                    "with-fields" -> FooUnionInternalGetRequestWithFields.fromJsonElement(__input, instancePath)
+                    "empty" -> FooUnionInternalGetRequestEmpty.fromJsonElement(__input, instancePath)
+                    else -> new()
+                }
+
+                else -> new()
+            }
+        }
+    }
+}
+
+data class FooUnionInternalGetRequestWithFields(
+    val string: String,
+    val nullableString: String?,
+    val float64: Double,
+    val int64: Long,
+    val boolean: Boolean,
+    val timestamp: Instant,
+    val nullableEnum: FooUnionInternalGetRequestWithFieldsNullableEnum?,
+    val optionalString: String? = null,
+) : FooUnionInternalGetRequest {
+    override val kind get() = "with-fields"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"with-fields\""
+        output += ",\"string\":"
+        output += buildString { printQuoted(string) }
+        output += ",\"nullableString\":"
+        output += when (nullableString) {
+            is String -> buildString { printQuoted(nullableString) }
+            else -> "null"
+        }
+        output += ",\"float64\":"
+        output += float64
+        output += ",\"int64\":"
+        output += "\"${int64}\""
+        output += ",\"boolean\":"
+        output += boolean
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += ",\"nullableEnum\":"
+        output += when (nullableEnum) {
+            is FooUnionInternalGetRequestWithFieldsNullableEnum -> "\"${nullableEnum.serialValue}\""
+            else -> "null"
+        }
+        if (optionalString != null) {
+            output += ",\"optionalString\":"
+            output += buildString { printQuoted(optionalString) }
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("kind=with-fields")
+        queryParts.add("string=${__encodeQueryValue(string)}")
+        queryParts.add("nullableString=${__encodeQueryValue(nullableString)}")
+        queryParts.add("float64=$float64")
+        queryParts.add("int64=$int64")
+        queryParts.add("boolean=$boolean")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        queryParts.add("nullableEnum=${__encodeQueryValue(nullableEnum?.serialValue)}")
+        if (optionalString != null) {
+            queryParts.add("optionalString=${__encodeQueryValue(optionalString)}")
+        }
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooUnionInternalGetRequestWithFields> {
+        @JvmStatic
+        override fun new(): FooUnionInternalGetRequestWithFields {
+            return FooUnionInternalGetRequestWithFields(
+                string = "",
+                nullableString = null,
+                float64 = 0.0,
+                int64 = 0L,
+                boolean = false,
+                timestamp = Instant.now(),
+                nullableEnum = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooUnionInternalGetRequestWithFields {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUnionInternalGetRequestWithFields {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooUnionInternalGetRequestWithFields.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUnionInternalGetRequestWithFields.")
+                return new()
+            }
+            val string: String = when (__input.jsonObject["string"]) {
+                is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val nullableString: String? = when (__input.jsonObject["nullableString"]) {
+                is JsonPrimitive -> __input.jsonObject["nullableString"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val float64: Double = when (__input.jsonObject["float64"]) {
+                is JsonPrimitive -> __input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val int64: Long = when (__input.jsonObject["int64"]) {
+                is JsonPrimitive -> __input.jsonObject["int64"]!!.jsonPrimitive.longOrNull ?: 0L
+                else -> 0L
+            }
+            val boolean: Boolean = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                    else
+                        Instant.now()
+
+                else -> Instant.now()
+            }
+            val nullableEnum: FooUnionInternalGetRequestWithFieldsNullableEnum? = when (__input.jsonObject["nullableEnum"]) {
+                is JsonNull -> null
+                is JsonPrimitive -> FooUnionInternalGetRequestWithFieldsNullableEnum.fromJsonElement(__input.jsonObject["nullableEnum"]!!, "$instancePath/nullableEnum")
+                else -> null
+            }
+            val optionalString: String? = when (__input.jsonObject["optionalString"]) {
+                is JsonPrimitive -> __input.jsonObject["optionalString"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            return FooUnionInternalGetRequestWithFields(
+                string,
+                nullableString,
+                float64,
+                int64,
+                boolean,
+                timestamp,
+                nullableEnum,
+                optionalString,
+            )
+        }
+    }
+}
+
+enum class FooUnionInternalGetRequestWithFieldsNullableEnum {
+    A,
+    B;
+
+    val serialValue: String
+        get() = when (this) {
+            A -> "A"
+            B -> "B"
+        }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooUnionInternalGetRequestWithFieldsNullableEnum> {
+        @JvmStatic
+        override fun new(): FooUnionInternalGetRequestWithFieldsNullableEnum {
+            return A
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooUnionInternalGetRequestWithFieldsNullableEnum {
+            return when (input) {
+                A.serialValue -> A
+                B.serialValue -> B
+                else -> A
+            }
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUnionInternalGetRequestWithFieldsNullableEnum {
+            if (__input !is JsonPrimitive) {
+                __logError("[WARNING] FooUnionInternalGetRequestWithFieldsNullableEnum.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty FooUnionInternalGetRequestWithFieldsNullableEnum.")
+                return new()
+            }
+            return when (__input.jsonPrimitive.contentOrNull) {
+                "A" -> A
+                "B" -> B
+                else -> new()
+            }
+        }
+    }
+}
+
+data class FooUnionInternalGetRequestEmpty(
+    private val placeholderKey: Short = 0
+) : FooUnionInternalGetRequest {
+    override val kind get() = "empty"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"empty\""
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("kind=empty")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientPrefixedModelFactory<FooUnionInternalGetRequestEmpty> {
+        @JvmStatic
+        override fun new(): FooUnionInternalGetRequestEmpty {
+            return FooUnionInternalGetRequestEmpty()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): FooUnionInternalGetRequestEmpty {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): FooUnionInternalGetRequestEmpty {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] FooUnionInternalGetRequestEmpty.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty FooUnionInternalGetRequestEmpty.")
+                return new()
+            }
+            return FooUnionInternalGetRequestEmpty()
         }
     }
 }
