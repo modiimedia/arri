@@ -1,7 +1,12 @@
 import {
     AppDefinition,
+    getUnionFallbackKey,
+    isRecursiveSchema,
+    matchSchemaForms,
     removeDisallowedChars,
     type RpcDefinition,
+    Schema,
+    SchemaMatcher,
     setNestedObjectProperty,
     stringStartsWithNumber,
     unflattenObject,
@@ -214,5 +219,190 @@ describe('String utils', () => {
         for (const input of failingInputs) {
             expect(stringStartsWithNumber(input)).toBe(false);
         }
+    });
+});
+
+describe('matchSchemaForms()', () => {
+    const testMatcher: SchemaMatcher<keyof SchemaMatcher<string>> = {
+        type: (_) => 'type',
+        enum: (_) => 'enum',
+        properties: (_) => 'properties',
+        elements: (_) => 'elements',
+        values: (_) => 'values',
+        discriminator: (_) => 'discriminator',
+        union: (_) => 'union',
+        ref: (_) => 'ref',
+        empty: (_) => 'empty',
+    };
+    const testCases: {
+        title: string;
+        input: Schema;
+        output: keyof SchemaMatcher<string>;
+    }[] = [
+        {
+            title: 'SchemaFormType',
+            input: { type: 'boolean' },
+            output: 'type',
+        },
+        {
+            title: 'SchemaFormEnum',
+            input: { enum: ['foo', 'bar'] },
+            output: 'enum',
+        },
+        {
+            title: 'SchemaFormProperties',
+            input: {
+                properties: { foo: { type: 'string' } },
+                optionalProperties: { bar: { type: 'boolean' } },
+            },
+            output: 'properties',
+        },
+        {
+            title: 'SchemaFormElements',
+            input: {
+                elements: {
+                    type: 'boolean',
+                },
+            },
+            output: 'elements',
+        },
+        {
+            title: 'SchemaFormValues',
+            input: {
+                values: {
+                    type: 'timestamp',
+                },
+            },
+            output: 'values',
+        },
+        {
+            title: 'SchemaFormDiscriminator',
+            input: {
+                discriminator: 'type',
+                mapping: {
+                    foo: {
+                        properties: {
+                            foo: {
+                                type: 'string',
+                            },
+                        },
+                    },
+                },
+            },
+            output: 'discriminator',
+        },
+        {
+            title: 'SchemaFormUnion',
+            input: {
+                union: {},
+            },
+            output: 'union',
+        },
+        {
+            title: 'SchemaFormRef',
+            input: {
+                ref: 'Foo',
+            },
+            output: 'ref',
+        },
+        {
+            title: 'SchemaFormEmpty',
+            input: {},
+            output: 'empty',
+        },
+        {
+            title: 'SchemaFormEmpty with metadata',
+
+            input: {
+                metadata: {},
+            },
+            output: 'empty',
+        },
+        {
+            title: 'Unknown schema falls back to SchemaFormEmpty',
+            input: {
+                foo: {},
+            } as any,
+            output: 'empty',
+        },
+    ];
+    for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i]!;
+        test(testCase.title, () => {
+            expect(matchSchemaForms(testCase.input, testMatcher)).toBe(
+                testCase.output,
+            );
+        });
+    }
+});
+
+describe('isRecursiveSchema()', () => {
+    const ref: Schema = { ref: 'Parent' };
+    test('non-nullable refs are recursive', () => {
+        expect(isRecursiveSchema(ref)).toBe(true);
+        expect(isRecursiveSchema({ properties: { child: ref } })).toBe(true);
+        expect(
+            isRecursiveSchema({
+                properties: { nested: { properties: { child: ref } } },
+            }),
+        ).toBe(true);
+    });
+    test('refs that fall back to an empty value are not recursive', () => {
+        expect(isRecursiveSchema({ ref: 'Parent', isNullable: true })).toBe(
+            false,
+        );
+        expect(
+            isRecursiveSchema({
+                properties: { child: { ref: 'Parent', isNullable: true } },
+            }),
+        ).toBe(false);
+        expect(
+            isRecursiveSchema({
+                properties: {},
+                optionalProperties: { child: ref },
+            }),
+        ).toBe(false);
+        expect(isRecursiveSchema({ elements: ref })).toBe(false);
+        expect(isRecursiveSchema({ values: ref })).toBe(false);
+        expect(
+            isRecursiveSchema({ properties: { child: ref }, isNullable: true }),
+        ).toBe(false);
+    });
+    test('nested unions are recursive when every variant is recursive', () => {
+        expect(isRecursiveSchema({ union: { a: ref } })).toBe(true);
+        expect(
+            isRecursiveSchema({ union: { a: ref, b: { type: 'string' } } }),
+        ).toBe(false);
+        expect(
+            isRecursiveSchema({
+                discriminator: 'type',
+                mapping: { a: { properties: { child: ref } } },
+            }),
+        ).toBe(true);
+    });
+});
+
+describe('getUnionFallbackKey()', () => {
+    test('returns the first variant', () => {
+        expect(
+            getUnionFallbackKey({ a: { type: 'string' }, b: { ref: 'Union' } }),
+        ).toBe('a');
+    });
+    test('skips recursive variants', () => {
+        expect(
+            getUnionFallbackKey({
+                a: { ref: 'Union' },
+                b: { properties: { child: { ref: 'Union' } } },
+                c: { elements: { ref: 'Union' } },
+            }),
+        ).toBe('c');
+    });
+    test('returns the first variant when every variant is recursive', () => {
+        expect(
+            getUnionFallbackKey({ a: { ref: 'Union' }, b: { ref: 'Union' } }),
+        ).toBe('a');
+    });
+    test('returns undefined when there are no variants', () => {
+        expect(getUnionFallbackKey({})).toBe(undefined);
     });
 });

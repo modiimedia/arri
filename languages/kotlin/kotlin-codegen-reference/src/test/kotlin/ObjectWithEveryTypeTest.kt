@@ -26,7 +26,9 @@ class ObjectWithEveryTypeTest {
         ),
         array = mutableListOf(true, false, false),
         record = mutableMapOf(Pair("A", true), Pair("B", false)),
-        discriminator = DiscriminatorC(id = "", name = "", date = Instant.parse("2001-01-01T16:00:00.000Z")),
+        unionExternal = UnionExternalArray(value = mutableListOf("hello", "world")),
+        unionInternal = UnionInternalCircle(radius = 2.5),
+        unionAdjacent = UnionAdjacentNullableTimestamp(data = Instant.parse("2001-01-01T16:00:00.000Z")),
         any = JsonPrimitive("hello world")
     )
 

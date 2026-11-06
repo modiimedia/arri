@@ -1,6 +1,7 @@
+import { readFileSync, rmSync } from 'node:fs';
+import path from 'node:path';
+
 import { build } from 'esbuild';
-import { readFileSync, rmSync } from 'fs';
-import path from 'path';
 import { test } from 'vitest';
 
 const outDir = path.resolve(import.meta.dirname, '../.tmp/bundles');

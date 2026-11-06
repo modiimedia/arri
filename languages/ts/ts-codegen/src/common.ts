@@ -68,6 +68,31 @@ ${descriptionParts.join('\n')}
 */\n`;
 }
 
+/**
+ * Property access for a raw JSON key. Uses dot notation when the key is a valid identifier and bracket notation otherwise.
+ */
+export function jsonKeyAccessor(target: string, key: string): string {
+    if (isValidIdentifier(key)) {
+        return `${target}.${key}`;
+    }
+    return `${target}[${JSON.stringify(key)}]`;
+}
+
+function isValidIdentifier(input: string): boolean {
+    if (input.length === 0) return false;
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i]!;
+        const isLetter =
+            (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
+        const isAllowedSymbol = char === '_' || char === '$';
+        const isDigit = char >= '0' && char <= '9';
+        if (isLetter || isAllowedSymbol) continue;
+        if (isDigit && i > 0) continue;
+        return false;
+    }
+    return true;
+}
+
 const illegalChars = '!#^&*()-+=?/][{}|\\~`\'"';
 
 export function validVarName(name: string): string {

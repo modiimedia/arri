@@ -73,7 +73,7 @@ export function tsArrayFromSchema(
                     ${target} += '[';
                     for (let i = 0; i < ${input}.length; i++) {
                         if (i !== 0) ${target} += ',';
-                        const ${elVar} = ${input}[i];
+                        const ${elVar} = ${input}[i]!;
                         ${innerType.toJsonTemplate(elVar, target, elKeyVar)}
                     }
                     ${target} += ']';
@@ -84,7 +84,7 @@ export function tsArrayFromSchema(
             return `${target} += '[';
             for (let i = 0; i < ${input}.length; i++) {
                 if (i !== 0) ${target} += ',';
-                const ${elVar} = ${input}[i];
+                const ${elVar} = ${input}[i]!;
                 ${innerType.toJsonTemplate(elVar, target, elKeyVar)}
             }
             ${target} += ']';`;

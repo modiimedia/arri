@@ -9,11 +9,14 @@ import {
     a,
     ADiscriminatorSchema,
     AObjectSchema,
+    type ASchema,
+    AUnionSchema,
     errorMessageFromErrors,
     InferType,
     isADiscriminatorSchema,
     isAObjectSchema,
     isASchema,
+    isAUnionSchema,
     Result,
     ValueError,
 } from '@arrirpc/schema';
@@ -29,6 +32,7 @@ import {
 } from 'h3';
 import { kebabCase, pascalCase } from 'scule';
 
+import { type ArriOptions } from './app';
 import { type RpcEventContext, type RpcPostEventContext } from './context';
 import { defineError, handleH3Error } from './errors';
 import {
@@ -40,10 +44,15 @@ import { type RouteOptions } from './route';
 
 export type RpcParamSchema<T = any> =
     | AObjectSchema<T>
+    | AUnionSchema<T>
     | ADiscriminatorSchema<T>;
 
 export function isRpcParamSchema(input: unknown): input is RpcParamSchema<any> {
-    return isAObjectSchema(input) || isADiscriminatorSchema(input);
+    return (
+        isAObjectSchema(input) ||
+        isAUnionSchema(input) ||
+        isADiscriminatorSchema(input)
+    );
 }
 
 export interface NamedHttpRpc<
@@ -225,6 +234,22 @@ function getRpcResponseDefinition(
     return name;
 }
 
+/**
+ * GET requests receive params through url query params.
+ * Only internally tagged unions keep all of their fields at the top level, so it's the only union style that can be represented.
+ */
+export function assertValidGetParams(
+    rpcName: string,
+    httpMethod: RpcHttpMethod,
+    params: unknown,
+) {
+    if (httpMethod !== 'get' || !isAUnionSchema(params)) return;
+    if (params.tagKey && !params.valueKey) return;
+    throw new Error(
+        `Error registering ${rpcName}. GET requests receive params through url query params and only internally tagged unions can be used as url query params. Use a different http method such as POST for these params.`,
+    );
+}
+
 export function registerRpc(
     router: Router,
     path: string,
@@ -232,12 +257,18 @@ export function registerRpc(
     opts: RouteOptions,
 ) {
     const paramValidator = procedure.params
-        ? getSchemaValidator(procedure.name, 'params', procedure.params)
+        ? getSchemaValidator(procedure.name, 'params', procedure.params, opts)
         : undefined;
     const responseValidator = procedure.response
-        ? getSchemaValidator(procedure.name, 'response', procedure.response)
+        ? getSchemaValidator(
+              procedure.name,
+              'response',
+              procedure.response,
+              opts,
+          )
         : undefined;
     const httpMethod = procedure.method ?? 'post';
+    assertValidGetParams(procedure.name, httpMethod, procedure.params);
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
@@ -385,20 +416,28 @@ export type RequestValidator<T = any> = {
 
 let useJitCompiler = true;
 
+function runtimeValidator<T>(schema: ASchema<T>): RequestValidator<T> {
+    return {
+        validate: (input) => a.validate(schema, input),
+        serialize: (input) => a.serialize(schema, input),
+        parse: (input) => a.parse(schema, input),
+        coerce: (input) => a.coerce(schema, input),
+        errors: (input) => a.errors(schema, input),
+    };
+}
+
 export function getSchemaValidator<T extends Record<string, any> = any>(
     rpcName: string,
     type: 'params' | 'response',
     schema: RpcParamSchema<T>,
+    opts: Pick<
+        ArriOptions,
+        'disableValidatorCompilation' | 'strictValidatorCompilation'
+    > = {},
 ): RequestValidator<T> | undefined {
     if (!isASchema(schema)) return undefined;
-    if (!useJitCompiler) {
-        return {
-            validate: (input) => a.validate(schema, input),
-            serialize: (input) => a.serialize(schema, input),
-            parse: (input) => a.parse(schema, input),
-            coerce: (input) => a.coerce(schema, input),
-            errors: (input) => a.errors(schema, input),
-        };
+    if (!useJitCompiler || opts.disableValidatorCompilation) {
+        return runtimeValidator(schema);
     }
     try {
         const validator = a.compile(schema);
@@ -410,23 +449,27 @@ export function getSchemaValidator<T extends Record<string, any> = any>(
             errors: (input) => a.errors(schema, input),
         };
     } catch (err) {
-        // If there's an error running a.compile() we'll just assume that the runtime
-        // has prohibited eval and fallback to the slower non-compile validators.
-        // In the future we can make this smarter to handle other error cases
-        useJitCompiler = false;
-
+        // Runtimes that prohibit code generation throw an EvalError no matter what the code is.
+        // Nothing can be compiled in that case so there's no reason to keep trying.
+        // This checks the name because instanceof fails for errors from another realm.
+        if ((err as Error | undefined)?.name === 'EvalError') {
+            useJitCompiler = false;
+            // eslint-disable-next-line no-console
+            console.warn(
+                `This runtime does not allow code generation. Runtime validators will be used instead of compiled validators, which is slower. Error: ${err}`,
+            );
+            return runtimeValidator(schema);
+        }
+        if (opts.strictValidatorCompilation) {
+            throw new Error(
+                `Failed to compile ${type} validator for ${rpcName}. Error: ${err}`,
+            );
+        }
         // eslint-disable-next-line no-console
         console.warn(
-            `Encountered error compiling validator for ${rpcName}. Runtime validator will now be used instead. Error: ${err}. `,
+            `Failed to compile ${type} validator for ${rpcName}. Falling back to the runtime validator for this procedure, which is slower. Error: ${err}`,
         );
-
-        return {
-            validate: (input) => a.validate(schema, input),
-            serialize: (input) => a.serialize(schema, input),
-            parse: (input) => a.parse(schema, input),
-            coerce: (input) => a.coerce(schema, input),
-            errors: (input) => a.errors(schema, input),
-        };
+        return runtimeValidator(schema);
     }
 }
 

@@ -9,6 +9,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     Schema,
     unflattenProcedures,
@@ -30,6 +31,7 @@ import {
 import { swiftServiceFromSchema } from './procedures';
 import { swiftDictionaryFromSchema } from './record';
 import { swiftRefFromSchema } from './ref';
+import { swiftUnionFromSchema } from './union';
 
 export interface SwiftClientGeneratorOptions {
     /**
@@ -209,6 +211,9 @@ export function swiftTypeFromSchema(
     }
     if (isSchemaFormDiscriminator(schema)) {
         return swiftTaggedUnionFromSchema(schema, context);
+    }
+    if (isSchemaFormUnion(schema)) {
+        return swiftUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return swiftRefFromSchema(schema, context);

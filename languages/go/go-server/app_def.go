@@ -24,8 +24,8 @@ type AppDefInfo struct {
 }
 
 type RpcDef struct {
-	DiscriminatorKey `discriminatorKey:"transport"`
-	Http             *HttpRpcDef `discriminator:"http"`
+	Union `tagKey:"transport"`
+	Http  *HttpRpcDef `tag:"http"`
 }
 
 const (

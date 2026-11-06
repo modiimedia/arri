@@ -50,6 +50,7 @@ Client generators should aim to do the following:
 - Output code that is consistent and predictable. The same input should always produce the same output.
 - Output code that follows the standard conventions of the target language
     - Ex: if a language expects snake_case keys. Then the code generator should convert the keys as needed.
+    - This includes the `tagKey` and `valueKey` of [union schemas](../specifications/arri_type_definition.md#union-schema-form). The field names should follow the conventions of the target language, while the JSON keys must stay exactly as they are in the schema.
 - Output code that is ergonomic and feels good to use.
 - Output code comments when a `description` is added to a type definition
 - Output code comments when a `description` is added to an RPC definition
@@ -67,20 +68,23 @@ Arri clients should not crash unnecessarily. The truth of the matter is data mod
 
 To accomplish this tolerance, Arri clients should assign a fallback value for any field that fails validation. These fallbacks values are outlined below:
 
-| type                | fallback value                                                                                                                                         |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| any nullable type   | `null`                                                                                                                                                 |
-| any optional type   | `undefined`                                                                                                                                            |
-| string              | `""`                                                                                                                                                   |
-| boolean             | `false`                                                                                                                                                |
-| timestamp           | [Current Date and Time]                                                                                                                                |
-| floats              | `0.0`                                                                                                                                                  |
-| integers            | `0`                                                                                                                                                    |
-| enums               | The first specified enum value                                                                                                                         |
-| arrays              | `[]` an empty array                                                                                                                                    |
-| records             | `{}` an empty record / hashmap                                                                                                                         |
-| objects             | An instance of the object with all fields set to their fallback value                                                                                  |
-| discriminated union | An instance of the first specified sub type with all fields set to their fallback value. If the first sub type is recursive then use the next in line. |
+| type              | fallback value                                                                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| any nullable type | `null`                                                                                                                                               |
+| any optional type | `undefined`                                                                                                                                          |
+| string            | `""`                                                                                                                                                 |
+| boolean           | `false`                                                                                                                                              |
+| timestamp         | [Current Date and Time]                                                                                                                              |
+| floats            | `0.0`                                                                                                                                                |
+| integers          | `0`                                                                                                                                                  |
+| enums             | The first specified enum value                                                                                                                       |
+| arrays            | `[]` an empty array                                                                                                                                  |
+| records           | `{}` an empty record / hashmap                                                                                                                       |
+| objects           | An instance of the object with all fields set to their fallback value                                                                                |
+| unions            | An instance of the first specified variant with all fields set to their fallback value. If the first variant is recursive then use the next in line. |
+| discriminators    | Same as unions. (The discriminator schema form is deprecated but generators should continue supporting it for now.)                                  |
+
+Unions (and discriminators) should also use this fallback when the tag is missing or has a value that the client doesn't recognize. See [scenario 3](#scenario-3-client-receives-a-union-variant-that-it-doesnt-understand).
 
 #### Scenario 1: Client receives an object with a missing field
 
@@ -150,6 +154,38 @@ User {
 }
 ```
 
+#### Scenario 3: Client receives a union variant that it doesn't understand
+
+Let's say the client was expecting a type that looked like this:
+
+```ts
+type Shape =
+    | { shape: 'rectangle'; width: number; height: number }
+    | { shape: 'circle'; radius: number };
+```
+
+But the server has since added a new variant and sends a response that looks like this:
+
+```json
+{
+    "shape": "triangle",
+    "base": 10,
+    "height": 5
+}
+```
+
+Because the client doesn't understand the `triangle` variant it should fallback to the first specified variant with all of its fields set to their fallback values.
+
+```ts
+{
+    shape: 'rectangle', // this is the fallback value
+    width: 0,
+    height: 0,
+}
+```
+
+The same applies to externally tagged and adjacently tagged unions. An unknown or missing tag results in the first variant being initialized with its fallback values.
+
 #### When is acceptable to have the client return an error?
 
 - The client was unable to connect to the server
@@ -171,7 +207,7 @@ Typically when making a new client generator I will hand write a custom client b
 
 ### Creating unit tests with the reference test files
 
-In the following directory `test/test-files` there are a number of JSON files which are used as a reference during unit tests.
+In the following directory `tests/test-files` there are a number of JSON files which are used as a reference during unit tests. These files are generated by [`internal/scripts/generate-test-utils.ts`](../internal/scripts/generate-test-utils.ts) which can be run with `pnpm gen-test-utils`. (This script deletes and recreates the entire directory, so any new test files should be added to the script rather than created by hand.)
 
 Personally I will usually hand write a client based on the `AppDefinition.json` that I want my code-generator to output. After that I will create a unit tests that feeds `AppDefinition.json` to the code generator to see if the outputs match (Ignoring disparities in newlines and indentation. The `normalizeWhitespace()` utility from `@arrirpc/codegen-utils` can be used for this.)
 
@@ -187,6 +223,21 @@ Unit tests can also be made for the hand-written client to ensure that it deseri
 - `ObjectWithOptionalFields_AllUndefined.json`
 - `ObjectWithOptionalFields_NoUndefined.json`
 - `RecursiveObject.json`
+- `UnionExternal_Object.json`
+- `UnionExternal_Array.json`
+- `UnionExternal_Boolean.json`
+- `UnionExternal_Timestamp.json`
+- `UnionExternal_TimestampNull.json`
+- `UnionInternal_Rectangle.json`
+- `UnionAdjacent_Object.json`
+- `UnionAdjacent_TimestampNull.json`
+
+Some other files you may need:
+
+- `*_ReversedRecord.json` files contain the same data as their counterpart but with the record keys in reverse order. These are useful for languages where hashmaps don't guarantee key order, since the serialized output can match either file.
+- `LegacyDiscriminator.json` tests the deprecated discriminator schema form.
+
+`ObjectWithEveryType`, `ObjectWithNullableFields`, and `ObjectWithOptionalFields` each contain an externally tagged, internally tagged, and adjacently tagged union field (`unionExternal`, `unionInternal`, and `unionAdjacent`). The top level `Union*` files intentionally use different variants than the ones nested in those objects so that every variant gets exercised.
 
 I encourage you to look at some of the codegen-reference projects in `/languages` to see what some of this looks like. For example look at the tests in `/languages/dart/dart-codegen-reference` and `/languages/dart/dart-codegen` to see how they reference one another and how they reference the test files.
 

@@ -1,21 +1,23 @@
 package arri
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOptions) *DecoderError {
 	reflectValue := reflect.ValueOf(target).Elem()
-	errors := []ValidationError{}
-	ctx := DecoderContext{KeyCasing: options.KeyCasing, Errors: errors}
+	keyCasing := options.KeyCasing
+	if len(keyCasing) == 0 {
+		keyCasing = KeyCasingCamelCase
+	}
+	ctx := DecoderContext{KeyCasing: keyCasing, Errors: []ValidationError{}}
 	if reflectValue.Kind() != reflect.Struct {
 		err := NewDecoderError(
 			[]ValidationError{
@@ -24,63 +26,164 @@ func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOpti
 		)
 		return &err
 	}
-	numFields := reflectValue.NumField()
-	targetType := reflectValue.Type()
-	ctxSnapshot := ctx.clone()
-	for i := 0; i < numFields; i++ {
-		field := reflectValue.Field(i)
-		fieldMeta := targetType.Field(i)
-		fieldType := field.Type()
-		key := fieldMeta.Name
-		switch ctx.KeyCasing {
-		case KeyCasingCamelCase:
-			key = strcase.ToLowerCamel(key)
-		case KeyCasingPascalCase:
-		case KeyCasingSnakeCase:
-			key = strcase.ToSnake(key)
-		default:
-			key = strcase.ToLowerCamel(key)
-		}
-		enumTag := fieldMeta.Tag.Get("enum")
-		enumValues := []string{}
-		if len(enumTag) > 0 {
-			vals := strings.Split(enumTag, ",")
-			for i := 0; i < len(vals); i++ {
-				enumValues = append(enumValues, strings.TrimSpace(vals[i]))
-			}
-
-		}
-		urlValue := values.Get(key)
-		isOptional := utils.IsOptionalType(fieldType)
-		if isOptional {
-			ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
-			ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
-			ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties"
-			ctx.EnumValues = enumValues
-			optionalTypeFromUrlQuery(urlValue, &field, &ctx)
-			continue
-		}
-		hasUrlValue := values.Has(key)
-		if !hasUrlValue {
-			ctx.Errors = append(ctx.Errors,
-				NewValidationError("missing required field", "/"+key, "/properties/"+key),
-			)
-			continue
-		}
-		ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
-		ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
-		ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties"
-		ctx.EnumValues = enumValues
-		isNullable := utils.IsNullableTypeOrPointer(fieldType)
-		if isNullable {
-			nullableTypeFromUrlQuery(urlValue, &field, &ctx)
-			continue
-		}
-		typeFromUrlQuery(urlValue, &field, &ctx)
-	}
+	structFromUrlQuery(values, reflectValue, &ctx)
 	if len(ctx.Errors) > 0 {
 		err := NewDecoderError(ctx.Errors)
 		return &err
+	}
+	return nil
+}
+
+func structFromUrlQuery(values url.Values, target reflect.Value, ctx *DecoderContext) bool {
+	targetType := target.Type()
+	union, unionErr := getUnionInfo(targetType)
+	if unionErr != nil {
+		ctx.Errors = append(ctx.Errors, NewValidationError(unionErr.Error(), ctx.InstancePath, ctx.SchemaPath))
+		return false
+	}
+	if union != nil {
+		return unionFromUrlQuery(values, target, union, ctx)
+	}
+	hasErr := false
+	ctxSnapshot := ctx.clone()
+	for i := 0; i < target.NumField(); i++ {
+		field := target.Field(i)
+		fieldMeta := targetType.Field(i)
+		if !fieldMeta.IsExported() {
+			continue
+		}
+		fieldType := field.Type()
+		key := utils.GetSerialKey(&fieldMeta, ctx.KeyCasing)
+		enumValues, _ := enumOptionsFromField(&fieldMeta)
+		urlValue := values.Get(key)
+		ctx.CurrentDepth = ctxSnapshot.CurrentDepth + 1
+		ctx.InstancePath = ctxSnapshot.InstancePath + "/" + key
+		ctx.EnumValues = enumValues.UnwrapOr(None[[]string]()).UnwrapOr([]string{})
+		if utils.IsOptionalType(fieldType) {
+			ctx.SchemaPath = ctxSnapshot.SchemaPath + "/optionalProperties/" + key
+			if !optionalTypeFromUrlQuery(urlValue, &field, ctx) {
+				hasErr = true
+			}
+			continue
+		}
+		ctx.SchemaPath = ctxSnapshot.SchemaPath + "/properties/" + key
+		if !values.Has(key) {
+			ctx.Errors = append(ctx.Errors,
+				NewValidationError("missing required field", ctx.InstancePath, ctx.SchemaPath),
+			)
+			hasErr = true
+			continue
+		}
+		var success bool
+		if utils.IsNullableTypeOrPointer(fieldType) {
+			success = nullableTypeFromUrlQuery(urlValue, &field, ctx)
+		} else {
+			success = typeFromUrlQuery(urlValue, &field, ctx)
+		}
+		if !success {
+			hasErr = true
+		}
+	}
+	ctx.CurrentDepth = ctxSnapshot.CurrentDepth
+	ctx.InstancePath = ctxSnapshot.InstancePath
+	ctx.SchemaPath = ctxSnapshot.SchemaPath
+	ctx.EnumValues = ctxSnapshot.EnumValues
+	return !hasErr
+}
+
+// Only internally tagged unions are supported. The tag and the variant's fields are all top level params.
+func unionFromUrlQuery(values url.Values, target reflect.Value, info *unionInfo, ctx *DecoderContext) bool {
+	if !info.isInternallyTagged() {
+		ctx.Errors = append(ctx.Errors, NewValidationError(
+			"only internally tagged unions can be decoded from url query params",
+			ctx.InstancePath,
+			ctx.SchemaPath,
+		))
+		return false
+	}
+	if !values.Has(info.TagKey) {
+		ctx.Errors = append(ctx.Errors, NewValidationError(
+			"missing union tag \""+info.TagKey+"\"",
+			ctx.InstancePath+"/"+info.TagKey,
+			ctx.SchemaPath+"/tagKey",
+		))
+		return false
+	}
+	tag := values.Get(info.TagKey)
+	targetType := target.Type()
+	for _, variant := range info.Variants {
+		if variant.tagName(ctx.KeyCasing) != tag {
+			continue
+		}
+		variantType := targetType.Field(variant.FieldIndex).Type.Elem()
+		if variantType.Kind() != reflect.Struct {
+			ctx.Errors = append(ctx.Errors, NewValidationError(
+				"internally tagged union variants must be structs",
+				ctx.InstancePath,
+				ctx.SchemaPath+"/union/"+tag,
+			))
+			return false
+		}
+		innerTarget := reflect.New(variantType)
+		schemaPath := ctx.SchemaPath
+		ctx.SchemaPath = schemaPath + "/union/" + tag
+		success := structFromUrlQuery(values, innerTarget.Elem(), ctx)
+		ctx.SchemaPath = schemaPath
+		if !success {
+			return false
+		}
+		for _, other := range info.Variants {
+			otherField := target.Field(other.FieldIndex)
+			otherField.Set(reflect.Zero(otherField.Type()))
+		}
+		target.Field(variant.FieldIndex).Set(innerTarget)
+		return true
+	}
+	ctx.Errors = append(ctx.Errors, NewValidationError(
+		"\""+tag+"\" is not a valid union variant",
+		ctx.InstancePath+"/"+info.TagKey,
+		ctx.SchemaPath+"/union",
+	))
+	return false
+}
+
+// Returns an error when values of the schema can't be passed through url query params.
+// Supported schemas are objects or internally tagged unions of objects where every property is a primitive or enum.
+func validateUrlQueryTypeDef(def *TypeDef) error {
+	if def.Union.IsSome() {
+		if def.TagKey.IsNone() || def.ValueKey.IsSome() {
+			return errors.New("only internally tagged unions can be used as url query params")
+		}
+		for _, entry := range def.Union.Value.Entries() {
+			variant := entry.Right
+			if err := validateUrlQueryProperties(&variant, "/"+entry.Left); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if def.Properties.IsNone() {
+		return errors.New("url query params must be an object or an internally tagged union")
+	}
+	return validateUrlQueryProperties(def, "")
+}
+
+func validateUrlQueryProperties(def *TypeDef, path string) error {
+	properties := []pair[string, TypeDef]{}
+	if def.Properties.IsSome() {
+		properties = append(properties, def.Properties.Value.Entries()...)
+	}
+	if def.OptionalProperties.IsSome() {
+		properties = append(properties, def.OptionalProperties.Value.Entries()...)
+	}
+	for _, property := range properties {
+		if property.Right.Type.IsNone() && property.Right.Enum.IsNone() {
+			return fmt.Errorf(
+				"\"%s/%s\" cannot be passed through url query params. only strings, booleans, numbers, timestamps, and enums are supported",
+				path,
+				property.Left,
+			)
+		}
 	}
 	return nil
 }

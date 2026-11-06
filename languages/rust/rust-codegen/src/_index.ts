@@ -11,6 +11,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     isServiceDefinition,
     type Schema,
@@ -47,6 +48,7 @@ import {
 import { rustRpcFromSchema, rustServiceFromSchema } from './procedures';
 import rustRecordFromSchema from './record';
 import rustRefFromSchema from './ref';
+import { rustUnionFromSchema } from './union';
 
 export interface RustClientGeneratorOptions {
     clientName?: string;
@@ -267,6 +269,9 @@ export function rustTypeFromSchema(
     }
     if (isSchemaFormDiscriminator(schema)) {
         return rustTaggedUnionFromSchema(schema, context);
+    }
+    if (isSchemaFormUnion(schema)) {
+        return rustUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return rustRefFromSchema(schema, context);

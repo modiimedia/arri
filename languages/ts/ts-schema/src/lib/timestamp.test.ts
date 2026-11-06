@@ -11,26 +11,26 @@ it('infers types', () => {
 describe('validation', () => {
     const validate = (input: unknown) => a.validate(a.timestamp(), input);
     it('accepts valid dates', () => {
-        expect(validate(new Date()));
-        expect(validate(new Date('01/01/2001')));
+        expect(validate(new Date())).toBe(true);
+        expect(validate(new Date('01/01/2001'))).toBe(true);
     });
     it('rejects invalid dates', () => {
-        expect(!validate(45151));
-        expect(!validate({ aldkjf: 'asasldkfj' }));
-        expect(!validate(true));
+        expect(validate(45151)).toBe(false);
+        expect(validate({ aldkjf: 'asasldkfj' })).toBe(false);
+        expect(validate(true)).toBe(false);
     });
 });
 
 describe('parsing', () => {
     const parse = (input: unknown) => a.parse(a.timestamp(), input).success;
     it('accepts valid input', () => {
-        expect(parse(new Date()));
-        expect(parse('2001-01-01T06:00:00.000Z'));
+        expect(parse(new Date())).toBe(true);
+        expect(parse('2001-01-01T06:00:00.000Z')).toBe(true);
     });
     it('rejects valid input', () => {
-        expect(!parse('hello world'));
-        expect(!parse(13431531));
-        expect(!parse({ hello: 'hello' }));
+        expect(parse('hello world')).toBe(false);
+        expect(parse(13431531)).toBe(false);
+        expect(parse({ hello: 'hello' })).toBe(false);
     });
 });
 
@@ -57,6 +57,6 @@ describe('standard-schema support', () => {
     });
     it('excludes standard property from JSON output', () => {
         const result = JSON.stringify(a.timestamp());
-        expect(!result.includes('"~standard":{')).toBe(true);
+        expect(result.includes('"~standard":{')).toBe(false);
     });
 });

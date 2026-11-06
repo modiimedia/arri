@@ -17,9 +17,9 @@ const BinaryTree = a.recursive<BinaryTree>(
     },
 );
 
-type RecursiveUnion =
-    | { type: 'CHILD'; data: RecursiveUnion }
-    | { type: 'CHILDREN'; data: RecursiveUnion[] }
+type RecursiveDiscriminator =
+    | { type: 'CHILD'; data: RecursiveDiscriminator }
+    | { type: 'CHILDREN'; data: RecursiveDiscriminator[] }
     | { type: 'TEXT'; data: string }
     | {
           type: 'SHAPE';
@@ -29,7 +29,7 @@ type RecursiveUnion =
               color: string;
           };
       };
-const RecursiveUnion = a.recursive<RecursiveUnion>(
+const RecursiveDiscriminator = a.recursive<RecursiveDiscriminator>(
     (self) =>
         a.discriminator('type', {
             CHILD: a.object({
@@ -50,8 +50,40 @@ const RecursiveUnion = a.recursive<RecursiveUnion>(
             }),
         }),
     {
-        id: 'RecursiveUnion',
+        id: 'RecursiveDiscriminator',
     },
+);
+
+type RecursiveUnion =
+    | {
+          child: RecursiveUnion;
+      }
+    | {
+          children: RecursiveUnion[];
+      }
+    | {
+          text: string;
+      }
+    | {
+          shape: {
+              width: number;
+              height: number;
+              color: string;
+          };
+      };
+const RecursiveUnion = a.recursive<RecursiveUnion>(
+    (self) =>
+        a.union({
+            child: self,
+            children: a.array(self),
+            text: a.string(),
+            shape: a.object({
+                width: a.float64(),
+                height: a.float64(),
+                color: a.string(),
+            }),
+        }),
+    { id: 'RecursiveUnion' },
 );
 test('type inference', () => {
     // TODO: figure out how to infer recursive type without needing to pass in type parameter
@@ -94,8 +126,8 @@ describe('validation', () => {
         };
         expect(a.validate(BinaryTree, input2)).toBe(false);
     });
-    test('Recursive Union', () => {
-        const input: RecursiveUnion = {
+    test('Recursive Discriminator', () => {
+        const input: RecursiveDiscriminator = {
             type: 'CHILDREN',
             data: [
                 {
@@ -128,7 +160,7 @@ describe('validation', () => {
                 },
             ],
         };
-        expect(a.validate(RecursiveUnion, input)).toBe(true);
+        expect(a.validate(RecursiveDiscriminator, input)).toBe(true);
         const badInput = {
             type: 'CHILDREN',
             data: [
@@ -153,6 +185,64 @@ describe('validation', () => {
                         {
                             type: 'BLOCK',
                             data: {
+                                width: 2,
+                                height: 2,
+                                color: 'blue',
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        expect(a.validate(RecursiveDiscriminator, badInput)).toBe(false);
+    });
+    test('Recursive Union', () => {
+        const input: RecursiveUnion = {
+            children: [
+                {
+                    child: {
+                        text: 'hello world',
+                    },
+                },
+                {
+                    shape: {
+                        width: 1,
+                        height: 1,
+                        color: 'red',
+                    },
+                },
+                {
+                    children: [
+                        {
+                            shape: {
+                                width: 2,
+                                height: 2,
+                                color: 'blue',
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        expect(a.validate(RecursiveUnion, input)).toBe(true);
+        const badInput = {
+            children: [
+                {
+                    child: {
+                        text: 'hello world',
+                    },
+                },
+                {
+                    shape: {
+                        width: 1,
+                        height: 1,
+                        color: 'red',
+                    },
+                },
+                {
+                    children: [
+                        {
+                            block: {
                                 width: 2,
                                 height: 2,
                                 color: 'blue',

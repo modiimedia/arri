@@ -1,6 +1,23 @@
 import {
     AppDefinition,
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormRef,
+    isSchemaFormType,
+    isSchemaFormUnion,
+    isSchemaFormValues,
     RpcDefinition,
+    Schema,
+    SchemaFormDiscriminator,
+    SchemaFormElements,
+    SchemaFormEnum,
+    SchemaFormProperties,
+    SchemaFormRef,
+    SchemaFormType,
+    SchemaFormUnion,
+    SchemaFormValues,
     ServiceDefinition,
 } from '@arrirpc/type-defs';
 
@@ -88,4 +105,67 @@ export function normalizeWhitespace(input: string) {
         return normalizeWhitespace(result.split('\n\n').join('\n'));
     }
     return result;
+}
+
+export type SchemaMatcher<T> = {
+    type: (schema: SchemaFormType) => T;
+    enum: (schema: SchemaFormEnum) => T;
+    properties: (schema: SchemaFormProperties) => T;
+    elements: (schema: SchemaFormElements) => T;
+    values: (schema: SchemaFormValues) => T;
+    /**
+     * @deprecated
+     */
+    discriminator: (schema: SchemaFormDiscriminator) => T;
+    union: (schema: SchemaFormUnion) => T;
+    ref: (schema: SchemaFormRef) => T;
+    empty: (schema: SchemaFormElements) => T;
+};
+
+export function matchSchemaForms<T = void>(
+    schema: Schema,
+    matcher: SchemaMatcher<T>,
+) {
+    if (isSchemaFormType(schema)) return matcher.type(schema);
+    if (isSchemaFormEnum(schema)) return matcher.enum(schema);
+    if (isSchemaFormProperties(schema)) return matcher.properties(schema);
+    if (isSchemaFormElements(schema)) return matcher.elements(schema);
+    if (isSchemaFormValues(schema)) return matcher.values(schema);
+    if (isSchemaFormDiscriminator(schema)) return matcher.discriminator(schema);
+    if (isSchemaFormUnion(schema)) return matcher.union(schema);
+    if (isSchemaFormRef(schema)) return matcher.ref(schema);
+    return matcher.empty(schema as any);
+}
+
+/**
+ * Returns the key of the variant that clients should fall back to when a union (or discriminator) can't be decoded.
+ * This is the first variant unless it's recursive, in which case it's the next non-recursive variant.
+ * If every variant is recursive the first variant is returned.
+ */
+export function getUnionFallbackKey(
+    variants: Record<string, Schema>,
+): string | undefined {
+    const keys = Object.keys(variants);
+    return keys.find((key) => !isRecursiveSchema(variants[key]!)) ?? keys[0];
+}
+
+/**
+ * A schema is recursive when building its fallback value would loop back to itself.
+ * Refs are only used for self-references, so this is the case when the fallback reaches a non-nullable ref.
+ * Nullable schemas, arrays, records, and optional properties fall back to an empty value so they never recurse.
+ */
+export function isRecursiveSchema(schema: Schema): boolean {
+    if (schema.isNullable) return false;
+    return matchSchemaForms(schema, {
+        type: () => false,
+        enum: () => false,
+        empty: () => false,
+        elements: () => false,
+        values: () => false,
+        ref: () => true,
+        properties: (s) => Object.values(s.properties).some(isRecursiveSchema),
+        // nested unions fall back to their first non-recursive variant
+        discriminator: (s) => Object.values(s.mapping).every(isRecursiveSchema),
+        union: (s) => Object.values(s.union).every(isRecursiveSchema),
+    });
 }

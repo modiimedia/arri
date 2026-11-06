@@ -54,8 +54,9 @@ async fn main() {
 #[cfg(test)]
 mod parsing_and_serialization_tests {
     use crate::example_client::{
-        Book, BookParams, Discriminator, Enumerator, NestedObject, ObjectWithEveryType,
-        ObjectWithNullableFields, ObjectWithOptionalFields, RecursiveObject,
+        Book, BookParams, Enumerator, LegacyDiscriminator, NestedObject, ObjectWithEveryType,
+        ObjectWithNullableFields, ObjectWithOptionalFields, RecursiveObject, UnionAdjacent,
+        UnionExternal, UnionInternal,
     };
     use arri_client::{
         chrono::{DateTime, FixedOffset},
@@ -162,11 +163,9 @@ mod parsing_and_serialization_tests {
             },
             array: vec![true, false, false],
             record: record_val,
-            discriminator: Discriminator::C {
-                id: "".to_string(),
-                name: "".to_string(),
-                date: get_test_date(),
-            },
+            union_external: UnionExternal::Array(vec!["hello".to_string(), "world".to_string()]),
+            union_internal: UnionInternal::Circle { radius: 2.5 },
+            union_adjacent: UnionAdjacent::NullableTimestamp(Some(get_test_date())),
             any: serde_json::Value::String("hello world".to_string()),
         };
 
@@ -221,11 +220,12 @@ mod parsing_and_serialization_tests {
             }),
             array: Some(vec![true, false, false]),
             record: Some(record_val),
-            discriminator: Some(Discriminator::C {
-                id: "".to_string(),
-                name: "".to_string(),
-                date: get_test_date(),
-            }),
+            union_external: Some(UnionExternal::Array(vec![
+                "hello".to_string(),
+                "world".to_string(),
+            ])),
+            union_internal: Some(UnionInternal::Circle { radius: 2.5 }),
+            union_adjacent: Some(UnionAdjacent::NullableTimestamp(Some(get_test_date()))),
             any: Some(serde_json::Value::String("hello world".to_string())),
         };
 
@@ -258,7 +258,9 @@ mod parsing_and_serialization_tests {
             object: None,
             array: None,
             record: None,
-            discriminator: None,
+            union_external: None,
+            union_internal: None,
+            union_adjacent: None,
             any: serde_json::Value::Null,
         };
         assert_eq!(
@@ -298,11 +300,12 @@ mod parsing_and_serialization_tests {
             }),
             array: Some(vec![true, false, false]),
             record: Some(record_val),
-            discriminator: Some(Discriminator::C {
-                id: "".to_string(),
-                name: "".to_string(),
-                date: get_test_date(),
-            }),
+            union_external: Some(UnionExternal::Array(vec![
+                "hello".to_string(),
+                "world".to_string(),
+            ])),
+            union_internal: Some(UnionInternal::Circle { radius: 2.5 }),
+            union_adjacent: Some(UnionAdjacent::Boolean(true)),
             any: json!({"message": "hello world"}),
         };
         assert_eq!(
@@ -338,5 +341,161 @@ mod parsing_and_serialization_tests {
         );
         assert_eq!(file_content.clone(), reference.to_json_string());
         assert_eq!(reference.to_query_params_string(), "".to_string());
+    }
+    fn read_test_file(name: &str) -> String {
+        fs::read_to_string(format!("../../../tests/test-files/{}", name)).unwrap()
+    }
+
+    fn nested_object() -> NestedObject {
+        NestedObject {
+            id: "1".to_string(),
+            content: "hello world".to_string(),
+        }
+    }
+
+    #[test]
+    fn union_external_test() {
+        let cases = vec![
+            (
+                "UnionExternal_Object.json",
+                UnionExternal::Object(nested_object()),
+            ),
+            (
+                "UnionExternal_Array.json",
+                UnionExternal::Array(vec!["hello".to_string(), "world".to_string()]),
+            ),
+            ("UnionExternal_Boolean.json", UnionExternal::Boolean(true)),
+            (
+                "UnionExternal_Timestamp.json",
+                UnionExternal::NullableTimestamp(Some(get_test_date())),
+            ),
+            (
+                "UnionExternal_TimestampNull.json",
+                UnionExternal::NullableTimestamp(None),
+            ),
+        ];
+        for (file_name, reference) in cases {
+            let file_content = read_test_file(file_name);
+            assert_eq!(
+                UnionExternal::from_json_string(file_content.clone()),
+                reference
+            );
+            assert_eq!(reference.to_json_string(), file_content);
+        }
+    }
+
+    #[test]
+    fn union_external_fallback_test() {
+        let fallback = UnionExternal::Object(NestedObject::new());
+        assert_eq!(UnionExternal::new(), fallback);
+        assert_eq!(
+            UnionExternal::from_json_string("{\"unknown\":true}".to_string()),
+            fallback
+        );
+        assert_eq!(
+            UnionExternal::from_json_string("\"array\"".to_string()),
+            fallback
+        );
+    }
+
+    #[test]
+    fn union_internal_test() {
+        let file_content = read_test_file("UnionInternal_Rectangle.json");
+        let reference = UnionInternal::Rectangle {
+            width: 10.7,
+            height: 5.3,
+        };
+        assert_eq!(
+            UnionInternal::from_json_string(file_content.clone()),
+            reference
+        );
+        assert_eq!(reference.to_json_string(), file_content);
+        assert_eq!(
+            reference.to_query_params_string(),
+            "shape=rectangle&width=10.7&height=5.3"
+        );
+    }
+
+    #[test]
+    fn union_internal_fallback_test() {
+        let fallback = UnionInternal::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        };
+        assert_eq!(UnionInternal::new(), fallback);
+        assert_eq!(
+            UnionInternal::from_json_string("{\"shape\":\"triangle\"}".to_string()),
+            fallback
+        );
+        assert_eq!(
+            UnionInternal::from_json_string("{\"radius\":2.5}".to_string()),
+            fallback
+        );
+    }
+
+    #[test]
+    fn union_adjacent_test() {
+        let cases = vec![
+            (
+                "UnionAdjacent_Object.json",
+                UnionAdjacent::Object(nested_object()),
+            ),
+            (
+                "UnionAdjacent_TimestampNull.json",
+                UnionAdjacent::NullableTimestamp(None),
+            ),
+        ];
+        for (file_name, reference) in cases {
+            let file_content = read_test_file(file_name);
+            assert_eq!(
+                UnionAdjacent::from_json_string(file_content.clone()),
+                reference
+            );
+            assert_eq!(reference.to_json_string(), file_content);
+        }
+    }
+
+    #[test]
+    fn union_adjacent_kind_test() {
+        assert_eq!(UnionAdjacent::Object(nested_object()).kind(), "object");
+        assert_eq!(UnionAdjacent::Array(Vec::new()).kind(), "array");
+        assert_eq!(UnionAdjacent::Boolean(false).kind(), "boolean");
+        assert_eq!(
+            UnionAdjacent::NullableTimestamp(None).kind(),
+            "nullable-timestamp"
+        );
+    }
+
+    #[test]
+    fn union_adjacent_fallback_test() {
+        let fallback = UnionAdjacent::Object(NestedObject::new());
+        assert_eq!(UnionAdjacent::new(), fallback);
+        assert_eq!(
+            UnionAdjacent::from_json_string("{\"kind\":\"unknown\",\"data\":1}".to_string()),
+            fallback
+        );
+        assert_eq!(
+            UnionAdjacent::from_json_string("{\"data\":true}".to_string()),
+            fallback
+        );
+    }
+
+    #[test]
+    fn legacy_discriminator_test() {
+        let file_content = read_test_file("LegacyDiscriminator.json");
+        let reference = LegacyDiscriminator::C {
+            id: "1".to_string(),
+            name: "John Doe".to_string(),
+            date: get_test_date(),
+        };
+        assert_eq!(
+            LegacyDiscriminator::from_json_string(file_content.clone()),
+            reference
+        );
+        assert_eq!(reference.to_json_string(), file_content);
+        assert_eq!(
+            LegacyDiscriminator::new(),
+            LegacyDiscriminator::A { id: "".to_string() }
+        );
     }
 }

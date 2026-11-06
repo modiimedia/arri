@@ -54,7 +54,7 @@ describe('nullable()', () => {
     const NullableObject = a.nullable(
         a.object({
             id: a.string(),
-            name: a.nullable(a.number()),
+            name: a.nullable(a.string()),
             createdAt: a.timestamp(),
         }),
     );
@@ -64,75 +64,79 @@ describe('nullable()', () => {
             a.validate(NullableObject, input);
 
         it('accepts good input', () => {
-            expect(validateNum(1));
-            expect(validateNum(null));
+            expect(validateNum(1)).toBe(true);
+            expect(validateNum(null)).toBe(true);
             expect(
                 validateObj({
                     id: '12354',
                     name: 'john doe',
                     createdAt: new Date(),
                 }),
-            );
+            ).toBe(true);
             expect(
                 validateObj({
                     id: '12345',
                     name: null,
                     createdAt: new Date(),
                 }),
-            );
-            expect(validateObj(null));
+            ).toBe(true);
+            expect(validateObj(null)).toBe(true);
         });
         it('rejects bad input', () => {
-            expect(validateNum(undefined));
-            expect(validateNum('12l3123'));
-            expect(validateObj(undefined));
+            expect(validateNum(undefined)).toBe(false);
+            expect(validateNum('12l3123')).toBe(false);
+            expect(validateObj(undefined)).toBe(false);
             expect(
                 validateObj({
                     id: 1,
                     name: 'john doe',
                     createdAt: new Date(),
                 }),
-            );
+            ).toBe(false);
             expect(
                 validateObj({
                     id: null,
                     name: null,
                     createdAt: new Date(),
                 }),
-            );
+            ).toBe(false);
         });
     });
     describe('parsing', () => {
         const parseNum = (input: unknown) => a.parse(NullableNum, input);
         const parseObject = (input: unknown) => a.parse(NullableObject, input);
         it('accepts good input', () => {
-            expect(parseNum('1').success);
-            expect(parseNum(null).success);
+            expect(parseNum('1').success).toBe(true);
+            expect(parseNum(null).success).toBe(true);
             expect(
                 parseObject({
                     id: '12345',
                     name: null,
                     createdAt: new Date(),
                 }).success,
-            );
+            ).toBe(true);
             expect(
                 parseObject({
                     id: '12345',
                     name: 'john doe',
                     createdAt: new Date(),
-                }),
-            );
-            expect(parseObject(null).success);
+                }).success,
+            ).toBe(true);
+            expect(parseObject(null).success).toBe(true);
         });
         it('rejects bad input', () => {
             const numResult = parseNum('hello world');
-            expect(!numResult.success && numResult.errors.length > 0);
+            expect(!numResult.success && numResult.errors.length > 0).toBe(
+                true,
+            );
             const objResult = parseObject({
                 id: '12355',
                 name: undefined,
                 createdAt: new Date(),
             });
-            expect(!objResult.success && objResult.errors.length > 0);
+            expect(!objResult.success && objResult.errors.length > 0).toBe(
+                true,
+            );
         });
     });
     describe('standard-schema support', () => {

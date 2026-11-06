@@ -4,6 +4,7 @@ import {
     type CodegenContext,
     getClassName,
     isNullable,
+    kotlinEncodedQueryString,
     type KotlinProperty,
 } from './_common';
 
@@ -30,11 +31,12 @@ export function kotlinEnumFromSchema(
     if (!context.existingTypeIds.includes(className)) {
         content = `enum class ${prefixedClassName} {
     ${enumItems.map((item) => item.name).join(',\n    ')};
+
     val serialValue: String
         get() = when (this) {
             ${enumItems.map((item) => `${item.name} -> "${item.value}"`).join('\n            ')}
         }
-    
+
     companion object Factory : ${context.clientName}ModelFactory<${prefixedClassName}> {
         @JvmStatic
         override fun new(): ${prefixedClassName} {
@@ -70,38 +72,30 @@ export function kotlinEnumFromSchema(
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
-            if (nullable) {
-                return `when (${input}) {
-                    is JsonNull -> null
-                    is JsonPrimitive -> ${prefixedClassName}.fromJsonElement(${input}!!, "$instancePath/${key ?? ''}")
-                    else -> null
-                }`;
-            }
             return `when (${input}) {
-                is JsonNull -> ${defaultValue}
-                is JsonPrimitive -> ${prefixedClassName}.fromJsonElement(${input}!!, "$instancePath/${key}")
-                else -> ${defaultValue}
-            }`;
+    is JsonNull -> ${defaultValue}
+    is JsonPrimitive -> ${prefixedClassName}.fromJsonElement(${input}!!, "$instancePath/${key ?? ''}")
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
                 return `${target} += when (${input}) {
-                    is ${prefixedClassName} -> "\\"\${${input}.serialValue}\\""
-                    else -> "null"
-                }`;
+    is ${prefixedClassName} -> "\\"\${${input}.serialValue}\\""
+    else -> "null"
+}`;
             }
             return `${target} += "\\"\${${input}.serialValue}\\""`;
         },
         toQueryString(input, target, key) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target}.add("${key}=\${${input}.serialValue}")
-                }`;
-            }
-            if (schema.isNullable) {
-                return `${target}.add("${key}=\${${input}?.serialValue}")`;
-            }
-            return `${target}.add("${key}=\${${input}.serialValue}")`;
+            return kotlinEncodedQueryString(
+                schema,
+                context,
+                input,
+                target,
+                key,
+                (value) => `${value}.serialValue`,
+            );
         },
         content,
     };

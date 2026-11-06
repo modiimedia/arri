@@ -68,13 +68,13 @@ const RecursiveObject = a.recursive<RecursiveObject>((self) =>
     }),
 );
 
-export type RecursiveUnion =
-    | { type: 'CHILD'; data: RecursiveUnion }
-    | { type: 'CHILDREN'; data: RecursiveUnion[] }
+export type RecursiveDiscriminator =
+    | { type: 'CHILD'; data: RecursiveDiscriminator }
+    | { type: 'CHILDREN'; data: RecursiveDiscriminator[] }
     | { type: 'TEXT'; data: string }
     | { type: 'SHAPE'; data: { width: number; height: number } };
-export const RecursiveUnion = a.recursive<RecursiveUnion>(
-    'RecursiveUnion',
+export const RecursiveDiscriminator = a.recursive<RecursiveDiscriminator>(
+    'RecursiveDiscriminator',
     (self) =>
         a.discriminator('type', {
             CHILD: a.object({ data: self }),
@@ -92,6 +92,101 @@ export const RecursiveUnion = a.recursive<RecursiveUnion>(
             }),
         }),
 );
+
+type RecursiveUnion =
+    | {
+          child: RecursiveUnion;
+      }
+    | {
+          children: RecursiveUnion[];
+      }
+    | {
+          text: string;
+      }
+    | {
+          shape: {
+              width: number;
+              height: number;
+              color: string;
+          };
+      };
+const RecursiveUnion = a.recursive<RecursiveUnion>(
+    (self) =>
+        a.union({
+            child: self,
+            children: a.array(self),
+            text: a.string(),
+            shape: a.object({
+                width: a.float64(),
+                height: a.float64(),
+                color: a.string(),
+            }),
+        }),
+    { id: 'RecursiveUnion' },
+);
+
+const UnionExternalTagging = a.union({
+    text: a.string(),
+    image: a.object({
+        url: a.string(),
+        width: a.float64(),
+        height: a.float64(),
+    }),
+    references: a.array(a.string()),
+});
+type UnionExternalTagging = a.infer<typeof UnionExternalTagging>;
+
+const UnionInternalTagging = a.union(
+    {
+        rectangle: a.object({
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        circle: a.object({
+            radius: a.float64(),
+        }),
+    },
+    {
+        tagKey: 'kind',
+    },
+);
+type UnionInternalTagging = a.infer<typeof UnionInternalTagging>;
+
+const UnionInternalTaggingWithValue = a.union(
+    {
+        text: a.string(),
+        image: a.object({
+            url: a.string(),
+            width: a.float64(),
+            height: a.float64(),
+        }),
+        references: a.array(a.string()),
+        nullableText: a.nullable(a.string()),
+    },
+    {
+        tagKey: 'type',
+        valueKey: 'data',
+    },
+);
+type UnionInternalTaggingWithValue = a.infer<
+    typeof UnionInternalTaggingWithValue
+>;
+
+type RecursiveObjectWithNonIdentifierKeys = {
+    'my-value': string;
+    'my-child': RecursiveObjectWithNonIdentifierKeys | null;
+    'my children': RecursiveObjectWithNonIdentifierKeys[];
+};
+
+type RecursiveObjectWithTimestamp = {
+    date: Date;
+    child: RecursiveObjectWithTimestamp | null;
+};
+
+type RecursiveUnionAdjacent =
+    | { kind: 'child'; data: RecursiveUnionAdjacent }
+    | { kind: 'children'; data: RecursiveUnionAdjacent[] }
+    | { kind: 'text'; data: string };
 
 export const validationTestSuites: Record<
     string,
@@ -234,6 +329,143 @@ export const validationTestSuites: Record<
         schema: a.nullable(a.timestamp()),
         goodInputs: [new Date(), null],
         badInputs: [true, false, {}, [], 'hello world'],
+    },
+    'nested timestamps': {
+        schema: a.object({
+            required: a.timestamp(),
+            nullable: a.nullable(a.timestamp()),
+            optional: a.optional(a.timestamp()),
+            array: a.array(a.timestamp()),
+            record: a.record(a.timestamp()),
+        }),
+        goodInputs: [
+            {
+                required: new Date(),
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: new Date(),
+                optional: new Date(),
+                array: [new Date()],
+                record: { a: new Date() },
+            },
+        ],
+        badInputs: [
+            {
+                required: 'hello world',
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: '',
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: 'null',
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: 'hello world',
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: 'null',
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                optional: 'hello world',
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                array: ['hello world'],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                array: [],
+                record: { a: 'hello world' },
+            },
+        ],
+    },
+    'recursive object with timestamp': {
+        schema: a.recursive<RecursiveObjectWithTimestamp>(
+            'RecursiveObjectWithTimestamp',
+            (self) =>
+                a.object({
+                    date: a.timestamp(),
+                    child: a.nullable(self),
+                }),
+        ),
+        goodInputs: [
+            {
+                date: new Date(),
+                child: { date: new Date(), child: null },
+            },
+        ],
+        badInputs: [
+            { date: 'hello world', child: null },
+            {
+                date: new Date(),
+                child: { date: 'hello world', child: null },
+            },
+        ],
+    },
+    'recursive adjacently tagged union': {
+        schema: a.recursive<RecursiveUnionAdjacent>(
+            'RecursiveUnionAdjacent',
+            (self) =>
+                a.union(
+                    {
+                        child: self,
+                        children: a.array(self),
+                        text: a.string(),
+                    },
+                    { tagKey: 'kind', valueKey: 'data' },
+                ),
+        ),
+        goodInputs: [
+            { kind: 'text', data: 'hello world' },
+            { kind: 'child', data: { kind: 'text', data: 'hello world' } },
+            {
+                kind: 'children',
+                data: [
+                    { kind: 'text', data: 'hello world' },
+                    {
+                        kind: 'child',
+                        data: {
+                            kind: 'children',
+                            data: [{ kind: 'text', data: 'hello world' }],
+                        },
+                    },
+                ],
+            },
+        ],
+        badInputs: [
+            {},
+            { kind: 'unknown', data: 'hello world' },
+            { kind: 'text', data: 1 },
+            { kind: 'child', data: { kind: 'unknown', data: 'hello world' } },
+            { kind: 'child', data: { kind: 'text', data: 1 } },
+            { kind: 'children', data: [{ kind: 'text', data: 1 }] },
+        ],
     },
     'simple object': {
         schema: a.object({
@@ -613,6 +845,180 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    union: {
+        schema: a.union({
+            object: a.object({
+                foo: a.string(),
+                bar: a.boolean(),
+            }),
+            text: a.string(),
+            array: a.array(a.boolean()),
+            record: a.record(a.uint32()),
+            nullableBool: a.nullable(a.boolean()),
+        }),
+        goodInputs: [
+            {
+                object: {
+                    foo: 'string',
+                    bar: true,
+                },
+            },
+            {
+                text: 'hello world',
+            },
+            {
+                array: [true, false, false],
+            },
+            {
+                record: {
+                    a: 13,
+                    b: 49,
+                    c: 99,
+                },
+            },
+            {
+                nullableBool: true,
+            },
+            {
+                nullableBool: null,
+            },
+            {
+                nullableBool: false,
+            },
+        ],
+        badInputs: [
+            {
+                object: {
+                    foo: 'string',
+                    bar: 'true',
+                },
+            },
+            {
+                text: null,
+            },
+            {
+                array: [true, false, 1],
+            },
+            {
+                record: {
+                    a: 13,
+                    b: 49,
+                    c: '99',
+                },
+            },
+            {
+                nullableBool: 'true',
+            },
+            {
+                nullableBool: undefined,
+            },
+            {
+                foo: true,
+            },
+        ],
+    },
+    'union with external tagging (default)': {
+        schema: UnionExternalTagging,
+        goodInputs: [
+            { text: 'hello world' },
+            { image: { url: 'http://example.com', width: 15, height: 15 } },
+            { references: ['hello', 'world'] },
+        ] satisfies UnionExternalTagging[],
+        badInputs: [
+            { text: null },
+            { image: { url: 15, width: 15, height: 15 } },
+            { references: ['hello', false] },
+            { tags: ['hello', 'world'] },
+        ],
+    },
+    'union with internal tagging': {
+        schema: UnionInternalTagging,
+        goodInputs: [
+            { kind: 'rectangle', width: 15.5, height: 25.5 },
+            { kind: 'circle', radius: 16 },
+        ] satisfies UnionInternalTagging[],
+        badInputs: [
+            { kind: 'rectangle', width: true, height: 25.5 },
+            { kind: 'circle', radius: true },
+            { kind: 'triangle', width: 25.5, height: 25.5 },
+        ],
+    },
+    'union with internal tagging + value key': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            { type: 'text', data: 'hello world' },
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: 100, height: 50 },
+            },
+            { type: 'references', data: ['hello', 'world'] },
+            { type: 'nullableText', data: 'hello world' },
+            { type: 'nullableText', data: null },
+        ] satisfies UnionInternalTaggingWithValue[],
+        badInputs: [
+            { type: 'text', data: null },
+            {
+                type: 'image',
+                data: { src: 'https://example.com', width: 100, height: 50 },
+            },
+            { type: 'references', data: ['hello', 'world', false] },
+        ],
+    },
+    'nullable union with internal tagging': {
+        schema: a.nullable(UnionInternalTagging),
+        goodInputs: [
+            null,
+            { kind: 'rectangle', width: 15.5, height: 25.5 },
+            { kind: 'circle', radius: 16 },
+        ] satisfies (UnionInternalTagging | null)[],
+        badInputs: [
+            undefined,
+            'rectangle',
+            { kind: 'triangle', width: 25.5, height: 25.5 },
+        ],
+    },
+    'nullable union with internal tagging + value key': {
+        schema: a.nullable(UnionInternalTaggingWithValue),
+        goodInputs: [
+            null,
+            { type: 'text', data: 'hello world' },
+            { type: 'references', data: ['hello', 'world'] },
+        ] satisfies (UnionInternalTaggingWithValue | null)[],
+        badInputs: [undefined, 'text', { type: 'text', data: null }],
+    },
+    'object with tagged union fields': {
+        schema: a.object({
+            internal: UnionInternalTagging,
+            adjacent: a.nullable(UnionInternalTaggingWithValue),
+            list: a.array(UnionInternalTagging),
+        }),
+        goodInputs: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'text', data: 'hello world' },
+                list: [
+                    { kind: 'rectangle', width: 1, height: 2 },
+                    { kind: 'circle', radius: 3 },
+                ],
+            },
+            {
+                internal: { kind: 'rectangle', width: 1, height: 2 },
+                adjacent: null,
+                list: [],
+            },
+        ],
+        badInputs: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'text', data: 'hello world' },
+                list: [{ kind: 'triangle' }],
+            },
+            {
+                internal: { kind: 'circle', radius: 5 },
+                list: [],
+            },
+        ],
+    },
     'record with boolean values': {
         schema: a.record(a.boolean()),
         goodInputs: [{ a: true, b: false, [`"C"`]: true }, {}],
@@ -848,7 +1254,7 @@ export const validationTestSuites: Record<
         ],
     },
     'recursive discriminator': {
-        schema: RecursiveUnion,
+        schema: RecursiveDiscriminator,
         goodInputs: [
             {
                 type: 'CHILD',
@@ -897,6 +1303,364 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    'recursive union': {
+        schema: RecursiveUnion,
+        goodInputs: [
+            {
+                children: [
+                    {
+                        children: [
+                            {
+                                child: {
+                                    text: 'hello world',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        child: {
+                            text: 'hello world',
+                        },
+                    },
+                    {
+                        shape: {
+                            width: 1.5,
+                            height: 1.5,
+                            color: '#fafafa',
+                        },
+                    },
+                ],
+            },
+        ],
+        badInputs: [
+            {
+                children: [
+                    {
+                        children: [
+                            {
+                                child: {
+                                    text: 'hello world',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        child: {
+                            text: 'hello world',
+                        },
+                    },
+                    {
+                        shape: {
+                            width: 1.5,
+                            height: 1.5,
+                            color: true,
+                        },
+                    },
+                ],
+            },
+        ],
+    },
+    'object with non-identifier keys': {
+        schema: a.object({
+            'my-key': a.string(),
+            'my key': a.boolean(),
+            'my.key': a.int8(),
+            '1key': a.nullable(a.string()),
+            'my-float': a.float64(),
+            'my float': a.float32(),
+            'optional-key': a.optional(a.string()),
+            'nested-object': a.object({
+                'inner-key': a.string(),
+            }),
+            'all-optional-object': a.object({
+                'first-key': a.optional(a.string()),
+                'second-key': a.optional(a.string()),
+            }),
+            'all optional object': a.object({
+                'first key': a.optional(a.string()),
+            }),
+            '1-array': a.array(
+                a.object({
+                    'inner-key': a.string(),
+                }),
+            ),
+            'my array': a.array(a.string()),
+            'my-record': a.record(a.string()),
+            'my record': a.record(a.string()),
+        }),
+        goodInputs: [
+            {
+                'my-key': 'a',
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'nested-object': { 'inner-key': 'b' },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [{ 'inner-key': 'c' }],
+                'my array': ['d'],
+                'my-record': { 'record-key': 'e' },
+                'my record': {},
+            },
+            {
+                'my-key': 'a',
+                'my key': false,
+                'my.key': 1,
+                '1key': 'b',
+                'my-float': 1.5,
+                'my float': 2.5,
+                'optional-key': 'c',
+                'nested-object': { 'inner-key': 'd' },
+                'all-optional-object': { 'first-key': 'e', 'second-key': 'f' },
+                'all optional object': { 'first key': 'g' },
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': { 'record key': 'h' },
+            },
+        ],
+        badInputs: [
+            {},
+            {
+                'my-key': 1,
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'nested-object': { 'inner-key': 'b' },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': {},
+            },
+            {
+                'my-key': 'a',
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'optional-key': 1,
+                'nested-object': { 'inner-key': 'b' },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': {},
+            },
+            {
+                'my-key': 'a',
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'nested-object': { 'inner-key': 1 },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': {},
+            },
+        ],
+    },
+    'unions nested under non-identifier keys': {
+        schema: a.object({
+            'internal-union': a.union(
+                {
+                    'my-variant': a.object({ 'inner-key': a.string() }),
+                },
+                { tagKey: 'my-tag' },
+            ),
+            'adjacent-union': a.union(
+                { 'my-variant': a.string() },
+                { tagKey: 'my-tag', valueKey: 'my-value' },
+            ),
+            'external-union': a.union({ 'my-variant': a.string() }),
+            'nullable-internal-union': a.nullable(
+                a.union(
+                    { 'my-variant': a.object({ 'inner-key': a.string() }) },
+                    { tagKey: 'my-tag' },
+                ),
+            ),
+            'union-array': a.array(
+                a.union(
+                    { 'my-variant': a.object({ 'inner-key': a.string() }) },
+                    { tagKey: 'my-tag' },
+                ),
+            ),
+        }),
+        goodInputs: [
+            {
+                'internal-union': { 'my-tag': 'my-variant', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'my-variant', 'my-value': 'a' },
+                'external-union': { 'my-variant': 'a' },
+                'nullable-internal-union': null,
+                'union-array': [{ 'my-tag': 'my-variant', 'inner-key': 'a' }],
+            },
+        ],
+        badInputs: [
+            {},
+            {
+                'internal-union': { 'my-tag': 'unknown', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'my-variant', 'my-value': 'a' },
+                'external-union': { 'my-variant': 'a' },
+                'nullable-internal-union': null,
+                'union-array': [],
+            },
+            {
+                'internal-union': { 'my-tag': 'my-variant', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'unknown', 'my-value': 'a' },
+                'external-union': { 'my-variant': 'a' },
+                'nullable-internal-union': null,
+                'union-array': [],
+            },
+            {
+                'internal-union': { 'my-tag': 'my-variant', 'inner-key': 'a' },
+                'adjacent-union': { 'my-tag': 'my-variant', 'my-value': 'a' },
+                'external-union': { unknown: 'a' },
+                'nullable-internal-union': null,
+                'union-array': [],
+            },
+        ],
+    },
+    'external union with non-identifier keys': {
+        schema: a.union({
+            'nullable-timestamp': a.nullable(a.timestamp()),
+            'my object': a.object({
+                'inner-key': a.string(),
+            }),
+            '1-boolean': a.boolean(),
+        }),
+        goodInputs: [
+            { 'nullable-timestamp': new Date('2001-01-01T16:00:00.000Z') },
+            { 'nullable-timestamp': null },
+            { 'my object': { 'inner-key': 'a' } },
+            { '1-boolean': true },
+        ],
+        badInputs: [
+            {},
+            { 'nullable-timestamp': true },
+            { 'nullable-timestamp': 'a' },
+            { 'my object': { 'inner-key': 1 } },
+            { '1-boolean': 'a' },
+        ],
+    },
+    'internally tagged union with non-identifier keys': {
+        schema: a.union(
+            {
+                'my-variant': a.object({
+                    'inner-key': a.string(),
+                    'optional-key': a.optional(a.string()),
+                }),
+                'other variant': a.object({
+                    'inner key': a.boolean(),
+                }),
+            },
+            { tagKey: 'my-tag' },
+        ),
+        goodInputs: [
+            { 'my-tag': 'my-variant', 'inner-key': 'a' },
+            { 'my-tag': 'my-variant', 'inner-key': 'a', 'optional-key': 'b' },
+            { 'my-tag': 'other variant', 'inner key': true },
+        ],
+        badInputs: [
+            {},
+            { 'inner-key': 'a' },
+            { 'my-tag': 'unknown', 'inner-key': 'a' },
+            { 'my-tag': 'my-variant', 'inner-key': 1 },
+            { 'my-tag': 'my-variant', 'inner-key': 'a', 'optional-key': 1 },
+            { 'my-tag': 'other variant', 'inner-key': 'a' },
+        ],
+    },
+    'adjacently tagged union with non-identifier keys': {
+        schema: a.union(
+            {
+                'nullable-timestamp': a.nullable(a.timestamp()),
+                'my object': a.object({
+                    'inner-key': a.string(),
+                }),
+            },
+            { tagKey: 'my-tag', valueKey: 'my-value' },
+        ),
+        goodInputs: [
+            {
+                'my-tag': 'nullable-timestamp',
+                'my-value': new Date('2001-01-01T16:00:00.000Z'),
+            },
+            { 'my-tag': 'nullable-timestamp', 'my-value': null },
+            { 'my-tag': 'my object', 'my-value': { 'inner-key': 'a' } },
+        ],
+        badInputs: [
+            {},
+            { 'my-tag': 'unknown', 'my-value': null },
+            { 'my-tag': 'nullable-timestamp', 'my-value': true },
+            { 'my-tag': 'nullable-timestamp', 'my-value': 'a' },
+            { 'my-tag': 'my object', 'my-value': { 'inner-key': 1 } },
+        ],
+    },
+    'discriminator with non-identifier keys': {
+        schema: a.discriminator('my-tag', {
+            'my-variant': a.object({
+                'inner-key': a.string(),
+            }),
+        }),
+        goodInputs: [{ 'my-tag': 'my-variant', 'inner-key': 'a' }],
+        badInputs: [
+            {},
+            { 'inner-key': 'a' },
+            { 'my-tag': 'my-variant', 'inner-key': 1 },
+        ],
+    },
+    'recursive object with non-identifier keys': {
+        schema: a.recursive<RecursiveObjectWithNonIdentifierKeys>(
+            'RecursiveObjectWithNonIdentifierKeys',
+            (self) =>
+                a.object({
+                    'my-value': a.string(),
+                    'my-child': a.nullable(self),
+                    'my children': a.array(self),
+                }),
+        ),
+        goodInputs: [
+            { 'my-value': 'a', 'my-child': null, 'my children': [] },
+            {
+                'my-value': 'a',
+                'my-child': {
+                    'my-value': 'b',
+                    'my-child': null,
+                    'my children': [
+                        {
+                            'my-value': 'c',
+                            'my-child': null,
+                            'my children': [],
+                        },
+                    ],
+                },
+                'my children': [],
+            },
+        ],
+        badInputs: [
+            {},
+            { 'my-value': 1, 'my-child': null, 'my children': [] },
+            {
+                'my-value': 'a',
+                'my-child': {
+                    'my-value': 1,
+                    'my-child': null,
+                    'my children': [],
+                },
+                'my children': [],
+            },
+        ],
+    },
 };
 
 const ObjectSchema = a.object({
@@ -940,6 +1704,44 @@ export const parsingTestSuites: Record<
         badInputs: any[];
     }
 > = {
+    'nested timestamp strings': {
+        schema: a.object({
+            required: a.timestamp(),
+            nullable: a.nullable(a.timestamp()),
+            array: a.array(a.timestamp()),
+        }),
+        goodInputs: [
+            {
+                required: '2001-01-01T16:00:00.000Z',
+                nullable: '2002-02-02T16:00:00.000Z',
+                array: ['2003-03-03T16:00:00.000Z'],
+            },
+            {
+                required: '2001-01-01T16:00:00.000Z',
+                nullable: null,
+                array: [],
+            },
+        ],
+        expectedResults: [
+            {
+                required: new Date('2001-01-01T16:00:00.000Z'),
+                nullable: new Date('2002-02-02T16:00:00.000Z'),
+                array: [new Date('2003-03-03T16:00:00.000Z')],
+            },
+            {
+                required: new Date('2001-01-01T16:00:00.000Z'),
+                nullable: null,
+                array: [],
+            },
+        ],
+        badInputs: [
+            {
+                required: 'hello world',
+                nullable: null,
+                array: [],
+            },
+        ],
+    },
     any: {
         schema: a.any(),
         goodInputs: [
@@ -1310,6 +2112,142 @@ export const parsingTestSuites: Record<
             }`,
         ],
     },
+    'recursive union': {
+        schema: RecursiveUnion,
+        goodInputs: [
+            `{ "child": { "text" : "foo" } }`,
+            `{ "children": [ { "child": { "text": "foo" } } ] }`,
+        ],
+        expectedResults: [
+            { child: { text: 'foo' } },
+            { children: [{ child: { text: 'foo' } }] },
+        ],
+        badInputs: [],
+    },
+    'nullable union': {
+        schema: a.object({
+            union: a.nullable(
+                a.union({
+                    one: a.string(),
+                    many: a.array(a.string()),
+                }),
+            ),
+        }),
+        goodInputs: [
+            '{"union":null}',
+            '{"union":{"one":"foo"}}',
+            '{"union":{"many":["hello","world"]}}',
+        ],
+        expectedResults: [
+            { union: null },
+            { union: { one: 'foo' } },
+            { union: { many: ['hello', 'world'] } },
+        ],
+        badInputs: [],
+    },
+    'nullable union 2': {
+        schema: a.object({
+            /** @deprecated */
+            foo: a.nullable(a.string()),
+            bar: a.nullable(
+                a.union({
+                    A: a.object({
+                        title: a.string(),
+                        description: a.string(),
+                    }),
+                    B: a.stringEnum(['A', 'B', 'C']),
+                }),
+            ),
+        }),
+        goodInputs: [
+            `{"foo":null,"bar":null}`,
+            `{"foo":"hello world","bar":{"A":{"title":"foo","description":"foo"}}}`,
+        ],
+        expectedResults: [
+            { foo: null, bar: null },
+            {
+                foo: 'hello world',
+                bar: { A: { title: 'foo', description: 'foo' } },
+            },
+        ],
+        badInputs: [],
+    },
+    'union internally tagged': {
+        schema: UnionInternalTagging,
+        goodInputs: [
+            `{"kind":"rectangle","width":15,"height":10}`,
+            `{"kind":"circle","radius":22.5}`,
+        ],
+        expectedResults: [
+            { kind: 'rectangle', width: 15, height: 10 },
+            { kind: 'circle', radius: 22.5 },
+        ],
+        badInputs: [`{"kind":"triangle","width":15,"height":10}`],
+    },
+    'union internally tagged with value': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            `{"type":"text","data":"hello world"}`,
+            `{"type":"image","data":{"url":"https://www.youtube.com","width":1080,"height":720}}`,
+            `{"type":"references","data":["hello","world"]}`,
+        ],
+        expectedResults: [
+            { type: 'text', data: 'hello world' },
+            {
+                type: 'image',
+                data: {
+                    url: 'https://www.youtube.com',
+                    width: 1080,
+                    height: 720,
+                },
+            },
+            { type: 'references', data: ['hello', 'world'] },
+        ],
+        badInputs: [
+            { type: 'foo', data: { url: 'foo' } },
+            { data: 'hello world' },
+            { type: 'text', data: null },
+        ],
+    },
+    'nullable union internally tagged': {
+        schema: a.nullable(UnionInternalTagging),
+        goodInputs: ['null', `{"kind":"circle","radius":22.5}`],
+        expectedResults: [null, { kind: 'circle', radius: 22.5 }],
+        badInputs: [`{"kind":"triangle","width":15,"height":10}`],
+    },
+    'nullable union internally tagged with value': {
+        schema: a.nullable(UnionInternalTaggingWithValue),
+        goodInputs: ['null', `{"type":"text","data":"hello world"}`],
+        expectedResults: [null, { type: 'text', data: 'hello world' }],
+        badInputs: [`{"type":"text","data":null}`],
+    },
+    'object with tagged union fields': {
+        schema: a.object({
+            internal: UnionInternalTagging,
+            adjacent: a.nullable(UnionInternalTaggingWithValue),
+            list: a.array(UnionInternalTagging),
+        }),
+        goodInputs: [
+            `{"internal":{"kind":"circle","radius":5},"adjacent":{"type":"references","data":["a","b"]},"list":[{"kind":"rectangle","width":1,"height":2}]}`,
+            `{"internal":{"kind":"circle","radius":5},"adjacent":null,"list":[]}`,
+        ],
+        expectedResults: [
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: { type: 'references', data: ['a', 'b'] },
+                list: [{ kind: 'rectangle', width: 1, height: 2 }],
+            },
+            {
+                internal: { kind: 'circle', radius: 5 },
+                adjacent: null,
+                list: [],
+            },
+        ],
+        badInputs: [
+            `{"internal":{"kind":"circle","radius":5},"adjacent":null,"list":[{"kind":"triangle"}]}`,
+            `{"internal":{"kind":"circle"},"adjacent":null,"list":[]}`,
+        ],
+    },
 };
 
 export const coercionTestSuites: Record<
@@ -1321,6 +2259,120 @@ export const coercionTestSuites: Record<
         badInputs: any[];
     }
 > = {
+    'nullable fields set to the string "null"': {
+        schema: a.object({
+            string: a.nullable(a.string()),
+            nonNullableString: a.string(),
+            optionalString: a.optional(a.nullable(a.string())),
+            boolean: a.nullable(a.boolean()),
+            float64: a.nullable(a.float64()),
+            int32: a.nullable(a.int32()),
+            int64: a.nullable(a.int64()),
+            timestamp: a.nullable(a.timestamp()),
+            enum: a.nullable(a.enumerator(['A', 'B'])),
+            any: a.nullable(a.any()),
+            array: a.nullable(a.array(a.string())),
+            arrayItems: a.array(a.nullable(a.string())),
+            object: a.nullable(a.object({ id: a.string() })),
+            record: a.nullable(a.record(a.string())),
+            unionExternal: a.nullable(a.union({ id: a.string() })),
+            unionInternal: a.nullable(
+                a.union(
+                    { circle: a.object({ radius: a.float64() }) },
+                    { tagKey: 'shape' },
+                ),
+            ),
+            unionAdjacent: a.nullable(
+                a.union(
+                    { id: a.string() },
+                    { tagKey: 'kind', valueKey: 'data' },
+                ),
+            ),
+        }),
+        goodInputs: [
+            {
+                string: 'null',
+                nonNullableString: 'null',
+                optionalString: 'null',
+                boolean: 'null',
+                float64: 'null',
+                int32: 'null',
+                int64: 'null',
+                timestamp: 'null',
+                enum: 'null',
+                any: 'null',
+                array: 'null',
+                arrayItems: ['null', 'hello world'],
+                object: 'null',
+                record: 'null',
+                unionExternal: 'null',
+                unionInternal: 'null',
+                unionAdjacent: 'null',
+            },
+        ],
+        expectedResults: [
+            {
+                string: null,
+                nonNullableString: 'null',
+                optionalString: null,
+                boolean: null,
+                float64: null,
+                int32: null,
+                int64: null,
+                timestamp: null,
+                enum: null,
+                any: null,
+                array: null,
+                arrayItems: [null, 'hello world'],
+                object: null,
+                record: null,
+                unionExternal: null,
+                unionInternal: null,
+                unionAdjacent: null,
+            },
+        ],
+        badInputs: [{ enum: 'NULL' }],
+    },
+    'object with non-identifier keys': {
+        schema: a.object({
+            'my-float': a.float64(),
+            'my float': a.float32(),
+            '1-int': a.int8(),
+            'my bool': a.boolean(),
+            'my date': a.timestamp(),
+            'my-enum': a.enumerator(['A', 'B']),
+        }),
+        goodInputs: [
+            {
+                'my-float': '1.5',
+                'my float': '2.5',
+                '1-int': '1',
+                'my bool': 'true',
+                'my date': '2001-01-01T16:00:00.000Z',
+                'my-enum': 'A',
+            },
+        ],
+        expectedResults: [
+            {
+                'my-float': 1.5,
+                'my float': 2.5,
+                '1-int': 1,
+                'my bool': true,
+                'my date': new Date('2001-01-01T16:00:00.000Z'),
+                'my-enum': 'A',
+            },
+        ],
+        badInputs: [
+            {
+                'my-float': 'a',
+                'my float': '2.5',
+                '1-int': '1',
+                'my bool': 'true',
+                'my date': '2001-01-01T16:00:00.000Z',
+                'my-enum': 'A',
+            },
+        ],
+    },
     boolean: {
         schema: a.boolean(),
         goodInputs: [
@@ -1766,6 +2818,38 @@ export const coercionTestSuites: Record<
                 ],
             },
         ],
+    },
+    'union with external tagging': {
+        schema: UnionExternalTagging,
+        goodInputs: [
+            { image: { url: 'https://example.com', width: '15', height: 20 } },
+        ],
+        expectedResults: [
+            { image: { url: 'https://example.com', width: 15, height: 20 } },
+        ],
+        badInputs: [{ image: { url: 'https://example.com', width: 'foo' } }],
+    },
+    'union with internal tagging': {
+        schema: UnionInternalTagging,
+        goodInputs: [{ kind: 'rectangle', width: '15.5', height: 25.5 }],
+        expectedResults: [{ kind: 'rectangle', width: 15.5, height: 25.5 }],
+        badInputs: [{ kind: 'triangle', width: '15.5', height: 25.5 }],
+    },
+    'union with internal tagging + value key': {
+        schema: UnionInternalTaggingWithValue,
+        goodInputs: [
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: '100', height: 50 },
+            },
+        ],
+        expectedResults: [
+            {
+                type: 'image',
+                data: { url: 'https://example.com', width: 100, height: 50 },
+            },
+        ],
+        badInputs: [{ type: 'image', data: { url: 'https://example.com' } }],
     },
 };
 

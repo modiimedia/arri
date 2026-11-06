@@ -167,6 +167,7 @@ class EmptyObject implements ArriModel {
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{};
+
     return _output_;
   }
 
@@ -178,6 +179,7 @@ class EmptyObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
+
     return _queryParts_.join("&");
   }
 
@@ -252,6 +254,7 @@ class Book implements ArriModel {
       "createdAt": createdAt.toUtc().toIso8601String(),
       "updatedAt": updatedAt.toUtc().toIso8601String(),
     };
+
     return _output_;
   }
 
@@ -322,6 +325,7 @@ class BookParams implements ArriModel {
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{"bookId": bookId};
+
     return _output_;
   }
 
@@ -381,6 +385,7 @@ class NestedObject implements ArriModel {
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{"id": id, "content": content};
+
     return _output_;
   }
 
@@ -437,7 +442,9 @@ class ObjectWithEveryType implements ArriModel {
   final NestedObject object;
   final List<bool> array;
   final Map<String, bool> record;
-  final Discriminator discriminator;
+  final UnionExternal unionExternal;
+  final UnionInternal unionInternal;
+  final UnionAdjacent unionAdjacent;
   final dynamic any;
   const ObjectWithEveryType({
     required this.string,
@@ -457,9 +464,12 @@ class ObjectWithEveryType implements ArriModel {
     required this.object,
     required this.array,
     required this.record,
-    required this.discriminator,
+    required this.unionExternal,
+    required this.unionInternal,
+    required this.unionAdjacent,
     required this.any,
   });
+
   factory ObjectWithEveryType.empty() {
     return ObjectWithEveryType(
       string: "",
@@ -479,10 +489,13 @@ class ObjectWithEveryType implements ArriModel {
       object: NestedObject.empty(),
       array: [],
       record: {},
-      discriminator: Discriminator.empty(),
+      unionExternal: UnionExternal.empty(),
+      unionInternal: UnionInternal.empty(),
+      unionAdjacent: UnionAdjacent.empty(),
       any: null,
     );
   }
+
   factory ObjectWithEveryType.fromJson(Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
@@ -517,10 +530,18 @@ class ObjectWithEveryType implements ArriModel {
                   MapEntry(_key_, typeFromDynamic<bool>(_val_, false)),
             )
             : <String, bool>{};
-    final discriminator =
-        _input_["discriminator"] is Map<String, dynamic>
-            ? Discriminator.fromJson(_input_["discriminator"])
-            : Discriminator.empty();
+    final unionExternal =
+        _input_["unionExternal"] is Map<String, dynamic>
+            ? UnionExternal.fromJson(_input_["unionExternal"])
+            : UnionExternal.empty();
+    final unionInternal =
+        _input_["unionInternal"] is Map<String, dynamic>
+            ? UnionInternal.fromJson(_input_["unionInternal"])
+            : UnionInternal.empty();
+    final unionAdjacent =
+        _input_["unionAdjacent"] is Map<String, dynamic>
+            ? UnionAdjacent.fromJson(_input_["unionAdjacent"])
+            : UnionAdjacent.empty();
     final any = _input_["any"];
     return ObjectWithEveryType(
       string: string,
@@ -540,7 +561,9 @@ class ObjectWithEveryType implements ArriModel {
       object: object,
       array: array,
       record: record,
-      discriminator: discriminator,
+      unionExternal: unionExternal,
+      unionInternal: unionInternal,
+      unionAdjacent: unionAdjacent,
       any: any,
     );
   }
@@ -569,9 +592,12 @@ class ObjectWithEveryType implements ArriModel {
       "object": object.toJson(),
       "array": array.map((_el_) => _el_).toList(),
       "record": record.map((_key_, _val_) => MapEntry(_key_, _val_)),
-      "discriminator": discriminator.toJson(),
+      "unionExternal": unionExternal.toJson(),
+      "unionInternal": unionInternal.toJson(),
+      "unionAdjacent": unionAdjacent.toJson(),
       "any": any,
     };
+
     return _output_;
   }
 
@@ -607,7 +633,13 @@ class ObjectWithEveryType implements ArriModel {
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.",
+    );
+    print(
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.",
+    );
+    print(
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.",
     );
     print(
       "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.",
@@ -634,7 +666,9 @@ class ObjectWithEveryType implements ArriModel {
     NestedObject? object,
     List<bool>? array,
     Map<String, bool>? record,
-    Discriminator? discriminator,
+    UnionExternal? unionExternal,
+    UnionInternal? unionInternal,
+    UnionAdjacent? unionAdjacent,
     dynamic any,
   }) {
     return ObjectWithEveryType(
@@ -655,7 +689,9 @@ class ObjectWithEveryType implements ArriModel {
       object: object ?? this.object,
       array: array ?? this.array,
       record: record ?? this.record,
-      discriminator: discriminator ?? this.discriminator,
+      unionExternal: unionExternal ?? this.unionExternal,
+      unionInternal: unionInternal ?? this.unionInternal,
+      unionAdjacent: unionAdjacent ?? this.unionAdjacent,
       any: any ?? this.any,
     );
   }
@@ -679,7 +715,9 @@ class ObjectWithEveryType implements ArriModel {
     object,
     array,
     record,
-    discriminator,
+    unionExternal,
+    unionInternal,
+    unionAdjacent,
     any,
   ];
 
@@ -718,56 +756,57 @@ enum Enumerator implements Comparable<Enumerator> {
   int compareTo(Enumerator other) => name.compareTo(other.name);
 }
 
-sealed class Discriminator implements ArriModel {
-  String get typeName;
-  const Discriminator();
+sealed class UnionExternal implements ArriModel {
+  const UnionExternal();
 
-  factory Discriminator.empty() {
-    return DiscriminatorA.empty();
+  factory UnionExternal.empty() {
+    return UnionExternalObject.empty();
   }
 
-  factory Discriminator.fromJson(Map<String, dynamic> _input_) {
-    final typeName = typeFromDynamic<String>(_input_["typeName"], "");
-    switch (typeName) {
-      case "A":
-        return DiscriminatorA.fromJson(_input_);
-      case "B":
-        return DiscriminatorB.fromJson(_input_);
-      case "C":
-        return DiscriminatorC.fromJson(_input_);
-      default:
-        return Discriminator.empty();
+  factory UnionExternal.fromJson(Map<String, dynamic> _input_) {
+    if (_input_.containsKey("object")) {
+      return UnionExternalObject.fromJson(_input_);
     }
+    if (_input_.containsKey("array")) {
+      return UnionExternalArray.fromJson(_input_);
+    }
+    if (_input_.containsKey("boolean")) {
+      return UnionExternalBoolean.fromJson(_input_);
+    }
+    if (_input_.containsKey("nullable-timestamp")) {
+      return UnionExternalNullableTimestamp.fromJson(_input_);
+    }
+    return UnionExternal.empty();
   }
 
-  factory Discriminator.fromJsonString(String input) {
-    return Discriminator.fromJson(json.decode(input));
+  factory UnionExternal.fromJsonString(String input) {
+    return UnionExternal.fromJson(json.decode(input));
   }
 }
 
-class DiscriminatorA implements Discriminator {
-  final String id;
-  const DiscriminatorA({required this.id});
+class UnionExternalObject implements UnionExternal {
+  final NestedObject value;
+  const UnionExternalObject({required this.value});
 
-  @override
-  String get typeName => "A";
-
-  factory DiscriminatorA.empty() {
-    return DiscriminatorA(id: "");
+  factory UnionExternalObject.empty() {
+    return UnionExternalObject(value: NestedObject.empty());
   }
 
-  factory DiscriminatorA.fromJson(Map<String, dynamic> _input_) {
-    final id = typeFromDynamic<String>(_input_["id"], "");
-    return DiscriminatorA(id: id);
+  factory UnionExternalObject.fromJson(Map<String, dynamic> _input_) {
+    final value =
+        _input_["object"] is Map<String, dynamic>
+            ? NestedObject.fromJson(_input_["object"])
+            : NestedObject.empty();
+    return UnionExternalObject(value: value);
   }
 
-  factory DiscriminatorA.fromJsonString(String input) {
-    return DiscriminatorA.fromJson(json.decode(input));
+  factory UnionExternalObject.fromJsonString(String input) {
+    return UnionExternalObject.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final _output_ = <String, dynamic>{"typeName": typeName, "id": id};
+    final _output_ = <String, dynamic>{"object": value.toJson()};
     return _output_;
   }
 
@@ -778,23 +817,23 @@ class DiscriminatorA implements Discriminator {
 
   @override
   String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("typeName=$typeName");
-    _queryParts_.add("id=$id");
-    return _queryParts_.join("&");
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionExternalObject.",
+    );
+    return "";
   }
 
   @override
-  DiscriminatorA copyWith({String? id}) {
-    return DiscriminatorA(id: id ?? this.id);
+  UnionExternalObject copyWith({NestedObject? value}) {
+    return UnionExternalObject(value: value ?? this.value);
   }
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [value];
 
   @override
   bool operator ==(Object other) {
-    return other is DiscriminatorA && listsAreEqual(props, other.props);
+    return other is UnionExternalObject && listsAreEqual(props, other.props);
   }
 
   @override
@@ -802,38 +841,36 @@ class DiscriminatorA implements Discriminator {
 
   @override
   String toString() {
-    return "DiscriminatorA ${toJsonString()}";
+    return "UnionExternalObject ${toJsonString()}";
   }
 }
 
-class DiscriminatorB implements Discriminator {
-  final String id;
-  final String name;
-  const DiscriminatorB({required this.id, required this.name});
+class UnionExternalArray implements UnionExternal {
+  final List<String> value;
+  const UnionExternalArray({required this.value});
 
-  @override
-  String get typeName => "B";
-
-  factory DiscriminatorB.empty() {
-    return DiscriminatorB(id: "", name: "");
+  factory UnionExternalArray.empty() {
+    return UnionExternalArray(value: []);
   }
 
-  factory DiscriminatorB.fromJson(Map<String, dynamic> _input_) {
-    final id = typeFromDynamic<String>(_input_["id"], "");
-    final name = typeFromDynamic<String>(_input_["name"], "");
-    return DiscriminatorB(id: id, name: name);
+  factory UnionExternalArray.fromJson(Map<String, dynamic> _input_) {
+    final value =
+        _input_["array"] is List
+            ? (_input_["array"] as List)
+                .map((_el_) => typeFromDynamic<String>(_el_, ""))
+                .toList()
+            : <String>[];
+    return UnionExternalArray(value: value);
   }
 
-  factory DiscriminatorB.fromJsonString(String input) {
-    return DiscriminatorB.fromJson(json.decode(input));
+  factory UnionExternalArray.fromJsonString(String input) {
+    return UnionExternalArray.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
-      "typeName": typeName,
-      "id": id,
-      "name": name,
+      "array": value.map((_el_) => _el_).toList(),
     };
     return _output_;
   }
@@ -845,24 +882,23 @@ class DiscriminatorB implements Discriminator {
 
   @override
   String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("typeName=$typeName");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("name=$name");
-    return _queryParts_.join("&");
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionExternalArray.",
+    );
+    return "";
   }
 
   @override
-  DiscriminatorB copyWith({String? id, String? name}) {
-    return DiscriminatorB(id: id ?? this.id, name: name ?? this.name);
+  UnionExternalArray copyWith({List<String>? value}) {
+    return UnionExternalArray(value: value ?? this.value);
   }
 
   @override
-  List<Object?> get props => [id, name];
+  List<Object?> get props => [value];
 
   @override
   bool operator ==(Object other) {
-    return other is DiscriminatorB && listsAreEqual(props, other.props);
+    return other is UnionExternalArray && listsAreEqual(props, other.props);
   }
 
   @override
@@ -870,45 +906,91 @@ class DiscriminatorB implements Discriminator {
 
   @override
   String toString() {
-    return "DiscriminatorB ${toJsonString()}";
+    return "UnionExternalArray ${toJsonString()}";
   }
 }
 
-class DiscriminatorC implements Discriminator {
-  final String id;
-  final String name;
-  final DateTime date;
-  const DiscriminatorC({
-    required this.id,
-    required this.name,
-    required this.date,
-  });
+class UnionExternalBoolean implements UnionExternal {
+  final bool value;
+  const UnionExternalBoolean({required this.value});
+
+  factory UnionExternalBoolean.empty() {
+    return UnionExternalBoolean(value: false);
+  }
+
+  factory UnionExternalBoolean.fromJson(Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<bool>(_input_["boolean"], false);
+    return UnionExternalBoolean(value: value);
+  }
+
+  factory UnionExternalBoolean.fromJsonString(String input) {
+    return UnionExternalBoolean.fromJson(json.decode(input));
+  }
 
   @override
-  String get typeName => "C";
-
-  factory DiscriminatorC.empty() {
-    return DiscriminatorC(id: "", name: "", date: DateTime(0));
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{"boolean": value};
+    return _output_;
   }
 
-  factory DiscriminatorC.fromJson(Map<String, dynamic> _input_) {
-    final id = typeFromDynamic<String>(_input_["id"], "");
-    final name = typeFromDynamic<String>(_input_["name"], "");
-    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
-    return DiscriminatorC(id: id, name: name, date: date);
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
-  factory DiscriminatorC.fromJsonString(String input) {
-    return DiscriminatorC.fromJson(json.decode(input));
+  @override
+  String toUrlQueryParams() {
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionExternalBoolean.",
+    );
+    return "";
+  }
+
+  @override
+  UnionExternalBoolean copyWith({bool? value}) {
+    return UnionExternalBoolean(value: value ?? this.value);
+  }
+
+  @override
+  List<Object?> get props => [value];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionExternalBoolean && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionExternalBoolean ${toJsonString()}";
+  }
+}
+
+class UnionExternalNullableTimestamp implements UnionExternal {
+  final DateTime? value;
+  const UnionExternalNullableTimestamp({required this.value});
+
+  factory UnionExternalNullableTimestamp.empty() {
+    return UnionExternalNullableTimestamp(value: null);
+  }
+
+  factory UnionExternalNullableTimestamp.fromJson(
+    Map<String, dynamic> _input_,
+  ) {
+    final value = nullableDateTimeFromDynamic(_input_["nullable-timestamp"]);
+    return UnionExternalNullableTimestamp(value: value);
+  }
+
+  factory UnionExternalNullableTimestamp.fromJsonString(String input) {
+    return UnionExternalNullableTimestamp.fromJson(json.decode(input));
   }
 
   @override
   Map<String, dynamic> toJson() {
     final _output_ = <String, dynamic>{
-      "typeName": typeName,
-      "id": id,
-      "name": name,
-      "date": date.toUtc().toIso8601String(),
+      "nullable-timestamp": value?.toUtc().toIso8601String(),
     };
     return _output_;
   }
@@ -920,29 +1002,26 @@ class DiscriminatorC implements Discriminator {
 
   @override
   String toUrlQueryParams() {
-    final _queryParts_ = <String>[];
-    _queryParts_.add("typeName=$typeName");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("name=$name");
-    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
-    return _queryParts_.join("&");
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionExternalNullableTimestamp.",
+    );
+    return "";
   }
 
   @override
-  DiscriminatorC copyWith({String? id, String? name, DateTime? date}) {
-    return DiscriminatorC(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      date: date ?? this.date,
+  UnionExternalNullableTimestamp copyWith({DateTime? Function()? value}) {
+    return UnionExternalNullableTimestamp(
+      value: value != null ? value() : this.value,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, date];
+  List<Object?> get props => [value];
 
   @override
   bool operator ==(Object other) {
-    return other is DiscriminatorC && listsAreEqual(props, other.props);
+    return other is UnionExternalNullableTimestamp &&
+        listsAreEqual(props, other.props);
   }
 
   @override
@@ -950,7 +1029,458 @@ class DiscriminatorC implements Discriminator {
 
   @override
   String toString() {
-    return "DiscriminatorC ${toJsonString()}";
+    return "UnionExternalNullableTimestamp ${toJsonString()}";
+  }
+}
+
+sealed class UnionInternal implements ArriModel {
+  String get shape;
+  const UnionInternal();
+
+  factory UnionInternal.empty() {
+    return UnionInternalRectangle.empty();
+  }
+
+  factory UnionInternal.fromJson(Map<String, dynamic> _input_) {
+    final shape = typeFromDynamic<String>(_input_["shape"], "");
+    switch (shape) {
+      case "rectangle":
+        return UnionInternalRectangle.fromJson(_input_);
+      case "circle":
+        return UnionInternalCircle.fromJson(_input_);
+      default:
+        return UnionInternal.empty();
+    }
+  }
+
+  factory UnionInternal.fromJsonString(String input) {
+    return UnionInternal.fromJson(json.decode(input));
+  }
+}
+
+class UnionInternalRectangle implements UnionInternal {
+  final double width;
+  final double height;
+  const UnionInternalRectangle({required this.width, required this.height});
+
+  @override
+  String get shape => "rectangle";
+
+  factory UnionInternalRectangle.empty() {
+    return UnionInternalRectangle(width: 0.0, height: 0.0);
+  }
+
+  factory UnionInternalRectangle.fromJson(Map<String, dynamic> _input_) {
+    final width = doubleFromDynamic(_input_["width"], 0.0);
+    final height = doubleFromDynamic(_input_["height"], 0.0);
+    return UnionInternalRectangle(width: width, height: height);
+  }
+
+  factory UnionInternalRectangle.fromJsonString(String input) {
+    return UnionInternalRectangle.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "width": width,
+      "height": height,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("shape=$shape");
+    _queryParts_.add("width=$width");
+    _queryParts_.add("height=$height");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  UnionInternalRectangle copyWith({double? width, double? height}) {
+    return UnionInternalRectangle(
+      width: width ?? this.width,
+      height: height ?? this.height,
+    );
+  }
+
+  @override
+  List<Object?> get props => [width, height];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionInternalRectangle && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionInternalRectangle ${toJsonString()}";
+  }
+}
+
+class UnionInternalCircle implements UnionInternal {
+  final double radius;
+  const UnionInternalCircle({required this.radius});
+
+  @override
+  String get shape => "circle";
+
+  factory UnionInternalCircle.empty() {
+    return UnionInternalCircle(radius: 0.0);
+  }
+
+  factory UnionInternalCircle.fromJson(Map<String, dynamic> _input_) {
+    final radius = doubleFromDynamic(_input_["radius"], 0.0);
+    return UnionInternalCircle(radius: radius);
+  }
+
+  factory UnionInternalCircle.fromJsonString(String input) {
+    return UnionInternalCircle.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{"shape": shape, "radius": radius};
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("shape=$shape");
+    _queryParts_.add("radius=$radius");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  UnionInternalCircle copyWith({double? radius}) {
+    return UnionInternalCircle(radius: radius ?? this.radius);
+  }
+
+  @override
+  List<Object?> get props => [radius];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionInternalCircle && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionInternalCircle ${toJsonString()}";
+  }
+}
+
+sealed class UnionAdjacent implements ArriModel {
+  String get kind;
+  const UnionAdjacent();
+
+  factory UnionAdjacent.empty() {
+    return UnionAdjacentObject.empty();
+  }
+
+  factory UnionAdjacent.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "object":
+        return UnionAdjacentObject.fromJson(_input_);
+      case "array":
+        return UnionAdjacentArray.fromJson(_input_);
+      case "boolean":
+        return UnionAdjacentBoolean.fromJson(_input_);
+      case "nullable-timestamp":
+        return UnionAdjacentNullableTimestamp.fromJson(_input_);
+      default:
+        return UnionAdjacent.empty();
+    }
+  }
+
+  factory UnionAdjacent.fromJsonString(String input) {
+    return UnionAdjacent.fromJson(json.decode(input));
+  }
+}
+
+class UnionAdjacentObject implements UnionAdjacent {
+  final NestedObject data;
+  const UnionAdjacentObject({required this.data});
+
+  @override
+  String get kind => "object";
+
+  factory UnionAdjacentObject.empty() {
+    return UnionAdjacentObject(data: NestedObject.empty());
+  }
+
+  factory UnionAdjacentObject.fromJson(Map<String, dynamic> _input_) {
+    final data =
+        _input_["data"] is Map<String, dynamic>
+            ? NestedObject.fromJson(_input_["data"])
+            : NestedObject.empty();
+    return UnionAdjacentObject(data: data);
+  }
+
+  factory UnionAdjacentObject.fromJsonString(String input) {
+    return UnionAdjacentObject.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{"kind": kind, "data": data.toJson()};
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionAdjacentObject.",
+    );
+    return "";
+  }
+
+  @override
+  UnionAdjacentObject copyWith({NestedObject? data}) {
+    return UnionAdjacentObject(data: data ?? this.data);
+  }
+
+  @override
+  List<Object?> get props => [data];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionAdjacentObject && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionAdjacentObject ${toJsonString()}";
+  }
+}
+
+class UnionAdjacentArray implements UnionAdjacent {
+  final List<String> data;
+  const UnionAdjacentArray({required this.data});
+
+  @override
+  String get kind => "array";
+
+  factory UnionAdjacentArray.empty() {
+    return UnionAdjacentArray(data: []);
+  }
+
+  factory UnionAdjacentArray.fromJson(Map<String, dynamic> _input_) {
+    final data =
+        _input_["data"] is List
+            ? (_input_["data"] as List)
+                .map((_el_) => typeFromDynamic<String>(_el_, ""))
+                .toList()
+            : <String>[];
+    return UnionAdjacentArray(data: data);
+  }
+
+  factory UnionAdjacentArray.fromJsonString(String input) {
+    return UnionAdjacentArray.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.map((_el_) => _el_).toList(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionAdjacentArray.",
+    );
+    return "";
+  }
+
+  @override
+  UnionAdjacentArray copyWith({List<String>? data}) {
+    return UnionAdjacentArray(data: data ?? this.data);
+  }
+
+  @override
+  List<Object?> get props => [data];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionAdjacentArray && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionAdjacentArray ${toJsonString()}";
+  }
+}
+
+class UnionAdjacentBoolean implements UnionAdjacent {
+  final bool data;
+  const UnionAdjacentBoolean({required this.data});
+
+  @override
+  String get kind => "boolean";
+
+  factory UnionAdjacentBoolean.empty() {
+    return UnionAdjacentBoolean(data: false);
+  }
+
+  factory UnionAdjacentBoolean.fromJson(Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<bool>(_input_["data"], false);
+    return UnionAdjacentBoolean(data: data);
+  }
+
+  factory UnionAdjacentBoolean.fromJsonString(String input) {
+    return UnionAdjacentBoolean.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{"kind": kind, "data": data};
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionAdjacentBoolean.",
+    );
+    return "";
+  }
+
+  @override
+  UnionAdjacentBoolean copyWith({bool? data}) {
+    return UnionAdjacentBoolean(data: data ?? this.data);
+  }
+
+  @override
+  List<Object?> get props => [data];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionAdjacentBoolean && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionAdjacentBoolean ${toJsonString()}";
+  }
+}
+
+class UnionAdjacentNullableTimestamp implements UnionAdjacent {
+  final DateTime? data;
+  const UnionAdjacentNullableTimestamp({required this.data});
+
+  @override
+  String get kind => "nullable-timestamp";
+
+  factory UnionAdjacentNullableTimestamp.empty() {
+    return UnionAdjacentNullableTimestamp(data: null);
+  }
+
+  factory UnionAdjacentNullableTimestamp.fromJson(
+    Map<String, dynamic> _input_,
+  ) {
+    final data = nullableDateTimeFromDynamic(_input_["data"]);
+    return UnionAdjacentNullableTimestamp(data: data);
+  }
+
+  factory UnionAdjacentNullableTimestamp.fromJsonString(String input) {
+    return UnionAdjacentNullableTimestamp.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data?.toUtc().toIso8601String(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+      "[WARNING] unions cannot be serialized to query params. Skipping UnionAdjacentNullableTimestamp.",
+    );
+    return "";
+  }
+
+  @override
+  UnionAdjacentNullableTimestamp copyWith({DateTime? Function()? data}) {
+    return UnionAdjacentNullableTimestamp(
+      data: data != null ? data() : this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [data];
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnionAdjacentNullableTimestamp &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "UnionAdjacentNullableTimestamp ${toJsonString()}";
   }
 }
 
@@ -972,7 +1502,9 @@ class ObjectWithOptionalFields implements ArriModel {
   final NestedObject? object;
   final List<bool>? array;
   final Map<String, bool>? record;
-  final Discriminator? discriminator;
+  final UnionExternal? unionExternal;
+  final UnionInternal? unionInternal;
+  final UnionAdjacent? unionAdjacent;
   final dynamic any;
   const ObjectWithOptionalFields({
     this.string,
@@ -992,7 +1524,9 @@ class ObjectWithOptionalFields implements ArriModel {
     this.object,
     this.array,
     this.record,
-    this.discriminator,
+    this.unionExternal,
+    this.unionInternal,
+    this.unionAdjacent,
     this.any,
   });
 
@@ -1035,9 +1569,17 @@ class ObjectWithOptionalFields implements ArriModel {
                   MapEntry(_key_, typeFromDynamic<bool>(_val_, false)),
             )
             : null;
-    final discriminator =
-        _input_["discriminator"] is Map<String, dynamic>
-            ? Discriminator.fromJson(_input_["discriminator"])
+    final unionExternal =
+        _input_["unionExternal"] is Map<String, dynamic>
+            ? UnionExternal.fromJson(_input_["unionExternal"])
+            : null;
+    final unionInternal =
+        _input_["unionInternal"] is Map<String, dynamic>
+            ? UnionInternal.fromJson(_input_["unionInternal"])
+            : null;
+    final unionAdjacent =
+        _input_["unionAdjacent"] is Map<String, dynamic>
+            ? UnionAdjacent.fromJson(_input_["unionAdjacent"])
             : null;
     final any = _input_["any"];
     return ObjectWithOptionalFields(
@@ -1058,10 +1600,13 @@ class ObjectWithOptionalFields implements ArriModel {
       object: object,
       array: array,
       record: record,
-      discriminator: discriminator,
+      unionExternal: unionExternal,
+      unionInternal: unionInternal,
+      unionAdjacent: unionAdjacent,
       any: any,
     );
   }
+
   factory ObjectWithOptionalFields.fromJsonString(String input) {
     return ObjectWithOptionalFields.fromJson(json.decode(input));
   }
@@ -1090,8 +1635,12 @@ class ObjectWithOptionalFields implements ArriModel {
       _output_["record"] = record!.map(
         (_key_, _val_) => MapEntry(_key_, _val_),
       );
-    if (discriminator != null)
-      _output_["discriminator"] = discriminator!.toJson();
+    if (unionExternal != null)
+      _output_["unionExternal"] = unionExternal!.toJson();
+    if (unionInternal != null)
+      _output_["unionInternal"] = unionInternal!.toJson();
+    if (unionAdjacent != null)
+      _output_["unionAdjacent"] = unionAdjacent!.toJson();
     if (any != null) _output_["any"] = any;
     return _output_;
   }
@@ -1129,7 +1678,13 @@ class ObjectWithOptionalFields implements ArriModel {
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionExternal.",
+    );
+    print(
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.",
+    );
+    print(
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionAdjacent.",
     );
     print(
       "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.",
@@ -1156,7 +1711,9 @@ class ObjectWithOptionalFields implements ArriModel {
     NestedObject? Function()? object,
     List<bool>? Function()? array,
     Map<String, bool>? Function()? record,
-    Discriminator? Function()? discriminator,
+    UnionExternal? Function()? unionExternal,
+    UnionInternal? Function()? unionInternal,
+    UnionAdjacent? Function()? unionAdjacent,
     dynamic Function()? any,
   }) {
     return ObjectWithOptionalFields(
@@ -1177,8 +1734,12 @@ class ObjectWithOptionalFields implements ArriModel {
       object: object != null ? object() : this.object,
       array: array != null ? array() : this.array,
       record: record != null ? record() : this.record,
-      discriminator:
-          discriminator != null ? discriminator() : this.discriminator,
+      unionExternal:
+          unionExternal != null ? unionExternal() : this.unionExternal,
+      unionInternal:
+          unionInternal != null ? unionInternal() : this.unionInternal,
+      unionAdjacent:
+          unionAdjacent != null ? unionAdjacent() : this.unionAdjacent,
       any: any != null ? any() : this.any,
     );
   }
@@ -1202,7 +1763,9 @@ class ObjectWithOptionalFields implements ArriModel {
     object,
     array,
     record,
-    discriminator,
+    unionExternal,
+    unionInternal,
+    unionAdjacent,
     any,
   ];
 
@@ -1239,7 +1802,9 @@ class ObjectWithNullableFields implements ArriModel {
   final NestedObject? object;
   final List<bool>? array;
   final Map<String, bool>? record;
-  final Discriminator? discriminator;
+  final UnionExternal? unionExternal;
+  final UnionInternal? unionInternal;
+  final UnionAdjacent? unionAdjacent;
   final dynamic any;
   const ObjectWithNullableFields({
     required this.string,
@@ -1259,7 +1824,9 @@ class ObjectWithNullableFields implements ArriModel {
     required this.object,
     required this.array,
     required this.record,
-    required this.discriminator,
+    required this.unionExternal,
+    required this.unionInternal,
+    required this.unionAdjacent,
     required this.any,
   });
 
@@ -1282,7 +1849,9 @@ class ObjectWithNullableFields implements ArriModel {
       object: null,
       array: null,
       record: null,
-      discriminator: null,
+      unionExternal: null,
+      unionInternal: null,
+      unionAdjacent: null,
       any: null,
     );
   }
@@ -1322,9 +1891,17 @@ class ObjectWithNullableFields implements ArriModel {
                   MapEntry(_key_, typeFromDynamic<bool>(_val_, false)),
             )
             : null;
-    final discriminator =
-        _input_["discriminator"] is Map<String, dynamic>
-            ? Discriminator.fromJson(_input_["discriminator"])
+    final unionExternal =
+        _input_["unionExternal"] is Map<String, dynamic>
+            ? UnionExternal.fromJson(_input_["unionExternal"])
+            : null;
+    final unionInternal =
+        _input_["unionInternal"] is Map<String, dynamic>
+            ? UnionInternal.fromJson(_input_["unionInternal"])
+            : null;
+    final unionAdjacent =
+        _input_["unionAdjacent"] is Map<String, dynamic>
+            ? UnionAdjacent.fromJson(_input_["unionAdjacent"])
             : null;
     final any = _input_["any"];
     return ObjectWithNullableFields(
@@ -1345,7 +1922,9 @@ class ObjectWithNullableFields implements ArriModel {
       object: object,
       array: array,
       record: record,
-      discriminator: discriminator,
+      unionExternal: unionExternal,
+      unionInternal: unionInternal,
+      unionAdjacent: unionAdjacent,
       any: any,
     );
   }
@@ -1374,9 +1953,12 @@ class ObjectWithNullableFields implements ArriModel {
       "object": object?.toJson(),
       "array": array?.map((_el_) => _el_).toList(),
       "record": record?.map((_key_, _val_) => MapEntry(_key_, _val_)),
-      "discriminator": discriminator?.toJson(),
+      "unionExternal": unionExternal?.toJson(),
+      "unionInternal": unionInternal?.toJson(),
+      "unionAdjacent": unionAdjacent?.toJson(),
       "any": any,
     };
+
     return _output_;
   }
 
@@ -1412,7 +1994,13 @@ class ObjectWithNullableFields implements ArriModel {
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionExternal.",
+    );
+    print(
+      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionInternal.",
+    );
+    print(
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionAdjacent.",
     );
     print(
       "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.",
@@ -1439,7 +2027,9 @@ class ObjectWithNullableFields implements ArriModel {
     NestedObject? Function()? object,
     List<bool>? Function()? array,
     Map<String, bool>? Function()? record,
-    Discriminator? Function()? discriminator,
+    UnionExternal? Function()? unionExternal,
+    UnionInternal? Function()? unionInternal,
+    UnionAdjacent? Function()? unionAdjacent,
     dynamic Function()? any,
   }) {
     return ObjectWithNullableFields(
@@ -1460,8 +2050,12 @@ class ObjectWithNullableFields implements ArriModel {
       object: object != null ? object() : this.object,
       array: array != null ? array() : this.array,
       record: record != null ? record() : this.record,
-      discriminator:
-          discriminator != null ? discriminator() : this.discriminator,
+      unionExternal:
+          unionExternal != null ? unionExternal() : this.unionExternal,
+      unionInternal:
+          unionInternal != null ? unionInternal() : this.unionInternal,
+      unionAdjacent:
+          unionAdjacent != null ? unionAdjacent() : this.unionAdjacent,
       any: any != null ? any() : this.any,
     );
   }
@@ -1485,7 +2079,9 @@ class ObjectWithNullableFields implements ArriModel {
     object,
     array,
     record,
-    discriminator,
+    unionExternal,
+    unionInternal,
+    unionAdjacent,
     any,
   ];
 
@@ -1508,9 +2104,11 @@ class RecursiveObject implements ArriModel {
   final RecursiveObject? left;
   final RecursiveObject? right;
   const RecursiveObject({required this.left, required this.right});
+
   factory RecursiveObject.empty() {
     return RecursiveObject(left: null, right: null);
   }
+
   factory RecursiveObject.fromJson(Map<String, dynamic> _input_) {
     final left =
         _input_["left"] is Map<String, dynamic>
@@ -1522,6 +2120,7 @@ class RecursiveObject implements ArriModel {
             : null;
     return RecursiveObject(left: left, right: right);
   }
+
   factory RecursiveObject.fromJsonString(String input) {
     return RecursiveObject.fromJson(json.decode(input));
   }
@@ -1532,6 +2131,7 @@ class RecursiveObject implements ArriModel {
       "left": left?.toJson(),
       "right": right?.toJson(),
     };
+
     return _output_;
   }
 
@@ -1577,5 +2177,244 @@ class RecursiveObject implements ArriModel {
   @override
   String toString() {
     return "RecursiveObject ${toJsonString()}";
+  }
+}
+
+sealed class LegacyDiscriminator implements ArriModel {
+  String get typeName;
+  const LegacyDiscriminator();
+
+  factory LegacyDiscriminator.empty() {
+    return LegacyDiscriminatorA.empty();
+  }
+
+  factory LegacyDiscriminator.fromJson(Map<String, dynamic> _input_) {
+    final typeName = typeFromDynamic<String>(_input_["typeName"], "");
+    switch (typeName) {
+      case "A":
+        return LegacyDiscriminatorA.fromJson(_input_);
+      case "B":
+        return LegacyDiscriminatorB.fromJson(_input_);
+      case "C":
+        return LegacyDiscriminatorC.fromJson(_input_);
+      default:
+        return LegacyDiscriminator.empty();
+    }
+  }
+
+  factory LegacyDiscriminator.fromJsonString(String input) {
+    return LegacyDiscriminator.fromJson(json.decode(input));
+  }
+}
+
+class LegacyDiscriminatorA implements LegacyDiscriminator {
+  final String id;
+  const LegacyDiscriminatorA({required this.id});
+
+  @override
+  String get typeName => "A";
+
+  factory LegacyDiscriminatorA.empty() {
+    return LegacyDiscriminatorA(id: "");
+  }
+
+  factory LegacyDiscriminatorA.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    return LegacyDiscriminatorA(id: id);
+  }
+
+  factory LegacyDiscriminatorA.fromJsonString(String input) {
+    return LegacyDiscriminatorA.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{"typeName": typeName, "id": id};
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("typeName=$typeName");
+    _queryParts_.add("id=$id");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  LegacyDiscriminatorA copyWith({String? id}) {
+    return LegacyDiscriminatorA(id: id ?? this.id);
+  }
+
+  @override
+  List<Object?> get props => [id];
+
+  @override
+  bool operator ==(Object other) {
+    return other is LegacyDiscriminatorA && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "LegacyDiscriminatorA ${toJsonString()}";
+  }
+}
+
+class LegacyDiscriminatorB implements LegacyDiscriminator {
+  final String id;
+  final String name;
+  const LegacyDiscriminatorB({required this.id, required this.name});
+
+  @override
+  String get typeName => "B";
+
+  factory LegacyDiscriminatorB.empty() {
+    return LegacyDiscriminatorB(id: "", name: "");
+  }
+
+  factory LegacyDiscriminatorB.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final name = typeFromDynamic<String>(_input_["name"], "");
+    return LegacyDiscriminatorB(id: id, name: name);
+  }
+
+  factory LegacyDiscriminatorB.fromJsonString(String input) {
+    return LegacyDiscriminatorB.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "typeName": typeName,
+      "id": id,
+      "name": name,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("typeName=$typeName");
+    _queryParts_.add("id=$id");
+    _queryParts_.add("name=$name");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  LegacyDiscriminatorB copyWith({String? id, String? name}) {
+    return LegacyDiscriminatorB(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  List<Object?> get props => [id, name];
+
+  @override
+  bool operator ==(Object other) {
+    return other is LegacyDiscriminatorB && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "LegacyDiscriminatorB ${toJsonString()}";
+  }
+}
+
+class LegacyDiscriminatorC implements LegacyDiscriminator {
+  final String id;
+  final String name;
+  final DateTime date;
+  const LegacyDiscriminatorC({
+    required this.id,
+    required this.name,
+    required this.date,
+  });
+
+  @override
+  String get typeName => "C";
+
+  factory LegacyDiscriminatorC.empty() {
+    return LegacyDiscriminatorC(id: "", name: "", date: DateTime(0));
+  }
+
+  factory LegacyDiscriminatorC.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final name = typeFromDynamic<String>(_input_["name"], "");
+    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
+    return LegacyDiscriminatorC(id: id, name: name, date: date);
+  }
+
+  factory LegacyDiscriminatorC.fromJsonString(String input) {
+    return LegacyDiscriminatorC.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "typeName": typeName,
+      "id": id,
+      "name": name,
+      "date": date.toUtc().toIso8601String(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("typeName=$typeName");
+    _queryParts_.add("id=$id");
+    _queryParts_.add("name=$name");
+    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  LegacyDiscriminatorC copyWith({String? id, String? name, DateTime? date}) {
+    return LegacyDiscriminatorC(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      date: date ?? this.date,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, date];
+
+  @override
+  bool operator ==(Object other) {
+    return other is LegacyDiscriminatorC && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "LegacyDiscriminatorC ${toJsonString()}";
   }
 }
