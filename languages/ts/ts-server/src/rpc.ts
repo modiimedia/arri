@@ -430,10 +430,15 @@ export function getSchemaValidator<T extends Record<string, any> = any>(
     rpcName: string,
     type: 'params' | 'response',
     schema: RpcParamSchema<T>,
-    opts: Pick<ArriOptions, 'strictValidatorCompilation'> = {},
+    opts: Pick<
+        ArriOptions,
+        'disableValidatorCompilation' | 'strictValidatorCompilation'
+    > = {},
 ): RequestValidator<T> | undefined {
     if (!isASchema(schema)) return undefined;
-    if (!useJitCompiler) return runtimeValidator(schema);
+    if (!useJitCompiler || opts.disableValidatorCompilation) {
+        return runtimeValidator(schema);
+    }
     try {
         const validator = a.compile(schema);
         return {

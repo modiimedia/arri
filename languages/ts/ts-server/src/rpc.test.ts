@@ -215,6 +215,69 @@ describe('validator compilation failures', () => {
         expect(warn).toHaveBeenCalledTimes(2);
     });
 
+    describe('disableValidatorCompilation', () => {
+        const disabled = { disableValidatorCompilation: true };
+
+        it('uses runtime validators without compiling', async () => {
+            const { getSchemaValidator, compile } = await setup();
+            const validator = getSchemaValidator(
+                'first',
+                'params',
+                Params,
+                disabled,
+            )!;
+            expect(compile).not.toHaveBeenCalled();
+            expect(warn).not.toHaveBeenCalled();
+            expect(validator.parse({ id: '1' }).success).toBe(true);
+            expect(validator.parse({ id: 1 }).success).toBe(false);
+            expect(validator.coerce({ id: '1' }).success).toBe(true);
+            expect(validator.validate({ id: '1' })).toBe(true);
+            expect(validator.serialize({ id: '1' }).success).toBe(true);
+        });
+        it('does not affect later procedures that have compilation enabled', async () => {
+            const { getSchemaValidator, compile } = await setup();
+            getSchemaValidator('first', 'params', Params, disabled);
+            getSchemaValidator('second', 'params', Params);
+            expect(compile).toHaveBeenCalledTimes(1);
+        });
+        it('takes priority over strictValidatorCompilation', async () => {
+            const { getSchemaValidator, compile } = await setup();
+            compile.mockImplementation(() => {
+                throw new SyntaxError('Invalid left-hand side in assignment');
+            });
+            expect(() =>
+                getSchemaValidator('first', 'params', Params, {
+                    ...disabled,
+                    strictValidatorCompilation: true,
+                }),
+            ).not.toThrow();
+            expect(compile).not.toHaveBeenCalled();
+        });
+        it('is passed through from ArriApp', () => {
+            const compile = vi.spyOn(a, 'compile');
+            const app = new ArriApp({ disableValidatorCompilation: true });
+            app.rpc(
+                'first',
+                defineRpc({
+                    params: Params,
+                    response: Params,
+                    handler({ params }) {
+                        return params;
+                    },
+                }),
+            );
+            app.rpc(
+                'second',
+                defineEventStreamRpc({
+                    params: Params,
+                    response: Params,
+                    handler() {},
+                }),
+            );
+            expect(compile).not.toHaveBeenCalled();
+        });
+    });
+
     describe('strictValidatorCompilation', () => {
         const strict = { strictValidatorCompilation: true };
 

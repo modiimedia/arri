@@ -80,6 +80,7 @@ export type RouteOptions = Pick<
     | 'onRequest'
     | 'debug'
     | 'heartbeatMs'
+    | 'disableValidatorCompilation'
     | 'strictValidatorCompilation'
 > & { middleware: Middleware[] };
 
