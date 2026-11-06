@@ -7,7 +7,7 @@ const ObjectWithPascalCaseKeys = a.object('ObjectWithPascalCaseKeys', {
     EmailAddress: a.optional(a.string()),
     PhoneNumber: a.nullable(a.string()),
     IsAdmin: a.optional(a.boolean()),
-    LastEvent: a.nullable(
+    ExternalEvent: a.nullable(
         a.union({
             UserCreated: a.object({
                 UserId: a.string(),
@@ -19,6 +19,27 @@ const ObjectWithPascalCaseKeys = a.object('ObjectWithPascalCaseKeys', {
                 UserId: a.string(),
             }),
         }),
+    ),
+    InternalEvent: a.union(
+        {
+            UserCreated: a.object({
+                UserId: a.string(),
+            }),
+            UserUpdated: a.object({
+                UserId: a.string(),
+                UpdatedAt: a.optional(a.timestamp()),
+            }),
+        },
+        { tagKey: 'EventType' },
+    ),
+    AdjacentEvent: a.union(
+        {
+            UserCreated: a.object({
+                UserId: a.string(),
+            }),
+            UserUpdated: a.string(),
+        },
+        { tagKey: 'EventType', valueKey: 'EventData' },
     ),
 });
 

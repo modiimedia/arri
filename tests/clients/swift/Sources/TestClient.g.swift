@@ -231,6 +231,32 @@ public class TestClientTestsService {
         )
         return result
     }
+    /// Union variants with no fields, only optional fields, a mix of required, optional, and nullable fields, and nested fields.
+    public func sendUnionVariantShapes(_ params: UnionVariantShapes) async throws -> UnionVariantShapes {
+        let result: UnionVariantShapes = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-union-variant-shapes",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        return result
+    }
+    /// Union variants of every value type, nested unions, and names that are reserved words in many languages.
+    public func sendUnionVariantTypes(_ params: UnionVariantTypes) async throws -> UnionVariantTypes {
+        let result: UnionVariantTypes = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-union-variant-types",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params,
+            onError: onError
+        )
+        return result
+    }
     public func streamAutoReconnect(_ params: AutoReconnectParams, options: EventSourceOptions<AutoReconnectResponse>) -> Task<(), Never> {
         let task = Task {
             var eventSource = EventSource<AutoReconnectResponse>(
@@ -2053,21 +2079,27 @@ public struct ObjectWithKebabCaseKeys: ArriClientModel {
     public var createdAt: Date = Date()
     public var displayName: String = ""
     public var phoneNumber: String?
-    public var lastEvent: ObjectWithKebabCaseKeysLastEvent?
+    public var externalEvent: ObjectWithKebabCaseKeysExternalEvent?
+    public var internalEvent: ObjectWithKebabCaseKeysInternalEvent = ObjectWithKebabCaseKeysInternalEvent()
+    public var adjacentEvent: ObjectWithKebabCaseKeysAdjacentEvent = ObjectWithKebabCaseKeysAdjacentEvent()
     public var emailAddress: String?
     public var isAdmin: Bool?
     public init(
         createdAt: Date,
         displayName: String,
         phoneNumber: String?,
-        lastEvent: ObjectWithKebabCaseKeysLastEvent?,
+        externalEvent: ObjectWithKebabCaseKeysExternalEvent?,
+        internalEvent: ObjectWithKebabCaseKeysInternalEvent,
+        adjacentEvent: ObjectWithKebabCaseKeysAdjacentEvent,
         emailAddress: String?,
         isAdmin: Bool?
     ) {
             self.createdAt = createdAt
             self.displayName = displayName
             self.phoneNumber = phoneNumber
-            self.lastEvent = lastEvent
+            self.externalEvent = externalEvent
+            self.internalEvent = internalEvent
+            self.adjacentEvent = adjacentEvent
             self.emailAddress = emailAddress
             self.isAdmin = isAdmin
     }
@@ -2078,9 +2110,11 @@ public struct ObjectWithKebabCaseKeys: ArriClientModel {
         if json["phone-number"].string != nil {
             self.phoneNumber = json["phone-number"].string
         }
-        if json["last-event"].dictionary != nil {
-                    self.lastEvent = ObjectWithKebabCaseKeysLastEvent(json: json["last-event"])
+        if json["external-event"].dictionary != nil {
+                    self.externalEvent = ObjectWithKebabCaseKeysExternalEvent(json: json["external-event"])
                 }
+        self.internalEvent = ObjectWithKebabCaseKeysInternalEvent(json: json["internal-event"])
+        self.adjacentEvent = ObjectWithKebabCaseKeysAdjacentEvent(json: json["adjacent-event"])
         if json["email-address"].exists() {
             self.emailAddress = json["email-address"].string    
         }
@@ -2119,12 +2153,16 @@ public struct ObjectWithKebabCaseKeys: ArriClientModel {
                 } else {
                     __json += "null" 
                 }
-        __json += ",\"last-event\":"
-        if self.lastEvent != nil {
-                    __json += self.lastEvent!.toJSONString()
+        __json += ",\"external-event\":"
+        if self.externalEvent != nil {
+                    __json += self.externalEvent!.toJSONString()
                 } else {
                     __json += "null"
                 }
+        __json += ",\"internal-event\":"
+        __json += self.internalEvent.toJSONString()
+        __json += ",\"adjacent-event\":"
+        __json += self.adjacentEvent.toJSONString()
         if self.emailAddress != nil {
                     __json += ",\"email-address\":"
         __json += serializeString(input: self.emailAddress!)
@@ -2145,7 +2183,9 @@ __json += "\(self.isAdmin!)"
                 } else {
                     __queryParts.append(URLQueryItem(name: "phone-number", value: "null")) 
                 }
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.")
         if self.emailAddress != nil {
                     __queryParts.append(URLQueryItem(name: "email-address", value: self.emailAddress!))
                 }
@@ -2156,11 +2196,15 @@ __json += "\(self.isAdmin!)"
     }
     public func clone() -> ObjectWithKebabCaseKeys {
 
+
+
         return ObjectWithKebabCaseKeys(
             createdAt: self.createdAt,
             displayName: self.displayName,
             phoneNumber: self.phoneNumber,
-            lastEvent: self.lastEvent?.clone(),
+            externalEvent: self.externalEvent?.clone(),
+            internalEvent: self.internalEvent.clone(),
+            adjacentEvent: self.adjacentEvent.clone(),
             emailAddress: self.emailAddress,
             isAdmin: self.isAdmin
         )
@@ -2168,28 +2212,28 @@ __json += "\(self.isAdmin!)"
     
 }
     
-public enum ObjectWithKebabCaseKeysLastEvent: ArriClientModel {
-    case userCreated(ObjectWithKebabCaseKeysLastEventUserCreated)
-    case userUpdated(ObjectWithKebabCaseKeysLastEventUserUpdated)
-    case userDeleted(ObjectWithKebabCaseKeysLastEventUserDeleted)
+public enum ObjectWithKebabCaseKeysExternalEvent: ArriClientModel {
+    case userCreated(ObjectWithKebabCaseKeysExternalEventUserCreated)
+    case userUpdated(ObjectWithKebabCaseKeysExternalEventUserUpdated)
+    case userDeleted(ObjectWithKebabCaseKeysExternalEventUserDeleted)
     public init() {
-        self = .userCreated(ObjectWithKebabCaseKeysLastEventUserCreated())
+        self = .userCreated(ObjectWithKebabCaseKeysExternalEventUserCreated())
     }
     public init(json: JSON) {
         if json["user-created"].exists() {
-                var __variantValue: ObjectWithKebabCaseKeysLastEventUserCreated
-                __variantValue = ObjectWithKebabCaseKeysLastEventUserCreated(json: json["user-created"])
+                var __variantValue: ObjectWithKebabCaseKeysExternalEventUserCreated
+                __variantValue = ObjectWithKebabCaseKeysExternalEventUserCreated(json: json["user-created"])
                 self = .userCreated(__variantValue)
         } else if json["user-updated"].exists() {
-                var __variantValue: ObjectWithKebabCaseKeysLastEventUserUpdated
-                __variantValue = ObjectWithKebabCaseKeysLastEventUserUpdated(json: json["user-updated"])
+                var __variantValue: ObjectWithKebabCaseKeysExternalEventUserUpdated
+                __variantValue = ObjectWithKebabCaseKeysExternalEventUserUpdated(json: json["user-updated"])
                 self = .userUpdated(__variantValue)
         } else if json["user-deleted"].exists() {
-                var __variantValue: ObjectWithKebabCaseKeysLastEventUserDeleted
-                __variantValue = ObjectWithKebabCaseKeysLastEventUserDeleted(json: json["user-deleted"])
+                var __variantValue: ObjectWithKebabCaseKeysExternalEventUserDeleted
+                __variantValue = ObjectWithKebabCaseKeysExternalEventUserDeleted(json: json["user-deleted"])
                 self = .userDeleted(__variantValue)
         } else {
-            self = .userCreated(ObjectWithKebabCaseKeysLastEventUserCreated())
+            self = .userCreated(ObjectWithKebabCaseKeysExternalEventUserCreated())
         }
     }
     public init(JSONData: Data) {
@@ -2230,10 +2274,10 @@ public enum ObjectWithKebabCaseKeysLastEvent: ArriClientModel {
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
-        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEvent.")
+        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysExternalEvent.")
         return []
     }
-    public func clone() -> ObjectWithKebabCaseKeysLastEvent {
+    public func clone() -> ObjectWithKebabCaseKeysExternalEvent {
         switch(self) {
             case .userCreated(let __variantValue):
                 
@@ -2248,7 +2292,7 @@ public enum ObjectWithKebabCaseKeysLastEvent: ArriClientModel {
     }
 }
 
-public struct ObjectWithKebabCaseKeysLastEventUserCreated: ArriClientModel {
+public struct ObjectWithKebabCaseKeysExternalEventUserCreated: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -2290,9 +2334,9 @@ public struct ObjectWithKebabCaseKeysLastEventUserCreated: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "user-id", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithKebabCaseKeysLastEventUserCreated {
+    public func clone() -> ObjectWithKebabCaseKeysExternalEventUserCreated {
 
-        return ObjectWithKebabCaseKeysLastEventUserCreated(
+        return ObjectWithKebabCaseKeysExternalEventUserCreated(
             userId: self.userId
         )
     }
@@ -2300,7 +2344,7 @@ public struct ObjectWithKebabCaseKeysLastEventUserCreated: ArriClientModel {
 }
     
 
-public struct ObjectWithKebabCaseKeysLastEventUserUpdated: ArriClientModel {
+public struct ObjectWithKebabCaseKeysExternalEventUserUpdated: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -2342,9 +2386,9 @@ public struct ObjectWithKebabCaseKeysLastEventUserUpdated: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "user-id", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithKebabCaseKeysLastEventUserUpdated {
+    public func clone() -> ObjectWithKebabCaseKeysExternalEventUserUpdated {
 
-        return ObjectWithKebabCaseKeysLastEventUserUpdated(
+        return ObjectWithKebabCaseKeysExternalEventUserUpdated(
             userId: self.userId
         )
     }
@@ -2352,7 +2396,7 @@ public struct ObjectWithKebabCaseKeysLastEventUserUpdated: ArriClientModel {
 }
     
 
-public struct ObjectWithKebabCaseKeysLastEventUserDeleted: ArriClientModel {
+public struct ObjectWithKebabCaseKeysExternalEventUserDeleted: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -2394,9 +2438,322 @@ public struct ObjectWithKebabCaseKeysLastEventUserDeleted: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "user-id", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithKebabCaseKeysLastEventUserDeleted {
+    public func clone() -> ObjectWithKebabCaseKeysExternalEventUserDeleted {
 
-        return ObjectWithKebabCaseKeysLastEventUserDeleted(
+        return ObjectWithKebabCaseKeysExternalEventUserDeleted(
+            userId: self.userId
+        )
+    }
+    
+}
+    
+
+public enum ObjectWithKebabCaseKeysInternalEvent: ArriClientModel {
+    case userCreated(ObjectWithKebabCaseKeysInternalEventUserCreated)
+    case userUpdated(ObjectWithKebabCaseKeysInternalEventUserUpdated)
+    public init() {
+        self = .userCreated(ObjectWithKebabCaseKeysInternalEventUserCreated())
+    }
+    public init(json: JSON) {
+        let __tag = json["event-type"].string ?? ""
+        switch (__tag) {
+            case "user-created":
+                self = .userCreated(ObjectWithKebabCaseKeysInternalEventUserCreated(json: json))
+                break
+            case "user-updated":
+                self = .userUpdated(ObjectWithKebabCaseKeysInternalEventUserUpdated(json: json))
+                break
+            default:
+                self = .userCreated(ObjectWithKebabCaseKeysInternalEventUserCreated())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return __innerVal.toJSONString()
+            case .userUpdated(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .userUpdated(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> ObjectWithKebabCaseKeysInternalEvent {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return .userCreated(__innerVal.clone())
+            case .userUpdated(let __innerVal):
+                return .userUpdated(__innerVal.clone())
+        }
+    }
+}
+
+public struct ObjectWithKebabCaseKeysInternalEventUserCreated: ArriClientModel {
+    let eventType: String = "user-created"
+    public var userId: String = ""
+    public init(
+        userId: String
+    ) {
+            self.userId = userId
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["user-id"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"event-type\":\"user-created\""
+        __json += ",\"user-id\":"
+        __json += serializeString(input: self.userId)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "event-type", value: "user-created"))
+        __queryParts.append(URLQueryItem(name: "user-id", value: self.userId))
+        return __queryParts
+    }
+    public func clone() -> ObjectWithKebabCaseKeysInternalEventUserCreated {
+
+        return ObjectWithKebabCaseKeysInternalEventUserCreated(
+            userId: self.userId
+        )
+    }
+    
+}
+    
+
+public struct ObjectWithKebabCaseKeysInternalEventUserUpdated: ArriClientModel {
+    let eventType: String = "user-updated"
+    public var userId: String = ""
+    public var updatedAt: Date?
+    public init(
+        userId: String,
+        updatedAt: Date?
+    ) {
+            self.userId = userId
+            self.updatedAt = updatedAt
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["user-id"].string ?? ""
+        if json["updated-at"].exists() {
+                    self.updatedAt = parseDate(json["updated-at"].string ?? "") ?? Date()
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"event-type\":\"user-updated\""
+        __json += ",\"user-id\":"
+        __json += serializeString(input: self.userId)
+        if self.updatedAt != nil {
+                    __json += ",\"updated-at\":"
+        __json += serializeDate(self.updatedAt!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "event-type", value: "user-updated"))
+        __queryParts.append(URLQueryItem(name: "user-id", value: self.userId))
+        if self.updatedAt != nil {
+                    __queryParts.append(URLQueryItem(name: "updated-at", value: serializeDate(self.updatedAt!, withQuotes: false)))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithKebabCaseKeysInternalEventUserUpdated {
+
+        return ObjectWithKebabCaseKeysInternalEventUserUpdated(
+            userId: self.userId,
+            updatedAt: self.updatedAt
+        )
+    }
+    
+}
+    
+
+public enum ObjectWithKebabCaseKeysAdjacentEvent: ArriClientModel {
+    case userCreated(ObjectWithKebabCaseKeysAdjacentEventUserCreated)
+    case userUpdated(String)
+    public init() {
+        self = .userCreated(ObjectWithKebabCaseKeysAdjacentEventUserCreated())
+    }
+    public init(json: JSON) {
+        let __tag = json["event-type"].string ?? ""
+        switch (__tag) {
+            case "user-created":
+                var __variantValue: ObjectWithKebabCaseKeysAdjacentEventUserCreated
+                __variantValue = ObjectWithKebabCaseKeysAdjacentEventUserCreated(json: json["event-data"])
+                self = .userCreated(__variantValue)
+                break
+            case "user-updated":
+                var __variantValue: String
+                __variantValue = json["event-data"].string ?? ""
+                self = .userUpdated(__variantValue)
+                break
+            default:
+                self = .userCreated(ObjectWithKebabCaseKeysAdjacentEventUserCreated())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .userCreated(let __variantValue):
+                __json += "\"event-type\":\"user-created\",\"event-data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .userUpdated(let __variantValue):
+                __json += "\"event-type\":\"user-updated\",\"event-data\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysAdjacentEvent.")
+        return []
+    }
+    public func clone() -> ObjectWithKebabCaseKeysAdjacentEvent {
+        switch(self) {
+            case .userCreated(let __variantValue):
+                
+                return .userCreated(__variantValue.clone())
+            case .userUpdated(let __variantValue):
+                
+                return .userUpdated(__variantValue)
+        }
+    }
+}
+
+public struct ObjectWithKebabCaseKeysAdjacentEventUserCreated: ArriClientModel {
+    public var userId: String = ""
+    public init(
+        userId: String
+    ) {
+            self.userId = userId
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["user-id"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"user-id\":"
+        __json += serializeString(input: self.userId)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "user-id", value: self.userId))
+        return __queryParts
+    }
+    public func clone() -> ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+
+        return ObjectWithKebabCaseKeysAdjacentEventUserCreated(
             userId: self.userId
         )
     }
@@ -3947,21 +4304,27 @@ public struct ObjectWithPascalCaseKeys: ArriClientModel {
     public var createdAt: Date = Date()
     public var displayName: String = ""
     public var phoneNumber: String?
-    public var lastEvent: ObjectWithPascalCaseKeysLastEvent?
+    public var externalEvent: ObjectWithPascalCaseKeysExternalEvent?
+    public var internalEvent: ObjectWithPascalCaseKeysInternalEvent = ObjectWithPascalCaseKeysInternalEvent()
+    public var adjacentEvent: ObjectWithPascalCaseKeysAdjacentEvent = ObjectWithPascalCaseKeysAdjacentEvent()
     public var emailAddress: String?
     public var isAdmin: Bool?
     public init(
         createdAt: Date,
         displayName: String,
         phoneNumber: String?,
-        lastEvent: ObjectWithPascalCaseKeysLastEvent?,
+        externalEvent: ObjectWithPascalCaseKeysExternalEvent?,
+        internalEvent: ObjectWithPascalCaseKeysInternalEvent,
+        adjacentEvent: ObjectWithPascalCaseKeysAdjacentEvent,
         emailAddress: String?,
         isAdmin: Bool?
     ) {
             self.createdAt = createdAt
             self.displayName = displayName
             self.phoneNumber = phoneNumber
-            self.lastEvent = lastEvent
+            self.externalEvent = externalEvent
+            self.internalEvent = internalEvent
+            self.adjacentEvent = adjacentEvent
             self.emailAddress = emailAddress
             self.isAdmin = isAdmin
     }
@@ -3972,9 +4335,11 @@ public struct ObjectWithPascalCaseKeys: ArriClientModel {
         if json["PhoneNumber"].string != nil {
             self.phoneNumber = json["PhoneNumber"].string
         }
-        if json["LastEvent"].dictionary != nil {
-                    self.lastEvent = ObjectWithPascalCaseKeysLastEvent(json: json["LastEvent"])
+        if json["ExternalEvent"].dictionary != nil {
+                    self.externalEvent = ObjectWithPascalCaseKeysExternalEvent(json: json["ExternalEvent"])
                 }
+        self.internalEvent = ObjectWithPascalCaseKeysInternalEvent(json: json["InternalEvent"])
+        self.adjacentEvent = ObjectWithPascalCaseKeysAdjacentEvent(json: json["AdjacentEvent"])
         if json["EmailAddress"].exists() {
             self.emailAddress = json["EmailAddress"].string    
         }
@@ -4013,12 +4378,16 @@ public struct ObjectWithPascalCaseKeys: ArriClientModel {
                 } else {
                     __json += "null" 
                 }
-        __json += ",\"LastEvent\":"
-        if self.lastEvent != nil {
-                    __json += self.lastEvent!.toJSONString()
+        __json += ",\"ExternalEvent\":"
+        if self.externalEvent != nil {
+                    __json += self.externalEvent!.toJSONString()
                 } else {
                     __json += "null"
                 }
+        __json += ",\"InternalEvent\":"
+        __json += self.internalEvent.toJSONString()
+        __json += ",\"AdjacentEvent\":"
+        __json += self.adjacentEvent.toJSONString()
         if self.emailAddress != nil {
                     __json += ",\"EmailAddress\":"
         __json += serializeString(input: self.emailAddress!)
@@ -4039,7 +4408,9 @@ __json += "\(self.isAdmin!)"
                 } else {
                     __queryParts.append(URLQueryItem(name: "PhoneNumber", value: "null")) 
                 }
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.")
         if self.emailAddress != nil {
                     __queryParts.append(URLQueryItem(name: "EmailAddress", value: self.emailAddress!))
                 }
@@ -4050,11 +4421,15 @@ __json += "\(self.isAdmin!)"
     }
     public func clone() -> ObjectWithPascalCaseKeys {
 
+
+
         return ObjectWithPascalCaseKeys(
             createdAt: self.createdAt,
             displayName: self.displayName,
             phoneNumber: self.phoneNumber,
-            lastEvent: self.lastEvent?.clone(),
+            externalEvent: self.externalEvent?.clone(),
+            internalEvent: self.internalEvent.clone(),
+            adjacentEvent: self.adjacentEvent.clone(),
             emailAddress: self.emailAddress,
             isAdmin: self.isAdmin
         )
@@ -4062,28 +4437,28 @@ __json += "\(self.isAdmin!)"
     
 }
     
-public enum ObjectWithPascalCaseKeysLastEvent: ArriClientModel {
-    case userCreated(ObjectWithPascalCaseKeysLastEventUserCreated)
-    case userUpdated(ObjectWithPascalCaseKeysLastEventUserUpdated)
-    case userDeleted(ObjectWithPascalCaseKeysLastEventUserDeleted)
+public enum ObjectWithPascalCaseKeysExternalEvent: ArriClientModel {
+    case userCreated(ObjectWithPascalCaseKeysExternalEventUserCreated)
+    case userUpdated(ObjectWithPascalCaseKeysExternalEventUserUpdated)
+    case userDeleted(ObjectWithPascalCaseKeysExternalEventUserDeleted)
     public init() {
-        self = .userCreated(ObjectWithPascalCaseKeysLastEventUserCreated())
+        self = .userCreated(ObjectWithPascalCaseKeysExternalEventUserCreated())
     }
     public init(json: JSON) {
         if json["UserCreated"].exists() {
-                var __variantValue: ObjectWithPascalCaseKeysLastEventUserCreated
-                __variantValue = ObjectWithPascalCaseKeysLastEventUserCreated(json: json["UserCreated"])
+                var __variantValue: ObjectWithPascalCaseKeysExternalEventUserCreated
+                __variantValue = ObjectWithPascalCaseKeysExternalEventUserCreated(json: json["UserCreated"])
                 self = .userCreated(__variantValue)
         } else if json["UserUpdated"].exists() {
-                var __variantValue: ObjectWithPascalCaseKeysLastEventUserUpdated
-                __variantValue = ObjectWithPascalCaseKeysLastEventUserUpdated(json: json["UserUpdated"])
+                var __variantValue: ObjectWithPascalCaseKeysExternalEventUserUpdated
+                __variantValue = ObjectWithPascalCaseKeysExternalEventUserUpdated(json: json["UserUpdated"])
                 self = .userUpdated(__variantValue)
         } else if json["UserDeleted"].exists() {
-                var __variantValue: ObjectWithPascalCaseKeysLastEventUserDeleted
-                __variantValue = ObjectWithPascalCaseKeysLastEventUserDeleted(json: json["UserDeleted"])
+                var __variantValue: ObjectWithPascalCaseKeysExternalEventUserDeleted
+                __variantValue = ObjectWithPascalCaseKeysExternalEventUserDeleted(json: json["UserDeleted"])
                 self = .userDeleted(__variantValue)
         } else {
-            self = .userCreated(ObjectWithPascalCaseKeysLastEventUserCreated())
+            self = .userCreated(ObjectWithPascalCaseKeysExternalEventUserCreated())
         }
     }
     public init(JSONData: Data) {
@@ -4124,10 +4499,10 @@ public enum ObjectWithPascalCaseKeysLastEvent: ArriClientModel {
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
-        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEvent.")
+        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysExternalEvent.")
         return []
     }
-    public func clone() -> ObjectWithPascalCaseKeysLastEvent {
+    public func clone() -> ObjectWithPascalCaseKeysExternalEvent {
         switch(self) {
             case .userCreated(let __variantValue):
                 
@@ -4142,7 +4517,7 @@ public enum ObjectWithPascalCaseKeysLastEvent: ArriClientModel {
     }
 }
 
-public struct ObjectWithPascalCaseKeysLastEventUserCreated: ArriClientModel {
+public struct ObjectWithPascalCaseKeysExternalEventUserCreated: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -4184,9 +4559,9 @@ public struct ObjectWithPascalCaseKeysLastEventUserCreated: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "UserId", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithPascalCaseKeysLastEventUserCreated {
+    public func clone() -> ObjectWithPascalCaseKeysExternalEventUserCreated {
 
-        return ObjectWithPascalCaseKeysLastEventUserCreated(
+        return ObjectWithPascalCaseKeysExternalEventUserCreated(
             userId: self.userId
         )
     }
@@ -4194,7 +4569,7 @@ public struct ObjectWithPascalCaseKeysLastEventUserCreated: ArriClientModel {
 }
     
 
-public struct ObjectWithPascalCaseKeysLastEventUserUpdated: ArriClientModel {
+public struct ObjectWithPascalCaseKeysExternalEventUserUpdated: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -4236,9 +4611,9 @@ public struct ObjectWithPascalCaseKeysLastEventUserUpdated: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "UserId", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithPascalCaseKeysLastEventUserUpdated {
+    public func clone() -> ObjectWithPascalCaseKeysExternalEventUserUpdated {
 
-        return ObjectWithPascalCaseKeysLastEventUserUpdated(
+        return ObjectWithPascalCaseKeysExternalEventUserUpdated(
             userId: self.userId
         )
     }
@@ -4246,7 +4621,7 @@ public struct ObjectWithPascalCaseKeysLastEventUserUpdated: ArriClientModel {
 }
     
 
-public struct ObjectWithPascalCaseKeysLastEventUserDeleted: ArriClientModel {
+public struct ObjectWithPascalCaseKeysExternalEventUserDeleted: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -4288,9 +4663,322 @@ public struct ObjectWithPascalCaseKeysLastEventUserDeleted: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "UserId", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithPascalCaseKeysLastEventUserDeleted {
+    public func clone() -> ObjectWithPascalCaseKeysExternalEventUserDeleted {
 
-        return ObjectWithPascalCaseKeysLastEventUserDeleted(
+        return ObjectWithPascalCaseKeysExternalEventUserDeleted(
+            userId: self.userId
+        )
+    }
+    
+}
+    
+
+public enum ObjectWithPascalCaseKeysInternalEvent: ArriClientModel {
+    case userCreated(ObjectWithPascalCaseKeysInternalEventUserCreated)
+    case userUpdated(ObjectWithPascalCaseKeysInternalEventUserUpdated)
+    public init() {
+        self = .userCreated(ObjectWithPascalCaseKeysInternalEventUserCreated())
+    }
+    public init(json: JSON) {
+        let __tag = json["EventType"].string ?? ""
+        switch (__tag) {
+            case "UserCreated":
+                self = .userCreated(ObjectWithPascalCaseKeysInternalEventUserCreated(json: json))
+                break
+            case "UserUpdated":
+                self = .userUpdated(ObjectWithPascalCaseKeysInternalEventUserUpdated(json: json))
+                break
+            default:
+                self = .userCreated(ObjectWithPascalCaseKeysInternalEventUserCreated())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return __innerVal.toJSONString()
+            case .userUpdated(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .userUpdated(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> ObjectWithPascalCaseKeysInternalEvent {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return .userCreated(__innerVal.clone())
+            case .userUpdated(let __innerVal):
+                return .userUpdated(__innerVal.clone())
+        }
+    }
+}
+
+public struct ObjectWithPascalCaseKeysInternalEventUserCreated: ArriClientModel {
+    let eventType: String = "UserCreated"
+    public var userId: String = ""
+    public init(
+        userId: String
+    ) {
+            self.userId = userId
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["UserId"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"EventType\":\"UserCreated\""
+        __json += ",\"UserId\":"
+        __json += serializeString(input: self.userId)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "EventType", value: "UserCreated"))
+        __queryParts.append(URLQueryItem(name: "UserId", value: self.userId))
+        return __queryParts
+    }
+    public func clone() -> ObjectWithPascalCaseKeysInternalEventUserCreated {
+
+        return ObjectWithPascalCaseKeysInternalEventUserCreated(
+            userId: self.userId
+        )
+    }
+    
+}
+    
+
+public struct ObjectWithPascalCaseKeysInternalEventUserUpdated: ArriClientModel {
+    let eventType: String = "UserUpdated"
+    public var userId: String = ""
+    public var updatedAt: Date?
+    public init(
+        userId: String,
+        updatedAt: Date?
+    ) {
+            self.userId = userId
+            self.updatedAt = updatedAt
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["UserId"].string ?? ""
+        if json["UpdatedAt"].exists() {
+                    self.updatedAt = parseDate(json["UpdatedAt"].string ?? "") ?? Date()
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"EventType\":\"UserUpdated\""
+        __json += ",\"UserId\":"
+        __json += serializeString(input: self.userId)
+        if self.updatedAt != nil {
+                    __json += ",\"UpdatedAt\":"
+        __json += serializeDate(self.updatedAt!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "EventType", value: "UserUpdated"))
+        __queryParts.append(URLQueryItem(name: "UserId", value: self.userId))
+        if self.updatedAt != nil {
+                    __queryParts.append(URLQueryItem(name: "UpdatedAt", value: serializeDate(self.updatedAt!, withQuotes: false)))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithPascalCaseKeysInternalEventUserUpdated {
+
+        return ObjectWithPascalCaseKeysInternalEventUserUpdated(
+            userId: self.userId,
+            updatedAt: self.updatedAt
+        )
+    }
+    
+}
+    
+
+public enum ObjectWithPascalCaseKeysAdjacentEvent: ArriClientModel {
+    case userCreated(ObjectWithPascalCaseKeysAdjacentEventUserCreated)
+    case userUpdated(String)
+    public init() {
+        self = .userCreated(ObjectWithPascalCaseKeysAdjacentEventUserCreated())
+    }
+    public init(json: JSON) {
+        let __tag = json["EventType"].string ?? ""
+        switch (__tag) {
+            case "UserCreated":
+                var __variantValue: ObjectWithPascalCaseKeysAdjacentEventUserCreated
+                __variantValue = ObjectWithPascalCaseKeysAdjacentEventUserCreated(json: json["EventData"])
+                self = .userCreated(__variantValue)
+                break
+            case "UserUpdated":
+                var __variantValue: String
+                __variantValue = json["EventData"].string ?? ""
+                self = .userUpdated(__variantValue)
+                break
+            default:
+                self = .userCreated(ObjectWithPascalCaseKeysAdjacentEventUserCreated())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .userCreated(let __variantValue):
+                __json += "\"EventType\":\"UserCreated\",\"EventData\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .userUpdated(let __variantValue):
+                __json += "\"EventType\":\"UserUpdated\",\"EventData\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysAdjacentEvent.")
+        return []
+    }
+    public func clone() -> ObjectWithPascalCaseKeysAdjacentEvent {
+        switch(self) {
+            case .userCreated(let __variantValue):
+                
+                return .userCreated(__variantValue.clone())
+            case .userUpdated(let __variantValue):
+                
+                return .userUpdated(__variantValue)
+        }
+    }
+}
+
+public struct ObjectWithPascalCaseKeysAdjacentEventUserCreated: ArriClientModel {
+    public var userId: String = ""
+    public init(
+        userId: String
+    ) {
+            self.userId = userId
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["UserId"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"UserId\":"
+        __json += serializeString(input: self.userId)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "UserId", value: self.userId))
+        return __queryParts
+    }
+    public func clone() -> ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+
+        return ObjectWithPascalCaseKeysAdjacentEventUserCreated(
             userId: self.userId
         )
     }
@@ -4302,21 +4990,27 @@ public struct ObjectWithSnakeCaseKeys: ArriClientModel {
     public var createdAt: Date = Date()
     public var displayName: String = ""
     public var phoneNumber: String?
-    public var lastEvent: ObjectWithSnakeCaseKeysLastEvent?
+    public var externalEvent: ObjectWithSnakeCaseKeysExternalEvent?
+    public var internalEvent: ObjectWithSnakeCaseKeysInternalEvent = ObjectWithSnakeCaseKeysInternalEvent()
+    public var adjacentEvent: ObjectWithSnakeCaseKeysAdjacentEvent = ObjectWithSnakeCaseKeysAdjacentEvent()
     public var emailAddress: String?
     public var isAdmin: Bool?
     public init(
         createdAt: Date,
         displayName: String,
         phoneNumber: String?,
-        lastEvent: ObjectWithSnakeCaseKeysLastEvent?,
+        externalEvent: ObjectWithSnakeCaseKeysExternalEvent?,
+        internalEvent: ObjectWithSnakeCaseKeysInternalEvent,
+        adjacentEvent: ObjectWithSnakeCaseKeysAdjacentEvent,
         emailAddress: String?,
         isAdmin: Bool?
     ) {
             self.createdAt = createdAt
             self.displayName = displayName
             self.phoneNumber = phoneNumber
-            self.lastEvent = lastEvent
+            self.externalEvent = externalEvent
+            self.internalEvent = internalEvent
+            self.adjacentEvent = adjacentEvent
             self.emailAddress = emailAddress
             self.isAdmin = isAdmin
     }
@@ -4327,9 +5021,11 @@ public struct ObjectWithSnakeCaseKeys: ArriClientModel {
         if json["phone_number"].string != nil {
             self.phoneNumber = json["phone_number"].string
         }
-        if json["last_event"].dictionary != nil {
-                    self.lastEvent = ObjectWithSnakeCaseKeysLastEvent(json: json["last_event"])
+        if json["external_event"].dictionary != nil {
+                    self.externalEvent = ObjectWithSnakeCaseKeysExternalEvent(json: json["external_event"])
                 }
+        self.internalEvent = ObjectWithSnakeCaseKeysInternalEvent(json: json["internal_event"])
+        self.adjacentEvent = ObjectWithSnakeCaseKeysAdjacentEvent(json: json["adjacent_event"])
         if json["email_address"].exists() {
             self.emailAddress = json["email_address"].string    
         }
@@ -4368,12 +5064,16 @@ public struct ObjectWithSnakeCaseKeys: ArriClientModel {
                 } else {
                     __json += "null" 
                 }
-        __json += ",\"last_event\":"
-        if self.lastEvent != nil {
-                    __json += self.lastEvent!.toJSONString()
+        __json += ",\"external_event\":"
+        if self.externalEvent != nil {
+                    __json += self.externalEvent!.toJSONString()
                 } else {
                     __json += "null"
                 }
+        __json += ",\"internal_event\":"
+        __json += self.internalEvent.toJSONString()
+        __json += ",\"adjacent_event\":"
+        __json += self.adjacentEvent.toJSONString()
         if self.emailAddress != nil {
                     __json += ",\"email_address\":"
         __json += serializeString(input: self.emailAddress!)
@@ -4394,7 +5094,9 @@ __json += "\(self.isAdmin!)"
                 } else {
                     __queryParts.append(URLQueryItem(name: "phone_number", value: "null")) 
                 }
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.")
         if self.emailAddress != nil {
                     __queryParts.append(URLQueryItem(name: "email_address", value: self.emailAddress!))
                 }
@@ -4405,11 +5107,15 @@ __json += "\(self.isAdmin!)"
     }
     public func clone() -> ObjectWithSnakeCaseKeys {
 
+
+
         return ObjectWithSnakeCaseKeys(
             createdAt: self.createdAt,
             displayName: self.displayName,
             phoneNumber: self.phoneNumber,
-            lastEvent: self.lastEvent?.clone(),
+            externalEvent: self.externalEvent?.clone(),
+            internalEvent: self.internalEvent.clone(),
+            adjacentEvent: self.adjacentEvent.clone(),
             emailAddress: self.emailAddress,
             isAdmin: self.isAdmin
         )
@@ -4417,28 +5123,28 @@ __json += "\(self.isAdmin!)"
     
 }
     
-public enum ObjectWithSnakeCaseKeysLastEvent: ArriClientModel {
-    case userCreated(ObjectWithSnakeCaseKeysLastEventUserCreated)
-    case userUpdated(ObjectWithSnakeCaseKeysLastEventUserUpdated)
-    case userDeleted(ObjectWithSnakeCaseKeysLastEventUserDeleted)
+public enum ObjectWithSnakeCaseKeysExternalEvent: ArriClientModel {
+    case userCreated(ObjectWithSnakeCaseKeysExternalEventUserCreated)
+    case userUpdated(ObjectWithSnakeCaseKeysExternalEventUserUpdated)
+    case userDeleted(ObjectWithSnakeCaseKeysExternalEventUserDeleted)
     public init() {
-        self = .userCreated(ObjectWithSnakeCaseKeysLastEventUserCreated())
+        self = .userCreated(ObjectWithSnakeCaseKeysExternalEventUserCreated())
     }
     public init(json: JSON) {
         if json["user_created"].exists() {
-                var __variantValue: ObjectWithSnakeCaseKeysLastEventUserCreated
-                __variantValue = ObjectWithSnakeCaseKeysLastEventUserCreated(json: json["user_created"])
+                var __variantValue: ObjectWithSnakeCaseKeysExternalEventUserCreated
+                __variantValue = ObjectWithSnakeCaseKeysExternalEventUserCreated(json: json["user_created"])
                 self = .userCreated(__variantValue)
         } else if json["user_updated"].exists() {
-                var __variantValue: ObjectWithSnakeCaseKeysLastEventUserUpdated
-                __variantValue = ObjectWithSnakeCaseKeysLastEventUserUpdated(json: json["user_updated"])
+                var __variantValue: ObjectWithSnakeCaseKeysExternalEventUserUpdated
+                __variantValue = ObjectWithSnakeCaseKeysExternalEventUserUpdated(json: json["user_updated"])
                 self = .userUpdated(__variantValue)
         } else if json["user_deleted"].exists() {
-                var __variantValue: ObjectWithSnakeCaseKeysLastEventUserDeleted
-                __variantValue = ObjectWithSnakeCaseKeysLastEventUserDeleted(json: json["user_deleted"])
+                var __variantValue: ObjectWithSnakeCaseKeysExternalEventUserDeleted
+                __variantValue = ObjectWithSnakeCaseKeysExternalEventUserDeleted(json: json["user_deleted"])
                 self = .userDeleted(__variantValue)
         } else {
-            self = .userCreated(ObjectWithSnakeCaseKeysLastEventUserCreated())
+            self = .userCreated(ObjectWithSnakeCaseKeysExternalEventUserCreated())
         }
     }
     public init(JSONData: Data) {
@@ -4479,10 +5185,10 @@ public enum ObjectWithSnakeCaseKeysLastEvent: ArriClientModel {
         return __json
     }
     public func toURLQueryParts() -> [URLQueryItem] {
-        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEvent.")
+        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysExternalEvent.")
         return []
     }
-    public func clone() -> ObjectWithSnakeCaseKeysLastEvent {
+    public func clone() -> ObjectWithSnakeCaseKeysExternalEvent {
         switch(self) {
             case .userCreated(let __variantValue):
                 
@@ -4497,7 +5203,7 @@ public enum ObjectWithSnakeCaseKeysLastEvent: ArriClientModel {
     }
 }
 
-public struct ObjectWithSnakeCaseKeysLastEventUserCreated: ArriClientModel {
+public struct ObjectWithSnakeCaseKeysExternalEventUserCreated: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -4539,9 +5245,9 @@ public struct ObjectWithSnakeCaseKeysLastEventUserCreated: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "user_id", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithSnakeCaseKeysLastEventUserCreated {
+    public func clone() -> ObjectWithSnakeCaseKeysExternalEventUserCreated {
 
-        return ObjectWithSnakeCaseKeysLastEventUserCreated(
+        return ObjectWithSnakeCaseKeysExternalEventUserCreated(
             userId: self.userId
         )
     }
@@ -4549,7 +5255,7 @@ public struct ObjectWithSnakeCaseKeysLastEventUserCreated: ArriClientModel {
 }
     
 
-public struct ObjectWithSnakeCaseKeysLastEventUserUpdated: ArriClientModel {
+public struct ObjectWithSnakeCaseKeysExternalEventUserUpdated: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -4591,9 +5297,9 @@ public struct ObjectWithSnakeCaseKeysLastEventUserUpdated: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "user_id", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithSnakeCaseKeysLastEventUserUpdated {
+    public func clone() -> ObjectWithSnakeCaseKeysExternalEventUserUpdated {
 
-        return ObjectWithSnakeCaseKeysLastEventUserUpdated(
+        return ObjectWithSnakeCaseKeysExternalEventUserUpdated(
             userId: self.userId
         )
     }
@@ -4601,7 +5307,7 @@ public struct ObjectWithSnakeCaseKeysLastEventUserUpdated: ArriClientModel {
 }
     
 
-public struct ObjectWithSnakeCaseKeysLastEventUserDeleted: ArriClientModel {
+public struct ObjectWithSnakeCaseKeysExternalEventUserDeleted: ArriClientModel {
     public var userId: String = ""
     public init(
         userId: String
@@ -4643,9 +5349,322 @@ public struct ObjectWithSnakeCaseKeysLastEventUserDeleted: ArriClientModel {
         __queryParts.append(URLQueryItem(name: "user_id", value: self.userId))
         return __queryParts
     }
-    public func clone() -> ObjectWithSnakeCaseKeysLastEventUserDeleted {
+    public func clone() -> ObjectWithSnakeCaseKeysExternalEventUserDeleted {
 
-        return ObjectWithSnakeCaseKeysLastEventUserDeleted(
+        return ObjectWithSnakeCaseKeysExternalEventUserDeleted(
+            userId: self.userId
+        )
+    }
+    
+}
+    
+
+public enum ObjectWithSnakeCaseKeysInternalEvent: ArriClientModel {
+    case userCreated(ObjectWithSnakeCaseKeysInternalEventUserCreated)
+    case userUpdated(ObjectWithSnakeCaseKeysInternalEventUserUpdated)
+    public init() {
+        self = .userCreated(ObjectWithSnakeCaseKeysInternalEventUserCreated())
+    }
+    public init(json: JSON) {
+        let __tag = json["event_type"].string ?? ""
+        switch (__tag) {
+            case "user_created":
+                self = .userCreated(ObjectWithSnakeCaseKeysInternalEventUserCreated(json: json))
+                break
+            case "user_updated":
+                self = .userUpdated(ObjectWithSnakeCaseKeysInternalEventUserUpdated(json: json))
+                break
+            default:
+                self = .userCreated(ObjectWithSnakeCaseKeysInternalEventUserCreated())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return __innerVal.toJSONString()
+            case .userUpdated(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .userUpdated(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> ObjectWithSnakeCaseKeysInternalEvent {
+        switch(self) {
+            case .userCreated(let __innerVal):
+                return .userCreated(__innerVal.clone())
+            case .userUpdated(let __innerVal):
+                return .userUpdated(__innerVal.clone())
+        }
+    }
+}
+
+public struct ObjectWithSnakeCaseKeysInternalEventUserCreated: ArriClientModel {
+    let eventType: String = "user_created"
+    public var userId: String = ""
+    public init(
+        userId: String
+    ) {
+            self.userId = userId
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["user_id"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"event_type\":\"user_created\""
+        __json += ",\"user_id\":"
+        __json += serializeString(input: self.userId)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "event_type", value: "user_created"))
+        __queryParts.append(URLQueryItem(name: "user_id", value: self.userId))
+        return __queryParts
+    }
+    public func clone() -> ObjectWithSnakeCaseKeysInternalEventUserCreated {
+
+        return ObjectWithSnakeCaseKeysInternalEventUserCreated(
+            userId: self.userId
+        )
+    }
+    
+}
+    
+
+public struct ObjectWithSnakeCaseKeysInternalEventUserUpdated: ArriClientModel {
+    let eventType: String = "user_updated"
+    public var userId: String = ""
+    public var updatedAt: Date?
+    public init(
+        userId: String,
+        updatedAt: Date?
+    ) {
+            self.userId = userId
+            self.updatedAt = updatedAt
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["user_id"].string ?? ""
+        if json["updated_at"].exists() {
+                    self.updatedAt = parseDate(json["updated_at"].string ?? "") ?? Date()
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"event_type\":\"user_updated\""
+        __json += ",\"user_id\":"
+        __json += serializeString(input: self.userId)
+        if self.updatedAt != nil {
+                    __json += ",\"updated_at\":"
+        __json += serializeDate(self.updatedAt!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "event_type", value: "user_updated"))
+        __queryParts.append(URLQueryItem(name: "user_id", value: self.userId))
+        if self.updatedAt != nil {
+                    __queryParts.append(URLQueryItem(name: "updated_at", value: serializeDate(self.updatedAt!, withQuotes: false)))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+
+        return ObjectWithSnakeCaseKeysInternalEventUserUpdated(
+            userId: self.userId,
+            updatedAt: self.updatedAt
+        )
+    }
+    
+}
+    
+
+public enum ObjectWithSnakeCaseKeysAdjacentEvent: ArriClientModel {
+    case userCreated(ObjectWithSnakeCaseKeysAdjacentEventUserCreated)
+    case userUpdated(String)
+    public init() {
+        self = .userCreated(ObjectWithSnakeCaseKeysAdjacentEventUserCreated())
+    }
+    public init(json: JSON) {
+        let __tag = json["event_type"].string ?? ""
+        switch (__tag) {
+            case "user_created":
+                var __variantValue: ObjectWithSnakeCaseKeysAdjacentEventUserCreated
+                __variantValue = ObjectWithSnakeCaseKeysAdjacentEventUserCreated(json: json["event_data"])
+                self = .userCreated(__variantValue)
+                break
+            case "user_updated":
+                var __variantValue: String
+                __variantValue = json["event_data"].string ?? ""
+                self = .userUpdated(__variantValue)
+                break
+            default:
+                self = .userCreated(ObjectWithSnakeCaseKeysAdjacentEventUserCreated())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .userCreated(let __variantValue):
+                __json += "\"event_type\":\"user_created\",\"event_data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .userUpdated(let __variantValue):
+                __json += "\"event_type\":\"user_updated\",\"event_data\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysAdjacentEvent.")
+        return []
+    }
+    public func clone() -> ObjectWithSnakeCaseKeysAdjacentEvent {
+        switch(self) {
+            case .userCreated(let __variantValue):
+                
+                return .userCreated(__variantValue.clone())
+            case .userUpdated(let __variantValue):
+                
+                return .userUpdated(__variantValue)
+        }
+    }
+}
+
+public struct ObjectWithSnakeCaseKeysAdjacentEventUserCreated: ArriClientModel {
+    public var userId: String = ""
+    public init(
+        userId: String
+    ) {
+            self.userId = userId
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.userId = json["user_id"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"user_id\":"
+        __json += serializeString(input: self.userId)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "user_id", value: self.userId))
+        return __queryParts
+    }
+    public func clone() -> ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+
+        return ObjectWithSnakeCaseKeysAdjacentEventUserCreated(
             userId: self.userId
         )
     }
@@ -7187,6 +8206,2719 @@ public struct UnionInternalGetRequestEmpty: ArriClientModel {
     
 }
     
+
+public struct UnionVariantShapes: ArriClientModel {
+    public var `internal`: UnionVariantShapesInternal = UnionVariantShapesInternal()
+    public var external: UnionVariantShapesExternal = UnionVariantShapesExternal()
+    public var adjacent: UnionVariantShapesAdjacent = UnionVariantShapesAdjacent()
+    public init(
+        `internal`: UnionVariantShapesInternal,
+        external: UnionVariantShapesExternal,
+        adjacent: UnionVariantShapesAdjacent
+    ) {
+            self.`internal` = `internal`
+            self.external = external
+            self.adjacent = adjacent
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.`internal` = UnionVariantShapesInternal(json: json["internal"])
+        self.external = UnionVariantShapesExternal(json: json["external"])
+        self.adjacent = UnionVariantShapesAdjacent(json: json["adjacent"])
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"internal\":"
+        __json += self.`internal`.toJSONString()
+        __json += ",\"external\":"
+        __json += self.external.toJSONString()
+        __json += ",\"adjacent\":"
+        __json += self.adjacent.toJSONString()
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/external.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/adjacent.")
+        return []
+    }
+    public func clone() -> UnionVariantShapes {
+
+
+
+        return UnionVariantShapes(
+            `internal`: self.`internal`.clone(),
+            external: self.external.clone(),
+            adjacent: self.adjacent.clone()
+        )
+    }
+    
+}
+    
+public enum UnionVariantShapesInternal: ArriClientModel {
+    case empty(UnionVariantShapesInternalEmpty)
+    case allOptional(UnionVariantShapesInternalAllOptional)
+    case mixed(UnionVariantShapesInternalMixed)
+    case nested(UnionVariantShapesInternalNested)
+    public init() {
+        self = .empty(UnionVariantShapesInternalEmpty())
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "empty":
+                self = .empty(UnionVariantShapesInternalEmpty(json: json))
+                break
+            case "all-optional":
+                self = .allOptional(UnionVariantShapesInternalAllOptional(json: json))
+                break
+            case "mixed":
+                self = .mixed(UnionVariantShapesInternalMixed(json: json))
+                break
+            case "nested":
+                self = .nested(UnionVariantShapesInternalNested(json: json))
+                break
+            default:
+                self = .empty(UnionVariantShapesInternalEmpty())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .empty(let __innerVal):
+                return __innerVal.toJSONString()
+            case .allOptional(let __innerVal):
+                return __innerVal.toJSONString()
+            case .mixed(let __innerVal):
+                return __innerVal.toJSONString()
+            case .nested(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .empty(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .allOptional(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .mixed(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .nested(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> UnionVariantShapesInternal {
+        switch(self) {
+            case .empty(let __innerVal):
+                return .empty(__innerVal.clone())
+            case .allOptional(let __innerVal):
+                return .allOptional(__innerVal.clone())
+            case .mixed(let __innerVal):
+                return .mixed(__innerVal.clone())
+            case .nested(let __innerVal):
+                return .nested(__innerVal.clone())
+        }
+    }
+}
+
+public struct UnionVariantShapesInternalEmpty: ArriClientModel {
+    let kind: String = "empty"
+    public init(
+
+    ) {
+
+    }
+    
+    public init(json: JSON) {
+
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"empty\""
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "empty"))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesInternalEmpty {
+
+        return UnionVariantShapesInternalEmpty(
+
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesInternalAllOptional: ArriClientModel {
+    let kind: String = "all-optional"
+    public var first: String?
+    public var second: Int32?
+    public init(
+        first: String?,
+        second: Int32?
+    ) {
+            self.first = first
+            self.second = second
+    }
+    public init() {}
+    public init(json: JSON) {
+        if json["first"].exists() {
+            self.first = json["first"].string    
+        }
+        if json["second"].exists() {
+                    self.second = json["second"].int32
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"all-optional\""
+        if self.first != nil {
+                    __json += ",\"first\":"
+        __json += serializeString(input: self.first!)
+        }
+        if self.second != nil {
+                    __json += ",\"second\":"
+        __json += "\(self.second!)"
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "all-optional"))
+        if self.first != nil {
+                    __queryParts.append(URLQueryItem(name: "first", value: self.first!))
+                }
+        if self.second != nil {
+                    __queryParts.append(URLQueryItem(name: "second", value: "\(self.second!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesInternalAllOptional {
+
+        return UnionVariantShapesInternalAllOptional(
+            first: self.first,
+            second: self.second
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesInternalMixed: ArriClientModel {
+    let kind: String = "mixed"
+    public var required: String = ""
+    public var nullable: String?
+    public var optional: String?
+    public init(
+        required: String,
+        nullable: String?,
+        optional: String?
+    ) {
+            self.required = required
+            self.nullable = nullable
+            self.optional = optional
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.required = json["required"].string ?? ""
+        if json["nullable"].string != nil {
+            self.nullable = json["nullable"].string
+        }
+        if json["optional"].exists() {
+            self.optional = json["optional"].string    
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"mixed\""
+        __json += ",\"required\":"
+        __json += serializeString(input: self.required)
+        __json += ",\"nullable\":"
+        if self.nullable != nil {
+                    __json += serializeString(input: self.nullable!)
+                } else {
+                    __json += "null" 
+                }
+        if self.optional != nil {
+                    __json += ",\"optional\":"
+        __json += serializeString(input: self.optional!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "mixed"))
+        __queryParts.append(URLQueryItem(name: "required", value: self.required))
+        if self.nullable != nil {
+                    __queryParts.append(URLQueryItem(name: "nullable", value: self.nullable!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "nullable", value: "null")) 
+                }
+        if self.optional != nil {
+                    __queryParts.append(URLQueryItem(name: "optional", value: self.optional!))
+                }
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesInternalMixed {
+
+        return UnionVariantShapesInternalMixed(
+            required: self.required,
+            nullable: self.nullable,
+            optional: self.optional
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesInternalNested: ArriClientModel {
+    let kind: String = "nested"
+    public var array: [UnionVariantShapesInternalNestedArrayElement] = []
+    public var record: Dictionary<String, Int64> = Dictionary()
+    public var object: UnionVariantShapesInternalNestedObject = UnionVariantShapesInternalNestedObject()
+    public init(
+        array: [UnionVariantShapesInternalNestedArrayElement],
+        record: Dictionary<String, Int64>,
+        object: UnionVariantShapesInternalNestedObject
+    ) {
+            self.array = array
+            self.record = record
+            self.object = object
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.array = []
+            for __arrayJsonElement in json["array"].array ?? [] {
+                var __arrayJsonElementValue: UnionVariantShapesInternalNestedArrayElement
+                        __arrayJsonElementValue = UnionVariantShapesInternalNestedArrayElement(json: __arrayJsonElement)
+                self.array.append(__arrayJsonElementValue)
+            }
+        self.record = Dictionary()
+            for (__key, __value) in json["record"].dictionary ?? Dictionary() {
+                var __parsedValue: Int64
+                        __parsedValue = Int64(__value.string ?? "0") ?? 0
+                self.record[__key] = __parsedValue            
+            }
+        self.object = UnionVariantShapesInternalNestedObject(json: json["object"])
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"nested\""
+        __json += ",\"array\":"
+       __json += "["
+            for (__index, __element) in self.array.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                        __json += __element.toJSONString()
+            }
+            __json += "]"
+        __json += ",\"record\":"
+        __json += "{"
+            for (__index, (__key, __value)) in self.record.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\(serializeString(input: __key)):"
+                        __json += "\"\(__value)\""
+            }
+            __json += "}"
+        __json += ",\"object\":"
+        __json += self.object.toJSONString()
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "nested"))
+        print("[WARNING] arrays cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/array.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/record.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/object.")
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesInternalNested {
+var __arrayCloned: [UnionVariantShapesInternalNestedArrayElement] = []
+                for __arrayElement in self.array {
+                    
+                    __arrayCloned.append(__arrayElement.clone())
+                }
+var __recordCloned: Dictionary<String, Int64> = Dictionary()
+                    for (__recordKey, __recordValue) in self.record {
+                        
+                        __recordCloned[__recordKey] = __recordValue
+                    }
+
+        return UnionVariantShapesInternalNested(
+            array: __arrayCloned,
+            record: __recordCloned,
+            object: self.object.clone()
+        )
+    }
+    
+}
+    
+public struct UnionVariantShapesInternalNestedArrayElement: ArriClientModel {
+    public var id: String = ""
+    public init(
+        id: String
+    ) {
+            self.id = id
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"id\":"
+        __json += serializeString(input: self.id)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesInternalNestedArrayElement {
+
+        return UnionVariantShapesInternalNestedArrayElement(
+            id: self.id
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesInternalNestedObject: ArriClientModel {
+    public var timestamp: Date = Date()
+    public init(
+        timestamp: Date
+    ) {
+            self.timestamp = timestamp
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"timestamp\":"
+        __json += serializeDate(self.timestamp)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "timestamp", value: serializeDate(self.timestamp, withQuotes: false)))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesInternalNestedObject {
+
+        return UnionVariantShapesInternalNestedObject(
+            timestamp: self.timestamp
+        )
+    }
+    
+}
+    
+
+public enum UnionVariantShapesExternal: ArriClientModel {
+    case empty(UnionVariantShapesExternalEmpty)
+    case allOptional(UnionVariantShapesExternalAllOptional)
+    case mixed(UnionVariantShapesExternalMixed)
+    public init() {
+        self = .empty(UnionVariantShapesExternalEmpty())
+    }
+    public init(json: JSON) {
+        if json["empty"].exists() {
+                var __variantValue: UnionVariantShapesExternalEmpty
+                __variantValue = UnionVariantShapesExternalEmpty(json: json["empty"])
+                self = .empty(__variantValue)
+        } else if json["all-optional"].exists() {
+                var __variantValue: UnionVariantShapesExternalAllOptional
+                __variantValue = UnionVariantShapesExternalAllOptional(json: json["all-optional"])
+                self = .allOptional(__variantValue)
+        } else if json["mixed"].exists() {
+                var __variantValue: UnionVariantShapesExternalMixed
+                __variantValue = UnionVariantShapesExternalMixed(json: json["mixed"])
+                self = .mixed(__variantValue)
+        } else {
+            self = .empty(UnionVariantShapesExternalEmpty())
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .empty(let __variantValue):
+                __json += "\"empty\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .allOptional(let __variantValue):
+                __json += "\"all-optional\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .mixed(let __variantValue):
+                __json += "\"mixed\":"
+                __json += __variantValue.toJSONString()
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantShapesExternal.")
+        return []
+    }
+    public func clone() -> UnionVariantShapesExternal {
+        switch(self) {
+            case .empty(let __variantValue):
+                
+                return .empty(__variantValue.clone())
+            case .allOptional(let __variantValue):
+                
+                return .allOptional(__variantValue.clone())
+            case .mixed(let __variantValue):
+                
+                return .mixed(__variantValue.clone())
+        }
+    }
+}
+
+public struct UnionVariantShapesExternalEmpty: ArriClientModel {
+
+    public init(
+
+    ) {
+
+    }
+    
+    public init(json: JSON) {
+
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+      var __numKeys = 0
+
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        
+
+        return []
+    }
+    public func clone() -> UnionVariantShapesExternalEmpty {
+
+        return UnionVariantShapesExternalEmpty(
+
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesExternalAllOptional: ArriClientModel {
+    public var first: String?
+    public var second: Int32?
+    public init(
+        first: String?,
+        second: Int32?
+    ) {
+            self.first = first
+            self.second = second
+    }
+    public init() {}
+    public init(json: JSON) {
+        if json["first"].exists() {
+            self.first = json["first"].string    
+        }
+        if json["second"].exists() {
+                    self.second = json["second"].int32
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+      var __numKeys = 0
+        if self.first != nil {
+                        __json += "\"first\":"
+        __json += serializeString(input: self.first!)            
+__numKeys += 1
+        }
+        if self.second != nil {
+                        if __numKeys > 0 {
+                    __json += ","
+                }
+            __json += "\"second\":"
+        __json += "\(self.second!)"            
+__numKeys += 1
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        if self.first != nil {
+                    __queryParts.append(URLQueryItem(name: "first", value: self.first!))
+                }
+        if self.second != nil {
+                    __queryParts.append(URLQueryItem(name: "second", value: "\(self.second!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesExternalAllOptional {
+
+        return UnionVariantShapesExternalAllOptional(
+            first: self.first,
+            second: self.second
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesExternalMixed: ArriClientModel {
+    public var required: String = ""
+    public var nullable: String?
+    public var optional: String?
+    public init(
+        required: String,
+        nullable: String?,
+        optional: String?
+    ) {
+            self.required = required
+            self.nullable = nullable
+            self.optional = optional
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.required = json["required"].string ?? ""
+        if json["nullable"].string != nil {
+            self.nullable = json["nullable"].string
+        }
+        if json["optional"].exists() {
+            self.optional = json["optional"].string    
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"required\":"
+        __json += serializeString(input: self.required)
+        __json += ",\"nullable\":"
+        if self.nullable != nil {
+                    __json += serializeString(input: self.nullable!)
+                } else {
+                    __json += "null" 
+                }
+        if self.optional != nil {
+                    __json += ",\"optional\":"
+        __json += serializeString(input: self.optional!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "required", value: self.required))
+        if self.nullable != nil {
+                    __queryParts.append(URLQueryItem(name: "nullable", value: self.nullable!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "nullable", value: "null")) 
+                }
+        if self.optional != nil {
+                    __queryParts.append(URLQueryItem(name: "optional", value: self.optional!))
+                }
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesExternalMixed {
+
+        return UnionVariantShapesExternalMixed(
+            required: self.required,
+            nullable: self.nullable,
+            optional: self.optional
+        )
+    }
+    
+}
+    
+
+public enum UnionVariantShapesAdjacent: ArriClientModel {
+    case empty(UnionVariantShapesAdjacentEmpty)
+    case allOptional(UnionVariantShapesAdjacentAllOptional)
+    case mixed(UnionVariantShapesAdjacentMixed)
+    public init() {
+        self = .empty(UnionVariantShapesAdjacentEmpty())
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "empty":
+                var __variantValue: UnionVariantShapesAdjacentEmpty
+                __variantValue = UnionVariantShapesAdjacentEmpty(json: json["data"])
+                self = .empty(__variantValue)
+                break
+            case "all-optional":
+                var __variantValue: UnionVariantShapesAdjacentAllOptional
+                __variantValue = UnionVariantShapesAdjacentAllOptional(json: json["data"])
+                self = .allOptional(__variantValue)
+                break
+            case "mixed":
+                var __variantValue: UnionVariantShapesAdjacentMixed
+                __variantValue = UnionVariantShapesAdjacentMixed(json: json["data"])
+                self = .mixed(__variantValue)
+                break
+            default:
+                self = .empty(UnionVariantShapesAdjacentEmpty())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .empty(let __variantValue):
+                __json += "\"kind\":\"empty\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .allOptional(let __variantValue):
+                __json += "\"kind\":\"all-optional\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .mixed(let __variantValue):
+                __json += "\"kind\":\"mixed\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantShapesAdjacent.")
+        return []
+    }
+    public func clone() -> UnionVariantShapesAdjacent {
+        switch(self) {
+            case .empty(let __variantValue):
+                
+                return .empty(__variantValue.clone())
+            case .allOptional(let __variantValue):
+                
+                return .allOptional(__variantValue.clone())
+            case .mixed(let __variantValue):
+                
+                return .mixed(__variantValue.clone())
+        }
+    }
+}
+
+public struct UnionVariantShapesAdjacentEmpty: ArriClientModel {
+
+    public init(
+
+    ) {
+
+    }
+    
+    public init(json: JSON) {
+
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+      var __numKeys = 0
+
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        
+
+        return []
+    }
+    public func clone() -> UnionVariantShapesAdjacentEmpty {
+
+        return UnionVariantShapesAdjacentEmpty(
+
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesAdjacentAllOptional: ArriClientModel {
+    public var first: String?
+    public var second: Int32?
+    public init(
+        first: String?,
+        second: Int32?
+    ) {
+            self.first = first
+            self.second = second
+    }
+    public init() {}
+    public init(json: JSON) {
+        if json["first"].exists() {
+            self.first = json["first"].string    
+        }
+        if json["second"].exists() {
+                    self.second = json["second"].int32
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+      var __numKeys = 0
+        if self.first != nil {
+                        __json += "\"first\":"
+        __json += serializeString(input: self.first!)            
+__numKeys += 1
+        }
+        if self.second != nil {
+                        if __numKeys > 0 {
+                    __json += ","
+                }
+            __json += "\"second\":"
+        __json += "\(self.second!)"            
+__numKeys += 1
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        if self.first != nil {
+                    __queryParts.append(URLQueryItem(name: "first", value: self.first!))
+                }
+        if self.second != nil {
+                    __queryParts.append(URLQueryItem(name: "second", value: "\(self.second!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesAdjacentAllOptional {
+
+        return UnionVariantShapesAdjacentAllOptional(
+            first: self.first,
+            second: self.second
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantShapesAdjacentMixed: ArriClientModel {
+    public var required: String = ""
+    public var nullable: String?
+    public var optional: String?
+    public init(
+        required: String,
+        nullable: String?,
+        optional: String?
+    ) {
+            self.required = required
+            self.nullable = nullable
+            self.optional = optional
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.required = json["required"].string ?? ""
+        if json["nullable"].string != nil {
+            self.nullable = json["nullable"].string
+        }
+        if json["optional"].exists() {
+            self.optional = json["optional"].string    
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"required\":"
+        __json += serializeString(input: self.required)
+        __json += ",\"nullable\":"
+        if self.nullable != nil {
+                    __json += serializeString(input: self.nullable!)
+                } else {
+                    __json += "null" 
+                }
+        if self.optional != nil {
+                    __json += ",\"optional\":"
+        __json += serializeString(input: self.optional!)
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "required", value: self.required))
+        if self.nullable != nil {
+                    __queryParts.append(URLQueryItem(name: "nullable", value: self.nullable!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "nullable", value: "null")) 
+                }
+        if self.optional != nil {
+                    __queryParts.append(URLQueryItem(name: "optional", value: self.optional!))
+                }
+        return __queryParts
+    }
+    public func clone() -> UnionVariantShapesAdjacentMixed {
+
+        return UnionVariantShapesAdjacentMixed(
+            required: self.required,
+            nullable: self.nullable,
+            optional: self.optional
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantTypes: ArriClientModel {
+    public var external: UnionVariantTypesExternal = UnionVariantTypesExternal()
+    public var adjacent: UnionVariantTypesAdjacent = UnionVariantTypesAdjacent()
+    public var `internal`: UnionVariantTypesInternal = UnionVariantTypesInternal()
+    public init(
+        external: UnionVariantTypesExternal,
+        adjacent: UnionVariantTypesAdjacent,
+        `internal`: UnionVariantTypesInternal
+    ) {
+            self.external = external
+            self.adjacent = adjacent
+            self.`internal` = `internal`
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.external = UnionVariantTypesExternal(json: json["external"])
+        self.adjacent = UnionVariantTypesAdjacent(json: json["adjacent"])
+        self.`internal` = UnionVariantTypesInternal(json: json["internal"])
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"external\":"
+        __json += self.external.toJSONString()
+        __json += ",\"adjacent\":"
+        __json += self.adjacent.toJSONString()
+        __json += ",\"internal\":"
+        __json += self.`internal`.toJSONString()
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/external.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/adjacent.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.")
+        return []
+    }
+    public func clone() -> UnionVariantTypes {
+
+
+
+        return UnionVariantTypes(
+            external: self.external.clone(),
+            adjacent: self.adjacent.clone(),
+            `internal`: self.`internal`.clone()
+        )
+    }
+    
+}
+    
+public enum UnionVariantTypesExternal: ArriClientModel {
+    case string(String)
+    case int64(Int64)
+    case uint64(UInt64)
+    case float64(Float64)
+    case enumerator(UnionVariantTypesExternalEnumerator)
+    case record(Dictionary<String, String>)
+    case any(JSON)
+    case nullableString(String?)
+    case nullableArray([String]?)
+    case externalUnion(UnionVariantTypesExternalExternalUnion)
+    case internalUnion(UnionVariantTypesExternalInternalUnion)
+    case adjacentUnion(UnionVariantTypesExternalAdjacentUnion)
+    case `class`(String)
+    case `default`(String)
+    public init() {
+        self = .string("")
+    }
+    public init(json: JSON) {
+        if json["string"].exists() {
+                var __variantValue: String
+                __variantValue = json["string"].string ?? ""
+                self = .string(__variantValue)
+        } else if json["int64"].exists() {
+                var __variantValue: Int64
+                __variantValue = Int64(json["int64"].string ?? "0") ?? 0
+                self = .int64(__variantValue)
+        } else if json["uint64"].exists() {
+                var __variantValue: UInt64
+                __variantValue = UInt64(json["uint64"].string ?? "0") ?? 0
+                self = .uint64(__variantValue)
+        } else if json["float64"].exists() {
+                var __variantValue: Float64
+                __variantValue = json["float64"].double ?? 0.0
+                self = .float64(__variantValue)
+        } else if json["enumerator"].exists() {
+                var __variantValue: UnionVariantTypesExternalEnumerator
+                __variantValue = UnionVariantTypesExternalEnumerator(serialValue: json["enumerator"].string ?? "")
+                self = .enumerator(__variantValue)
+        } else if json["record"].exists() {
+                var __variantValue: Dictionary<String, String>
+                __variantValue = Dictionary()
+            for (__key, __value) in json["record"].dictionary ?? Dictionary() {
+                var __parsedValue: String
+                        __parsedValue = __value.string ?? ""
+                __variantValue[__key] = __parsedValue            
+            }
+                self = .record(__variantValue)
+        } else if json["any"].exists() {
+                var __variantValue: JSON
+                __variantValue = json["any"]
+                self = .any(__variantValue)
+        } else if json["nullableString"].exists() {
+                var __variantValue: String?
+                if json["nullableString"].string != nil {
+            __variantValue = json["nullableString"].string
+        }
+                self = .nullableString(__variantValue)
+        } else if json["nullableArray"].exists() {
+                var __variantValue: [String]?
+                if json["nullableArray"].array != nil {
+        __variantValue = []
+            for __variantValueJsonElement in json["nullableArray"].array ?? [] {
+                var __variantValueJsonElementValue: String
+                        __variantValueJsonElementValue = __variantValueJsonElement.string ?? ""
+                __variantValue!.append(__variantValueJsonElementValue)
+            }
+                }
+                self = .nullableArray(__variantValue)
+        } else if json["externalUnion"].exists() {
+                var __variantValue: UnionVariantTypesExternalExternalUnion
+                __variantValue = UnionVariantTypesExternalExternalUnion(json: json["externalUnion"])
+                self = .externalUnion(__variantValue)
+        } else if json["internalUnion"].exists() {
+                var __variantValue: UnionVariantTypesExternalInternalUnion
+                __variantValue = UnionVariantTypesExternalInternalUnion(json: json["internalUnion"])
+                self = .internalUnion(__variantValue)
+        } else if json["adjacentUnion"].exists() {
+                var __variantValue: UnionVariantTypesExternalAdjacentUnion
+                __variantValue = UnionVariantTypesExternalAdjacentUnion(json: json["adjacentUnion"])
+                self = .adjacentUnion(__variantValue)
+        } else if json["class"].exists() {
+                var __variantValue: String
+                __variantValue = json["class"].string ?? ""
+                self = .`class`(__variantValue)
+        } else if json["default"].exists() {
+                var __variantValue: String
+                __variantValue = json["default"].string ?? ""
+                self = .`default`(__variantValue)
+        } else {
+            self = .string("")
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .string(let __variantValue):
+                __json += "\"string\":"
+                __json += serializeString(input: __variantValue)
+                break
+            case .int64(let __variantValue):
+                __json += "\"int64\":"
+                __json += "\"\(__variantValue)\""
+                break
+            case .uint64(let __variantValue):
+                __json += "\"uint64\":"
+                __json += "\"\(__variantValue)\""
+                break
+            case .float64(let __variantValue):
+                __json += "\"float64\":"
+                __json += "\(__variantValue)"
+                break
+            case .enumerator(let __variantValue):
+                __json += "\"enumerator\":"
+                __json += "\"\(__variantValue.serialValue())\""
+                break
+            case .record(let __variantValue):
+                __json += "\"record\":"
+                __json += "{"
+            for (__index, (__key, __value)) in __variantValue.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\(serializeString(input: __key)):"
+                        __json += serializeString(input: __value)
+            }
+            __json += "}"
+                break
+            case .any(let __variantValue):
+                __json += "\"any\":"
+                __json += serializeAny(input: __variantValue)
+                break
+            case .nullableString(let __variantValue):
+                __json += "\"nullableString\":"
+                if __variantValue != nil {
+                    __json += serializeString(input: __variantValue!)
+                } else {
+                    __json += "null" 
+                }
+                break
+            case .nullableArray(let __variantValue):
+                __json += "\"nullableArray\":"
+                if __variantValue != nil {
+                           __json += "["
+            for (__index, __element) in __variantValue!.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                        __json += serializeString(input: __element)
+            }
+            __json += "]"
+                } else {
+                    __json += "null" 
+                }
+                break
+            case .externalUnion(let __variantValue):
+                __json += "\"externalUnion\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .internalUnion(let __variantValue):
+                __json += "\"internalUnion\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .adjacentUnion(let __variantValue):
+                __json += "\"adjacentUnion\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .`class`(let __variantValue):
+                __json += "\"class\":"
+                __json += serializeString(input: __variantValue)
+                break
+            case .`default`(let __variantValue):
+                __json += "\"default\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesExternal.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesExternal {
+        switch(self) {
+            case .string(let __variantValue):
+                
+                return .string(__variantValue)
+            case .int64(let __variantValue):
+                
+                return .int64(__variantValue)
+            case .uint64(let __variantValue):
+                
+                return .uint64(__variantValue)
+            case .float64(let __variantValue):
+                
+                return .float64(__variantValue)
+            case .enumerator(let __variantValue):
+                
+                return .enumerator(__variantValue)
+            case .record(let __variantValue):
+                var __variantValueCloned: Dictionary<String, String> = Dictionary()
+                    for (__variantValueKey, __variantValueValue) in __variantValue {
+                        
+                        __variantValueCloned[__variantValueKey] = __variantValueValue
+                    }
+                return .record(__variantValueCloned)
+            case .any(let __variantValue):
+                
+                return .any(__variantValue)
+            case .nullableString(let __variantValue):
+                
+                return .nullableString(__variantValue)
+            case .nullableArray(let __variantValue):
+                var __variantValueCloned: [String]?
+                if __variantValue != nil {
+                    __variantValueCloned = []
+                    for __variantValueElement in __variantValue! {
+                        
+                        __variantValueCloned!.append(__variantValueElement)
+                    }
+                }
+                return .nullableArray(__variantValueCloned)
+            case .externalUnion(let __variantValue):
+                
+                return .externalUnion(__variantValue.clone())
+            case .internalUnion(let __variantValue):
+                
+                return .internalUnion(__variantValue.clone())
+            case .adjacentUnion(let __variantValue):
+                
+                return .adjacentUnion(__variantValue.clone())
+            case .`class`(let __variantValue):
+                
+                return .`class`(__variantValue)
+            case .`default`(let __variantValue):
+                
+                return .`default`(__variantValue)
+        }
+    }
+}
+
+public enum UnionVariantTypesExternalEnumerator: ArriClientEnum {
+    case a
+    case b
+    public init() {
+        self = .a
+    }
+    public init(serialValue: String) {
+        switch(serialValue) {
+            case "A":
+                self = .a
+                break;
+            case "B":
+                self = .b
+                break;
+            default:
+                self = .a
+        }
+    }
+    public func serialValue() -> String {
+        switch (self) {
+            case .a:
+                return "A"
+            case .b:
+                return "B"
+        }
+    }
+}
+public enum UnionVariantTypesExternalExternalUnion: ArriClientModel {
+    case text(String)
+    public init() {
+        self = .text("")
+    }
+    public init(json: JSON) {
+        if json["text"].exists() {
+                var __variantValue: String
+                __variantValue = json["text"].string ?? ""
+                self = .text(__variantValue)
+        } else {
+            self = .text("")
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .text(let __variantValue):
+                __json += "\"text\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesExternalExternalUnion.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesExternalExternalUnion {
+        switch(self) {
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+        }
+    }
+}
+
+
+public enum UnionVariantTypesExternalInternalUnion: ArriClientModel {
+    case circle(UnionVariantTypesExternalInternalUnionCircle)
+    public init() {
+        self = .circle(UnionVariantTypesExternalInternalUnionCircle())
+    }
+    public init(json: JSON) {
+        let __tag = json["shape"].string ?? ""
+        switch (__tag) {
+            case "circle":
+                self = .circle(UnionVariantTypesExternalInternalUnionCircle(json: json))
+                break
+            default:
+                self = .circle(UnionVariantTypesExternalInternalUnionCircle())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .circle(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .circle(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> UnionVariantTypesExternalInternalUnion {
+        switch(self) {
+            case .circle(let __innerVal):
+                return .circle(__innerVal.clone())
+        }
+    }
+}
+
+public struct UnionVariantTypesExternalInternalUnionCircle: ArriClientModel {
+    let shape: String = "circle"
+    public var radius: Float64 = 0.0
+    public init(
+        radius: Float64
+    ) {
+            self.radius = radius
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.radius = json["radius"].double ?? 0.0
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"shape\":\"circle\""
+        __json += ",\"radius\":"
+        __json += "\(self.radius)"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "shape", value: "circle"))
+        __queryParts.append(URLQueryItem(name: "radius", value: "\(self.radius)"))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantTypesExternalInternalUnionCircle {
+
+        return UnionVariantTypesExternalInternalUnionCircle(
+            radius: self.radius
+        )
+    }
+    
+}
+    
+
+public enum UnionVariantTypesExternalAdjacentUnion: ArriClientModel {
+    case text(String)
+    public init() {
+        self = .text("")
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "text":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .text(__variantValue)
+                break
+            default:
+                self = .text("")
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .text(let __variantValue):
+                __json += "\"kind\":\"text\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesExternalAdjacentUnion.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesExternalAdjacentUnion {
+        switch(self) {
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+        }
+    }
+}
+
+
+public enum UnionVariantTypesAdjacent: ArriClientModel {
+    case string(String)
+    case int64(Int64)
+    case uint64(UInt64)
+    case float64(Float64)
+    case enumerator(UnionVariantTypesAdjacentEnumerator)
+    case record(Dictionary<String, String>)
+    case any(JSON)
+    case nullableString(String?)
+    case nullableArray([String]?)
+    case externalUnion(UnionVariantTypesAdjacentExternalUnion)
+    case internalUnion(UnionVariantTypesAdjacentInternalUnion)
+    case adjacentUnion(UnionVariantTypesAdjacentAdjacentUnion)
+    case `class`(String)
+    case `default`(String)
+    public init() {
+        self = .string("")
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "string":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .string(__variantValue)
+                break
+            case "int64":
+                var __variantValue: Int64
+                __variantValue = Int64(json["data"].string ?? "0") ?? 0
+                self = .int64(__variantValue)
+                break
+            case "uint64":
+                var __variantValue: UInt64
+                __variantValue = UInt64(json["data"].string ?? "0") ?? 0
+                self = .uint64(__variantValue)
+                break
+            case "float64":
+                var __variantValue: Float64
+                __variantValue = json["data"].double ?? 0.0
+                self = .float64(__variantValue)
+                break
+            case "enumerator":
+                var __variantValue: UnionVariantTypesAdjacentEnumerator
+                __variantValue = UnionVariantTypesAdjacentEnumerator(serialValue: json["data"].string ?? "")
+                self = .enumerator(__variantValue)
+                break
+            case "record":
+                var __variantValue: Dictionary<String, String>
+                __variantValue = Dictionary()
+            for (__key, __value) in json["data"].dictionary ?? Dictionary() {
+                var __parsedValue: String
+                        __parsedValue = __value.string ?? ""
+                __variantValue[__key] = __parsedValue            
+            }
+                self = .record(__variantValue)
+                break
+            case "any":
+                var __variantValue: JSON
+                __variantValue = json["data"]
+                self = .any(__variantValue)
+                break
+            case "nullableString":
+                var __variantValue: String?
+                if json["data"].string != nil {
+            __variantValue = json["data"].string
+        }
+                self = .nullableString(__variantValue)
+                break
+            case "nullableArray":
+                var __variantValue: [String]?
+                if json["data"].array != nil {
+        __variantValue = []
+            for __variantValueJsonElement in json["data"].array ?? [] {
+                var __variantValueJsonElementValue: String
+                        __variantValueJsonElementValue = __variantValueJsonElement.string ?? ""
+                __variantValue!.append(__variantValueJsonElementValue)
+            }
+                }
+                self = .nullableArray(__variantValue)
+                break
+            case "externalUnion":
+                var __variantValue: UnionVariantTypesAdjacentExternalUnion
+                __variantValue = UnionVariantTypesAdjacentExternalUnion(json: json["data"])
+                self = .externalUnion(__variantValue)
+                break
+            case "internalUnion":
+                var __variantValue: UnionVariantTypesAdjacentInternalUnion
+                __variantValue = UnionVariantTypesAdjacentInternalUnion(json: json["data"])
+                self = .internalUnion(__variantValue)
+                break
+            case "adjacentUnion":
+                var __variantValue: UnionVariantTypesAdjacentAdjacentUnion
+                __variantValue = UnionVariantTypesAdjacentAdjacentUnion(json: json["data"])
+                self = .adjacentUnion(__variantValue)
+                break
+            case "class":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .`class`(__variantValue)
+                break
+            case "default":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .`default`(__variantValue)
+                break
+            default:
+                self = .string("")
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .string(let __variantValue):
+                __json += "\"kind\":\"string\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+            case .int64(let __variantValue):
+                __json += "\"kind\":\"int64\",\"data\":"
+                __json += "\"\(__variantValue)\""
+                break
+            case .uint64(let __variantValue):
+                __json += "\"kind\":\"uint64\",\"data\":"
+                __json += "\"\(__variantValue)\""
+                break
+            case .float64(let __variantValue):
+                __json += "\"kind\":\"float64\",\"data\":"
+                __json += "\(__variantValue)"
+                break
+            case .enumerator(let __variantValue):
+                __json += "\"kind\":\"enumerator\",\"data\":"
+                __json += "\"\(__variantValue.serialValue())\""
+                break
+            case .record(let __variantValue):
+                __json += "\"kind\":\"record\",\"data\":"
+                __json += "{"
+            for (__index, (__key, __value)) in __variantValue.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\(serializeString(input: __key)):"
+                        __json += serializeString(input: __value)
+            }
+            __json += "}"
+                break
+            case .any(let __variantValue):
+                __json += "\"kind\":\"any\",\"data\":"
+                __json += serializeAny(input: __variantValue)
+                break
+            case .nullableString(let __variantValue):
+                __json += "\"kind\":\"nullableString\",\"data\":"
+                if __variantValue != nil {
+                    __json += serializeString(input: __variantValue!)
+                } else {
+                    __json += "null" 
+                }
+                break
+            case .nullableArray(let __variantValue):
+                __json += "\"kind\":\"nullableArray\",\"data\":"
+                if __variantValue != nil {
+                           __json += "["
+            for (__index, __element) in __variantValue!.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                        __json += serializeString(input: __element)
+            }
+            __json += "]"
+                } else {
+                    __json += "null" 
+                }
+                break
+            case .externalUnion(let __variantValue):
+                __json += "\"kind\":\"externalUnion\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .internalUnion(let __variantValue):
+                __json += "\"kind\":\"internalUnion\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .adjacentUnion(let __variantValue):
+                __json += "\"kind\":\"adjacentUnion\",\"data\":"
+                __json += __variantValue.toJSONString()
+                break
+            case .`class`(let __variantValue):
+                __json += "\"kind\":\"class\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+            case .`default`(let __variantValue):
+                __json += "\"kind\":\"default\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesAdjacent.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesAdjacent {
+        switch(self) {
+            case .string(let __variantValue):
+                
+                return .string(__variantValue)
+            case .int64(let __variantValue):
+                
+                return .int64(__variantValue)
+            case .uint64(let __variantValue):
+                
+                return .uint64(__variantValue)
+            case .float64(let __variantValue):
+                
+                return .float64(__variantValue)
+            case .enumerator(let __variantValue):
+                
+                return .enumerator(__variantValue)
+            case .record(let __variantValue):
+                var __variantValueCloned: Dictionary<String, String> = Dictionary()
+                    for (__variantValueKey, __variantValueValue) in __variantValue {
+                        
+                        __variantValueCloned[__variantValueKey] = __variantValueValue
+                    }
+                return .record(__variantValueCloned)
+            case .any(let __variantValue):
+                
+                return .any(__variantValue)
+            case .nullableString(let __variantValue):
+                
+                return .nullableString(__variantValue)
+            case .nullableArray(let __variantValue):
+                var __variantValueCloned: [String]?
+                if __variantValue != nil {
+                    __variantValueCloned = []
+                    for __variantValueElement in __variantValue! {
+                        
+                        __variantValueCloned!.append(__variantValueElement)
+                    }
+                }
+                return .nullableArray(__variantValueCloned)
+            case .externalUnion(let __variantValue):
+                
+                return .externalUnion(__variantValue.clone())
+            case .internalUnion(let __variantValue):
+                
+                return .internalUnion(__variantValue.clone())
+            case .adjacentUnion(let __variantValue):
+                
+                return .adjacentUnion(__variantValue.clone())
+            case .`class`(let __variantValue):
+                
+                return .`class`(__variantValue)
+            case .`default`(let __variantValue):
+                
+                return .`default`(__variantValue)
+        }
+    }
+}
+
+public enum UnionVariantTypesAdjacentEnumerator: ArriClientEnum {
+    case a
+    case b
+    public init() {
+        self = .a
+    }
+    public init(serialValue: String) {
+        switch(serialValue) {
+            case "A":
+                self = .a
+                break;
+            case "B":
+                self = .b
+                break;
+            default:
+                self = .a
+        }
+    }
+    public func serialValue() -> String {
+        switch (self) {
+            case .a:
+                return "A"
+            case .b:
+                return "B"
+        }
+    }
+}
+public enum UnionVariantTypesAdjacentExternalUnion: ArriClientModel {
+    case text(String)
+    public init() {
+        self = .text("")
+    }
+    public init(json: JSON) {
+        if json["text"].exists() {
+                var __variantValue: String
+                __variantValue = json["text"].string ?? ""
+                self = .text(__variantValue)
+        } else {
+            self = .text("")
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .text(let __variantValue):
+                __json += "\"text\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesAdjacentExternalUnion.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesAdjacentExternalUnion {
+        switch(self) {
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+        }
+    }
+}
+
+
+public enum UnionVariantTypesAdjacentInternalUnion: ArriClientModel {
+    case circle(UnionVariantTypesAdjacentInternalUnionCircle)
+    public init() {
+        self = .circle(UnionVariantTypesAdjacentInternalUnionCircle())
+    }
+    public init(json: JSON) {
+        let __tag = json["shape"].string ?? ""
+        switch (__tag) {
+            case "circle":
+                self = .circle(UnionVariantTypesAdjacentInternalUnionCircle(json: json))
+                break
+            default:
+                self = .circle(UnionVariantTypesAdjacentInternalUnionCircle())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .circle(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .circle(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> UnionVariantTypesAdjacentInternalUnion {
+        switch(self) {
+            case .circle(let __innerVal):
+                return .circle(__innerVal.clone())
+        }
+    }
+}
+
+public struct UnionVariantTypesAdjacentInternalUnionCircle: ArriClientModel {
+    let shape: String = "circle"
+    public var radius: Float64 = 0.0
+    public init(
+        radius: Float64
+    ) {
+            self.radius = radius
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.radius = json["radius"].double ?? 0.0
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"shape\":\"circle\""
+        __json += ",\"radius\":"
+        __json += "\(self.radius)"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "shape", value: "circle"))
+        __queryParts.append(URLQueryItem(name: "radius", value: "\(self.radius)"))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantTypesAdjacentInternalUnionCircle {
+
+        return UnionVariantTypesAdjacentInternalUnionCircle(
+            radius: self.radius
+        )
+    }
+    
+}
+    
+
+public enum UnionVariantTypesAdjacentAdjacentUnion: ArriClientModel {
+    case text(String)
+    public init() {
+        self = .text("")
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "text":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .text(__variantValue)
+                break
+            default:
+                self = .text("")
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .text(let __variantValue):
+                __json += "\"kind\":\"text\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesAdjacentAdjacentUnion.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesAdjacentAdjacentUnion {
+        switch(self) {
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+        }
+    }
+}
+
+
+public enum UnionVariantTypesInternal: ArriClientModel {
+    case `class`(UnionVariantTypesInternalClass)
+    case `default`(UnionVariantTypesInternalDefault)
+    public init() {
+        self = .`class`(UnionVariantTypesInternalClass())
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "class":
+                self = .`class`(UnionVariantTypesInternalClass(json: json))
+                break
+            case "default":
+                self = .`default`(UnionVariantTypesInternalDefault(json: json))
+                break
+            default:
+                self = .`class`(UnionVariantTypesInternalClass())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .`class`(let __innerVal):
+                return __innerVal.toJSONString()
+            case .`default`(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .`class`(let __innerVal):
+                return __innerVal.toURLQueryParts()
+            case .`default`(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> UnionVariantTypesInternal {
+        switch(self) {
+            case .`class`(let __innerVal):
+                return .`class`(__innerVal.clone())
+            case .`default`(let __innerVal):
+                return .`default`(__innerVal.clone())
+        }
+    }
+}
+
+public struct UnionVariantTypesInternalClass: ArriClientModel {
+    let kind: String = "class"
+    public var `for`: String = ""
+    public var `default`: String = ""
+    public init(
+        `for`: String,
+        `default`: String
+    ) {
+            self.`for` = `for`
+            self.`default` = `default`
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.`for` = json["for"].string ?? ""
+        self.`default` = json["default"].string ?? ""
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"class\""
+        __json += ",\"for\":"
+        __json += serializeString(input: self.`for`)
+        __json += ",\"default\":"
+        __json += serializeString(input: self.`default`)
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "class"))
+        __queryParts.append(URLQueryItem(name: "for", value: self.`for`))
+        __queryParts.append(URLQueryItem(name: "default", value: self.`default`))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantTypesInternalClass {
+
+        return UnionVariantTypesInternalClass(
+            for: self.`for`,
+            default: self.`default`
+        )
+    }
+    
+}
+    
+
+public struct UnionVariantTypesInternalDefault: ArriClientModel {
+    let kind: String = "default"
+    public var `class`: String = ""
+    public var internalUnion: UnionVariantTypesInternalDefaultInternalUnion = UnionVariantTypesInternalDefaultInternalUnion()
+    public var adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnion = UnionVariantTypesInternalDefaultAdjacentUnion()
+    public var externalUnion: UnionVariantTypesInternalDefaultExternalUnion = UnionVariantTypesInternalDefaultExternalUnion()
+    public init(
+        `class`: String,
+        internalUnion: UnionVariantTypesInternalDefaultInternalUnion,
+        adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnion,
+        externalUnion: UnionVariantTypesInternalDefaultExternalUnion
+    ) {
+            self.`class` = `class`
+            self.internalUnion = internalUnion
+            self.adjacentUnion = adjacentUnion
+            self.externalUnion = externalUnion
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.`class` = json["class"].string ?? ""
+        self.internalUnion = UnionVariantTypesInternalDefaultInternalUnion(json: json["internalUnion"])
+        self.adjacentUnion = UnionVariantTypesInternalDefaultAdjacentUnion(json: json["adjacentUnion"])
+        self.externalUnion = UnionVariantTypesInternalDefaultExternalUnion(json: json["externalUnion"])
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"kind\":\"default\""
+        __json += ",\"class\":"
+        __json += serializeString(input: self.`class`)
+        __json += ",\"internalUnion\":"
+        __json += self.internalUnion.toJSONString()
+        __json += ",\"adjacentUnion\":"
+        __json += self.adjacentUnion.toJSONString()
+        __json += ",\"externalUnion\":"
+        __json += self.externalUnion.toJSONString()
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "kind", value: "default"))
+        __queryParts.append(URLQueryItem(name: "class", value: self.`class`))
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/adjacentUnion.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/externalUnion.")
+        return __queryParts
+    }
+    public func clone() -> UnionVariantTypesInternalDefault {
+
+
+
+        return UnionVariantTypesInternalDefault(
+            class: self.`class`,
+            internalUnion: self.internalUnion.clone(),
+            adjacentUnion: self.adjacentUnion.clone(),
+            externalUnion: self.externalUnion.clone()
+        )
+    }
+    
+}
+    
+public enum UnionVariantTypesInternalDefaultInternalUnion: ArriClientModel {
+    case circle(UnionVariantTypesInternalDefaultInternalUnionCircle)
+    public init() {
+        self = .circle(UnionVariantTypesInternalDefaultInternalUnionCircle())
+    }
+    public init(json: JSON) {
+        let __tag = json["shape"].string ?? ""
+        switch (__tag) {
+            case "circle":
+                self = .circle(UnionVariantTypesInternalDefaultInternalUnionCircle(json: json))
+                break
+            default:
+                self = .circle(UnionVariantTypesInternalDefaultInternalUnionCircle())
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        switch(self) {
+            case .circle(let __innerVal):
+                return __innerVal.toJSONString()
+        }
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        switch(self) {
+            case .circle(let __innerVal):
+                return __innerVal.toURLQueryParts()
+        }
+    }
+    public func clone() -> UnionVariantTypesInternalDefaultInternalUnion {
+        switch(self) {
+            case .circle(let __innerVal):
+                return .circle(__innerVal.clone())
+        }
+    }
+}
+
+public struct UnionVariantTypesInternalDefaultInternalUnionCircle: ArriClientModel {
+    let shape: String = "circle"
+    public var radius: Float64 = 0.0
+    public init(
+        radius: Float64
+    ) {
+            self.radius = radius
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.radius = json["radius"].double ?? 0.0
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"shape\":\"circle\""
+        __json += ",\"radius\":"
+        __json += "\(self.radius)"
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "shape", value: "circle"))
+        __queryParts.append(URLQueryItem(name: "radius", value: "\(self.radius)"))
+        return __queryParts
+    }
+    public func clone() -> UnionVariantTypesInternalDefaultInternalUnionCircle {
+
+        return UnionVariantTypesInternalDefaultInternalUnionCircle(
+            radius: self.radius
+        )
+    }
+    
+}
+    
+
+public enum UnionVariantTypesInternalDefaultAdjacentUnion: ArriClientModel {
+    case text(String)
+    public init() {
+        self = .text("")
+    }
+    public init(json: JSON) {
+        let __tag = json["kind"].string ?? ""
+        switch (__tag) {
+            case "text":
+                var __variantValue: String
+                __variantValue = json["data"].string ?? ""
+                self = .text(__variantValue)
+                break
+            default:
+                self = .text("")
+                break
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .text(let __variantValue):
+                __json += "\"kind\":\"text\",\"data\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesInternalDefaultAdjacentUnion.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesInternalDefaultAdjacentUnion {
+        switch(self) {
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+        }
+    }
+}
+
+
+public enum UnionVariantTypesInternalDefaultExternalUnion: ArriClientModel {
+    case text(String)
+    public init() {
+        self = .text("")
+    }
+    public init(json: JSON) {
+        if json["text"].exists() {
+                var __variantValue: String
+                __variantValue = json["text"].string ?? ""
+                self = .text(__variantValue)
+        } else {
+            self = .text("")
+        }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        switch(self) {
+            case .text(let __variantValue):
+                __json += "\"text\":"
+                __json += serializeString(input: __variantValue)
+                break
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        print("[WARNING] unions cannot be serialized to query params. Skipping UnionVariantTypesInternalDefaultExternalUnion.")
+        return []
+    }
+    public func clone() -> UnionVariantTypesInternalDefaultExternalUnion {
+        switch(self) {
+            case .text(let __variantValue):
+                
+                return .text(__variantValue)
+        }
+    }
+}
+
 
 public struct AutoReconnectParams: ArriClientModel {
     public var messageCount: UInt8 = 0

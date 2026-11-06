@@ -6,6 +6,8 @@ import { assertType, describe, expect, test } from 'vitest';
 import {
     $$ObjectWithEveryType,
     $$ObjectWithEveryTypeEnumerator,
+    $$UnionVariantShapes,
+    $$UnionVariantTypes,
     type ObjectWithEveryNullableType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryType,
@@ -19,6 +21,8 @@ import {
     RecursiveUnionInternal,
     TestClient,
     type UnionInternalGetRequest,
+    type UnionVariantShapes,
+    type UnionVariantTypes,
 } from './testClient.g';
 
 // function wait(ms: number) {
@@ -156,9 +160,18 @@ test('can send/receive object with transformed keys', async () => {
         emailAddress: 'johndoe@gmail.com',
         phoneNumber: null,
         isAdmin: false,
-        lastEvent: {
+        externalEvent: {
             type: 'user_created',
             value: { userId: '1' },
+        },
+        internalEvent: {
+            eventType: 'user_updated',
+            userId: '1',
+            updatedAt: undefined,
+        },
+        adjacentEvent: {
+            eventType: 'user_created',
+            eventData: { userId: '1' },
         },
     };
     const snakeCaseResult =
@@ -170,10 +183,16 @@ test('can send/receive object with transformed keys', async () => {
         isAdmin: undefined,
         displayName: 'john doe',
         phoneNumber: '2112112111',
-        lastEvent: {
+        externalEvent: {
             type: 'UserCreated',
             value: { userId: '1' },
         },
+        internalEvent: {
+            eventType: 'UserUpdated',
+            userId: '1',
+            updatedAt: new Date(),
+        },
+        adjacentEvent: { eventType: 'UserUpdated', eventData: 'hello world' },
     };
     const pascalCaseResult =
         await client.tests.sendObjectWithPascalCaseKeys(pascalCasePayload);
@@ -184,9 +203,18 @@ test('can send/receive object with transformed keys', async () => {
         isAdmin: undefined,
         displayName: 'john doe',
         phoneNumber: '2112112111',
-        lastEvent: {
+        externalEvent: {
             type: 'user-created',
             value: { userId: '1' },
+        },
+        internalEvent: {
+            eventType: 'user-updated',
+            userId: '1',
+            updatedAt: new Date(),
+        },
+        adjacentEvent: {
+            eventType: 'user-created',
+            eventData: { userId: '1' },
         },
     };
     const kebabCaseResult =
@@ -503,6 +531,129 @@ describe('can send/receive internally tagged unions with GET requests', () => {
                 await client.tests.sendUnionInternalGetRequest(payload);
             expect(result).toEqual(payload);
         });
+    }
+});
+
+function label(input: unknown) {
+    return JSON.stringify(input, (_, val) =>
+        typeof val === 'bigint' ? val.toString() : val,
+    );
+}
+
+describe('can send/receive union variant shapes', () => {
+    const internal: UnionVariantShapes['internal'][] = [
+        { kind: 'empty' },
+        { kind: 'all-optional' },
+        { kind: 'all-optional', second: 1 },
+        { kind: 'all-optional', first: 'a', second: 1 },
+        { kind: 'mixed', required: 'a', nullable: null },
+        { kind: 'mixed', required: 'a', optional: 'b', nullable: 'c' },
+        {
+            kind: 'nested',
+            array: [{ id: 'a' }],
+            record: { a: BigInt('-1') },
+            object: { timestamp: new Date() },
+        },
+    ];
+    const external: UnionVariantShapes['external'][] = [
+        { type: 'empty', value: {} },
+        { type: 'all-optional', value: {} },
+        { type: 'all-optional', value: { second: 1 } },
+        { type: 'mixed', value: { required: 'a', nullable: null } },
+        {
+            type: 'mixed',
+            value: { required: 'a', optional: 'b', nullable: 'c' },
+        },
+    ];
+    const adjacent: UnionVariantShapes['adjacent'][] = [
+        { kind: 'empty', data: {} },
+        { kind: 'all-optional', data: {} },
+        { kind: 'all-optional', data: { second: 1 } },
+        { kind: 'mixed', data: { required: 'a', nullable: null } },
+        {
+            kind: 'mixed',
+            data: { required: 'a', optional: 'b', nullable: 'c' },
+        },
+    ];
+    const defaults: UnionVariantShapes = {
+        internal: internal[0]!,
+        external: external[0]!,
+        adjacent: adjacent[0]!,
+    };
+    async function roundTrip(payload: UnionVariantShapes) {
+        const result = await client.tests.sendUnionVariantShapes(payload);
+        // the client sets missing optional fields to undefined
+        expect(result).toEqual(payload);
+        expect($$UnionVariantShapes.validate(result)).toBe(true);
+    }
+    for (const value of internal) {
+        test(`internally tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, internal: value }));
+    }
+    for (const value of external) {
+        test(`externally tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, external: value }));
+    }
+    for (const value of adjacent) {
+        test(`adjacently tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, adjacent: value }));
+    }
+});
+
+describe('can send/receive union variant types', () => {
+    const values: { type: string; value: any }[] = [
+        { type: 'string', value: 'hello world' },
+        { type: 'int64', value: BigInt('-5') },
+        { type: 'uint64', value: BigInt('5') },
+        { type: 'float64', value: 1.5 },
+        { type: 'enumerator', value: 'B' },
+        { type: 'record', value: { a: 'b' } },
+        { type: 'any', value: { a: 1 } },
+        { type: 'any', value: null },
+        { type: 'nullableString', value: null },
+        { type: 'nullableString', value: 'hello world' },
+        { type: 'nullableArray', value: null },
+        { type: 'nullableArray', value: ['hello world'] },
+        { type: 'externalUnion', value: { type: 'text', value: 'hello' } },
+        { type: 'internalUnion', value: { shape: 'circle', radius: 1.5 } },
+        { type: 'adjacentUnion', value: { kind: 'text', data: 'hello' } },
+        { type: 'class', value: 'hello world' },
+        { type: 'default', value: 'hello world' },
+    ];
+    const internal: UnionVariantTypes['internal'][] = [
+        { kind: 'class', for: 'a', default: 'b' },
+        {
+            kind: 'default',
+            class: 'a',
+            internalUnion: { shape: 'circle', radius: 1.5 },
+            adjacentUnion: { kind: 'text', data: 'hello' },
+            externalUnion: { type: 'text', value: 'hello' },
+        },
+    ];
+    const defaults: UnionVariantTypes = {
+        external: { type: 'string', value: 'hello world' },
+        adjacent: { kind: 'string', data: 'hello world' },
+        internal: internal[0]!,
+    };
+    async function roundTrip(payload: UnionVariantTypes) {
+        const result = await client.tests.sendUnionVariantTypes(payload);
+        expect(result).toStrictEqual(payload);
+        expect($$UnionVariantTypes.validate(result)).toBe(true);
+    }
+    for (const { type, value } of values) {
+        test(`externally tagged ${label({ type, value })}`, () =>
+            roundTrip({ ...defaults, external: { type, value } as any }));
+    }
+    for (const { type, value } of values) {
+        test(`adjacently tagged ${label({ type, value })}`, () =>
+            roundTrip({
+                ...defaults,
+                adjacent: { kind: type, data: value } as any,
+            }));
+    }
+    for (const value of internal) {
+        test(`internally tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, internal: value }));
     }
 });
 

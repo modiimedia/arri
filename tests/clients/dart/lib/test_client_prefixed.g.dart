@@ -238,6 +238,38 @@ class TestClientPrefixed {
     );
   }
 
+  /// Union variants with no fields, only optional fields, a mix of required, optional, and nullable fields, and nested fields.
+  Future<FooUnionVariantShapes> sendUnionVariantShapes(
+      FooUnionVariantShapes params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-union-variant-shapes",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => FooUnionVariantShapes.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
+  /// Union variants of every value type, nested unions, and names that are reserved words in many languages.
+  Future<FooUnionVariantTypes> sendUnionVariantTypes(
+      FooUnionVariantTypes params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-union-variant-types",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => FooUnionVariantTypes.fromJsonString(body),
+      onError: _onError,
+      timeout: _timeout,
+    );
+  }
+
   EventSource<FooAutoReconnectResponse> streamAutoReconnect(
     FooAutoReconnectParams params, {
     void Function(FooAutoReconnectResponse data,
@@ -3058,14 +3090,18 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
   final DateTime createdAt;
   final String displayName;
   final String? phoneNumber;
-  final FooObjectWithKebabCaseKeysLastEvent? lastEvent;
+  final FooObjectWithKebabCaseKeysExternalEvent? externalEvent;
+  final FooObjectWithKebabCaseKeysInternalEvent internalEvent;
+  final FooObjectWithKebabCaseKeysAdjacentEvent adjacentEvent;
   final String? emailAddress;
   final bool? isAdmin;
   const FooObjectWithKebabCaseKeys({
     required this.createdAt,
     required this.displayName,
     required this.phoneNumber,
-    required this.lastEvent,
+    required this.externalEvent,
+    required this.internalEvent,
+    required this.adjacentEvent,
     this.emailAddress,
     this.isAdmin,
   });
@@ -3075,7 +3111,9 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
       createdAt: DateTime(0),
       displayName: "",
       phoneNumber: null,
-      lastEvent: null,
+      externalEvent: null,
+      internalEvent: FooObjectWithKebabCaseKeysInternalEvent.empty(),
+      adjacentEvent: FooObjectWithKebabCaseKeysAdjacentEvent.empty(),
     );
   }
 
@@ -3084,9 +3122,18 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
     final displayName = typeFromDynamic<String>(_input_["display-name"], "");
     final phoneNumber =
         nullableTypeFromDynamic<String>(_input_["phone-number"]);
-    final lastEvent = _input_["last-event"] is Map<String, dynamic>
-        ? FooObjectWithKebabCaseKeysLastEvent.fromJson(_input_["last-event"])
+    final externalEvent = _input_["external-event"] is Map<String, dynamic>
+        ? FooObjectWithKebabCaseKeysExternalEvent.fromJson(
+            _input_["external-event"])
         : null;
+    final internalEvent = _input_["internal-event"] is Map<String, dynamic>
+        ? FooObjectWithKebabCaseKeysInternalEvent.fromJson(
+            _input_["internal-event"])
+        : FooObjectWithKebabCaseKeysInternalEvent.empty();
+    final adjacentEvent = _input_["adjacent-event"] is Map<String, dynamic>
+        ? FooObjectWithKebabCaseKeysAdjacentEvent.fromJson(
+            _input_["adjacent-event"])
+        : FooObjectWithKebabCaseKeysAdjacentEvent.empty();
     final emailAddress =
         nullableTypeFromDynamic<String>(_input_["email-address"]);
     final isAdmin = nullableTypeFromDynamic<bool>(_input_["is-admin"]);
@@ -3094,7 +3141,9 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
       createdAt: createdAt,
       displayName: displayName,
       phoneNumber: phoneNumber,
-      lastEvent: lastEvent,
+      externalEvent: externalEvent,
+      internalEvent: internalEvent,
+      adjacentEvent: adjacentEvent,
       emailAddress: emailAddress,
       isAdmin: isAdmin,
     );
@@ -3110,7 +3159,9 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
       "created-at": createdAt.toUtc().toIso8601String(),
       "display-name": displayName,
       "phone-number": phoneNumber,
-      "last-event": lastEvent?.toJson(),
+      "external-event": externalEvent?.toJson(),
+      "internal-event": internalEvent.toJson(),
+      "adjacent-event": adjacentEvent.toJson(),
     };
     if (emailAddress != null) _output_["email-address"] = emailAddress;
     if (isAdmin != null) _output_["is-admin"] = isAdmin;
@@ -3129,7 +3180,11 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
     _queryParts_.add("display-name=$displayName");
     _queryParts_.add("phone-number=$phoneNumber");
     print(
-        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.");
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.");
     if (emailAddress != null) _queryParts_.add("email-address=$emailAddress");
     if (isAdmin != null) _queryParts_.add("is-admin=$isAdmin");
     return _queryParts_.join("&");
@@ -3140,7 +3195,9 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
     DateTime? createdAt,
     String? displayName,
     String? Function()? phoneNumber,
-    FooObjectWithKebabCaseKeysLastEvent? Function()? lastEvent,
+    FooObjectWithKebabCaseKeysExternalEvent? Function()? externalEvent,
+    FooObjectWithKebabCaseKeysInternalEvent? internalEvent,
+    FooObjectWithKebabCaseKeysAdjacentEvent? adjacentEvent,
     String? Function()? emailAddress,
     bool? Function()? isAdmin,
   }) {
@@ -3148,7 +3205,10 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
       createdAt: createdAt ?? this.createdAt,
       displayName: displayName ?? this.displayName,
       phoneNumber: phoneNumber != null ? phoneNumber() : this.phoneNumber,
-      lastEvent: lastEvent != null ? lastEvent() : this.lastEvent,
+      externalEvent:
+          externalEvent != null ? externalEvent() : this.externalEvent,
+      internalEvent: internalEvent ?? this.internalEvent,
+      adjacentEvent: adjacentEvent ?? this.adjacentEvent,
       emailAddress: emailAddress != null ? emailAddress() : this.emailAddress,
       isAdmin: isAdmin != null ? isAdmin() : this.isAdmin,
     );
@@ -3159,7 +3219,9 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
         createdAt,
         displayName,
         phoneNumber,
-        lastEvent,
+        externalEvent,
+        internalEvent,
+        adjacentEvent,
         emailAddress,
         isAdmin,
       ];
@@ -3179,59 +3241,62 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
   }
 }
 
-sealed class FooObjectWithKebabCaseKeysLastEvent implements ArriModel {
-  const FooObjectWithKebabCaseKeysLastEvent();
+sealed class FooObjectWithKebabCaseKeysExternalEvent implements ArriModel {
+  const FooObjectWithKebabCaseKeysExternalEvent();
 
-  factory FooObjectWithKebabCaseKeysLastEvent.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserCreated.empty();
+  factory FooObjectWithKebabCaseKeysExternalEvent.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserCreated.empty();
   }
 
-  factory FooObjectWithKebabCaseKeysLastEvent.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEvent.fromJson(
       Map<String, dynamic> _input_) {
     if (_input_.containsKey("user-created")) {
-      return FooObjectWithKebabCaseKeysLastEventUserCreated.fromJson(_input_);
+      return FooObjectWithKebabCaseKeysExternalEventUserCreated.fromJson(
+          _input_);
     }
     if (_input_.containsKey("user-updated")) {
-      return FooObjectWithKebabCaseKeysLastEventUserUpdated.fromJson(_input_);
+      return FooObjectWithKebabCaseKeysExternalEventUserUpdated.fromJson(
+          _input_);
     }
     if (_input_.containsKey("user-deleted")) {
-      return FooObjectWithKebabCaseKeysLastEventUserDeleted.fromJson(_input_);
+      return FooObjectWithKebabCaseKeysExternalEventUserDeleted.fromJson(
+          _input_);
     }
-    return FooObjectWithKebabCaseKeysLastEvent.empty();
+    return FooObjectWithKebabCaseKeysExternalEvent.empty();
   }
 
-  factory FooObjectWithKebabCaseKeysLastEvent.fromJsonString(String input) {
-    return FooObjectWithKebabCaseKeysLastEvent.fromJson(json.decode(input));
+  factory FooObjectWithKebabCaseKeysExternalEvent.fromJsonString(String input) {
+    return FooObjectWithKebabCaseKeysExternalEvent.fromJson(json.decode(input));
   }
 }
 
-class FooObjectWithKebabCaseKeysLastEventUserCreated
-    implements FooObjectWithKebabCaseKeysLastEvent {
-  final FooObjectWithKebabCaseKeysLastEventUserCreatedValue value;
-  const FooObjectWithKebabCaseKeysLastEventUserCreated({
+class FooObjectWithKebabCaseKeysExternalEventUserCreated
+    implements FooObjectWithKebabCaseKeysExternalEvent {
+  final FooObjectWithKebabCaseKeysExternalEventUserCreatedValue value;
+  const FooObjectWithKebabCaseKeysExternalEventUserCreated({
     required this.value,
   });
 
-  factory FooObjectWithKebabCaseKeysLastEventUserCreated.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserCreated(
-      value: FooObjectWithKebabCaseKeysLastEventUserCreatedValue.empty(),
+  factory FooObjectWithKebabCaseKeysExternalEventUserCreated.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserCreated(
+      value: FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.empty(),
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserCreated.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEventUserCreated.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["user-created"] is Map<String, dynamic>
-        ? FooObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJson(
+        ? FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.fromJson(
             _input_["user-created"])
-        : FooObjectWithKebabCaseKeysLastEventUserCreatedValue.empty();
-    return FooObjectWithKebabCaseKeysLastEventUserCreated(
+        : FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.empty();
+    return FooObjectWithKebabCaseKeysExternalEventUserCreated(
       value: value,
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserCreated.fromJsonString(
+  factory FooObjectWithKebabCaseKeysExternalEventUserCreated.fromJsonString(
       String input) {
-    return FooObjectWithKebabCaseKeysLastEventUserCreated.fromJson(
+    return FooObjectWithKebabCaseKeysExternalEventUserCreated.fromJson(
         json.decode(input));
   }
 
@@ -3251,15 +3316,15 @@ class FooObjectWithKebabCaseKeysLastEventUserCreated
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysLastEventUserCreated.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysExternalEventUserCreated.");
     return "";
   }
 
   @override
-  FooObjectWithKebabCaseKeysLastEventUserCreated copyWith({
-    FooObjectWithKebabCaseKeysLastEventUserCreatedValue? value,
+  FooObjectWithKebabCaseKeysExternalEventUserCreated copyWith({
+    FooObjectWithKebabCaseKeysExternalEventUserCreatedValue? value,
   }) {
-    return FooObjectWithKebabCaseKeysLastEventUserCreated(
+    return FooObjectWithKebabCaseKeysExternalEventUserCreated(
       value: value ?? this.value,
     );
   }
@@ -3271,7 +3336,7 @@ class FooObjectWithKebabCaseKeysLastEventUserCreated
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithKebabCaseKeysLastEventUserCreated &&
+    return other is FooObjectWithKebabCaseKeysExternalEventUserCreated &&
         listsAreEqual(props, other.props);
   }
 
@@ -3280,37 +3345,37 @@ class FooObjectWithKebabCaseKeysLastEventUserCreated
 
   @override
   String toString() {
-    return "FooObjectWithKebabCaseKeysLastEventUserCreated ${toJsonString()}";
+    return "FooObjectWithKebabCaseKeysExternalEventUserCreated ${toJsonString()}";
   }
 }
 
-class FooObjectWithKebabCaseKeysLastEventUserUpdated
-    implements FooObjectWithKebabCaseKeysLastEvent {
-  final FooObjectWithKebabCaseKeysLastEventUserUpdatedValue value;
-  const FooObjectWithKebabCaseKeysLastEventUserUpdated({
+class FooObjectWithKebabCaseKeysExternalEventUserUpdated
+    implements FooObjectWithKebabCaseKeysExternalEvent {
+  final FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue value;
+  const FooObjectWithKebabCaseKeysExternalEventUserUpdated({
     required this.value,
   });
 
-  factory FooObjectWithKebabCaseKeysLastEventUserUpdated.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserUpdated(
-      value: FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.empty(),
+  factory FooObjectWithKebabCaseKeysExternalEventUserUpdated.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdated(
+      value: FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.empty(),
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserUpdated.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEventUserUpdated.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["user-updated"] is Map<String, dynamic>
-        ? FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJson(
+        ? FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.fromJson(
             _input_["user-updated"])
-        : FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.empty();
-    return FooObjectWithKebabCaseKeysLastEventUserUpdated(
+        : FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.empty();
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdated(
       value: value,
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserUpdated.fromJsonString(
+  factory FooObjectWithKebabCaseKeysExternalEventUserUpdated.fromJsonString(
       String input) {
-    return FooObjectWithKebabCaseKeysLastEventUserUpdated.fromJson(
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdated.fromJson(
         json.decode(input));
   }
 
@@ -3330,15 +3395,15 @@ class FooObjectWithKebabCaseKeysLastEventUserUpdated
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysLastEventUserUpdated.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysExternalEventUserUpdated.");
     return "";
   }
 
   @override
-  FooObjectWithKebabCaseKeysLastEventUserUpdated copyWith({
-    FooObjectWithKebabCaseKeysLastEventUserUpdatedValue? value,
+  FooObjectWithKebabCaseKeysExternalEventUserUpdated copyWith({
+    FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue? value,
   }) {
-    return FooObjectWithKebabCaseKeysLastEventUserUpdated(
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdated(
       value: value ?? this.value,
     );
   }
@@ -3350,7 +3415,7 @@ class FooObjectWithKebabCaseKeysLastEventUserUpdated
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithKebabCaseKeysLastEventUserUpdated &&
+    return other is FooObjectWithKebabCaseKeysExternalEventUserUpdated &&
         listsAreEqual(props, other.props);
   }
 
@@ -3359,37 +3424,37 @@ class FooObjectWithKebabCaseKeysLastEventUserUpdated
 
   @override
   String toString() {
-    return "FooObjectWithKebabCaseKeysLastEventUserUpdated ${toJsonString()}";
+    return "FooObjectWithKebabCaseKeysExternalEventUserUpdated ${toJsonString()}";
   }
 }
 
-class FooObjectWithKebabCaseKeysLastEventUserDeleted
-    implements FooObjectWithKebabCaseKeysLastEvent {
-  final FooObjectWithKebabCaseKeysLastEventUserDeletedValue value;
-  const FooObjectWithKebabCaseKeysLastEventUserDeleted({
+class FooObjectWithKebabCaseKeysExternalEventUserDeleted
+    implements FooObjectWithKebabCaseKeysExternalEvent {
+  final FooObjectWithKebabCaseKeysExternalEventUserDeletedValue value;
+  const FooObjectWithKebabCaseKeysExternalEventUserDeleted({
     required this.value,
   });
 
-  factory FooObjectWithKebabCaseKeysLastEventUserDeleted.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserDeleted(
-      value: FooObjectWithKebabCaseKeysLastEventUserDeletedValue.empty(),
+  factory FooObjectWithKebabCaseKeysExternalEventUserDeleted.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserDeleted(
+      value: FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.empty(),
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserDeleted.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEventUserDeleted.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["user-deleted"] is Map<String, dynamic>
-        ? FooObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJson(
+        ? FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.fromJson(
             _input_["user-deleted"])
-        : FooObjectWithKebabCaseKeysLastEventUserDeletedValue.empty();
-    return FooObjectWithKebabCaseKeysLastEventUserDeleted(
+        : FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.empty();
+    return FooObjectWithKebabCaseKeysExternalEventUserDeleted(
       value: value,
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserDeleted.fromJsonString(
+  factory FooObjectWithKebabCaseKeysExternalEventUserDeleted.fromJsonString(
       String input) {
-    return FooObjectWithKebabCaseKeysLastEventUserDeleted.fromJson(
+    return FooObjectWithKebabCaseKeysExternalEventUserDeleted.fromJson(
         json.decode(input));
   }
 
@@ -3409,15 +3474,15 @@ class FooObjectWithKebabCaseKeysLastEventUserDeleted
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysLastEventUserDeleted.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysExternalEventUserDeleted.");
     return "";
   }
 
   @override
-  FooObjectWithKebabCaseKeysLastEventUserDeleted copyWith({
-    FooObjectWithKebabCaseKeysLastEventUserDeletedValue? value,
+  FooObjectWithKebabCaseKeysExternalEventUserDeleted copyWith({
+    FooObjectWithKebabCaseKeysExternalEventUserDeletedValue? value,
   }) {
-    return FooObjectWithKebabCaseKeysLastEventUserDeleted(
+    return FooObjectWithKebabCaseKeysExternalEventUserDeleted(
       value: value ?? this.value,
     );
   }
@@ -3429,7 +3494,7 @@ class FooObjectWithKebabCaseKeysLastEventUserDeleted
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithKebabCaseKeysLastEventUserDeleted &&
+    return other is FooObjectWithKebabCaseKeysExternalEventUserDeleted &&
         listsAreEqual(props, other.props);
   }
 
@@ -3438,33 +3503,34 @@ class FooObjectWithKebabCaseKeysLastEventUserDeleted
 
   @override
   String toString() {
-    return "FooObjectWithKebabCaseKeysLastEventUserDeleted ${toJsonString()}";
+    return "FooObjectWithKebabCaseKeysExternalEventUserDeleted ${toJsonString()}";
   }
 }
 
-class FooObjectWithKebabCaseKeysLastEventUserCreatedValue implements ArriModel {
+class FooObjectWithKebabCaseKeysExternalEventUserCreatedValue
+    implements ArriModel {
   final String userId;
-  const FooObjectWithKebabCaseKeysLastEventUserCreatedValue({
+  const FooObjectWithKebabCaseKeysExternalEventUserCreatedValue({
     required this.userId,
   });
 
-  factory FooObjectWithKebabCaseKeysLastEventUserCreatedValue.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserCreatedValue(
+  factory FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserCreatedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user-id"], "");
-    return FooObjectWithKebabCaseKeysLastEventUserCreatedValue(
+    return FooObjectWithKebabCaseKeysExternalEventUserCreatedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJsonString(
+  factory FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.fromJsonString(
       String input) {
-    return FooObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJson(
+    return FooObjectWithKebabCaseKeysExternalEventUserCreatedValue.fromJson(
         json.decode(input));
   }
 
@@ -3490,10 +3556,10 @@ class FooObjectWithKebabCaseKeysLastEventUserCreatedValue implements ArriModel {
   }
 
   @override
-  FooObjectWithKebabCaseKeysLastEventUserCreatedValue copyWith({
+  FooObjectWithKebabCaseKeysExternalEventUserCreatedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithKebabCaseKeysLastEventUserCreatedValue(
+    return FooObjectWithKebabCaseKeysExternalEventUserCreatedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -3505,7 +3571,7 @@ class FooObjectWithKebabCaseKeysLastEventUserCreatedValue implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithKebabCaseKeysLastEventUserCreatedValue &&
+    return other is FooObjectWithKebabCaseKeysExternalEventUserCreatedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -3514,33 +3580,34 @@ class FooObjectWithKebabCaseKeysLastEventUserCreatedValue implements ArriModel {
 
   @override
   String toString() {
-    return "FooObjectWithKebabCaseKeysLastEventUserCreatedValue ${toJsonString()}";
+    return "FooObjectWithKebabCaseKeysExternalEventUserCreatedValue ${toJsonString()}";
   }
 }
 
-class FooObjectWithKebabCaseKeysLastEventUserUpdatedValue implements ArriModel {
+class FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue
+    implements ArriModel {
   final String userId;
-  const FooObjectWithKebabCaseKeysLastEventUserUpdatedValue({
+  const FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue({
     required this.userId,
   });
 
-  factory FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+  factory FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user-id"], "");
-    return FooObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJsonString(
+  factory FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.fromJsonString(
       String input) {
-    return FooObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJson(
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue.fromJson(
         json.decode(input));
   }
 
@@ -3566,10 +3633,10 @@ class FooObjectWithKebabCaseKeysLastEventUserUpdatedValue implements ArriModel {
   }
 
   @override
-  FooObjectWithKebabCaseKeysLastEventUserUpdatedValue copyWith({
+  FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+    return FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -3581,7 +3648,7 @@ class FooObjectWithKebabCaseKeysLastEventUserUpdatedValue implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithKebabCaseKeysLastEventUserUpdatedValue &&
+    return other is FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -3590,33 +3657,34 @@ class FooObjectWithKebabCaseKeysLastEventUserUpdatedValue implements ArriModel {
 
   @override
   String toString() {
-    return "FooObjectWithKebabCaseKeysLastEventUserUpdatedValue ${toJsonString()}";
+    return "FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue ${toJsonString()}";
   }
 }
 
-class FooObjectWithKebabCaseKeysLastEventUserDeletedValue implements ArriModel {
+class FooObjectWithKebabCaseKeysExternalEventUserDeletedValue
+    implements ArriModel {
   final String userId;
-  const FooObjectWithKebabCaseKeysLastEventUserDeletedValue({
+  const FooObjectWithKebabCaseKeysExternalEventUserDeletedValue({
     required this.userId,
   });
 
-  factory FooObjectWithKebabCaseKeysLastEventUserDeletedValue.empty() {
-    return FooObjectWithKebabCaseKeysLastEventUserDeletedValue(
+  factory FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.empty() {
+    return FooObjectWithKebabCaseKeysExternalEventUserDeletedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJson(
+  factory FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user-id"], "");
-    return FooObjectWithKebabCaseKeysLastEventUserDeletedValue(
+    return FooObjectWithKebabCaseKeysExternalEventUserDeletedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJsonString(
+  factory FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.fromJsonString(
       String input) {
-    return FooObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJson(
+    return FooObjectWithKebabCaseKeysExternalEventUserDeletedValue.fromJson(
         json.decode(input));
   }
 
@@ -3642,10 +3710,10 @@ class FooObjectWithKebabCaseKeysLastEventUserDeletedValue implements ArriModel {
   }
 
   @override
-  FooObjectWithKebabCaseKeysLastEventUserDeletedValue copyWith({
+  FooObjectWithKebabCaseKeysExternalEventUserDeletedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithKebabCaseKeysLastEventUserDeletedValue(
+    return FooObjectWithKebabCaseKeysExternalEventUserDeletedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -3657,7 +3725,7 @@ class FooObjectWithKebabCaseKeysLastEventUserDeletedValue implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithKebabCaseKeysLastEventUserDeletedValue &&
+    return other is FooObjectWithKebabCaseKeysExternalEventUserDeletedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -3666,7 +3734,479 @@ class FooObjectWithKebabCaseKeysLastEventUserDeletedValue implements ArriModel {
 
   @override
   String toString() {
-    return "FooObjectWithKebabCaseKeysLastEventUserDeletedValue ${toJsonString()}";
+    return "FooObjectWithKebabCaseKeysExternalEventUserDeletedValue ${toJsonString()}";
+  }
+}
+
+sealed class FooObjectWithKebabCaseKeysInternalEvent implements ArriModel {
+  String get eventType;
+  const FooObjectWithKebabCaseKeysInternalEvent();
+
+  factory FooObjectWithKebabCaseKeysInternalEvent.empty() {
+    return FooObjectWithKebabCaseKeysInternalEventUserCreated.empty();
+  }
+
+  factory FooObjectWithKebabCaseKeysInternalEvent.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventType = typeFromDynamic<String>(_input_["event-type"], "");
+    switch (eventType) {
+      case "user-created":
+        return FooObjectWithKebabCaseKeysInternalEventUserCreated.fromJson(
+            _input_);
+      case "user-updated":
+        return FooObjectWithKebabCaseKeysInternalEventUserUpdated.fromJson(
+            _input_);
+      default:
+        return FooObjectWithKebabCaseKeysInternalEvent.empty();
+    }
+  }
+
+  factory FooObjectWithKebabCaseKeysInternalEvent.fromJsonString(String input) {
+    return FooObjectWithKebabCaseKeysInternalEvent.fromJson(json.decode(input));
+  }
+}
+
+class FooObjectWithKebabCaseKeysInternalEventUserCreated
+    implements FooObjectWithKebabCaseKeysInternalEvent {
+  final String userId;
+  const FooObjectWithKebabCaseKeysInternalEventUserCreated({
+    required this.userId,
+  });
+
+  @override
+  String get eventType => "user-created";
+
+  factory FooObjectWithKebabCaseKeysInternalEventUserCreated.empty() {
+    return FooObjectWithKebabCaseKeysInternalEventUserCreated(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysInternalEventUserCreated.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["user-id"], "");
+    return FooObjectWithKebabCaseKeysInternalEventUserCreated(
+      userId: userId,
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysInternalEventUserCreated.fromJsonString(
+      String input) {
+    return FooObjectWithKebabCaseKeysInternalEventUserCreated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event-type": eventType,
+      "user-id": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("event-type=$eventType");
+    _queryParts_.add("user-id=$userId");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithKebabCaseKeysInternalEventUserCreated copyWith({
+    String? userId,
+  }) {
+    return FooObjectWithKebabCaseKeysInternalEventUserCreated(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithKebabCaseKeysInternalEventUserCreated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithKebabCaseKeysInternalEventUserCreated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithKebabCaseKeysInternalEventUserUpdated
+    implements FooObjectWithKebabCaseKeysInternalEvent {
+  final String userId;
+  final DateTime? updatedAt;
+  const FooObjectWithKebabCaseKeysInternalEventUserUpdated({
+    required this.userId,
+    this.updatedAt,
+  });
+
+  @override
+  String get eventType => "user-updated";
+
+  factory FooObjectWithKebabCaseKeysInternalEventUserUpdated.empty() {
+    return FooObjectWithKebabCaseKeysInternalEventUserUpdated(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysInternalEventUserUpdated.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["user-id"], "");
+    final updatedAt = nullableDateTimeFromDynamic(_input_["updated-at"]);
+    return FooObjectWithKebabCaseKeysInternalEventUserUpdated(
+      userId: userId,
+      updatedAt: updatedAt,
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysInternalEventUserUpdated.fromJsonString(
+      String input) {
+    return FooObjectWithKebabCaseKeysInternalEventUserUpdated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event-type": eventType,
+      "user-id": userId,
+    };
+    if (updatedAt != null)
+      _output_["updated-at"] = updatedAt!.toUtc().toIso8601String();
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("event-type=$eventType");
+    _queryParts_.add("user-id=$userId");
+    if (updatedAt != null)
+      _queryParts_.add("updated-at=${updatedAt!.toUtc().toIso8601String()}");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithKebabCaseKeysInternalEventUserUpdated copyWith({
+    String? userId,
+    DateTime? Function()? updatedAt,
+  }) {
+    return FooObjectWithKebabCaseKeysInternalEventUserUpdated(
+      userId: userId ?? this.userId,
+      updatedAt: updatedAt != null ? updatedAt() : this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+        updatedAt,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithKebabCaseKeysInternalEventUserUpdated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithKebabCaseKeysInternalEventUserUpdated ${toJsonString()}";
+  }
+}
+
+sealed class FooObjectWithKebabCaseKeysAdjacentEvent implements ArriModel {
+  String get eventType;
+  const FooObjectWithKebabCaseKeysAdjacentEvent();
+
+  factory FooObjectWithKebabCaseKeysAdjacentEvent.empty() {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreated.empty();
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEvent.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventType = typeFromDynamic<String>(_input_["event-type"], "");
+    switch (eventType) {
+      case "user-created":
+        return FooObjectWithKebabCaseKeysAdjacentEventUserCreated.fromJson(
+            _input_);
+      case "user-updated":
+        return FooObjectWithKebabCaseKeysAdjacentEventUserUpdated.fromJson(
+            _input_);
+      default:
+        return FooObjectWithKebabCaseKeysAdjacentEvent.empty();
+    }
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEvent.fromJsonString(String input) {
+    return FooObjectWithKebabCaseKeysAdjacentEvent.fromJson(json.decode(input));
+  }
+}
+
+class FooObjectWithKebabCaseKeysAdjacentEventUserCreated
+    implements FooObjectWithKebabCaseKeysAdjacentEvent {
+  final FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData eventData;
+  const FooObjectWithKebabCaseKeysAdjacentEventUserCreated({
+    required this.eventData,
+  });
+
+  @override
+  String get eventType => "user-created";
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserCreated.empty() {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreated(
+      eventData:
+          FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.empty(),
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserCreated.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventData = _input_["event-data"] is Map<String, dynamic>
+        ? FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+            _input_["event-data"])
+        : FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.empty();
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreated(
+      eventData: eventData,
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserCreated.fromJsonString(
+      String input) {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event-type": eventType,
+      "event-data": eventData.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysAdjacentEventUserCreated.");
+    return "";
+  }
+
+  @override
+  FooObjectWithKebabCaseKeysAdjacentEventUserCreated copyWith({
+    FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData? eventData,
+  }) {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreated(
+      eventData: eventData ?? this.eventData,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        eventData,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithKebabCaseKeysAdjacentEventUserCreated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithKebabCaseKeysAdjacentEventUserCreated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithKebabCaseKeysAdjacentEventUserUpdated
+    implements FooObjectWithKebabCaseKeysAdjacentEvent {
+  final String eventData;
+  const FooObjectWithKebabCaseKeysAdjacentEventUserUpdated({
+    required this.eventData,
+  });
+
+  @override
+  String get eventType => "user-updated";
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserUpdated.empty() {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserUpdated(
+      eventData: "",
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserUpdated.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventData = typeFromDynamic<String>(_input_["event-data"], "");
+    return FooObjectWithKebabCaseKeysAdjacentEventUserUpdated(
+      eventData: eventData,
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserUpdated.fromJsonString(
+      String input) {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserUpdated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event-type": eventType,
+      "event-data": eventData,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithKebabCaseKeysAdjacentEventUserUpdated.");
+    return "";
+  }
+
+  @override
+  FooObjectWithKebabCaseKeysAdjacentEventUserUpdated copyWith({
+    String? eventData,
+  }) {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserUpdated(
+      eventData: eventData ?? this.eventData,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        eventData,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithKebabCaseKeysAdjacentEventUserUpdated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithKebabCaseKeysAdjacentEventUserUpdated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData
+    implements ArriModel {
+  final String userId;
+  const FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData({
+    required this.userId,
+  });
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.empty() {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["user-id"], "");
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData(
+      userId: userId,
+    );
+  }
+
+  factory FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.fromJsonString(
+      String input) {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "user-id": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("user-id=$userId");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData copyWith({
+    String? userId,
+  }) {
+    return FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other
+            is FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData ${toJsonString()}";
   }
 }
 
@@ -5607,14 +6147,18 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
   final DateTime createdAt;
   final String displayName;
   final String? phoneNumber;
-  final FooObjectWithPascalCaseKeysLastEvent? lastEvent;
+  final FooObjectWithPascalCaseKeysExternalEvent? externalEvent;
+  final FooObjectWithPascalCaseKeysInternalEvent internalEvent;
+  final FooObjectWithPascalCaseKeysAdjacentEvent adjacentEvent;
   final String? emailAddress;
   final bool? isAdmin;
   const FooObjectWithPascalCaseKeys({
     required this.createdAt,
     required this.displayName,
     required this.phoneNumber,
-    required this.lastEvent,
+    required this.externalEvent,
+    required this.internalEvent,
+    required this.adjacentEvent,
     this.emailAddress,
     this.isAdmin,
   });
@@ -5624,7 +6168,9 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
       createdAt: DateTime(0),
       displayName: "",
       phoneNumber: null,
-      lastEvent: null,
+      externalEvent: null,
+      internalEvent: FooObjectWithPascalCaseKeysInternalEvent.empty(),
+      adjacentEvent: FooObjectWithPascalCaseKeysAdjacentEvent.empty(),
     );
   }
 
@@ -5632,9 +6178,18 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
     final createdAt = dateTimeFromDynamic(_input_["CreatedAt"], DateTime(0));
     final displayName = typeFromDynamic<String>(_input_["DisplayName"], "");
     final phoneNumber = nullableTypeFromDynamic<String>(_input_["PhoneNumber"]);
-    final lastEvent = _input_["LastEvent"] is Map<String, dynamic>
-        ? FooObjectWithPascalCaseKeysLastEvent.fromJson(_input_["LastEvent"])
+    final externalEvent = _input_["ExternalEvent"] is Map<String, dynamic>
+        ? FooObjectWithPascalCaseKeysExternalEvent.fromJson(
+            _input_["ExternalEvent"])
         : null;
+    final internalEvent = _input_["InternalEvent"] is Map<String, dynamic>
+        ? FooObjectWithPascalCaseKeysInternalEvent.fromJson(
+            _input_["InternalEvent"])
+        : FooObjectWithPascalCaseKeysInternalEvent.empty();
+    final adjacentEvent = _input_["AdjacentEvent"] is Map<String, dynamic>
+        ? FooObjectWithPascalCaseKeysAdjacentEvent.fromJson(
+            _input_["AdjacentEvent"])
+        : FooObjectWithPascalCaseKeysAdjacentEvent.empty();
     final emailAddress =
         nullableTypeFromDynamic<String>(_input_["EmailAddress"]);
     final isAdmin = nullableTypeFromDynamic<bool>(_input_["IsAdmin"]);
@@ -5642,7 +6197,9 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
       createdAt: createdAt,
       displayName: displayName,
       phoneNumber: phoneNumber,
-      lastEvent: lastEvent,
+      externalEvent: externalEvent,
+      internalEvent: internalEvent,
+      adjacentEvent: adjacentEvent,
       emailAddress: emailAddress,
       isAdmin: isAdmin,
     );
@@ -5658,7 +6215,9 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
       "CreatedAt": createdAt.toUtc().toIso8601String(),
       "DisplayName": displayName,
       "PhoneNumber": phoneNumber,
-      "LastEvent": lastEvent?.toJson(),
+      "ExternalEvent": externalEvent?.toJson(),
+      "InternalEvent": internalEvent.toJson(),
+      "AdjacentEvent": adjacentEvent.toJson(),
     };
     if (emailAddress != null) _output_["EmailAddress"] = emailAddress;
     if (isAdmin != null) _output_["IsAdmin"] = isAdmin;
@@ -5677,7 +6236,11 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
     _queryParts_.add("DisplayName=$displayName");
     _queryParts_.add("PhoneNumber=$phoneNumber");
     print(
-        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.");
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.");
     if (emailAddress != null) _queryParts_.add("EmailAddress=$emailAddress");
     if (isAdmin != null) _queryParts_.add("IsAdmin=$isAdmin");
     return _queryParts_.join("&");
@@ -5688,7 +6251,9 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
     DateTime? createdAt,
     String? displayName,
     String? Function()? phoneNumber,
-    FooObjectWithPascalCaseKeysLastEvent? Function()? lastEvent,
+    FooObjectWithPascalCaseKeysExternalEvent? Function()? externalEvent,
+    FooObjectWithPascalCaseKeysInternalEvent? internalEvent,
+    FooObjectWithPascalCaseKeysAdjacentEvent? adjacentEvent,
     String? Function()? emailAddress,
     bool? Function()? isAdmin,
   }) {
@@ -5696,7 +6261,10 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
       createdAt: createdAt ?? this.createdAt,
       displayName: displayName ?? this.displayName,
       phoneNumber: phoneNumber != null ? phoneNumber() : this.phoneNumber,
-      lastEvent: lastEvent != null ? lastEvent() : this.lastEvent,
+      externalEvent:
+          externalEvent != null ? externalEvent() : this.externalEvent,
+      internalEvent: internalEvent ?? this.internalEvent,
+      adjacentEvent: adjacentEvent ?? this.adjacentEvent,
       emailAddress: emailAddress != null ? emailAddress() : this.emailAddress,
       isAdmin: isAdmin != null ? isAdmin() : this.isAdmin,
     );
@@ -5707,7 +6275,9 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
         createdAt,
         displayName,
         phoneNumber,
-        lastEvent,
+        externalEvent,
+        internalEvent,
+        adjacentEvent,
         emailAddress,
         isAdmin,
       ];
@@ -5727,59 +6297,64 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
   }
 }
 
-sealed class FooObjectWithPascalCaseKeysLastEvent implements ArriModel {
-  const FooObjectWithPascalCaseKeysLastEvent();
+sealed class FooObjectWithPascalCaseKeysExternalEvent implements ArriModel {
+  const FooObjectWithPascalCaseKeysExternalEvent();
 
-  factory FooObjectWithPascalCaseKeysLastEvent.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserCreated.empty();
+  factory FooObjectWithPascalCaseKeysExternalEvent.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserCreated.empty();
   }
 
-  factory FooObjectWithPascalCaseKeysLastEvent.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEvent.fromJson(
       Map<String, dynamic> _input_) {
     if (_input_.containsKey("UserCreated")) {
-      return FooObjectWithPascalCaseKeysLastEventUserCreated.fromJson(_input_);
+      return FooObjectWithPascalCaseKeysExternalEventUserCreated.fromJson(
+          _input_);
     }
     if (_input_.containsKey("UserUpdated")) {
-      return FooObjectWithPascalCaseKeysLastEventUserUpdated.fromJson(_input_);
+      return FooObjectWithPascalCaseKeysExternalEventUserUpdated.fromJson(
+          _input_);
     }
     if (_input_.containsKey("UserDeleted")) {
-      return FooObjectWithPascalCaseKeysLastEventUserDeleted.fromJson(_input_);
+      return FooObjectWithPascalCaseKeysExternalEventUserDeleted.fromJson(
+          _input_);
     }
-    return FooObjectWithPascalCaseKeysLastEvent.empty();
+    return FooObjectWithPascalCaseKeysExternalEvent.empty();
   }
 
-  factory FooObjectWithPascalCaseKeysLastEvent.fromJsonString(String input) {
-    return FooObjectWithPascalCaseKeysLastEvent.fromJson(json.decode(input));
+  factory FooObjectWithPascalCaseKeysExternalEvent.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysExternalEvent.fromJson(
+        json.decode(input));
   }
 }
 
-class FooObjectWithPascalCaseKeysLastEventUserCreated
-    implements FooObjectWithPascalCaseKeysLastEvent {
-  final FooObjectWithPascalCaseKeysLastEventUserCreatedValue value;
-  const FooObjectWithPascalCaseKeysLastEventUserCreated({
+class FooObjectWithPascalCaseKeysExternalEventUserCreated
+    implements FooObjectWithPascalCaseKeysExternalEvent {
+  final FooObjectWithPascalCaseKeysExternalEventUserCreatedValue value;
+  const FooObjectWithPascalCaseKeysExternalEventUserCreated({
     required this.value,
   });
 
-  factory FooObjectWithPascalCaseKeysLastEventUserCreated.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserCreated(
-      value: FooObjectWithPascalCaseKeysLastEventUserCreatedValue.empty(),
+  factory FooObjectWithPascalCaseKeysExternalEventUserCreated.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserCreated(
+      value: FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.empty(),
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserCreated.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEventUserCreated.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["UserCreated"] is Map<String, dynamic>
-        ? FooObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJson(
+        ? FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.fromJson(
             _input_["UserCreated"])
-        : FooObjectWithPascalCaseKeysLastEventUserCreatedValue.empty();
-    return FooObjectWithPascalCaseKeysLastEventUserCreated(
+        : FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.empty();
+    return FooObjectWithPascalCaseKeysExternalEventUserCreated(
       value: value,
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserCreated.fromJsonString(
+  factory FooObjectWithPascalCaseKeysExternalEventUserCreated.fromJsonString(
       String input) {
-    return FooObjectWithPascalCaseKeysLastEventUserCreated.fromJson(
+    return FooObjectWithPascalCaseKeysExternalEventUserCreated.fromJson(
         json.decode(input));
   }
 
@@ -5799,15 +6374,15 @@ class FooObjectWithPascalCaseKeysLastEventUserCreated
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysLastEventUserCreated.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysExternalEventUserCreated.");
     return "";
   }
 
   @override
-  FooObjectWithPascalCaseKeysLastEventUserCreated copyWith({
-    FooObjectWithPascalCaseKeysLastEventUserCreatedValue? value,
+  FooObjectWithPascalCaseKeysExternalEventUserCreated copyWith({
+    FooObjectWithPascalCaseKeysExternalEventUserCreatedValue? value,
   }) {
-    return FooObjectWithPascalCaseKeysLastEventUserCreated(
+    return FooObjectWithPascalCaseKeysExternalEventUserCreated(
       value: value ?? this.value,
     );
   }
@@ -5819,7 +6394,7 @@ class FooObjectWithPascalCaseKeysLastEventUserCreated
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithPascalCaseKeysLastEventUserCreated &&
+    return other is FooObjectWithPascalCaseKeysExternalEventUserCreated &&
         listsAreEqual(props, other.props);
   }
 
@@ -5828,37 +6403,37 @@ class FooObjectWithPascalCaseKeysLastEventUserCreated
 
   @override
   String toString() {
-    return "FooObjectWithPascalCaseKeysLastEventUserCreated ${toJsonString()}";
+    return "FooObjectWithPascalCaseKeysExternalEventUserCreated ${toJsonString()}";
   }
 }
 
-class FooObjectWithPascalCaseKeysLastEventUserUpdated
-    implements FooObjectWithPascalCaseKeysLastEvent {
-  final FooObjectWithPascalCaseKeysLastEventUserUpdatedValue value;
-  const FooObjectWithPascalCaseKeysLastEventUserUpdated({
+class FooObjectWithPascalCaseKeysExternalEventUserUpdated
+    implements FooObjectWithPascalCaseKeysExternalEvent {
+  final FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue value;
+  const FooObjectWithPascalCaseKeysExternalEventUserUpdated({
     required this.value,
   });
 
-  factory FooObjectWithPascalCaseKeysLastEventUserUpdated.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserUpdated(
-      value: FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.empty(),
+  factory FooObjectWithPascalCaseKeysExternalEventUserUpdated.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdated(
+      value: FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.empty(),
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserUpdated.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEventUserUpdated.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["UserUpdated"] is Map<String, dynamic>
-        ? FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJson(
+        ? FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.fromJson(
             _input_["UserUpdated"])
-        : FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.empty();
-    return FooObjectWithPascalCaseKeysLastEventUserUpdated(
+        : FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.empty();
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdated(
       value: value,
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserUpdated.fromJsonString(
+  factory FooObjectWithPascalCaseKeysExternalEventUserUpdated.fromJsonString(
       String input) {
-    return FooObjectWithPascalCaseKeysLastEventUserUpdated.fromJson(
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdated.fromJson(
         json.decode(input));
   }
 
@@ -5878,15 +6453,15 @@ class FooObjectWithPascalCaseKeysLastEventUserUpdated
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysLastEventUserUpdated.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysExternalEventUserUpdated.");
     return "";
   }
 
   @override
-  FooObjectWithPascalCaseKeysLastEventUserUpdated copyWith({
-    FooObjectWithPascalCaseKeysLastEventUserUpdatedValue? value,
+  FooObjectWithPascalCaseKeysExternalEventUserUpdated copyWith({
+    FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue? value,
   }) {
-    return FooObjectWithPascalCaseKeysLastEventUserUpdated(
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdated(
       value: value ?? this.value,
     );
   }
@@ -5898,7 +6473,7 @@ class FooObjectWithPascalCaseKeysLastEventUserUpdated
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithPascalCaseKeysLastEventUserUpdated &&
+    return other is FooObjectWithPascalCaseKeysExternalEventUserUpdated &&
         listsAreEqual(props, other.props);
   }
 
@@ -5907,37 +6482,37 @@ class FooObjectWithPascalCaseKeysLastEventUserUpdated
 
   @override
   String toString() {
-    return "FooObjectWithPascalCaseKeysLastEventUserUpdated ${toJsonString()}";
+    return "FooObjectWithPascalCaseKeysExternalEventUserUpdated ${toJsonString()}";
   }
 }
 
-class FooObjectWithPascalCaseKeysLastEventUserDeleted
-    implements FooObjectWithPascalCaseKeysLastEvent {
-  final FooObjectWithPascalCaseKeysLastEventUserDeletedValue value;
-  const FooObjectWithPascalCaseKeysLastEventUserDeleted({
+class FooObjectWithPascalCaseKeysExternalEventUserDeleted
+    implements FooObjectWithPascalCaseKeysExternalEvent {
+  final FooObjectWithPascalCaseKeysExternalEventUserDeletedValue value;
+  const FooObjectWithPascalCaseKeysExternalEventUserDeleted({
     required this.value,
   });
 
-  factory FooObjectWithPascalCaseKeysLastEventUserDeleted.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserDeleted(
-      value: FooObjectWithPascalCaseKeysLastEventUserDeletedValue.empty(),
+  factory FooObjectWithPascalCaseKeysExternalEventUserDeleted.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserDeleted(
+      value: FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.empty(),
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserDeleted.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEventUserDeleted.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["UserDeleted"] is Map<String, dynamic>
-        ? FooObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJson(
+        ? FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.fromJson(
             _input_["UserDeleted"])
-        : FooObjectWithPascalCaseKeysLastEventUserDeletedValue.empty();
-    return FooObjectWithPascalCaseKeysLastEventUserDeleted(
+        : FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.empty();
+    return FooObjectWithPascalCaseKeysExternalEventUserDeleted(
       value: value,
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserDeleted.fromJsonString(
+  factory FooObjectWithPascalCaseKeysExternalEventUserDeleted.fromJsonString(
       String input) {
-    return FooObjectWithPascalCaseKeysLastEventUserDeleted.fromJson(
+    return FooObjectWithPascalCaseKeysExternalEventUserDeleted.fromJson(
         json.decode(input));
   }
 
@@ -5957,15 +6532,15 @@ class FooObjectWithPascalCaseKeysLastEventUserDeleted
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysLastEventUserDeleted.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysExternalEventUserDeleted.");
     return "";
   }
 
   @override
-  FooObjectWithPascalCaseKeysLastEventUserDeleted copyWith({
-    FooObjectWithPascalCaseKeysLastEventUserDeletedValue? value,
+  FooObjectWithPascalCaseKeysExternalEventUserDeleted copyWith({
+    FooObjectWithPascalCaseKeysExternalEventUserDeletedValue? value,
   }) {
-    return FooObjectWithPascalCaseKeysLastEventUserDeleted(
+    return FooObjectWithPascalCaseKeysExternalEventUserDeleted(
       value: value ?? this.value,
     );
   }
@@ -5977,7 +6552,7 @@ class FooObjectWithPascalCaseKeysLastEventUserDeleted
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithPascalCaseKeysLastEventUserDeleted &&
+    return other is FooObjectWithPascalCaseKeysExternalEventUserDeleted &&
         listsAreEqual(props, other.props);
   }
 
@@ -5986,34 +6561,34 @@ class FooObjectWithPascalCaseKeysLastEventUserDeleted
 
   @override
   String toString() {
-    return "FooObjectWithPascalCaseKeysLastEventUserDeleted ${toJsonString()}";
+    return "FooObjectWithPascalCaseKeysExternalEventUserDeleted ${toJsonString()}";
   }
 }
 
-class FooObjectWithPascalCaseKeysLastEventUserCreatedValue
+class FooObjectWithPascalCaseKeysExternalEventUserCreatedValue
     implements ArriModel {
   final String userId;
-  const FooObjectWithPascalCaseKeysLastEventUserCreatedValue({
+  const FooObjectWithPascalCaseKeysExternalEventUserCreatedValue({
     required this.userId,
   });
 
-  factory FooObjectWithPascalCaseKeysLastEventUserCreatedValue.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserCreatedValue(
+  factory FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserCreatedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["UserId"], "");
-    return FooObjectWithPascalCaseKeysLastEventUserCreatedValue(
+    return FooObjectWithPascalCaseKeysExternalEventUserCreatedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJsonString(
+  factory FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.fromJsonString(
       String input) {
-    return FooObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJson(
+    return FooObjectWithPascalCaseKeysExternalEventUserCreatedValue.fromJson(
         json.decode(input));
   }
 
@@ -6039,10 +6614,10 @@ class FooObjectWithPascalCaseKeysLastEventUserCreatedValue
   }
 
   @override
-  FooObjectWithPascalCaseKeysLastEventUserCreatedValue copyWith({
+  FooObjectWithPascalCaseKeysExternalEventUserCreatedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithPascalCaseKeysLastEventUserCreatedValue(
+    return FooObjectWithPascalCaseKeysExternalEventUserCreatedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -6054,7 +6629,7 @@ class FooObjectWithPascalCaseKeysLastEventUserCreatedValue
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithPascalCaseKeysLastEventUserCreatedValue &&
+    return other is FooObjectWithPascalCaseKeysExternalEventUserCreatedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -6063,34 +6638,34 @@ class FooObjectWithPascalCaseKeysLastEventUserCreatedValue
 
   @override
   String toString() {
-    return "FooObjectWithPascalCaseKeysLastEventUserCreatedValue ${toJsonString()}";
+    return "FooObjectWithPascalCaseKeysExternalEventUserCreatedValue ${toJsonString()}";
   }
 }
 
-class FooObjectWithPascalCaseKeysLastEventUserUpdatedValue
+class FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue
     implements ArriModel {
   final String userId;
-  const FooObjectWithPascalCaseKeysLastEventUserUpdatedValue({
+  const FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue({
     required this.userId,
   });
 
-  factory FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+  factory FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["UserId"], "");
-    return FooObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJsonString(
+  factory FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.fromJsonString(
       String input) {
-    return FooObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJson(
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue.fromJson(
         json.decode(input));
   }
 
@@ -6116,10 +6691,10 @@ class FooObjectWithPascalCaseKeysLastEventUserUpdatedValue
   }
 
   @override
-  FooObjectWithPascalCaseKeysLastEventUserUpdatedValue copyWith({
+  FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+    return FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -6131,7 +6706,7 @@ class FooObjectWithPascalCaseKeysLastEventUserUpdatedValue
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithPascalCaseKeysLastEventUserUpdatedValue &&
+    return other is FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -6140,34 +6715,34 @@ class FooObjectWithPascalCaseKeysLastEventUserUpdatedValue
 
   @override
   String toString() {
-    return "FooObjectWithPascalCaseKeysLastEventUserUpdatedValue ${toJsonString()}";
+    return "FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue ${toJsonString()}";
   }
 }
 
-class FooObjectWithPascalCaseKeysLastEventUserDeletedValue
+class FooObjectWithPascalCaseKeysExternalEventUserDeletedValue
     implements ArriModel {
   final String userId;
-  const FooObjectWithPascalCaseKeysLastEventUserDeletedValue({
+  const FooObjectWithPascalCaseKeysExternalEventUserDeletedValue({
     required this.userId,
   });
 
-  factory FooObjectWithPascalCaseKeysLastEventUserDeletedValue.empty() {
-    return FooObjectWithPascalCaseKeysLastEventUserDeletedValue(
+  factory FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.empty() {
+    return FooObjectWithPascalCaseKeysExternalEventUserDeletedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJson(
+  factory FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["UserId"], "");
-    return FooObjectWithPascalCaseKeysLastEventUserDeletedValue(
+    return FooObjectWithPascalCaseKeysExternalEventUserDeletedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJsonString(
+  factory FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.fromJsonString(
       String input) {
-    return FooObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJson(
+    return FooObjectWithPascalCaseKeysExternalEventUserDeletedValue.fromJson(
         json.decode(input));
   }
 
@@ -6193,10 +6768,10 @@ class FooObjectWithPascalCaseKeysLastEventUserDeletedValue
   }
 
   @override
-  FooObjectWithPascalCaseKeysLastEventUserDeletedValue copyWith({
+  FooObjectWithPascalCaseKeysExternalEventUserDeletedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithPascalCaseKeysLastEventUserDeletedValue(
+    return FooObjectWithPascalCaseKeysExternalEventUserDeletedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -6208,7 +6783,7 @@ class FooObjectWithPascalCaseKeysLastEventUserDeletedValue
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithPascalCaseKeysLastEventUserDeletedValue &&
+    return other is FooObjectWithPascalCaseKeysExternalEventUserDeletedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -6217,7 +6792,483 @@ class FooObjectWithPascalCaseKeysLastEventUserDeletedValue
 
   @override
   String toString() {
-    return "FooObjectWithPascalCaseKeysLastEventUserDeletedValue ${toJsonString()}";
+    return "FooObjectWithPascalCaseKeysExternalEventUserDeletedValue ${toJsonString()}";
+  }
+}
+
+sealed class FooObjectWithPascalCaseKeysInternalEvent implements ArriModel {
+  String get eventType;
+  const FooObjectWithPascalCaseKeysInternalEvent();
+
+  factory FooObjectWithPascalCaseKeysInternalEvent.empty() {
+    return FooObjectWithPascalCaseKeysInternalEventUserCreated.empty();
+  }
+
+  factory FooObjectWithPascalCaseKeysInternalEvent.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventType = typeFromDynamic<String>(_input_["EventType"], "");
+    switch (eventType) {
+      case "UserCreated":
+        return FooObjectWithPascalCaseKeysInternalEventUserCreated.fromJson(
+            _input_);
+      case "UserUpdated":
+        return FooObjectWithPascalCaseKeysInternalEventUserUpdated.fromJson(
+            _input_);
+      default:
+        return FooObjectWithPascalCaseKeysInternalEvent.empty();
+    }
+  }
+
+  factory FooObjectWithPascalCaseKeysInternalEvent.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysInternalEvent.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooObjectWithPascalCaseKeysInternalEventUserCreated
+    implements FooObjectWithPascalCaseKeysInternalEvent {
+  final String userId;
+  const FooObjectWithPascalCaseKeysInternalEventUserCreated({
+    required this.userId,
+  });
+
+  @override
+  String get eventType => "UserCreated";
+
+  factory FooObjectWithPascalCaseKeysInternalEventUserCreated.empty() {
+    return FooObjectWithPascalCaseKeysInternalEventUserCreated(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysInternalEventUserCreated.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["UserId"], "");
+    return FooObjectWithPascalCaseKeysInternalEventUserCreated(
+      userId: userId,
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysInternalEventUserCreated.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysInternalEventUserCreated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "EventType": eventType,
+      "UserId": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("EventType=$eventType");
+    _queryParts_.add("UserId=$userId");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithPascalCaseKeysInternalEventUserCreated copyWith({
+    String? userId,
+  }) {
+    return FooObjectWithPascalCaseKeysInternalEventUserCreated(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithPascalCaseKeysInternalEventUserCreated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithPascalCaseKeysInternalEventUserCreated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithPascalCaseKeysInternalEventUserUpdated
+    implements FooObjectWithPascalCaseKeysInternalEvent {
+  final String userId;
+  final DateTime? updatedAt;
+  const FooObjectWithPascalCaseKeysInternalEventUserUpdated({
+    required this.userId,
+    this.updatedAt,
+  });
+
+  @override
+  String get eventType => "UserUpdated";
+
+  factory FooObjectWithPascalCaseKeysInternalEventUserUpdated.empty() {
+    return FooObjectWithPascalCaseKeysInternalEventUserUpdated(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysInternalEventUserUpdated.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["UserId"], "");
+    final updatedAt = nullableDateTimeFromDynamic(_input_["UpdatedAt"]);
+    return FooObjectWithPascalCaseKeysInternalEventUserUpdated(
+      userId: userId,
+      updatedAt: updatedAt,
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysInternalEventUserUpdated.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysInternalEventUserUpdated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "EventType": eventType,
+      "UserId": userId,
+    };
+    if (updatedAt != null)
+      _output_["UpdatedAt"] = updatedAt!.toUtc().toIso8601String();
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("EventType=$eventType");
+    _queryParts_.add("UserId=$userId");
+    if (updatedAt != null)
+      _queryParts_.add("UpdatedAt=${updatedAt!.toUtc().toIso8601String()}");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithPascalCaseKeysInternalEventUserUpdated copyWith({
+    String? userId,
+    DateTime? Function()? updatedAt,
+  }) {
+    return FooObjectWithPascalCaseKeysInternalEventUserUpdated(
+      userId: userId ?? this.userId,
+      updatedAt: updatedAt != null ? updatedAt() : this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+        updatedAt,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithPascalCaseKeysInternalEventUserUpdated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithPascalCaseKeysInternalEventUserUpdated ${toJsonString()}";
+  }
+}
+
+sealed class FooObjectWithPascalCaseKeysAdjacentEvent implements ArriModel {
+  String get eventType;
+  const FooObjectWithPascalCaseKeysAdjacentEvent();
+
+  factory FooObjectWithPascalCaseKeysAdjacentEvent.empty() {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreated.empty();
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEvent.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventType = typeFromDynamic<String>(_input_["EventType"], "");
+    switch (eventType) {
+      case "UserCreated":
+        return FooObjectWithPascalCaseKeysAdjacentEventUserCreated.fromJson(
+            _input_);
+      case "UserUpdated":
+        return FooObjectWithPascalCaseKeysAdjacentEventUserUpdated.fromJson(
+            _input_);
+      default:
+        return FooObjectWithPascalCaseKeysAdjacentEvent.empty();
+    }
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEvent.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysAdjacentEvent.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooObjectWithPascalCaseKeysAdjacentEventUserCreated
+    implements FooObjectWithPascalCaseKeysAdjacentEvent {
+  final FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData eventData;
+  const FooObjectWithPascalCaseKeysAdjacentEventUserCreated({
+    required this.eventData,
+  });
+
+  @override
+  String get eventType => "UserCreated";
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserCreated.empty() {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreated(
+      eventData:
+          FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData.empty(),
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserCreated.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventData = _input_["EventData"] is Map<String, dynamic>
+        ? FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+            _input_["EventData"])
+        : FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData.empty();
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreated(
+      eventData: eventData,
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserCreated.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "EventType": eventType,
+      "EventData": eventData.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysAdjacentEventUserCreated.");
+    return "";
+  }
+
+  @override
+  FooObjectWithPascalCaseKeysAdjacentEventUserCreated copyWith({
+    FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData? eventData,
+  }) {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreated(
+      eventData: eventData ?? this.eventData,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        eventData,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithPascalCaseKeysAdjacentEventUserCreated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithPascalCaseKeysAdjacentEventUserCreated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithPascalCaseKeysAdjacentEventUserUpdated
+    implements FooObjectWithPascalCaseKeysAdjacentEvent {
+  final String eventData;
+  const FooObjectWithPascalCaseKeysAdjacentEventUserUpdated({
+    required this.eventData,
+  });
+
+  @override
+  String get eventType => "UserUpdated";
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserUpdated.empty() {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserUpdated(
+      eventData: "",
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserUpdated.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventData = typeFromDynamic<String>(_input_["EventData"], "");
+    return FooObjectWithPascalCaseKeysAdjacentEventUserUpdated(
+      eventData: eventData,
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserUpdated.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserUpdated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "EventType": eventType,
+      "EventData": eventData,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithPascalCaseKeysAdjacentEventUserUpdated.");
+    return "";
+  }
+
+  @override
+  FooObjectWithPascalCaseKeysAdjacentEventUserUpdated copyWith({
+    String? eventData,
+  }) {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserUpdated(
+      eventData: eventData ?? this.eventData,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        eventData,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithPascalCaseKeysAdjacentEventUserUpdated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithPascalCaseKeysAdjacentEventUserUpdated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData
+    implements ArriModel {
+  final String userId;
+  const FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData({
+    required this.userId,
+  });
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData.empty() {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["UserId"], "");
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData(
+      userId: userId,
+    );
+  }
+
+  factory FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData.fromJsonString(
+      String input) {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData
+        .fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "UserId": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("UserId=$userId");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData copyWith({
+    String? userId,
+  }) {
+    return FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other
+            is FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData ${toJsonString()}";
   }
 }
 
@@ -6225,14 +7276,18 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
   final DateTime createdAt;
   final String displayName;
   final String? phoneNumber;
-  final FooObjectWithSnakeCaseKeysLastEvent? lastEvent;
+  final FooObjectWithSnakeCaseKeysExternalEvent? externalEvent;
+  final FooObjectWithSnakeCaseKeysInternalEvent internalEvent;
+  final FooObjectWithSnakeCaseKeysAdjacentEvent adjacentEvent;
   final String? emailAddress;
   final bool? isAdmin;
   const FooObjectWithSnakeCaseKeys({
     required this.createdAt,
     required this.displayName,
     required this.phoneNumber,
-    required this.lastEvent,
+    required this.externalEvent,
+    required this.internalEvent,
+    required this.adjacentEvent,
     this.emailAddress,
     this.isAdmin,
   });
@@ -6242,7 +7297,9 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
       createdAt: DateTime(0),
       displayName: "",
       phoneNumber: null,
-      lastEvent: null,
+      externalEvent: null,
+      internalEvent: FooObjectWithSnakeCaseKeysInternalEvent.empty(),
+      adjacentEvent: FooObjectWithSnakeCaseKeysAdjacentEvent.empty(),
     );
   }
 
@@ -6251,9 +7308,18 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
     final displayName = typeFromDynamic<String>(_input_["display_name"], "");
     final phoneNumber =
         nullableTypeFromDynamic<String>(_input_["phone_number"]);
-    final lastEvent = _input_["last_event"] is Map<String, dynamic>
-        ? FooObjectWithSnakeCaseKeysLastEvent.fromJson(_input_["last_event"])
+    final externalEvent = _input_["external_event"] is Map<String, dynamic>
+        ? FooObjectWithSnakeCaseKeysExternalEvent.fromJson(
+            _input_["external_event"])
         : null;
+    final internalEvent = _input_["internal_event"] is Map<String, dynamic>
+        ? FooObjectWithSnakeCaseKeysInternalEvent.fromJson(
+            _input_["internal_event"])
+        : FooObjectWithSnakeCaseKeysInternalEvent.empty();
+    final adjacentEvent = _input_["adjacent_event"] is Map<String, dynamic>
+        ? FooObjectWithSnakeCaseKeysAdjacentEvent.fromJson(
+            _input_["adjacent_event"])
+        : FooObjectWithSnakeCaseKeysAdjacentEvent.empty();
     final emailAddress =
         nullableTypeFromDynamic<String>(_input_["email_address"]);
     final isAdmin = nullableTypeFromDynamic<bool>(_input_["is_admin"]);
@@ -6261,7 +7327,9 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
       createdAt: createdAt,
       displayName: displayName,
       phoneNumber: phoneNumber,
-      lastEvent: lastEvent,
+      externalEvent: externalEvent,
+      internalEvent: internalEvent,
+      adjacentEvent: adjacentEvent,
       emailAddress: emailAddress,
       isAdmin: isAdmin,
     );
@@ -6277,7 +7345,9 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
       "created_at": createdAt.toUtc().toIso8601String(),
       "display_name": displayName,
       "phone_number": phoneNumber,
-      "last_event": lastEvent?.toJson(),
+      "external_event": externalEvent?.toJson(),
+      "internal_event": internalEvent.toJson(),
+      "adjacent_event": adjacentEvent.toJson(),
     };
     if (emailAddress != null) _output_["email_address"] = emailAddress;
     if (isAdmin != null) _output_["is_admin"] = isAdmin;
@@ -6296,7 +7366,11 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
     _queryParts_.add("display_name=$displayName");
     _queryParts_.add("phone_number=$phoneNumber");
     print(
-        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.");
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.");
     if (emailAddress != null) _queryParts_.add("email_address=$emailAddress");
     if (isAdmin != null) _queryParts_.add("is_admin=$isAdmin");
     return _queryParts_.join("&");
@@ -6307,7 +7381,9 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
     DateTime? createdAt,
     String? displayName,
     String? Function()? phoneNumber,
-    FooObjectWithSnakeCaseKeysLastEvent? Function()? lastEvent,
+    FooObjectWithSnakeCaseKeysExternalEvent? Function()? externalEvent,
+    FooObjectWithSnakeCaseKeysInternalEvent? internalEvent,
+    FooObjectWithSnakeCaseKeysAdjacentEvent? adjacentEvent,
     String? Function()? emailAddress,
     bool? Function()? isAdmin,
   }) {
@@ -6315,7 +7391,10 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
       createdAt: createdAt ?? this.createdAt,
       displayName: displayName ?? this.displayName,
       phoneNumber: phoneNumber != null ? phoneNumber() : this.phoneNumber,
-      lastEvent: lastEvent != null ? lastEvent() : this.lastEvent,
+      externalEvent:
+          externalEvent != null ? externalEvent() : this.externalEvent,
+      internalEvent: internalEvent ?? this.internalEvent,
+      adjacentEvent: adjacentEvent ?? this.adjacentEvent,
       emailAddress: emailAddress != null ? emailAddress() : this.emailAddress,
       isAdmin: isAdmin != null ? isAdmin() : this.isAdmin,
     );
@@ -6326,7 +7405,9 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
         createdAt,
         displayName,
         phoneNumber,
-        lastEvent,
+        externalEvent,
+        internalEvent,
+        adjacentEvent,
         emailAddress,
         isAdmin,
       ];
@@ -6346,59 +7427,62 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
   }
 }
 
-sealed class FooObjectWithSnakeCaseKeysLastEvent implements ArriModel {
-  const FooObjectWithSnakeCaseKeysLastEvent();
+sealed class FooObjectWithSnakeCaseKeysExternalEvent implements ArriModel {
+  const FooObjectWithSnakeCaseKeysExternalEvent();
 
-  factory FooObjectWithSnakeCaseKeysLastEvent.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreated.empty();
+  factory FooObjectWithSnakeCaseKeysExternalEvent.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreated.empty();
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEvent.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEvent.fromJson(
       Map<String, dynamic> _input_) {
     if (_input_.containsKey("user_created")) {
-      return FooObjectWithSnakeCaseKeysLastEventUserCreated.fromJson(_input_);
+      return FooObjectWithSnakeCaseKeysExternalEventUserCreated.fromJson(
+          _input_);
     }
     if (_input_.containsKey("user_updated")) {
-      return FooObjectWithSnakeCaseKeysLastEventUserUpdated.fromJson(_input_);
+      return FooObjectWithSnakeCaseKeysExternalEventUserUpdated.fromJson(
+          _input_);
     }
     if (_input_.containsKey("user_deleted")) {
-      return FooObjectWithSnakeCaseKeysLastEventUserDeleted.fromJson(_input_);
+      return FooObjectWithSnakeCaseKeysExternalEventUserDeleted.fromJson(
+          _input_);
     }
-    return FooObjectWithSnakeCaseKeysLastEvent.empty();
+    return FooObjectWithSnakeCaseKeysExternalEvent.empty();
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEvent.fromJsonString(String input) {
-    return FooObjectWithSnakeCaseKeysLastEvent.fromJson(json.decode(input));
+  factory FooObjectWithSnakeCaseKeysExternalEvent.fromJsonString(String input) {
+    return FooObjectWithSnakeCaseKeysExternalEvent.fromJson(json.decode(input));
   }
 }
 
-class FooObjectWithSnakeCaseKeysLastEventUserCreated
-    implements FooObjectWithSnakeCaseKeysLastEvent {
-  final FooObjectWithSnakeCaseKeysLastEventUserCreatedValue value;
-  const FooObjectWithSnakeCaseKeysLastEventUserCreated({
+class FooObjectWithSnakeCaseKeysExternalEventUserCreated
+    implements FooObjectWithSnakeCaseKeysExternalEvent {
+  final FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue value;
+  const FooObjectWithSnakeCaseKeysExternalEventUserCreated({
     required this.value,
   });
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserCreated.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreated(
-      value: FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.empty(),
+  factory FooObjectWithSnakeCaseKeysExternalEventUserCreated.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreated(
+      value: FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.empty(),
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserCreated.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserCreated.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["user_created"] is Map<String, dynamic>
-        ? FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJson(
+        ? FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.fromJson(
             _input_["user_created"])
-        : FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.empty();
-    return FooObjectWithSnakeCaseKeysLastEventUserCreated(
+        : FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.empty();
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreated(
       value: value,
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserCreated.fromJsonString(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserCreated.fromJsonString(
       String input) {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreated.fromJson(
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreated.fromJson(
         json.decode(input));
   }
 
@@ -6418,15 +7502,15 @@ class FooObjectWithSnakeCaseKeysLastEventUserCreated
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysLastEventUserCreated.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysExternalEventUserCreated.");
     return "";
   }
 
   @override
-  FooObjectWithSnakeCaseKeysLastEventUserCreated copyWith({
-    FooObjectWithSnakeCaseKeysLastEventUserCreatedValue? value,
+  FooObjectWithSnakeCaseKeysExternalEventUserCreated copyWith({
+    FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue? value,
   }) {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreated(
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreated(
       value: value ?? this.value,
     );
   }
@@ -6438,7 +7522,7 @@ class FooObjectWithSnakeCaseKeysLastEventUserCreated
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithSnakeCaseKeysLastEventUserCreated &&
+    return other is FooObjectWithSnakeCaseKeysExternalEventUserCreated &&
         listsAreEqual(props, other.props);
   }
 
@@ -6447,37 +7531,37 @@ class FooObjectWithSnakeCaseKeysLastEventUserCreated
 
   @override
   String toString() {
-    return "FooObjectWithSnakeCaseKeysLastEventUserCreated ${toJsonString()}";
+    return "FooObjectWithSnakeCaseKeysExternalEventUserCreated ${toJsonString()}";
   }
 }
 
-class FooObjectWithSnakeCaseKeysLastEventUserUpdated
-    implements FooObjectWithSnakeCaseKeysLastEvent {
-  final FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue value;
-  const FooObjectWithSnakeCaseKeysLastEventUserUpdated({
+class FooObjectWithSnakeCaseKeysExternalEventUserUpdated
+    implements FooObjectWithSnakeCaseKeysExternalEvent {
+  final FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue value;
+  const FooObjectWithSnakeCaseKeysExternalEventUserUpdated({
     required this.value,
   });
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserUpdated.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdated(
-      value: FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.empty(),
+  factory FooObjectWithSnakeCaseKeysExternalEventUserUpdated.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdated(
+      value: FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.empty(),
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserUpdated.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserUpdated.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["user_updated"] is Map<String, dynamic>
-        ? FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJson(
+        ? FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.fromJson(
             _input_["user_updated"])
-        : FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.empty();
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdated(
+        : FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.empty();
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdated(
       value: value,
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserUpdated.fromJsonString(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserUpdated.fromJsonString(
       String input) {
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdated.fromJson(
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdated.fromJson(
         json.decode(input));
   }
 
@@ -6497,15 +7581,15 @@ class FooObjectWithSnakeCaseKeysLastEventUserUpdated
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysLastEventUserUpdated.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysExternalEventUserUpdated.");
     return "";
   }
 
   @override
-  FooObjectWithSnakeCaseKeysLastEventUserUpdated copyWith({
-    FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue? value,
+  FooObjectWithSnakeCaseKeysExternalEventUserUpdated copyWith({
+    FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue? value,
   }) {
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdated(
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdated(
       value: value ?? this.value,
     );
   }
@@ -6517,7 +7601,7 @@ class FooObjectWithSnakeCaseKeysLastEventUserUpdated
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithSnakeCaseKeysLastEventUserUpdated &&
+    return other is FooObjectWithSnakeCaseKeysExternalEventUserUpdated &&
         listsAreEqual(props, other.props);
   }
 
@@ -6526,37 +7610,37 @@ class FooObjectWithSnakeCaseKeysLastEventUserUpdated
 
   @override
   String toString() {
-    return "FooObjectWithSnakeCaseKeysLastEventUserUpdated ${toJsonString()}";
+    return "FooObjectWithSnakeCaseKeysExternalEventUserUpdated ${toJsonString()}";
   }
 }
 
-class FooObjectWithSnakeCaseKeysLastEventUserDeleted
-    implements FooObjectWithSnakeCaseKeysLastEvent {
-  final FooObjectWithSnakeCaseKeysLastEventUserDeletedValue value;
-  const FooObjectWithSnakeCaseKeysLastEventUserDeleted({
+class FooObjectWithSnakeCaseKeysExternalEventUserDeleted
+    implements FooObjectWithSnakeCaseKeysExternalEvent {
+  final FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue value;
+  const FooObjectWithSnakeCaseKeysExternalEventUserDeleted({
     required this.value,
   });
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserDeleted.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserDeleted(
-      value: FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.empty(),
+  factory FooObjectWithSnakeCaseKeysExternalEventUserDeleted.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeleted(
+      value: FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.empty(),
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserDeleted.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserDeleted.fromJson(
       Map<String, dynamic> _input_) {
     final value = _input_["user_deleted"] is Map<String, dynamic>
-        ? FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJson(
+        ? FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.fromJson(
             _input_["user_deleted"])
-        : FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.empty();
-    return FooObjectWithSnakeCaseKeysLastEventUserDeleted(
+        : FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.empty();
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeleted(
       value: value,
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserDeleted.fromJsonString(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserDeleted.fromJsonString(
       String input) {
-    return FooObjectWithSnakeCaseKeysLastEventUserDeleted.fromJson(
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeleted.fromJson(
         json.decode(input));
   }
 
@@ -6576,15 +7660,15 @@ class FooObjectWithSnakeCaseKeysLastEventUserDeleted
   @override
   String toUrlQueryParams() {
     print(
-        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysLastEventUserDeleted.");
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysExternalEventUserDeleted.");
     return "";
   }
 
   @override
-  FooObjectWithSnakeCaseKeysLastEventUserDeleted copyWith({
-    FooObjectWithSnakeCaseKeysLastEventUserDeletedValue? value,
+  FooObjectWithSnakeCaseKeysExternalEventUserDeleted copyWith({
+    FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue? value,
   }) {
-    return FooObjectWithSnakeCaseKeysLastEventUserDeleted(
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeleted(
       value: value ?? this.value,
     );
   }
@@ -6596,7 +7680,7 @@ class FooObjectWithSnakeCaseKeysLastEventUserDeleted
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithSnakeCaseKeysLastEventUserDeleted &&
+    return other is FooObjectWithSnakeCaseKeysExternalEventUserDeleted &&
         listsAreEqual(props, other.props);
   }
 
@@ -6605,33 +7689,34 @@ class FooObjectWithSnakeCaseKeysLastEventUserDeleted
 
   @override
   String toString() {
-    return "FooObjectWithSnakeCaseKeysLastEventUserDeleted ${toJsonString()}";
+    return "FooObjectWithSnakeCaseKeysExternalEventUserDeleted ${toJsonString()}";
   }
 }
 
-class FooObjectWithSnakeCaseKeysLastEventUserCreatedValue implements ArriModel {
+class FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue
+    implements ArriModel {
   final String userId;
-  const FooObjectWithSnakeCaseKeysLastEventUserCreatedValue({
+  const FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue({
     required this.userId,
   });
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user_id"], "");
-    return FooObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJsonString(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.fromJsonString(
       String input) {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJson(
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue.fromJson(
         json.decode(input));
   }
 
@@ -6657,10 +7742,10 @@ class FooObjectWithSnakeCaseKeysLastEventUserCreatedValue implements ArriModel {
   }
 
   @override
-  FooObjectWithSnakeCaseKeysLastEventUserCreatedValue copyWith({
+  FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+    return FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -6672,7 +7757,7 @@ class FooObjectWithSnakeCaseKeysLastEventUserCreatedValue implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithSnakeCaseKeysLastEventUserCreatedValue &&
+    return other is FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -6681,33 +7766,34 @@ class FooObjectWithSnakeCaseKeysLastEventUserCreatedValue implements ArriModel {
 
   @override
   String toString() {
-    return "FooObjectWithSnakeCaseKeysLastEventUserCreatedValue ${toJsonString()}";
+    return "FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue ${toJsonString()}";
   }
 }
 
-class FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue implements ArriModel {
+class FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue
+    implements ArriModel {
   final String userId;
-  const FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue({
+  const FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue({
     required this.userId,
   });
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user_id"], "");
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJsonString(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.fromJsonString(
       String input) {
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJson(
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue.fromJson(
         json.decode(input));
   }
 
@@ -6733,10 +7819,10 @@ class FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue implements ArriModel {
   }
 
   @override
-  FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue copyWith({
+  FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+    return FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -6748,7 +7834,7 @@ class FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue &&
+    return other is FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -6757,33 +7843,34 @@ class FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue implements ArriModel {
 
   @override
   String toString() {
-    return "FooObjectWithSnakeCaseKeysLastEventUserUpdatedValue ${toJsonString()}";
+    return "FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue ${toJsonString()}";
   }
 }
 
-class FooObjectWithSnakeCaseKeysLastEventUserDeletedValue implements ArriModel {
+class FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue
+    implements ArriModel {
   final String userId;
-  const FooObjectWithSnakeCaseKeysLastEventUserDeletedValue({
+  const FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue({
     required this.userId,
   });
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.empty() {
-    return FooObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.empty() {
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue(
       userId: "",
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJson(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.fromJson(
       Map<String, dynamic> _input_) {
     final userId = typeFromDynamic<String>(_input_["user_id"], "");
-    return FooObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue(
       userId: userId,
     );
   }
 
-  factory FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJsonString(
+  factory FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.fromJsonString(
       String input) {
-    return FooObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJson(
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue.fromJson(
         json.decode(input));
   }
 
@@ -6809,10 +7896,10 @@ class FooObjectWithSnakeCaseKeysLastEventUserDeletedValue implements ArriModel {
   }
 
   @override
-  FooObjectWithSnakeCaseKeysLastEventUserDeletedValue copyWith({
+  FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue copyWith({
     String? userId,
   }) {
-    return FooObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+    return FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue(
       userId: userId ?? this.userId,
     );
   }
@@ -6824,7 +7911,7 @@ class FooObjectWithSnakeCaseKeysLastEventUserDeletedValue implements ArriModel {
 
   @override
   bool operator ==(Object other) {
-    return other is FooObjectWithSnakeCaseKeysLastEventUserDeletedValue &&
+    return other is FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue &&
         listsAreEqual(props, other.props);
   }
 
@@ -6833,7 +7920,479 @@ class FooObjectWithSnakeCaseKeysLastEventUserDeletedValue implements ArriModel {
 
   @override
   String toString() {
-    return "FooObjectWithSnakeCaseKeysLastEventUserDeletedValue ${toJsonString()}";
+    return "FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue ${toJsonString()}";
+  }
+}
+
+sealed class FooObjectWithSnakeCaseKeysInternalEvent implements ArriModel {
+  String get eventType;
+  const FooObjectWithSnakeCaseKeysInternalEvent();
+
+  factory FooObjectWithSnakeCaseKeysInternalEvent.empty() {
+    return FooObjectWithSnakeCaseKeysInternalEventUserCreated.empty();
+  }
+
+  factory FooObjectWithSnakeCaseKeysInternalEvent.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventType = typeFromDynamic<String>(_input_["event_type"], "");
+    switch (eventType) {
+      case "user_created":
+        return FooObjectWithSnakeCaseKeysInternalEventUserCreated.fromJson(
+            _input_);
+      case "user_updated":
+        return FooObjectWithSnakeCaseKeysInternalEventUserUpdated.fromJson(
+            _input_);
+      default:
+        return FooObjectWithSnakeCaseKeysInternalEvent.empty();
+    }
+  }
+
+  factory FooObjectWithSnakeCaseKeysInternalEvent.fromJsonString(String input) {
+    return FooObjectWithSnakeCaseKeysInternalEvent.fromJson(json.decode(input));
+  }
+}
+
+class FooObjectWithSnakeCaseKeysInternalEventUserCreated
+    implements FooObjectWithSnakeCaseKeysInternalEvent {
+  final String userId;
+  const FooObjectWithSnakeCaseKeysInternalEventUserCreated({
+    required this.userId,
+  });
+
+  @override
+  String get eventType => "user_created";
+
+  factory FooObjectWithSnakeCaseKeysInternalEventUserCreated.empty() {
+    return FooObjectWithSnakeCaseKeysInternalEventUserCreated(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysInternalEventUserCreated.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["user_id"], "");
+    return FooObjectWithSnakeCaseKeysInternalEventUserCreated(
+      userId: userId,
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysInternalEventUserCreated.fromJsonString(
+      String input) {
+    return FooObjectWithSnakeCaseKeysInternalEventUserCreated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event_type": eventType,
+      "user_id": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("event_type=$eventType");
+    _queryParts_.add("user_id=$userId");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithSnakeCaseKeysInternalEventUserCreated copyWith({
+    String? userId,
+  }) {
+    return FooObjectWithSnakeCaseKeysInternalEventUserCreated(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithSnakeCaseKeysInternalEventUserCreated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithSnakeCaseKeysInternalEventUserCreated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithSnakeCaseKeysInternalEventUserUpdated
+    implements FooObjectWithSnakeCaseKeysInternalEvent {
+  final String userId;
+  final DateTime? updatedAt;
+  const FooObjectWithSnakeCaseKeysInternalEventUserUpdated({
+    required this.userId,
+    this.updatedAt,
+  });
+
+  @override
+  String get eventType => "user_updated";
+
+  factory FooObjectWithSnakeCaseKeysInternalEventUserUpdated.empty() {
+    return FooObjectWithSnakeCaseKeysInternalEventUserUpdated(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysInternalEventUserUpdated.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["user_id"], "");
+    final updatedAt = nullableDateTimeFromDynamic(_input_["updated_at"]);
+    return FooObjectWithSnakeCaseKeysInternalEventUserUpdated(
+      userId: userId,
+      updatedAt: updatedAt,
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysInternalEventUserUpdated.fromJsonString(
+      String input) {
+    return FooObjectWithSnakeCaseKeysInternalEventUserUpdated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event_type": eventType,
+      "user_id": userId,
+    };
+    if (updatedAt != null)
+      _output_["updated_at"] = updatedAt!.toUtc().toIso8601String();
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("event_type=$eventType");
+    _queryParts_.add("user_id=$userId");
+    if (updatedAt != null)
+      _queryParts_.add("updated_at=${updatedAt!.toUtc().toIso8601String()}");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithSnakeCaseKeysInternalEventUserUpdated copyWith({
+    String? userId,
+    DateTime? Function()? updatedAt,
+  }) {
+    return FooObjectWithSnakeCaseKeysInternalEventUserUpdated(
+      userId: userId ?? this.userId,
+      updatedAt: updatedAt != null ? updatedAt() : this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+        updatedAt,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithSnakeCaseKeysInternalEventUserUpdated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithSnakeCaseKeysInternalEventUserUpdated ${toJsonString()}";
+  }
+}
+
+sealed class FooObjectWithSnakeCaseKeysAdjacentEvent implements ArriModel {
+  String get eventType;
+  const FooObjectWithSnakeCaseKeysAdjacentEvent();
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEvent.empty() {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.empty();
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEvent.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventType = typeFromDynamic<String>(_input_["event_type"], "");
+    switch (eventType) {
+      case "user_created":
+        return FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.fromJson(
+            _input_);
+      case "user_updated":
+        return FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated.fromJson(
+            _input_);
+      default:
+        return FooObjectWithSnakeCaseKeysAdjacentEvent.empty();
+    }
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEvent.fromJsonString(String input) {
+    return FooObjectWithSnakeCaseKeysAdjacentEvent.fromJson(json.decode(input));
+  }
+}
+
+class FooObjectWithSnakeCaseKeysAdjacentEventUserCreated
+    implements FooObjectWithSnakeCaseKeysAdjacentEvent {
+  final FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData eventData;
+  const FooObjectWithSnakeCaseKeysAdjacentEventUserCreated({
+    required this.eventData,
+  });
+
+  @override
+  String get eventType => "user_created";
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.empty() {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreated(
+      eventData:
+          FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.empty(),
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventData = _input_["event_data"] is Map<String, dynamic>
+        ? FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+            _input_["event_data"])
+        : FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.empty();
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreated(
+      eventData: eventData,
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.fromJsonString(
+      String input) {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event_type": eventType,
+      "event_data": eventData.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysAdjacentEventUserCreated.");
+    return "";
+  }
+
+  @override
+  FooObjectWithSnakeCaseKeysAdjacentEventUserCreated copyWith({
+    FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData? eventData,
+  }) {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreated(
+      eventData: eventData ?? this.eventData,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        eventData,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithSnakeCaseKeysAdjacentEventUserCreated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithSnakeCaseKeysAdjacentEventUserCreated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated
+    implements FooObjectWithSnakeCaseKeysAdjacentEvent {
+  final String eventData;
+  const FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated({
+    required this.eventData,
+  });
+
+  @override
+  String get eventType => "user_updated";
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated.empty() {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated(
+      eventData: "",
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated.fromJson(
+      Map<String, dynamic> _input_) {
+    final eventData = typeFromDynamic<String>(_input_["event_data"], "");
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated(
+      eventData: eventData,
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated.fromJsonString(
+      String input) {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "event_type": eventType,
+      "event_data": eventData,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated.");
+    return "";
+  }
+
+  @override
+  FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated copyWith({
+    String? eventData,
+  }) {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated(
+      eventData: eventData ?? this.eventData,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        eventData,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithSnakeCaseKeysAdjacentEventUserUpdated ${toJsonString()}";
+  }
+}
+
+class FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData
+    implements ArriModel {
+  final String userId;
+  const FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData({
+    required this.userId,
+  });
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.empty() {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData(
+      userId: "",
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+      Map<String, dynamic> _input_) {
+    final userId = typeFromDynamic<String>(_input_["user_id"], "");
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData(
+      userId: userId,
+    );
+  }
+
+  factory FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.fromJsonString(
+      String input) {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "user_id": userId,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("user_id=$userId");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData copyWith({
+    String? userId,
+  }) {
+    return FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData(
+      userId: userId ?? this.userId,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        userId,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other
+            is FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData ${toJsonString()}";
   }
 }
 
@@ -10435,6 +11994,5289 @@ class FooUnionInternalGetRequestEmpty implements FooUnionInternalGetRequest {
   @override
   String toString() {
     return "FooUnionInternalGetRequestEmpty ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapes implements ArriModel {
+  final FooUnionVariantShapesInternal internal;
+  final FooUnionVariantShapesExternal external;
+  final FooUnionVariantShapesAdjacent adjacent;
+  const FooUnionVariantShapes({
+    required this.internal,
+    required this.external,
+    required this.adjacent,
+  });
+
+  factory FooUnionVariantShapes.empty() {
+    return FooUnionVariantShapes(
+      internal: FooUnionVariantShapesInternal.empty(),
+      external: FooUnionVariantShapesExternal.empty(),
+      adjacent: FooUnionVariantShapesAdjacent.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapes.fromJson(Map<String, dynamic> _input_) {
+    final internal = _input_["internal"] is Map<String, dynamic>
+        ? FooUnionVariantShapesInternal.fromJson(_input_["internal"])
+        : FooUnionVariantShapesInternal.empty();
+    final external = _input_["external"] is Map<String, dynamic>
+        ? FooUnionVariantShapesExternal.fromJson(_input_["external"])
+        : FooUnionVariantShapesExternal.empty();
+    final adjacent = _input_["adjacent"] is Map<String, dynamic>
+        ? FooUnionVariantShapesAdjacent.fromJson(_input_["adjacent"])
+        : FooUnionVariantShapesAdjacent.empty();
+    return FooUnionVariantShapes(
+      internal: internal,
+      external: external,
+      adjacent: adjacent,
+    );
+  }
+
+  factory FooUnionVariantShapes.fromJsonString(String input) {
+    return FooUnionVariantShapes.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "internal": internal.toJson(),
+      "external": external.toJson(),
+      "adjacent": adjacent.toJson(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/external.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/adjacent.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapes copyWith({
+    FooUnionVariantShapesInternal? internal,
+    FooUnionVariantShapesExternal? external,
+    FooUnionVariantShapesAdjacent? adjacent,
+  }) {
+    return FooUnionVariantShapes(
+      internal: internal ?? this.internal,
+      external: external ?? this.external,
+      adjacent: adjacent ?? this.adjacent,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        internal,
+        external,
+        adjacent,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapes && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapes ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantShapesInternal implements ArriModel {
+  String get kind;
+  const FooUnionVariantShapesInternal();
+
+  factory FooUnionVariantShapesInternal.empty() {
+    return FooUnionVariantShapesInternalEmpty.empty();
+  }
+
+  factory FooUnionVariantShapesInternal.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "empty":
+        return FooUnionVariantShapesInternalEmpty.fromJson(_input_);
+      case "all-optional":
+        return FooUnionVariantShapesInternalAllOptional.fromJson(_input_);
+      case "mixed":
+        return FooUnionVariantShapesInternalMixed.fromJson(_input_);
+      case "nested":
+        return FooUnionVariantShapesInternalNested.fromJson(_input_);
+      default:
+        return FooUnionVariantShapesInternal.empty();
+    }
+  }
+
+  factory FooUnionVariantShapesInternal.fromJsonString(String input) {
+    return FooUnionVariantShapesInternal.fromJson(json.decode(input));
+  }
+}
+
+class FooUnionVariantShapesInternalEmpty
+    implements FooUnionVariantShapesInternal {
+  const FooUnionVariantShapesInternalEmpty();
+
+  @override
+  String get kind => "empty";
+
+  factory FooUnionVariantShapesInternalEmpty.empty() {
+    return FooUnionVariantShapesInternalEmpty();
+  }
+
+  factory FooUnionVariantShapesInternalEmpty.fromJson(
+      Map<String, dynamic> _input_) {
+    return FooUnionVariantShapesInternalEmpty();
+  }
+
+  factory FooUnionVariantShapesInternalEmpty.fromJsonString(String input) {
+    return FooUnionVariantShapesInternalEmpty.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesInternalEmpty copyWith() {
+    return FooUnionVariantShapesInternalEmpty();
+  }
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesInternalEmpty &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesInternalEmpty ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesInternalAllOptional
+    implements FooUnionVariantShapesInternal {
+  final String? first;
+  final int? second;
+  const FooUnionVariantShapesInternalAllOptional({
+    this.first,
+    this.second,
+  });
+
+  @override
+  String get kind => "all-optional";
+
+  factory FooUnionVariantShapesInternalAllOptional.empty() {
+    return FooUnionVariantShapesInternalAllOptional();
+  }
+
+  factory FooUnionVariantShapesInternalAllOptional.fromJson(
+      Map<String, dynamic> _input_) {
+    final first = nullableTypeFromDynamic<String>(_input_["first"]);
+    final second = nullableIntFromDynamic(_input_["second"]);
+    return FooUnionVariantShapesInternalAllOptional(
+      first: first,
+      second: second,
+    );
+  }
+
+  factory FooUnionVariantShapesInternalAllOptional.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesInternalAllOptional.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+    };
+    if (first != null) _output_["first"] = first;
+    if (second != null) _output_["second"] = second;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    if (first != null) _queryParts_.add("first=$first");
+    if (second != null) _queryParts_.add("second=$second");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesInternalAllOptional copyWith({
+    String? Function()? first,
+    int? Function()? second,
+  }) {
+    return FooUnionVariantShapesInternalAllOptional(
+      first: first != null ? first() : this.first,
+      second: second != null ? second() : this.second,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        first,
+        second,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesInternalAllOptional &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesInternalAllOptional ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesInternalMixed
+    implements FooUnionVariantShapesInternal {
+  final String required;
+  final String? nullable;
+  final String? optional;
+  const FooUnionVariantShapesInternalMixed({
+    required this.required,
+    required this.nullable,
+    this.optional,
+  });
+
+  @override
+  String get kind => "mixed";
+
+  factory FooUnionVariantShapesInternalMixed.empty() {
+    return FooUnionVariantShapesInternalMixed(
+      required: "",
+      nullable: null,
+    );
+  }
+
+  factory FooUnionVariantShapesInternalMixed.fromJson(
+      Map<String, dynamic> _input_) {
+    final required = typeFromDynamic<String>(_input_["required"], "");
+    final nullable = nullableTypeFromDynamic<String>(_input_["nullable"]);
+    final optional = nullableTypeFromDynamic<String>(_input_["optional"]);
+    return FooUnionVariantShapesInternalMixed(
+      required: required,
+      nullable: nullable,
+      optional: optional,
+    );
+  }
+
+  factory FooUnionVariantShapesInternalMixed.fromJsonString(String input) {
+    return FooUnionVariantShapesInternalMixed.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "required": required,
+      "nullable": nullable,
+    };
+    if (optional != null) _output_["optional"] = optional;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    _queryParts_.add("required=$required");
+    _queryParts_.add("nullable=$nullable");
+    if (optional != null) _queryParts_.add("optional=$optional");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesInternalMixed copyWith({
+    String? required,
+    String? Function()? nullable,
+    String? Function()? optional,
+  }) {
+    return FooUnionVariantShapesInternalMixed(
+      required: required ?? this.required,
+      nullable: nullable != null ? nullable() : this.nullable,
+      optional: optional != null ? optional() : this.optional,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        required,
+        nullable,
+        optional,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesInternalMixed &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesInternalMixed ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesInternalNested
+    implements FooUnionVariantShapesInternal {
+  final List<FooUnionVariantShapesInternalNestedArrayElement> array;
+  final Map<String, BigInt> record;
+  final FooUnionVariantShapesInternalNestedObject object;
+  const FooUnionVariantShapesInternalNested({
+    required this.array,
+    required this.record,
+    required this.object,
+  });
+
+  @override
+  String get kind => "nested";
+
+  factory FooUnionVariantShapesInternalNested.empty() {
+    return FooUnionVariantShapesInternalNested(
+      array: [],
+      record: {},
+      object: FooUnionVariantShapesInternalNestedObject.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesInternalNested.fromJson(
+      Map<String, dynamic> _input_) {
+    final array = _input_["array"] is List
+        ? (_input_["array"] as List)
+            .map((_el_) => _el_ is Map<String, dynamic>
+                ? FooUnionVariantShapesInternalNestedArrayElement.fromJson(_el_)
+                : FooUnionVariantShapesInternalNestedArrayElement.empty())
+            .toList()
+        : <FooUnionVariantShapesInternalNestedArrayElement>[];
+    final record = _input_["record"] is Map<String, dynamic>
+        ? (_input_["record"] as Map<String, dynamic>).map(
+            (_key_, _val_) => MapEntry(
+              _key_,
+              bigIntFromDynamic(_val_, BigInt.zero),
+            ),
+          )
+        : <String, BigInt>{};
+    final object = _input_["object"] is Map<String, dynamic>
+        ? FooUnionVariantShapesInternalNestedObject.fromJson(_input_["object"])
+        : FooUnionVariantShapesInternalNestedObject.empty();
+    return FooUnionVariantShapesInternalNested(
+      array: array,
+      record: record,
+      object: object,
+    );
+  }
+
+  factory FooUnionVariantShapesInternalNested.fromJsonString(String input) {
+    return FooUnionVariantShapesInternalNested.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "array": array.map((_el_) => _el_.toJson()).toList(),
+      "record": record.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_.toString(),
+        ),
+      ),
+      "object": object.toJson(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/array.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/record.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/object.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesInternalNested copyWith({
+    List<FooUnionVariantShapesInternalNestedArrayElement>? array,
+    Map<String, BigInt>? record,
+    FooUnionVariantShapesInternalNestedObject? object,
+  }) {
+    return FooUnionVariantShapesInternalNested(
+      array: array ?? this.array,
+      record: record ?? this.record,
+      object: object ?? this.object,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        array,
+        record,
+        object,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesInternalNested &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesInternalNested ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesInternalNestedArrayElement implements ArriModel {
+  final String id;
+  const FooUnionVariantShapesInternalNestedArrayElement({
+    required this.id,
+  });
+
+  factory FooUnionVariantShapesInternalNestedArrayElement.empty() {
+    return FooUnionVariantShapesInternalNestedArrayElement(
+      id: "",
+    );
+  }
+
+  factory FooUnionVariantShapesInternalNestedArrayElement.fromJson(
+      Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    return FooUnionVariantShapesInternalNestedArrayElement(
+      id: id,
+    );
+  }
+
+  factory FooUnionVariantShapesInternalNestedArrayElement.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesInternalNestedArrayElement.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "id": id,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("id=$id");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesInternalNestedArrayElement copyWith({
+    String? id,
+  }) {
+    return FooUnionVariantShapesInternalNestedArrayElement(
+      id: id ?? this.id,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesInternalNestedArrayElement &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesInternalNestedArrayElement ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesInternalNestedObject implements ArriModel {
+  final DateTime timestamp;
+  const FooUnionVariantShapesInternalNestedObject({
+    required this.timestamp,
+  });
+
+  factory FooUnionVariantShapesInternalNestedObject.empty() {
+    return FooUnionVariantShapesInternalNestedObject(
+      timestamp: DateTime(0),
+    );
+  }
+
+  factory FooUnionVariantShapesInternalNestedObject.fromJson(
+      Map<String, dynamic> _input_) {
+    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
+    return FooUnionVariantShapesInternalNestedObject(
+      timestamp: timestamp,
+    );
+  }
+
+  factory FooUnionVariantShapesInternalNestedObject.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesInternalNestedObject.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesInternalNestedObject copyWith({
+    DateTime? timestamp,
+  }) {
+    return FooUnionVariantShapesInternalNestedObject(
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        timestamp,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesInternalNestedObject &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesInternalNestedObject ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantShapesExternal implements ArriModel {
+  const FooUnionVariantShapesExternal();
+
+  factory FooUnionVariantShapesExternal.empty() {
+    return FooUnionVariantShapesExternalEmpty.empty();
+  }
+
+  factory FooUnionVariantShapesExternal.fromJson(Map<String, dynamic> _input_) {
+    if (_input_.containsKey("empty")) {
+      return FooUnionVariantShapesExternalEmpty.fromJson(_input_);
+    }
+    if (_input_.containsKey("all-optional")) {
+      return FooUnionVariantShapesExternalAllOptional.fromJson(_input_);
+    }
+    if (_input_.containsKey("mixed")) {
+      return FooUnionVariantShapesExternalMixed.fromJson(_input_);
+    }
+    return FooUnionVariantShapesExternal.empty();
+  }
+
+  factory FooUnionVariantShapesExternal.fromJsonString(String input) {
+    return FooUnionVariantShapesExternal.fromJson(json.decode(input));
+  }
+}
+
+class FooUnionVariantShapesExternalEmpty
+    implements FooUnionVariantShapesExternal {
+  final FooUnionVariantShapesExternalEmptyValue value;
+  const FooUnionVariantShapesExternalEmpty({
+    required this.value,
+  });
+
+  factory FooUnionVariantShapesExternalEmpty.empty() {
+    return FooUnionVariantShapesExternalEmpty(
+      value: FooUnionVariantShapesExternalEmptyValue.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesExternalEmpty.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["empty"] is Map<String, dynamic>
+        ? FooUnionVariantShapesExternalEmptyValue.fromJson(_input_["empty"])
+        : FooUnionVariantShapesExternalEmptyValue.empty();
+    return FooUnionVariantShapesExternalEmpty(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantShapesExternalEmpty.fromJsonString(String input) {
+    return FooUnionVariantShapesExternalEmpty.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "empty": value.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantShapesExternalEmpty.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantShapesExternalEmpty copyWith({
+    FooUnionVariantShapesExternalEmptyValue? value,
+  }) {
+    return FooUnionVariantShapesExternalEmpty(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesExternalEmpty &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesExternalEmpty ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesExternalAllOptional
+    implements FooUnionVariantShapesExternal {
+  final FooUnionVariantShapesExternalAllOptionalValue value;
+  const FooUnionVariantShapesExternalAllOptional({
+    required this.value,
+  });
+
+  factory FooUnionVariantShapesExternalAllOptional.empty() {
+    return FooUnionVariantShapesExternalAllOptional(
+      value: FooUnionVariantShapesExternalAllOptionalValue.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesExternalAllOptional.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["all-optional"] is Map<String, dynamic>
+        ? FooUnionVariantShapesExternalAllOptionalValue.fromJson(
+            _input_["all-optional"])
+        : FooUnionVariantShapesExternalAllOptionalValue.empty();
+    return FooUnionVariantShapesExternalAllOptional(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantShapesExternalAllOptional.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesExternalAllOptional.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "all-optional": value.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantShapesExternalAllOptional.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantShapesExternalAllOptional copyWith({
+    FooUnionVariantShapesExternalAllOptionalValue? value,
+  }) {
+    return FooUnionVariantShapesExternalAllOptional(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesExternalAllOptional &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesExternalAllOptional ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesExternalMixed
+    implements FooUnionVariantShapesExternal {
+  final FooUnionVariantShapesExternalMixedValue value;
+  const FooUnionVariantShapesExternalMixed({
+    required this.value,
+  });
+
+  factory FooUnionVariantShapesExternalMixed.empty() {
+    return FooUnionVariantShapesExternalMixed(
+      value: FooUnionVariantShapesExternalMixedValue.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesExternalMixed.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["mixed"] is Map<String, dynamic>
+        ? FooUnionVariantShapesExternalMixedValue.fromJson(_input_["mixed"])
+        : FooUnionVariantShapesExternalMixedValue.empty();
+    return FooUnionVariantShapesExternalMixed(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantShapesExternalMixed.fromJsonString(String input) {
+    return FooUnionVariantShapesExternalMixed.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "mixed": value.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantShapesExternalMixed.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantShapesExternalMixed copyWith({
+    FooUnionVariantShapesExternalMixedValue? value,
+  }) {
+    return FooUnionVariantShapesExternalMixed(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesExternalMixed &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesExternalMixed ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesExternalEmptyValue implements ArriModel {
+  const FooUnionVariantShapesExternalEmptyValue();
+
+  factory FooUnionVariantShapesExternalEmptyValue.empty() {
+    return FooUnionVariantShapesExternalEmptyValue();
+  }
+
+  factory FooUnionVariantShapesExternalEmptyValue.fromJson(
+      Map<String, dynamic> _input_) {
+    return FooUnionVariantShapesExternalEmptyValue();
+  }
+
+  factory FooUnionVariantShapesExternalEmptyValue.fromJsonString(String input) {
+    return FooUnionVariantShapesExternalEmptyValue.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{};
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesExternalEmptyValue copyWith() {
+    return FooUnionVariantShapesExternalEmptyValue();
+  }
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesExternalEmptyValue &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesExternalEmptyValue ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesExternalAllOptionalValue implements ArriModel {
+  final String? first;
+  final int? second;
+  const FooUnionVariantShapesExternalAllOptionalValue({
+    this.first,
+    this.second,
+  });
+
+  factory FooUnionVariantShapesExternalAllOptionalValue.empty() {
+    return FooUnionVariantShapesExternalAllOptionalValue();
+  }
+
+  factory FooUnionVariantShapesExternalAllOptionalValue.fromJson(
+      Map<String, dynamic> _input_) {
+    final first = nullableTypeFromDynamic<String>(_input_["first"]);
+    final second = nullableIntFromDynamic(_input_["second"]);
+    return FooUnionVariantShapesExternalAllOptionalValue(
+      first: first,
+      second: second,
+    );
+  }
+
+  factory FooUnionVariantShapesExternalAllOptionalValue.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesExternalAllOptionalValue.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{};
+    if (first != null) _output_["first"] = first;
+    if (second != null) _output_["second"] = second;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    if (first != null) _queryParts_.add("first=$first");
+    if (second != null) _queryParts_.add("second=$second");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesExternalAllOptionalValue copyWith({
+    String? Function()? first,
+    int? Function()? second,
+  }) {
+    return FooUnionVariantShapesExternalAllOptionalValue(
+      first: first != null ? first() : this.first,
+      second: second != null ? second() : this.second,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        first,
+        second,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesExternalAllOptionalValue &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesExternalAllOptionalValue ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesExternalMixedValue implements ArriModel {
+  final String required;
+  final String? nullable;
+  final String? optional;
+  const FooUnionVariantShapesExternalMixedValue({
+    required this.required,
+    required this.nullable,
+    this.optional,
+  });
+
+  factory FooUnionVariantShapesExternalMixedValue.empty() {
+    return FooUnionVariantShapesExternalMixedValue(
+      required: "",
+      nullable: null,
+    );
+  }
+
+  factory FooUnionVariantShapesExternalMixedValue.fromJson(
+      Map<String, dynamic> _input_) {
+    final required = typeFromDynamic<String>(_input_["required"], "");
+    final nullable = nullableTypeFromDynamic<String>(_input_["nullable"]);
+    final optional = nullableTypeFromDynamic<String>(_input_["optional"]);
+    return FooUnionVariantShapesExternalMixedValue(
+      required: required,
+      nullable: nullable,
+      optional: optional,
+    );
+  }
+
+  factory FooUnionVariantShapesExternalMixedValue.fromJsonString(String input) {
+    return FooUnionVariantShapesExternalMixedValue.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "required": required,
+      "nullable": nullable,
+    };
+    if (optional != null) _output_["optional"] = optional;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("required=$required");
+    _queryParts_.add("nullable=$nullable");
+    if (optional != null) _queryParts_.add("optional=$optional");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesExternalMixedValue copyWith({
+    String? required,
+    String? Function()? nullable,
+    String? Function()? optional,
+  }) {
+    return FooUnionVariantShapesExternalMixedValue(
+      required: required ?? this.required,
+      nullable: nullable != null ? nullable() : this.nullable,
+      optional: optional != null ? optional() : this.optional,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        required,
+        nullable,
+        optional,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesExternalMixedValue &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesExternalMixedValue ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantShapesAdjacent implements ArriModel {
+  String get kind;
+  const FooUnionVariantShapesAdjacent();
+
+  factory FooUnionVariantShapesAdjacent.empty() {
+    return FooUnionVariantShapesAdjacentEmpty.empty();
+  }
+
+  factory FooUnionVariantShapesAdjacent.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "empty":
+        return FooUnionVariantShapesAdjacentEmpty.fromJson(_input_);
+      case "all-optional":
+        return FooUnionVariantShapesAdjacentAllOptional.fromJson(_input_);
+      case "mixed":
+        return FooUnionVariantShapesAdjacentMixed.fromJson(_input_);
+      default:
+        return FooUnionVariantShapesAdjacent.empty();
+    }
+  }
+
+  factory FooUnionVariantShapesAdjacent.fromJsonString(String input) {
+    return FooUnionVariantShapesAdjacent.fromJson(json.decode(input));
+  }
+}
+
+class FooUnionVariantShapesAdjacentEmpty
+    implements FooUnionVariantShapesAdjacent {
+  final FooUnionVariantShapesAdjacentEmptyData data;
+  const FooUnionVariantShapesAdjacentEmpty({
+    required this.data,
+  });
+
+  @override
+  String get kind => "empty";
+
+  factory FooUnionVariantShapesAdjacentEmpty.empty() {
+    return FooUnionVariantShapesAdjacentEmpty(
+      data: FooUnionVariantShapesAdjacentEmptyData.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentEmpty.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? FooUnionVariantShapesAdjacentEmptyData.fromJson(_input_["data"])
+        : FooUnionVariantShapesAdjacentEmptyData.empty();
+    return FooUnionVariantShapesAdjacentEmpty(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentEmpty.fromJsonString(String input) {
+    return FooUnionVariantShapesAdjacentEmpty.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantShapesAdjacentEmpty.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantShapesAdjacentEmpty copyWith({
+    FooUnionVariantShapesAdjacentEmptyData? data,
+  }) {
+    return FooUnionVariantShapesAdjacentEmpty(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesAdjacentEmpty &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesAdjacentEmpty ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesAdjacentAllOptional
+    implements FooUnionVariantShapesAdjacent {
+  final FooUnionVariantShapesAdjacentAllOptionalData data;
+  const FooUnionVariantShapesAdjacentAllOptional({
+    required this.data,
+  });
+
+  @override
+  String get kind => "all-optional";
+
+  factory FooUnionVariantShapesAdjacentAllOptional.empty() {
+    return FooUnionVariantShapesAdjacentAllOptional(
+      data: FooUnionVariantShapesAdjacentAllOptionalData.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentAllOptional.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? FooUnionVariantShapesAdjacentAllOptionalData.fromJson(_input_["data"])
+        : FooUnionVariantShapesAdjacentAllOptionalData.empty();
+    return FooUnionVariantShapesAdjacentAllOptional(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentAllOptional.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesAdjacentAllOptional.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantShapesAdjacentAllOptional.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantShapesAdjacentAllOptional copyWith({
+    FooUnionVariantShapesAdjacentAllOptionalData? data,
+  }) {
+    return FooUnionVariantShapesAdjacentAllOptional(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesAdjacentAllOptional &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesAdjacentAllOptional ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesAdjacentMixed
+    implements FooUnionVariantShapesAdjacent {
+  final FooUnionVariantShapesAdjacentMixedData data;
+  const FooUnionVariantShapesAdjacentMixed({
+    required this.data,
+  });
+
+  @override
+  String get kind => "mixed";
+
+  factory FooUnionVariantShapesAdjacentMixed.empty() {
+    return FooUnionVariantShapesAdjacentMixed(
+      data: FooUnionVariantShapesAdjacentMixedData.empty(),
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentMixed.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? FooUnionVariantShapesAdjacentMixedData.fromJson(_input_["data"])
+        : FooUnionVariantShapesAdjacentMixedData.empty();
+    return FooUnionVariantShapesAdjacentMixed(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentMixed.fromJsonString(String input) {
+    return FooUnionVariantShapesAdjacentMixed.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantShapesAdjacentMixed.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantShapesAdjacentMixed copyWith({
+    FooUnionVariantShapesAdjacentMixedData? data,
+  }) {
+    return FooUnionVariantShapesAdjacentMixed(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesAdjacentMixed &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesAdjacentMixed ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesAdjacentEmptyData implements ArriModel {
+  const FooUnionVariantShapesAdjacentEmptyData();
+
+  factory FooUnionVariantShapesAdjacentEmptyData.empty() {
+    return FooUnionVariantShapesAdjacentEmptyData();
+  }
+
+  factory FooUnionVariantShapesAdjacentEmptyData.fromJson(
+      Map<String, dynamic> _input_) {
+    return FooUnionVariantShapesAdjacentEmptyData();
+  }
+
+  factory FooUnionVariantShapesAdjacentEmptyData.fromJsonString(String input) {
+    return FooUnionVariantShapesAdjacentEmptyData.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{};
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesAdjacentEmptyData copyWith() {
+    return FooUnionVariantShapesAdjacentEmptyData();
+  }
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesAdjacentEmptyData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesAdjacentEmptyData ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesAdjacentAllOptionalData implements ArriModel {
+  final String? first;
+  final int? second;
+  const FooUnionVariantShapesAdjacentAllOptionalData({
+    this.first,
+    this.second,
+  });
+
+  factory FooUnionVariantShapesAdjacentAllOptionalData.empty() {
+    return FooUnionVariantShapesAdjacentAllOptionalData();
+  }
+
+  factory FooUnionVariantShapesAdjacentAllOptionalData.fromJson(
+      Map<String, dynamic> _input_) {
+    final first = nullableTypeFromDynamic<String>(_input_["first"]);
+    final second = nullableIntFromDynamic(_input_["second"]);
+    return FooUnionVariantShapesAdjacentAllOptionalData(
+      first: first,
+      second: second,
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentAllOptionalData.fromJsonString(
+      String input) {
+    return FooUnionVariantShapesAdjacentAllOptionalData.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{};
+    if (first != null) _output_["first"] = first;
+    if (second != null) _output_["second"] = second;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    if (first != null) _queryParts_.add("first=$first");
+    if (second != null) _queryParts_.add("second=$second");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesAdjacentAllOptionalData copyWith({
+    String? Function()? first,
+    int? Function()? second,
+  }) {
+    return FooUnionVariantShapesAdjacentAllOptionalData(
+      first: first != null ? first() : this.first,
+      second: second != null ? second() : this.second,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        first,
+        second,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesAdjacentAllOptionalData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesAdjacentAllOptionalData ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantShapesAdjacentMixedData implements ArriModel {
+  final String required;
+  final String? nullable;
+  final String? optional;
+  const FooUnionVariantShapesAdjacentMixedData({
+    required this.required,
+    required this.nullable,
+    this.optional,
+  });
+
+  factory FooUnionVariantShapesAdjacentMixedData.empty() {
+    return FooUnionVariantShapesAdjacentMixedData(
+      required: "",
+      nullable: null,
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentMixedData.fromJson(
+      Map<String, dynamic> _input_) {
+    final required = typeFromDynamic<String>(_input_["required"], "");
+    final nullable = nullableTypeFromDynamic<String>(_input_["nullable"]);
+    final optional = nullableTypeFromDynamic<String>(_input_["optional"]);
+    return FooUnionVariantShapesAdjacentMixedData(
+      required: required,
+      nullable: nullable,
+      optional: optional,
+    );
+  }
+
+  factory FooUnionVariantShapesAdjacentMixedData.fromJsonString(String input) {
+    return FooUnionVariantShapesAdjacentMixedData.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "required": required,
+      "nullable": nullable,
+    };
+    if (optional != null) _output_["optional"] = optional;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("required=$required");
+    _queryParts_.add("nullable=$nullable");
+    if (optional != null) _queryParts_.add("optional=$optional");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantShapesAdjacentMixedData copyWith({
+    String? required,
+    String? Function()? nullable,
+    String? Function()? optional,
+  }) {
+    return FooUnionVariantShapesAdjacentMixedData(
+      required: required ?? this.required,
+      nullable: nullable != null ? nullable() : this.nullable,
+      optional: optional != null ? optional() : this.optional,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        required,
+        nullable,
+        optional,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantShapesAdjacentMixedData &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantShapesAdjacentMixedData ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypes implements ArriModel {
+  final FooUnionVariantTypesExternal external;
+  final FooUnionVariantTypesAdjacent adjacent;
+  final FooUnionVariantTypesInternal internal;
+  const FooUnionVariantTypes({
+    required this.external,
+    required this.adjacent,
+    required this.internal,
+  });
+
+  factory FooUnionVariantTypes.empty() {
+    return FooUnionVariantTypes(
+      external: FooUnionVariantTypesExternal.empty(),
+      adjacent: FooUnionVariantTypesAdjacent.empty(),
+      internal: FooUnionVariantTypesInternal.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypes.fromJson(Map<String, dynamic> _input_) {
+    final external = _input_["external"] is Map<String, dynamic>
+        ? FooUnionVariantTypesExternal.fromJson(_input_["external"])
+        : FooUnionVariantTypesExternal.empty();
+    final adjacent = _input_["adjacent"] is Map<String, dynamic>
+        ? FooUnionVariantTypesAdjacent.fromJson(_input_["adjacent"])
+        : FooUnionVariantTypesAdjacent.empty();
+    final internal = _input_["internal"] is Map<String, dynamic>
+        ? FooUnionVariantTypesInternal.fromJson(_input_["internal"])
+        : FooUnionVariantTypesInternal.empty();
+    return FooUnionVariantTypes(
+      external: external,
+      adjacent: adjacent,
+      internal: internal,
+    );
+  }
+
+  factory FooUnionVariantTypes.fromJsonString(String input) {
+    return FooUnionVariantTypes.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "external": external.toJson(),
+      "adjacent": adjacent.toJson(),
+      "internal": internal.toJson(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/external.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/adjacent.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantTypes copyWith({
+    FooUnionVariantTypesExternal? external,
+    FooUnionVariantTypesAdjacent? adjacent,
+    FooUnionVariantTypesInternal? internal,
+  }) {
+    return FooUnionVariantTypes(
+      external: external ?? this.external,
+      adjacent: adjacent ?? this.adjacent,
+      internal: internal ?? this.internal,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        external,
+        adjacent,
+        internal,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypes && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypes ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesExternal implements ArriModel {
+  const FooUnionVariantTypesExternal();
+
+  factory FooUnionVariantTypesExternal.empty() {
+    return FooUnionVariantTypesExternalString.empty();
+  }
+
+  factory FooUnionVariantTypesExternal.fromJson(Map<String, dynamic> _input_) {
+    if (_input_.containsKey("string")) {
+      return FooUnionVariantTypesExternalString.fromJson(_input_);
+    }
+    if (_input_.containsKey("int64")) {
+      return FooUnionVariantTypesExternalInt64.fromJson(_input_);
+    }
+    if (_input_.containsKey("uint64")) {
+      return FooUnionVariantTypesExternalUint64.fromJson(_input_);
+    }
+    if (_input_.containsKey("float64")) {
+      return FooUnionVariantTypesExternalFloat64.fromJson(_input_);
+    }
+    if (_input_.containsKey("enumerator")) {
+      return FooUnionVariantTypesExternalEnumerator.fromJson(_input_);
+    }
+    if (_input_.containsKey("record")) {
+      return FooUnionVariantTypesExternalRecord.fromJson(_input_);
+    }
+    if (_input_.containsKey("any")) {
+      return FooUnionVariantTypesExternalAny.fromJson(_input_);
+    }
+    if (_input_.containsKey("nullableString")) {
+      return FooUnionVariantTypesExternalNullableString.fromJson(_input_);
+    }
+    if (_input_.containsKey("nullableArray")) {
+      return FooUnionVariantTypesExternalNullableArray.fromJson(_input_);
+    }
+    if (_input_.containsKey("externalUnion")) {
+      return FooUnionVariantTypesExternalExternalUnion.fromJson(_input_);
+    }
+    if (_input_.containsKey("internalUnion")) {
+      return FooUnionVariantTypesExternalInternalUnion.fromJson(_input_);
+    }
+    if (_input_.containsKey("adjacentUnion")) {
+      return FooUnionVariantTypesExternalAdjacentUnion.fromJson(_input_);
+    }
+    if (_input_.containsKey("class")) {
+      return FooUnionVariantTypesExternalClass.fromJson(_input_);
+    }
+    if (_input_.containsKey("default")) {
+      return FooUnionVariantTypesExternalDefault.fromJson(_input_);
+    }
+    return FooUnionVariantTypesExternal.empty();
+  }
+
+  factory FooUnionVariantTypesExternal.fromJsonString(String input) {
+    return FooUnionVariantTypesExternal.fromJson(json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesExternalString
+    implements FooUnionVariantTypesExternal {
+  final String value;
+  const FooUnionVariantTypesExternalString({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalString.empty() {
+    return FooUnionVariantTypesExternalString(
+      value: "",
+    );
+  }
+
+  factory FooUnionVariantTypesExternalString.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<String>(_input_["string"], "");
+    return FooUnionVariantTypesExternalString(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalString.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalString.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "string": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalString.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalString copyWith({
+    String? value,
+  }) {
+    return FooUnionVariantTypesExternalString(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalString &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalString ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalInt64
+    implements FooUnionVariantTypesExternal {
+  final BigInt value;
+  const FooUnionVariantTypesExternalInt64({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalInt64.empty() {
+    return FooUnionVariantTypesExternalInt64(
+      value: BigInt.zero,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalInt64.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = bigIntFromDynamic(_input_["int64"], BigInt.zero);
+    return FooUnionVariantTypesExternalInt64(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalInt64.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalInt64.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "int64": value.toString(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalInt64.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalInt64 copyWith({
+    BigInt? value,
+  }) {
+    return FooUnionVariantTypesExternalInt64(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalInt64 &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalInt64 ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalUint64
+    implements FooUnionVariantTypesExternal {
+  final BigInt value;
+  const FooUnionVariantTypesExternalUint64({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalUint64.empty() {
+    return FooUnionVariantTypesExternalUint64(
+      value: BigInt.zero,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalUint64.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = bigIntFromDynamic(_input_["uint64"], BigInt.zero);
+    return FooUnionVariantTypesExternalUint64(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalUint64.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalUint64.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "uint64": value.toString(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalUint64.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalUint64 copyWith({
+    BigInt? value,
+  }) {
+    return FooUnionVariantTypesExternalUint64(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalUint64 &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalUint64 ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalFloat64
+    implements FooUnionVariantTypesExternal {
+  final double value;
+  const FooUnionVariantTypesExternalFloat64({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalFloat64.empty() {
+    return FooUnionVariantTypesExternalFloat64(
+      value: 0.0,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalFloat64.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = doubleFromDynamic(_input_["float64"], 0.0);
+    return FooUnionVariantTypesExternalFloat64(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalFloat64.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalFloat64.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "float64": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalFloat64.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalFloat64 copyWith({
+    double? value,
+  }) {
+    return FooUnionVariantTypesExternalFloat64(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalFloat64 &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalFloat64 ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalEnumerator
+    implements FooUnionVariantTypesExternal {
+  final FooUnionVariantTypesExternalEnumeratorValue value;
+  const FooUnionVariantTypesExternalEnumerator({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalEnumerator.empty() {
+    return FooUnionVariantTypesExternalEnumerator(
+      value: FooUnionVariantTypesExternalEnumeratorValue.a,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalEnumerator.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = FooUnionVariantTypesExternalEnumeratorValue.fromString(
+        typeFromDynamic<String>(_input_["enumerator"], ""));
+    return FooUnionVariantTypesExternalEnumerator(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalEnumerator.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalEnumerator.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "enumerator": value.serialValue,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalEnumerator.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalEnumerator copyWith({
+    FooUnionVariantTypesExternalEnumeratorValue? value,
+  }) {
+    return FooUnionVariantTypesExternalEnumerator(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalEnumerator &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalEnumerator ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalRecord
+    implements FooUnionVariantTypesExternal {
+  final Map<String, String> value;
+  const FooUnionVariantTypesExternalRecord({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalRecord.empty() {
+    return FooUnionVariantTypesExternalRecord(
+      value: {},
+    );
+  }
+
+  factory FooUnionVariantTypesExternalRecord.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["record"] is Map<String, dynamic>
+        ? (_input_["record"] as Map<String, dynamic>).map(
+            (_key_, _val_) => MapEntry(
+              _key_,
+              typeFromDynamic<String>(_val_, ""),
+            ),
+          )
+        : <String, String>{};
+    return FooUnionVariantTypesExternalRecord(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalRecord.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalRecord.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "record": value.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_,
+        ),
+      ),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalRecord.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalRecord copyWith({
+    Map<String, String>? value,
+  }) {
+    return FooUnionVariantTypesExternalRecord(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalRecord &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalRecord ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalAny implements FooUnionVariantTypesExternal {
+  final dynamic value;
+  const FooUnionVariantTypesExternalAny({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalAny.empty() {
+    return FooUnionVariantTypesExternalAny(
+      value: null,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalAny.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["any"];
+    return FooUnionVariantTypesExternalAny(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalAny.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalAny.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "any": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalAny.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalAny copyWith({
+    dynamic value,
+  }) {
+    return FooUnionVariantTypesExternalAny(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalAny &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalAny ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalNullableString
+    implements FooUnionVariantTypesExternal {
+  final String? value;
+  const FooUnionVariantTypesExternalNullableString({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalNullableString.empty() {
+    return FooUnionVariantTypesExternalNullableString(
+      value: null,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalNullableString.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = nullableTypeFromDynamic<String>(_input_["nullableString"]);
+    return FooUnionVariantTypesExternalNullableString(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalNullableString.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalNullableString.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "nullableString": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalNullableString.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalNullableString copyWith({
+    String? Function()? value,
+  }) {
+    return FooUnionVariantTypesExternalNullableString(
+      value: value != null ? value() : this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalNullableString &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalNullableString ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalNullableArray
+    implements FooUnionVariantTypesExternal {
+  final List<String>? value;
+  const FooUnionVariantTypesExternalNullableArray({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalNullableArray.empty() {
+    return FooUnionVariantTypesExternalNullableArray(
+      value: null,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalNullableArray.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["nullableArray"] is List
+        ? (_input_["nullableArray"] as List)
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
+        : null;
+    return FooUnionVariantTypesExternalNullableArray(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalNullableArray.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalNullableArray.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "nullableArray": value?.map((_el_) => _el_).toList(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalNullableArray.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalNullableArray copyWith({
+    List<String>? Function()? value,
+  }) {
+    return FooUnionVariantTypesExternalNullableArray(
+      value: value != null ? value() : this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalNullableArray &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalNullableArray ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalExternalUnion
+    implements FooUnionVariantTypesExternal {
+  final FooUnionVariantTypesExternalExternalUnionValue value;
+  const FooUnionVariantTypesExternalExternalUnion({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalExternalUnion.empty() {
+    return FooUnionVariantTypesExternalExternalUnion(
+      value: FooUnionVariantTypesExternalExternalUnionValue.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesExternalExternalUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["externalUnion"] is Map<String, dynamic>
+        ? FooUnionVariantTypesExternalExternalUnionValue.fromJson(
+            _input_["externalUnion"])
+        : FooUnionVariantTypesExternalExternalUnionValue.empty();
+    return FooUnionVariantTypesExternalExternalUnion(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalExternalUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalExternalUnion.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "externalUnion": value.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalExternalUnion.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalExternalUnion copyWith({
+    FooUnionVariantTypesExternalExternalUnionValue? value,
+  }) {
+    return FooUnionVariantTypesExternalExternalUnion(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalExternalUnion &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalExternalUnion ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalInternalUnion
+    implements FooUnionVariantTypesExternal {
+  final FooUnionVariantTypesExternalInternalUnionValue value;
+  const FooUnionVariantTypesExternalInternalUnion({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalInternalUnion.empty() {
+    return FooUnionVariantTypesExternalInternalUnion(
+      value: FooUnionVariantTypesExternalInternalUnionValue.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesExternalInternalUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["internalUnion"] is Map<String, dynamic>
+        ? FooUnionVariantTypesExternalInternalUnionValue.fromJson(
+            _input_["internalUnion"])
+        : FooUnionVariantTypesExternalInternalUnionValue.empty();
+    return FooUnionVariantTypesExternalInternalUnion(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalInternalUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalInternalUnion.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "internalUnion": value.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalInternalUnion.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalInternalUnion copyWith({
+    FooUnionVariantTypesExternalInternalUnionValue? value,
+  }) {
+    return FooUnionVariantTypesExternalInternalUnion(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalInternalUnion &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalInternalUnion ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalAdjacentUnion
+    implements FooUnionVariantTypesExternal {
+  final FooUnionVariantTypesExternalAdjacentUnionValue value;
+  const FooUnionVariantTypesExternalAdjacentUnion({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalAdjacentUnion.empty() {
+    return FooUnionVariantTypesExternalAdjacentUnion(
+      value: FooUnionVariantTypesExternalAdjacentUnionValue.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesExternalAdjacentUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = _input_["adjacentUnion"] is Map<String, dynamic>
+        ? FooUnionVariantTypesExternalAdjacentUnionValue.fromJson(
+            _input_["adjacentUnion"])
+        : FooUnionVariantTypesExternalAdjacentUnionValue.empty();
+    return FooUnionVariantTypesExternalAdjacentUnion(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalAdjacentUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalAdjacentUnion.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "adjacentUnion": value.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalAdjacentUnion.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalAdjacentUnion copyWith({
+    FooUnionVariantTypesExternalAdjacentUnionValue? value,
+  }) {
+    return FooUnionVariantTypesExternalAdjacentUnion(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalAdjacentUnion &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalAdjacentUnion ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalClass
+    implements FooUnionVariantTypesExternal {
+  final String value;
+  const FooUnionVariantTypesExternalClass({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalClass.empty() {
+    return FooUnionVariantTypesExternalClass(
+      value: "",
+    );
+  }
+
+  factory FooUnionVariantTypesExternalClass.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<String>(_input_["class"], "");
+    return FooUnionVariantTypesExternalClass(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalClass.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalClass.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "class": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalClass.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalClass copyWith({
+    String? value,
+  }) {
+    return FooUnionVariantTypesExternalClass(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalClass &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalClass ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesExternalDefault
+    implements FooUnionVariantTypesExternal {
+  final String value;
+  const FooUnionVariantTypesExternalDefault({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalDefault.empty() {
+    return FooUnionVariantTypesExternalDefault(
+      value: "",
+    );
+  }
+
+  factory FooUnionVariantTypesExternalDefault.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<String>(_input_["default"], "");
+    return FooUnionVariantTypesExternalDefault(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalDefault.fromJsonString(String input) {
+    return FooUnionVariantTypesExternalDefault.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "default": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalDefault.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalDefault copyWith({
+    String? value,
+  }) {
+    return FooUnionVariantTypesExternalDefault(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalDefault &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalDefault ${toJsonString()}";
+  }
+}
+
+enum FooUnionVariantTypesExternalEnumeratorValue
+    implements Comparable<FooUnionVariantTypesExternalEnumeratorValue> {
+  a("A"),
+  b("B");
+
+  const FooUnionVariantTypesExternalEnumeratorValue(this.serialValue);
+  final String serialValue;
+
+  factory FooUnionVariantTypesExternalEnumeratorValue.fromString(String input) {
+    for (final val in values) {
+      if (val.serialValue == input) {
+        return val;
+      }
+    }
+    return a;
+  }
+
+  @override
+  int compareTo(FooUnionVariantTypesExternalEnumeratorValue other) =>
+      name.compareTo(other.name);
+}
+
+sealed class FooUnionVariantTypesExternalExternalUnionValue
+    implements ArriModel {
+  const FooUnionVariantTypesExternalExternalUnionValue();
+
+  factory FooUnionVariantTypesExternalExternalUnionValue.empty() {
+    return FooUnionVariantTypesExternalExternalUnionValueText.empty();
+  }
+
+  factory FooUnionVariantTypesExternalExternalUnionValue.fromJson(
+      Map<String, dynamic> _input_) {
+    if (_input_.containsKey("text")) {
+      return FooUnionVariantTypesExternalExternalUnionValueText.fromJson(
+          _input_);
+    }
+    return FooUnionVariantTypesExternalExternalUnionValue.empty();
+  }
+
+  factory FooUnionVariantTypesExternalExternalUnionValue.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalExternalUnionValue.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesExternalExternalUnionValueText
+    implements FooUnionVariantTypesExternalExternalUnionValue {
+  final String value;
+  const FooUnionVariantTypesExternalExternalUnionValueText({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesExternalExternalUnionValueText.empty() {
+    return FooUnionVariantTypesExternalExternalUnionValueText(
+      value: "",
+    );
+  }
+
+  factory FooUnionVariantTypesExternalExternalUnionValueText.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<String>(_input_["text"], "");
+    return FooUnionVariantTypesExternalExternalUnionValueText(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalExternalUnionValueText.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalExternalUnionValueText.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "text": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalExternalUnionValueText.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalExternalUnionValueText copyWith({
+    String? value,
+  }) {
+    return FooUnionVariantTypesExternalExternalUnionValueText(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalExternalUnionValueText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalExternalUnionValueText ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesExternalInternalUnionValue
+    implements ArriModel {
+  String get shape;
+  const FooUnionVariantTypesExternalInternalUnionValue();
+
+  factory FooUnionVariantTypesExternalInternalUnionValue.empty() {
+    return FooUnionVariantTypesExternalInternalUnionValueCircle.empty();
+  }
+
+  factory FooUnionVariantTypesExternalInternalUnionValue.fromJson(
+      Map<String, dynamic> _input_) {
+    final shape = typeFromDynamic<String>(_input_["shape"], "");
+    switch (shape) {
+      case "circle":
+        return FooUnionVariantTypesExternalInternalUnionValueCircle.fromJson(
+            _input_);
+      default:
+        return FooUnionVariantTypesExternalInternalUnionValue.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesExternalInternalUnionValue.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalInternalUnionValue.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesExternalInternalUnionValueCircle
+    implements FooUnionVariantTypesExternalInternalUnionValue {
+  final double radius;
+  const FooUnionVariantTypesExternalInternalUnionValueCircle({
+    required this.radius,
+  });
+
+  @override
+  String get shape => "circle";
+
+  factory FooUnionVariantTypesExternalInternalUnionValueCircle.empty() {
+    return FooUnionVariantTypesExternalInternalUnionValueCircle(
+      radius: 0.0,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalInternalUnionValueCircle.fromJson(
+      Map<String, dynamic> _input_) {
+    final radius = doubleFromDynamic(_input_["radius"], 0.0);
+    return FooUnionVariantTypesExternalInternalUnionValueCircle(
+      radius: radius,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalInternalUnionValueCircle.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalInternalUnionValueCircle.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "radius": radius,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("shape=$shape");
+    _queryParts_.add("radius=$radius");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantTypesExternalInternalUnionValueCircle copyWith({
+    double? radius,
+  }) {
+    return FooUnionVariantTypesExternalInternalUnionValueCircle(
+      radius: radius ?? this.radius,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        radius,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalInternalUnionValueCircle &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalInternalUnionValueCircle ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesExternalAdjacentUnionValue
+    implements ArriModel {
+  String get kind;
+  const FooUnionVariantTypesExternalAdjacentUnionValue();
+
+  factory FooUnionVariantTypesExternalAdjacentUnionValue.empty() {
+    return FooUnionVariantTypesExternalAdjacentUnionValueText.empty();
+  }
+
+  factory FooUnionVariantTypesExternalAdjacentUnionValue.fromJson(
+      Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "text":
+        return FooUnionVariantTypesExternalAdjacentUnionValueText.fromJson(
+            _input_);
+      default:
+        return FooUnionVariantTypesExternalAdjacentUnionValue.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesExternalAdjacentUnionValue.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalAdjacentUnionValue.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesExternalAdjacentUnionValueText
+    implements FooUnionVariantTypesExternalAdjacentUnionValue {
+  final String data;
+  const FooUnionVariantTypesExternalAdjacentUnionValueText({
+    required this.data,
+  });
+
+  @override
+  String get kind => "text";
+
+  factory FooUnionVariantTypesExternalAdjacentUnionValueText.empty() {
+    return FooUnionVariantTypesExternalAdjacentUnionValueText(
+      data: "",
+    );
+  }
+
+  factory FooUnionVariantTypesExternalAdjacentUnionValueText.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return FooUnionVariantTypesExternalAdjacentUnionValueText(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesExternalAdjacentUnionValueText.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesExternalAdjacentUnionValueText.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesExternalAdjacentUnionValueText.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesExternalAdjacentUnionValueText copyWith({
+    String? data,
+  }) {
+    return FooUnionVariantTypesExternalAdjacentUnionValueText(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesExternalAdjacentUnionValueText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesExternalAdjacentUnionValueText ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesAdjacent implements ArriModel {
+  String get kind;
+  const FooUnionVariantTypesAdjacent();
+
+  factory FooUnionVariantTypesAdjacent.empty() {
+    return FooUnionVariantTypesAdjacentString.empty();
+  }
+
+  factory FooUnionVariantTypesAdjacent.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "string":
+        return FooUnionVariantTypesAdjacentString.fromJson(_input_);
+      case "int64":
+        return FooUnionVariantTypesAdjacentInt64.fromJson(_input_);
+      case "uint64":
+        return FooUnionVariantTypesAdjacentUint64.fromJson(_input_);
+      case "float64":
+        return FooUnionVariantTypesAdjacentFloat64.fromJson(_input_);
+      case "enumerator":
+        return FooUnionVariantTypesAdjacentEnumerator.fromJson(_input_);
+      case "record":
+        return FooUnionVariantTypesAdjacentRecord.fromJson(_input_);
+      case "any":
+        return FooUnionVariantTypesAdjacentAny.fromJson(_input_);
+      case "nullableString":
+        return FooUnionVariantTypesAdjacentNullableString.fromJson(_input_);
+      case "nullableArray":
+        return FooUnionVariantTypesAdjacentNullableArray.fromJson(_input_);
+      case "externalUnion":
+        return FooUnionVariantTypesAdjacentExternalUnion.fromJson(_input_);
+      case "internalUnion":
+        return FooUnionVariantTypesAdjacentInternalUnion.fromJson(_input_);
+      case "adjacentUnion":
+        return FooUnionVariantTypesAdjacentAdjacentUnion.fromJson(_input_);
+      case "class":
+        return FooUnionVariantTypesAdjacentClass.fromJson(_input_);
+      case "default":
+        return FooUnionVariantTypesAdjacentDefault.fromJson(_input_);
+      default:
+        return FooUnionVariantTypesAdjacent.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesAdjacent.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacent.fromJson(json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesAdjacentString
+    implements FooUnionVariantTypesAdjacent {
+  final String data;
+  const FooUnionVariantTypesAdjacentString({
+    required this.data,
+  });
+
+  @override
+  String get kind => "string";
+
+  factory FooUnionVariantTypesAdjacentString.empty() {
+    return FooUnionVariantTypesAdjacentString(
+      data: "",
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentString.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return FooUnionVariantTypesAdjacentString(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentString.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentString.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentString.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentString copyWith({
+    String? data,
+  }) {
+    return FooUnionVariantTypesAdjacentString(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentString &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentString ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentInt64
+    implements FooUnionVariantTypesAdjacent {
+  final BigInt data;
+  const FooUnionVariantTypesAdjacentInt64({
+    required this.data,
+  });
+
+  @override
+  String get kind => "int64";
+
+  factory FooUnionVariantTypesAdjacentInt64.empty() {
+    return FooUnionVariantTypesAdjacentInt64(
+      data: BigInt.zero,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentInt64.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = bigIntFromDynamic(_input_["data"], BigInt.zero);
+    return FooUnionVariantTypesAdjacentInt64(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentInt64.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentInt64.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toString(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentInt64.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentInt64 copyWith({
+    BigInt? data,
+  }) {
+    return FooUnionVariantTypesAdjacentInt64(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentInt64 &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentInt64 ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentUint64
+    implements FooUnionVariantTypesAdjacent {
+  final BigInt data;
+  const FooUnionVariantTypesAdjacentUint64({
+    required this.data,
+  });
+
+  @override
+  String get kind => "uint64";
+
+  factory FooUnionVariantTypesAdjacentUint64.empty() {
+    return FooUnionVariantTypesAdjacentUint64(
+      data: BigInt.zero,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentUint64.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = bigIntFromDynamic(_input_["data"], BigInt.zero);
+    return FooUnionVariantTypesAdjacentUint64(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentUint64.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentUint64.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toString(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentUint64.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentUint64 copyWith({
+    BigInt? data,
+  }) {
+    return FooUnionVariantTypesAdjacentUint64(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentUint64 &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentUint64 ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentFloat64
+    implements FooUnionVariantTypesAdjacent {
+  final double data;
+  const FooUnionVariantTypesAdjacentFloat64({
+    required this.data,
+  });
+
+  @override
+  String get kind => "float64";
+
+  factory FooUnionVariantTypesAdjacentFloat64.empty() {
+    return FooUnionVariantTypesAdjacentFloat64(
+      data: 0.0,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentFloat64.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = doubleFromDynamic(_input_["data"], 0.0);
+    return FooUnionVariantTypesAdjacentFloat64(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentFloat64.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentFloat64.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentFloat64.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentFloat64 copyWith({
+    double? data,
+  }) {
+    return FooUnionVariantTypesAdjacentFloat64(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentFloat64 &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentFloat64 ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentEnumerator
+    implements FooUnionVariantTypesAdjacent {
+  final FooUnionVariantTypesAdjacentEnumeratorData data;
+  const FooUnionVariantTypesAdjacentEnumerator({
+    required this.data,
+  });
+
+  @override
+  String get kind => "enumerator";
+
+  factory FooUnionVariantTypesAdjacentEnumerator.empty() {
+    return FooUnionVariantTypesAdjacentEnumerator(
+      data: FooUnionVariantTypesAdjacentEnumeratorData.a,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentEnumerator.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = FooUnionVariantTypesAdjacentEnumeratorData.fromString(
+        typeFromDynamic<String>(_input_["data"], ""));
+    return FooUnionVariantTypesAdjacentEnumerator(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentEnumerator.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentEnumerator.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.serialValue,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentEnumerator.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentEnumerator copyWith({
+    FooUnionVariantTypesAdjacentEnumeratorData? data,
+  }) {
+    return FooUnionVariantTypesAdjacentEnumerator(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentEnumerator &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentEnumerator ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentRecord
+    implements FooUnionVariantTypesAdjacent {
+  final Map<String, String> data;
+  const FooUnionVariantTypesAdjacentRecord({
+    required this.data,
+  });
+
+  @override
+  String get kind => "record";
+
+  factory FooUnionVariantTypesAdjacentRecord.empty() {
+    return FooUnionVariantTypesAdjacentRecord(
+      data: {},
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentRecord.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? (_input_["data"] as Map<String, dynamic>).map(
+            (_key_, _val_) => MapEntry(
+              _key_,
+              typeFromDynamic<String>(_val_, ""),
+            ),
+          )
+        : <String, String>{};
+    return FooUnionVariantTypesAdjacentRecord(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentRecord.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentRecord.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.map(
+        (_key_, _val_) => MapEntry(
+          _key_,
+          _val_,
+        ),
+      ),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentRecord.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentRecord copyWith({
+    Map<String, String>? data,
+  }) {
+    return FooUnionVariantTypesAdjacentRecord(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentRecord &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentRecord ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentAny implements FooUnionVariantTypesAdjacent {
+  final dynamic data;
+  const FooUnionVariantTypesAdjacentAny({
+    required this.data,
+  });
+
+  @override
+  String get kind => "any";
+
+  factory FooUnionVariantTypesAdjacentAny.empty() {
+    return FooUnionVariantTypesAdjacentAny(
+      data: null,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentAny.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"];
+    return FooUnionVariantTypesAdjacentAny(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentAny.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentAny.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentAny.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentAny copyWith({
+    dynamic data,
+  }) {
+    return FooUnionVariantTypesAdjacentAny(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentAny &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentAny ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentNullableString
+    implements FooUnionVariantTypesAdjacent {
+  final String? data;
+  const FooUnionVariantTypesAdjacentNullableString({
+    required this.data,
+  });
+
+  @override
+  String get kind => "nullableString";
+
+  factory FooUnionVariantTypesAdjacentNullableString.empty() {
+    return FooUnionVariantTypesAdjacentNullableString(
+      data: null,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentNullableString.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = nullableTypeFromDynamic<String>(_input_["data"]);
+    return FooUnionVariantTypesAdjacentNullableString(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentNullableString.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentNullableString.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentNullableString.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentNullableString copyWith({
+    String? Function()? data,
+  }) {
+    return FooUnionVariantTypesAdjacentNullableString(
+      data: data != null ? data() : this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentNullableString &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentNullableString ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentNullableArray
+    implements FooUnionVariantTypesAdjacent {
+  final List<String>? data;
+  const FooUnionVariantTypesAdjacentNullableArray({
+    required this.data,
+  });
+
+  @override
+  String get kind => "nullableArray";
+
+  factory FooUnionVariantTypesAdjacentNullableArray.empty() {
+    return FooUnionVariantTypesAdjacentNullableArray(
+      data: null,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentNullableArray.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is List
+        ? (_input_["data"] as List)
+            .map((_el_) => typeFromDynamic<String>(_el_, ""))
+            .toList()
+        : null;
+    return FooUnionVariantTypesAdjacentNullableArray(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentNullableArray.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentNullableArray.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data?.map((_el_) => _el_).toList(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentNullableArray.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentNullableArray copyWith({
+    List<String>? Function()? data,
+  }) {
+    return FooUnionVariantTypesAdjacentNullableArray(
+      data: data != null ? data() : this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentNullableArray &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentNullableArray ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentExternalUnion
+    implements FooUnionVariantTypesAdjacent {
+  final FooUnionVariantTypesAdjacentExternalUnionData data;
+  const FooUnionVariantTypesAdjacentExternalUnion({
+    required this.data,
+  });
+
+  @override
+  String get kind => "externalUnion";
+
+  factory FooUnionVariantTypesAdjacentExternalUnion.empty() {
+    return FooUnionVariantTypesAdjacentExternalUnion(
+      data: FooUnionVariantTypesAdjacentExternalUnionData.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentExternalUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? FooUnionVariantTypesAdjacentExternalUnionData.fromJson(
+            _input_["data"])
+        : FooUnionVariantTypesAdjacentExternalUnionData.empty();
+    return FooUnionVariantTypesAdjacentExternalUnion(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentExternalUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentExternalUnion.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentExternalUnion.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentExternalUnion copyWith({
+    FooUnionVariantTypesAdjacentExternalUnionData? data,
+  }) {
+    return FooUnionVariantTypesAdjacentExternalUnion(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentExternalUnion &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentExternalUnion ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentInternalUnion
+    implements FooUnionVariantTypesAdjacent {
+  final FooUnionVariantTypesAdjacentInternalUnionData data;
+  const FooUnionVariantTypesAdjacentInternalUnion({
+    required this.data,
+  });
+
+  @override
+  String get kind => "internalUnion";
+
+  factory FooUnionVariantTypesAdjacentInternalUnion.empty() {
+    return FooUnionVariantTypesAdjacentInternalUnion(
+      data: FooUnionVariantTypesAdjacentInternalUnionData.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentInternalUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? FooUnionVariantTypesAdjacentInternalUnionData.fromJson(
+            _input_["data"])
+        : FooUnionVariantTypesAdjacentInternalUnionData.empty();
+    return FooUnionVariantTypesAdjacentInternalUnion(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentInternalUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentInternalUnion.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentInternalUnion.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentInternalUnion copyWith({
+    FooUnionVariantTypesAdjacentInternalUnionData? data,
+  }) {
+    return FooUnionVariantTypesAdjacentInternalUnion(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentInternalUnion &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentInternalUnion ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentAdjacentUnion
+    implements FooUnionVariantTypesAdjacent {
+  final FooUnionVariantTypesAdjacentAdjacentUnionData data;
+  const FooUnionVariantTypesAdjacentAdjacentUnion({
+    required this.data,
+  });
+
+  @override
+  String get kind => "adjacentUnion";
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnion.empty() {
+    return FooUnionVariantTypesAdjacentAdjacentUnion(
+      data: FooUnionVariantTypesAdjacentAdjacentUnionData.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = _input_["data"] is Map<String, dynamic>
+        ? FooUnionVariantTypesAdjacentAdjacentUnionData.fromJson(
+            _input_["data"])
+        : FooUnionVariantTypesAdjacentAdjacentUnionData.empty();
+    return FooUnionVariantTypesAdjacentAdjacentUnion(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentAdjacentUnion.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data.toJson(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentAdjacentUnion.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentAdjacentUnion copyWith({
+    FooUnionVariantTypesAdjacentAdjacentUnionData? data,
+  }) {
+    return FooUnionVariantTypesAdjacentAdjacentUnion(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentAdjacentUnion &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentAdjacentUnion ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentClass
+    implements FooUnionVariantTypesAdjacent {
+  final String data;
+  const FooUnionVariantTypesAdjacentClass({
+    required this.data,
+  });
+
+  @override
+  String get kind => "class";
+
+  factory FooUnionVariantTypesAdjacentClass.empty() {
+    return FooUnionVariantTypesAdjacentClass(
+      data: "",
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentClass.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return FooUnionVariantTypesAdjacentClass(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentClass.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentClass.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentClass.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentClass copyWith({
+    String? data,
+  }) {
+    return FooUnionVariantTypesAdjacentClass(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentClass &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentClass ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesAdjacentDefault
+    implements FooUnionVariantTypesAdjacent {
+  final String data;
+  const FooUnionVariantTypesAdjacentDefault({
+    required this.data,
+  });
+
+  @override
+  String get kind => "default";
+
+  factory FooUnionVariantTypesAdjacentDefault.empty() {
+    return FooUnionVariantTypesAdjacentDefault(
+      data: "",
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentDefault.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return FooUnionVariantTypesAdjacentDefault(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentDefault.fromJsonString(String input) {
+    return FooUnionVariantTypesAdjacentDefault.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentDefault.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentDefault copyWith({
+    String? data,
+  }) {
+    return FooUnionVariantTypesAdjacentDefault(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentDefault &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentDefault ${toJsonString()}";
+  }
+}
+
+enum FooUnionVariantTypesAdjacentEnumeratorData
+    implements Comparable<FooUnionVariantTypesAdjacentEnumeratorData> {
+  a("A"),
+  b("B");
+
+  const FooUnionVariantTypesAdjacentEnumeratorData(this.serialValue);
+  final String serialValue;
+
+  factory FooUnionVariantTypesAdjacentEnumeratorData.fromString(String input) {
+    for (final val in values) {
+      if (val.serialValue == input) {
+        return val;
+      }
+    }
+    return a;
+  }
+
+  @override
+  int compareTo(FooUnionVariantTypesAdjacentEnumeratorData other) =>
+      name.compareTo(other.name);
+}
+
+sealed class FooUnionVariantTypesAdjacentExternalUnionData
+    implements ArriModel {
+  const FooUnionVariantTypesAdjacentExternalUnionData();
+
+  factory FooUnionVariantTypesAdjacentExternalUnionData.empty() {
+    return FooUnionVariantTypesAdjacentExternalUnionDataText.empty();
+  }
+
+  factory FooUnionVariantTypesAdjacentExternalUnionData.fromJson(
+      Map<String, dynamic> _input_) {
+    if (_input_.containsKey("text")) {
+      return FooUnionVariantTypesAdjacentExternalUnionDataText.fromJson(
+          _input_);
+    }
+    return FooUnionVariantTypesAdjacentExternalUnionData.empty();
+  }
+
+  factory FooUnionVariantTypesAdjacentExternalUnionData.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentExternalUnionData.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesAdjacentExternalUnionDataText
+    implements FooUnionVariantTypesAdjacentExternalUnionData {
+  final String value;
+  const FooUnionVariantTypesAdjacentExternalUnionDataText({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesAdjacentExternalUnionDataText.empty() {
+    return FooUnionVariantTypesAdjacentExternalUnionDataText(
+      value: "",
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentExternalUnionDataText.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<String>(_input_["text"], "");
+    return FooUnionVariantTypesAdjacentExternalUnionDataText(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentExternalUnionDataText.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentExternalUnionDataText.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "text": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentExternalUnionDataText.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentExternalUnionDataText copyWith({
+    String? value,
+  }) {
+    return FooUnionVariantTypesAdjacentExternalUnionDataText(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentExternalUnionDataText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentExternalUnionDataText ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesAdjacentInternalUnionData
+    implements ArriModel {
+  String get shape;
+  const FooUnionVariantTypesAdjacentInternalUnionData();
+
+  factory FooUnionVariantTypesAdjacentInternalUnionData.empty() {
+    return FooUnionVariantTypesAdjacentInternalUnionDataCircle.empty();
+  }
+
+  factory FooUnionVariantTypesAdjacentInternalUnionData.fromJson(
+      Map<String, dynamic> _input_) {
+    final shape = typeFromDynamic<String>(_input_["shape"], "");
+    switch (shape) {
+      case "circle":
+        return FooUnionVariantTypesAdjacentInternalUnionDataCircle.fromJson(
+            _input_);
+      default:
+        return FooUnionVariantTypesAdjacentInternalUnionData.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesAdjacentInternalUnionData.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentInternalUnionData.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesAdjacentInternalUnionDataCircle
+    implements FooUnionVariantTypesAdjacentInternalUnionData {
+  final double radius;
+  const FooUnionVariantTypesAdjacentInternalUnionDataCircle({
+    required this.radius,
+  });
+
+  @override
+  String get shape => "circle";
+
+  factory FooUnionVariantTypesAdjacentInternalUnionDataCircle.empty() {
+    return FooUnionVariantTypesAdjacentInternalUnionDataCircle(
+      radius: 0.0,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentInternalUnionDataCircle.fromJson(
+      Map<String, dynamic> _input_) {
+    final radius = doubleFromDynamic(_input_["radius"], 0.0);
+    return FooUnionVariantTypesAdjacentInternalUnionDataCircle(
+      radius: radius,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentInternalUnionDataCircle.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentInternalUnionDataCircle.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "radius": radius,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("shape=$shape");
+    _queryParts_.add("radius=$radius");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentInternalUnionDataCircle copyWith({
+    double? radius,
+  }) {
+    return FooUnionVariantTypesAdjacentInternalUnionDataCircle(
+      radius: radius ?? this.radius,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        radius,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentInternalUnionDataCircle &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentInternalUnionDataCircle ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesAdjacentAdjacentUnionData
+    implements ArriModel {
+  String get kind;
+  const FooUnionVariantTypesAdjacentAdjacentUnionData();
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnionData.empty() {
+    return FooUnionVariantTypesAdjacentAdjacentUnionDataText.empty();
+  }
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnionData.fromJson(
+      Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "text":
+        return FooUnionVariantTypesAdjacentAdjacentUnionDataText.fromJson(
+            _input_);
+      default:
+        return FooUnionVariantTypesAdjacentAdjacentUnionData.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnionData.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentAdjacentUnionData.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesAdjacentAdjacentUnionDataText
+    implements FooUnionVariantTypesAdjacentAdjacentUnionData {
+  final String data;
+  const FooUnionVariantTypesAdjacentAdjacentUnionDataText({
+    required this.data,
+  });
+
+  @override
+  String get kind => "text";
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnionDataText.empty() {
+    return FooUnionVariantTypesAdjacentAdjacentUnionDataText(
+      data: "",
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnionDataText.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return FooUnionVariantTypesAdjacentAdjacentUnionDataText(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesAdjacentAdjacentUnionDataText.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesAdjacentAdjacentUnionDataText.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesAdjacentAdjacentUnionDataText.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesAdjacentAdjacentUnionDataText copyWith({
+    String? data,
+  }) {
+    return FooUnionVariantTypesAdjacentAdjacentUnionDataText(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesAdjacentAdjacentUnionDataText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesAdjacentAdjacentUnionDataText ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesInternal implements ArriModel {
+  String get kind;
+  const FooUnionVariantTypesInternal();
+
+  factory FooUnionVariantTypesInternal.empty() {
+    return FooUnionVariantTypesInternalClass.empty();
+  }
+
+  factory FooUnionVariantTypesInternal.fromJson(Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "class":
+        return FooUnionVariantTypesInternalClass.fromJson(_input_);
+      case "default":
+        return FooUnionVariantTypesInternalDefault.fromJson(_input_);
+      default:
+        return FooUnionVariantTypesInternal.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesInternal.fromJsonString(String input) {
+    return FooUnionVariantTypesInternal.fromJson(json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesInternalClass
+    implements FooUnionVariantTypesInternal {
+  final String k_for;
+  final String k_default;
+  const FooUnionVariantTypesInternalClass({
+    required this.k_for,
+    required this.k_default,
+  });
+
+  @override
+  String get kind => "class";
+
+  factory FooUnionVariantTypesInternalClass.empty() {
+    return FooUnionVariantTypesInternalClass(
+      k_for: "",
+      k_default: "",
+    );
+  }
+
+  factory FooUnionVariantTypesInternalClass.fromJson(
+      Map<String, dynamic> _input_) {
+    final k_for = typeFromDynamic<String>(_input_["for"], "");
+    final k_default = typeFromDynamic<String>(_input_["default"], "");
+    return FooUnionVariantTypesInternalClass(
+      k_for: k_for,
+      k_default: k_default,
+    );
+  }
+
+  factory FooUnionVariantTypesInternalClass.fromJsonString(String input) {
+    return FooUnionVariantTypesInternalClass.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "for": k_for,
+      "default": k_default,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    _queryParts_.add("for=$k_for");
+    _queryParts_.add("default=$k_default");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantTypesInternalClass copyWith({
+    String? k_for,
+    String? k_default,
+  }) {
+    return FooUnionVariantTypesInternalClass(
+      k_for: k_for ?? this.k_for,
+      k_default: k_default ?? this.k_default,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        k_for,
+        k_default,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesInternalClass &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesInternalClass ${toJsonString()}";
+  }
+}
+
+class FooUnionVariantTypesInternalDefault
+    implements FooUnionVariantTypesInternal {
+  final String k_class;
+  final FooUnionVariantTypesInternalDefaultInternalUnion internalUnion;
+  final FooUnionVariantTypesInternalDefaultAdjacentUnion adjacentUnion;
+  final FooUnionVariantTypesInternalDefaultExternalUnion externalUnion;
+  const FooUnionVariantTypesInternalDefault({
+    required this.k_class,
+    required this.internalUnion,
+    required this.adjacentUnion,
+    required this.externalUnion,
+  });
+
+  @override
+  String get kind => "default";
+
+  factory FooUnionVariantTypesInternalDefault.empty() {
+    return FooUnionVariantTypesInternalDefault(
+      k_class: "",
+      internalUnion: FooUnionVariantTypesInternalDefaultInternalUnion.empty(),
+      adjacentUnion: FooUnionVariantTypesInternalDefaultAdjacentUnion.empty(),
+      externalUnion: FooUnionVariantTypesInternalDefaultExternalUnion.empty(),
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefault.fromJson(
+      Map<String, dynamic> _input_) {
+    final k_class = typeFromDynamic<String>(_input_["class"], "");
+    final internalUnion = _input_["internalUnion"] is Map<String, dynamic>
+        ? FooUnionVariantTypesInternalDefaultInternalUnion.fromJson(
+            _input_["internalUnion"])
+        : FooUnionVariantTypesInternalDefaultInternalUnion.empty();
+    final adjacentUnion = _input_["adjacentUnion"] is Map<String, dynamic>
+        ? FooUnionVariantTypesInternalDefaultAdjacentUnion.fromJson(
+            _input_["adjacentUnion"])
+        : FooUnionVariantTypesInternalDefaultAdjacentUnion.empty();
+    final externalUnion = _input_["externalUnion"] is Map<String, dynamic>
+        ? FooUnionVariantTypesInternalDefaultExternalUnion.fromJson(
+            _input_["externalUnion"])
+        : FooUnionVariantTypesInternalDefaultExternalUnion.empty();
+    return FooUnionVariantTypesInternalDefault(
+      k_class: k_class,
+      internalUnion: internalUnion,
+      adjacentUnion: adjacentUnion,
+      externalUnion: externalUnion,
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefault.fromJsonString(String input) {
+    return FooUnionVariantTypesInternalDefault.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "class": k_class,
+      "internalUnion": internalUnion.toJson(),
+      "adjacentUnion": adjacentUnion.toJson(),
+      "externalUnion": externalUnion.toJson(),
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("kind=$kind");
+    _queryParts_.add("class=$k_class");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/adjacentUnion.");
+    print(
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/externalUnion.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantTypesInternalDefault copyWith({
+    String? k_class,
+    FooUnionVariantTypesInternalDefaultInternalUnion? internalUnion,
+    FooUnionVariantTypesInternalDefaultAdjacentUnion? adjacentUnion,
+    FooUnionVariantTypesInternalDefaultExternalUnion? externalUnion,
+  }) {
+    return FooUnionVariantTypesInternalDefault(
+      k_class: k_class ?? this.k_class,
+      internalUnion: internalUnion ?? this.internalUnion,
+      adjacentUnion: adjacentUnion ?? this.adjacentUnion,
+      externalUnion: externalUnion ?? this.externalUnion,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        k_class,
+        internalUnion,
+        adjacentUnion,
+        externalUnion,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesInternalDefault &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesInternalDefault ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesInternalDefaultInternalUnion
+    implements ArriModel {
+  String get shape;
+  const FooUnionVariantTypesInternalDefaultInternalUnion();
+
+  factory FooUnionVariantTypesInternalDefaultInternalUnion.empty() {
+    return FooUnionVariantTypesInternalDefaultInternalUnionCircle.empty();
+  }
+
+  factory FooUnionVariantTypesInternalDefaultInternalUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final shape = typeFromDynamic<String>(_input_["shape"], "");
+    switch (shape) {
+      case "circle":
+        return FooUnionVariantTypesInternalDefaultInternalUnionCircle.fromJson(
+            _input_);
+      default:
+        return FooUnionVariantTypesInternalDefaultInternalUnion.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesInternalDefaultInternalUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesInternalDefaultInternalUnion.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesInternalDefaultInternalUnionCircle
+    implements FooUnionVariantTypesInternalDefaultInternalUnion {
+  final double radius;
+  const FooUnionVariantTypesInternalDefaultInternalUnionCircle({
+    required this.radius,
+  });
+
+  @override
+  String get shape => "circle";
+
+  factory FooUnionVariantTypesInternalDefaultInternalUnionCircle.empty() {
+    return FooUnionVariantTypesInternalDefaultInternalUnionCircle(
+      radius: 0.0,
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefaultInternalUnionCircle.fromJson(
+      Map<String, dynamic> _input_) {
+    final radius = doubleFromDynamic(_input_["radius"], 0.0);
+    return FooUnionVariantTypesInternalDefaultInternalUnionCircle(
+      radius: radius,
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefaultInternalUnionCircle.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesInternalDefaultInternalUnionCircle.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "shape": shape,
+      "radius": radius,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("shape=$shape");
+    _queryParts_.add("radius=$radius");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  FooUnionVariantTypesInternalDefaultInternalUnionCircle copyWith({
+    double? radius,
+  }) {
+    return FooUnionVariantTypesInternalDefaultInternalUnionCircle(
+      radius: radius ?? this.radius,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        radius,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesInternalDefaultInternalUnionCircle &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesInternalDefaultInternalUnionCircle ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesInternalDefaultAdjacentUnion
+    implements ArriModel {
+  String get kind;
+  const FooUnionVariantTypesInternalDefaultAdjacentUnion();
+
+  factory FooUnionVariantTypesInternalDefaultAdjacentUnion.empty() {
+    return FooUnionVariantTypesInternalDefaultAdjacentUnionText.empty();
+  }
+
+  factory FooUnionVariantTypesInternalDefaultAdjacentUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    final kind = typeFromDynamic<String>(_input_["kind"], "");
+    switch (kind) {
+      case "text":
+        return FooUnionVariantTypesInternalDefaultAdjacentUnionText.fromJson(
+            _input_);
+      default:
+        return FooUnionVariantTypesInternalDefaultAdjacentUnion.empty();
+    }
+  }
+
+  factory FooUnionVariantTypesInternalDefaultAdjacentUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesInternalDefaultAdjacentUnion.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesInternalDefaultAdjacentUnionText
+    implements FooUnionVariantTypesInternalDefaultAdjacentUnion {
+  final String data;
+  const FooUnionVariantTypesInternalDefaultAdjacentUnionText({
+    required this.data,
+  });
+
+  @override
+  String get kind => "text";
+
+  factory FooUnionVariantTypesInternalDefaultAdjacentUnionText.empty() {
+    return FooUnionVariantTypesInternalDefaultAdjacentUnionText(
+      data: "",
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefaultAdjacentUnionText.fromJson(
+      Map<String, dynamic> _input_) {
+    final data = typeFromDynamic<String>(_input_["data"], "");
+    return FooUnionVariantTypesInternalDefaultAdjacentUnionText(
+      data: data,
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefaultAdjacentUnionText.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesInternalDefaultAdjacentUnionText.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "kind": kind,
+      "data": data,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesInternalDefaultAdjacentUnionText.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesInternalDefaultAdjacentUnionText copyWith({
+    String? data,
+  }) {
+    return FooUnionVariantTypesInternalDefaultAdjacentUnionText(
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        data,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesInternalDefaultAdjacentUnionText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesInternalDefaultAdjacentUnionText ${toJsonString()}";
+  }
+}
+
+sealed class FooUnionVariantTypesInternalDefaultExternalUnion
+    implements ArriModel {
+  const FooUnionVariantTypesInternalDefaultExternalUnion();
+
+  factory FooUnionVariantTypesInternalDefaultExternalUnion.empty() {
+    return FooUnionVariantTypesInternalDefaultExternalUnionText.empty();
+  }
+
+  factory FooUnionVariantTypesInternalDefaultExternalUnion.fromJson(
+      Map<String, dynamic> _input_) {
+    if (_input_.containsKey("text")) {
+      return FooUnionVariantTypesInternalDefaultExternalUnionText.fromJson(
+          _input_);
+    }
+    return FooUnionVariantTypesInternalDefaultExternalUnion.empty();
+  }
+
+  factory FooUnionVariantTypesInternalDefaultExternalUnion.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesInternalDefaultExternalUnion.fromJson(
+        json.decode(input));
+  }
+}
+
+class FooUnionVariantTypesInternalDefaultExternalUnionText
+    implements FooUnionVariantTypesInternalDefaultExternalUnion {
+  final String value;
+  const FooUnionVariantTypesInternalDefaultExternalUnionText({
+    required this.value,
+  });
+
+  factory FooUnionVariantTypesInternalDefaultExternalUnionText.empty() {
+    return FooUnionVariantTypesInternalDefaultExternalUnionText(
+      value: "",
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefaultExternalUnionText.fromJson(
+      Map<String, dynamic> _input_) {
+    final value = typeFromDynamic<String>(_input_["text"], "");
+    return FooUnionVariantTypesInternalDefaultExternalUnionText(
+      value: value,
+    );
+  }
+
+  factory FooUnionVariantTypesInternalDefaultExternalUnionText.fromJsonString(
+      String input) {
+    return FooUnionVariantTypesInternalDefaultExternalUnionText.fromJson(
+        json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "text": value,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    print(
+        "[WARNING] unions cannot be serialized to query params. Skipping FooUnionVariantTypesInternalDefaultExternalUnionText.");
+    return "";
+  }
+
+  @override
+  FooUnionVariantTypesInternalDefaultExternalUnionText copyWith({
+    String? value,
+  }) {
+    return FooUnionVariantTypesInternalDefaultExternalUnionText(
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        value,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is FooUnionVariantTypesInternalDefaultExternalUnionText &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "FooUnionVariantTypesInternalDefaultExternalUnionText ${toJsonString()}";
   }
 }
 

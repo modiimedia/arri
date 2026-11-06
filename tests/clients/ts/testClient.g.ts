@@ -386,6 +386,48 @@ export class TestClientTestsService {
             options: options ?? this._options,
         });
     }
+    /**
+     * Union variants with no fields, only optional fields, a mix of required, optional, and nullable fields, and nested fields.
+     */
+    async sendUnionVariantShapes(
+        params: UnionVariantShapes,
+        options?: ArriRequestOptions,
+    ): Promise<UnionVariantShapes> {
+        return arriRequest<UnionVariantShapes, UnionVariantShapes>({
+            url: `${this._baseUrl}/rpcs/tests/send-union-variant-shapes`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: UnionVariantShapesFromJson,
+            responseFromString: UnionVariantShapesFromJsonString,
+            serializer: UnionVariantShapesToJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
+    /**
+     * Union variants of every value type, nested unions, and names that are reserved words in many languages.
+     */
+    async sendUnionVariantTypes(
+        params: UnionVariantTypes,
+        options?: ArriRequestOptions,
+    ): Promise<UnionVariantTypes> {
+        return arriRequest<UnionVariantTypes, UnionVariantTypes>({
+            url: `${this._baseUrl}/rpcs/tests/send-union-variant-types`,
+            method: 'post',
+            ofetch: this._fetch,
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: UnionVariantTypesFromJson,
+            responseFromString: UnionVariantTypesFromJsonString,
+            serializer: UnionVariantTypesToJsonString,
+            clientVersion: '10',
+            options: options ?? this._options,
+        });
+    }
     streamAutoReconnect(
         params: AutoReconnectParams,
         options: SseOptions<AutoReconnectResponse> = {},
@@ -3209,7 +3251,9 @@ export interface ObjectWithKebabCaseKeys {
     createdAt: Date;
     displayName: string;
     phoneNumber: string | null;
-    lastEvent: ObjectWithKebabCaseKeysLastEvent | null;
+    externalEvent: ObjectWithKebabCaseKeysExternalEvent | null;
+    internalEvent: ObjectWithKebabCaseKeysInternalEvent;
+    adjacentEvent: ObjectWithKebabCaseKeysAdjacentEvent;
     emailAddress?: string;
     isAdmin?: boolean;
 }
@@ -3218,7 +3262,9 @@ export function ObjectWithKebabCaseKeysNew(): ObjectWithKebabCaseKeys {
         createdAt: new Date(0),
         displayName: '',
         phoneNumber: null,
-        lastEvent: null,
+        externalEvent: null,
+        internalEvent: ObjectWithKebabCaseKeysInternalEventNew(),
+        adjacentEvent: ObjectWithKebabCaseKeysAdjacentEventNew(),
     };
 }
 export function ObjectWithKebabCaseKeysValidate(
@@ -3229,8 +3275,10 @@ export function ObjectWithKebabCaseKeysValidate(
         input.createdAt instanceof Date &&
         typeof input.displayName === 'string' &&
         (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
-        (ObjectWithKebabCaseKeysLastEventValidate(input.lastEvent) ||
-            input.lastEvent === null) &&
+        (ObjectWithKebabCaseKeysExternalEventValidate(input.externalEvent) ||
+            input.externalEvent === null) &&
+        ObjectWithKebabCaseKeysInternalEventValidate(input.internalEvent) &&
+        ObjectWithKebabCaseKeysAdjacentEventValidate(input.adjacentEvent) &&
         (typeof input.emailAddress === 'string' ||
             typeof input.emailAddress === 'undefined') &&
         (typeof input.isAdmin === 'boolean' ||
@@ -3246,12 +3294,22 @@ export function ObjectWithKebabCaseKeysClone(
     _displayname = input.displayName;
     let _phonenumber: string | null;
     _phonenumber = input.phoneNumber;
-    let _lastevent: ObjectWithKebabCaseKeysLastEvent | null;
-    if (input.lastEvent !== null) {
-        _lastevent = ObjectWithKebabCaseKeysLastEventClone(input.lastEvent);
+    let _externalevent: ObjectWithKebabCaseKeysExternalEvent | null;
+    if (input.externalEvent !== null) {
+        _externalevent = ObjectWithKebabCaseKeysExternalEventClone(
+            input.externalEvent,
+        );
     } else {
-        _lastevent = null;
+        _externalevent = null;
     }
+    let _internalevent: ObjectWithKebabCaseKeysInternalEvent;
+    _internalevent = ObjectWithKebabCaseKeysInternalEventClone(
+        input.internalEvent,
+    );
+    let _adjacentevent: ObjectWithKebabCaseKeysAdjacentEvent;
+    _adjacentevent = ObjectWithKebabCaseKeysAdjacentEventClone(
+        input.adjacentEvent,
+    );
     let _emailaddress: string | undefined;
     if (typeof input.emailAddress !== 'undefined') {
         _emailaddress = input.emailAddress;
@@ -3264,7 +3322,9 @@ export function ObjectWithKebabCaseKeysClone(
         createdAt: _createdat,
         displayName: _displayname,
         phoneNumber: _phonenumber,
-        lastEvent: _lastevent,
+        externalEvent: _externalevent,
+        internalEvent: _internalevent,
+        adjacentEvent: _adjacentevent,
         emailAddress: _emailaddress,
         isAdmin: _isadmin,
     };
@@ -3278,13 +3338,29 @@ export function ObjectWithKebabCaseKeysFromJson(
     _displayname = parseString(input['display-name']);
     let _phonenumber: string | null;
     _phonenumber = parseNullableString(input['phone-number']);
-    let _lastevent: ObjectWithKebabCaseKeysLastEvent | null;
-    if (isObject(input['last-event'])) {
-        _lastevent = ObjectWithKebabCaseKeysLastEventFromJson(
-            input['last-event'],
+    let _externalevent: ObjectWithKebabCaseKeysExternalEvent | null;
+    if (isObject(input['external-event'])) {
+        _externalevent = ObjectWithKebabCaseKeysExternalEventFromJson(
+            input['external-event'],
         );
     } else {
-        _lastevent = null;
+        _externalevent = null;
+    }
+    let _internalevent: ObjectWithKebabCaseKeysInternalEvent;
+    if (isObject(input['internal-event'])) {
+        _internalevent = ObjectWithKebabCaseKeysInternalEventFromJson(
+            input['internal-event'],
+        );
+    } else {
+        _internalevent = ObjectWithKebabCaseKeysInternalEventNew();
+    }
+    let _adjacentevent: ObjectWithKebabCaseKeysAdjacentEvent;
+    if (isObject(input['adjacent-event'])) {
+        _adjacentevent = ObjectWithKebabCaseKeysAdjacentEventFromJson(
+            input['adjacent-event'],
+        );
+    } else {
+        _adjacentevent = ObjectWithKebabCaseKeysAdjacentEventNew();
     }
     let _emailaddress: string | undefined;
     if (typeof input['email-address'] !== 'undefined') {
@@ -3298,7 +3374,9 @@ export function ObjectWithKebabCaseKeysFromJson(
         createdAt: _createdat,
         displayName: _displayname,
         phoneNumber: _phonenumber,
-        lastEvent: _lastevent,
+        externalEvent: _externalevent,
+        internalEvent: _internalevent,
+        adjacentEvent: _adjacentevent,
         emailAddress: _emailaddress,
         isAdmin: _isadmin,
     };
@@ -3322,12 +3400,22 @@ export function ObjectWithKebabCaseKeysToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"last-event":';
-    if (input.lastEvent != null) {
-        json += ObjectWithKebabCaseKeysLastEventToJsonString(input.lastEvent);
+    json += ',"external-event":';
+    if (input.externalEvent != null) {
+        json += ObjectWithKebabCaseKeysExternalEventToJsonString(
+            input.externalEvent,
+        );
     } else {
         json += 'null';
     }
+    json += ',"internal-event":';
+    json += ObjectWithKebabCaseKeysInternalEventToJsonString(
+        input.internalEvent,
+    );
+    json += ',"adjacent-event":';
+    json += ObjectWithKebabCaseKeysAdjacentEventToJsonString(
+        input.adjacentEvent,
+    );
     if (typeof input.emailAddress !== 'undefined') {
         json += `,"email-address":`;
         json += serializeString(input.emailAddress);
@@ -3347,7 +3435,13 @@ export function ObjectWithKebabCaseKeysToUrlSearchParams(
     params.set('display-name', input.displayName);
     params.set('phone-number', `${input.phoneNumber}`);
     console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithKebabCaseKeys/last-event.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithKebabCaseKeys/external-event.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithKebabCaseKeys/internal-event.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithKebabCaseKeys/adjacent-event.',
     );
     if (typeof input.emailAddress !== 'undefined') {
         params.set('email-address', input.emailAddress);
@@ -3373,28 +3467,28 @@ export const $$ObjectWithKebabCaseKeys: TestClientValidator<ObjectWithKebabCaseK
         toUrlSearchParams: ObjectWithKebabCaseKeysToUrlSearchParams,
         toUrlSearchParamsString: ObjectWithKebabCaseKeysToUrlSearchParamsString,
     };
-export type ObjectWithKebabCaseKeysLastEvent =
+export type ObjectWithKebabCaseKeysExternalEvent =
     | {
           type: `user-created`;
-          value: ObjectWithKebabCaseKeysLastEventUserCreated;
+          value: ObjectWithKebabCaseKeysExternalEventUserCreated;
       }
     | {
           type: `user-updated`;
-          value: ObjectWithKebabCaseKeysLastEventUserUpdated;
+          value: ObjectWithKebabCaseKeysExternalEventUserUpdated;
       }
     | {
           type: `user-deleted`;
-          value: ObjectWithKebabCaseKeysLastEventUserDeleted;
+          value: ObjectWithKebabCaseKeysExternalEventUserDeleted;
       };
-export function ObjectWithKebabCaseKeysLastEventNew(): ObjectWithKebabCaseKeysLastEvent {
+export function ObjectWithKebabCaseKeysExternalEventNew(): ObjectWithKebabCaseKeysExternalEvent {
     return {
         type: `user-created`,
-        value: ObjectWithKebabCaseKeysLastEventUserCreatedNew(),
+        value: ObjectWithKebabCaseKeysExternalEventUserCreatedNew(),
     };
 }
-export function ObjectWithKebabCaseKeysLastEventValidate(
+export function ObjectWithKebabCaseKeysExternalEventValidate(
     input: unknown,
-): input is ObjectWithKebabCaseKeysLastEvent {
+): input is ObjectWithKebabCaseKeysExternalEvent {
     if (!isObject(input)) {
         return false;
     }
@@ -3403,17 +3497,17 @@ export function ObjectWithKebabCaseKeysLastEventValidate(
     }
     switch (input.type) {
         case `user-created`:
-            return ObjectWithKebabCaseKeysLastEventUserCreatedValidate(
+            return ObjectWithKebabCaseKeysExternalEventUserCreatedValidate(
                 input.value,
             );
 
         case `user-updated`:
-            return ObjectWithKebabCaseKeysLastEventUserUpdatedValidate(
+            return ObjectWithKebabCaseKeysExternalEventUserUpdatedValidate(
                 input.value,
             );
 
         case `user-deleted`:
-            return ObjectWithKebabCaseKeysLastEventUserDeletedValidate(
+            return ObjectWithKebabCaseKeysExternalEventUserDeletedValidate(
                 input.value,
             );
 
@@ -3421,13 +3515,13 @@ export function ObjectWithKebabCaseKeysLastEventValidate(
             return false;
     }
 }
-export function ObjectWithKebabCaseKeysLastEventClone(
-    input: ObjectWithKebabCaseKeysLastEvent,
-): ObjectWithKebabCaseKeysLastEvent {
+export function ObjectWithKebabCaseKeysExternalEventClone(
+    input: ObjectWithKebabCaseKeysExternalEvent,
+): ObjectWithKebabCaseKeysExternalEvent {
     switch (input.type) {
         case `user-created`: {
-            let __value__: ObjectWithKebabCaseKeysLastEventUserCreated;
-            __value__ = ObjectWithKebabCaseKeysLastEventUserCreatedClone(
+            let __value__: ObjectWithKebabCaseKeysExternalEventUserCreated;
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserCreatedClone(
                 input.value,
             );
             return {
@@ -3437,8 +3531,8 @@ export function ObjectWithKebabCaseKeysLastEventClone(
         }
 
         case `user-updated`: {
-            let __value__: ObjectWithKebabCaseKeysLastEventUserUpdated;
-            __value__ = ObjectWithKebabCaseKeysLastEventUserUpdatedClone(
+            let __value__: ObjectWithKebabCaseKeysExternalEventUserUpdated;
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserUpdatedClone(
                 input.value,
             );
             return {
@@ -3448,8 +3542,8 @@ export function ObjectWithKebabCaseKeysLastEventClone(
         }
 
         case `user-deleted`: {
-            let __value__: ObjectWithKebabCaseKeysLastEventUserDeleted;
-            __value__ = ObjectWithKebabCaseKeysLastEventUserDeletedClone(
+            let __value__: ObjectWithKebabCaseKeysExternalEventUserDeleted;
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserDeletedClone(
                 input.value,
             );
             return {
@@ -3462,17 +3556,17 @@ export function ObjectWithKebabCaseKeysLastEventClone(
             throw new Error(`Unknown union variant: ${(input as any).type}`);
     }
 }
-export function ObjectWithKebabCaseKeysLastEventFromJson(
+export function ObjectWithKebabCaseKeysExternalEventFromJson(
     input: Record<string, unknown>,
-): ObjectWithKebabCaseKeysLastEvent {
+): ObjectWithKebabCaseKeysExternalEvent {
     if (`user-created` in input) {
-        let __value__: ObjectWithKebabCaseKeysLastEventUserCreated;
+        let __value__: ObjectWithKebabCaseKeysExternalEventUserCreated;
         if (isObject(input[`user-created`])) {
-            __value__ = ObjectWithKebabCaseKeysLastEventUserCreatedFromJson(
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserCreatedFromJson(
                 input[`user-created`],
             );
         } else {
-            __value__ = ObjectWithKebabCaseKeysLastEventUserCreatedNew();
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserCreatedNew();
         }
         return {
             type: `user-created`,
@@ -3481,13 +3575,13 @@ export function ObjectWithKebabCaseKeysLastEventFromJson(
     }
 
     if (`user-updated` in input) {
-        let __value__: ObjectWithKebabCaseKeysLastEventUserUpdated;
+        let __value__: ObjectWithKebabCaseKeysExternalEventUserUpdated;
         if (isObject(input[`user-updated`])) {
-            __value__ = ObjectWithKebabCaseKeysLastEventUserUpdatedFromJson(
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserUpdatedFromJson(
                 input[`user-updated`],
             );
         } else {
-            __value__ = ObjectWithKebabCaseKeysLastEventUserUpdatedNew();
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserUpdatedNew();
         }
         return {
             type: `user-updated`,
@@ -3496,35 +3590,35 @@ export function ObjectWithKebabCaseKeysLastEventFromJson(
     }
 
     if (`user-deleted` in input) {
-        let __value__: ObjectWithKebabCaseKeysLastEventUserDeleted;
+        let __value__: ObjectWithKebabCaseKeysExternalEventUserDeleted;
         if (isObject(input[`user-deleted`])) {
-            __value__ = ObjectWithKebabCaseKeysLastEventUserDeletedFromJson(
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserDeletedFromJson(
                 input[`user-deleted`],
             );
         } else {
-            __value__ = ObjectWithKebabCaseKeysLastEventUserDeletedNew();
+            __value__ = ObjectWithKebabCaseKeysExternalEventUserDeletedNew();
         }
         return {
             type: `user-deleted`,
             value: __value__,
         };
     }
-    return ObjectWithKebabCaseKeysLastEventNew();
+    return ObjectWithKebabCaseKeysExternalEventNew();
 }
-export function ObjectWithKebabCaseKeysLastEventFromJsonString(
+export function ObjectWithKebabCaseKeysExternalEventFromJsonString(
     input: string,
-): ObjectWithKebabCaseKeysLastEvent {
-    return ObjectWithKebabCaseKeysLastEventFromJson(JSON.parse(input));
+): ObjectWithKebabCaseKeysExternalEvent {
+    return ObjectWithKebabCaseKeysExternalEventFromJson(JSON.parse(input));
 }
-export function ObjectWithKebabCaseKeysLastEventToJsonString(
-    input: ObjectWithKebabCaseKeysLastEvent,
+export function ObjectWithKebabCaseKeysExternalEventToJsonString(
+    input: ObjectWithKebabCaseKeysExternalEvent,
 ): string {
     switch (input.type) {
         case `user-created`: {
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithKebabCaseKeysLastEventUserCreatedToJsonString(
+            json += ObjectWithKebabCaseKeysExternalEventUserCreatedToJsonString(
                 input.value,
             );
             json += '}';
@@ -3535,7 +3629,7 @@ export function ObjectWithKebabCaseKeysLastEventToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithKebabCaseKeysLastEventUserUpdatedToJsonString(
+            json += ObjectWithKebabCaseKeysExternalEventUserUpdatedToJsonString(
                 input.value,
             );
             json += '}';
@@ -3546,7 +3640,7 @@ export function ObjectWithKebabCaseKeysLastEventToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithKebabCaseKeysLastEventUserDeletedToJsonString(
+            json += ObjectWithKebabCaseKeysExternalEventUserDeletedToJsonString(
                 input.value,
             );
             json += '}';
@@ -3559,70 +3653,73 @@ export function ObjectWithKebabCaseKeysLastEventToJsonString(
         }
     }
 }
-export function ObjectWithKebabCaseKeysLastEventToUrlSearchParams(
-    input: ObjectWithKebabCaseKeysLastEvent,
+export function ObjectWithKebabCaseKeysExternalEventToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysExternalEvent,
 ): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function ObjectWithKebabCaseKeysLastEventToUrlSearchParamsString(
-    input: ObjectWithKebabCaseKeysLastEvent,
+export function ObjectWithKebabCaseKeysExternalEventToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysExternalEvent,
 ): string {
-    return ObjectWithKebabCaseKeysLastEventToUrlSearchParams(input).toString();
+    return ObjectWithKebabCaseKeysExternalEventToUrlSearchParams(
+        input,
+    ).toString();
 }
-export const $$ObjectWithKebabCaseKeysLastEvent: TestClientValidator<ObjectWithKebabCaseKeysLastEvent> =
+export const $$ObjectWithKebabCaseKeysExternalEvent: TestClientValidator<ObjectWithKebabCaseKeysExternalEvent> =
     {
-        new: ObjectWithKebabCaseKeysLastEventNew,
-        validate: ObjectWithKebabCaseKeysLastEventValidate,
-        clone: ObjectWithKebabCaseKeysLastEventClone,
-        fromJson: ObjectWithKebabCaseKeysLastEventFromJson,
-        fromJsonString: ObjectWithKebabCaseKeysLastEventFromJsonString,
-        toJsonString: ObjectWithKebabCaseKeysLastEventToJsonString,
-        toUrlSearchParams: ObjectWithKebabCaseKeysLastEventToUrlSearchParams,
+        new: ObjectWithKebabCaseKeysExternalEventNew,
+        validate: ObjectWithKebabCaseKeysExternalEventValidate,
+        clone: ObjectWithKebabCaseKeysExternalEventClone,
+        fromJson: ObjectWithKebabCaseKeysExternalEventFromJson,
+        fromJsonString: ObjectWithKebabCaseKeysExternalEventFromJsonString,
+        toJsonString: ObjectWithKebabCaseKeysExternalEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithKebabCaseKeysExternalEventToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithKebabCaseKeysLastEventToUrlSearchParamsString,
+            ObjectWithKebabCaseKeysExternalEventToUrlSearchParamsString,
     };
-export interface ObjectWithKebabCaseKeysLastEventUserCreated {
+export interface ObjectWithKebabCaseKeysExternalEventUserCreated {
     userId: string;
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedNew(): ObjectWithKebabCaseKeysLastEventUserCreated {
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedNew(): ObjectWithKebabCaseKeysExternalEventUserCreated {
     return {
         userId: '',
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedValidate(
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedValidate(
     input: unknown,
-): input is ObjectWithKebabCaseKeysLastEventUserCreated {
+): input is ObjectWithKebabCaseKeysExternalEventUserCreated {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedClone(
-    input: ObjectWithKebabCaseKeysLastEventUserCreated,
-): ObjectWithKebabCaseKeysLastEventUserCreated {
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedClone(
+    input: ObjectWithKebabCaseKeysExternalEventUserCreated,
+): ObjectWithKebabCaseKeysExternalEventUserCreated {
     let _userid: string;
     _userid = input.userId;
     return {
         userId: _userid,
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedFromJson(
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedFromJson(
     input: Record<string, unknown>,
-): ObjectWithKebabCaseKeysLastEventUserCreated {
+): ObjectWithKebabCaseKeysExternalEventUserCreated {
     let _userid: string;
     _userid = parseString(input['user-id']);
     return {
         userId: _userid,
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedFromJsonString(
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedFromJsonString(
     input: string,
-): ObjectWithKebabCaseKeysLastEventUserCreated {
-    return ObjectWithKebabCaseKeysLastEventUserCreatedFromJson(
+): ObjectWithKebabCaseKeysExternalEventUserCreated {
+    return ObjectWithKebabCaseKeysExternalEventUserCreatedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedToJsonString(
-    input: ObjectWithKebabCaseKeysLastEventUserCreated,
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedToJsonString(
+    input: ObjectWithKebabCaseKeysExternalEventUserCreated,
 ): string {
     let json = '{';
     json += '"user-id":';
@@ -3630,75 +3727,76 @@ export function ObjectWithKebabCaseKeysLastEventUserCreatedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParams(
-    input: ObjectWithKebabCaseKeysLastEventUserCreated,
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysExternalEventUserCreated,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('user-id', input.userId);
     return params;
 }
-export function ObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParamsString(
-    input: ObjectWithKebabCaseKeysLastEventUserCreated,
+export function ObjectWithKebabCaseKeysExternalEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysExternalEventUserCreated,
 ): string {
-    return ObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParams(
+    return ObjectWithKebabCaseKeysExternalEventUserCreatedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithKebabCaseKeysLastEventUserCreated: TestClientValidator<ObjectWithKebabCaseKeysLastEventUserCreated> =
+export const $$ObjectWithKebabCaseKeysExternalEventUserCreated: TestClientValidator<ObjectWithKebabCaseKeysExternalEventUserCreated> =
     {
-        new: ObjectWithKebabCaseKeysLastEventUserCreatedNew,
-        validate: ObjectWithKebabCaseKeysLastEventUserCreatedValidate,
-        clone: ObjectWithKebabCaseKeysLastEventUserCreatedClone,
-        fromJson: ObjectWithKebabCaseKeysLastEventUserCreatedFromJson,
+        new: ObjectWithKebabCaseKeysExternalEventUserCreatedNew,
+        validate: ObjectWithKebabCaseKeysExternalEventUserCreatedValidate,
+        clone: ObjectWithKebabCaseKeysExternalEventUserCreatedClone,
+        fromJson: ObjectWithKebabCaseKeysExternalEventUserCreatedFromJson,
         fromJsonString:
-            ObjectWithKebabCaseKeysLastEventUserCreatedFromJsonString,
-        toJsonString: ObjectWithKebabCaseKeysLastEventUserCreatedToJsonString,
+            ObjectWithKebabCaseKeysExternalEventUserCreatedFromJsonString,
+        toJsonString:
+            ObjectWithKebabCaseKeysExternalEventUserCreatedToJsonString,
         toUrlSearchParams:
-            ObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParams,
+            ObjectWithKebabCaseKeysExternalEventUserCreatedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithKebabCaseKeysLastEventUserCreatedToUrlSearchParamsString,
+            ObjectWithKebabCaseKeysExternalEventUserCreatedToUrlSearchParamsString,
     };
 
-export interface ObjectWithKebabCaseKeysLastEventUserUpdated {
+export interface ObjectWithKebabCaseKeysExternalEventUserUpdated {
     userId: string;
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedNew(): ObjectWithKebabCaseKeysLastEventUserUpdated {
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedNew(): ObjectWithKebabCaseKeysExternalEventUserUpdated {
     return {
         userId: '',
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedValidate(
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedValidate(
     input: unknown,
-): input is ObjectWithKebabCaseKeysLastEventUserUpdated {
+): input is ObjectWithKebabCaseKeysExternalEventUserUpdated {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedClone(
-    input: ObjectWithKebabCaseKeysLastEventUserUpdated,
-): ObjectWithKebabCaseKeysLastEventUserUpdated {
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedClone(
+    input: ObjectWithKebabCaseKeysExternalEventUserUpdated,
+): ObjectWithKebabCaseKeysExternalEventUserUpdated {
     let _userid: string;
     _userid = input.userId;
     return {
         userId: _userid,
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedFromJson(
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedFromJson(
     input: Record<string, unknown>,
-): ObjectWithKebabCaseKeysLastEventUserUpdated {
+): ObjectWithKebabCaseKeysExternalEventUserUpdated {
     let _userid: string;
     _userid = parseString(input['user-id']);
     return {
         userId: _userid,
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedFromJsonString(
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedFromJsonString(
     input: string,
-): ObjectWithKebabCaseKeysLastEventUserUpdated {
-    return ObjectWithKebabCaseKeysLastEventUserUpdatedFromJson(
+): ObjectWithKebabCaseKeysExternalEventUserUpdated {
+    return ObjectWithKebabCaseKeysExternalEventUserUpdatedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedToJsonString(
-    input: ObjectWithKebabCaseKeysLastEventUserUpdated,
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedToJsonString(
+    input: ObjectWithKebabCaseKeysExternalEventUserUpdated,
 ): string {
     let json = '{';
     json += '"user-id":';
@@ -3706,75 +3804,76 @@ export function ObjectWithKebabCaseKeysLastEventUserUpdatedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParams(
-    input: ObjectWithKebabCaseKeysLastEventUserUpdated,
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysExternalEventUserUpdated,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('user-id', input.userId);
     return params;
 }
-export function ObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParamsString(
-    input: ObjectWithKebabCaseKeysLastEventUserUpdated,
+export function ObjectWithKebabCaseKeysExternalEventUserUpdatedToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysExternalEventUserUpdated,
 ): string {
-    return ObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParams(
+    return ObjectWithKebabCaseKeysExternalEventUserUpdatedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithKebabCaseKeysLastEventUserUpdated: TestClientValidator<ObjectWithKebabCaseKeysLastEventUserUpdated> =
+export const $$ObjectWithKebabCaseKeysExternalEventUserUpdated: TestClientValidator<ObjectWithKebabCaseKeysExternalEventUserUpdated> =
     {
-        new: ObjectWithKebabCaseKeysLastEventUserUpdatedNew,
-        validate: ObjectWithKebabCaseKeysLastEventUserUpdatedValidate,
-        clone: ObjectWithKebabCaseKeysLastEventUserUpdatedClone,
-        fromJson: ObjectWithKebabCaseKeysLastEventUserUpdatedFromJson,
+        new: ObjectWithKebabCaseKeysExternalEventUserUpdatedNew,
+        validate: ObjectWithKebabCaseKeysExternalEventUserUpdatedValidate,
+        clone: ObjectWithKebabCaseKeysExternalEventUserUpdatedClone,
+        fromJson: ObjectWithKebabCaseKeysExternalEventUserUpdatedFromJson,
         fromJsonString:
-            ObjectWithKebabCaseKeysLastEventUserUpdatedFromJsonString,
-        toJsonString: ObjectWithKebabCaseKeysLastEventUserUpdatedToJsonString,
+            ObjectWithKebabCaseKeysExternalEventUserUpdatedFromJsonString,
+        toJsonString:
+            ObjectWithKebabCaseKeysExternalEventUserUpdatedToJsonString,
         toUrlSearchParams:
-            ObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParams,
+            ObjectWithKebabCaseKeysExternalEventUserUpdatedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithKebabCaseKeysLastEventUserUpdatedToUrlSearchParamsString,
+            ObjectWithKebabCaseKeysExternalEventUserUpdatedToUrlSearchParamsString,
     };
 
-export interface ObjectWithKebabCaseKeysLastEventUserDeleted {
+export interface ObjectWithKebabCaseKeysExternalEventUserDeleted {
     userId: string;
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedNew(): ObjectWithKebabCaseKeysLastEventUserDeleted {
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedNew(): ObjectWithKebabCaseKeysExternalEventUserDeleted {
     return {
         userId: '',
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedValidate(
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedValidate(
     input: unknown,
-): input is ObjectWithKebabCaseKeysLastEventUserDeleted {
+): input is ObjectWithKebabCaseKeysExternalEventUserDeleted {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedClone(
-    input: ObjectWithKebabCaseKeysLastEventUserDeleted,
-): ObjectWithKebabCaseKeysLastEventUserDeleted {
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedClone(
+    input: ObjectWithKebabCaseKeysExternalEventUserDeleted,
+): ObjectWithKebabCaseKeysExternalEventUserDeleted {
     let _userid: string;
     _userid = input.userId;
     return {
         userId: _userid,
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedFromJson(
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedFromJson(
     input: Record<string, unknown>,
-): ObjectWithKebabCaseKeysLastEventUserDeleted {
+): ObjectWithKebabCaseKeysExternalEventUserDeleted {
     let _userid: string;
     _userid = parseString(input['user-id']);
     return {
         userId: _userid,
     };
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedFromJsonString(
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedFromJsonString(
     input: string,
-): ObjectWithKebabCaseKeysLastEventUserDeleted {
-    return ObjectWithKebabCaseKeysLastEventUserDeletedFromJson(
+): ObjectWithKebabCaseKeysExternalEventUserDeleted {
+    return ObjectWithKebabCaseKeysExternalEventUserDeletedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedToJsonString(
-    input: ObjectWithKebabCaseKeysLastEventUserDeleted,
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedToJsonString(
+    input: ObjectWithKebabCaseKeysExternalEventUserDeleted,
 ): string {
     let json = '{';
     json += '"user-id":';
@@ -3782,33 +3881,573 @@ export function ObjectWithKebabCaseKeysLastEventUserDeletedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParams(
-    input: ObjectWithKebabCaseKeysLastEventUserDeleted,
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysExternalEventUserDeleted,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('user-id', input.userId);
     return params;
 }
-export function ObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParamsString(
-    input: ObjectWithKebabCaseKeysLastEventUserDeleted,
+export function ObjectWithKebabCaseKeysExternalEventUserDeletedToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysExternalEventUserDeleted,
 ): string {
-    return ObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParams(
+    return ObjectWithKebabCaseKeysExternalEventUserDeletedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithKebabCaseKeysLastEventUserDeleted: TestClientValidator<ObjectWithKebabCaseKeysLastEventUserDeleted> =
+export const $$ObjectWithKebabCaseKeysExternalEventUserDeleted: TestClientValidator<ObjectWithKebabCaseKeysExternalEventUserDeleted> =
     {
-        new: ObjectWithKebabCaseKeysLastEventUserDeletedNew,
-        validate: ObjectWithKebabCaseKeysLastEventUserDeletedValidate,
-        clone: ObjectWithKebabCaseKeysLastEventUserDeletedClone,
-        fromJson: ObjectWithKebabCaseKeysLastEventUserDeletedFromJson,
+        new: ObjectWithKebabCaseKeysExternalEventUserDeletedNew,
+        validate: ObjectWithKebabCaseKeysExternalEventUserDeletedValidate,
+        clone: ObjectWithKebabCaseKeysExternalEventUserDeletedClone,
+        fromJson: ObjectWithKebabCaseKeysExternalEventUserDeletedFromJson,
         fromJsonString:
-            ObjectWithKebabCaseKeysLastEventUserDeletedFromJsonString,
-        toJsonString: ObjectWithKebabCaseKeysLastEventUserDeletedToJsonString,
+            ObjectWithKebabCaseKeysExternalEventUserDeletedFromJsonString,
+        toJsonString:
+            ObjectWithKebabCaseKeysExternalEventUserDeletedToJsonString,
         toUrlSearchParams:
-            ObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParams,
+            ObjectWithKebabCaseKeysExternalEventUserDeletedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithKebabCaseKeysLastEventUserDeletedToUrlSearchParamsString,
+            ObjectWithKebabCaseKeysExternalEventUserDeletedToUrlSearchParamsString,
+    };
+
+export type ObjectWithKebabCaseKeysInternalEvent =
+    | ObjectWithKebabCaseKeysInternalEventUserCreated
+    | ObjectWithKebabCaseKeysInternalEventUserUpdated;
+export function ObjectWithKebabCaseKeysInternalEventNew(): ObjectWithKebabCaseKeysInternalEvent {
+    return ObjectWithKebabCaseKeysInternalEventUserCreatedNew();
+}
+export function ObjectWithKebabCaseKeysInternalEventValidate(
+    input: unknown,
+): input is ObjectWithKebabCaseKeysInternalEvent {
+    return (
+        ObjectWithKebabCaseKeysInternalEventUserCreatedValidate(input) ||
+        ObjectWithKebabCaseKeysInternalEventUserUpdatedValidate(input)
+    );
+}
+export function ObjectWithKebabCaseKeysInternalEventClone(
+    input: ObjectWithKebabCaseKeysInternalEvent,
+): ObjectWithKebabCaseKeysInternalEvent {
+    switch (input.eventType) {
+        case `user-created`: {
+            let __value__: ObjectWithKebabCaseKeysInternalEventUserCreated;
+            __value__ =
+                ObjectWithKebabCaseKeysInternalEventUserCreatedClone(input);
+            return __value__;
+        }
+
+        case `user-updated`: {
+            let __value__: ObjectWithKebabCaseKeysInternalEventUserUpdated;
+            __value__ =
+                ObjectWithKebabCaseKeysInternalEventUserUpdatedClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysInternalEventFromJson(
+    input: Record<string, unknown>,
+): ObjectWithKebabCaseKeysInternalEvent {
+    switch (input['event-type']) {
+        case `user-created`: {
+            return ObjectWithKebabCaseKeysInternalEventUserCreatedFromJson(
+                input,
+            );
+        }
+        case `user-updated`: {
+            return ObjectWithKebabCaseKeysInternalEventUserUpdatedFromJson(
+                input,
+            );
+        }
+        default: {
+            return ObjectWithKebabCaseKeysInternalEventUserCreatedNew();
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysInternalEventFromJsonString(
+    input: string,
+): ObjectWithKebabCaseKeysInternalEvent {
+    return ObjectWithKebabCaseKeysInternalEventFromJson(JSON.parse(input));
+}
+export function ObjectWithKebabCaseKeysInternalEventToJsonString(
+    input: ObjectWithKebabCaseKeysInternalEvent,
+): string {
+    switch (input.eventType) {
+        case `user-created`: {
+            return ObjectWithKebabCaseKeysInternalEventUserCreatedToJsonString(
+                input,
+            );
+        }
+
+        case `user-updated`: {
+            return ObjectWithKebabCaseKeysInternalEventUserUpdatedToJsonString(
+                input,
+            );
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysInternalEventToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysInternalEvent,
+): URLSearchParams {
+    switch (input.eventType) {
+        case `user-created`: {
+            return ObjectWithKebabCaseKeysInternalEventUserCreatedToUrlSearchParams(
+                input,
+            );
+        }
+        case `user-updated`: {
+            return ObjectWithKebabCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+                input,
+            );
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysInternalEventToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysInternalEvent,
+): string {
+    return ObjectWithKebabCaseKeysInternalEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithKebabCaseKeysInternalEvent: TestClientValidator<ObjectWithKebabCaseKeysInternalEvent> =
+    {
+        new: ObjectWithKebabCaseKeysInternalEventNew,
+        validate: ObjectWithKebabCaseKeysInternalEventValidate,
+        clone: ObjectWithKebabCaseKeysInternalEventClone,
+        fromJson: ObjectWithKebabCaseKeysInternalEventFromJson,
+        fromJsonString: ObjectWithKebabCaseKeysInternalEventFromJsonString,
+        toJsonString: ObjectWithKebabCaseKeysInternalEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithKebabCaseKeysInternalEventToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithKebabCaseKeysInternalEventToUrlSearchParamsString,
+    };
+export interface ObjectWithKebabCaseKeysInternalEventUserCreated {
+    eventType: `user-created`;
+    userId: string;
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedNew(): ObjectWithKebabCaseKeysInternalEventUserCreated {
+    return {
+        eventType: `user-created`,
+        userId: '',
+    };
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedValidate(
+    input: unknown,
+): input is ObjectWithKebabCaseKeysInternalEventUserCreated {
+    return (
+        isObject(input) &&
+        input.eventType === `user-created` &&
+        typeof input.userId === 'string'
+    );
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedClone(
+    input: ObjectWithKebabCaseKeysInternalEventUserCreated,
+): ObjectWithKebabCaseKeysInternalEventUserCreated {
+    const _eventType = `user-created`;
+    let _userid: string;
+    _userid = input.userId;
+    return {
+        eventType: _eventType,
+        userId: _userid,
+    };
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithKebabCaseKeysInternalEventUserCreated {
+    const _eventType = `user-created`;
+    let _userid: string;
+    _userid = parseString(input['user-id']);
+    return {
+        eventType: _eventType,
+        userId: _userid,
+    };
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedFromJsonString(
+    input: string,
+): ObjectWithKebabCaseKeysInternalEventUserCreated {
+    return ObjectWithKebabCaseKeysInternalEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedToJsonString(
+    input: ObjectWithKebabCaseKeysInternalEventUserCreated,
+): string {
+    let json = '{';
+    json += '"event-type":"user-created"';
+    json += ',"user-id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysInternalEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('event-type', `user-created`);
+    params.set('user-id', input.userId);
+    return params;
+}
+export function ObjectWithKebabCaseKeysInternalEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysInternalEventUserCreated,
+): string {
+    return ObjectWithKebabCaseKeysInternalEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface ObjectWithKebabCaseKeysInternalEventUserUpdated {
+    eventType: `user-updated`;
+    userId: string;
+    updatedAt?: Date;
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedNew(): ObjectWithKebabCaseKeysInternalEventUserUpdated {
+    return {
+        eventType: `user-updated`,
+        userId: '',
+    };
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedValidate(
+    input: unknown,
+): input is ObjectWithKebabCaseKeysInternalEventUserUpdated {
+    return (
+        isObject(input) &&
+        input.eventType === `user-updated` &&
+        typeof input.userId === 'string' &&
+        (input.updatedAt instanceof Date ||
+            typeof input.updatedAt === 'undefined')
+    );
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedClone(
+    input: ObjectWithKebabCaseKeysInternalEventUserUpdated,
+): ObjectWithKebabCaseKeysInternalEventUserUpdated {
+    const _eventType = `user-updated`;
+    let _userid: string;
+    _userid = input.userId;
+    let _updatedat: Date | undefined;
+    if (typeof input.updatedAt !== 'undefined') {
+        _updatedat = new Date(input.updatedAt.getTime());
+    }
+    return {
+        eventType: _eventType,
+        userId: _userid,
+        updatedAt: _updatedat,
+    };
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithKebabCaseKeysInternalEventUserUpdated {
+    const _eventType = `user-updated`;
+    let _userid: string;
+    _userid = parseString(input['user-id']);
+    let _updatedat: Date | undefined;
+    if (typeof input['updated-at'] !== 'undefined') {
+        _updatedat = parseTimestamp(input['updated-at']);
+    }
+    return {
+        eventType: _eventType,
+        userId: _userid,
+        updatedAt: _updatedat,
+    };
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedFromJsonString(
+    input: string,
+): ObjectWithKebabCaseKeysInternalEventUserUpdated {
+    return ObjectWithKebabCaseKeysInternalEventUserUpdatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedToJsonString(
+    input: ObjectWithKebabCaseKeysInternalEventUserUpdated,
+): string {
+    let json = '{';
+    json += '"event-type":"user-updated"';
+    json += ',"user-id":';
+    json += serializeString(input.userId);
+    if (typeof input.updatedAt !== 'undefined') {
+        json += `,"updated-at":`;
+        json += `"${input.updatedAt.toISOString()}"`;
+    }
+    json += '}';
+    return json;
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysInternalEventUserUpdated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('event-type', `user-updated`);
+    params.set('user-id', input.userId);
+    if (typeof input.updatedAt !== 'undefined') {
+        params.set('updated-at', input.updatedAt.toISOString());
+    }
+    return params;
+}
+export function ObjectWithKebabCaseKeysInternalEventUserUpdatedToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysInternalEventUserUpdated,
+): string {
+    return ObjectWithKebabCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type ObjectWithKebabCaseKeysAdjacentEvent =
+    | {
+          eventType: `user-created`;
+          eventData: ObjectWithKebabCaseKeysAdjacentEventUserCreated;
+      }
+    | { eventType: `user-updated`; eventData: string };
+export function ObjectWithKebabCaseKeysAdjacentEventNew(): ObjectWithKebabCaseKeysAdjacentEvent {
+    return {
+        eventType: `user-created`,
+        eventData: ObjectWithKebabCaseKeysAdjacentEventUserCreatedNew(),
+    };
+}
+export function ObjectWithKebabCaseKeysAdjacentEventValidate(
+    input: unknown,
+): input is ObjectWithKebabCaseKeysAdjacentEvent {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('eventType' in input) || !('eventData' in input)) {
+        return false;
+    }
+    switch (input.eventType) {
+        case `user-created`:
+            return ObjectWithKebabCaseKeysAdjacentEventUserCreatedValidate(
+                input.eventData,
+            );
+
+        case `user-updated`:
+            return typeof input.eventData === 'string';
+
+        default:
+            return false;
+    }
+}
+export function ObjectWithKebabCaseKeysAdjacentEventClone(
+    input: ObjectWithKebabCaseKeysAdjacentEvent,
+): ObjectWithKebabCaseKeysAdjacentEvent {
+    switch (input.eventType) {
+        case `user-created`: {
+            let __value__: ObjectWithKebabCaseKeysAdjacentEventUserCreated;
+            __value__ = ObjectWithKebabCaseKeysAdjacentEventUserCreatedClone(
+                input.eventData,
+            );
+            return {
+                eventType: `user-created`,
+                eventData: __value__,
+            };
+        }
+
+        case `user-updated`: {
+            let __value__: string;
+            __value__ = input.eventData;
+            return {
+                eventType: `user-updated`,
+                eventData: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysAdjacentEventFromJson(
+    input: Record<string, unknown>,
+): ObjectWithKebabCaseKeysAdjacentEvent {
+    if (typeof input['event-type'] !== 'string') {
+        return ObjectWithKebabCaseKeysAdjacentEventNew();
+    }
+    switch (input['event-type']) {
+        case `user-created`: {
+            let __value__: ObjectWithKebabCaseKeysAdjacentEventUserCreated;
+            if (isObject(input['event-data'])) {
+                __value__ =
+                    ObjectWithKebabCaseKeysAdjacentEventUserCreatedFromJson(
+                        input['event-data'],
+                    );
+            } else {
+                __value__ =
+                    ObjectWithKebabCaseKeysAdjacentEventUserCreatedNew();
+            }
+            return {
+                eventType: `user-created`,
+                eventData: __value__,
+            };
+        }
+        case `user-updated`: {
+            let __value__: string;
+            __value__ = parseString(input['event-data']);
+            return {
+                eventType: `user-updated`,
+                eventData: __value__,
+            };
+        }
+        default: {
+            return ObjectWithKebabCaseKeysAdjacentEventNew();
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysAdjacentEventFromJsonString(
+    input: string,
+): ObjectWithKebabCaseKeysAdjacentEvent {
+    return ObjectWithKebabCaseKeysAdjacentEventFromJson(JSON.parse(input));
+}
+export function ObjectWithKebabCaseKeysAdjacentEventToJsonString(
+    input: ObjectWithKebabCaseKeysAdjacentEvent,
+): string {
+    switch (input.eventType) {
+        case `user-created`: {
+            let json = '{';
+            json += '"event-type":"user-created"';
+            json += ',"event-data":';
+            json += ObjectWithKebabCaseKeysAdjacentEventUserCreatedToJsonString(
+                input.eventData,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `user-updated`: {
+            let json = '{';
+            json += '"event-type":"user-updated"';
+            json += ',"event-data":';
+            json += serializeString(input.eventData);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithKebabCaseKeysAdjacentEventToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysAdjacentEvent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function ObjectWithKebabCaseKeysAdjacentEventToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysAdjacentEvent,
+): string {
+    return ObjectWithKebabCaseKeysAdjacentEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithKebabCaseKeysAdjacentEvent: TestClientValidator<ObjectWithKebabCaseKeysAdjacentEvent> =
+    {
+        new: ObjectWithKebabCaseKeysAdjacentEventNew,
+        validate: ObjectWithKebabCaseKeysAdjacentEventValidate,
+        clone: ObjectWithKebabCaseKeysAdjacentEventClone,
+        fromJson: ObjectWithKebabCaseKeysAdjacentEventFromJson,
+        fromJsonString: ObjectWithKebabCaseKeysAdjacentEventFromJsonString,
+        toJsonString: ObjectWithKebabCaseKeysAdjacentEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithKebabCaseKeysAdjacentEventToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithKebabCaseKeysAdjacentEventToUrlSearchParamsString,
+    };
+export interface ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+    userId: string;
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedNew(): ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+    return {
+        userId: '',
+    };
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedValidate(
+    input: unknown,
+): input is ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+    return isObject(input) && typeof input.userId === 'string';
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedClone(
+    input: ObjectWithKebabCaseKeysAdjacentEventUserCreated,
+): ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+    let _userid: string;
+    _userid = input.userId;
+    return {
+        userId: _userid,
+    };
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+    let _userid: string;
+    _userid = parseString(input['user-id']);
+    return {
+        userId: _userid,
+    };
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedFromJsonString(
+    input: string,
+): ObjectWithKebabCaseKeysAdjacentEventUserCreated {
+    return ObjectWithKebabCaseKeysAdjacentEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedToJsonString(
+    input: ObjectWithKebabCaseKeysAdjacentEventUserCreated,
+): string {
+    let json = '{';
+    json += '"user-id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedToUrlSearchParams(
+    input: ObjectWithKebabCaseKeysAdjacentEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user-id', input.userId);
+    return params;
+}
+export function ObjectWithKebabCaseKeysAdjacentEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithKebabCaseKeysAdjacentEventUserCreated,
+): string {
+    return ObjectWithKebabCaseKeysAdjacentEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithKebabCaseKeysAdjacentEventUserCreated: TestClientValidator<ObjectWithKebabCaseKeysAdjacentEventUserCreated> =
+    {
+        new: ObjectWithKebabCaseKeysAdjacentEventUserCreatedNew,
+        validate: ObjectWithKebabCaseKeysAdjacentEventUserCreatedValidate,
+        clone: ObjectWithKebabCaseKeysAdjacentEventUserCreatedClone,
+        fromJson: ObjectWithKebabCaseKeysAdjacentEventUserCreatedFromJson,
+        fromJsonString:
+            ObjectWithKebabCaseKeysAdjacentEventUserCreatedFromJsonString,
+        toJsonString:
+            ObjectWithKebabCaseKeysAdjacentEventUserCreatedToJsonString,
+        toUrlSearchParams:
+            ObjectWithKebabCaseKeysAdjacentEventUserCreatedToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithKebabCaseKeysAdjacentEventUserCreatedToUrlSearchParamsString,
     };
 
 export interface ObjectWithEveryNullableType {
@@ -6098,7 +6737,9 @@ export interface ObjectWithPascalCaseKeys {
     createdAt: Date;
     displayName: string;
     phoneNumber: string | null;
-    lastEvent: ObjectWithPascalCaseKeysLastEvent | null;
+    externalEvent: ObjectWithPascalCaseKeysExternalEvent | null;
+    internalEvent: ObjectWithPascalCaseKeysInternalEvent;
+    adjacentEvent: ObjectWithPascalCaseKeysAdjacentEvent;
     emailAddress?: string;
     isAdmin?: boolean;
 }
@@ -6107,7 +6748,9 @@ export function ObjectWithPascalCaseKeysNew(): ObjectWithPascalCaseKeys {
         createdAt: new Date(0),
         displayName: '',
         phoneNumber: null,
-        lastEvent: null,
+        externalEvent: null,
+        internalEvent: ObjectWithPascalCaseKeysInternalEventNew(),
+        adjacentEvent: ObjectWithPascalCaseKeysAdjacentEventNew(),
     };
 }
 export function ObjectWithPascalCaseKeysValidate(
@@ -6118,8 +6761,10 @@ export function ObjectWithPascalCaseKeysValidate(
         input.createdAt instanceof Date &&
         typeof input.displayName === 'string' &&
         (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
-        (ObjectWithPascalCaseKeysLastEventValidate(input.lastEvent) ||
-            input.lastEvent === null) &&
+        (ObjectWithPascalCaseKeysExternalEventValidate(input.externalEvent) ||
+            input.externalEvent === null) &&
+        ObjectWithPascalCaseKeysInternalEventValidate(input.internalEvent) &&
+        ObjectWithPascalCaseKeysAdjacentEventValidate(input.adjacentEvent) &&
         (typeof input.emailAddress === 'string' ||
             typeof input.emailAddress === 'undefined') &&
         (typeof input.isAdmin === 'boolean' ||
@@ -6135,12 +6780,22 @@ export function ObjectWithPascalCaseKeysClone(
     _DisplayName = input.displayName;
     let _PhoneNumber: string | null;
     _PhoneNumber = input.phoneNumber;
-    let _LastEvent: ObjectWithPascalCaseKeysLastEvent | null;
-    if (input.lastEvent !== null) {
-        _LastEvent = ObjectWithPascalCaseKeysLastEventClone(input.lastEvent);
+    let _ExternalEvent: ObjectWithPascalCaseKeysExternalEvent | null;
+    if (input.externalEvent !== null) {
+        _ExternalEvent = ObjectWithPascalCaseKeysExternalEventClone(
+            input.externalEvent,
+        );
     } else {
-        _LastEvent = null;
+        _ExternalEvent = null;
     }
+    let _InternalEvent: ObjectWithPascalCaseKeysInternalEvent;
+    _InternalEvent = ObjectWithPascalCaseKeysInternalEventClone(
+        input.internalEvent,
+    );
+    let _AdjacentEvent: ObjectWithPascalCaseKeysAdjacentEvent;
+    _AdjacentEvent = ObjectWithPascalCaseKeysAdjacentEventClone(
+        input.adjacentEvent,
+    );
     let _EmailAddress: string | undefined;
     if (typeof input.emailAddress !== 'undefined') {
         _EmailAddress = input.emailAddress;
@@ -6153,7 +6808,9 @@ export function ObjectWithPascalCaseKeysClone(
         createdAt: _CreatedAt,
         displayName: _DisplayName,
         phoneNumber: _PhoneNumber,
-        lastEvent: _LastEvent,
+        externalEvent: _ExternalEvent,
+        internalEvent: _InternalEvent,
+        adjacentEvent: _AdjacentEvent,
         emailAddress: _EmailAddress,
         isAdmin: _IsAdmin,
     };
@@ -6167,11 +6824,29 @@ export function ObjectWithPascalCaseKeysFromJson(
     _DisplayName = parseString(input.DisplayName);
     let _PhoneNumber: string | null;
     _PhoneNumber = parseNullableString(input.PhoneNumber);
-    let _LastEvent: ObjectWithPascalCaseKeysLastEvent | null;
-    if (isObject(input.LastEvent)) {
-        _LastEvent = ObjectWithPascalCaseKeysLastEventFromJson(input.LastEvent);
+    let _ExternalEvent: ObjectWithPascalCaseKeysExternalEvent | null;
+    if (isObject(input.ExternalEvent)) {
+        _ExternalEvent = ObjectWithPascalCaseKeysExternalEventFromJson(
+            input.ExternalEvent,
+        );
     } else {
-        _LastEvent = null;
+        _ExternalEvent = null;
+    }
+    let _InternalEvent: ObjectWithPascalCaseKeysInternalEvent;
+    if (isObject(input.InternalEvent)) {
+        _InternalEvent = ObjectWithPascalCaseKeysInternalEventFromJson(
+            input.InternalEvent,
+        );
+    } else {
+        _InternalEvent = ObjectWithPascalCaseKeysInternalEventNew();
+    }
+    let _AdjacentEvent: ObjectWithPascalCaseKeysAdjacentEvent;
+    if (isObject(input.AdjacentEvent)) {
+        _AdjacentEvent = ObjectWithPascalCaseKeysAdjacentEventFromJson(
+            input.AdjacentEvent,
+        );
+    } else {
+        _AdjacentEvent = ObjectWithPascalCaseKeysAdjacentEventNew();
     }
     let _EmailAddress: string | undefined;
     if (typeof input.EmailAddress !== 'undefined') {
@@ -6185,7 +6860,9 @@ export function ObjectWithPascalCaseKeysFromJson(
         createdAt: _CreatedAt,
         displayName: _DisplayName,
         phoneNumber: _PhoneNumber,
-        lastEvent: _LastEvent,
+        externalEvent: _ExternalEvent,
+        internalEvent: _InternalEvent,
+        adjacentEvent: _AdjacentEvent,
         emailAddress: _EmailAddress,
         isAdmin: _IsAdmin,
     };
@@ -6209,12 +6886,22 @@ export function ObjectWithPascalCaseKeysToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"LastEvent":';
-    if (input.lastEvent != null) {
-        json += ObjectWithPascalCaseKeysLastEventToJsonString(input.lastEvent);
+    json += ',"ExternalEvent":';
+    if (input.externalEvent != null) {
+        json += ObjectWithPascalCaseKeysExternalEventToJsonString(
+            input.externalEvent,
+        );
     } else {
         json += 'null';
     }
+    json += ',"InternalEvent":';
+    json += ObjectWithPascalCaseKeysInternalEventToJsonString(
+        input.internalEvent,
+    );
+    json += ',"AdjacentEvent":';
+    json += ObjectWithPascalCaseKeysAdjacentEventToJsonString(
+        input.adjacentEvent,
+    );
     if (typeof input.emailAddress !== 'undefined') {
         json += `,"EmailAddress":`;
         json += serializeString(input.emailAddress);
@@ -6234,7 +6921,13 @@ export function ObjectWithPascalCaseKeysToUrlSearchParams(
     params.set('DisplayName', input.displayName);
     params.set('PhoneNumber', `${input.phoneNumber}`);
     console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithPascalCaseKeys/LastEvent.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithPascalCaseKeys/ExternalEvent.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithPascalCaseKeys/InternalEvent.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithPascalCaseKeys/AdjacentEvent.',
     );
     if (typeof input.emailAddress !== 'undefined') {
         params.set('EmailAddress', input.emailAddress);
@@ -6261,28 +6954,28 @@ export const $$ObjectWithPascalCaseKeys: TestClientValidator<ObjectWithPascalCas
         toUrlSearchParamsString:
             ObjectWithPascalCaseKeysToUrlSearchParamsString,
     };
-export type ObjectWithPascalCaseKeysLastEvent =
+export type ObjectWithPascalCaseKeysExternalEvent =
     | {
           type: `UserCreated`;
-          value: ObjectWithPascalCaseKeysLastEventUserCreated;
+          value: ObjectWithPascalCaseKeysExternalEventUserCreated;
       }
     | {
           type: `UserUpdated`;
-          value: ObjectWithPascalCaseKeysLastEventUserUpdated;
+          value: ObjectWithPascalCaseKeysExternalEventUserUpdated;
       }
     | {
           type: `UserDeleted`;
-          value: ObjectWithPascalCaseKeysLastEventUserDeleted;
+          value: ObjectWithPascalCaseKeysExternalEventUserDeleted;
       };
-export function ObjectWithPascalCaseKeysLastEventNew(): ObjectWithPascalCaseKeysLastEvent {
+export function ObjectWithPascalCaseKeysExternalEventNew(): ObjectWithPascalCaseKeysExternalEvent {
     return {
         type: `UserCreated`,
-        value: ObjectWithPascalCaseKeysLastEventUserCreatedNew(),
+        value: ObjectWithPascalCaseKeysExternalEventUserCreatedNew(),
     };
 }
-export function ObjectWithPascalCaseKeysLastEventValidate(
+export function ObjectWithPascalCaseKeysExternalEventValidate(
     input: unknown,
-): input is ObjectWithPascalCaseKeysLastEvent {
+): input is ObjectWithPascalCaseKeysExternalEvent {
     if (!isObject(input)) {
         return false;
     }
@@ -6291,17 +6984,17 @@ export function ObjectWithPascalCaseKeysLastEventValidate(
     }
     switch (input.type) {
         case `UserCreated`:
-            return ObjectWithPascalCaseKeysLastEventUserCreatedValidate(
+            return ObjectWithPascalCaseKeysExternalEventUserCreatedValidate(
                 input.value,
             );
 
         case `UserUpdated`:
-            return ObjectWithPascalCaseKeysLastEventUserUpdatedValidate(
+            return ObjectWithPascalCaseKeysExternalEventUserUpdatedValidate(
                 input.value,
             );
 
         case `UserDeleted`:
-            return ObjectWithPascalCaseKeysLastEventUserDeletedValidate(
+            return ObjectWithPascalCaseKeysExternalEventUserDeletedValidate(
                 input.value,
             );
 
@@ -6309,13 +7002,13 @@ export function ObjectWithPascalCaseKeysLastEventValidate(
             return false;
     }
 }
-export function ObjectWithPascalCaseKeysLastEventClone(
-    input: ObjectWithPascalCaseKeysLastEvent,
-): ObjectWithPascalCaseKeysLastEvent {
+export function ObjectWithPascalCaseKeysExternalEventClone(
+    input: ObjectWithPascalCaseKeysExternalEvent,
+): ObjectWithPascalCaseKeysExternalEvent {
     switch (input.type) {
         case `UserCreated`: {
-            let __value__: ObjectWithPascalCaseKeysLastEventUserCreated;
-            __value__ = ObjectWithPascalCaseKeysLastEventUserCreatedClone(
+            let __value__: ObjectWithPascalCaseKeysExternalEventUserCreated;
+            __value__ = ObjectWithPascalCaseKeysExternalEventUserCreatedClone(
                 input.value,
             );
             return {
@@ -6325,8 +7018,8 @@ export function ObjectWithPascalCaseKeysLastEventClone(
         }
 
         case `UserUpdated`: {
-            let __value__: ObjectWithPascalCaseKeysLastEventUserUpdated;
-            __value__ = ObjectWithPascalCaseKeysLastEventUserUpdatedClone(
+            let __value__: ObjectWithPascalCaseKeysExternalEventUserUpdated;
+            __value__ = ObjectWithPascalCaseKeysExternalEventUserUpdatedClone(
                 input.value,
             );
             return {
@@ -6336,8 +7029,8 @@ export function ObjectWithPascalCaseKeysLastEventClone(
         }
 
         case `UserDeleted`: {
-            let __value__: ObjectWithPascalCaseKeysLastEventUserDeleted;
-            __value__ = ObjectWithPascalCaseKeysLastEventUserDeletedClone(
+            let __value__: ObjectWithPascalCaseKeysExternalEventUserDeleted;
+            __value__ = ObjectWithPascalCaseKeysExternalEventUserDeletedClone(
                 input.value,
             );
             return {
@@ -6350,17 +7043,18 @@ export function ObjectWithPascalCaseKeysLastEventClone(
             throw new Error(`Unknown union variant: ${(input as any).type}`);
     }
 }
-export function ObjectWithPascalCaseKeysLastEventFromJson(
+export function ObjectWithPascalCaseKeysExternalEventFromJson(
     input: Record<string, unknown>,
-): ObjectWithPascalCaseKeysLastEvent {
+): ObjectWithPascalCaseKeysExternalEvent {
     if (`UserCreated` in input) {
-        let __value__: ObjectWithPascalCaseKeysLastEventUserCreated;
+        let __value__: ObjectWithPascalCaseKeysExternalEventUserCreated;
         if (isObject(input[`UserCreated`])) {
-            __value__ = ObjectWithPascalCaseKeysLastEventUserCreatedFromJson(
-                input[`UserCreated`],
-            );
+            __value__ =
+                ObjectWithPascalCaseKeysExternalEventUserCreatedFromJson(
+                    input[`UserCreated`],
+                );
         } else {
-            __value__ = ObjectWithPascalCaseKeysLastEventUserCreatedNew();
+            __value__ = ObjectWithPascalCaseKeysExternalEventUserCreatedNew();
         }
         return {
             type: `UserCreated`,
@@ -6369,13 +7063,14 @@ export function ObjectWithPascalCaseKeysLastEventFromJson(
     }
 
     if (`UserUpdated` in input) {
-        let __value__: ObjectWithPascalCaseKeysLastEventUserUpdated;
+        let __value__: ObjectWithPascalCaseKeysExternalEventUserUpdated;
         if (isObject(input[`UserUpdated`])) {
-            __value__ = ObjectWithPascalCaseKeysLastEventUserUpdatedFromJson(
-                input[`UserUpdated`],
-            );
+            __value__ =
+                ObjectWithPascalCaseKeysExternalEventUserUpdatedFromJson(
+                    input[`UserUpdated`],
+                );
         } else {
-            __value__ = ObjectWithPascalCaseKeysLastEventUserUpdatedNew();
+            __value__ = ObjectWithPascalCaseKeysExternalEventUserUpdatedNew();
         }
         return {
             type: `UserUpdated`,
@@ -6384,37 +7079,39 @@ export function ObjectWithPascalCaseKeysLastEventFromJson(
     }
 
     if (`UserDeleted` in input) {
-        let __value__: ObjectWithPascalCaseKeysLastEventUserDeleted;
+        let __value__: ObjectWithPascalCaseKeysExternalEventUserDeleted;
         if (isObject(input[`UserDeleted`])) {
-            __value__ = ObjectWithPascalCaseKeysLastEventUserDeletedFromJson(
-                input[`UserDeleted`],
-            );
+            __value__ =
+                ObjectWithPascalCaseKeysExternalEventUserDeletedFromJson(
+                    input[`UserDeleted`],
+                );
         } else {
-            __value__ = ObjectWithPascalCaseKeysLastEventUserDeletedNew();
+            __value__ = ObjectWithPascalCaseKeysExternalEventUserDeletedNew();
         }
         return {
             type: `UserDeleted`,
             value: __value__,
         };
     }
-    return ObjectWithPascalCaseKeysLastEventNew();
+    return ObjectWithPascalCaseKeysExternalEventNew();
 }
-export function ObjectWithPascalCaseKeysLastEventFromJsonString(
+export function ObjectWithPascalCaseKeysExternalEventFromJsonString(
     input: string,
-): ObjectWithPascalCaseKeysLastEvent {
-    return ObjectWithPascalCaseKeysLastEventFromJson(JSON.parse(input));
+): ObjectWithPascalCaseKeysExternalEvent {
+    return ObjectWithPascalCaseKeysExternalEventFromJson(JSON.parse(input));
 }
-export function ObjectWithPascalCaseKeysLastEventToJsonString(
-    input: ObjectWithPascalCaseKeysLastEvent,
+export function ObjectWithPascalCaseKeysExternalEventToJsonString(
+    input: ObjectWithPascalCaseKeysExternalEvent,
 ): string {
     switch (input.type) {
         case `UserCreated`: {
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithPascalCaseKeysLastEventUserCreatedToJsonString(
-                input.value,
-            );
+            json +=
+                ObjectWithPascalCaseKeysExternalEventUserCreatedToJsonString(
+                    input.value,
+                );
             json += '}';
             return json;
         }
@@ -6423,9 +7120,10 @@ export function ObjectWithPascalCaseKeysLastEventToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithPascalCaseKeysLastEventUserUpdatedToJsonString(
-                input.value,
-            );
+            json +=
+                ObjectWithPascalCaseKeysExternalEventUserUpdatedToJsonString(
+                    input.value,
+                );
             json += '}';
             return json;
         }
@@ -6434,9 +7132,10 @@ export function ObjectWithPascalCaseKeysLastEventToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithPascalCaseKeysLastEventUserDeletedToJsonString(
-                input.value,
-            );
+            json +=
+                ObjectWithPascalCaseKeysExternalEventUserDeletedToJsonString(
+                    input.value,
+                );
             json += '}';
             return json;
         }
@@ -6447,70 +7146,73 @@ export function ObjectWithPascalCaseKeysLastEventToJsonString(
         }
     }
 }
-export function ObjectWithPascalCaseKeysLastEventToUrlSearchParams(
-    input: ObjectWithPascalCaseKeysLastEvent,
+export function ObjectWithPascalCaseKeysExternalEventToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysExternalEvent,
 ): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function ObjectWithPascalCaseKeysLastEventToUrlSearchParamsString(
-    input: ObjectWithPascalCaseKeysLastEvent,
+export function ObjectWithPascalCaseKeysExternalEventToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysExternalEvent,
 ): string {
-    return ObjectWithPascalCaseKeysLastEventToUrlSearchParams(input).toString();
+    return ObjectWithPascalCaseKeysExternalEventToUrlSearchParams(
+        input,
+    ).toString();
 }
-export const $$ObjectWithPascalCaseKeysLastEvent: TestClientValidator<ObjectWithPascalCaseKeysLastEvent> =
+export const $$ObjectWithPascalCaseKeysExternalEvent: TestClientValidator<ObjectWithPascalCaseKeysExternalEvent> =
     {
-        new: ObjectWithPascalCaseKeysLastEventNew,
-        validate: ObjectWithPascalCaseKeysLastEventValidate,
-        clone: ObjectWithPascalCaseKeysLastEventClone,
-        fromJson: ObjectWithPascalCaseKeysLastEventFromJson,
-        fromJsonString: ObjectWithPascalCaseKeysLastEventFromJsonString,
-        toJsonString: ObjectWithPascalCaseKeysLastEventToJsonString,
-        toUrlSearchParams: ObjectWithPascalCaseKeysLastEventToUrlSearchParams,
+        new: ObjectWithPascalCaseKeysExternalEventNew,
+        validate: ObjectWithPascalCaseKeysExternalEventValidate,
+        clone: ObjectWithPascalCaseKeysExternalEventClone,
+        fromJson: ObjectWithPascalCaseKeysExternalEventFromJson,
+        fromJsonString: ObjectWithPascalCaseKeysExternalEventFromJsonString,
+        toJsonString: ObjectWithPascalCaseKeysExternalEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithPascalCaseKeysExternalEventToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithPascalCaseKeysLastEventToUrlSearchParamsString,
+            ObjectWithPascalCaseKeysExternalEventToUrlSearchParamsString,
     };
-export interface ObjectWithPascalCaseKeysLastEventUserCreated {
+export interface ObjectWithPascalCaseKeysExternalEventUserCreated {
     userId: string;
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedNew(): ObjectWithPascalCaseKeysLastEventUserCreated {
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedNew(): ObjectWithPascalCaseKeysExternalEventUserCreated {
     return {
         userId: '',
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedValidate(
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedValidate(
     input: unknown,
-): input is ObjectWithPascalCaseKeysLastEventUserCreated {
+): input is ObjectWithPascalCaseKeysExternalEventUserCreated {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedClone(
-    input: ObjectWithPascalCaseKeysLastEventUserCreated,
-): ObjectWithPascalCaseKeysLastEventUserCreated {
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedClone(
+    input: ObjectWithPascalCaseKeysExternalEventUserCreated,
+): ObjectWithPascalCaseKeysExternalEventUserCreated {
     let _UserId: string;
     _UserId = input.userId;
     return {
         userId: _UserId,
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedFromJson(
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedFromJson(
     input: Record<string, unknown>,
-): ObjectWithPascalCaseKeysLastEventUserCreated {
+): ObjectWithPascalCaseKeysExternalEventUserCreated {
     let _UserId: string;
     _UserId = parseString(input.UserId);
     return {
         userId: _UserId,
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedFromJsonString(
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedFromJsonString(
     input: string,
-): ObjectWithPascalCaseKeysLastEventUserCreated {
-    return ObjectWithPascalCaseKeysLastEventUserCreatedFromJson(
+): ObjectWithPascalCaseKeysExternalEventUserCreated {
+    return ObjectWithPascalCaseKeysExternalEventUserCreatedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedToJsonString(
-    input: ObjectWithPascalCaseKeysLastEventUserCreated,
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedToJsonString(
+    input: ObjectWithPascalCaseKeysExternalEventUserCreated,
 ): string {
     let json = '{';
     json += '"UserId":';
@@ -6518,75 +7220,76 @@ export function ObjectWithPascalCaseKeysLastEventUserCreatedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParams(
-    input: ObjectWithPascalCaseKeysLastEventUserCreated,
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysExternalEventUserCreated,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('UserId', input.userId);
     return params;
 }
-export function ObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParamsString(
-    input: ObjectWithPascalCaseKeysLastEventUserCreated,
+export function ObjectWithPascalCaseKeysExternalEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysExternalEventUserCreated,
 ): string {
-    return ObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParams(
+    return ObjectWithPascalCaseKeysExternalEventUserCreatedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithPascalCaseKeysLastEventUserCreated: TestClientValidator<ObjectWithPascalCaseKeysLastEventUserCreated> =
+export const $$ObjectWithPascalCaseKeysExternalEventUserCreated: TestClientValidator<ObjectWithPascalCaseKeysExternalEventUserCreated> =
     {
-        new: ObjectWithPascalCaseKeysLastEventUserCreatedNew,
-        validate: ObjectWithPascalCaseKeysLastEventUserCreatedValidate,
-        clone: ObjectWithPascalCaseKeysLastEventUserCreatedClone,
-        fromJson: ObjectWithPascalCaseKeysLastEventUserCreatedFromJson,
+        new: ObjectWithPascalCaseKeysExternalEventUserCreatedNew,
+        validate: ObjectWithPascalCaseKeysExternalEventUserCreatedValidate,
+        clone: ObjectWithPascalCaseKeysExternalEventUserCreatedClone,
+        fromJson: ObjectWithPascalCaseKeysExternalEventUserCreatedFromJson,
         fromJsonString:
-            ObjectWithPascalCaseKeysLastEventUserCreatedFromJsonString,
-        toJsonString: ObjectWithPascalCaseKeysLastEventUserCreatedToJsonString,
+            ObjectWithPascalCaseKeysExternalEventUserCreatedFromJsonString,
+        toJsonString:
+            ObjectWithPascalCaseKeysExternalEventUserCreatedToJsonString,
         toUrlSearchParams:
-            ObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParams,
+            ObjectWithPascalCaseKeysExternalEventUserCreatedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithPascalCaseKeysLastEventUserCreatedToUrlSearchParamsString,
+            ObjectWithPascalCaseKeysExternalEventUserCreatedToUrlSearchParamsString,
     };
 
-export interface ObjectWithPascalCaseKeysLastEventUserUpdated {
+export interface ObjectWithPascalCaseKeysExternalEventUserUpdated {
     userId: string;
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedNew(): ObjectWithPascalCaseKeysLastEventUserUpdated {
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedNew(): ObjectWithPascalCaseKeysExternalEventUserUpdated {
     return {
         userId: '',
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedValidate(
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedValidate(
     input: unknown,
-): input is ObjectWithPascalCaseKeysLastEventUserUpdated {
+): input is ObjectWithPascalCaseKeysExternalEventUserUpdated {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedClone(
-    input: ObjectWithPascalCaseKeysLastEventUserUpdated,
-): ObjectWithPascalCaseKeysLastEventUserUpdated {
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedClone(
+    input: ObjectWithPascalCaseKeysExternalEventUserUpdated,
+): ObjectWithPascalCaseKeysExternalEventUserUpdated {
     let _UserId: string;
     _UserId = input.userId;
     return {
         userId: _UserId,
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedFromJson(
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedFromJson(
     input: Record<string, unknown>,
-): ObjectWithPascalCaseKeysLastEventUserUpdated {
+): ObjectWithPascalCaseKeysExternalEventUserUpdated {
     let _UserId: string;
     _UserId = parseString(input.UserId);
     return {
         userId: _UserId,
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedFromJsonString(
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedFromJsonString(
     input: string,
-): ObjectWithPascalCaseKeysLastEventUserUpdated {
-    return ObjectWithPascalCaseKeysLastEventUserUpdatedFromJson(
+): ObjectWithPascalCaseKeysExternalEventUserUpdated {
+    return ObjectWithPascalCaseKeysExternalEventUserUpdatedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedToJsonString(
-    input: ObjectWithPascalCaseKeysLastEventUserUpdated,
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedToJsonString(
+    input: ObjectWithPascalCaseKeysExternalEventUserUpdated,
 ): string {
     let json = '{';
     json += '"UserId":';
@@ -6594,75 +7297,76 @@ export function ObjectWithPascalCaseKeysLastEventUserUpdatedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParams(
-    input: ObjectWithPascalCaseKeysLastEventUserUpdated,
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysExternalEventUserUpdated,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('UserId', input.userId);
     return params;
 }
-export function ObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParamsString(
-    input: ObjectWithPascalCaseKeysLastEventUserUpdated,
+export function ObjectWithPascalCaseKeysExternalEventUserUpdatedToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysExternalEventUserUpdated,
 ): string {
-    return ObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParams(
+    return ObjectWithPascalCaseKeysExternalEventUserUpdatedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithPascalCaseKeysLastEventUserUpdated: TestClientValidator<ObjectWithPascalCaseKeysLastEventUserUpdated> =
+export const $$ObjectWithPascalCaseKeysExternalEventUserUpdated: TestClientValidator<ObjectWithPascalCaseKeysExternalEventUserUpdated> =
     {
-        new: ObjectWithPascalCaseKeysLastEventUserUpdatedNew,
-        validate: ObjectWithPascalCaseKeysLastEventUserUpdatedValidate,
-        clone: ObjectWithPascalCaseKeysLastEventUserUpdatedClone,
-        fromJson: ObjectWithPascalCaseKeysLastEventUserUpdatedFromJson,
+        new: ObjectWithPascalCaseKeysExternalEventUserUpdatedNew,
+        validate: ObjectWithPascalCaseKeysExternalEventUserUpdatedValidate,
+        clone: ObjectWithPascalCaseKeysExternalEventUserUpdatedClone,
+        fromJson: ObjectWithPascalCaseKeysExternalEventUserUpdatedFromJson,
         fromJsonString:
-            ObjectWithPascalCaseKeysLastEventUserUpdatedFromJsonString,
-        toJsonString: ObjectWithPascalCaseKeysLastEventUserUpdatedToJsonString,
+            ObjectWithPascalCaseKeysExternalEventUserUpdatedFromJsonString,
+        toJsonString:
+            ObjectWithPascalCaseKeysExternalEventUserUpdatedToJsonString,
         toUrlSearchParams:
-            ObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParams,
+            ObjectWithPascalCaseKeysExternalEventUserUpdatedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithPascalCaseKeysLastEventUserUpdatedToUrlSearchParamsString,
+            ObjectWithPascalCaseKeysExternalEventUserUpdatedToUrlSearchParamsString,
     };
 
-export interface ObjectWithPascalCaseKeysLastEventUserDeleted {
+export interface ObjectWithPascalCaseKeysExternalEventUserDeleted {
     userId: string;
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedNew(): ObjectWithPascalCaseKeysLastEventUserDeleted {
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedNew(): ObjectWithPascalCaseKeysExternalEventUserDeleted {
     return {
         userId: '',
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedValidate(
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedValidate(
     input: unknown,
-): input is ObjectWithPascalCaseKeysLastEventUserDeleted {
+): input is ObjectWithPascalCaseKeysExternalEventUserDeleted {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedClone(
-    input: ObjectWithPascalCaseKeysLastEventUserDeleted,
-): ObjectWithPascalCaseKeysLastEventUserDeleted {
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedClone(
+    input: ObjectWithPascalCaseKeysExternalEventUserDeleted,
+): ObjectWithPascalCaseKeysExternalEventUserDeleted {
     let _UserId: string;
     _UserId = input.userId;
     return {
         userId: _UserId,
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedFromJson(
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedFromJson(
     input: Record<string, unknown>,
-): ObjectWithPascalCaseKeysLastEventUserDeleted {
+): ObjectWithPascalCaseKeysExternalEventUserDeleted {
     let _UserId: string;
     _UserId = parseString(input.UserId);
     return {
         userId: _UserId,
     };
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedFromJsonString(
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedFromJsonString(
     input: string,
-): ObjectWithPascalCaseKeysLastEventUserDeleted {
-    return ObjectWithPascalCaseKeysLastEventUserDeletedFromJson(
+): ObjectWithPascalCaseKeysExternalEventUserDeleted {
+    return ObjectWithPascalCaseKeysExternalEventUserDeletedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedToJsonString(
-    input: ObjectWithPascalCaseKeysLastEventUserDeleted,
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedToJsonString(
+    input: ObjectWithPascalCaseKeysExternalEventUserDeleted,
 ): string {
     let json = '{';
     json += '"UserId":';
@@ -6670,40 +7374,583 @@ export function ObjectWithPascalCaseKeysLastEventUserDeletedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParams(
-    input: ObjectWithPascalCaseKeysLastEventUserDeleted,
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysExternalEventUserDeleted,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('UserId', input.userId);
     return params;
 }
-export function ObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParamsString(
-    input: ObjectWithPascalCaseKeysLastEventUserDeleted,
+export function ObjectWithPascalCaseKeysExternalEventUserDeletedToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysExternalEventUserDeleted,
 ): string {
-    return ObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParams(
+    return ObjectWithPascalCaseKeysExternalEventUserDeletedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithPascalCaseKeysLastEventUserDeleted: TestClientValidator<ObjectWithPascalCaseKeysLastEventUserDeleted> =
+export const $$ObjectWithPascalCaseKeysExternalEventUserDeleted: TestClientValidator<ObjectWithPascalCaseKeysExternalEventUserDeleted> =
     {
-        new: ObjectWithPascalCaseKeysLastEventUserDeletedNew,
-        validate: ObjectWithPascalCaseKeysLastEventUserDeletedValidate,
-        clone: ObjectWithPascalCaseKeysLastEventUserDeletedClone,
-        fromJson: ObjectWithPascalCaseKeysLastEventUserDeletedFromJson,
+        new: ObjectWithPascalCaseKeysExternalEventUserDeletedNew,
+        validate: ObjectWithPascalCaseKeysExternalEventUserDeletedValidate,
+        clone: ObjectWithPascalCaseKeysExternalEventUserDeletedClone,
+        fromJson: ObjectWithPascalCaseKeysExternalEventUserDeletedFromJson,
         fromJsonString:
-            ObjectWithPascalCaseKeysLastEventUserDeletedFromJsonString,
-        toJsonString: ObjectWithPascalCaseKeysLastEventUserDeletedToJsonString,
+            ObjectWithPascalCaseKeysExternalEventUserDeletedFromJsonString,
+        toJsonString:
+            ObjectWithPascalCaseKeysExternalEventUserDeletedToJsonString,
         toUrlSearchParams:
-            ObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParams,
+            ObjectWithPascalCaseKeysExternalEventUserDeletedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithPascalCaseKeysLastEventUserDeletedToUrlSearchParamsString,
+            ObjectWithPascalCaseKeysExternalEventUserDeletedToUrlSearchParamsString,
+    };
+
+export type ObjectWithPascalCaseKeysInternalEvent =
+    | ObjectWithPascalCaseKeysInternalEventUserCreated
+    | ObjectWithPascalCaseKeysInternalEventUserUpdated;
+export function ObjectWithPascalCaseKeysInternalEventNew(): ObjectWithPascalCaseKeysInternalEvent {
+    return ObjectWithPascalCaseKeysInternalEventUserCreatedNew();
+}
+export function ObjectWithPascalCaseKeysInternalEventValidate(
+    input: unknown,
+): input is ObjectWithPascalCaseKeysInternalEvent {
+    return (
+        ObjectWithPascalCaseKeysInternalEventUserCreatedValidate(input) ||
+        ObjectWithPascalCaseKeysInternalEventUserUpdatedValidate(input)
+    );
+}
+export function ObjectWithPascalCaseKeysInternalEventClone(
+    input: ObjectWithPascalCaseKeysInternalEvent,
+): ObjectWithPascalCaseKeysInternalEvent {
+    switch (input.eventType) {
+        case `UserCreated`: {
+            let __value__: ObjectWithPascalCaseKeysInternalEventUserCreated;
+            __value__ =
+                ObjectWithPascalCaseKeysInternalEventUserCreatedClone(input);
+            return __value__;
+        }
+
+        case `UserUpdated`: {
+            let __value__: ObjectWithPascalCaseKeysInternalEventUserUpdated;
+            __value__ =
+                ObjectWithPascalCaseKeysInternalEventUserUpdatedClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysInternalEventFromJson(
+    input: Record<string, unknown>,
+): ObjectWithPascalCaseKeysInternalEvent {
+    switch (input.EventType) {
+        case `UserCreated`: {
+            return ObjectWithPascalCaseKeysInternalEventUserCreatedFromJson(
+                input,
+            );
+        }
+        case `UserUpdated`: {
+            return ObjectWithPascalCaseKeysInternalEventUserUpdatedFromJson(
+                input,
+            );
+        }
+        default: {
+            return ObjectWithPascalCaseKeysInternalEventUserCreatedNew();
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysInternalEventFromJsonString(
+    input: string,
+): ObjectWithPascalCaseKeysInternalEvent {
+    return ObjectWithPascalCaseKeysInternalEventFromJson(JSON.parse(input));
+}
+export function ObjectWithPascalCaseKeysInternalEventToJsonString(
+    input: ObjectWithPascalCaseKeysInternalEvent,
+): string {
+    switch (input.eventType) {
+        case `UserCreated`: {
+            return ObjectWithPascalCaseKeysInternalEventUserCreatedToJsonString(
+                input,
+            );
+        }
+
+        case `UserUpdated`: {
+            return ObjectWithPascalCaseKeysInternalEventUserUpdatedToJsonString(
+                input,
+            );
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysInternalEventToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysInternalEvent,
+): URLSearchParams {
+    switch (input.eventType) {
+        case `UserCreated`: {
+            return ObjectWithPascalCaseKeysInternalEventUserCreatedToUrlSearchParams(
+                input,
+            );
+        }
+        case `UserUpdated`: {
+            return ObjectWithPascalCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+                input,
+            );
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysInternalEventToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysInternalEvent,
+): string {
+    return ObjectWithPascalCaseKeysInternalEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithPascalCaseKeysInternalEvent: TestClientValidator<ObjectWithPascalCaseKeysInternalEvent> =
+    {
+        new: ObjectWithPascalCaseKeysInternalEventNew,
+        validate: ObjectWithPascalCaseKeysInternalEventValidate,
+        clone: ObjectWithPascalCaseKeysInternalEventClone,
+        fromJson: ObjectWithPascalCaseKeysInternalEventFromJson,
+        fromJsonString: ObjectWithPascalCaseKeysInternalEventFromJsonString,
+        toJsonString: ObjectWithPascalCaseKeysInternalEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithPascalCaseKeysInternalEventToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithPascalCaseKeysInternalEventToUrlSearchParamsString,
+    };
+export interface ObjectWithPascalCaseKeysInternalEventUserCreated {
+    eventType: `UserCreated`;
+    userId: string;
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedNew(): ObjectWithPascalCaseKeysInternalEventUserCreated {
+    return {
+        eventType: `UserCreated`,
+        userId: '',
+    };
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedValidate(
+    input: unknown,
+): input is ObjectWithPascalCaseKeysInternalEventUserCreated {
+    return (
+        isObject(input) &&
+        input.eventType === `UserCreated` &&
+        typeof input.userId === 'string'
+    );
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedClone(
+    input: ObjectWithPascalCaseKeysInternalEventUserCreated,
+): ObjectWithPascalCaseKeysInternalEventUserCreated {
+    const _eventType = `UserCreated`;
+    let _UserId: string;
+    _UserId = input.userId;
+    return {
+        eventType: _eventType,
+        userId: _UserId,
+    };
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithPascalCaseKeysInternalEventUserCreated {
+    const _eventType = `UserCreated`;
+    let _UserId: string;
+    _UserId = parseString(input.UserId);
+    return {
+        eventType: _eventType,
+        userId: _UserId,
+    };
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedFromJsonString(
+    input: string,
+): ObjectWithPascalCaseKeysInternalEventUserCreated {
+    return ObjectWithPascalCaseKeysInternalEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedToJsonString(
+    input: ObjectWithPascalCaseKeysInternalEventUserCreated,
+): string {
+    let json = '{';
+    json += '"EventType":"UserCreated"';
+    json += ',"UserId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysInternalEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('EventType', `UserCreated`);
+    params.set('UserId', input.userId);
+    return params;
+}
+export function ObjectWithPascalCaseKeysInternalEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysInternalEventUserCreated,
+): string {
+    return ObjectWithPascalCaseKeysInternalEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface ObjectWithPascalCaseKeysInternalEventUserUpdated {
+    eventType: `UserUpdated`;
+    userId: string;
+    updatedAt?: Date;
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedNew(): ObjectWithPascalCaseKeysInternalEventUserUpdated {
+    return {
+        eventType: `UserUpdated`,
+        userId: '',
+    };
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedValidate(
+    input: unknown,
+): input is ObjectWithPascalCaseKeysInternalEventUserUpdated {
+    return (
+        isObject(input) &&
+        input.eventType === `UserUpdated` &&
+        typeof input.userId === 'string' &&
+        (input.updatedAt instanceof Date ||
+            typeof input.updatedAt === 'undefined')
+    );
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedClone(
+    input: ObjectWithPascalCaseKeysInternalEventUserUpdated,
+): ObjectWithPascalCaseKeysInternalEventUserUpdated {
+    const _eventType = `UserUpdated`;
+    let _UserId: string;
+    _UserId = input.userId;
+    let _UpdatedAt: Date | undefined;
+    if (typeof input.updatedAt !== 'undefined') {
+        _UpdatedAt = new Date(input.updatedAt.getTime());
+    }
+    return {
+        eventType: _eventType,
+        userId: _UserId,
+        updatedAt: _UpdatedAt,
+    };
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithPascalCaseKeysInternalEventUserUpdated {
+    const _eventType = `UserUpdated`;
+    let _UserId: string;
+    _UserId = parseString(input.UserId);
+    let _UpdatedAt: Date | undefined;
+    if (typeof input.UpdatedAt !== 'undefined') {
+        _UpdatedAt = parseTimestamp(input.UpdatedAt);
+    }
+    return {
+        eventType: _eventType,
+        userId: _UserId,
+        updatedAt: _UpdatedAt,
+    };
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedFromJsonString(
+    input: string,
+): ObjectWithPascalCaseKeysInternalEventUserUpdated {
+    return ObjectWithPascalCaseKeysInternalEventUserUpdatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedToJsonString(
+    input: ObjectWithPascalCaseKeysInternalEventUserUpdated,
+): string {
+    let json = '{';
+    json += '"EventType":"UserUpdated"';
+    json += ',"UserId":';
+    json += serializeString(input.userId);
+    if (typeof input.updatedAt !== 'undefined') {
+        json += `,"UpdatedAt":`;
+        json += `"${input.updatedAt.toISOString()}"`;
+    }
+    json += '}';
+    return json;
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysInternalEventUserUpdated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('EventType', `UserUpdated`);
+    params.set('UserId', input.userId);
+    if (typeof input.updatedAt !== 'undefined') {
+        params.set('UpdatedAt', input.updatedAt.toISOString());
+    }
+    return params;
+}
+export function ObjectWithPascalCaseKeysInternalEventUserUpdatedToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysInternalEventUserUpdated,
+): string {
+    return ObjectWithPascalCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type ObjectWithPascalCaseKeysAdjacentEvent =
+    | {
+          eventType: `UserCreated`;
+          eventData: ObjectWithPascalCaseKeysAdjacentEventUserCreated;
+      }
+    | { eventType: `UserUpdated`; eventData: string };
+export function ObjectWithPascalCaseKeysAdjacentEventNew(): ObjectWithPascalCaseKeysAdjacentEvent {
+    return {
+        eventType: `UserCreated`,
+        eventData: ObjectWithPascalCaseKeysAdjacentEventUserCreatedNew(),
+    };
+}
+export function ObjectWithPascalCaseKeysAdjacentEventValidate(
+    input: unknown,
+): input is ObjectWithPascalCaseKeysAdjacentEvent {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('eventType' in input) || !('eventData' in input)) {
+        return false;
+    }
+    switch (input.eventType) {
+        case `UserCreated`:
+            return ObjectWithPascalCaseKeysAdjacentEventUserCreatedValidate(
+                input.eventData,
+            );
+
+        case `UserUpdated`:
+            return typeof input.eventData === 'string';
+
+        default:
+            return false;
+    }
+}
+export function ObjectWithPascalCaseKeysAdjacentEventClone(
+    input: ObjectWithPascalCaseKeysAdjacentEvent,
+): ObjectWithPascalCaseKeysAdjacentEvent {
+    switch (input.eventType) {
+        case `UserCreated`: {
+            let __value__: ObjectWithPascalCaseKeysAdjacentEventUserCreated;
+            __value__ = ObjectWithPascalCaseKeysAdjacentEventUserCreatedClone(
+                input.eventData,
+            );
+            return {
+                eventType: `UserCreated`,
+                eventData: __value__,
+            };
+        }
+
+        case `UserUpdated`: {
+            let __value__: string;
+            __value__ = input.eventData;
+            return {
+                eventType: `UserUpdated`,
+                eventData: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysAdjacentEventFromJson(
+    input: Record<string, unknown>,
+): ObjectWithPascalCaseKeysAdjacentEvent {
+    if (typeof input.EventType !== 'string') {
+        return ObjectWithPascalCaseKeysAdjacentEventNew();
+    }
+    switch (input.EventType) {
+        case `UserCreated`: {
+            let __value__: ObjectWithPascalCaseKeysAdjacentEventUserCreated;
+            if (isObject(input.EventData)) {
+                __value__ =
+                    ObjectWithPascalCaseKeysAdjacentEventUserCreatedFromJson(
+                        input.EventData,
+                    );
+            } else {
+                __value__ =
+                    ObjectWithPascalCaseKeysAdjacentEventUserCreatedNew();
+            }
+            return {
+                eventType: `UserCreated`,
+                eventData: __value__,
+            };
+        }
+        case `UserUpdated`: {
+            let __value__: string;
+            __value__ = parseString(input.EventData);
+            return {
+                eventType: `UserUpdated`,
+                eventData: __value__,
+            };
+        }
+        default: {
+            return ObjectWithPascalCaseKeysAdjacentEventNew();
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysAdjacentEventFromJsonString(
+    input: string,
+): ObjectWithPascalCaseKeysAdjacentEvent {
+    return ObjectWithPascalCaseKeysAdjacentEventFromJson(JSON.parse(input));
+}
+export function ObjectWithPascalCaseKeysAdjacentEventToJsonString(
+    input: ObjectWithPascalCaseKeysAdjacentEvent,
+): string {
+    switch (input.eventType) {
+        case `UserCreated`: {
+            let json = '{';
+            json += '"EventType":"UserCreated"';
+            json += ',"EventData":';
+            json +=
+                ObjectWithPascalCaseKeysAdjacentEventUserCreatedToJsonString(
+                    input.eventData,
+                );
+            json += '}';
+            return json;
+        }
+
+        case `UserUpdated`: {
+            let json = '{';
+            json += '"EventType":"UserUpdated"';
+            json += ',"EventData":';
+            json += serializeString(input.eventData);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithPascalCaseKeysAdjacentEventToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysAdjacentEvent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function ObjectWithPascalCaseKeysAdjacentEventToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysAdjacentEvent,
+): string {
+    return ObjectWithPascalCaseKeysAdjacentEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithPascalCaseKeysAdjacentEvent: TestClientValidator<ObjectWithPascalCaseKeysAdjacentEvent> =
+    {
+        new: ObjectWithPascalCaseKeysAdjacentEventNew,
+        validate: ObjectWithPascalCaseKeysAdjacentEventValidate,
+        clone: ObjectWithPascalCaseKeysAdjacentEventClone,
+        fromJson: ObjectWithPascalCaseKeysAdjacentEventFromJson,
+        fromJsonString: ObjectWithPascalCaseKeysAdjacentEventFromJsonString,
+        toJsonString: ObjectWithPascalCaseKeysAdjacentEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithPascalCaseKeysAdjacentEventToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithPascalCaseKeysAdjacentEventToUrlSearchParamsString,
+    };
+export interface ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+    userId: string;
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedNew(): ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+    return {
+        userId: '',
+    };
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedValidate(
+    input: unknown,
+): input is ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+    return isObject(input) && typeof input.userId === 'string';
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedClone(
+    input: ObjectWithPascalCaseKeysAdjacentEventUserCreated,
+): ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+    let _UserId: string;
+    _UserId = input.userId;
+    return {
+        userId: _UserId,
+    };
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+    let _UserId: string;
+    _UserId = parseString(input.UserId);
+    return {
+        userId: _UserId,
+    };
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedFromJsonString(
+    input: string,
+): ObjectWithPascalCaseKeysAdjacentEventUserCreated {
+    return ObjectWithPascalCaseKeysAdjacentEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedToJsonString(
+    input: ObjectWithPascalCaseKeysAdjacentEventUserCreated,
+): string {
+    let json = '{';
+    json += '"UserId":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedToUrlSearchParams(
+    input: ObjectWithPascalCaseKeysAdjacentEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('UserId', input.userId);
+    return params;
+}
+export function ObjectWithPascalCaseKeysAdjacentEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithPascalCaseKeysAdjacentEventUserCreated,
+): string {
+    return ObjectWithPascalCaseKeysAdjacentEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithPascalCaseKeysAdjacentEventUserCreated: TestClientValidator<ObjectWithPascalCaseKeysAdjacentEventUserCreated> =
+    {
+        new: ObjectWithPascalCaseKeysAdjacentEventUserCreatedNew,
+        validate: ObjectWithPascalCaseKeysAdjacentEventUserCreatedValidate,
+        clone: ObjectWithPascalCaseKeysAdjacentEventUserCreatedClone,
+        fromJson: ObjectWithPascalCaseKeysAdjacentEventUserCreatedFromJson,
+        fromJsonString:
+            ObjectWithPascalCaseKeysAdjacentEventUserCreatedFromJsonString,
+        toJsonString:
+            ObjectWithPascalCaseKeysAdjacentEventUserCreatedToJsonString,
+        toUrlSearchParams:
+            ObjectWithPascalCaseKeysAdjacentEventUserCreatedToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithPascalCaseKeysAdjacentEventUserCreatedToUrlSearchParamsString,
     };
 
 export interface ObjectWithSnakeCaseKeys {
     createdAt: Date;
     displayName: string;
     phoneNumber: string | null;
-    lastEvent: ObjectWithSnakeCaseKeysLastEvent | null;
+    externalEvent: ObjectWithSnakeCaseKeysExternalEvent | null;
+    internalEvent: ObjectWithSnakeCaseKeysInternalEvent;
+    adjacentEvent: ObjectWithSnakeCaseKeysAdjacentEvent;
     emailAddress?: string;
     isAdmin?: boolean;
 }
@@ -6712,7 +7959,9 @@ export function ObjectWithSnakeCaseKeysNew(): ObjectWithSnakeCaseKeys {
         createdAt: new Date(0),
         displayName: '',
         phoneNumber: null,
-        lastEvent: null,
+        externalEvent: null,
+        internalEvent: ObjectWithSnakeCaseKeysInternalEventNew(),
+        adjacentEvent: ObjectWithSnakeCaseKeysAdjacentEventNew(),
     };
 }
 export function ObjectWithSnakeCaseKeysValidate(
@@ -6723,8 +7972,10 @@ export function ObjectWithSnakeCaseKeysValidate(
         input.createdAt instanceof Date &&
         typeof input.displayName === 'string' &&
         (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
-        (ObjectWithSnakeCaseKeysLastEventValidate(input.lastEvent) ||
-            input.lastEvent === null) &&
+        (ObjectWithSnakeCaseKeysExternalEventValidate(input.externalEvent) ||
+            input.externalEvent === null) &&
+        ObjectWithSnakeCaseKeysInternalEventValidate(input.internalEvent) &&
+        ObjectWithSnakeCaseKeysAdjacentEventValidate(input.adjacentEvent) &&
         (typeof input.emailAddress === 'string' ||
             typeof input.emailAddress === 'undefined') &&
         (typeof input.isAdmin === 'boolean' ||
@@ -6740,12 +7991,22 @@ export function ObjectWithSnakeCaseKeysClone(
     _display_name = input.displayName;
     let _phone_number: string | null;
     _phone_number = input.phoneNumber;
-    let _last_event: ObjectWithSnakeCaseKeysLastEvent | null;
-    if (input.lastEvent !== null) {
-        _last_event = ObjectWithSnakeCaseKeysLastEventClone(input.lastEvent);
+    let _external_event: ObjectWithSnakeCaseKeysExternalEvent | null;
+    if (input.externalEvent !== null) {
+        _external_event = ObjectWithSnakeCaseKeysExternalEventClone(
+            input.externalEvent,
+        );
     } else {
-        _last_event = null;
+        _external_event = null;
     }
+    let _internal_event: ObjectWithSnakeCaseKeysInternalEvent;
+    _internal_event = ObjectWithSnakeCaseKeysInternalEventClone(
+        input.internalEvent,
+    );
+    let _adjacent_event: ObjectWithSnakeCaseKeysAdjacentEvent;
+    _adjacent_event = ObjectWithSnakeCaseKeysAdjacentEventClone(
+        input.adjacentEvent,
+    );
     let _email_address: string | undefined;
     if (typeof input.emailAddress !== 'undefined') {
         _email_address = input.emailAddress;
@@ -6758,7 +8019,9 @@ export function ObjectWithSnakeCaseKeysClone(
         createdAt: _created_at,
         displayName: _display_name,
         phoneNumber: _phone_number,
-        lastEvent: _last_event,
+        externalEvent: _external_event,
+        internalEvent: _internal_event,
+        adjacentEvent: _adjacent_event,
         emailAddress: _email_address,
         isAdmin: _is_admin,
     };
@@ -6772,13 +8035,29 @@ export function ObjectWithSnakeCaseKeysFromJson(
     _display_name = parseString(input.display_name);
     let _phone_number: string | null;
     _phone_number = parseNullableString(input.phone_number);
-    let _last_event: ObjectWithSnakeCaseKeysLastEvent | null;
-    if (isObject(input.last_event)) {
-        _last_event = ObjectWithSnakeCaseKeysLastEventFromJson(
-            input.last_event,
+    let _external_event: ObjectWithSnakeCaseKeysExternalEvent | null;
+    if (isObject(input.external_event)) {
+        _external_event = ObjectWithSnakeCaseKeysExternalEventFromJson(
+            input.external_event,
         );
     } else {
-        _last_event = null;
+        _external_event = null;
+    }
+    let _internal_event: ObjectWithSnakeCaseKeysInternalEvent;
+    if (isObject(input.internal_event)) {
+        _internal_event = ObjectWithSnakeCaseKeysInternalEventFromJson(
+            input.internal_event,
+        );
+    } else {
+        _internal_event = ObjectWithSnakeCaseKeysInternalEventNew();
+    }
+    let _adjacent_event: ObjectWithSnakeCaseKeysAdjacentEvent;
+    if (isObject(input.adjacent_event)) {
+        _adjacent_event = ObjectWithSnakeCaseKeysAdjacentEventFromJson(
+            input.adjacent_event,
+        );
+    } else {
+        _adjacent_event = ObjectWithSnakeCaseKeysAdjacentEventNew();
     }
     let _email_address: string | undefined;
     if (typeof input.email_address !== 'undefined') {
@@ -6792,7 +8071,9 @@ export function ObjectWithSnakeCaseKeysFromJson(
         createdAt: _created_at,
         displayName: _display_name,
         phoneNumber: _phone_number,
-        lastEvent: _last_event,
+        externalEvent: _external_event,
+        internalEvent: _internal_event,
+        adjacentEvent: _adjacent_event,
         emailAddress: _email_address,
         isAdmin: _is_admin,
     };
@@ -6816,12 +8097,22 @@ export function ObjectWithSnakeCaseKeysToJsonString(
     } else {
         json += 'null';
     }
-    json += ',"last_event":';
-    if (input.lastEvent != null) {
-        json += ObjectWithSnakeCaseKeysLastEventToJsonString(input.lastEvent);
+    json += ',"external_event":';
+    if (input.externalEvent != null) {
+        json += ObjectWithSnakeCaseKeysExternalEventToJsonString(
+            input.externalEvent,
+        );
     } else {
         json += 'null';
     }
+    json += ',"internal_event":';
+    json += ObjectWithSnakeCaseKeysInternalEventToJsonString(
+        input.internalEvent,
+    );
+    json += ',"adjacent_event":';
+    json += ObjectWithSnakeCaseKeysAdjacentEventToJsonString(
+        input.adjacentEvent,
+    );
     if (typeof input.emailAddress !== 'undefined') {
         json += `,"email_address":`;
         json += serializeString(input.emailAddress);
@@ -6841,7 +8132,13 @@ export function ObjectWithSnakeCaseKeysToUrlSearchParams(
     params.set('display_name', input.displayName);
     params.set('phone_number', `${input.phoneNumber}`);
     console.warn(
-        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithSnakeCaseKeys/last_event.',
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithSnakeCaseKeys/external_event.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithSnakeCaseKeys/internal_event.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithSnakeCaseKeys/adjacent_event.',
     );
     if (typeof input.emailAddress !== 'undefined') {
         params.set('email_address', input.emailAddress);
@@ -6867,28 +8164,28 @@ export const $$ObjectWithSnakeCaseKeys: TestClientValidator<ObjectWithSnakeCaseK
         toUrlSearchParams: ObjectWithSnakeCaseKeysToUrlSearchParams,
         toUrlSearchParamsString: ObjectWithSnakeCaseKeysToUrlSearchParamsString,
     };
-export type ObjectWithSnakeCaseKeysLastEvent =
+export type ObjectWithSnakeCaseKeysExternalEvent =
     | {
           type: `user_created`;
-          value: ObjectWithSnakeCaseKeysLastEventUserCreated;
+          value: ObjectWithSnakeCaseKeysExternalEventUserCreated;
       }
     | {
           type: `user_updated`;
-          value: ObjectWithSnakeCaseKeysLastEventUserUpdated;
+          value: ObjectWithSnakeCaseKeysExternalEventUserUpdated;
       }
     | {
           type: `user_deleted`;
-          value: ObjectWithSnakeCaseKeysLastEventUserDeleted;
+          value: ObjectWithSnakeCaseKeysExternalEventUserDeleted;
       };
-export function ObjectWithSnakeCaseKeysLastEventNew(): ObjectWithSnakeCaseKeysLastEvent {
+export function ObjectWithSnakeCaseKeysExternalEventNew(): ObjectWithSnakeCaseKeysExternalEvent {
     return {
         type: `user_created`,
-        value: ObjectWithSnakeCaseKeysLastEventUserCreatedNew(),
+        value: ObjectWithSnakeCaseKeysExternalEventUserCreatedNew(),
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventValidate(
+export function ObjectWithSnakeCaseKeysExternalEventValidate(
     input: unknown,
-): input is ObjectWithSnakeCaseKeysLastEvent {
+): input is ObjectWithSnakeCaseKeysExternalEvent {
     if (!isObject(input)) {
         return false;
     }
@@ -6897,17 +8194,17 @@ export function ObjectWithSnakeCaseKeysLastEventValidate(
     }
     switch (input.type) {
         case `user_created`:
-            return ObjectWithSnakeCaseKeysLastEventUserCreatedValidate(
+            return ObjectWithSnakeCaseKeysExternalEventUserCreatedValidate(
                 input.value,
             );
 
         case `user_updated`:
-            return ObjectWithSnakeCaseKeysLastEventUserUpdatedValidate(
+            return ObjectWithSnakeCaseKeysExternalEventUserUpdatedValidate(
                 input.value,
             );
 
         case `user_deleted`:
-            return ObjectWithSnakeCaseKeysLastEventUserDeletedValidate(
+            return ObjectWithSnakeCaseKeysExternalEventUserDeletedValidate(
                 input.value,
             );
 
@@ -6915,13 +8212,13 @@ export function ObjectWithSnakeCaseKeysLastEventValidate(
             return false;
     }
 }
-export function ObjectWithSnakeCaseKeysLastEventClone(
-    input: ObjectWithSnakeCaseKeysLastEvent,
-): ObjectWithSnakeCaseKeysLastEvent {
+export function ObjectWithSnakeCaseKeysExternalEventClone(
+    input: ObjectWithSnakeCaseKeysExternalEvent,
+): ObjectWithSnakeCaseKeysExternalEvent {
     switch (input.type) {
         case `user_created`: {
-            let __value__: ObjectWithSnakeCaseKeysLastEventUserCreated;
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserCreatedClone(
+            let __value__: ObjectWithSnakeCaseKeysExternalEventUserCreated;
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserCreatedClone(
                 input.value,
             );
             return {
@@ -6931,8 +8228,8 @@ export function ObjectWithSnakeCaseKeysLastEventClone(
         }
 
         case `user_updated`: {
-            let __value__: ObjectWithSnakeCaseKeysLastEventUserUpdated;
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserUpdatedClone(
+            let __value__: ObjectWithSnakeCaseKeysExternalEventUserUpdated;
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserUpdatedClone(
                 input.value,
             );
             return {
@@ -6942,8 +8239,8 @@ export function ObjectWithSnakeCaseKeysLastEventClone(
         }
 
         case `user_deleted`: {
-            let __value__: ObjectWithSnakeCaseKeysLastEventUserDeleted;
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserDeletedClone(
+            let __value__: ObjectWithSnakeCaseKeysExternalEventUserDeleted;
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserDeletedClone(
                 input.value,
             );
             return {
@@ -6956,17 +8253,17 @@ export function ObjectWithSnakeCaseKeysLastEventClone(
             throw new Error(`Unknown union variant: ${(input as any).type}`);
     }
 }
-export function ObjectWithSnakeCaseKeysLastEventFromJson(
+export function ObjectWithSnakeCaseKeysExternalEventFromJson(
     input: Record<string, unknown>,
-): ObjectWithSnakeCaseKeysLastEvent {
+): ObjectWithSnakeCaseKeysExternalEvent {
     if (`user_created` in input) {
-        let __value__: ObjectWithSnakeCaseKeysLastEventUserCreated;
+        let __value__: ObjectWithSnakeCaseKeysExternalEventUserCreated;
         if (isObject(input[`user_created`])) {
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserCreatedFromJson(
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserCreatedFromJson(
                 input[`user_created`],
             );
         } else {
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserCreatedNew();
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserCreatedNew();
         }
         return {
             type: `user_created`,
@@ -6975,13 +8272,13 @@ export function ObjectWithSnakeCaseKeysLastEventFromJson(
     }
 
     if (`user_updated` in input) {
-        let __value__: ObjectWithSnakeCaseKeysLastEventUserUpdated;
+        let __value__: ObjectWithSnakeCaseKeysExternalEventUserUpdated;
         if (isObject(input[`user_updated`])) {
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson(
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserUpdatedFromJson(
                 input[`user_updated`],
             );
         } else {
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserUpdatedNew();
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserUpdatedNew();
         }
         return {
             type: `user_updated`,
@@ -6990,35 +8287,35 @@ export function ObjectWithSnakeCaseKeysLastEventFromJson(
     }
 
     if (`user_deleted` in input) {
-        let __value__: ObjectWithSnakeCaseKeysLastEventUserDeleted;
+        let __value__: ObjectWithSnakeCaseKeysExternalEventUserDeleted;
         if (isObject(input[`user_deleted`])) {
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserDeletedFromJson(
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserDeletedFromJson(
                 input[`user_deleted`],
             );
         } else {
-            __value__ = ObjectWithSnakeCaseKeysLastEventUserDeletedNew();
+            __value__ = ObjectWithSnakeCaseKeysExternalEventUserDeletedNew();
         }
         return {
             type: `user_deleted`,
             value: __value__,
         };
     }
-    return ObjectWithSnakeCaseKeysLastEventNew();
+    return ObjectWithSnakeCaseKeysExternalEventNew();
 }
-export function ObjectWithSnakeCaseKeysLastEventFromJsonString(
+export function ObjectWithSnakeCaseKeysExternalEventFromJsonString(
     input: string,
-): ObjectWithSnakeCaseKeysLastEvent {
-    return ObjectWithSnakeCaseKeysLastEventFromJson(JSON.parse(input));
+): ObjectWithSnakeCaseKeysExternalEvent {
+    return ObjectWithSnakeCaseKeysExternalEventFromJson(JSON.parse(input));
 }
-export function ObjectWithSnakeCaseKeysLastEventToJsonString(
-    input: ObjectWithSnakeCaseKeysLastEvent,
+export function ObjectWithSnakeCaseKeysExternalEventToJsonString(
+    input: ObjectWithSnakeCaseKeysExternalEvent,
 ): string {
     switch (input.type) {
         case `user_created`: {
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithSnakeCaseKeysLastEventUserCreatedToJsonString(
+            json += ObjectWithSnakeCaseKeysExternalEventUserCreatedToJsonString(
                 input.value,
             );
             json += '}';
@@ -7029,7 +8326,7 @@ export function ObjectWithSnakeCaseKeysLastEventToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithSnakeCaseKeysLastEventUserUpdatedToJsonString(
+            json += ObjectWithSnakeCaseKeysExternalEventUserUpdatedToJsonString(
                 input.value,
             );
             json += '}';
@@ -7040,7 +8337,7 @@ export function ObjectWithSnakeCaseKeysLastEventToJsonString(
             let json = '{';
             json += serializeString(input.type);
             json += ':';
-            json += ObjectWithSnakeCaseKeysLastEventUserDeletedToJsonString(
+            json += ObjectWithSnakeCaseKeysExternalEventUserDeletedToJsonString(
                 input.value,
             );
             json += '}';
@@ -7053,70 +8350,73 @@ export function ObjectWithSnakeCaseKeysLastEventToJsonString(
         }
     }
 }
-export function ObjectWithSnakeCaseKeysLastEventToUrlSearchParams(
-    input: ObjectWithSnakeCaseKeysLastEvent,
+export function ObjectWithSnakeCaseKeysExternalEventToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysExternalEvent,
 ): URLSearchParams {
     const params = new URLSearchParams();
     console.warn('[WARNING] Cannot serialize unions to query string.');
     return params;
 }
-export function ObjectWithSnakeCaseKeysLastEventToUrlSearchParamsString(
-    input: ObjectWithSnakeCaseKeysLastEvent,
+export function ObjectWithSnakeCaseKeysExternalEventToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysExternalEvent,
 ): string {
-    return ObjectWithSnakeCaseKeysLastEventToUrlSearchParams(input).toString();
+    return ObjectWithSnakeCaseKeysExternalEventToUrlSearchParams(
+        input,
+    ).toString();
 }
-export const $$ObjectWithSnakeCaseKeysLastEvent: TestClientValidator<ObjectWithSnakeCaseKeysLastEvent> =
+export const $$ObjectWithSnakeCaseKeysExternalEvent: TestClientValidator<ObjectWithSnakeCaseKeysExternalEvent> =
     {
-        new: ObjectWithSnakeCaseKeysLastEventNew,
-        validate: ObjectWithSnakeCaseKeysLastEventValidate,
-        clone: ObjectWithSnakeCaseKeysLastEventClone,
-        fromJson: ObjectWithSnakeCaseKeysLastEventFromJson,
-        fromJsonString: ObjectWithSnakeCaseKeysLastEventFromJsonString,
-        toJsonString: ObjectWithSnakeCaseKeysLastEventToJsonString,
-        toUrlSearchParams: ObjectWithSnakeCaseKeysLastEventToUrlSearchParams,
+        new: ObjectWithSnakeCaseKeysExternalEventNew,
+        validate: ObjectWithSnakeCaseKeysExternalEventValidate,
+        clone: ObjectWithSnakeCaseKeysExternalEventClone,
+        fromJson: ObjectWithSnakeCaseKeysExternalEventFromJson,
+        fromJsonString: ObjectWithSnakeCaseKeysExternalEventFromJsonString,
+        toJsonString: ObjectWithSnakeCaseKeysExternalEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithSnakeCaseKeysExternalEventToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithSnakeCaseKeysLastEventToUrlSearchParamsString,
+            ObjectWithSnakeCaseKeysExternalEventToUrlSearchParamsString,
     };
-export interface ObjectWithSnakeCaseKeysLastEventUserCreated {
+export interface ObjectWithSnakeCaseKeysExternalEventUserCreated {
     userId: string;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedNew(): ObjectWithSnakeCaseKeysLastEventUserCreated {
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedNew(): ObjectWithSnakeCaseKeysExternalEventUserCreated {
     return {
         userId: '',
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedValidate(
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedValidate(
     input: unknown,
-): input is ObjectWithSnakeCaseKeysLastEventUserCreated {
+): input is ObjectWithSnakeCaseKeysExternalEventUserCreated {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedClone(
-    input: ObjectWithSnakeCaseKeysLastEventUserCreated,
-): ObjectWithSnakeCaseKeysLastEventUserCreated {
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedClone(
+    input: ObjectWithSnakeCaseKeysExternalEventUserCreated,
+): ObjectWithSnakeCaseKeysExternalEventUserCreated {
     let _user_id: string;
     _user_id = input.userId;
     return {
         userId: _user_id,
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedFromJson(
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedFromJson(
     input: Record<string, unknown>,
-): ObjectWithSnakeCaseKeysLastEventUserCreated {
+): ObjectWithSnakeCaseKeysExternalEventUserCreated {
     let _user_id: string;
     _user_id = parseString(input.user_id);
     return {
         userId: _user_id,
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedFromJsonString(
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedFromJsonString(
     input: string,
-): ObjectWithSnakeCaseKeysLastEventUserCreated {
-    return ObjectWithSnakeCaseKeysLastEventUserCreatedFromJson(
+): ObjectWithSnakeCaseKeysExternalEventUserCreated {
+    return ObjectWithSnakeCaseKeysExternalEventUserCreatedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedToJsonString(
-    input: ObjectWithSnakeCaseKeysLastEventUserCreated,
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedToJsonString(
+    input: ObjectWithSnakeCaseKeysExternalEventUserCreated,
 ): string {
     let json = '{';
     json += '"user_id":';
@@ -7124,75 +8424,76 @@ export function ObjectWithSnakeCaseKeysLastEventUserCreatedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParams(
-    input: ObjectWithSnakeCaseKeysLastEventUserCreated,
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysExternalEventUserCreated,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('user_id', input.userId);
     return params;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParamsString(
-    input: ObjectWithSnakeCaseKeysLastEventUserCreated,
+export function ObjectWithSnakeCaseKeysExternalEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysExternalEventUserCreated,
 ): string {
-    return ObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParams(
+    return ObjectWithSnakeCaseKeysExternalEventUserCreatedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithSnakeCaseKeysLastEventUserCreated: TestClientValidator<ObjectWithSnakeCaseKeysLastEventUserCreated> =
+export const $$ObjectWithSnakeCaseKeysExternalEventUserCreated: TestClientValidator<ObjectWithSnakeCaseKeysExternalEventUserCreated> =
     {
-        new: ObjectWithSnakeCaseKeysLastEventUserCreatedNew,
-        validate: ObjectWithSnakeCaseKeysLastEventUserCreatedValidate,
-        clone: ObjectWithSnakeCaseKeysLastEventUserCreatedClone,
-        fromJson: ObjectWithSnakeCaseKeysLastEventUserCreatedFromJson,
+        new: ObjectWithSnakeCaseKeysExternalEventUserCreatedNew,
+        validate: ObjectWithSnakeCaseKeysExternalEventUserCreatedValidate,
+        clone: ObjectWithSnakeCaseKeysExternalEventUserCreatedClone,
+        fromJson: ObjectWithSnakeCaseKeysExternalEventUserCreatedFromJson,
         fromJsonString:
-            ObjectWithSnakeCaseKeysLastEventUserCreatedFromJsonString,
-        toJsonString: ObjectWithSnakeCaseKeysLastEventUserCreatedToJsonString,
+            ObjectWithSnakeCaseKeysExternalEventUserCreatedFromJsonString,
+        toJsonString:
+            ObjectWithSnakeCaseKeysExternalEventUserCreatedToJsonString,
         toUrlSearchParams:
-            ObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParams,
+            ObjectWithSnakeCaseKeysExternalEventUserCreatedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithSnakeCaseKeysLastEventUserCreatedToUrlSearchParamsString,
+            ObjectWithSnakeCaseKeysExternalEventUserCreatedToUrlSearchParamsString,
     };
 
-export interface ObjectWithSnakeCaseKeysLastEventUserUpdated {
+export interface ObjectWithSnakeCaseKeysExternalEventUserUpdated {
     userId: string;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedNew(): ObjectWithSnakeCaseKeysLastEventUserUpdated {
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedNew(): ObjectWithSnakeCaseKeysExternalEventUserUpdated {
     return {
         userId: '',
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedValidate(
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedValidate(
     input: unknown,
-): input is ObjectWithSnakeCaseKeysLastEventUserUpdated {
+): input is ObjectWithSnakeCaseKeysExternalEventUserUpdated {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedClone(
-    input: ObjectWithSnakeCaseKeysLastEventUserUpdated,
-): ObjectWithSnakeCaseKeysLastEventUserUpdated {
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedClone(
+    input: ObjectWithSnakeCaseKeysExternalEventUserUpdated,
+): ObjectWithSnakeCaseKeysExternalEventUserUpdated {
     let _user_id: string;
     _user_id = input.userId;
     return {
         userId: _user_id,
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson(
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedFromJson(
     input: Record<string, unknown>,
-): ObjectWithSnakeCaseKeysLastEventUserUpdated {
+): ObjectWithSnakeCaseKeysExternalEventUserUpdated {
     let _user_id: string;
     _user_id = parseString(input.user_id);
     return {
         userId: _user_id,
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedFromJsonString(
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedFromJsonString(
     input: string,
-): ObjectWithSnakeCaseKeysLastEventUserUpdated {
-    return ObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson(
+): ObjectWithSnakeCaseKeysExternalEventUserUpdated {
+    return ObjectWithSnakeCaseKeysExternalEventUserUpdatedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedToJsonString(
-    input: ObjectWithSnakeCaseKeysLastEventUserUpdated,
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedToJsonString(
+    input: ObjectWithSnakeCaseKeysExternalEventUserUpdated,
 ): string {
     let json = '{';
     json += '"user_id":';
@@ -7200,75 +8501,76 @@ export function ObjectWithSnakeCaseKeysLastEventUserUpdatedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParams(
-    input: ObjectWithSnakeCaseKeysLastEventUserUpdated,
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysExternalEventUserUpdated,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('user_id', input.userId);
     return params;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParamsString(
-    input: ObjectWithSnakeCaseKeysLastEventUserUpdated,
+export function ObjectWithSnakeCaseKeysExternalEventUserUpdatedToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysExternalEventUserUpdated,
 ): string {
-    return ObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParams(
+    return ObjectWithSnakeCaseKeysExternalEventUserUpdatedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithSnakeCaseKeysLastEventUserUpdated: TestClientValidator<ObjectWithSnakeCaseKeysLastEventUserUpdated> =
+export const $$ObjectWithSnakeCaseKeysExternalEventUserUpdated: TestClientValidator<ObjectWithSnakeCaseKeysExternalEventUserUpdated> =
     {
-        new: ObjectWithSnakeCaseKeysLastEventUserUpdatedNew,
-        validate: ObjectWithSnakeCaseKeysLastEventUserUpdatedValidate,
-        clone: ObjectWithSnakeCaseKeysLastEventUserUpdatedClone,
-        fromJson: ObjectWithSnakeCaseKeysLastEventUserUpdatedFromJson,
+        new: ObjectWithSnakeCaseKeysExternalEventUserUpdatedNew,
+        validate: ObjectWithSnakeCaseKeysExternalEventUserUpdatedValidate,
+        clone: ObjectWithSnakeCaseKeysExternalEventUserUpdatedClone,
+        fromJson: ObjectWithSnakeCaseKeysExternalEventUserUpdatedFromJson,
         fromJsonString:
-            ObjectWithSnakeCaseKeysLastEventUserUpdatedFromJsonString,
-        toJsonString: ObjectWithSnakeCaseKeysLastEventUserUpdatedToJsonString,
+            ObjectWithSnakeCaseKeysExternalEventUserUpdatedFromJsonString,
+        toJsonString:
+            ObjectWithSnakeCaseKeysExternalEventUserUpdatedToJsonString,
         toUrlSearchParams:
-            ObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParams,
+            ObjectWithSnakeCaseKeysExternalEventUserUpdatedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithSnakeCaseKeysLastEventUserUpdatedToUrlSearchParamsString,
+            ObjectWithSnakeCaseKeysExternalEventUserUpdatedToUrlSearchParamsString,
     };
 
-export interface ObjectWithSnakeCaseKeysLastEventUserDeleted {
+export interface ObjectWithSnakeCaseKeysExternalEventUserDeleted {
     userId: string;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedNew(): ObjectWithSnakeCaseKeysLastEventUserDeleted {
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedNew(): ObjectWithSnakeCaseKeysExternalEventUserDeleted {
     return {
         userId: '',
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedValidate(
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedValidate(
     input: unknown,
-): input is ObjectWithSnakeCaseKeysLastEventUserDeleted {
+): input is ObjectWithSnakeCaseKeysExternalEventUserDeleted {
     return isObject(input) && typeof input.userId === 'string';
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedClone(
-    input: ObjectWithSnakeCaseKeysLastEventUserDeleted,
-): ObjectWithSnakeCaseKeysLastEventUserDeleted {
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedClone(
+    input: ObjectWithSnakeCaseKeysExternalEventUserDeleted,
+): ObjectWithSnakeCaseKeysExternalEventUserDeleted {
     let _user_id: string;
     _user_id = input.userId;
     return {
         userId: _user_id,
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedFromJson(
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedFromJson(
     input: Record<string, unknown>,
-): ObjectWithSnakeCaseKeysLastEventUserDeleted {
+): ObjectWithSnakeCaseKeysExternalEventUserDeleted {
     let _user_id: string;
     _user_id = parseString(input.user_id);
     return {
         userId: _user_id,
     };
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedFromJsonString(
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedFromJsonString(
     input: string,
-): ObjectWithSnakeCaseKeysLastEventUserDeleted {
-    return ObjectWithSnakeCaseKeysLastEventUserDeletedFromJson(
+): ObjectWithSnakeCaseKeysExternalEventUserDeleted {
+    return ObjectWithSnakeCaseKeysExternalEventUserDeletedFromJson(
         JSON.parse(input),
     );
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedToJsonString(
-    input: ObjectWithSnakeCaseKeysLastEventUserDeleted,
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedToJsonString(
+    input: ObjectWithSnakeCaseKeysExternalEventUserDeleted,
 ): string {
     let json = '{';
     json += '"user_id":';
@@ -7276,33 +8578,573 @@ export function ObjectWithSnakeCaseKeysLastEventUserDeletedToJsonString(
     json += '}';
     return json;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParams(
-    input: ObjectWithSnakeCaseKeysLastEventUserDeleted,
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysExternalEventUserDeleted,
 ): URLSearchParams {
     const params = new URLSearchParams();
     params.set('user_id', input.userId);
     return params;
 }
-export function ObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParamsString(
-    input: ObjectWithSnakeCaseKeysLastEventUserDeleted,
+export function ObjectWithSnakeCaseKeysExternalEventUserDeletedToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysExternalEventUserDeleted,
 ): string {
-    return ObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParams(
+    return ObjectWithSnakeCaseKeysExternalEventUserDeletedToUrlSearchParams(
         input,
     ).toString();
 }
-export const $$ObjectWithSnakeCaseKeysLastEventUserDeleted: TestClientValidator<ObjectWithSnakeCaseKeysLastEventUserDeleted> =
+export const $$ObjectWithSnakeCaseKeysExternalEventUserDeleted: TestClientValidator<ObjectWithSnakeCaseKeysExternalEventUserDeleted> =
     {
-        new: ObjectWithSnakeCaseKeysLastEventUserDeletedNew,
-        validate: ObjectWithSnakeCaseKeysLastEventUserDeletedValidate,
-        clone: ObjectWithSnakeCaseKeysLastEventUserDeletedClone,
-        fromJson: ObjectWithSnakeCaseKeysLastEventUserDeletedFromJson,
+        new: ObjectWithSnakeCaseKeysExternalEventUserDeletedNew,
+        validate: ObjectWithSnakeCaseKeysExternalEventUserDeletedValidate,
+        clone: ObjectWithSnakeCaseKeysExternalEventUserDeletedClone,
+        fromJson: ObjectWithSnakeCaseKeysExternalEventUserDeletedFromJson,
         fromJsonString:
-            ObjectWithSnakeCaseKeysLastEventUserDeletedFromJsonString,
-        toJsonString: ObjectWithSnakeCaseKeysLastEventUserDeletedToJsonString,
+            ObjectWithSnakeCaseKeysExternalEventUserDeletedFromJsonString,
+        toJsonString:
+            ObjectWithSnakeCaseKeysExternalEventUserDeletedToJsonString,
         toUrlSearchParams:
-            ObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParams,
+            ObjectWithSnakeCaseKeysExternalEventUserDeletedToUrlSearchParams,
         toUrlSearchParamsString:
-            ObjectWithSnakeCaseKeysLastEventUserDeletedToUrlSearchParamsString,
+            ObjectWithSnakeCaseKeysExternalEventUserDeletedToUrlSearchParamsString,
+    };
+
+export type ObjectWithSnakeCaseKeysInternalEvent =
+    | ObjectWithSnakeCaseKeysInternalEventUserCreated
+    | ObjectWithSnakeCaseKeysInternalEventUserUpdated;
+export function ObjectWithSnakeCaseKeysInternalEventNew(): ObjectWithSnakeCaseKeysInternalEvent {
+    return ObjectWithSnakeCaseKeysInternalEventUserCreatedNew();
+}
+export function ObjectWithSnakeCaseKeysInternalEventValidate(
+    input: unknown,
+): input is ObjectWithSnakeCaseKeysInternalEvent {
+    return (
+        ObjectWithSnakeCaseKeysInternalEventUserCreatedValidate(input) ||
+        ObjectWithSnakeCaseKeysInternalEventUserUpdatedValidate(input)
+    );
+}
+export function ObjectWithSnakeCaseKeysInternalEventClone(
+    input: ObjectWithSnakeCaseKeysInternalEvent,
+): ObjectWithSnakeCaseKeysInternalEvent {
+    switch (input.eventType) {
+        case `user_created`: {
+            let __value__: ObjectWithSnakeCaseKeysInternalEventUserCreated;
+            __value__ =
+                ObjectWithSnakeCaseKeysInternalEventUserCreatedClone(input);
+            return __value__;
+        }
+
+        case `user_updated`: {
+            let __value__: ObjectWithSnakeCaseKeysInternalEventUserUpdated;
+            __value__ =
+                ObjectWithSnakeCaseKeysInternalEventUserUpdatedClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysInternalEventFromJson(
+    input: Record<string, unknown>,
+): ObjectWithSnakeCaseKeysInternalEvent {
+    switch (input.event_type) {
+        case `user_created`: {
+            return ObjectWithSnakeCaseKeysInternalEventUserCreatedFromJson(
+                input,
+            );
+        }
+        case `user_updated`: {
+            return ObjectWithSnakeCaseKeysInternalEventUserUpdatedFromJson(
+                input,
+            );
+        }
+        default: {
+            return ObjectWithSnakeCaseKeysInternalEventUserCreatedNew();
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysInternalEventFromJsonString(
+    input: string,
+): ObjectWithSnakeCaseKeysInternalEvent {
+    return ObjectWithSnakeCaseKeysInternalEventFromJson(JSON.parse(input));
+}
+export function ObjectWithSnakeCaseKeysInternalEventToJsonString(
+    input: ObjectWithSnakeCaseKeysInternalEvent,
+): string {
+    switch (input.eventType) {
+        case `user_created`: {
+            return ObjectWithSnakeCaseKeysInternalEventUserCreatedToJsonString(
+                input,
+            );
+        }
+
+        case `user_updated`: {
+            return ObjectWithSnakeCaseKeysInternalEventUserUpdatedToJsonString(
+                input,
+            );
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysInternalEventToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysInternalEvent,
+): URLSearchParams {
+    switch (input.eventType) {
+        case `user_created`: {
+            return ObjectWithSnakeCaseKeysInternalEventUserCreatedToUrlSearchParams(
+                input,
+            );
+        }
+        case `user_updated`: {
+            return ObjectWithSnakeCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+                input,
+            );
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysInternalEventToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysInternalEvent,
+): string {
+    return ObjectWithSnakeCaseKeysInternalEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithSnakeCaseKeysInternalEvent: TestClientValidator<ObjectWithSnakeCaseKeysInternalEvent> =
+    {
+        new: ObjectWithSnakeCaseKeysInternalEventNew,
+        validate: ObjectWithSnakeCaseKeysInternalEventValidate,
+        clone: ObjectWithSnakeCaseKeysInternalEventClone,
+        fromJson: ObjectWithSnakeCaseKeysInternalEventFromJson,
+        fromJsonString: ObjectWithSnakeCaseKeysInternalEventFromJsonString,
+        toJsonString: ObjectWithSnakeCaseKeysInternalEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithSnakeCaseKeysInternalEventToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithSnakeCaseKeysInternalEventToUrlSearchParamsString,
+    };
+export interface ObjectWithSnakeCaseKeysInternalEventUserCreated {
+    eventType: `user_created`;
+    userId: string;
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedNew(): ObjectWithSnakeCaseKeysInternalEventUserCreated {
+    return {
+        eventType: `user_created`,
+        userId: '',
+    };
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedValidate(
+    input: unknown,
+): input is ObjectWithSnakeCaseKeysInternalEventUserCreated {
+    return (
+        isObject(input) &&
+        input.eventType === `user_created` &&
+        typeof input.userId === 'string'
+    );
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedClone(
+    input: ObjectWithSnakeCaseKeysInternalEventUserCreated,
+): ObjectWithSnakeCaseKeysInternalEventUserCreated {
+    const _eventType = `user_created`;
+    let _user_id: string;
+    _user_id = input.userId;
+    return {
+        eventType: _eventType,
+        userId: _user_id,
+    };
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithSnakeCaseKeysInternalEventUserCreated {
+    const _eventType = `user_created`;
+    let _user_id: string;
+    _user_id = parseString(input.user_id);
+    return {
+        eventType: _eventType,
+        userId: _user_id,
+    };
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedFromJsonString(
+    input: string,
+): ObjectWithSnakeCaseKeysInternalEventUserCreated {
+    return ObjectWithSnakeCaseKeysInternalEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedToJsonString(
+    input: ObjectWithSnakeCaseKeysInternalEventUserCreated,
+): string {
+    let json = '{';
+    json += '"event_type":"user_created"';
+    json += ',"user_id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysInternalEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('event_type', `user_created`);
+    params.set('user_id', input.userId);
+    return params;
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysInternalEventUserCreated,
+): string {
+    return ObjectWithSnakeCaseKeysInternalEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+    eventType: `user_updated`;
+    userId: string;
+    updatedAt?: Date;
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedNew(): ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+    return {
+        eventType: `user_updated`,
+        userId: '',
+    };
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedValidate(
+    input: unknown,
+): input is ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+    return (
+        isObject(input) &&
+        input.eventType === `user_updated` &&
+        typeof input.userId === 'string' &&
+        (input.updatedAt instanceof Date ||
+            typeof input.updatedAt === 'undefined')
+    );
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedClone(
+    input: ObjectWithSnakeCaseKeysInternalEventUserUpdated,
+): ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+    const _eventType = `user_updated`;
+    let _user_id: string;
+    _user_id = input.userId;
+    let _updated_at: Date | undefined;
+    if (typeof input.updatedAt !== 'undefined') {
+        _updated_at = new Date(input.updatedAt.getTime());
+    }
+    return {
+        eventType: _eventType,
+        userId: _user_id,
+        updatedAt: _updated_at,
+    };
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+    const _eventType = `user_updated`;
+    let _user_id: string;
+    _user_id = parseString(input.user_id);
+    let _updated_at: Date | undefined;
+    if (typeof input.updated_at !== 'undefined') {
+        _updated_at = parseTimestamp(input.updated_at);
+    }
+    return {
+        eventType: _eventType,
+        userId: _user_id,
+        updatedAt: _updated_at,
+    };
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedFromJsonString(
+    input: string,
+): ObjectWithSnakeCaseKeysInternalEventUserUpdated {
+    return ObjectWithSnakeCaseKeysInternalEventUserUpdatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedToJsonString(
+    input: ObjectWithSnakeCaseKeysInternalEventUserUpdated,
+): string {
+    let json = '{';
+    json += '"event_type":"user_updated"';
+    json += ',"user_id":';
+    json += serializeString(input.userId);
+    if (typeof input.updatedAt !== 'undefined') {
+        json += `,"updated_at":`;
+        json += `"${input.updatedAt.toISOString()}"`;
+    }
+    json += '}';
+    return json;
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysInternalEventUserUpdated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('event_type', `user_updated`);
+    params.set('user_id', input.userId);
+    if (typeof input.updatedAt !== 'undefined') {
+        params.set('updated_at', input.updatedAt.toISOString());
+    }
+    return params;
+}
+export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysInternalEventUserUpdated,
+): string {
+    return ObjectWithSnakeCaseKeysInternalEventUserUpdatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type ObjectWithSnakeCaseKeysAdjacentEvent =
+    | {
+          eventType: `user_created`;
+          eventData: ObjectWithSnakeCaseKeysAdjacentEventUserCreated;
+      }
+    | { eventType: `user_updated`; eventData: string };
+export function ObjectWithSnakeCaseKeysAdjacentEventNew(): ObjectWithSnakeCaseKeysAdjacentEvent {
+    return {
+        eventType: `user_created`,
+        eventData: ObjectWithSnakeCaseKeysAdjacentEventUserCreatedNew(),
+    };
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventValidate(
+    input: unknown,
+): input is ObjectWithSnakeCaseKeysAdjacentEvent {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('eventType' in input) || !('eventData' in input)) {
+        return false;
+    }
+    switch (input.eventType) {
+        case `user_created`:
+            return ObjectWithSnakeCaseKeysAdjacentEventUserCreatedValidate(
+                input.eventData,
+            );
+
+        case `user_updated`:
+            return typeof input.eventData === 'string';
+
+        default:
+            return false;
+    }
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventClone(
+    input: ObjectWithSnakeCaseKeysAdjacentEvent,
+): ObjectWithSnakeCaseKeysAdjacentEvent {
+    switch (input.eventType) {
+        case `user_created`: {
+            let __value__: ObjectWithSnakeCaseKeysAdjacentEventUserCreated;
+            __value__ = ObjectWithSnakeCaseKeysAdjacentEventUserCreatedClone(
+                input.eventData,
+            );
+            return {
+                eventType: `user_created`,
+                eventData: __value__,
+            };
+        }
+
+        case `user_updated`: {
+            let __value__: string;
+            __value__ = input.eventData;
+            return {
+                eventType: `user_updated`,
+                eventData: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventFromJson(
+    input: Record<string, unknown>,
+): ObjectWithSnakeCaseKeysAdjacentEvent {
+    if (typeof input.event_type !== 'string') {
+        return ObjectWithSnakeCaseKeysAdjacentEventNew();
+    }
+    switch (input.event_type) {
+        case `user_created`: {
+            let __value__: ObjectWithSnakeCaseKeysAdjacentEventUserCreated;
+            if (isObject(input.event_data)) {
+                __value__ =
+                    ObjectWithSnakeCaseKeysAdjacentEventUserCreatedFromJson(
+                        input.event_data,
+                    );
+            } else {
+                __value__ =
+                    ObjectWithSnakeCaseKeysAdjacentEventUserCreatedNew();
+            }
+            return {
+                eventType: `user_created`,
+                eventData: __value__,
+            };
+        }
+        case `user_updated`: {
+            let __value__: string;
+            __value__ = parseString(input.event_data);
+            return {
+                eventType: `user_updated`,
+                eventData: __value__,
+            };
+        }
+        default: {
+            return ObjectWithSnakeCaseKeysAdjacentEventNew();
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventFromJsonString(
+    input: string,
+): ObjectWithSnakeCaseKeysAdjacentEvent {
+    return ObjectWithSnakeCaseKeysAdjacentEventFromJson(JSON.parse(input));
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventToJsonString(
+    input: ObjectWithSnakeCaseKeysAdjacentEvent,
+): string {
+    switch (input.eventType) {
+        case `user_created`: {
+            let json = '{';
+            json += '"event_type":"user_created"';
+            json += ',"event_data":';
+            json += ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToJsonString(
+                input.eventData,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `user_updated`: {
+            let json = '{';
+            json += '"event_type":"user_updated"';
+            json += ',"event_data":';
+            json += serializeString(input.eventData);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown variant type: ${(input as any).eventType}`,
+            );
+        }
+    }
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysAdjacentEvent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysAdjacentEvent,
+): string {
+    return ObjectWithSnakeCaseKeysAdjacentEventToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithSnakeCaseKeysAdjacentEvent: TestClientValidator<ObjectWithSnakeCaseKeysAdjacentEvent> =
+    {
+        new: ObjectWithSnakeCaseKeysAdjacentEventNew,
+        validate: ObjectWithSnakeCaseKeysAdjacentEventValidate,
+        clone: ObjectWithSnakeCaseKeysAdjacentEventClone,
+        fromJson: ObjectWithSnakeCaseKeysAdjacentEventFromJson,
+        fromJsonString: ObjectWithSnakeCaseKeysAdjacentEventFromJsonString,
+        toJsonString: ObjectWithSnakeCaseKeysAdjacentEventToJsonString,
+        toUrlSearchParams:
+            ObjectWithSnakeCaseKeysAdjacentEventToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithSnakeCaseKeysAdjacentEventToUrlSearchParamsString,
+    };
+export interface ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+    userId: string;
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedNew(): ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+    return {
+        userId: '',
+    };
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedValidate(
+    input: unknown,
+): input is ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+    return isObject(input) && typeof input.userId === 'string';
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedClone(
+    input: ObjectWithSnakeCaseKeysAdjacentEventUserCreated,
+): ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+    let _user_id: string;
+    _user_id = input.userId;
+    return {
+        userId: _user_id,
+    };
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedFromJson(
+    input: Record<string, unknown>,
+): ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+    let _user_id: string;
+    _user_id = parseString(input.user_id);
+    return {
+        userId: _user_id,
+    };
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedFromJsonString(
+    input: string,
+): ObjectWithSnakeCaseKeysAdjacentEventUserCreated {
+    return ObjectWithSnakeCaseKeysAdjacentEventUserCreatedFromJson(
+        JSON.parse(input),
+    );
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToJsonString(
+    input: ObjectWithSnakeCaseKeysAdjacentEventUserCreated,
+): string {
+    let json = '{';
+    json += '"user_id":';
+    json += serializeString(input.userId);
+    json += '}';
+    return json;
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToUrlSearchParams(
+    input: ObjectWithSnakeCaseKeysAdjacentEventUserCreated,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('user_id', input.userId);
+    return params;
+}
+export function ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToUrlSearchParamsString(
+    input: ObjectWithSnakeCaseKeysAdjacentEventUserCreated,
+): string {
+    return ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$ObjectWithSnakeCaseKeysAdjacentEventUserCreated: TestClientValidator<ObjectWithSnakeCaseKeysAdjacentEventUserCreated> =
+    {
+        new: ObjectWithSnakeCaseKeysAdjacentEventUserCreatedNew,
+        validate: ObjectWithSnakeCaseKeysAdjacentEventUserCreatedValidate,
+        clone: ObjectWithSnakeCaseKeysAdjacentEventUserCreatedClone,
+        fromJson: ObjectWithSnakeCaseKeysAdjacentEventUserCreatedFromJson,
+        fromJsonString:
+            ObjectWithSnakeCaseKeysAdjacentEventUserCreatedFromJsonString,
+        toJsonString:
+            ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToJsonString,
+        toUrlSearchParams:
+            ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithSnakeCaseKeysAdjacentEventUserCreatedToUrlSearchParamsString,
     };
 
 export interface ObjectWithEveryOptionalType {
@@ -11348,6 +13190,4729 @@ export function UnionInternalGetRequestEmptyToUrlSearchParamsString(
 ): string {
     return UnionInternalGetRequestEmptyToUrlSearchParams(input).toString();
 }
+
+export interface UnionVariantShapes {
+    internal: UnionVariantShapesInternal;
+    external: UnionVariantShapesExternal;
+    adjacent: UnionVariantShapesAdjacent;
+}
+export function UnionVariantShapesNew(): UnionVariantShapes {
+    return {
+        internal: UnionVariantShapesInternalNew(),
+        external: UnionVariantShapesExternalNew(),
+        adjacent: UnionVariantShapesAdjacentNew(),
+    };
+}
+export function UnionVariantShapesValidate(
+    input: unknown,
+): input is UnionVariantShapes {
+    return (
+        isObject(input) &&
+        UnionVariantShapesInternalValidate(input.internal) &&
+        UnionVariantShapesExternalValidate(input.external) &&
+        UnionVariantShapesAdjacentValidate(input.adjacent)
+    );
+}
+export function UnionVariantShapesClone(
+    input: UnionVariantShapes,
+): UnionVariantShapes {
+    let _internal: UnionVariantShapesInternal;
+    _internal = UnionVariantShapesInternalClone(input.internal);
+    let _external: UnionVariantShapesExternal;
+    _external = UnionVariantShapesExternalClone(input.external);
+    let _adjacent: UnionVariantShapesAdjacent;
+    _adjacent = UnionVariantShapesAdjacentClone(input.adjacent);
+    return {
+        internal: _internal,
+        external: _external,
+        adjacent: _adjacent,
+    };
+}
+export function UnionVariantShapesFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapes {
+    let _internal: UnionVariantShapesInternal;
+    if (isObject(input.internal)) {
+        _internal = UnionVariantShapesInternalFromJson(input.internal);
+    } else {
+        _internal = UnionVariantShapesInternalNew();
+    }
+    let _external: UnionVariantShapesExternal;
+    if (isObject(input.external)) {
+        _external = UnionVariantShapesExternalFromJson(input.external);
+    } else {
+        _external = UnionVariantShapesExternalNew();
+    }
+    let _adjacent: UnionVariantShapesAdjacent;
+    if (isObject(input.adjacent)) {
+        _adjacent = UnionVariantShapesAdjacentFromJson(input.adjacent);
+    } else {
+        _adjacent = UnionVariantShapesAdjacentNew();
+    }
+    return {
+        internal: _internal,
+        external: _external,
+        adjacent: _adjacent,
+    };
+}
+export function UnionVariantShapesFromJsonString(
+    input: string,
+): UnionVariantShapes {
+    return UnionVariantShapesFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesToJsonString(
+    input: UnionVariantShapes,
+): string {
+    let json = '{';
+    json += '"internal":';
+    json += UnionVariantShapesInternalToJsonString(input.internal);
+    json += ',"external":';
+    json += UnionVariantShapesExternalToJsonString(input.external);
+    json += ',"adjacent":';
+    json += UnionVariantShapesAdjacentToJsonString(input.adjacent);
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesToUrlSearchParams(
+    input: UnionVariantShapes,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantShapes/internal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantShapes/external.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantShapes/adjacent.',
+    );
+    return params;
+}
+export function UnionVariantShapesToUrlSearchParamsString(
+    input: UnionVariantShapes,
+): string {
+    return UnionVariantShapesToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapes: TestClientValidator<UnionVariantShapes> = {
+    new: UnionVariantShapesNew,
+    validate: UnionVariantShapesValidate,
+    clone: UnionVariantShapesClone,
+    fromJson: UnionVariantShapesFromJson,
+    fromJsonString: UnionVariantShapesFromJsonString,
+    toJsonString: UnionVariantShapesToJsonString,
+    toUrlSearchParams: UnionVariantShapesToUrlSearchParams,
+    toUrlSearchParamsString: UnionVariantShapesToUrlSearchParamsString,
+};
+export type UnionVariantShapesInternal =
+    | UnionVariantShapesInternalEmpty
+    | UnionVariantShapesInternalAllOptional
+    | UnionVariantShapesInternalMixed
+    | UnionVariantShapesInternalNested;
+export function UnionVariantShapesInternalNew(): UnionVariantShapesInternal {
+    return UnionVariantShapesInternalEmptyNew();
+}
+export function UnionVariantShapesInternalValidate(
+    input: unknown,
+): input is UnionVariantShapesInternal {
+    return (
+        UnionVariantShapesInternalEmptyValidate(input) ||
+        UnionVariantShapesInternalAllOptionalValidate(input) ||
+        UnionVariantShapesInternalMixedValidate(input) ||
+        UnionVariantShapesInternalNestedValidate(input)
+    );
+}
+export function UnionVariantShapesInternalClone(
+    input: UnionVariantShapesInternal,
+): UnionVariantShapesInternal {
+    switch (input.kind) {
+        case `empty`: {
+            let __value__: UnionVariantShapesInternalEmpty;
+            __value__ = UnionVariantShapesInternalEmptyClone(input);
+            return __value__;
+        }
+
+        case `all-optional`: {
+            let __value__: UnionVariantShapesInternalAllOptional;
+            __value__ = UnionVariantShapesInternalAllOptionalClone(input);
+            return __value__;
+        }
+
+        case `mixed`: {
+            let __value__: UnionVariantShapesInternalMixed;
+            __value__ = UnionVariantShapesInternalMixedClone(input);
+            return __value__;
+        }
+
+        case `nested`: {
+            let __value__: UnionVariantShapesInternalNested;
+            __value__ = UnionVariantShapesInternalNestedClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantShapesInternalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternal {
+    switch (input.kind) {
+        case `empty`: {
+            return UnionVariantShapesInternalEmptyFromJson(input);
+        }
+        case `all-optional`: {
+            return UnionVariantShapesInternalAllOptionalFromJson(input);
+        }
+        case `mixed`: {
+            return UnionVariantShapesInternalMixedFromJson(input);
+        }
+        case `nested`: {
+            return UnionVariantShapesInternalNestedFromJson(input);
+        }
+        default: {
+            return UnionVariantShapesInternalEmptyNew();
+        }
+    }
+}
+export function UnionVariantShapesInternalFromJsonString(
+    input: string,
+): UnionVariantShapesInternal {
+    return UnionVariantShapesInternalFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesInternalToJsonString(
+    input: UnionVariantShapesInternal,
+): string {
+    switch (input.kind) {
+        case `empty`: {
+            return UnionVariantShapesInternalEmptyToJsonString(input);
+        }
+
+        case `all-optional`: {
+            return UnionVariantShapesInternalAllOptionalToJsonString(input);
+        }
+
+        case `mixed`: {
+            return UnionVariantShapesInternalMixedToJsonString(input);
+        }
+
+        case `nested`: {
+            return UnionVariantShapesInternalNestedToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantShapesInternalToUrlSearchParams(
+    input: UnionVariantShapesInternal,
+): URLSearchParams {
+    switch (input.kind) {
+        case `empty`: {
+            return UnionVariantShapesInternalEmptyToUrlSearchParams(input);
+        }
+        case `all-optional`: {
+            return UnionVariantShapesInternalAllOptionalToUrlSearchParams(
+                input,
+            );
+        }
+        case `mixed`: {
+            return UnionVariantShapesInternalMixedToUrlSearchParams(input);
+        }
+        case `nested`: {
+            return UnionVariantShapesInternalNestedToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantShapesInternalToUrlSearchParamsString(
+    input: UnionVariantShapesInternal,
+): string {
+    return UnionVariantShapesInternalToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesInternal: TestClientValidator<UnionVariantShapesInternal> =
+    {
+        new: UnionVariantShapesInternalNew,
+        validate: UnionVariantShapesInternalValidate,
+        clone: UnionVariantShapesInternalClone,
+        fromJson: UnionVariantShapesInternalFromJson,
+        fromJsonString: UnionVariantShapesInternalFromJsonString,
+        toJsonString: UnionVariantShapesInternalToJsonString,
+        toUrlSearchParams: UnionVariantShapesInternalToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesInternalToUrlSearchParamsString,
+    };
+export interface UnionVariantShapesInternalEmpty {
+    kind: `empty`;
+}
+export function UnionVariantShapesInternalEmptyNew(): UnionVariantShapesInternalEmpty {
+    return {
+        kind: `empty`,
+    };
+}
+export function UnionVariantShapesInternalEmptyValidate(
+    input: unknown,
+): input is UnionVariantShapesInternalEmpty {
+    return isObject(input) && input.kind === `empty`;
+}
+export function UnionVariantShapesInternalEmptyClone(
+    input: UnionVariantShapesInternalEmpty,
+): UnionVariantShapesInternalEmpty {
+    const _kind = `empty`;
+    return {
+        kind: _kind,
+    };
+}
+export function UnionVariantShapesInternalEmptyFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternalEmpty {
+    const _kind = `empty`;
+    return {
+        kind: _kind,
+    };
+}
+export function UnionVariantShapesInternalEmptyFromJsonString(
+    input: string,
+): UnionVariantShapesInternalEmpty {
+    return UnionVariantShapesInternalEmptyFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesInternalEmptyToJsonString(
+    input: UnionVariantShapesInternalEmpty,
+): string {
+    let json = '{';
+    json += '"kind":"empty"';
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesInternalEmptyToUrlSearchParams(
+    input: UnionVariantShapesInternalEmpty,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `empty`);
+    return params;
+}
+export function UnionVariantShapesInternalEmptyToUrlSearchParamsString(
+    input: UnionVariantShapesInternalEmpty,
+): string {
+    return UnionVariantShapesInternalEmptyToUrlSearchParams(input).toString();
+}
+
+export interface UnionVariantShapesInternalAllOptional {
+    kind: `all-optional`;
+    first?: string;
+    second?: number;
+}
+export function UnionVariantShapesInternalAllOptionalNew(): UnionVariantShapesInternalAllOptional {
+    return {
+        kind: `all-optional`,
+    };
+}
+export function UnionVariantShapesInternalAllOptionalValidate(
+    input: unknown,
+): input is UnionVariantShapesInternalAllOptional {
+    return (
+        isObject(input) &&
+        input.kind === `all-optional` &&
+        (typeof input.first === 'string' ||
+            typeof input.first === 'undefined') &&
+        ((typeof input.second === 'number' &&
+            Number.isInteger(input.second) &&
+            input.second >= INT32_MIN &&
+            input.second <= INT32_MAX) ||
+            typeof input.second === 'undefined')
+    );
+}
+export function UnionVariantShapesInternalAllOptionalClone(
+    input: UnionVariantShapesInternalAllOptional,
+): UnionVariantShapesInternalAllOptional {
+    const _kind = `all-optional`;
+    let _first: string | undefined;
+    if (typeof input.first !== 'undefined') {
+        _first = input.first;
+    }
+    let _second: number | undefined;
+    if (typeof input.second !== 'undefined') {
+        _second = input.second;
+    }
+    return {
+        kind: _kind,
+        first: _first,
+        second: _second,
+    };
+}
+export function UnionVariantShapesInternalAllOptionalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternalAllOptional {
+    const _kind = `all-optional`;
+    let _first: string | undefined;
+    if (typeof input.first !== 'undefined') {
+        _first = parseString(input.first);
+    }
+    let _second: number | undefined;
+    if (typeof input.second !== 'undefined') {
+        _second = parseNumberInt(input.second, INT32_MIN, INT32_MAX);
+    }
+    return {
+        kind: _kind,
+        first: _first,
+        second: _second,
+    };
+}
+export function UnionVariantShapesInternalAllOptionalFromJsonString(
+    input: string,
+): UnionVariantShapesInternalAllOptional {
+    return UnionVariantShapesInternalAllOptionalFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesInternalAllOptionalToJsonString(
+    input: UnionVariantShapesInternalAllOptional,
+): string {
+    let json = '{';
+    json += '"kind":"all-optional"';
+    if (typeof input.first !== 'undefined') {
+        json += `,"first":`;
+        json += serializeString(input.first);
+    }
+    if (typeof input.second !== 'undefined') {
+        json += `,"second":`;
+        json += `${input.second}`;
+    }
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesInternalAllOptionalToUrlSearchParams(
+    input: UnionVariantShapesInternalAllOptional,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `all-optional`);
+    if (typeof input.first !== 'undefined') {
+        params.set('first', input.first);
+    }
+    if (typeof input.second !== 'undefined') {
+        params.set('second', `${input.second}`);
+    }
+    return params;
+}
+export function UnionVariantShapesInternalAllOptionalToUrlSearchParamsString(
+    input: UnionVariantShapesInternalAllOptional,
+): string {
+    return UnionVariantShapesInternalAllOptionalToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export interface UnionVariantShapesInternalMixed {
+    kind: `mixed`;
+    required: string;
+    nullable: string | null;
+    optional?: string;
+}
+export function UnionVariantShapesInternalMixedNew(): UnionVariantShapesInternalMixed {
+    return {
+        kind: `mixed`,
+        required: '',
+        nullable: null,
+    };
+}
+export function UnionVariantShapesInternalMixedValidate(
+    input: unknown,
+): input is UnionVariantShapesInternalMixed {
+    return (
+        isObject(input) &&
+        input.kind === `mixed` &&
+        typeof input.required === 'string' &&
+        (typeof input.nullable === 'string' || input.nullable === null) &&
+        (typeof input.optional === 'string' ||
+            typeof input.optional === 'undefined')
+    );
+}
+export function UnionVariantShapesInternalMixedClone(
+    input: UnionVariantShapesInternalMixed,
+): UnionVariantShapesInternalMixed {
+    const _kind = `mixed`;
+    let _required: string;
+    _required = input.required;
+    let _nullable: string | null;
+    _nullable = input.nullable;
+    let _optional: string | undefined;
+    if (typeof input.optional !== 'undefined') {
+        _optional = input.optional;
+    }
+    return {
+        kind: _kind,
+        required: _required,
+        nullable: _nullable,
+        optional: _optional,
+    };
+}
+export function UnionVariantShapesInternalMixedFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternalMixed {
+    const _kind = `mixed`;
+    let _required: string;
+    _required = parseString(input.required);
+    let _nullable: string | null;
+    _nullable = parseNullableString(input.nullable);
+    let _optional: string | undefined;
+    if (typeof input.optional !== 'undefined') {
+        _optional = parseString(input.optional);
+    }
+    return {
+        kind: _kind,
+        required: _required,
+        nullable: _nullable,
+        optional: _optional,
+    };
+}
+export function UnionVariantShapesInternalMixedFromJsonString(
+    input: string,
+): UnionVariantShapesInternalMixed {
+    return UnionVariantShapesInternalMixedFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesInternalMixedToJsonString(
+    input: UnionVariantShapesInternalMixed,
+): string {
+    let json = '{';
+    json += '"kind":"mixed"';
+    json += ',"required":';
+    json += serializeString(input.required);
+    json += ',"nullable":';
+    if (typeof input.nullable === 'string') {
+        json += serializeString(input.nullable);
+    } else {
+        json += 'null';
+    }
+    if (typeof input.optional !== 'undefined') {
+        json += `,"optional":`;
+        json += serializeString(input.optional);
+    }
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesInternalMixedToUrlSearchParams(
+    input: UnionVariantShapesInternalMixed,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `mixed`);
+    params.set('required', input.required);
+    params.set('nullable', `${input.nullable}`);
+    if (typeof input.optional !== 'undefined') {
+        params.set('optional', input.optional);
+    }
+    return params;
+}
+export function UnionVariantShapesInternalMixedToUrlSearchParamsString(
+    input: UnionVariantShapesInternalMixed,
+): string {
+    return UnionVariantShapesInternalMixedToUrlSearchParams(input).toString();
+}
+
+export interface UnionVariantShapesInternalNested {
+    kind: `nested`;
+    array: UnionVariantShapesInternalNestedArrayElement[];
+    record: Record<string, bigint>;
+    object: UnionVariantShapesInternalNestedObject;
+}
+export function UnionVariantShapesInternalNestedNew(): UnionVariantShapesInternalNested {
+    return {
+        kind: `nested`,
+        array: [],
+        record: {},
+        object: UnionVariantShapesInternalNestedObjectNew(),
+    };
+}
+export function UnionVariantShapesInternalNestedValidate(
+    input: unknown,
+): input is UnionVariantShapesInternalNested {
+    return (
+        isObject(input) &&
+        input.kind === `nested` &&
+        Array.isArray(input.array) &&
+        input.array.every((_element) =>
+            UnionVariantShapesInternalNestedArrayElementValidate(_element),
+        ) &&
+        isObject(input.record) &&
+        Object.values(input.record).every(
+            (_value) =>
+                typeof _value === 'bigint' &&
+                _value >= INT64_MIN &&
+                _value <= INT64_MAX,
+        ) &&
+        UnionVariantShapesInternalNestedObjectValidate(input.object)
+    );
+}
+export function UnionVariantShapesInternalNestedClone(
+    input: UnionVariantShapesInternalNested,
+): UnionVariantShapesInternalNested {
+    const _kind = `nested`;
+    let _array: UnionVariantShapesInternalNestedArrayElement[];
+    _array = [];
+    for (const _arrayEl of input.array) {
+        let _arrayElValue: UnionVariantShapesInternalNestedArrayElement;
+        _arrayElValue =
+            UnionVariantShapesInternalNestedArrayElementClone(_arrayEl);
+        _array.push(_arrayElValue);
+    }
+    let _record: Record<string, bigint>;
+    _record = {};
+    for (const [_key, _value] of Object.entries(input.record)) {
+        let _recordValue: bigint;
+        _recordValue = _value;
+        _record[_key] = _recordValue;
+    }
+    let _object: UnionVariantShapesInternalNestedObject;
+    _object = UnionVariantShapesInternalNestedObjectClone(input.object);
+    return {
+        kind: _kind,
+        array: _array,
+        record: _record,
+        object: _object,
+    };
+}
+export function UnionVariantShapesInternalNestedFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternalNested {
+    const _kind = `nested`;
+    let _array: UnionVariantShapesInternalNestedArrayElement[];
+    if (Array.isArray(input.array)) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: UnionVariantShapesInternalNestedArrayElement;
+            if (isObject(_arrayEl)) {
+                _arrayElValue =
+                    UnionVariantShapesInternalNestedArrayElementFromJson(
+                        _arrayEl,
+                    );
+            } else {
+                _arrayElValue =
+                    UnionVariantShapesInternalNestedArrayElementNew();
+            }
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = [];
+    }
+    let _record: Record<string, bigint>;
+    if (isObject(input.record)) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: bigint;
+            _recordValue = parseNumberBigInt(_value);
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = {};
+    }
+    let _object: UnionVariantShapesInternalNestedObject;
+    if (isObject(input.object)) {
+        _object = UnionVariantShapesInternalNestedObjectFromJson(input.object);
+    } else {
+        _object = UnionVariantShapesInternalNestedObjectNew();
+    }
+    return {
+        kind: _kind,
+        array: _array,
+        record: _record,
+        object: _object,
+    };
+}
+export function UnionVariantShapesInternalNestedFromJsonString(
+    input: string,
+): UnionVariantShapesInternalNested {
+    return UnionVariantShapesInternalNestedFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesInternalNestedToJsonString(
+    input: UnionVariantShapesInternalNested,
+): string {
+    let json = '{';
+    json += '"kind":"nested"';
+    json += ',"array":';
+    json += '[';
+    for (let i = 0; i < input.array.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputArrayEl = input.array[i]!;
+        json +=
+            UnionVariantShapesInternalNestedArrayElementToJsonString(
+                _inputArrayEl,
+            );
+    }
+    json += ']';
+    json += ',"record":';
+    json += '{';
+    let _recordPropertyCount = 0;
+    for (const [_key, _value] of Object.entries(input.record)) {
+        if (_recordPropertyCount !== 0) {
+            json += ',';
+        }
+        json += `${serializeString(_key)}:`;
+        json += `"${_value}"`;
+        _recordPropertyCount++;
+    }
+    json += '}';
+
+    json += ',"object":';
+    json += UnionVariantShapesInternalNestedObjectToJsonString(input.object);
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesInternalNestedToUrlSearchParams(
+    input: UnionVariantShapesInternalNested,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `nested`);
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /UnionVariantShapesInternalNested/array.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UnionVariantShapesInternalNested/record.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /UnionVariantShapesInternalNested/object.',
+    );
+    return params;
+}
+export function UnionVariantShapesInternalNestedToUrlSearchParamsString(
+    input: UnionVariantShapesInternalNested,
+): string {
+    return UnionVariantShapesInternalNestedToUrlSearchParams(input).toString();
+}
+
+export interface UnionVariantShapesInternalNestedArrayElement {
+    id: string;
+}
+export function UnionVariantShapesInternalNestedArrayElementNew(): UnionVariantShapesInternalNestedArrayElement {
+    return {
+        id: '',
+    };
+}
+export function UnionVariantShapesInternalNestedArrayElementValidate(
+    input: unknown,
+): input is UnionVariantShapesInternalNestedArrayElement {
+    return isObject(input) && typeof input.id === 'string';
+}
+export function UnionVariantShapesInternalNestedArrayElementClone(
+    input: UnionVariantShapesInternalNestedArrayElement,
+): UnionVariantShapesInternalNestedArrayElement {
+    let _id: string;
+    _id = input.id;
+    return {
+        id: _id,
+    };
+}
+export function UnionVariantShapesInternalNestedArrayElementFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternalNestedArrayElement {
+    let _id: string;
+    _id = parseString(input.id);
+    return {
+        id: _id,
+    };
+}
+export function UnionVariantShapesInternalNestedArrayElementFromJsonString(
+    input: string,
+): UnionVariantShapesInternalNestedArrayElement {
+    return UnionVariantShapesInternalNestedArrayElementFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantShapesInternalNestedArrayElementToJsonString(
+    input: UnionVariantShapesInternalNestedArrayElement,
+): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesInternalNestedArrayElementToUrlSearchParams(
+    input: UnionVariantShapesInternalNestedArrayElement,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    return params;
+}
+export function UnionVariantShapesInternalNestedArrayElementToUrlSearchParamsString(
+    input: UnionVariantShapesInternalNestedArrayElement,
+): string {
+    return UnionVariantShapesInternalNestedArrayElementToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantShapesInternalNestedArrayElement: TestClientValidator<UnionVariantShapesInternalNestedArrayElement> =
+    {
+        new: UnionVariantShapesInternalNestedArrayElementNew,
+        validate: UnionVariantShapesInternalNestedArrayElementValidate,
+        clone: UnionVariantShapesInternalNestedArrayElementClone,
+        fromJson: UnionVariantShapesInternalNestedArrayElementFromJson,
+        fromJsonString:
+            UnionVariantShapesInternalNestedArrayElementFromJsonString,
+        toJsonString: UnionVariantShapesInternalNestedArrayElementToJsonString,
+        toUrlSearchParams:
+            UnionVariantShapesInternalNestedArrayElementToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesInternalNestedArrayElementToUrlSearchParamsString,
+    };
+
+export interface UnionVariantShapesInternalNestedObject {
+    timestamp: Date;
+}
+export function UnionVariantShapesInternalNestedObjectNew(): UnionVariantShapesInternalNestedObject {
+    return {
+        timestamp: new Date(0),
+    };
+}
+export function UnionVariantShapesInternalNestedObjectValidate(
+    input: unknown,
+): input is UnionVariantShapesInternalNestedObject {
+    return isObject(input) && input.timestamp instanceof Date;
+}
+export function UnionVariantShapesInternalNestedObjectClone(
+    input: UnionVariantShapesInternalNestedObject,
+): UnionVariantShapesInternalNestedObject {
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    return {
+        timestamp: _timestamp,
+    };
+}
+export function UnionVariantShapesInternalNestedObjectFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesInternalNestedObject {
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    return {
+        timestamp: _timestamp,
+    };
+}
+export function UnionVariantShapesInternalNestedObjectFromJsonString(
+    input: string,
+): UnionVariantShapesInternalNestedObject {
+    return UnionVariantShapesInternalNestedObjectFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesInternalNestedObjectToJsonString(
+    input: UnionVariantShapesInternalNestedObject,
+): string {
+    let json = '{';
+    json += '"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesInternalNestedObjectToUrlSearchParams(
+    input: UnionVariantShapesInternalNestedObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('timestamp', input.timestamp.toISOString());
+    return params;
+}
+export function UnionVariantShapesInternalNestedObjectToUrlSearchParamsString(
+    input: UnionVariantShapesInternalNestedObject,
+): string {
+    return UnionVariantShapesInternalNestedObjectToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantShapesInternalNestedObject: TestClientValidator<UnionVariantShapesInternalNestedObject> =
+    {
+        new: UnionVariantShapesInternalNestedObjectNew,
+        validate: UnionVariantShapesInternalNestedObjectValidate,
+        clone: UnionVariantShapesInternalNestedObjectClone,
+        fromJson: UnionVariantShapesInternalNestedObjectFromJson,
+        fromJsonString: UnionVariantShapesInternalNestedObjectFromJsonString,
+        toJsonString: UnionVariantShapesInternalNestedObjectToJsonString,
+        toUrlSearchParams:
+            UnionVariantShapesInternalNestedObjectToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesInternalNestedObjectToUrlSearchParamsString,
+    };
+
+export type UnionVariantShapesExternal =
+    | { type: `empty`; value: UnionVariantShapesExternalEmpty }
+    | { type: `all-optional`; value: UnionVariantShapesExternalAllOptional }
+    | { type: `mixed`; value: UnionVariantShapesExternalMixed };
+export function UnionVariantShapesExternalNew(): UnionVariantShapesExternal {
+    return {
+        type: `empty`,
+        value: UnionVariantShapesExternalEmptyNew(),
+    };
+}
+export function UnionVariantShapesExternalValidate(
+    input: unknown,
+): input is UnionVariantShapesExternal {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `empty`:
+            return UnionVariantShapesExternalEmptyValidate(input.value);
+
+        case `all-optional`:
+            return UnionVariantShapesExternalAllOptionalValidate(input.value);
+
+        case `mixed`:
+            return UnionVariantShapesExternalMixedValidate(input.value);
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantShapesExternalClone(
+    input: UnionVariantShapesExternal,
+): UnionVariantShapesExternal {
+    switch (input.type) {
+        case `empty`: {
+            let __value__: UnionVariantShapesExternalEmpty;
+            __value__ = UnionVariantShapesExternalEmptyClone(input.value);
+            return {
+                type: `empty`,
+                value: __value__,
+            };
+        }
+
+        case `all-optional`: {
+            let __value__: UnionVariantShapesExternalAllOptional;
+            __value__ = UnionVariantShapesExternalAllOptionalClone(input.value);
+            return {
+                type: `all-optional`,
+                value: __value__,
+            };
+        }
+
+        case `mixed`: {
+            let __value__: UnionVariantShapesExternalMixed;
+            __value__ = UnionVariantShapesExternalMixedClone(input.value);
+            return {
+                type: `mixed`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionVariantShapesExternalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesExternal {
+    if (`empty` in input) {
+        let __value__: UnionVariantShapesExternalEmpty;
+        if (isObject(input[`empty`])) {
+            __value__ = UnionVariantShapesExternalEmptyFromJson(input[`empty`]);
+        } else {
+            __value__ = UnionVariantShapesExternalEmptyNew();
+        }
+        return {
+            type: `empty`,
+            value: __value__,
+        };
+    }
+
+    if (`all-optional` in input) {
+        let __value__: UnionVariantShapesExternalAllOptional;
+        if (isObject(input[`all-optional`])) {
+            __value__ = UnionVariantShapesExternalAllOptionalFromJson(
+                input[`all-optional`],
+            );
+        } else {
+            __value__ = UnionVariantShapesExternalAllOptionalNew();
+        }
+        return {
+            type: `all-optional`,
+            value: __value__,
+        };
+    }
+
+    if (`mixed` in input) {
+        let __value__: UnionVariantShapesExternalMixed;
+        if (isObject(input[`mixed`])) {
+            __value__ = UnionVariantShapesExternalMixedFromJson(input[`mixed`]);
+        } else {
+            __value__ = UnionVariantShapesExternalMixedNew();
+        }
+        return {
+            type: `mixed`,
+            value: __value__,
+        };
+    }
+    return UnionVariantShapesExternalNew();
+}
+export function UnionVariantShapesExternalFromJsonString(
+    input: string,
+): UnionVariantShapesExternal {
+    return UnionVariantShapesExternalFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesExternalToJsonString(
+    input: UnionVariantShapesExternal,
+): string {
+    switch (input.type) {
+        case `empty`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += UnionVariantShapesExternalEmptyToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `all-optional`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += UnionVariantShapesExternalAllOptionalToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `mixed`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += UnionVariantShapesExternalMixedToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionVariantShapesExternalToUrlSearchParams(
+    input: UnionVariantShapesExternal,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantShapesExternalToUrlSearchParamsString(
+    input: UnionVariantShapesExternal,
+): string {
+    return UnionVariantShapesExternalToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesExternal: TestClientValidator<UnionVariantShapesExternal> =
+    {
+        new: UnionVariantShapesExternalNew,
+        validate: UnionVariantShapesExternalValidate,
+        clone: UnionVariantShapesExternalClone,
+        fromJson: UnionVariantShapesExternalFromJson,
+        fromJsonString: UnionVariantShapesExternalFromJsonString,
+        toJsonString: UnionVariantShapesExternalToJsonString,
+        toUrlSearchParams: UnionVariantShapesExternalToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesExternalToUrlSearchParamsString,
+    };
+export interface UnionVariantShapesExternalEmpty {}
+export function UnionVariantShapesExternalEmptyNew(): UnionVariantShapesExternalEmpty {
+    return {};
+}
+export function UnionVariantShapesExternalEmptyValidate(
+    input: unknown,
+): input is UnionVariantShapesExternalEmpty {
+    return isObject(input);
+}
+export function UnionVariantShapesExternalEmptyClone(
+    input: UnionVariantShapesExternalEmpty,
+): UnionVariantShapesExternalEmpty {
+    return {};
+}
+export function UnionVariantShapesExternalEmptyFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesExternalEmpty {
+    return {};
+}
+export function UnionVariantShapesExternalEmptyFromJsonString(
+    input: string,
+): UnionVariantShapesExternalEmpty {
+    return UnionVariantShapesExternalEmptyFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesExternalEmptyToJsonString(
+    input: UnionVariantShapesExternalEmpty,
+): string {
+    let json = '{';
+    let _hasKey = false;
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesExternalEmptyToUrlSearchParams(
+    input: UnionVariantShapesExternalEmpty,
+): URLSearchParams {
+    const params = new URLSearchParams();
+
+    return params;
+}
+export function UnionVariantShapesExternalEmptyToUrlSearchParamsString(
+    input: UnionVariantShapesExternalEmpty,
+): string {
+    return UnionVariantShapesExternalEmptyToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesExternalEmpty: TestClientValidator<UnionVariantShapesExternalEmpty> =
+    {
+        new: UnionVariantShapesExternalEmptyNew,
+        validate: UnionVariantShapesExternalEmptyValidate,
+        clone: UnionVariantShapesExternalEmptyClone,
+        fromJson: UnionVariantShapesExternalEmptyFromJson,
+        fromJsonString: UnionVariantShapesExternalEmptyFromJsonString,
+        toJsonString: UnionVariantShapesExternalEmptyToJsonString,
+        toUrlSearchParams: UnionVariantShapesExternalEmptyToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesExternalEmptyToUrlSearchParamsString,
+    };
+
+export interface UnionVariantShapesExternalAllOptional {
+    first?: string;
+    second?: number;
+}
+export function UnionVariantShapesExternalAllOptionalNew(): UnionVariantShapesExternalAllOptional {
+    return {};
+}
+export function UnionVariantShapesExternalAllOptionalValidate(
+    input: unknown,
+): input is UnionVariantShapesExternalAllOptional {
+    return (
+        isObject(input) &&
+        (typeof input.first === 'string' ||
+            typeof input.first === 'undefined') &&
+        ((typeof input.second === 'number' &&
+            Number.isInteger(input.second) &&
+            input.second >= INT32_MIN &&
+            input.second <= INT32_MAX) ||
+            typeof input.second === 'undefined')
+    );
+}
+export function UnionVariantShapesExternalAllOptionalClone(
+    input: UnionVariantShapesExternalAllOptional,
+): UnionVariantShapesExternalAllOptional {
+    let _first: string | undefined;
+    if (typeof input.first !== 'undefined') {
+        _first = input.first;
+    }
+    let _second: number | undefined;
+    if (typeof input.second !== 'undefined') {
+        _second = input.second;
+    }
+    return {
+        first: _first,
+        second: _second,
+    };
+}
+export function UnionVariantShapesExternalAllOptionalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesExternalAllOptional {
+    let _first: string | undefined;
+    if (typeof input.first !== 'undefined') {
+        _first = parseString(input.first);
+    }
+    let _second: number | undefined;
+    if (typeof input.second !== 'undefined') {
+        _second = parseNumberInt(input.second, INT32_MIN, INT32_MAX);
+    }
+    return {
+        first: _first,
+        second: _second,
+    };
+}
+export function UnionVariantShapesExternalAllOptionalFromJsonString(
+    input: string,
+): UnionVariantShapesExternalAllOptional {
+    return UnionVariantShapesExternalAllOptionalFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesExternalAllOptionalToJsonString(
+    input: UnionVariantShapesExternalAllOptional,
+): string {
+    let json = '{';
+    let _hasKey = false;
+    if (typeof input.first !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"first":';
+        json += serializeString(input.first);
+        _hasKey = true;
+    }
+    if (typeof input.second !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"second":';
+        json += `${input.second}`;
+        _hasKey = true;
+    }
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesExternalAllOptionalToUrlSearchParams(
+    input: UnionVariantShapesExternalAllOptional,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    if (typeof input.first !== 'undefined') {
+        params.set('first', input.first);
+    }
+    if (typeof input.second !== 'undefined') {
+        params.set('second', `${input.second}`);
+    }
+    return params;
+}
+export function UnionVariantShapesExternalAllOptionalToUrlSearchParamsString(
+    input: UnionVariantShapesExternalAllOptional,
+): string {
+    return UnionVariantShapesExternalAllOptionalToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantShapesExternalAllOptional: TestClientValidator<UnionVariantShapesExternalAllOptional> =
+    {
+        new: UnionVariantShapesExternalAllOptionalNew,
+        validate: UnionVariantShapesExternalAllOptionalValidate,
+        clone: UnionVariantShapesExternalAllOptionalClone,
+        fromJson: UnionVariantShapesExternalAllOptionalFromJson,
+        fromJsonString: UnionVariantShapesExternalAllOptionalFromJsonString,
+        toJsonString: UnionVariantShapesExternalAllOptionalToJsonString,
+        toUrlSearchParams:
+            UnionVariantShapesExternalAllOptionalToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesExternalAllOptionalToUrlSearchParamsString,
+    };
+
+export interface UnionVariantShapesExternalMixed {
+    required: string;
+    nullable: string | null;
+    optional?: string;
+}
+export function UnionVariantShapesExternalMixedNew(): UnionVariantShapesExternalMixed {
+    return {
+        required: '',
+        nullable: null,
+    };
+}
+export function UnionVariantShapesExternalMixedValidate(
+    input: unknown,
+): input is UnionVariantShapesExternalMixed {
+    return (
+        isObject(input) &&
+        typeof input.required === 'string' &&
+        (typeof input.nullable === 'string' || input.nullable === null) &&
+        (typeof input.optional === 'string' ||
+            typeof input.optional === 'undefined')
+    );
+}
+export function UnionVariantShapesExternalMixedClone(
+    input: UnionVariantShapesExternalMixed,
+): UnionVariantShapesExternalMixed {
+    let _required: string;
+    _required = input.required;
+    let _nullable: string | null;
+    _nullable = input.nullable;
+    let _optional: string | undefined;
+    if (typeof input.optional !== 'undefined') {
+        _optional = input.optional;
+    }
+    return {
+        required: _required,
+        nullable: _nullable,
+        optional: _optional,
+    };
+}
+export function UnionVariantShapesExternalMixedFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesExternalMixed {
+    let _required: string;
+    _required = parseString(input.required);
+    let _nullable: string | null;
+    _nullable = parseNullableString(input.nullable);
+    let _optional: string | undefined;
+    if (typeof input.optional !== 'undefined') {
+        _optional = parseString(input.optional);
+    }
+    return {
+        required: _required,
+        nullable: _nullable,
+        optional: _optional,
+    };
+}
+export function UnionVariantShapesExternalMixedFromJsonString(
+    input: string,
+): UnionVariantShapesExternalMixed {
+    return UnionVariantShapesExternalMixedFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesExternalMixedToJsonString(
+    input: UnionVariantShapesExternalMixed,
+): string {
+    let json = '{';
+    json += '"required":';
+    json += serializeString(input.required);
+    json += ',"nullable":';
+    if (typeof input.nullable === 'string') {
+        json += serializeString(input.nullable);
+    } else {
+        json += 'null';
+    }
+    if (typeof input.optional !== 'undefined') {
+        json += `,"optional":`;
+        json += serializeString(input.optional);
+    }
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesExternalMixedToUrlSearchParams(
+    input: UnionVariantShapesExternalMixed,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('required', input.required);
+    params.set('nullable', `${input.nullable}`);
+    if (typeof input.optional !== 'undefined') {
+        params.set('optional', input.optional);
+    }
+    return params;
+}
+export function UnionVariantShapesExternalMixedToUrlSearchParamsString(
+    input: UnionVariantShapesExternalMixed,
+): string {
+    return UnionVariantShapesExternalMixedToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesExternalMixed: TestClientValidator<UnionVariantShapesExternalMixed> =
+    {
+        new: UnionVariantShapesExternalMixedNew,
+        validate: UnionVariantShapesExternalMixedValidate,
+        clone: UnionVariantShapesExternalMixedClone,
+        fromJson: UnionVariantShapesExternalMixedFromJson,
+        fromJsonString: UnionVariantShapesExternalMixedFromJsonString,
+        toJsonString: UnionVariantShapesExternalMixedToJsonString,
+        toUrlSearchParams: UnionVariantShapesExternalMixedToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesExternalMixedToUrlSearchParamsString,
+    };
+
+export type UnionVariantShapesAdjacent =
+    | { kind: `empty`; data: UnionVariantShapesAdjacentEmpty }
+    | { kind: `all-optional`; data: UnionVariantShapesAdjacentAllOptional }
+    | { kind: `mixed`; data: UnionVariantShapesAdjacentMixed };
+export function UnionVariantShapesAdjacentNew(): UnionVariantShapesAdjacent {
+    return {
+        kind: `empty`,
+        data: UnionVariantShapesAdjacentEmptyNew(),
+    };
+}
+export function UnionVariantShapesAdjacentValidate(
+    input: unknown,
+): input is UnionVariantShapesAdjacent {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
+    }
+    switch (input.kind) {
+        case `empty`:
+            return UnionVariantShapesAdjacentEmptyValidate(input.data);
+
+        case `all-optional`:
+            return UnionVariantShapesAdjacentAllOptionalValidate(input.data);
+
+        case `mixed`:
+            return UnionVariantShapesAdjacentMixedValidate(input.data);
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantShapesAdjacentClone(
+    input: UnionVariantShapesAdjacent,
+): UnionVariantShapesAdjacent {
+    switch (input.kind) {
+        case `empty`: {
+            let __value__: UnionVariantShapesAdjacentEmpty;
+            __value__ = UnionVariantShapesAdjacentEmptyClone(input.data);
+            return {
+                kind: `empty`,
+                data: __value__,
+            };
+        }
+
+        case `all-optional`: {
+            let __value__: UnionVariantShapesAdjacentAllOptional;
+            __value__ = UnionVariantShapesAdjacentAllOptionalClone(input.data);
+            return {
+                kind: `all-optional`,
+                data: __value__,
+            };
+        }
+
+        case `mixed`: {
+            let __value__: UnionVariantShapesAdjacentMixed;
+            __value__ = UnionVariantShapesAdjacentMixedClone(input.data);
+            return {
+                kind: `mixed`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantShapesAdjacentFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesAdjacent {
+    if (typeof input.kind !== 'string') {
+        return UnionVariantShapesAdjacentNew();
+    }
+    switch (input.kind) {
+        case `empty`: {
+            let __value__: UnionVariantShapesAdjacentEmpty;
+            if (isObject(input.data)) {
+                __value__ = UnionVariantShapesAdjacentEmptyFromJson(input.data);
+            } else {
+                __value__ = UnionVariantShapesAdjacentEmptyNew();
+            }
+            return {
+                kind: `empty`,
+                data: __value__,
+            };
+        }
+        case `all-optional`: {
+            let __value__: UnionVariantShapesAdjacentAllOptional;
+            if (isObject(input.data)) {
+                __value__ = UnionVariantShapesAdjacentAllOptionalFromJson(
+                    input.data,
+                );
+            } else {
+                __value__ = UnionVariantShapesAdjacentAllOptionalNew();
+            }
+            return {
+                kind: `all-optional`,
+                data: __value__,
+            };
+        }
+        case `mixed`: {
+            let __value__: UnionVariantShapesAdjacentMixed;
+            if (isObject(input.data)) {
+                __value__ = UnionVariantShapesAdjacentMixedFromJson(input.data);
+            } else {
+                __value__ = UnionVariantShapesAdjacentMixedNew();
+            }
+            return {
+                kind: `mixed`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionVariantShapesAdjacentNew();
+        }
+    }
+}
+export function UnionVariantShapesAdjacentFromJsonString(
+    input: string,
+): UnionVariantShapesAdjacent {
+    return UnionVariantShapesAdjacentFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesAdjacentToJsonString(
+    input: UnionVariantShapesAdjacent,
+): string {
+    switch (input.kind) {
+        case `empty`: {
+            let json = '{';
+            json += '"kind":"empty"';
+            json += ',"data":';
+            json += UnionVariantShapesAdjacentEmptyToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `all-optional`: {
+            let json = '{';
+            json += '"kind":"all-optional"';
+            json += ',"data":';
+            json += UnionVariantShapesAdjacentAllOptionalToJsonString(
+                input.data,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `mixed`: {
+            let json = '{';
+            json += '"kind":"mixed"';
+            json += ',"data":';
+            json += UnionVariantShapesAdjacentMixedToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantShapesAdjacentToUrlSearchParams(
+    input: UnionVariantShapesAdjacent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantShapesAdjacentToUrlSearchParamsString(
+    input: UnionVariantShapesAdjacent,
+): string {
+    return UnionVariantShapesAdjacentToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesAdjacent: TestClientValidator<UnionVariantShapesAdjacent> =
+    {
+        new: UnionVariantShapesAdjacentNew,
+        validate: UnionVariantShapesAdjacentValidate,
+        clone: UnionVariantShapesAdjacentClone,
+        fromJson: UnionVariantShapesAdjacentFromJson,
+        fromJsonString: UnionVariantShapesAdjacentFromJsonString,
+        toJsonString: UnionVariantShapesAdjacentToJsonString,
+        toUrlSearchParams: UnionVariantShapesAdjacentToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesAdjacentToUrlSearchParamsString,
+    };
+export interface UnionVariantShapesAdjacentEmpty {}
+export function UnionVariantShapesAdjacentEmptyNew(): UnionVariantShapesAdjacentEmpty {
+    return {};
+}
+export function UnionVariantShapesAdjacentEmptyValidate(
+    input: unknown,
+): input is UnionVariantShapesAdjacentEmpty {
+    return isObject(input);
+}
+export function UnionVariantShapesAdjacentEmptyClone(
+    input: UnionVariantShapesAdjacentEmpty,
+): UnionVariantShapesAdjacentEmpty {
+    return {};
+}
+export function UnionVariantShapesAdjacentEmptyFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesAdjacentEmpty {
+    return {};
+}
+export function UnionVariantShapesAdjacentEmptyFromJsonString(
+    input: string,
+): UnionVariantShapesAdjacentEmpty {
+    return UnionVariantShapesAdjacentEmptyFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesAdjacentEmptyToJsonString(
+    input: UnionVariantShapesAdjacentEmpty,
+): string {
+    let json = '{';
+    let _hasKey = false;
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesAdjacentEmptyToUrlSearchParams(
+    input: UnionVariantShapesAdjacentEmpty,
+): URLSearchParams {
+    const params = new URLSearchParams();
+
+    return params;
+}
+export function UnionVariantShapesAdjacentEmptyToUrlSearchParamsString(
+    input: UnionVariantShapesAdjacentEmpty,
+): string {
+    return UnionVariantShapesAdjacentEmptyToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesAdjacentEmpty: TestClientValidator<UnionVariantShapesAdjacentEmpty> =
+    {
+        new: UnionVariantShapesAdjacentEmptyNew,
+        validate: UnionVariantShapesAdjacentEmptyValidate,
+        clone: UnionVariantShapesAdjacentEmptyClone,
+        fromJson: UnionVariantShapesAdjacentEmptyFromJson,
+        fromJsonString: UnionVariantShapesAdjacentEmptyFromJsonString,
+        toJsonString: UnionVariantShapesAdjacentEmptyToJsonString,
+        toUrlSearchParams: UnionVariantShapesAdjacentEmptyToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesAdjacentEmptyToUrlSearchParamsString,
+    };
+
+export interface UnionVariantShapesAdjacentAllOptional {
+    first?: string;
+    second?: number;
+}
+export function UnionVariantShapesAdjacentAllOptionalNew(): UnionVariantShapesAdjacentAllOptional {
+    return {};
+}
+export function UnionVariantShapesAdjacentAllOptionalValidate(
+    input: unknown,
+): input is UnionVariantShapesAdjacentAllOptional {
+    return (
+        isObject(input) &&
+        (typeof input.first === 'string' ||
+            typeof input.first === 'undefined') &&
+        ((typeof input.second === 'number' &&
+            Number.isInteger(input.second) &&
+            input.second >= INT32_MIN &&
+            input.second <= INT32_MAX) ||
+            typeof input.second === 'undefined')
+    );
+}
+export function UnionVariantShapesAdjacentAllOptionalClone(
+    input: UnionVariantShapesAdjacentAllOptional,
+): UnionVariantShapesAdjacentAllOptional {
+    let _first: string | undefined;
+    if (typeof input.first !== 'undefined') {
+        _first = input.first;
+    }
+    let _second: number | undefined;
+    if (typeof input.second !== 'undefined') {
+        _second = input.second;
+    }
+    return {
+        first: _first,
+        second: _second,
+    };
+}
+export function UnionVariantShapesAdjacentAllOptionalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesAdjacentAllOptional {
+    let _first: string | undefined;
+    if (typeof input.first !== 'undefined') {
+        _first = parseString(input.first);
+    }
+    let _second: number | undefined;
+    if (typeof input.second !== 'undefined') {
+        _second = parseNumberInt(input.second, INT32_MIN, INT32_MAX);
+    }
+    return {
+        first: _first,
+        second: _second,
+    };
+}
+export function UnionVariantShapesAdjacentAllOptionalFromJsonString(
+    input: string,
+): UnionVariantShapesAdjacentAllOptional {
+    return UnionVariantShapesAdjacentAllOptionalFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesAdjacentAllOptionalToJsonString(
+    input: UnionVariantShapesAdjacentAllOptional,
+): string {
+    let json = '{';
+    let _hasKey = false;
+    if (typeof input.first !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"first":';
+        json += serializeString(input.first);
+        _hasKey = true;
+    }
+    if (typeof input.second !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"second":';
+        json += `${input.second}`;
+        _hasKey = true;
+    }
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesAdjacentAllOptionalToUrlSearchParams(
+    input: UnionVariantShapesAdjacentAllOptional,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    if (typeof input.first !== 'undefined') {
+        params.set('first', input.first);
+    }
+    if (typeof input.second !== 'undefined') {
+        params.set('second', `${input.second}`);
+    }
+    return params;
+}
+export function UnionVariantShapesAdjacentAllOptionalToUrlSearchParamsString(
+    input: UnionVariantShapesAdjacentAllOptional,
+): string {
+    return UnionVariantShapesAdjacentAllOptionalToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantShapesAdjacentAllOptional: TestClientValidator<UnionVariantShapesAdjacentAllOptional> =
+    {
+        new: UnionVariantShapesAdjacentAllOptionalNew,
+        validate: UnionVariantShapesAdjacentAllOptionalValidate,
+        clone: UnionVariantShapesAdjacentAllOptionalClone,
+        fromJson: UnionVariantShapesAdjacentAllOptionalFromJson,
+        fromJsonString: UnionVariantShapesAdjacentAllOptionalFromJsonString,
+        toJsonString: UnionVariantShapesAdjacentAllOptionalToJsonString,
+        toUrlSearchParams:
+            UnionVariantShapesAdjacentAllOptionalToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesAdjacentAllOptionalToUrlSearchParamsString,
+    };
+
+export interface UnionVariantShapesAdjacentMixed {
+    required: string;
+    nullable: string | null;
+    optional?: string;
+}
+export function UnionVariantShapesAdjacentMixedNew(): UnionVariantShapesAdjacentMixed {
+    return {
+        required: '',
+        nullable: null,
+    };
+}
+export function UnionVariantShapesAdjacentMixedValidate(
+    input: unknown,
+): input is UnionVariantShapesAdjacentMixed {
+    return (
+        isObject(input) &&
+        typeof input.required === 'string' &&
+        (typeof input.nullable === 'string' || input.nullable === null) &&
+        (typeof input.optional === 'string' ||
+            typeof input.optional === 'undefined')
+    );
+}
+export function UnionVariantShapesAdjacentMixedClone(
+    input: UnionVariantShapesAdjacentMixed,
+): UnionVariantShapesAdjacentMixed {
+    let _required: string;
+    _required = input.required;
+    let _nullable: string | null;
+    _nullable = input.nullable;
+    let _optional: string | undefined;
+    if (typeof input.optional !== 'undefined') {
+        _optional = input.optional;
+    }
+    return {
+        required: _required,
+        nullable: _nullable,
+        optional: _optional,
+    };
+}
+export function UnionVariantShapesAdjacentMixedFromJson(
+    input: Record<string, unknown>,
+): UnionVariantShapesAdjacentMixed {
+    let _required: string;
+    _required = parseString(input.required);
+    let _nullable: string | null;
+    _nullable = parseNullableString(input.nullable);
+    let _optional: string | undefined;
+    if (typeof input.optional !== 'undefined') {
+        _optional = parseString(input.optional);
+    }
+    return {
+        required: _required,
+        nullable: _nullable,
+        optional: _optional,
+    };
+}
+export function UnionVariantShapesAdjacentMixedFromJsonString(
+    input: string,
+): UnionVariantShapesAdjacentMixed {
+    return UnionVariantShapesAdjacentMixedFromJson(JSON.parse(input));
+}
+export function UnionVariantShapesAdjacentMixedToJsonString(
+    input: UnionVariantShapesAdjacentMixed,
+): string {
+    let json = '{';
+    json += '"required":';
+    json += serializeString(input.required);
+    json += ',"nullable":';
+    if (typeof input.nullable === 'string') {
+        json += serializeString(input.nullable);
+    } else {
+        json += 'null';
+    }
+    if (typeof input.optional !== 'undefined') {
+        json += `,"optional":`;
+        json += serializeString(input.optional);
+    }
+    json += '}';
+    return json;
+}
+export function UnionVariantShapesAdjacentMixedToUrlSearchParams(
+    input: UnionVariantShapesAdjacentMixed,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('required', input.required);
+    params.set('nullable', `${input.nullable}`);
+    if (typeof input.optional !== 'undefined') {
+        params.set('optional', input.optional);
+    }
+    return params;
+}
+export function UnionVariantShapesAdjacentMixedToUrlSearchParamsString(
+    input: UnionVariantShapesAdjacentMixed,
+): string {
+    return UnionVariantShapesAdjacentMixedToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantShapesAdjacentMixed: TestClientValidator<UnionVariantShapesAdjacentMixed> =
+    {
+        new: UnionVariantShapesAdjacentMixedNew,
+        validate: UnionVariantShapesAdjacentMixedValidate,
+        clone: UnionVariantShapesAdjacentMixedClone,
+        fromJson: UnionVariantShapesAdjacentMixedFromJson,
+        fromJsonString: UnionVariantShapesAdjacentMixedFromJsonString,
+        toJsonString: UnionVariantShapesAdjacentMixedToJsonString,
+        toUrlSearchParams: UnionVariantShapesAdjacentMixedToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantShapesAdjacentMixedToUrlSearchParamsString,
+    };
+
+export interface UnionVariantTypes {
+    external: UnionVariantTypesExternal;
+    adjacent: UnionVariantTypesAdjacent;
+    internal: UnionVariantTypesInternal;
+}
+export function UnionVariantTypesNew(): UnionVariantTypes {
+    return {
+        external: UnionVariantTypesExternalNew(),
+        adjacent: UnionVariantTypesAdjacentNew(),
+        internal: UnionVariantTypesInternalNew(),
+    };
+}
+export function UnionVariantTypesValidate(
+    input: unknown,
+): input is UnionVariantTypes {
+    return (
+        isObject(input) &&
+        UnionVariantTypesExternalValidate(input.external) &&
+        UnionVariantTypesAdjacentValidate(input.adjacent) &&
+        UnionVariantTypesInternalValidate(input.internal)
+    );
+}
+export function UnionVariantTypesClone(
+    input: UnionVariantTypes,
+): UnionVariantTypes {
+    let _external: UnionVariantTypesExternal;
+    _external = UnionVariantTypesExternalClone(input.external);
+    let _adjacent: UnionVariantTypesAdjacent;
+    _adjacent = UnionVariantTypesAdjacentClone(input.adjacent);
+    let _internal: UnionVariantTypesInternal;
+    _internal = UnionVariantTypesInternalClone(input.internal);
+    return {
+        external: _external,
+        adjacent: _adjacent,
+        internal: _internal,
+    };
+}
+export function UnionVariantTypesFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypes {
+    let _external: UnionVariantTypesExternal;
+    if (isObject(input.external)) {
+        _external = UnionVariantTypesExternalFromJson(input.external);
+    } else {
+        _external = UnionVariantTypesExternalNew();
+    }
+    let _adjacent: UnionVariantTypesAdjacent;
+    if (isObject(input.adjacent)) {
+        _adjacent = UnionVariantTypesAdjacentFromJson(input.adjacent);
+    } else {
+        _adjacent = UnionVariantTypesAdjacentNew();
+    }
+    let _internal: UnionVariantTypesInternal;
+    if (isObject(input.internal)) {
+        _internal = UnionVariantTypesInternalFromJson(input.internal);
+    } else {
+        _internal = UnionVariantTypesInternalNew();
+    }
+    return {
+        external: _external,
+        adjacent: _adjacent,
+        internal: _internal,
+    };
+}
+export function UnionVariantTypesFromJsonString(
+    input: string,
+): UnionVariantTypes {
+    return UnionVariantTypesFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesToJsonString(
+    input: UnionVariantTypes,
+): string {
+    let json = '{';
+    json += '"external":';
+    json += UnionVariantTypesExternalToJsonString(input.external);
+    json += ',"adjacent":';
+    json += UnionVariantTypesAdjacentToJsonString(input.adjacent);
+    json += ',"internal":';
+    json += UnionVariantTypesInternalToJsonString(input.internal);
+    json += '}';
+    return json;
+}
+export function UnionVariantTypesToUrlSearchParams(
+    input: UnionVariantTypes,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantTypes/external.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantTypes/adjacent.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantTypes/internal.',
+    );
+    return params;
+}
+export function UnionVariantTypesToUrlSearchParamsString(
+    input: UnionVariantTypes,
+): string {
+    return UnionVariantTypesToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantTypes: TestClientValidator<UnionVariantTypes> = {
+    new: UnionVariantTypesNew,
+    validate: UnionVariantTypesValidate,
+    clone: UnionVariantTypesClone,
+    fromJson: UnionVariantTypesFromJson,
+    fromJsonString: UnionVariantTypesFromJsonString,
+    toJsonString: UnionVariantTypesToJsonString,
+    toUrlSearchParams: UnionVariantTypesToUrlSearchParams,
+    toUrlSearchParamsString: UnionVariantTypesToUrlSearchParamsString,
+};
+export type UnionVariantTypesExternal =
+    | { type: `string`; value: string }
+    | { type: `int64`; value: bigint }
+    | { type: `uint64`; value: bigint }
+    | { type: `float64`; value: number }
+    | { type: `enumerator`; value: UnionVariantTypesExternalEnumerator }
+    | { type: `record`; value: Record<string, string> }
+    | { type: `any`; value: any }
+    | { type: `nullableString`; value: string | null }
+    | { type: `nullableArray`; value: string[] | null }
+    | { type: `externalUnion`; value: UnionVariantTypesExternalExternalUnion }
+    | { type: `internalUnion`; value: UnionVariantTypesExternalInternalUnion }
+    | { type: `adjacentUnion`; value: UnionVariantTypesExternalAdjacentUnion }
+    | { type: `class`; value: string }
+    | { type: `default`; value: string };
+export function UnionVariantTypesExternalNew(): UnionVariantTypesExternal {
+    return {
+        type: `string`,
+        value: '',
+    };
+}
+export function UnionVariantTypesExternalValidate(
+    input: unknown,
+): input is UnionVariantTypesExternal {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `string`:
+            return typeof input.value === 'string';
+
+        case `int64`:
+            return (
+                typeof input.value === 'bigint' &&
+                input.value >= INT64_MIN &&
+                input.value <= INT64_MAX
+            );
+
+        case `uint64`:
+            return (
+                typeof input.value === 'bigint' &&
+                input.value >= BigInt(0) &&
+                input.value <= UINT64_MAX
+            );
+
+        case `float64`:
+            return typeof input.value === 'number';
+
+        case `enumerator`:
+            return UnionVariantTypesExternalEnumeratorValidate(input.value);
+
+        case `record`:
+            return (
+                isObject(input.value) &&
+                Object.values(input.value).every(
+                    (_value) => typeof _value === 'string',
+                )
+            );
+
+        case `any`:
+            return true;
+
+        case `nullableString`:
+            return typeof input.value === 'string' || input.value === null;
+
+        case `nullableArray`:
+            return (
+                (Array.isArray(input.value) &&
+                    input.value.every(
+                        (_element) => typeof _element === 'string',
+                    )) ||
+                input.value === null
+            );
+
+        case `externalUnion`:
+            return UnionVariantTypesExternalExternalUnionValidate(input.value);
+
+        case `internalUnion`:
+            return UnionVariantTypesExternalInternalUnionValidate(input.value);
+
+        case `adjacentUnion`:
+            return UnionVariantTypesExternalAdjacentUnionValidate(input.value);
+
+        case `class`:
+            return typeof input.value === 'string';
+
+        case `default`:
+            return typeof input.value === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesExternalClone(
+    input: UnionVariantTypesExternal,
+): UnionVariantTypesExternal {
+    switch (input.type) {
+        case `string`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `string`,
+                value: __value__,
+            };
+        }
+
+        case `int64`: {
+            let __value__: bigint;
+            __value__ = input.value;
+            return {
+                type: `int64`,
+                value: __value__,
+            };
+        }
+
+        case `uint64`: {
+            let __value__: bigint;
+            __value__ = input.value;
+            return {
+                type: `uint64`,
+                value: __value__,
+            };
+        }
+
+        case `float64`: {
+            let __value__: number;
+            __value__ = input.value;
+            return {
+                type: `float64`,
+                value: __value__,
+            };
+        }
+
+        case `enumerator`: {
+            let __value__: UnionVariantTypesExternalEnumerator;
+            __value__ = input.value;
+            return {
+                type: `enumerator`,
+                value: __value__,
+            };
+        }
+
+        case `record`: {
+            let __value__: Record<string, string>;
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input.value)) {
+                let __value__Value: string;
+                __value__Value = _value;
+                __value__[_key] = __value__Value;
+            }
+            return {
+                type: `record`,
+                value: __value__,
+            };
+        }
+
+        case `any`: {
+            let __value__: any;
+            __value__ = input.value;
+            return {
+                type: `any`,
+                value: __value__,
+            };
+        }
+
+        case `nullableString`: {
+            let __value__: string | null;
+            __value__ = input.value;
+            return {
+                type: `nullableString`,
+                value: __value__,
+            };
+        }
+
+        case `nullableArray`: {
+            let __value__: string[] | null;
+            if (input.value !== null) {
+                __value__ = [];
+                for (const __value__El of input.value) {
+                    let __value__ElValue: string;
+                    __value__ElValue = __value__El;
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `nullableArray`,
+                value: __value__,
+            };
+        }
+
+        case `externalUnion`: {
+            let __value__: UnionVariantTypesExternalExternalUnion;
+            __value__ = UnionVariantTypesExternalExternalUnionClone(
+                input.value,
+            );
+            return {
+                type: `externalUnion`,
+                value: __value__,
+            };
+        }
+
+        case `internalUnion`: {
+            let __value__: UnionVariantTypesExternalInternalUnion;
+            __value__ = UnionVariantTypesExternalInternalUnionClone(
+                input.value,
+            );
+            return {
+                type: `internalUnion`,
+                value: __value__,
+            };
+        }
+
+        case `adjacentUnion`: {
+            let __value__: UnionVariantTypesExternalAdjacentUnion;
+            __value__ = UnionVariantTypesExternalAdjacentUnionClone(
+                input.value,
+            );
+            return {
+                type: `adjacentUnion`,
+                value: __value__,
+            };
+        }
+
+        case `class`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `class`,
+                value: __value__,
+            };
+        }
+
+        case `default`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `default`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionVariantTypesExternalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesExternal {
+    if (`string` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`string`]);
+        return {
+            type: `string`,
+            value: __value__,
+        };
+    }
+
+    if (`int64` in input) {
+        let __value__: bigint;
+        __value__ = parseNumberBigInt(input[`int64`]);
+        return {
+            type: `int64`,
+            value: __value__,
+        };
+    }
+
+    if (`uint64` in input) {
+        let __value__: bigint;
+        __value__ = parseNumberUnsignedBigInt(input[`uint64`]);
+        return {
+            type: `uint64`,
+            value: __value__,
+        };
+    }
+
+    if (`float64` in input) {
+        let __value__: number;
+        __value__ = parseNumberFloat(input[`float64`]);
+        return {
+            type: `float64`,
+            value: __value__,
+        };
+    }
+
+    if (`enumerator` in input) {
+        let __value__: UnionVariantTypesExternalEnumerator;
+        if (typeof input[`enumerator`] === 'string') {
+            __value__ = UnionVariantTypesExternalEnumeratorFromSerialValue(
+                input[`enumerator`],
+            );
+        } else {
+            __value__ = UnionVariantTypesExternalEnumeratorNew();
+        }
+        return {
+            type: `enumerator`,
+            value: __value__,
+        };
+    }
+
+    if (`record` in input) {
+        let __value__: Record<string, string>;
+        if (isObject(input[`record`])) {
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input[`record`])) {
+                let __value__Value: string;
+                __value__Value = parseString(_value);
+                __value__[_key] = __value__Value;
+            }
+        } else {
+            __value__ = {};
+        }
+        return {
+            type: `record`,
+            value: __value__,
+        };
+    }
+
+    if (`any` in input) {
+        let __value__: any;
+        __value__ = input[`any`];
+        return {
+            type: `any`,
+            value: __value__,
+        };
+    }
+
+    if (`nullableString` in input) {
+        let __value__: string | null;
+        __value__ = parseNullableString(input[`nullableString`]);
+        return {
+            type: `nullableString`,
+            value: __value__,
+        };
+    }
+
+    if (`nullableArray` in input) {
+        let __value__: string[] | null;
+        if (Array.isArray(input[`nullableArray`])) {
+            __value__ = [];
+            for (const __value__El of input[`nullableArray`]) {
+                let __value__ElValue: string;
+                __value__ElValue = parseString(__value__El);
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = null;
+        }
+        return {
+            type: `nullableArray`,
+            value: __value__,
+        };
+    }
+
+    if (`externalUnion` in input) {
+        let __value__: UnionVariantTypesExternalExternalUnion;
+        if (isObject(input[`externalUnion`])) {
+            __value__ = UnionVariantTypesExternalExternalUnionFromJson(
+                input[`externalUnion`],
+            );
+        } else {
+            __value__ = UnionVariantTypesExternalExternalUnionNew();
+        }
+        return {
+            type: `externalUnion`,
+            value: __value__,
+        };
+    }
+
+    if (`internalUnion` in input) {
+        let __value__: UnionVariantTypesExternalInternalUnion;
+        if (isObject(input[`internalUnion`])) {
+            __value__ = UnionVariantTypesExternalInternalUnionFromJson(
+                input[`internalUnion`],
+            );
+        } else {
+            __value__ = UnionVariantTypesExternalInternalUnionNew();
+        }
+        return {
+            type: `internalUnion`,
+            value: __value__,
+        };
+    }
+
+    if (`adjacentUnion` in input) {
+        let __value__: UnionVariantTypesExternalAdjacentUnion;
+        if (isObject(input[`adjacentUnion`])) {
+            __value__ = UnionVariantTypesExternalAdjacentUnionFromJson(
+                input[`adjacentUnion`],
+            );
+        } else {
+            __value__ = UnionVariantTypesExternalAdjacentUnionNew();
+        }
+        return {
+            type: `adjacentUnion`,
+            value: __value__,
+        };
+    }
+
+    if (`class` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`class`]);
+        return {
+            type: `class`,
+            value: __value__,
+        };
+    }
+
+    if (`default` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`default`]);
+        return {
+            type: `default`,
+            value: __value__,
+        };
+    }
+    return UnionVariantTypesExternalNew();
+}
+export function UnionVariantTypesExternalFromJsonString(
+    input: string,
+): UnionVariantTypesExternal {
+    return UnionVariantTypesExternalFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesExternalToJsonString(
+    input: UnionVariantTypesExternal,
+): string {
+    switch (input.type) {
+        case `string`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `int64`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `uint64`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `float64`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `${input.value}`;
+            json += '}';
+            return json;
+        }
+
+        case `enumerator`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `"${input.value}"`;
+            json += '}';
+            return json;
+        }
+
+        case `record`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.value)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += serializeString(_value);
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        case `any`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += JSON.stringify(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `nullableString`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (typeof input.value === 'string') {
+                json += serializeString(input.value);
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `nullableArray`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value !== null) {
+                json += '[';
+                for (let i = 0; i < input.value.length; i++) {
+                    if (i !== 0) json += ',';
+                    const _inputValueEl = input.value[i]!;
+                    json += serializeString(_inputValueEl);
+                }
+                json += ']';
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `externalUnion`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += UnionVariantTypesExternalExternalUnionToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `internalUnion`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += UnionVariantTypesExternalInternalUnionToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `adjacentUnion`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += UnionVariantTypesExternalAdjacentUnionToJsonString(
+                input.value,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `class`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `default`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalToUrlSearchParams(
+    input: UnionVariantTypesExternal,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesExternalToUrlSearchParamsString(
+    input: UnionVariantTypesExternal,
+): string {
+    return UnionVariantTypesExternalToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantTypesExternal: TestClientValidator<UnionVariantTypesExternal> =
+    {
+        new: UnionVariantTypesExternalNew,
+        validate: UnionVariantTypesExternalValidate,
+        clone: UnionVariantTypesExternalClone,
+        fromJson: UnionVariantTypesExternalFromJson,
+        fromJsonString: UnionVariantTypesExternalFromJsonString,
+        toJsonString: UnionVariantTypesExternalToJsonString,
+        toUrlSearchParams: UnionVariantTypesExternalToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesExternalToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesExternalEnumerator = 'A' | 'B';
+export const UnionVariantTypesExternalEnumerator = {
+    A: 'A',
+    B: 'B',
+} as const;
+export const UnionVariantTypesExternalEnumeratorValues = ['A', 'B'] as const;
+export function UnionVariantTypesExternalEnumeratorNew(): UnionVariantTypesExternalEnumerator {
+    return UnionVariantTypesExternalEnumeratorValues[0];
+}
+export function UnionVariantTypesExternalEnumeratorValidate(
+    input: unknown,
+): input is UnionVariantTypesExternalEnumerator {
+    return (
+        typeof input === 'string' &&
+        UnionVariantTypesExternalEnumeratorValues.includes(input as any)
+    );
+}
+export function UnionVariantTypesExternalEnumeratorFromSerialValue(
+    input: string,
+): UnionVariantTypesExternalEnumerator {
+    if (UnionVariantTypesExternalEnumeratorValues.includes(input as any)) {
+        return input as UnionVariantTypesExternalEnumerator;
+    }
+    if (
+        UnionVariantTypesExternalEnumeratorValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as UnionVariantTypesExternalEnumerator;
+    }
+    if (
+        UnionVariantTypesExternalEnumeratorValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as UnionVariantTypesExternalEnumerator;
+    }
+    return 'A';
+}
+export const $$UnionVariantTypesExternalEnumerator: TestClientEnumValidator<UnionVariantTypesExternalEnumerator> =
+    {
+        new: UnionVariantTypesExternalEnumeratorNew,
+        validate: UnionVariantTypesExternalEnumeratorValidate,
+        values: UnionVariantTypesExternalEnumeratorValues,
+        fromSerialValue: UnionVariantTypesExternalEnumeratorFromSerialValue,
+    };
+
+export type UnionVariantTypesExternalExternalUnion = {
+    type: `text`;
+    value: string;
+};
+export function UnionVariantTypesExternalExternalUnionNew(): UnionVariantTypesExternalExternalUnion {
+    return {
+        type: `text`,
+        value: '',
+    };
+}
+export function UnionVariantTypesExternalExternalUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesExternalExternalUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `text`:
+            return typeof input.value === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesExternalExternalUnionClone(
+    input: UnionVariantTypesExternalExternalUnion,
+): UnionVariantTypesExternalExternalUnion {
+    switch (input.type) {
+        case `text`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `text`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionVariantTypesExternalExternalUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesExternalExternalUnion {
+    if (`text` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`text`]);
+        return {
+            type: `text`,
+            value: __value__,
+        };
+    }
+    return UnionVariantTypesExternalExternalUnionNew();
+}
+export function UnionVariantTypesExternalExternalUnionFromJsonString(
+    input: string,
+): UnionVariantTypesExternalExternalUnion {
+    return UnionVariantTypesExternalExternalUnionFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesExternalExternalUnionToJsonString(
+    input: UnionVariantTypesExternalExternalUnion,
+): string {
+    switch (input.type) {
+        case `text`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalExternalUnionToUrlSearchParams(
+    input: UnionVariantTypesExternalExternalUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesExternalExternalUnionToUrlSearchParamsString(
+    input: UnionVariantTypesExternalExternalUnion,
+): string {
+    return UnionVariantTypesExternalExternalUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesExternalExternalUnion: TestClientValidator<UnionVariantTypesExternalExternalUnion> =
+    {
+        new: UnionVariantTypesExternalExternalUnionNew,
+        validate: UnionVariantTypesExternalExternalUnionValidate,
+        clone: UnionVariantTypesExternalExternalUnionClone,
+        fromJson: UnionVariantTypesExternalExternalUnionFromJson,
+        fromJsonString: UnionVariantTypesExternalExternalUnionFromJsonString,
+        toJsonString: UnionVariantTypesExternalExternalUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesExternalExternalUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesExternalExternalUnionToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesExternalInternalUnion =
+    UnionVariantTypesExternalInternalUnionCircle;
+export function UnionVariantTypesExternalInternalUnionNew(): UnionVariantTypesExternalInternalUnion {
+    return UnionVariantTypesExternalInternalUnionCircleNew();
+}
+export function UnionVariantTypesExternalInternalUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesExternalInternalUnion {
+    return UnionVariantTypesExternalInternalUnionCircleValidate(input);
+}
+export function UnionVariantTypesExternalInternalUnionClone(
+    input: UnionVariantTypesExternalInternalUnion,
+): UnionVariantTypesExternalInternalUnion {
+    switch (input.shape) {
+        case `circle`: {
+            let __value__: UnionVariantTypesExternalInternalUnionCircle;
+            __value__ =
+                UnionVariantTypesExternalInternalUnionCircleClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalInternalUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesExternalInternalUnion {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesExternalInternalUnionCircleFromJson(input);
+        }
+        default: {
+            return UnionVariantTypesExternalInternalUnionCircleNew();
+        }
+    }
+}
+export function UnionVariantTypesExternalInternalUnionFromJsonString(
+    input: string,
+): UnionVariantTypesExternalInternalUnion {
+    return UnionVariantTypesExternalInternalUnionFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesExternalInternalUnionToJsonString(
+    input: UnionVariantTypesExternalInternalUnion,
+): string {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesExternalInternalUnionCircleToJsonString(
+                input,
+            );
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalInternalUnionToUrlSearchParams(
+    input: UnionVariantTypesExternalInternalUnion,
+): URLSearchParams {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesExternalInternalUnionCircleToUrlSearchParams(
+                input,
+            );
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalInternalUnionToUrlSearchParamsString(
+    input: UnionVariantTypesExternalInternalUnion,
+): string {
+    return UnionVariantTypesExternalInternalUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesExternalInternalUnion: TestClientValidator<UnionVariantTypesExternalInternalUnion> =
+    {
+        new: UnionVariantTypesExternalInternalUnionNew,
+        validate: UnionVariantTypesExternalInternalUnionValidate,
+        clone: UnionVariantTypesExternalInternalUnionClone,
+        fromJson: UnionVariantTypesExternalInternalUnionFromJson,
+        fromJsonString: UnionVariantTypesExternalInternalUnionFromJsonString,
+        toJsonString: UnionVariantTypesExternalInternalUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesExternalInternalUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesExternalInternalUnionToUrlSearchParamsString,
+    };
+export interface UnionVariantTypesExternalInternalUnionCircle {
+    shape: `circle`;
+    radius: number;
+}
+export function UnionVariantTypesExternalInternalUnionCircleNew(): UnionVariantTypesExternalInternalUnionCircle {
+    return {
+        shape: `circle`,
+        radius: 0,
+    };
+}
+export function UnionVariantTypesExternalInternalUnionCircleValidate(
+    input: unknown,
+): input is UnionVariantTypesExternalInternalUnionCircle {
+    return (
+        isObject(input) &&
+        input.shape === `circle` &&
+        typeof input.radius === 'number'
+    );
+}
+export function UnionVariantTypesExternalInternalUnionCircleClone(
+    input: UnionVariantTypesExternalInternalUnionCircle,
+): UnionVariantTypesExternalInternalUnionCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = input.radius;
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionVariantTypesExternalInternalUnionCircleFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesExternalInternalUnionCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = parseNumberFloat(input.radius);
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionVariantTypesExternalInternalUnionCircleFromJsonString(
+    input: string,
+): UnionVariantTypesExternalInternalUnionCircle {
+    return UnionVariantTypesExternalInternalUnionCircleFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantTypesExternalInternalUnionCircleToJsonString(
+    input: UnionVariantTypesExternalInternalUnionCircle,
+): string {
+    let json = '{';
+    json += '"shape":"circle"';
+    json += ',"radius":';
+    json += `${input.radius}`;
+    json += '}';
+    return json;
+}
+export function UnionVariantTypesExternalInternalUnionCircleToUrlSearchParams(
+    input: UnionVariantTypesExternalInternalUnionCircle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `circle`);
+    params.set('radius', `${input.radius}`);
+    return params;
+}
+export function UnionVariantTypesExternalInternalUnionCircleToUrlSearchParamsString(
+    input: UnionVariantTypesExternalInternalUnionCircle,
+): string {
+    return UnionVariantTypesExternalInternalUnionCircleToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type UnionVariantTypesExternalAdjacentUnion = {
+    kind: `text`;
+    data: string;
+};
+export function UnionVariantTypesExternalAdjacentUnionNew(): UnionVariantTypesExternalAdjacentUnion {
+    return {
+        kind: `text`,
+        data: '',
+    };
+}
+export function UnionVariantTypesExternalAdjacentUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesExternalAdjacentUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
+    }
+    switch (input.kind) {
+        case `text`:
+            return typeof input.data === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesExternalAdjacentUnionClone(
+    input: UnionVariantTypesExternalAdjacentUnion,
+): UnionVariantTypesExternalAdjacentUnion {
+    switch (input.kind) {
+        case `text`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalAdjacentUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesExternalAdjacentUnion {
+    if (typeof input.kind !== 'string') {
+        return UnionVariantTypesExternalAdjacentUnionNew();
+    }
+    switch (input.kind) {
+        case `text`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionVariantTypesExternalAdjacentUnionNew();
+        }
+    }
+}
+export function UnionVariantTypesExternalAdjacentUnionFromJsonString(
+    input: string,
+): UnionVariantTypesExternalAdjacentUnion {
+    return UnionVariantTypesExternalAdjacentUnionFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesExternalAdjacentUnionToJsonString(
+    input: UnionVariantTypesExternalAdjacentUnion,
+): string {
+    switch (input.kind) {
+        case `text`: {
+            let json = '{';
+            json += '"kind":"text"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesExternalAdjacentUnionToUrlSearchParams(
+    input: UnionVariantTypesExternalAdjacentUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesExternalAdjacentUnionToUrlSearchParamsString(
+    input: UnionVariantTypesExternalAdjacentUnion,
+): string {
+    return UnionVariantTypesExternalAdjacentUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesExternalAdjacentUnion: TestClientValidator<UnionVariantTypesExternalAdjacentUnion> =
+    {
+        new: UnionVariantTypesExternalAdjacentUnionNew,
+        validate: UnionVariantTypesExternalAdjacentUnionValidate,
+        clone: UnionVariantTypesExternalAdjacentUnionClone,
+        fromJson: UnionVariantTypesExternalAdjacentUnionFromJson,
+        fromJsonString: UnionVariantTypesExternalAdjacentUnionFromJsonString,
+        toJsonString: UnionVariantTypesExternalAdjacentUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesExternalAdjacentUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesExternalAdjacentUnionToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesAdjacent =
+    | { kind: `string`; data: string }
+    | { kind: `int64`; data: bigint }
+    | { kind: `uint64`; data: bigint }
+    | { kind: `float64`; data: number }
+    | { kind: `enumerator`; data: UnionVariantTypesAdjacentEnumerator }
+    | { kind: `record`; data: Record<string, string> }
+    | { kind: `any`; data: any }
+    | { kind: `nullableString`; data: string | null }
+    | { kind: `nullableArray`; data: string[] | null }
+    | { kind: `externalUnion`; data: UnionVariantTypesAdjacentExternalUnion }
+    | { kind: `internalUnion`; data: UnionVariantTypesAdjacentInternalUnion }
+    | { kind: `adjacentUnion`; data: UnionVariantTypesAdjacentAdjacentUnion }
+    | { kind: `class`; data: string }
+    | { kind: `default`; data: string };
+export function UnionVariantTypesAdjacentNew(): UnionVariantTypesAdjacent {
+    return {
+        kind: `string`,
+        data: '',
+    };
+}
+export function UnionVariantTypesAdjacentValidate(
+    input: unknown,
+): input is UnionVariantTypesAdjacent {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
+    }
+    switch (input.kind) {
+        case `string`:
+            return typeof input.data === 'string';
+
+        case `int64`:
+            return (
+                typeof input.data === 'bigint' &&
+                input.data >= INT64_MIN &&
+                input.data <= INT64_MAX
+            );
+
+        case `uint64`:
+            return (
+                typeof input.data === 'bigint' &&
+                input.data >= BigInt(0) &&
+                input.data <= UINT64_MAX
+            );
+
+        case `float64`:
+            return typeof input.data === 'number';
+
+        case `enumerator`:
+            return UnionVariantTypesAdjacentEnumeratorValidate(input.data);
+
+        case `record`:
+            return (
+                isObject(input.data) &&
+                Object.values(input.data).every(
+                    (_value) => typeof _value === 'string',
+                )
+            );
+
+        case `any`:
+            return true;
+
+        case `nullableString`:
+            return typeof input.data === 'string' || input.data === null;
+
+        case `nullableArray`:
+            return (
+                (Array.isArray(input.data) &&
+                    input.data.every(
+                        (_element) => typeof _element === 'string',
+                    )) ||
+                input.data === null
+            );
+
+        case `externalUnion`:
+            return UnionVariantTypesAdjacentExternalUnionValidate(input.data);
+
+        case `internalUnion`:
+            return UnionVariantTypesAdjacentInternalUnionValidate(input.data);
+
+        case `adjacentUnion`:
+            return UnionVariantTypesAdjacentAdjacentUnionValidate(input.data);
+
+        case `class`:
+            return typeof input.data === 'string';
+
+        case `default`:
+            return typeof input.data === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesAdjacentClone(
+    input: UnionVariantTypesAdjacent,
+): UnionVariantTypesAdjacent {
+    switch (input.kind) {
+        case `string`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `string`,
+                data: __value__,
+            };
+        }
+
+        case `int64`: {
+            let __value__: bigint;
+            __value__ = input.data;
+            return {
+                kind: `int64`,
+                data: __value__,
+            };
+        }
+
+        case `uint64`: {
+            let __value__: bigint;
+            __value__ = input.data;
+            return {
+                kind: `uint64`,
+                data: __value__,
+            };
+        }
+
+        case `float64`: {
+            let __value__: number;
+            __value__ = input.data;
+            return {
+                kind: `float64`,
+                data: __value__,
+            };
+        }
+
+        case `enumerator`: {
+            let __value__: UnionVariantTypesAdjacentEnumerator;
+            __value__ = input.data;
+            return {
+                kind: `enumerator`,
+                data: __value__,
+            };
+        }
+
+        case `record`: {
+            let __value__: Record<string, string>;
+            __value__ = {};
+            for (const [_key, _value] of Object.entries(input.data)) {
+                let __value__Value: string;
+                __value__Value = _value;
+                __value__[_key] = __value__Value;
+            }
+            return {
+                kind: `record`,
+                data: __value__,
+            };
+        }
+
+        case `any`: {
+            let __value__: any;
+            __value__ = input.data;
+            return {
+                kind: `any`,
+                data: __value__,
+            };
+        }
+
+        case `nullableString`: {
+            let __value__: string | null;
+            __value__ = input.data;
+            return {
+                kind: `nullableString`,
+                data: __value__,
+            };
+        }
+
+        case `nullableArray`: {
+            let __value__: string[] | null;
+            if (input.data !== null) {
+                __value__ = [];
+                for (const __value__El of input.data) {
+                    let __value__ElValue: string;
+                    __value__ElValue = __value__El;
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = null;
+            }
+            return {
+                kind: `nullableArray`,
+                data: __value__,
+            };
+        }
+
+        case `externalUnion`: {
+            let __value__: UnionVariantTypesAdjacentExternalUnion;
+            __value__ = UnionVariantTypesAdjacentExternalUnionClone(input.data);
+            return {
+                kind: `externalUnion`,
+                data: __value__,
+            };
+        }
+
+        case `internalUnion`: {
+            let __value__: UnionVariantTypesAdjacentInternalUnion;
+            __value__ = UnionVariantTypesAdjacentInternalUnionClone(input.data);
+            return {
+                kind: `internalUnion`,
+                data: __value__,
+            };
+        }
+
+        case `adjacentUnion`: {
+            let __value__: UnionVariantTypesAdjacentAdjacentUnion;
+            __value__ = UnionVariantTypesAdjacentAdjacentUnionClone(input.data);
+            return {
+                kind: `adjacentUnion`,
+                data: __value__,
+            };
+        }
+
+        case `class`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `class`,
+                data: __value__,
+            };
+        }
+
+        case `default`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `default`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesAdjacent {
+    if (typeof input.kind !== 'string') {
+        return UnionVariantTypesAdjacentNew();
+    }
+    switch (input.kind) {
+        case `string`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `string`,
+                data: __value__,
+            };
+        }
+        case `int64`: {
+            let __value__: bigint;
+            __value__ = parseNumberBigInt(input.data);
+            return {
+                kind: `int64`,
+                data: __value__,
+            };
+        }
+        case `uint64`: {
+            let __value__: bigint;
+            __value__ = parseNumberUnsignedBigInt(input.data);
+            return {
+                kind: `uint64`,
+                data: __value__,
+            };
+        }
+        case `float64`: {
+            let __value__: number;
+            __value__ = parseNumberFloat(input.data);
+            return {
+                kind: `float64`,
+                data: __value__,
+            };
+        }
+        case `enumerator`: {
+            let __value__: UnionVariantTypesAdjacentEnumerator;
+            if (typeof input.data === 'string') {
+                __value__ = UnionVariantTypesAdjacentEnumeratorFromSerialValue(
+                    input.data,
+                );
+            } else {
+                __value__ = UnionVariantTypesAdjacentEnumeratorNew();
+            }
+            return {
+                kind: `enumerator`,
+                data: __value__,
+            };
+        }
+        case `record`: {
+            let __value__: Record<string, string>;
+            if (isObject(input.data)) {
+                __value__ = {};
+                for (const [_key, _value] of Object.entries(input.data)) {
+                    let __value__Value: string;
+                    __value__Value = parseString(_value);
+                    __value__[_key] = __value__Value;
+                }
+            } else {
+                __value__ = {};
+            }
+            return {
+                kind: `record`,
+                data: __value__,
+            };
+        }
+        case `any`: {
+            let __value__: any;
+            __value__ = input.data;
+            return {
+                kind: `any`,
+                data: __value__,
+            };
+        }
+        case `nullableString`: {
+            let __value__: string | null;
+            __value__ = parseNullableString(input.data);
+            return {
+                kind: `nullableString`,
+                data: __value__,
+            };
+        }
+        case `nullableArray`: {
+            let __value__: string[] | null;
+            if (Array.isArray(input.data)) {
+                __value__ = [];
+                for (const __value__El of input.data) {
+                    let __value__ElValue: string;
+                    __value__ElValue = parseString(__value__El);
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = null;
+            }
+            return {
+                kind: `nullableArray`,
+                data: __value__,
+            };
+        }
+        case `externalUnion`: {
+            let __value__: UnionVariantTypesAdjacentExternalUnion;
+            if (isObject(input.data)) {
+                __value__ = UnionVariantTypesAdjacentExternalUnionFromJson(
+                    input.data,
+                );
+            } else {
+                __value__ = UnionVariantTypesAdjacentExternalUnionNew();
+            }
+            return {
+                kind: `externalUnion`,
+                data: __value__,
+            };
+        }
+        case `internalUnion`: {
+            let __value__: UnionVariantTypesAdjacentInternalUnion;
+            if (isObject(input.data)) {
+                __value__ = UnionVariantTypesAdjacentInternalUnionFromJson(
+                    input.data,
+                );
+            } else {
+                __value__ = UnionVariantTypesAdjacentInternalUnionNew();
+            }
+            return {
+                kind: `internalUnion`,
+                data: __value__,
+            };
+        }
+        case `adjacentUnion`: {
+            let __value__: UnionVariantTypesAdjacentAdjacentUnion;
+            if (isObject(input.data)) {
+                __value__ = UnionVariantTypesAdjacentAdjacentUnionFromJson(
+                    input.data,
+                );
+            } else {
+                __value__ = UnionVariantTypesAdjacentAdjacentUnionNew();
+            }
+            return {
+                kind: `adjacentUnion`,
+                data: __value__,
+            };
+        }
+        case `class`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `class`,
+                data: __value__,
+            };
+        }
+        case `default`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `default`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionVariantTypesAdjacentNew();
+        }
+    }
+}
+export function UnionVariantTypesAdjacentFromJsonString(
+    input: string,
+): UnionVariantTypesAdjacent {
+    return UnionVariantTypesAdjacentFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesAdjacentToJsonString(
+    input: UnionVariantTypesAdjacent,
+): string {
+    switch (input.kind) {
+        case `string`: {
+            let json = '{';
+            json += '"kind":"string"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `int64`: {
+            let json = '{';
+            json += '"kind":"int64"';
+            json += ',"data":';
+            json += `"${input.data}"`;
+            json += '}';
+            return json;
+        }
+
+        case `uint64`: {
+            let json = '{';
+            json += '"kind":"uint64"';
+            json += ',"data":';
+            json += `"${input.data}"`;
+            json += '}';
+            return json;
+        }
+
+        case `float64`: {
+            let json = '{';
+            json += '"kind":"float64"';
+            json += ',"data":';
+            json += `${input.data}`;
+            json += '}';
+            return json;
+        }
+
+        case `enumerator`: {
+            let json = '{';
+            json += '"kind":"enumerator"';
+            json += ',"data":';
+            json += `"${input.data}"`;
+            json += '}';
+            return json;
+        }
+
+        case `record`: {
+            let json = '{';
+            json += '"kind":"record"';
+            json += ',"data":';
+            json += '{';
+            let _PropertyCount = 0;
+            for (const [_key, _value] of Object.entries(input.data)) {
+                if (_PropertyCount !== 0) {
+                    json += ',';
+                }
+                json += `${serializeString(_key)}:`;
+                json += serializeString(_value);
+                _PropertyCount++;
+            }
+            json += '}';
+
+            json += '}';
+            return json;
+        }
+
+        case `any`: {
+            let json = '{';
+            json += '"kind":"any"';
+            json += ',"data":';
+            json += JSON.stringify(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `nullableString`: {
+            let json = '{';
+            json += '"kind":"nullableString"';
+            json += ',"data":';
+            if (typeof input.data === 'string') {
+                json += serializeString(input.data);
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `nullableArray`: {
+            let json = '{';
+            json += '"kind":"nullableArray"';
+            json += ',"data":';
+            if (input.data !== null) {
+                json += '[';
+                for (let i = 0; i < input.data.length; i++) {
+                    if (i !== 0) json += ',';
+                    const _inputDataEl = input.data[i]!;
+                    json += serializeString(_inputDataEl);
+                }
+                json += ']';
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        case `externalUnion`: {
+            let json = '{';
+            json += '"kind":"externalUnion"';
+            json += ',"data":';
+            json += UnionVariantTypesAdjacentExternalUnionToJsonString(
+                input.data,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `internalUnion`: {
+            let json = '{';
+            json += '"kind":"internalUnion"';
+            json += ',"data":';
+            json += UnionVariantTypesAdjacentInternalUnionToJsonString(
+                input.data,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `adjacentUnion`: {
+            let json = '{';
+            json += '"kind":"adjacentUnion"';
+            json += ',"data":';
+            json += UnionVariantTypesAdjacentAdjacentUnionToJsonString(
+                input.data,
+            );
+            json += '}';
+            return json;
+        }
+
+        case `class`: {
+            let json = '{';
+            json += '"kind":"class"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `default`: {
+            let json = '{';
+            json += '"kind":"default"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentToUrlSearchParams(
+    input: UnionVariantTypesAdjacent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesAdjacentToUrlSearchParamsString(
+    input: UnionVariantTypesAdjacent,
+): string {
+    return UnionVariantTypesAdjacentToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantTypesAdjacent: TestClientValidator<UnionVariantTypesAdjacent> =
+    {
+        new: UnionVariantTypesAdjacentNew,
+        validate: UnionVariantTypesAdjacentValidate,
+        clone: UnionVariantTypesAdjacentClone,
+        fromJson: UnionVariantTypesAdjacentFromJson,
+        fromJsonString: UnionVariantTypesAdjacentFromJsonString,
+        toJsonString: UnionVariantTypesAdjacentToJsonString,
+        toUrlSearchParams: UnionVariantTypesAdjacentToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesAdjacentToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesAdjacentEnumerator = 'A' | 'B';
+export const UnionVariantTypesAdjacentEnumerator = {
+    A: 'A',
+    B: 'B',
+} as const;
+export const UnionVariantTypesAdjacentEnumeratorValues = ['A', 'B'] as const;
+export function UnionVariantTypesAdjacentEnumeratorNew(): UnionVariantTypesAdjacentEnumerator {
+    return UnionVariantTypesAdjacentEnumeratorValues[0];
+}
+export function UnionVariantTypesAdjacentEnumeratorValidate(
+    input: unknown,
+): input is UnionVariantTypesAdjacentEnumerator {
+    return (
+        typeof input === 'string' &&
+        UnionVariantTypesAdjacentEnumeratorValues.includes(input as any)
+    );
+}
+export function UnionVariantTypesAdjacentEnumeratorFromSerialValue(
+    input: string,
+): UnionVariantTypesAdjacentEnumerator {
+    if (UnionVariantTypesAdjacentEnumeratorValues.includes(input as any)) {
+        return input as UnionVariantTypesAdjacentEnumerator;
+    }
+    if (
+        UnionVariantTypesAdjacentEnumeratorValues.includes(
+            input.toLowerCase() as any,
+        )
+    ) {
+        return input.toLowerCase() as UnionVariantTypesAdjacentEnumerator;
+    }
+    if (
+        UnionVariantTypesAdjacentEnumeratorValues.includes(
+            input.toUpperCase() as any,
+        )
+    ) {
+        return input.toUpperCase() as UnionVariantTypesAdjacentEnumerator;
+    }
+    return 'A';
+}
+export const $$UnionVariantTypesAdjacentEnumerator: TestClientEnumValidator<UnionVariantTypesAdjacentEnumerator> =
+    {
+        new: UnionVariantTypesAdjacentEnumeratorNew,
+        validate: UnionVariantTypesAdjacentEnumeratorValidate,
+        values: UnionVariantTypesAdjacentEnumeratorValues,
+        fromSerialValue: UnionVariantTypesAdjacentEnumeratorFromSerialValue,
+    };
+
+export type UnionVariantTypesAdjacentExternalUnion = {
+    type: `text`;
+    value: string;
+};
+export function UnionVariantTypesAdjacentExternalUnionNew(): UnionVariantTypesAdjacentExternalUnion {
+    return {
+        type: `text`,
+        value: '',
+    };
+}
+export function UnionVariantTypesAdjacentExternalUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesAdjacentExternalUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `text`:
+            return typeof input.value === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesAdjacentExternalUnionClone(
+    input: UnionVariantTypesAdjacentExternalUnion,
+): UnionVariantTypesAdjacentExternalUnion {
+    switch (input.type) {
+        case `text`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `text`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionVariantTypesAdjacentExternalUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesAdjacentExternalUnion {
+    if (`text` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`text`]);
+        return {
+            type: `text`,
+            value: __value__,
+        };
+    }
+    return UnionVariantTypesAdjacentExternalUnionNew();
+}
+export function UnionVariantTypesAdjacentExternalUnionFromJsonString(
+    input: string,
+): UnionVariantTypesAdjacentExternalUnion {
+    return UnionVariantTypesAdjacentExternalUnionFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesAdjacentExternalUnionToJsonString(
+    input: UnionVariantTypesAdjacentExternalUnion,
+): string {
+    switch (input.type) {
+        case `text`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentExternalUnionToUrlSearchParams(
+    input: UnionVariantTypesAdjacentExternalUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesAdjacentExternalUnionToUrlSearchParamsString(
+    input: UnionVariantTypesAdjacentExternalUnion,
+): string {
+    return UnionVariantTypesAdjacentExternalUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesAdjacentExternalUnion: TestClientValidator<UnionVariantTypesAdjacentExternalUnion> =
+    {
+        new: UnionVariantTypesAdjacentExternalUnionNew,
+        validate: UnionVariantTypesAdjacentExternalUnionValidate,
+        clone: UnionVariantTypesAdjacentExternalUnionClone,
+        fromJson: UnionVariantTypesAdjacentExternalUnionFromJson,
+        fromJsonString: UnionVariantTypesAdjacentExternalUnionFromJsonString,
+        toJsonString: UnionVariantTypesAdjacentExternalUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesAdjacentExternalUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesAdjacentExternalUnionToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesAdjacentInternalUnion =
+    UnionVariantTypesAdjacentInternalUnionCircle;
+export function UnionVariantTypesAdjacentInternalUnionNew(): UnionVariantTypesAdjacentInternalUnion {
+    return UnionVariantTypesAdjacentInternalUnionCircleNew();
+}
+export function UnionVariantTypesAdjacentInternalUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesAdjacentInternalUnion {
+    return UnionVariantTypesAdjacentInternalUnionCircleValidate(input);
+}
+export function UnionVariantTypesAdjacentInternalUnionClone(
+    input: UnionVariantTypesAdjacentInternalUnion,
+): UnionVariantTypesAdjacentInternalUnion {
+    switch (input.shape) {
+        case `circle`: {
+            let __value__: UnionVariantTypesAdjacentInternalUnionCircle;
+            __value__ =
+                UnionVariantTypesAdjacentInternalUnionCircleClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentInternalUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesAdjacentInternalUnion {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesAdjacentInternalUnionCircleFromJson(input);
+        }
+        default: {
+            return UnionVariantTypesAdjacentInternalUnionCircleNew();
+        }
+    }
+}
+export function UnionVariantTypesAdjacentInternalUnionFromJsonString(
+    input: string,
+): UnionVariantTypesAdjacentInternalUnion {
+    return UnionVariantTypesAdjacentInternalUnionFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesAdjacentInternalUnionToJsonString(
+    input: UnionVariantTypesAdjacentInternalUnion,
+): string {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesAdjacentInternalUnionCircleToJsonString(
+                input,
+            );
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentInternalUnionToUrlSearchParams(
+    input: UnionVariantTypesAdjacentInternalUnion,
+): URLSearchParams {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesAdjacentInternalUnionCircleToUrlSearchParams(
+                input,
+            );
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentInternalUnionToUrlSearchParamsString(
+    input: UnionVariantTypesAdjacentInternalUnion,
+): string {
+    return UnionVariantTypesAdjacentInternalUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesAdjacentInternalUnion: TestClientValidator<UnionVariantTypesAdjacentInternalUnion> =
+    {
+        new: UnionVariantTypesAdjacentInternalUnionNew,
+        validate: UnionVariantTypesAdjacentInternalUnionValidate,
+        clone: UnionVariantTypesAdjacentInternalUnionClone,
+        fromJson: UnionVariantTypesAdjacentInternalUnionFromJson,
+        fromJsonString: UnionVariantTypesAdjacentInternalUnionFromJsonString,
+        toJsonString: UnionVariantTypesAdjacentInternalUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesAdjacentInternalUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesAdjacentInternalUnionToUrlSearchParamsString,
+    };
+export interface UnionVariantTypesAdjacentInternalUnionCircle {
+    shape: `circle`;
+    radius: number;
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleNew(): UnionVariantTypesAdjacentInternalUnionCircle {
+    return {
+        shape: `circle`,
+        radius: 0,
+    };
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleValidate(
+    input: unknown,
+): input is UnionVariantTypesAdjacentInternalUnionCircle {
+    return (
+        isObject(input) &&
+        input.shape === `circle` &&
+        typeof input.radius === 'number'
+    );
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleClone(
+    input: UnionVariantTypesAdjacentInternalUnionCircle,
+): UnionVariantTypesAdjacentInternalUnionCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = input.radius;
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesAdjacentInternalUnionCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = parseNumberFloat(input.radius);
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleFromJsonString(
+    input: string,
+): UnionVariantTypesAdjacentInternalUnionCircle {
+    return UnionVariantTypesAdjacentInternalUnionCircleFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleToJsonString(
+    input: UnionVariantTypesAdjacentInternalUnionCircle,
+): string {
+    let json = '{';
+    json += '"shape":"circle"';
+    json += ',"radius":';
+    json += `${input.radius}`;
+    json += '}';
+    return json;
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleToUrlSearchParams(
+    input: UnionVariantTypesAdjacentInternalUnionCircle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `circle`);
+    params.set('radius', `${input.radius}`);
+    return params;
+}
+export function UnionVariantTypesAdjacentInternalUnionCircleToUrlSearchParamsString(
+    input: UnionVariantTypesAdjacentInternalUnionCircle,
+): string {
+    return UnionVariantTypesAdjacentInternalUnionCircleToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type UnionVariantTypesAdjacentAdjacentUnion = {
+    kind: `text`;
+    data: string;
+};
+export function UnionVariantTypesAdjacentAdjacentUnionNew(): UnionVariantTypesAdjacentAdjacentUnion {
+    return {
+        kind: `text`,
+        data: '',
+    };
+}
+export function UnionVariantTypesAdjacentAdjacentUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesAdjacentAdjacentUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
+    }
+    switch (input.kind) {
+        case `text`:
+            return typeof input.data === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesAdjacentAdjacentUnionClone(
+    input: UnionVariantTypesAdjacentAdjacentUnion,
+): UnionVariantTypesAdjacentAdjacentUnion {
+    switch (input.kind) {
+        case `text`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentAdjacentUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesAdjacentAdjacentUnion {
+    if (typeof input.kind !== 'string') {
+        return UnionVariantTypesAdjacentAdjacentUnionNew();
+    }
+    switch (input.kind) {
+        case `text`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionVariantTypesAdjacentAdjacentUnionNew();
+        }
+    }
+}
+export function UnionVariantTypesAdjacentAdjacentUnionFromJsonString(
+    input: string,
+): UnionVariantTypesAdjacentAdjacentUnion {
+    return UnionVariantTypesAdjacentAdjacentUnionFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesAdjacentAdjacentUnionToJsonString(
+    input: UnionVariantTypesAdjacentAdjacentUnion,
+): string {
+    switch (input.kind) {
+        case `text`: {
+            let json = '{';
+            json += '"kind":"text"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesAdjacentAdjacentUnionToUrlSearchParams(
+    input: UnionVariantTypesAdjacentAdjacentUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesAdjacentAdjacentUnionToUrlSearchParamsString(
+    input: UnionVariantTypesAdjacentAdjacentUnion,
+): string {
+    return UnionVariantTypesAdjacentAdjacentUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesAdjacentAdjacentUnion: TestClientValidator<UnionVariantTypesAdjacentAdjacentUnion> =
+    {
+        new: UnionVariantTypesAdjacentAdjacentUnionNew,
+        validate: UnionVariantTypesAdjacentAdjacentUnionValidate,
+        clone: UnionVariantTypesAdjacentAdjacentUnionClone,
+        fromJson: UnionVariantTypesAdjacentAdjacentUnionFromJson,
+        fromJsonString: UnionVariantTypesAdjacentAdjacentUnionFromJsonString,
+        toJsonString: UnionVariantTypesAdjacentAdjacentUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesAdjacentAdjacentUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesAdjacentAdjacentUnionToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesInternal =
+    | UnionVariantTypesInternalClass
+    | UnionVariantTypesInternalDefault;
+export function UnionVariantTypesInternalNew(): UnionVariantTypesInternal {
+    return UnionVariantTypesInternalClassNew();
+}
+export function UnionVariantTypesInternalValidate(
+    input: unknown,
+): input is UnionVariantTypesInternal {
+    return (
+        UnionVariantTypesInternalClassValidate(input) ||
+        UnionVariantTypesInternalDefaultValidate(input)
+    );
+}
+export function UnionVariantTypesInternalClone(
+    input: UnionVariantTypesInternal,
+): UnionVariantTypesInternal {
+    switch (input.kind) {
+        case `class`: {
+            let __value__: UnionVariantTypesInternalClass;
+            __value__ = UnionVariantTypesInternalClassClone(input);
+            return __value__;
+        }
+
+        case `default`: {
+            let __value__: UnionVariantTypesInternalDefault;
+            __value__ = UnionVariantTypesInternalDefaultClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternal {
+    switch (input.kind) {
+        case `class`: {
+            return UnionVariantTypesInternalClassFromJson(input);
+        }
+        case `default`: {
+            return UnionVariantTypesInternalDefaultFromJson(input);
+        }
+        default: {
+            return UnionVariantTypesInternalClassNew();
+        }
+    }
+}
+export function UnionVariantTypesInternalFromJsonString(
+    input: string,
+): UnionVariantTypesInternal {
+    return UnionVariantTypesInternalFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesInternalToJsonString(
+    input: UnionVariantTypesInternal,
+): string {
+    switch (input.kind) {
+        case `class`: {
+            return UnionVariantTypesInternalClassToJsonString(input);
+        }
+
+        case `default`: {
+            return UnionVariantTypesInternalDefaultToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalToUrlSearchParams(
+    input: UnionVariantTypesInternal,
+): URLSearchParams {
+    switch (input.kind) {
+        case `class`: {
+            return UnionVariantTypesInternalClassToUrlSearchParams(input);
+        }
+        case `default`: {
+            return UnionVariantTypesInternalDefaultToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalToUrlSearchParamsString(
+    input: UnionVariantTypesInternal,
+): string {
+    return UnionVariantTypesInternalToUrlSearchParams(input).toString();
+}
+export const $$UnionVariantTypesInternal: TestClientValidator<UnionVariantTypesInternal> =
+    {
+        new: UnionVariantTypesInternalNew,
+        validate: UnionVariantTypesInternalValidate,
+        clone: UnionVariantTypesInternalClone,
+        fromJson: UnionVariantTypesInternalFromJson,
+        fromJsonString: UnionVariantTypesInternalFromJsonString,
+        toJsonString: UnionVariantTypesInternalToJsonString,
+        toUrlSearchParams: UnionVariantTypesInternalToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesInternalToUrlSearchParamsString,
+    };
+export interface UnionVariantTypesInternalClass {
+    kind: `class`;
+    for: string;
+    default: string;
+}
+export function UnionVariantTypesInternalClassNew(): UnionVariantTypesInternalClass {
+    return {
+        kind: `class`,
+        for: '',
+        default: '',
+    };
+}
+export function UnionVariantTypesInternalClassValidate(
+    input: unknown,
+): input is UnionVariantTypesInternalClass {
+    return (
+        isObject(input) &&
+        input.kind === `class` &&
+        typeof input.for === 'string' &&
+        typeof input.default === 'string'
+    );
+}
+export function UnionVariantTypesInternalClassClone(
+    input: UnionVariantTypesInternalClass,
+): UnionVariantTypesInternalClass {
+    const _kind = `class`;
+    let _for: string;
+    _for = input.for;
+    let _default: string;
+    _default = input.default;
+    return {
+        kind: _kind,
+        for: _for,
+        default: _default,
+    };
+}
+export function UnionVariantTypesInternalClassFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternalClass {
+    const _kind = `class`;
+    let _for: string;
+    _for = parseString(input.for);
+    let _default: string;
+    _default = parseString(input.default);
+    return {
+        kind: _kind,
+        for: _for,
+        default: _default,
+    };
+}
+export function UnionVariantTypesInternalClassFromJsonString(
+    input: string,
+): UnionVariantTypesInternalClass {
+    return UnionVariantTypesInternalClassFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesInternalClassToJsonString(
+    input: UnionVariantTypesInternalClass,
+): string {
+    let json = '{';
+    json += '"kind":"class"';
+    json += ',"for":';
+    json += serializeString(input.for);
+    json += ',"default":';
+    json += serializeString(input.default);
+    json += '}';
+    return json;
+}
+export function UnionVariantTypesInternalClassToUrlSearchParams(
+    input: UnionVariantTypesInternalClass,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `class`);
+    params.set('for', input.for);
+    params.set('default', input.default);
+    return params;
+}
+export function UnionVariantTypesInternalClassToUrlSearchParamsString(
+    input: UnionVariantTypesInternalClass,
+): string {
+    return UnionVariantTypesInternalClassToUrlSearchParams(input).toString();
+}
+
+export interface UnionVariantTypesInternalDefault {
+    kind: `default`;
+    class: string;
+    internalUnion: UnionVariantTypesInternalDefaultInternalUnion;
+    adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnion;
+    externalUnion: UnionVariantTypesInternalDefaultExternalUnion;
+}
+export function UnionVariantTypesInternalDefaultNew(): UnionVariantTypesInternalDefault {
+    return {
+        kind: `default`,
+        class: '',
+        internalUnion: UnionVariantTypesInternalDefaultInternalUnionNew(),
+        adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnionNew(),
+        externalUnion: UnionVariantTypesInternalDefaultExternalUnionNew(),
+    };
+}
+export function UnionVariantTypesInternalDefaultValidate(
+    input: unknown,
+): input is UnionVariantTypesInternalDefault {
+    return (
+        isObject(input) &&
+        input.kind === `default` &&
+        typeof input.class === 'string' &&
+        UnionVariantTypesInternalDefaultInternalUnionValidate(
+            input.internalUnion,
+        ) &&
+        UnionVariantTypesInternalDefaultAdjacentUnionValidate(
+            input.adjacentUnion,
+        ) &&
+        UnionVariantTypesInternalDefaultExternalUnionValidate(
+            input.externalUnion,
+        )
+    );
+}
+export function UnionVariantTypesInternalDefaultClone(
+    input: UnionVariantTypesInternalDefault,
+): UnionVariantTypesInternalDefault {
+    const _kind = `default`;
+    let _class: string;
+    _class = input.class;
+    let _internalUnion: UnionVariantTypesInternalDefaultInternalUnion;
+    _internalUnion = UnionVariantTypesInternalDefaultInternalUnionClone(
+        input.internalUnion,
+    );
+    let _adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnion;
+    _adjacentUnion = UnionVariantTypesInternalDefaultAdjacentUnionClone(
+        input.adjacentUnion,
+    );
+    let _externalUnion: UnionVariantTypesInternalDefaultExternalUnion;
+    _externalUnion = UnionVariantTypesInternalDefaultExternalUnionClone(
+        input.externalUnion,
+    );
+    return {
+        kind: _kind,
+        class: _class,
+        internalUnion: _internalUnion,
+        adjacentUnion: _adjacentUnion,
+        externalUnion: _externalUnion,
+    };
+}
+export function UnionVariantTypesInternalDefaultFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternalDefault {
+    const _kind = `default`;
+    let _class: string;
+    _class = parseString(input.class);
+    let _internalUnion: UnionVariantTypesInternalDefaultInternalUnion;
+    if (isObject(input.internalUnion)) {
+        _internalUnion = UnionVariantTypesInternalDefaultInternalUnionFromJson(
+            input.internalUnion,
+        );
+    } else {
+        _internalUnion = UnionVariantTypesInternalDefaultInternalUnionNew();
+    }
+    let _adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnion;
+    if (isObject(input.adjacentUnion)) {
+        _adjacentUnion = UnionVariantTypesInternalDefaultAdjacentUnionFromJson(
+            input.adjacentUnion,
+        );
+    } else {
+        _adjacentUnion = UnionVariantTypesInternalDefaultAdjacentUnionNew();
+    }
+    let _externalUnion: UnionVariantTypesInternalDefaultExternalUnion;
+    if (isObject(input.externalUnion)) {
+        _externalUnion = UnionVariantTypesInternalDefaultExternalUnionFromJson(
+            input.externalUnion,
+        );
+    } else {
+        _externalUnion = UnionVariantTypesInternalDefaultExternalUnionNew();
+    }
+    return {
+        kind: _kind,
+        class: _class,
+        internalUnion: _internalUnion,
+        adjacentUnion: _adjacentUnion,
+        externalUnion: _externalUnion,
+    };
+}
+export function UnionVariantTypesInternalDefaultFromJsonString(
+    input: string,
+): UnionVariantTypesInternalDefault {
+    return UnionVariantTypesInternalDefaultFromJson(JSON.parse(input));
+}
+export function UnionVariantTypesInternalDefaultToJsonString(
+    input: UnionVariantTypesInternalDefault,
+): string {
+    let json = '{';
+    json += '"kind":"default"';
+    json += ',"class":';
+    json += serializeString(input.class);
+    json += ',"internalUnion":';
+    json += UnionVariantTypesInternalDefaultInternalUnionToJsonString(
+        input.internalUnion,
+    );
+    json += ',"adjacentUnion":';
+    json += UnionVariantTypesInternalDefaultAdjacentUnionToJsonString(
+        input.adjacentUnion,
+    );
+    json += ',"externalUnion":';
+    json += UnionVariantTypesInternalDefaultExternalUnionToJsonString(
+        input.externalUnion,
+    );
+    json += '}';
+    return json;
+}
+export function UnionVariantTypesInternalDefaultToUrlSearchParams(
+    input: UnionVariantTypesInternalDefault,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('kind', `default`);
+    params.set('class', input.class);
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantTypesInternalDefault/internalUnion.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantTypesInternalDefault/adjacentUnion.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /UnionVariantTypesInternalDefault/externalUnion.',
+    );
+    return params;
+}
+export function UnionVariantTypesInternalDefaultToUrlSearchParamsString(
+    input: UnionVariantTypesInternalDefault,
+): string {
+    return UnionVariantTypesInternalDefaultToUrlSearchParams(input).toString();
+}
+
+export type UnionVariantTypesInternalDefaultInternalUnion =
+    UnionVariantTypesInternalDefaultInternalUnionCircle;
+export function UnionVariantTypesInternalDefaultInternalUnionNew(): UnionVariantTypesInternalDefaultInternalUnion {
+    return UnionVariantTypesInternalDefaultInternalUnionCircleNew();
+}
+export function UnionVariantTypesInternalDefaultInternalUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesInternalDefaultInternalUnion {
+    return UnionVariantTypesInternalDefaultInternalUnionCircleValidate(input);
+}
+export function UnionVariantTypesInternalDefaultInternalUnionClone(
+    input: UnionVariantTypesInternalDefaultInternalUnion,
+): UnionVariantTypesInternalDefaultInternalUnion {
+    switch (input.shape) {
+        case `circle`: {
+            let __value__: UnionVariantTypesInternalDefaultInternalUnionCircle;
+            __value__ =
+                UnionVariantTypesInternalDefaultInternalUnionCircleClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultInternalUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternalDefaultInternalUnion {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesInternalDefaultInternalUnionCircleFromJson(
+                input,
+            );
+        }
+        default: {
+            return UnionVariantTypesInternalDefaultInternalUnionCircleNew();
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultInternalUnionFromJsonString(
+    input: string,
+): UnionVariantTypesInternalDefaultInternalUnion {
+    return UnionVariantTypesInternalDefaultInternalUnionFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantTypesInternalDefaultInternalUnionToJsonString(
+    input: UnionVariantTypesInternalDefaultInternalUnion,
+): string {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesInternalDefaultInternalUnionCircleToJsonString(
+                input,
+            );
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultInternalUnionToUrlSearchParams(
+    input: UnionVariantTypesInternalDefaultInternalUnion,
+): URLSearchParams {
+    switch (input.shape) {
+        case `circle`: {
+            return UnionVariantTypesInternalDefaultInternalUnionCircleToUrlSearchParams(
+                input,
+            );
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultInternalUnionToUrlSearchParamsString(
+    input: UnionVariantTypesInternalDefaultInternalUnion,
+): string {
+    return UnionVariantTypesInternalDefaultInternalUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesInternalDefaultInternalUnion: TestClientValidator<UnionVariantTypesInternalDefaultInternalUnion> =
+    {
+        new: UnionVariantTypesInternalDefaultInternalUnionNew,
+        validate: UnionVariantTypesInternalDefaultInternalUnionValidate,
+        clone: UnionVariantTypesInternalDefaultInternalUnionClone,
+        fromJson: UnionVariantTypesInternalDefaultInternalUnionFromJson,
+        fromJsonString:
+            UnionVariantTypesInternalDefaultInternalUnionFromJsonString,
+        toJsonString: UnionVariantTypesInternalDefaultInternalUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesInternalDefaultInternalUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesInternalDefaultInternalUnionToUrlSearchParamsString,
+    };
+export interface UnionVariantTypesInternalDefaultInternalUnionCircle {
+    shape: `circle`;
+    radius: number;
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleNew(): UnionVariantTypesInternalDefaultInternalUnionCircle {
+    return {
+        shape: `circle`,
+        radius: 0,
+    };
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleValidate(
+    input: unknown,
+): input is UnionVariantTypesInternalDefaultInternalUnionCircle {
+    return (
+        isObject(input) &&
+        input.shape === `circle` &&
+        typeof input.radius === 'number'
+    );
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleClone(
+    input: UnionVariantTypesInternalDefaultInternalUnionCircle,
+): UnionVariantTypesInternalDefaultInternalUnionCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = input.radius;
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternalDefaultInternalUnionCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = parseNumberFloat(input.radius);
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleFromJsonString(
+    input: string,
+): UnionVariantTypesInternalDefaultInternalUnionCircle {
+    return UnionVariantTypesInternalDefaultInternalUnionCircleFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleToJsonString(
+    input: UnionVariantTypesInternalDefaultInternalUnionCircle,
+): string {
+    let json = '{';
+    json += '"shape":"circle"';
+    json += ',"radius":';
+    json += `${input.radius}`;
+    json += '}';
+    return json;
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleToUrlSearchParams(
+    input: UnionVariantTypesInternalDefaultInternalUnionCircle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `circle`);
+    params.set('radius', `${input.radius}`);
+    return params;
+}
+export function UnionVariantTypesInternalDefaultInternalUnionCircleToUrlSearchParamsString(
+    input: UnionVariantTypesInternalDefaultInternalUnionCircle,
+): string {
+    return UnionVariantTypesInternalDefaultInternalUnionCircleToUrlSearchParams(
+        input,
+    ).toString();
+}
+
+export type UnionVariantTypesInternalDefaultAdjacentUnion = {
+    kind: `text`;
+    data: string;
+};
+export function UnionVariantTypesInternalDefaultAdjacentUnionNew(): UnionVariantTypesInternalDefaultAdjacentUnion {
+    return {
+        kind: `text`,
+        data: '',
+    };
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesInternalDefaultAdjacentUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
+    }
+    switch (input.kind) {
+        case `text`:
+            return typeof input.data === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionClone(
+    input: UnionVariantTypesInternalDefaultAdjacentUnion,
+): UnionVariantTypesInternalDefaultAdjacentUnion {
+    switch (input.kind) {
+        case `text`: {
+            let __value__: string;
+            __value__ = input.data;
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternalDefaultAdjacentUnion {
+    if (typeof input.kind !== 'string') {
+        return UnionVariantTypesInternalDefaultAdjacentUnionNew();
+    }
+    switch (input.kind) {
+        case `text`: {
+            let __value__: string;
+            __value__ = parseString(input.data);
+            return {
+                kind: `text`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionVariantTypesInternalDefaultAdjacentUnionNew();
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionFromJsonString(
+    input: string,
+): UnionVariantTypesInternalDefaultAdjacentUnion {
+    return UnionVariantTypesInternalDefaultAdjacentUnionFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionToJsonString(
+    input: UnionVariantTypesInternalDefaultAdjacentUnion,
+): string {
+    switch (input.kind) {
+        case `text`: {
+            let json = '{';
+            json += '"kind":"text"';
+            json += ',"data":';
+            json += serializeString(input.data);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionToUrlSearchParams(
+    input: UnionVariantTypesInternalDefaultAdjacentUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesInternalDefaultAdjacentUnionToUrlSearchParamsString(
+    input: UnionVariantTypesInternalDefaultAdjacentUnion,
+): string {
+    return UnionVariantTypesInternalDefaultAdjacentUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesInternalDefaultAdjacentUnion: TestClientValidator<UnionVariantTypesInternalDefaultAdjacentUnion> =
+    {
+        new: UnionVariantTypesInternalDefaultAdjacentUnionNew,
+        validate: UnionVariantTypesInternalDefaultAdjacentUnionValidate,
+        clone: UnionVariantTypesInternalDefaultAdjacentUnionClone,
+        fromJson: UnionVariantTypesInternalDefaultAdjacentUnionFromJson,
+        fromJsonString:
+            UnionVariantTypesInternalDefaultAdjacentUnionFromJsonString,
+        toJsonString: UnionVariantTypesInternalDefaultAdjacentUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesInternalDefaultAdjacentUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesInternalDefaultAdjacentUnionToUrlSearchParamsString,
+    };
+
+export type UnionVariantTypesInternalDefaultExternalUnion = {
+    type: `text`;
+    value: string;
+};
+export function UnionVariantTypesInternalDefaultExternalUnionNew(): UnionVariantTypesInternalDefaultExternalUnion {
+    return {
+        type: `text`,
+        value: '',
+    };
+}
+export function UnionVariantTypesInternalDefaultExternalUnionValidate(
+    input: unknown,
+): input is UnionVariantTypesInternalDefaultExternalUnion {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `text`:
+            return typeof input.value === 'string';
+
+        default:
+            return false;
+    }
+}
+export function UnionVariantTypesInternalDefaultExternalUnionClone(
+    input: UnionVariantTypesInternalDefaultExternalUnion,
+): UnionVariantTypesInternalDefaultExternalUnion {
+    switch (input.type) {
+        case `text`: {
+            let __value__: string;
+            __value__ = input.value;
+            return {
+                type: `text`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionVariantTypesInternalDefaultExternalUnionFromJson(
+    input: Record<string, unknown>,
+): UnionVariantTypesInternalDefaultExternalUnion {
+    if (`text` in input) {
+        let __value__: string;
+        __value__ = parseString(input[`text`]);
+        return {
+            type: `text`,
+            value: __value__,
+        };
+    }
+    return UnionVariantTypesInternalDefaultExternalUnionNew();
+}
+export function UnionVariantTypesInternalDefaultExternalUnionFromJsonString(
+    input: string,
+): UnionVariantTypesInternalDefaultExternalUnion {
+    return UnionVariantTypesInternalDefaultExternalUnionFromJson(
+        JSON.parse(input),
+    );
+}
+export function UnionVariantTypesInternalDefaultExternalUnionToJsonString(
+    input: UnionVariantTypesInternalDefaultExternalUnion,
+): string {
+    switch (input.type) {
+        case `text`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += serializeString(input.value);
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionVariantTypesInternalDefaultExternalUnionToUrlSearchParams(
+    input: UnionVariantTypesInternalDefaultExternalUnion,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionVariantTypesInternalDefaultExternalUnionToUrlSearchParamsString(
+    input: UnionVariantTypesInternalDefaultExternalUnion,
+): string {
+    return UnionVariantTypesInternalDefaultExternalUnionToUrlSearchParams(
+        input,
+    ).toString();
+}
+export const $$UnionVariantTypesInternalDefaultExternalUnion: TestClientValidator<UnionVariantTypesInternalDefaultExternalUnion> =
+    {
+        new: UnionVariantTypesInternalDefaultExternalUnionNew,
+        validate: UnionVariantTypesInternalDefaultExternalUnionValidate,
+        clone: UnionVariantTypesInternalDefaultExternalUnionClone,
+        fromJson: UnionVariantTypesInternalDefaultExternalUnionFromJson,
+        fromJsonString:
+            UnionVariantTypesInternalDefaultExternalUnionFromJsonString,
+        toJsonString: UnionVariantTypesInternalDefaultExternalUnionToJsonString,
+        toUrlSearchParams:
+            UnionVariantTypesInternalDefaultExternalUnionToUrlSearchParams,
+        toUrlSearchParamsString:
+            UnionVariantTypesInternalDefaultExternalUnionToUrlSearchParamsString,
+    };
 
 export interface AutoReconnectParams {
     messageCount: number;
