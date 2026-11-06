@@ -39,18 +39,18 @@ class TestClient(
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     val tests: TestClientTestsService = TestClientTestsService(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )
+        httpClient = httpClient,
+        baseUrl = baseUrl,
+        headers = headers,
+        onError = onError,
+    )
 
     val users: TestClientUsersService = TestClientUsersService(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )
+        httpClient = httpClient,
+        baseUrl = baseUrl,
+        headers = headers,
+        onError = onError,
+    )
 }
 
 class TestClientTestsService(
@@ -60,17 +60,17 @@ class TestClientTestsService(
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     val nested: TestClientTestsNestedService = TestClientTestsNestedService(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )
+        httpClient = httpClient,
+        baseUrl = baseUrl,
+        headers = headers,
+        onError = onError,
+    )
 
     /**
-* If the target language supports it. Generated code should mark this procedure as deprecated.
-*/
-@Deprecated(message = "This method was marked as deprecated by the server")
-suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
+     * If the target language supports it. Generated code should mark this procedure as deprecated.
+     */
+    @Deprecated(message = "This method was marked as deprecated by the server")
+    suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         try {
             val response = __prepareRequest(
                 client = httpClient,
@@ -79,11 +79,10 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 params = params,
                 headers = headers?.invoke(),
             ).execute()
-            
             if (response.status.value in 200..299) {
-                return 
+                return
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -100,17 +99,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return DiscriminatorWithEmptyObject.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -126,11 +125,10 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 params = params,
                 headers = headers?.invoke(),
             ).execute()
-            
             if (response.status.value in 200..299) {
-                return 
+                return
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -147,17 +145,44 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return ObjectWithEveryType.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
+        } catch (e: Exception) {
+            onError(e)
+            throw e
+        }
+    }
+
+    suspend fun sendObjectWithKebabCaseKeys(params: ObjectWithKebabCaseKeys): ObjectWithKebabCaseKeys {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-kebab-case-keys",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return ObjectWithKebabCaseKeys.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -174,17 +199,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return ObjectWithEveryNullableType.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -201,17 +226,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return ObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -228,17 +253,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return ObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -255,17 +280,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return ObjectWithEveryOptionalType.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -282,17 +307,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return RecursiveObject.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -309,17 +334,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return RecursiveUnion.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -336,17 +361,17 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return RecursiveUnionV2.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -354,249 +379,246 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
     }
 
     suspend fun streamAutoReconnect(
-            params: AutoReconnectParams,
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: AutoReconnectResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
-                method = HttpMethod.Post,
-                params = params,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = AutoReconnectResponse.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+        params: AutoReconnectParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: AutoReconnectResponse) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = AutoReconnectResponse.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 
     /**
-* This route will always return an error. The client should automatically retry with exponential backoff.
-*/
-suspend fun streamConnectionErrorTest(
-            params: StreamConnectionErrorTestParams,
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-connection-error-test",
-                method = HttpMethod.Post,
-                params = params,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = StreamConnectionErrorTestResponse.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+     * This route will always return an error. The client should automatically retry with exponential backoff.
+     */
+    suspend fun streamConnectionErrorTest(
+        params: StreamConnectionErrorTestParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-connection-error-test",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = StreamConnectionErrorTestResponse.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 
     /**
-* Sends 5 messages quickly then starts sending messages slowly (1s) after that.
-* When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
-* When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
-*/
-suspend fun streamHeartbeatDetectionTest(
-            params: StreamHeartbeatDetectionTestParams,
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: StreamHeartbeatDetectionTestResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-heartbeat-detection-test",
-                method = HttpMethod.Post,
-                params = params,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = StreamHeartbeatDetectionTestResponse.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+     * Sends 5 messages quickly then starts sending messages slowly (1s) after that.
+     * When heartbeat is enabled the client should keep the connection alive regardless of the slowdown of messages.
+     * When heartbeat is disabled the client should open a new connection sometime after receiving the 5th message.
+     */
+    suspend fun streamHeartbeatDetectionTest(
+        params: StreamHeartbeatDetectionTestParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: StreamHeartbeatDetectionTestResponse) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-heartbeat-detection-test",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = StreamHeartbeatDetectionTestResponse.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 
     /**
-* Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
-*/
-suspend fun streamLargeObjects(
-            
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-large-objects",
-                method = HttpMethod.Post,
-                params = null,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = StreamLargeObjectsResponse.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+     * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+     */
+    suspend fun streamLargeObjects(
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-large-objects",
+            method = HttpMethod.Post,
+            params = null,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = StreamLargeObjectsResponse.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 
     suspend fun streamMessages(
-            params: ChatMessageParams,
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: ChatMessage) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-messages",
-                method = HttpMethod.Post,
-                params = params,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = ChatMessage.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+        params: ChatMessageParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: ChatMessage) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-messages",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = ChatMessage.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 
     suspend fun streamRetryWithNewCredentials(
-            
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-                method = HttpMethod.Post,
-                params = null,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = TestsStreamRetryWithNewCredentialsResponse.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
+            method = HttpMethod.Post,
+            params = null,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = TestsStreamRetryWithNewCredentialsResponse.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 
     /**
-* When the client receives the 'done' event, it should close the connection and NOT reconnect
-*/
-suspend fun streamTenEventsThenEnd(
-            
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: ChatMessage) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
-                method = HttpMethod.Post,
-                params = null,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = ChatMessage.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+     * When the client receives the 'done' event, it should close the connection and NOT reconnect
+     */
+    suspend fun streamTenEventsThenEnd(
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: ChatMessage) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
+            method = HttpMethod.Post,
+            params = null,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = ChatMessage.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 }
 
 class TestClientTestsNestedService(
@@ -615,17 +637,17 @@ class TestClientTestsNestedService(
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return DefaultPayload.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -642,17 +664,17 @@ class TestClientTestsNestedService(
                 headers = headers?.invoke(),
             ).execute()
             if (response.headers["Content-Type"] != "application/json") {
-            throw TestClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
-        }
+                throw TestClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
             if (response.status.value in 200..299) {
                 return DefaultPayload.fromJson(response.bodyAsText())
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -668,11 +690,10 @@ class TestClientTestsNestedService(
                 params = params,
                 headers = headers?.invoke(),
             ).execute()
-            
             if (response.status.value in 200..299) {
-                return 
+                return
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
@@ -688,19 +709,16 @@ class TestClientTestsNestedService(
                 params = params,
                 headers = headers?.invoke(),
             ).execute()
-            
             if (response.status.value in 200..299) {
-                return 
+                return
             }
-            throw TestClientError.fromJson(response.bodyAsText())    
+            throw TestClientError.fromJson(response.bodyAsText())
         } catch (e: Exception) {
             onError(e)
             throw e
         }
     }
 }
-
-
 
 class TestClientUsersService(
     private val httpClient: HttpClient,
@@ -709,40 +727,38 @@ class TestClientUsersService(
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun watchUser(
-            params: UsersWatchUserParams,
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: UsersWatchUserResponse) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl/rpcs/users/watch-user",
-                method = HttpMethod.Post,
-                params = params,
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    val data = UsersWatchUserResponse.fromJson(str)
-                    onData(data)
-                }
-            )
-        }
+        params: UsersWatchUserParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024 * 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onRequestError: ((error: Exception) -> Unit) = {},
+        onResponseError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: UsersWatchUserResponse) -> Unit) = {},
+        maxBackoffTime: Long? = null,
+    ): Unit {
+        __handleSseRequest(
+            httpClient = httpClient,
+            url = "$baseUrl/rpcs/users/watch-user",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers,
+            backoffTime = 0,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
+            lastEventId = lastEventId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onRequestError = onRequestError,
+            onResponseError = onResponseError,
+            onData = { str ->
+                val data = UsersWatchUserResponse.fromJson(str)
+                onData(data)
+            }
+        )
+    }
 }
-
-
 
 interface TestClientModel {
     fun toJson(): String
@@ -859,17 +875,17 @@ data class ManuallyAddedModel(
     val hello: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"hello\":"
-output += buildString { printQuoted(hello) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"hello\":"
+        output += buildString { printQuoted(hello) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("hello=$hello")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("hello=${__encodeQueryValue(hello)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ManuallyAddedModel> {
@@ -891,7 +907,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ManuallyAddedModel.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ManuallyAddedModel.")
                 return new()
             }
-val hello: String = when (__input.jsonObject["hello"]) {
+            val hello: String = when (__input.jsonObject["hello"]) {
                 is JsonPrimitive -> __input.jsonObject["hello"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -902,23 +918,21 @@ val hello: String = when (__input.jsonObject["hello"]) {
     }
 }
 
-
-
 data class DefaultPayload(
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"message\":"
-output += buildString { printQuoted(message) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"message\":"
+        output += buildString { printQuoted(message) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("message=$message")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("message=${__encodeQueryValue(message)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<DefaultPayload> {
@@ -940,7 +954,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] DefaultPayload.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DefaultPayload.")
                 return new()
             }
-val message: String = when (__input.jsonObject["message"]) {
+            val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -951,25 +965,23 @@ val message: String = when (__input.jsonObject["message"]) {
     }
 }
 
-
-
 @Deprecated(message = "This class was marked as deprecated by the server")
 data class DeprecatedRpcParams(
-@Deprecated(message = "This field was marked as deprecated by the server")
+    @Deprecated(message = "This field was marked as deprecated by the server")
     val deprecatedField: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"deprecatedField\":"
-output += buildString { printQuoted(deprecatedField) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"deprecatedField\":"
+        output += buildString { printQuoted(deprecatedField) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("deprecatedField=$deprecatedField")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("deprecatedField=${__encodeQueryValue(deprecatedField)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<DeprecatedRpcParams> {
@@ -991,7 +1003,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] DeprecatedRpcParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DeprecatedRpcParams.")
                 return new()
             }
-val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
+            val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
                 is JsonPrimitive -> __input.jsonObject["deprecatedField"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -1001,8 +1013,6 @@ val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
         }
     }
 }
-
-
 
 sealed interface DiscriminatorWithEmptyObject : TestClientModel {
     val type: String
@@ -1021,13 +1031,13 @@ sealed interface DiscriminatorWithEmptyObject : TestClientModel {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorWithEmptyObject {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObject.")
+                __logError("[WARNING] DiscriminatorWithEmptyObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObject.")
                 return new()
             }
             return when (__input.jsonObject["type"]) {
                 is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
                     "EMPTY" -> DiscriminatorWithEmptyObjectEmpty.fromJsonElement(__input, instancePath)
-"NOT_EMPTY" -> DiscriminatorWithEmptyObjectNotEmpty.fromJsonElement(__input, instancePath)
+                    "NOT_EMPTY" -> DiscriminatorWithEmptyObjectNotEmpty.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -1043,24 +1053,22 @@ data class DiscriminatorWithEmptyObjectEmpty(
     override val type get() = "EMPTY"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"EMPTY\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"type\":\"EMPTY\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=EMPTY")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("type=EMPTY")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<DiscriminatorWithEmptyObjectEmpty> {
         @JvmStatic
         override fun new(): DiscriminatorWithEmptyObjectEmpty {
-            return DiscriminatorWithEmptyObjectEmpty(
-
-            )
+            return DiscriminatorWithEmptyObjectEmpty()
         }
 
         @JvmStatic
@@ -1074,15 +1082,10 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] DiscriminatorWithEmptyObjectEmpty.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObjectEmpty.")
                 return new()
             }
-
-            return DiscriminatorWithEmptyObjectEmpty(
-                
-            )
+            return DiscriminatorWithEmptyObjectEmpty()
         }
     }
 }
-
-
 
 data class DiscriminatorWithEmptyObjectNotEmpty(
     val foo: String,
@@ -1092,25 +1095,25 @@ data class DiscriminatorWithEmptyObjectNotEmpty(
     override val type get() = "NOT_EMPTY"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"NOT_EMPTY\""
-output += ",\"foo\":"
-output += buildString { printQuoted(foo) }
-output += ",\"bar\":"
-output += bar
-output += ",\"baz\":"
-output += baz
-output += "}"
-return output    
+        var output = "{"
+        output += "\"type\":\"NOT_EMPTY\""
+        output += ",\"foo\":"
+        output += buildString { printQuoted(foo) }
+        output += ",\"bar\":"
+        output += bar
+        output += ",\"baz\":"
+        output += baz
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=NOT_EMPTY")
-queryParts.add("foo=$foo")
-queryParts.add("bar=$bar")
-queryParts.add("baz=$baz")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("type=NOT_EMPTY")
+        queryParts.add("foo=${__encodeQueryValue(foo)}")
+        queryParts.add("bar=$bar")
+        queryParts.add("baz=$baz")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<DiscriminatorWithEmptyObjectNotEmpty> {
@@ -1134,15 +1137,15 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] DiscriminatorWithEmptyObjectNotEmpty.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorWithEmptyObjectNotEmpty.")
                 return new()
             }
-val foo: String = when (__input.jsonObject["foo"]) {
+            val foo: String = when (__input.jsonObject["foo"]) {
                 is JsonPrimitive -> __input.jsonObject["foo"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val bar: Double = when (__input.jsonObject["bar"]) {
+            val bar: Double = when (__input.jsonObject["bar"]) {
                 is JsonPrimitive -> __input.jsonObject["bar"]!!.jsonPrimitive.doubleOrNull ?: 0.0
                 else -> 0.0
             }
-val baz: Boolean = when (__input.jsonObject["baz"]) {
+            val baz: Boolean = when (__input.jsonObject["baz"]) {
                 is JsonPrimitive -> __input.jsonObject["baz"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
@@ -1155,27 +1158,25 @@ val baz: Boolean = when (__input.jsonObject["baz"]) {
     }
 }
 
-
-
 data class SendErrorParams(
     val code: UShort,
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"code\":"
-output += code
-output += ",\"message\":"
-output += buildString { printQuoted(message) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"code\":"
+        output += code
+        output += ",\"message\":"
+        output += buildString { printQuoted(message) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("code=$code")
-queryParts.add("message=$message")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("code=$code")
+        queryParts.add("message=${__encodeQueryValue(message)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<SendErrorParams> {
@@ -1198,11 +1199,11 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] SendErrorParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty SendErrorParams.")
                 return new()
             }
-val code: UShort = when (__input.jsonObject["code"]) {
+            val code: UShort = when (__input.jsonObject["code"]) {
                 is JsonPrimitive -> __input.jsonObject["code"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
                 else -> 0u
             }
-val message: String = when (__input.jsonObject["message"]) {
+            val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -1213,8 +1214,6 @@ val message: String = when (__input.jsonObject["message"]) {
         }
     }
 }
-
-
 
 data class ObjectWithEveryType(
     val any: JsonElement,
@@ -1235,119 +1234,119 @@ data class ObjectWithEveryType(
     val array: MutableList<Boolean>,
     val `object`: ObjectWithEveryTypeObject,
     val record: MutableMap<String, ULong>,
-    val discriminator: ObjectWithEveryTypeDiscriminator,
-    val union: JsonElement,
+    val unionExternal: ObjectWithEveryTypeUnionExternal,
+    val unionInternal: ObjectWithEveryTypeUnionInternal,
+    val unionAdjacent: ObjectWithEveryTypeUnionAdjacent,
     val nestedObject: ObjectWithEveryTypeNestedObject,
     val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>>,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"any\":"
-output += JsonInstance.encodeToString(any)
-output += ",\"boolean\":"
-output += boolean
-output += ",\"string\":"
-output += buildString { printQuoted(string) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += ",\"float32\":"
-output += float32
-output += ",\"float64\":"
-output += float64
-output += ",\"int8\":"
-output += int8
-output += ",\"uint8\":"
-output += uint8
-output += ",\"int16\":"
-output += int16
-output += ",\"uint16\":"
-output += uint16
-output += ",\"int32\":"
-output += int32
-output += ",\"uint32\":"
-output += uint32
-output += ",\"int64\":"
-output += "\"${int64}\""
-output += ",\"uint64\":"
-output += "\"${uint64}\""
-output += ",\"enumerator\":"
-output += "\"${enumerator.serialValue}\""
-output += ",\"array\":"
-output += "["
-                for ((__index, __element) in array.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element
-                }
-                output += "]"
-output += ",\"object\":"
-output += `object`.toJson()
-output += ",\"record\":"
-output += "{"
-            for ((__index, __entry) in record.entries.withIndex()) {
+        var output = "{"
+        output += "\"any\":"
+        output += JsonInstance.encodeToString(any)
+        output += ",\"boolean\":"
+        output += boolean
+        output += ",\"string\":"
+        output += buildString { printQuoted(string) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += ",\"float32\":"
+        output += float32
+        output += ",\"float64\":"
+        output += float64
+        output += ",\"int8\":"
+        output += int8
+        output += ",\"uint8\":"
+        output += uint8
+        output += ",\"int16\":"
+        output += int16
+        output += ",\"uint16\":"
+        output += uint16
+        output += ",\"int32\":"
+        output += int32
+        output += ",\"uint32\":"
+        output += uint32
+        output += ",\"int64\":"
+        output += "\"${int64}\""
+        output += ",\"uint64\":"
+        output += "\"${uint64}\""
+        output += ",\"enumerator\":"
+        output += "\"${enumerator.serialValue}\""
+        output += ",\"array\":"
+        output += "["
+        for ((__index, __element) in array.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += __element
+        }
+        output += "]"
+        output += ",\"object\":"
+        output += `object`.toJson()
+        output += ",\"record\":"
+        output += "{"
+        for ((__index, __entry) in record.entries.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += "${buildString { printQuoted(__entry.key) }}:"
+            output += "\"${__entry.value}\""
+        }
+        output += "}"
+        output += ",\"unionExternal\":"
+        output += unionExternal.toJson()
+        output += ",\"unionInternal\":"
+        output += unionInternal.toJson()
+        output += ",\"unionAdjacent\":"
+        output += unionAdjacent.toJson()
+        output += ",\"nestedObject\":"
+        output += nestedObject.toJson()
+        output += ",\"nestedArray\":"
+        output += "["
+        for ((__index, __element) in nestedArray.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += "["
+            for ((__index, __element) in __element.withIndex()) {
                 if (__index != 0) {
                     output += ","
                 }
-                output += "${buildString { printQuoted(__entry.key) }}:"
-                output += "\"${__entry.value}\""
+                output += __element.toJson()
             }
-            output += "}"
-output += ",\"discriminator\":"
-output += discriminator.toJson()
-output += ",\"union\":"
-output += JsonInstance.encodeToString(union)
-output += ",\"nestedObject\":"
-output += nestedObject.toJson()
-output += ",\"nestedArray\":"
-output += "["
-                for ((__index, __element) in nestedArray.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += "["
-                for ((__index, __element) in __element.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element.toJson()
-                }
-                output += "]"
-                }
-                output += "]"
-output += "}"
-return output    
+            output += "]"
+        }
+        output += "]"
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
-queryParts.add("boolean=$boolean")
-queryParts.add("string=$string")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-queryParts.add("float32=$float32")
-queryParts.add("float64=$float64")
-queryParts.add("int8=$int8")
-queryParts.add("uint8=$uint8")
-queryParts.add("int16=$int16")
-queryParts.add("uint16=$uint16")
-queryParts.add("int32=$int32")
-queryParts.add("uint32=$uint32")
-queryParts.add("int64=$int64")
-queryParts.add("uint64=$uint64")
-queryParts.add("enumerator=${enumerator.serialValue}")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
-__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/union.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        __logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
+        queryParts.add("boolean=$boolean")
+        queryParts.add("string=${__encodeQueryValue(string)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        queryParts.add("float32=$float32")
+        queryParts.add("float64=$float64")
+        queryParts.add("int8=$int8")
+        queryParts.add("uint8=$uint8")
+        queryParts.add("int16=$int16")
+        queryParts.add("uint16=$uint16")
+        queryParts.add("int32=$int32")
+        queryParts.add("uint32=$uint32")
+        queryParts.add("int64=$int64")
+        queryParts.add("uint64=$uint64")
+        queryParts.add("enumerator=${__encodeQueryValue(enumerator.serialValue)}")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryType> {
@@ -1372,8 +1371,9 @@ return queryParts.joinToString("&")
                 array = mutableListOf(),
                 `object` = ObjectWithEveryTypeObject.new(),
                 record = mutableMapOf(),
-                discriminator = ObjectWithEveryTypeDiscriminator.new(),
-                union = JsonNull,
+                unionExternal = ObjectWithEveryTypeUnionExternal.new(),
+                unionInternal = ObjectWithEveryTypeUnionInternal.new(),
+                unionAdjacent = ObjectWithEveryTypeUnionAdjacent.new(),
                 nestedObject = ObjectWithEveryTypeNestedObject.new(),
                 nestedArray = mutableListOf(),
             )
@@ -1390,80 +1390,81 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryType.")
                 return new()
             }
-val any: JsonElement = when (__input.jsonObject["any"]) {
+            val any: JsonElement = when (__input.jsonObject["any"]) {
                 is JsonElement -> __input.jsonObject["any"]!!
                 else -> JsonNull
             }
-val boolean: Boolean = when (__input.jsonObject["boolean"]) {
+            val boolean: Boolean = when (__input.jsonObject["boolean"]) {
                 is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
-val string: String = when (__input.jsonObject["string"]) {
+            val string: String = when (__input.jsonObject["string"]) {
                 is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val float32: Float = when (__input.jsonObject["float32"]) {
+            val float32: Float = when (__input.jsonObject["float32"]) {
                 is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull ?: 0.0F
                 else -> 0.0F
             }
-val float64: Double = when (__input.jsonObject["float64"]) {
+            val float64: Double = when (__input.jsonObject["float64"]) {
                 is JsonPrimitive -> __input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull ?: 0.0
                 else -> 0.0
             }
-val int8: Byte = when (__input.jsonObject["int8"]) {
+            val int8: Byte = when (__input.jsonObject["int8"]) {
                 is JsonPrimitive -> __input.jsonObject["int8"]!!.jsonPrimitive.contentOrNull?.toByteOrNull() ?: 0
                 else -> 0
             }
-val uint8: UByte = when (__input.jsonObject["uint8"]) {
+            val uint8: UByte = when (__input.jsonObject["uint8"]) {
                 is JsonPrimitive -> __input.jsonObject["uint8"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
                 else -> 0u
             }
-val int16: Short = when (__input.jsonObject["int16"]) {
+            val int16: Short = when (__input.jsonObject["int16"]) {
                 is JsonPrimitive -> __input.jsonObject["int16"]!!.jsonPrimitive.contentOrNull?.toShortOrNull() ?: 0
                 else -> 0
             }
-val uint16: UShort = when (__input.jsonObject["uint16"]) {
+            val uint16: UShort = when (__input.jsonObject["uint16"]) {
                 is JsonPrimitive -> __input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
                 else -> 0u
             }
-val int32: Int = when (__input.jsonObject["int32"]) {
+            val int32: Int = when (__input.jsonObject["int32"]) {
                 is JsonPrimitive -> __input.jsonObject["int32"]!!.jsonPrimitive.intOrNull ?: 0
                 else -> 0
             }
-val uint32: UInt = when (__input.jsonObject["uint32"]) {
+            val uint32: UInt = when (__input.jsonObject["uint32"]) {
                 is JsonPrimitive -> __input.jsonObject["uint32"]!!.jsonPrimitive.contentOrNull?.toUIntOrNull() ?: 0u
                 else -> 0u
             }
-val int64: Long = when (__input.jsonObject["int64"]) {
+            val int64: Long = when (__input.jsonObject["int64"]) {
                 is JsonPrimitive -> __input.jsonObject["int64"]!!.jsonPrimitive.longOrNull ?: 0L
                 else -> 0L
             }
-val uint64: ULong = when (__input.jsonObject["uint64"]) {
+            val uint64: ULong = when (__input.jsonObject["uint64"]) {
                 is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
                 else -> 0UL
             }
-val enumerator: ObjectWithEveryTypeEnumerator = when (__input.jsonObject["enumerator"]) {
+            val enumerator: ObjectWithEveryTypeEnumerator = when (__input.jsonObject["enumerator"]) {
                 is JsonNull -> ObjectWithEveryTypeEnumerator.new()
                 is JsonPrimitive -> ObjectWithEveryTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
                 else -> ObjectWithEveryTypeEnumerator.new()
             }
-val array: MutableList<Boolean> = when (__input.jsonObject["array"]) {
+            val array: MutableList<Boolean> = when (__input.jsonObject["array"]) {
                 is JsonArray -> {
                     val __value: MutableList<Boolean> = mutableListOf()
                     for (__element in __input.jsonObject["array"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonPrimitive -> __element!!.jsonPrimitive.booleanOrNull ?: false
-                else -> false
-            }
+                                is JsonPrimitive -> __element!!.jsonPrimitive.booleanOrNull ?: false
+                                else -> false
+                            }
                         )
                     }
                     __value
@@ -1471,7 +1472,7 @@ val array: MutableList<Boolean> = when (__input.jsonObject["array"]) {
 
                 else -> mutableListOf()
             }
-val `object`: ObjectWithEveryTypeObject = when (__input.jsonObject["object"]) {
+            val `object`: ObjectWithEveryTypeObject = when (__input.jsonObject["object"]) {
                 is JsonObject -> ObjectWithEveryTypeObject.fromJsonElement(
                     __input.jsonObject["object"]!!,
                     "$instancePath/object",
@@ -1479,32 +1480,45 @@ val `object`: ObjectWithEveryTypeObject = when (__input.jsonObject["object"]) {
 
                 else -> ObjectWithEveryTypeObject.new()
             }
-val record: MutableMap<String, ULong> = when (__input.jsonObject["record"]) {
+            val record: MutableMap<String, ULong> = when (__input.jsonObject["record"]) {
                 is JsonObject -> {
                     val __value: MutableMap<String, ULong> = mutableMapOf()
                     for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
-                else -> 0UL
-            }
+                            is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
+                            else -> 0UL
+                        }
                     }
                     __value
                 }
 
                 else -> mutableMapOf()
             }
-val discriminator: ObjectWithEveryTypeDiscriminator = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> ObjectWithEveryTypeDiscriminator.fromJsonElement(
-                    __input.jsonObject["discriminator"]!!,
-                    "$instancePath/discriminator",
+            val unionExternal: ObjectWithEveryTypeUnionExternal = when (__input.jsonObject["unionExternal"]) {
+                is JsonObject -> ObjectWithEveryTypeUnionExternal.fromJsonElement(
+                    __input.jsonObject["unionExternal"]!!,
+                    "$instancePath/unionExternal",
                 )
-                else -> ObjectWithEveryTypeDiscriminator.new()
+
+                else -> ObjectWithEveryTypeUnionExternal.new()
             }
-val union: JsonElement = when (__input.jsonObject["union"]) {
-                is JsonElement -> __input.jsonObject["union"]!!
-                else -> JsonNull
+            val unionInternal: ObjectWithEveryTypeUnionInternal = when (__input.jsonObject["unionInternal"]) {
+                is JsonObject -> ObjectWithEveryTypeUnionInternal.fromJsonElement(
+                    __input.jsonObject["unionInternal"]!!,
+                    "$instancePath/unionInternal",
+                )
+
+                else -> ObjectWithEveryTypeUnionInternal.new()
             }
-val nestedObject: ObjectWithEveryTypeNestedObject = when (__input.jsonObject["nestedObject"]) {
+            val unionAdjacent: ObjectWithEveryTypeUnionAdjacent = when (__input.jsonObject["unionAdjacent"]) {
+                is JsonObject -> ObjectWithEveryTypeUnionAdjacent.fromJsonElement(
+                    __input.jsonObject["unionAdjacent"]!!,
+                    "$instancePath/unionAdjacent",
+                )
+
+                else -> ObjectWithEveryTypeUnionAdjacent.new()
+            }
+            val nestedObject: ObjectWithEveryTypeNestedObject = when (__input.jsonObject["nestedObject"]) {
                 is JsonObject -> ObjectWithEveryTypeNestedObject.fromJsonElement(
                     __input.jsonObject["nestedObject"]!!,
                     "$instancePath/nestedObject",
@@ -1512,31 +1526,31 @@ val nestedObject: ObjectWithEveryTypeNestedObject = when (__input.jsonObject["ne
 
                 else -> ObjectWithEveryTypeNestedObject.new()
             }
-val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>> = when (__input.jsonObject["nestedArray"]) {
+            val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>> = when (__input.jsonObject["nestedArray"]) {
                 is JsonArray -> {
                     val __value: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>> = mutableListOf()
                     for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonArray -> {
-                    val __value: MutableList<ObjectWithEveryTypeNestedArrayElementElement> = mutableListOf()
-                    for (__element in __element!!.jsonArray) {
-                        __value.add(
-                            when (__element) {
-                is JsonObject -> ObjectWithEveryTypeNestedArrayElementElement.fromJsonElement(
-                    __element!!,
-                    "$instancePath/undefined",
-                )
+                                is JsonArray -> {
+                                    val __value: MutableList<ObjectWithEveryTypeNestedArrayElementElement> = mutableListOf()
+                                    for (__element in __element!!.jsonArray) {
+                                        __value.add(
+                                            when (__element) {
+                                                is JsonObject -> ObjectWithEveryTypeNestedArrayElementElement.fromJsonElement(
+                                                    __element!!,
+                                                    "$instancePath/undefined",
+                                                )
 
-                else -> ObjectWithEveryTypeNestedArrayElementElement.new()
-            }
-                        )
-                    }
-                    __value
-                }
+                                                else -> ObjectWithEveryTypeNestedArrayElementElement.new()
+                                            }
+                                        )
+                                    }
+                                    __value
+                                }
 
-                else -> mutableListOf()
-            }
+                                else -> mutableListOf()
+                            }
                         )
                     }
                     __value
@@ -1563,8 +1577,9 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementEl
                 array,
                 `object`,
                 record,
-                discriminator,
-                union,
+                unionExternal,
+                unionInternal,
+                unionAdjacent,
                 nestedObject,
                 nestedArray,
             )
@@ -1576,13 +1591,14 @@ enum class ObjectWithEveryTypeEnumerator {
     A,
     B,
     C;
+
     val serialValue: String
         get() = when (this) {
             A -> "A"
             B -> "B"
             C -> "C"
         }
-    
+
     companion object Factory : TestClientModelFactory<ObjectWithEveryTypeEnumerator> {
         @JvmStatic
         override fun new(): ObjectWithEveryTypeEnumerator {
@@ -1621,27 +1637,23 @@ data class ObjectWithEveryTypeObject(
     val timestamp: Instant,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"string\":"
-output += buildString { printQuoted(string) }
-output += ",\"boolean\":"
-output += boolean
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"string\":"
+        output += buildString { printQuoted(string) }
+        output += ",\"boolean\":"
+        output += boolean
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("string=$string")
-queryParts.add("boolean=$boolean")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("string=${__encodeQueryValue(string)}")
+        queryParts.add("boolean=$boolean")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryTypeObject> {
@@ -1665,20 +1677,21 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeObject.")
                 return new()
             }
-val string: String = when (__input.jsonObject["string"]) {
+            val string: String = when (__input.jsonObject["string"]) {
                 is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val boolean: Boolean = when (__input.jsonObject["boolean"]) {
+            val boolean: Boolean = when (__input.jsonObject["boolean"]) {
                 is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
             return ObjectWithEveryTypeObject(
@@ -1690,32 +1703,331 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
-sealed interface ObjectWithEveryTypeDiscriminator : TestClientModel {
-    val type: String
-
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeDiscriminator> {
+sealed interface ObjectWithEveryTypeUnionExternal : TestClientModel {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionExternal> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeDiscriminator {
-            return ObjectWithEveryTypeDiscriminatorA.new()
+        override fun new(): ObjectWithEveryTypeUnionExternal {
+            return ObjectWithEveryTypeUnionExternalObject.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeDiscriminator {
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionExternal {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeDiscriminator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionExternal {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeDiscriminator.")
+                __logError("[WARNING] ObjectWithEveryTypeUnionExternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionExternal.")
                 return new()
             }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> ObjectWithEveryTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-"B" -> ObjectWithEveryTypeDiscriminatorB.fromJsonElement(__input, instancePath)
+            return when {
+                "object" in __input -> ObjectWithEveryTypeUnionExternalObject.fromJsonElement(__input, instancePath)
+                "array" in __input -> ObjectWithEveryTypeUnionExternalArray.fromJsonElement(__input, instancePath)
+                "boolean" in __input -> ObjectWithEveryTypeUnionExternalBoolean.fromJsonElement(__input, instancePath)
+                "nullable-timestamp" in __input -> ObjectWithEveryTypeUnionExternalNullableTimestamp.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionExternalObject(
+    val value: ObjectWithEveryTypeUnionExternalObjectValue,
+) : ObjectWithEveryTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"object\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalObject.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionExternalObject> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionExternalObject {
+            return ObjectWithEveryTypeUnionExternalObject(
+                value = ObjectWithEveryTypeUnionExternalObjectValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionExternalObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionExternalObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionExternalObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionExternalObject.")
+                return new()
+            }
+            val value: ObjectWithEveryTypeUnionExternalObjectValue = when (__input.jsonObject["object"]) {
+                is JsonObject -> ObjectWithEveryTypeUnionExternalObjectValue.fromJsonElement(
+                    __input.jsonObject["object"]!!,
+                    "$instancePath/object",
+                )
+
+                else -> ObjectWithEveryTypeUnionExternalObjectValue.new()
+            }
+            return ObjectWithEveryTypeUnionExternalObject(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionExternalArray(
+    val value: MutableList<String>,
+) : ObjectWithEveryTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"array\":"
+        output += "["
+        for ((__index, __element) in value.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += buildString { printQuoted(__element) }
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalArray.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionExternalArray> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionExternalArray {
+            return ObjectWithEveryTypeUnionExternalArray(
+                value = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionExternalArray {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionExternalArray {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionExternalArray.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionExternalArray.")
+                return new()
+            }
+            val value: MutableList<String> = when (__input.jsonObject["array"]) {
+                is JsonArray -> {
+                    val __value: MutableList<String> = mutableListOf()
+                    for (__element in __input.jsonObject["array"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return ObjectWithEveryTypeUnionExternalArray(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionExternalBoolean(
+    val value: Boolean,
+) : ObjectWithEveryTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"boolean\":"
+        output += value
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalBoolean.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionExternalBoolean> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionExternalBoolean {
+            return ObjectWithEveryTypeUnionExternalBoolean(
+                value = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionExternalBoolean {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionExternalBoolean {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionExternalBoolean.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionExternalBoolean.")
+                return new()
+            }
+            val value: Boolean = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return ObjectWithEveryTypeUnionExternalBoolean(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionExternalNullableTimestamp(
+    val value: Instant?,
+) : ObjectWithEveryTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"nullable-timestamp\":"
+        output += when (value) {
+            is Instant -> "\"${timestampFormatter.format(value)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionExternalNullableTimestamp.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionExternalNullableTimestamp> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionExternalNullableTimestamp {
+            return ObjectWithEveryTypeUnionExternalNullableTimestamp(
+                value = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionExternalNullableTimestamp {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionExternalNullableTimestamp {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionExternalNullableTimestamp.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionExternalNullableTimestamp.")
+                return new()
+            }
+            val value: Instant? = when (__input.jsonObject["nullable-timestamp"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                    else
+                        null
+
+                else -> null
+            }
+            return ObjectWithEveryTypeUnionExternalNullableTimestamp(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionExternalObjectValue(
+    val id: String,
+    val content: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"content\":"
+        output += buildString { printQuoted(content) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionExternalObjectValue> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionExternalObjectValue {
+            return ObjectWithEveryTypeUnionExternalObjectValue(
+                id = "",
+                content = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionExternalObjectValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionExternalObjectValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionExternalObjectValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionExternalObjectValue.")
+                return new()
+            }
+            val id: String = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val content: String = when (__input.jsonObject["content"]) {
+                is JsonPrimitive -> __input.jsonObject["content"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithEveryTypeUnionExternalObjectValue(
+                id,
+                content,
+            )
+        }
+    }
+}
+
+sealed interface ObjectWithEveryTypeUnionInternal : TestClientModel {
+    val shape: String
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionInternal> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionInternal {
+            return ObjectWithEveryTypeUnionInternalRectangle.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionInternal {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionInternal {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionInternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionInternal.")
+                return new()
+            }
+            return when (__input.jsonObject["shape"]) {
+                is JsonPrimitive -> when (__input.jsonObject["shape"]!!.jsonPrimitive.contentOrNull) {
+                    "rectangle" -> ObjectWithEveryTypeUnionInternalRectangle.fromJsonElement(__input, instancePath)
+                    "circle" -> ObjectWithEveryTypeUnionInternalCircle.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -1725,121 +2037,436 @@ sealed interface ObjectWithEveryTypeDiscriminator : TestClientModel {
     }
 }
 
-data class ObjectWithEveryTypeDiscriminatorA(
-    val title: String,
-) : ObjectWithEveryTypeDiscriminator {
-    override val type get() = "A"
+data class ObjectWithEveryTypeUnionInternalRectangle(
+    val width: Double,
+    val height: Double,
+) : ObjectWithEveryTypeUnionInternal {
+    override val shape get() = "rectangle"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"A\""
-output += ",\"title\":"
-output += buildString { printQuoted(title) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"shape\":\"rectangle\""
+        output += ",\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=A")
-queryParts.add("title=$title")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("shape=rectangle")
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeDiscriminatorA> {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionInternalRectangle> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeDiscriminatorA {
-            return ObjectWithEveryTypeDiscriminatorA(
-                title = "",
+        override fun new(): ObjectWithEveryTypeUnionInternalRectangle {
+            return ObjectWithEveryTypeUnionInternalRectangle(
+                width = 0.0,
+                height = 0.0,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeDiscriminatorA {
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionInternalRectangle {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeDiscriminatorA {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionInternalRectangle {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeDiscriminatorA.")
+                __logError("[WARNING] ObjectWithEveryTypeUnionInternalRectangle.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionInternalRectangle.")
                 return new()
             }
-val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
+            val width: Double = when (__input.jsonObject["width"]) {
+                is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
             }
-            return ObjectWithEveryTypeDiscriminatorA(
-                title,
+            val height: Double = when (__input.jsonObject["height"]) {
+                is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            return ObjectWithEveryTypeUnionInternalRectangle(
+                width,
+                height,
             )
         }
     }
 }
 
-
-
-data class ObjectWithEveryTypeDiscriminatorB(
-    val title: String,
-    val description: String,
-) : ObjectWithEveryTypeDiscriminator {
-    override val type get() = "B"
+data class ObjectWithEveryTypeUnionInternalCircle(
+    val radius: Double,
+) : ObjectWithEveryTypeUnionInternal {
+    override val shape get() = "circle"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"B\""
-output += ",\"title\":"
-output += buildString { printQuoted(title) }
-output += ",\"description\":"
-output += buildString { printQuoted(description) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"shape\":\"circle\""
+        output += ",\"radius\":"
+        output += radius
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=B")
-queryParts.add("title=$title")
-queryParts.add("description=$description")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("shape=circle")
+        queryParts.add("radius=$radius")
+        return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeDiscriminatorB> {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionInternalCircle> {
         @JvmStatic
-        override fun new(): ObjectWithEveryTypeDiscriminatorB {
-            return ObjectWithEveryTypeDiscriminatorB(
-                title = "",
-                description = "",
+        override fun new(): ObjectWithEveryTypeUnionInternalCircle {
+            return ObjectWithEveryTypeUnionInternalCircle(
+                radius = 0.0,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryTypeDiscriminatorB {
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionInternalCircle {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeDiscriminatorB {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionInternalCircle {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeDiscriminatorB.")
+                __logError("[WARNING] ObjectWithEveryTypeUnionInternalCircle.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionInternalCircle.")
                 return new()
             }
-val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
+            val radius: Double = when (__input.jsonObject["radius"]) {
+                is JsonPrimitive -> __input.jsonObject["radius"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
             }
-val description: String = when (__input.jsonObject["description"]) {
-                is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return ObjectWithEveryTypeDiscriminatorB(
-                title,
-                description,
+            return ObjectWithEveryTypeUnionInternalCircle(
+                radius,
             )
         }
     }
 }
 
+sealed interface ObjectWithEveryTypeUnionAdjacent : TestClientModel {
+    val kind: String
 
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionAdjacent> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionAdjacent {
+            return ObjectWithEveryTypeUnionAdjacentObject.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionAdjacent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionAdjacent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionAdjacent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionAdjacent.")
+                return new()
+            }
+            return when (__input.jsonObject["kind"]) {
+                is JsonPrimitive -> when (__input.jsonObject["kind"]!!.jsonPrimitive.contentOrNull) {
+                    "object" -> ObjectWithEveryTypeUnionAdjacentObject.fromJsonElement(__input, instancePath)
+                    "array" -> ObjectWithEveryTypeUnionAdjacentArray.fromJsonElement(__input, instancePath)
+                    "boolean" -> ObjectWithEveryTypeUnionAdjacentBoolean.fromJsonElement(__input, instancePath)
+                    "nullable-timestamp" -> ObjectWithEveryTypeUnionAdjacentNullableTimestamp.fromJsonElement(__input, instancePath)
+                    else -> new()
+                }
+
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionAdjacentObject(
+    val data: ObjectWithEveryTypeUnionAdjacentObjectData,
+) : ObjectWithEveryTypeUnionAdjacent {
+    override val kind get() = "object"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"object\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentObject.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionAdjacentObject> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionAdjacentObject {
+            return ObjectWithEveryTypeUnionAdjacentObject(
+                data = ObjectWithEveryTypeUnionAdjacentObjectData.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionAdjacentObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionAdjacentObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionAdjacentObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionAdjacentObject.")
+                return new()
+            }
+            val data: ObjectWithEveryTypeUnionAdjacentObjectData = when (__input.jsonObject["data"]) {
+                is JsonObject -> ObjectWithEveryTypeUnionAdjacentObjectData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> ObjectWithEveryTypeUnionAdjacentObjectData.new()
+            }
+            return ObjectWithEveryTypeUnionAdjacentObject(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionAdjacentArray(
+    val data: MutableList<String>,
+) : ObjectWithEveryTypeUnionAdjacent {
+    override val kind get() = "array"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"array\""
+        output += ",\"data\":"
+        output += "["
+        for ((__index, __element) in data.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += buildString { printQuoted(__element) }
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentArray.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionAdjacentArray> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionAdjacentArray {
+            return ObjectWithEveryTypeUnionAdjacentArray(
+                data = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionAdjacentArray {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionAdjacentArray {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionAdjacentArray.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionAdjacentArray.")
+                return new()
+            }
+            val data: MutableList<String> = when (__input.jsonObject["data"]) {
+                is JsonArray -> {
+                    val __value: MutableList<String> = mutableListOf()
+                    for (__element in __input.jsonObject["data"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return ObjectWithEveryTypeUnionAdjacentArray(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionAdjacentBoolean(
+    val data: Boolean,
+) : ObjectWithEveryTypeUnionAdjacent {
+    override val kind get() = "boolean"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"boolean\""
+        output += ",\"data\":"
+        output += data
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentBoolean.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionAdjacentBoolean> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionAdjacentBoolean {
+            return ObjectWithEveryTypeUnionAdjacentBoolean(
+                data = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionAdjacentBoolean {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionAdjacentBoolean {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionAdjacentBoolean.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionAdjacentBoolean.")
+                return new()
+            }
+            val data: Boolean = when (__input.jsonObject["data"]) {
+                is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return ObjectWithEveryTypeUnionAdjacentBoolean(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionAdjacentNullableTimestamp(
+    val data: Instant?,
+) : ObjectWithEveryTypeUnionAdjacent {
+    override val kind get() = "nullable-timestamp"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"nullable-timestamp\""
+        output += ",\"data\":"
+        output += when (data) {
+            is Instant -> "\"${timestampFormatter.format(data)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryTypeUnionAdjacentNullableTimestamp.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionAdjacentNullableTimestamp> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionAdjacentNullableTimestamp {
+            return ObjectWithEveryTypeUnionAdjacentNullableTimestamp(
+                data = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionAdjacentNullableTimestamp {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionAdjacentNullableTimestamp {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionAdjacentNullableTimestamp.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionAdjacentNullableTimestamp.")
+                return new()
+            }
+            val data: Instant? = when (__input.jsonObject["data"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["data"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                    else
+                        null
+
+                else -> null
+            }
+            return ObjectWithEveryTypeUnionAdjacentNullableTimestamp(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryTypeUnionAdjacentObjectData(
+    val id: String,
+    val content: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"content\":"
+        output += buildString { printQuoted(content) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryTypeUnionAdjacentObjectData> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryTypeUnionAdjacentObjectData {
+            return ObjectWithEveryTypeUnionAdjacentObjectData(
+                id = "",
+                content = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryTypeUnionAdjacentObjectData {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryTypeUnionAdjacentObjectData {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryTypeUnionAdjacentObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeUnionAdjacentObjectData.")
+                return new()
+            }
+            val id: String = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val content: String = when (__input.jsonObject["content"]) {
+                is JsonPrimitive -> __input.jsonObject["content"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithEveryTypeUnionAdjacentObjectData(
+                id,
+                content,
+            )
+        }
+    }
+}
 
 data class ObjectWithEveryTypeNestedObject(
     val id: String,
@@ -1847,27 +2474,23 @@ data class ObjectWithEveryTypeNestedObject(
     val data: ObjectWithEveryTypeNestedObjectData,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += ",\"data\":"
-output += data.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedObject> {
@@ -1891,19 +2514,20 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedObject.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val data: ObjectWithEveryTypeNestedObjectData = when (__input.jsonObject["data"]) {
+            val data: ObjectWithEveryTypeNestedObjectData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryTypeNestedObjectData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
@@ -1926,27 +2550,23 @@ data class ObjectWithEveryTypeNestedObjectData(
     val data: ObjectWithEveryTypeNestedObjectDataData,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += ",\"data\":"
-output += data.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedObjectData> {
@@ -1970,19 +2590,20 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedObjectData.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val data: ObjectWithEveryTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
+            val data: ObjectWithEveryTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryTypeNestedObjectDataData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
@@ -2004,24 +2625,20 @@ data class ObjectWithEveryTypeNestedObjectDataData(
     val timestamp: Instant,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedObjectDataData> {
@@ -2044,16 +2661,17 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedObjectDataData.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
             return ObjectWithEveryTypeNestedObjectDataData(
@@ -2064,31 +2682,25 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
 data class ObjectWithEveryTypeNestedArrayElementElement(
     val id: String,
     val timestamp: Instant,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryTypeNestedArrayElementElement> {
@@ -2111,16 +2723,17 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryTypeNestedArrayElementElement.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
             return ObjectWithEveryTypeNestedArrayElementElement(
@@ -2131,7 +2744,439 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
     }
 }
 
+data class ObjectWithKebabCaseKeys(
+    val createdAt: Instant,
+    val displayName: String,
+    val phoneNumber: String?,
+    val lastEvent: ObjectWithKebabCaseKeysLastEvent?,
+    val emailAddress: String? = null,
+    val isAdmin: Boolean? = null,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"created-at\":"
+        output += "\"${timestampFormatter.format(createdAt)}\""
+        output += ",\"display-name\":"
+        output += buildString { printQuoted(displayName) }
+        output += ",\"phone-number\":"
+        output += when (phoneNumber) {
+            is String -> buildString { printQuoted(phoneNumber) }
+            else -> "null"
+        }
+        output += ",\"last-event\":"
+        output += lastEvent?.toJson()
+        if (emailAddress != null) {
+            output += ",\"email-address\":"
+            output += buildString { printQuoted(emailAddress) }
+        }
+        if (isAdmin != null) {
+            output += ",\"is-admin\":"
+            output += isAdmin
+        }
+        output += "}"
+        return output
+    }
 
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("created-at=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
+        queryParts.add("display-name=${__encodeQueryValue(displayName)}")
+        queryParts.add("phone-number=${__encodeQueryValue(phoneNumber)}")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/last-event.")
+        if (emailAddress != null) {
+            queryParts.add("email-address=${__encodeQueryValue(emailAddress)}")
+        }
+        if (isAdmin != null) {
+            queryParts.add("is-admin=$isAdmin")
+        }
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeys> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeys {
+            return ObjectWithKebabCaseKeys(
+                createdAt = Instant.now(),
+                displayName = "",
+                phoneNumber = null,
+                lastEvent = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeys {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeys {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeys.")
+                return new()
+            }
+            val createdAt: Instant = when (__input.jsonObject["created-at"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["created-at"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["created-at"]!!.jsonPrimitive.content)
+                    else
+                        Instant.now()
+
+                else -> Instant.now()
+            }
+            val displayName: String = when (__input.jsonObject["display-name"]) {
+                is JsonPrimitive -> __input.jsonObject["display-name"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val phoneNumber: String? = when (__input.jsonObject["phone-number"]) {
+                is JsonPrimitive -> __input.jsonObject["phone-number"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val lastEvent: ObjectWithKebabCaseKeysLastEvent? = when (__input.jsonObject["last-event"]) {
+                is JsonObject -> ObjectWithKebabCaseKeysLastEvent.fromJsonElement(
+                    __input.jsonObject["last-event"]!!,
+                    "$instancePath/last-event",
+                )
+
+                else -> null
+            }
+            val emailAddress: String? = when (__input.jsonObject["email-address"]) {
+                is JsonPrimitive -> __input.jsonObject["email-address"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val isAdmin: Boolean? = when (__input.jsonObject["is-admin"]) {
+                is JsonPrimitive -> __input.jsonObject["is-admin"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
+            return ObjectWithKebabCaseKeys(
+                createdAt,
+                displayName,
+                phoneNumber,
+                lastEvent,
+                emailAddress,
+                isAdmin,
+            )
+        }
+    }
+}
+
+sealed interface ObjectWithKebabCaseKeysLastEvent : TestClientModel {
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEvent> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEvent {
+            return ObjectWithKebabCaseKeysLastEventUserCreated.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEvent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEvent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEvent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEvent.")
+                return new()
+            }
+            return when {
+                "user-created" in __input -> ObjectWithKebabCaseKeysLastEventUserCreated.fromJsonElement(__input, instancePath)
+                "user-updated" in __input -> ObjectWithKebabCaseKeysLastEventUserUpdated.fromJsonElement(__input, instancePath)
+                "user-deleted" in __input -> ObjectWithKebabCaseKeysLastEventUserDeleted.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithKebabCaseKeysLastEventUserCreated(
+    val value: ObjectWithKebabCaseKeysLastEventUserCreatedValue,
+) : ObjectWithKebabCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-created\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserCreated.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEventUserCreated> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEventUserCreated {
+            return ObjectWithKebabCaseKeysLastEventUserCreated(
+                value = ObjectWithKebabCaseKeysLastEventUserCreatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEventUserCreated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEventUserCreated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEventUserCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEventUserCreated.")
+                return new()
+            }
+            val value: ObjectWithKebabCaseKeysLastEventUserCreatedValue = when (__input.jsonObject["user-created"]) {
+                is JsonObject -> ObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJsonElement(
+                    __input.jsonObject["user-created"]!!,
+                    "$instancePath/user-created",
+                )
+
+                else -> ObjectWithKebabCaseKeysLastEventUserCreatedValue.new()
+            }
+            return ObjectWithKebabCaseKeysLastEventUserCreated(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithKebabCaseKeysLastEventUserUpdated(
+    val value: ObjectWithKebabCaseKeysLastEventUserUpdatedValue,
+) : ObjectWithKebabCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-updated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserUpdated.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEventUserUpdated> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEventUserUpdated {
+            return ObjectWithKebabCaseKeysLastEventUserUpdated(
+                value = ObjectWithKebabCaseKeysLastEventUserUpdatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEventUserUpdated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEventUserUpdated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEventUserUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEventUserUpdated.")
+                return new()
+            }
+            val value: ObjectWithKebabCaseKeysLastEventUserUpdatedValue = when (__input.jsonObject["user-updated"]) {
+                is JsonObject -> ObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJsonElement(
+                    __input.jsonObject["user-updated"]!!,
+                    "$instancePath/user-updated",
+                )
+
+                else -> ObjectWithKebabCaseKeysLastEventUserUpdatedValue.new()
+            }
+            return ObjectWithKebabCaseKeysLastEventUserUpdated(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithKebabCaseKeysLastEventUserDeleted(
+    val value: ObjectWithKebabCaseKeysLastEventUserDeletedValue,
+) : ObjectWithKebabCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-deleted\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithKebabCaseKeysLastEventUserDeleted.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEventUserDeleted> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEventUserDeleted {
+            return ObjectWithKebabCaseKeysLastEventUserDeleted(
+                value = ObjectWithKebabCaseKeysLastEventUserDeletedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEventUserDeleted {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEventUserDeleted {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEventUserDeleted.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEventUserDeleted.")
+                return new()
+            }
+            val value: ObjectWithKebabCaseKeysLastEventUserDeletedValue = when (__input.jsonObject["user-deleted"]) {
+                is JsonObject -> ObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJsonElement(
+                    __input.jsonObject["user-deleted"]!!,
+                    "$instancePath/user-deleted",
+                )
+
+                else -> ObjectWithKebabCaseKeysLastEventUserDeletedValue.new()
+            }
+            return ObjectWithKebabCaseKeysLastEventUserDeleted(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithKebabCaseKeysLastEventUserCreatedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user-id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEventUserCreatedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEventUserCreatedValue {
+            return ObjectWithKebabCaseKeysLastEventUserCreatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEventUserCreatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEventUserCreatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEventUserCreatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEventUserCreatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user-id"]) {
+                is JsonPrimitive -> __input.jsonObject["user-id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithKebabCaseKeysLastEventUserCreatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class ObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user-id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEventUserUpdatedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+            return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEventUserUpdatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEventUserUpdatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEventUserUpdatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user-id"]) {
+                is JsonPrimitive -> __input.jsonObject["user-id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithKebabCaseKeysLastEventUserUpdatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class ObjectWithKebabCaseKeysLastEventUserDeletedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user-id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user-id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithKebabCaseKeysLastEventUserDeletedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithKebabCaseKeysLastEventUserDeletedValue {
+            return ObjectWithKebabCaseKeysLastEventUserDeletedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithKebabCaseKeysLastEventUserDeletedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithKebabCaseKeysLastEventUserDeletedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithKebabCaseKeysLastEventUserDeletedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithKebabCaseKeysLastEventUserDeletedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user-id"]) {
+                is JsonPrimitive -> __input.jsonObject["user-id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithKebabCaseKeysLastEventUserDeletedValue(
+                userId,
+            )
+        }
+    }
+}
 
 data class ObjectWithEveryNullableType(
     val any: JsonElement?,
@@ -2152,112 +3197,112 @@ data class ObjectWithEveryNullableType(
     val array: MutableList<Boolean?>?,
     val `object`: ObjectWithEveryNullableTypeObject?,
     val record: MutableMap<String, ULong?>?,
-    val discriminator: ObjectWithEveryNullableTypeDiscriminator?,
-    val union: JsonElement?,
+    val unionExternal: ObjectWithEveryNullableTypeUnionExternal?,
+    val unionInternal: ObjectWithEveryNullableTypeUnionInternal?,
+    val unionAdjacent: ObjectWithEveryNullableTypeUnionAdjacent?,
     val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
     val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"any\":"
-output += when (any) {
-                    null -> "null"
-                    else -> JsonInstance.encodeToString(any)
+        var output = "{"
+        output += "\"any\":"
+        output += when (any) {
+            null -> "null"
+            else -> JsonInstance.encodeToString(any)
+        }
+        output += ",\"boolean\":"
+        output += boolean
+        output += ",\"string\":"
+        output += when (string) {
+            is String -> buildString { printQuoted(string) }
+            else -> "null"
+        }
+        output += ",\"timestamp\":"
+        output += when (timestamp) {
+            is Instant -> "\"${timestampFormatter.format(timestamp)}\""
+            else -> "null"
+        }
+        output += ",\"float32\":"
+        output += float32
+        output += ",\"float64\":"
+        output += float64
+        output += ",\"int8\":"
+        output += int8
+        output += ",\"uint8\":"
+        output += uint8
+        output += ",\"int16\":"
+        output += int16
+        output += ",\"uint16\":"
+        output += uint16
+        output += ",\"int32\":"
+        output += int32
+        output += ",\"uint32\":"
+        output += uint32
+        output += ",\"int64\":"
+        output += when (int64) {
+            is Long -> "\"${int64}\""
+            else -> "null"
+        }
+        output += ",\"uint64\":"
+        output += when (uint64) {
+            is ULong -> "\"${uint64}\""
+            else -> "null"
+        }
+        output += ",\"enumerator\":"
+        output += when (enumerator) {
+            is ObjectWithEveryNullableTypeEnumerator -> "\"${enumerator.serialValue}\""
+            else -> "null"
+        }
+        output += ",\"array\":"
+        if (array == null) {
+            output += "null"
+        } else {
+            output += "["
+            for ((__index, __element) in array.withIndex()) {
+                if (__index != 0) {
+                    output += ","
                 }
-output += ",\"boolean\":"
-output += boolean
-output += ",\"string\":"
-output += when (string) {
-                    is String -> buildString { printQuoted(string) }
-                    else -> "null"
+                output += __element
+            }
+            output += "]"
+        }
+        output += ",\"object\":"
+        output += `object`?.toJson()
+        output += ",\"record\":"
+        if (record == null) {
+            output += "null"
+        } else {
+            output += "{"
+            for ((__index, __entry) in record.entries.withIndex()) {
+                if (__index != 0) {
+                    output += ","
                 }
-output += ",\"timestamp\":"
-output += when (timestamp) {
-                    is Instant -> "\"${timestampFormatter.format(timestamp)}\""
-                    else -> "null"
-                }
-output += ",\"float32\":"
-output += float32
-output += ",\"float64\":"
-output += float64
-output += ",\"int8\":"
-output += int8
-output += ",\"uint8\":"
-output += uint8
-output += ",\"int16\":"
-output += int16
-output += ",\"uint16\":"
-output += uint16
-output += ",\"int32\":"
-output += int32
-output += ",\"uint32\":"
-output += uint32
-output += ",\"int64\":"
-output += when (int64) {
-                    is Long -> "\"${int64}\""
-                    else -> "null"
-                }
-output += ",\"uint64\":"
-output += when (uint64) {
-                    is ULong -> "\"${uint64}\""
-                    else -> "null"
-                }
-output += ",\"enumerator\":"
-output += when (enumerator) {
-                    is ObjectWithEveryNullableTypeEnumerator -> "\"${enumerator.serialValue}\""
-                    else -> "null"
-                }
-output += ",\"array\":"
-if (array == null) {
-                    output += "null"
-                } else {
-                    output += "["
-                    for ((__index, __element) in array.withIndex()) {
-                        if (__index != 0) {
-                            output += ","
-                        }
-                        output += __element
-                    }
-                    output += "]"
-                }
-output += ",\"object\":"
-output += `object`?.toJson()
-output += ",\"record\":"
-if (record == null) {
-                    output += "null"
-                } else {
-                    output += "{"
-                    for ((__index, __entry) in record.entries.withIndex()) {
-                        if (__index != 0) {
-                            output += ","
-                        }
-                        output += "${buildString { printQuoted(__entry.key) }}:"
-                        output += when (__entry.value) {
+                output += "${buildString { printQuoted(__entry.key) }}:"
+                output += when (__entry.value) {
                     is ULong -> "\"${__entry.value}\""
                     else -> "null"
                 }
-                    }
-                    output += "}"
+            }
+            output += "}"
+        }
+        output += ",\"unionExternal\":"
+        output += unionExternal?.toJson()
+        output += ",\"unionInternal\":"
+        output += unionInternal?.toJson()
+        output += ",\"unionAdjacent\":"
+        output += unionAdjacent?.toJson()
+        output += ",\"nestedObject\":"
+        output += nestedObject?.toJson()
+        output += ",\"nestedArray\":"
+        if (nestedArray == null) {
+            output += "null"
+        } else {
+            output += "["
+            for ((__index, __element) in nestedArray.withIndex()) {
+                if (__index != 0) {
+                    output += ","
                 }
-output += ",\"discriminator\":"
-output += discriminator?.toJson()
-output += ",\"union\":"
-output += when (union) {
-                    null -> "null"
-                    else -> JsonInstance.encodeToString(union)
-                }
-output += ",\"nestedObject\":"
-output += nestedObject?.toJson()
-output += ",\"nestedArray\":"
-if (nestedArray == null) {
-                    output += "null"
-                } else {
-                    output += "["
-                    for ((__index, __element) in nestedArray.withIndex()) {
-                        if (__index != 0) {
-                            output += ","
-                        }
-                        if (__element == null) {
+                if (__element == null) {
                     output += "null"
                 } else {
                     output += "["
@@ -2269,45 +3314,39 @@ if (nestedArray == null) {
                     }
                     output += "]"
                 }
-                    }
-                    output += "]"
-                }
-output += "}"
-return output    
+            }
+            output += "]"
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/any.")
-queryParts.add("boolean=$boolean")
-queryParts.add("string=$string")
-queryParts.add(
-                    "timestamp=${
-                        when (timestamp) {
-                            is Instant -> timestampFormatter.format(timestamp)
-                            else -> "null"
-                        }
-                    }"
-        )
-queryParts.add("float32=$float32")
-queryParts.add("float64=$float64")
-queryParts.add("int8=$int8")
-queryParts.add("uint8=$uint8")
-queryParts.add("int16=$int16")
-queryParts.add("uint16=$uint16")
-queryParts.add("int32=$int32")
-queryParts.add("uint32=$uint32")
-queryParts.add("int64=$int64")
-queryParts.add("uint64=$uint64")
-queryParts.add("enumerator=${enumerator?.serialValue}")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/discriminator.")
-__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/union.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        __logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/any.")
+        queryParts.add("boolean=$boolean")
+        queryParts.add("string=${__encodeQueryValue(string)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
+        queryParts.add("float32=$float32")
+        queryParts.add("float64=$float64")
+        queryParts.add("int8=$int8")
+        queryParts.add("uint8=$uint8")
+        queryParts.add("int16=$int16")
+        queryParts.add("uint16=$uint16")
+        queryParts.add("int32=$int32")
+        queryParts.add("uint32=$uint32")
+        queryParts.add("int64=$int64")
+        queryParts.add("uint64=$uint64")
+        queryParts.add("enumerator=${__encodeQueryValue(enumerator?.serialValue)}")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableType> {
@@ -2332,8 +3371,9 @@ return queryParts.joinToString("&")
                 array = null,
                 `object` = null,
                 record = null,
-                discriminator = null,
-                union = null,
+                unionExternal = null,
+                unionInternal = null,
+                unionAdjacent = null,
                 nestedObject = null,
                 nestedArray = null,
             )
@@ -2350,159 +3390,175 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryNullableType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableType.")
                 return new()
             }
-val any: JsonElement? = when (__input.jsonObject["any"]) {
-                    JsonNull -> null
-                    null -> null
-                    else -> __input.jsonObject["any"]
-                }
-val boolean: Boolean? = when (__input.jsonObject["boolean"]) {
-                    is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }
-val string: String? = when (__input.jsonObject["string"]) {
-                    is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val any: JsonElement? = when (__input.jsonObject["any"]) {
+                JsonNull -> null
+                null -> null
+                else -> __input.jsonObject["any"]
+            }
+            val boolean: Boolean? = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
+            val string: String? = when (__input.jsonObject["string"]) {
+                is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
+
                 else -> null
             }
-val float32: Float? = when (__input.jsonObject["float32"]) {
-                    is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull
-                    else -> null
-                }
-val float64: Double? = when (__input.jsonObject["float64"]) {
-                    is JsonPrimitive -> __input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull
-                    else -> null
-                }
-val int8: Byte? = when (__input.jsonObject["int8"]) {
-                    is JsonPrimitive -> __input.jsonObject["int8"]!!.jsonPrimitive.contentOrNull?.toByteOrNull()
-                    else -> null
-                }
-val uint8: UByte? = when (__input.jsonObject["uint8"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint8"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull()
-                    else -> null
-                }
-val int16: Short? = when (__input.jsonObject["int16"]) {
-                    is JsonPrimitive -> __input.jsonObject["int16"]!!.jsonPrimitive.contentOrNull?.toShortOrNull()
-                    else -> null
-                }
-val uint16: UShort? = when (__input.jsonObject["uint16"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull()
-                    else -> null
-                }
-val int32: Int? = when (__input.jsonObject["int32"]) {
-                    is JsonPrimitive -> __input.jsonObject["int32"]!!.jsonPrimitive.intOrNull
-                    else -> null
-                }
-val uint32: UInt? = when (__input.jsonObject["uint32"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint32"]!!.jsonPrimitive.contentOrNull?.toUIntOrNull()
-                    else -> null
-                }
-val int64: Long? = when (__input.jsonObject["int64"]) {
-                    is JsonPrimitive -> __input.jsonObject["int64"]!!.jsonPrimitive.longOrNull
-                    else -> null
-                }
-val uint64: ULong? = when (__input.jsonObject["uint64"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull()
-                    else -> null
-                }
-val enumerator: ObjectWithEveryNullableTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
-                    is JsonNull -> null
-                    is JsonPrimitive -> ObjectWithEveryNullableTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
-                    else -> null
-                }
-val array: MutableList<Boolean?>? = when (__input.jsonObject["array"]) {
-                    is JsonArray -> {
-                        val __value: MutableList<Boolean?> = mutableListOf()
-                        for (__element in __input.jsonObject["array"]!!.jsonArray) {
-                            __value.add(
-                                when (__element) {
-                    is JsonPrimitive -> __element!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }
-                            )
-                        }
-                        __value
-                    }
-
-                    else -> null
-                }
-val `object`: ObjectWithEveryNullableTypeObject? = when (__input.jsonObject["object"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeObject.fromJsonElement(
-                        __input.jsonObject["object"]!!,
-                        "$instancePath/object",
-                    )
-                    else -> null
-                }
-val record: MutableMap<String, ULong?>? = when (__input.jsonObject["record"]) {
-                is JsonObject -> {
-                    val __value: MutableMap<String, ULong?> = mutableMapOf()
-                    for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
-                        __value[__entry.key] = when (__entry.value) {
-                    is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull()
-                    else -> null
-                }
+            val float32: Float? = when (__input.jsonObject["float32"]) {
+                is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull
+                else -> null
+            }
+            val float64: Double? = when (__input.jsonObject["float64"]) {
+                is JsonPrimitive -> __input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull
+                else -> null
+            }
+            val int8: Byte? = when (__input.jsonObject["int8"]) {
+                is JsonPrimitive -> __input.jsonObject["int8"]!!.jsonPrimitive.contentOrNull?.toByteOrNull()
+                else -> null
+            }
+            val uint8: UByte? = when (__input.jsonObject["uint8"]) {
+                is JsonPrimitive -> __input.jsonObject["uint8"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull()
+                else -> null
+            }
+            val int16: Short? = when (__input.jsonObject["int16"]) {
+                is JsonPrimitive -> __input.jsonObject["int16"]!!.jsonPrimitive.contentOrNull?.toShortOrNull()
+                else -> null
+            }
+            val uint16: UShort? = when (__input.jsonObject["uint16"]) {
+                is JsonPrimitive -> __input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull()
+                else -> null
+            }
+            val int32: Int? = when (__input.jsonObject["int32"]) {
+                is JsonPrimitive -> __input.jsonObject["int32"]!!.jsonPrimitive.intOrNull
+                else -> null
+            }
+            val uint32: UInt? = when (__input.jsonObject["uint32"]) {
+                is JsonPrimitive -> __input.jsonObject["uint32"]!!.jsonPrimitive.contentOrNull?.toUIntOrNull()
+                else -> null
+            }
+            val int64: Long? = when (__input.jsonObject["int64"]) {
+                is JsonPrimitive -> __input.jsonObject["int64"]!!.jsonPrimitive.longOrNull
+                else -> null
+            }
+            val uint64: ULong? = when (__input.jsonObject["uint64"]) {
+                is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull()
+                else -> null
+            }
+            val enumerator: ObjectWithEveryNullableTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
+                is JsonNull -> null
+                is JsonPrimitive -> ObjectWithEveryNullableTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
+                else -> null
+            }
+            val array: MutableList<Boolean?>? = when (__input.jsonObject["array"]) {
+                is JsonArray -> {
+                    val __value: MutableList<Boolean?> = mutableListOf()
+                    for (__element in __input.jsonObject["array"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.booleanOrNull
+                                else -> null
+                            }
+                        )
                     }
                     __value
                 }
 
                 else -> null
             }
-val discriminator: ObjectWithEveryNullableTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> ObjectWithEveryNullableTypeDiscriminator.fromJsonElement(
-                    __input.jsonObject["discriminator"]!!,
-                    "$instancePath/discriminator",
+            val `object`: ObjectWithEveryNullableTypeObject? = when (__input.jsonObject["object"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeObject.fromJsonElement(
+                    __input.jsonObject["object"]!!,
+                    "$instancePath/object",
                 )
+
                 else -> null
             }
-val union: JsonElement? = when (__input.jsonObject["union"]) {
-                    JsonNull -> null
-                    null -> null
-                    else -> __input.jsonObject["union"]
-                }
-val nestedObject: ObjectWithEveryNullableTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedObject.fromJsonElement(
-                        __input.jsonObject["nestedObject"]!!,
-                        "$instancePath/nestedObject",
-                    )
-                    else -> null
-                }
-val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>? = when (__input.jsonObject["nestedArray"]) {
-                    is JsonArray -> {
-                        val __value: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?> = mutableListOf()
-                        for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
-                            __value.add(
-                                when (__element) {
-                    is JsonArray -> {
-                        val __value: MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?> = mutableListOf()
-                        for (__element in __element!!.jsonArray) {
-                            __value.add(
-                                when (__element) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement(
-                        __element!!,
-                        "$instancePath/undefined",
-                    )
-                    else -> null
-                }
-                            )
+            val record: MutableMap<String, ULong?>? = when (__input.jsonObject["record"]) {
+                is JsonObject -> {
+                    val __value: MutableMap<String, ULong?> = mutableMapOf()
+                    for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
+                        __value[__entry.key] = when (__entry.value) {
+                            is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull()
+                            else -> null
                         }
-                        __value
                     }
-
-                    else -> null
+                    __value
                 }
-                            )
-                        }
-                        __value
+
+                else -> null
+            }
+            val unionExternal: ObjectWithEveryNullableTypeUnionExternal? = when (__input.jsonObject["unionExternal"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeUnionExternal.fromJsonElement(
+                    __input.jsonObject["unionExternal"]!!,
+                    "$instancePath/unionExternal",
+                )
+
+                else -> null
+            }
+            val unionInternal: ObjectWithEveryNullableTypeUnionInternal? = when (__input.jsonObject["unionInternal"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeUnionInternal.fromJsonElement(
+                    __input.jsonObject["unionInternal"]!!,
+                    "$instancePath/unionInternal",
+                )
+
+                else -> null
+            }
+            val unionAdjacent: ObjectWithEveryNullableTypeUnionAdjacent? = when (__input.jsonObject["unionAdjacent"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeUnionAdjacent.fromJsonElement(
+                    __input.jsonObject["unionAdjacent"]!!,
+                    "$instancePath/unionAdjacent",
+                )
+
+                else -> null
+            }
+            val nestedObject: ObjectWithEveryNullableTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeNestedObject.fromJsonElement(
+                    __input.jsonObject["nestedObject"]!!,
+                    "$instancePath/nestedObject",
+                )
+
+                else -> null
+            }
+            val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>? = when (__input.jsonObject["nestedArray"]) {
+                is JsonArray -> {
+                    val __value: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?> = mutableListOf()
+                    for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonArray -> {
+                                    val __value: MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?> = mutableListOf()
+                                    for (__element in __element!!.jsonArray) {
+                                        __value.add(
+                                            when (__element) {
+                                                is JsonObject -> ObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement(
+                                                    __element!!,
+                                                    "$instancePath/undefined",
+                                                )
+
+                                                else -> null
+                                            }
+                                        )
+                                    }
+                                    __value
+                                }
+
+                                else -> null
+                            }
+                        )
                     }
-
-                    else -> null
+                    __value
                 }
+
+                else -> null
+            }
             return ObjectWithEveryNullableType(
                 any,
                 boolean,
@@ -2522,8 +3578,9 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayE
                 array,
                 `object`,
                 record,
-                discriminator,
-                union,
+                unionExternal,
+                unionInternal,
+                unionAdjacent,
                 nestedObject,
                 nestedArray,
             )
@@ -2535,13 +3592,14 @@ enum class ObjectWithEveryNullableTypeEnumerator {
     A,
     B,
     C;
+
     val serialValue: String
         get() = when (this) {
             A -> "A"
             B -> "B"
             C -> "C"
         }
-    
+
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeEnumerator> {
         @JvmStatic
         override fun new(): ObjectWithEveryNullableTypeEnumerator {
@@ -2580,36 +3638,29 @@ data class ObjectWithEveryNullableTypeObject(
     val timestamp: Instant?,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"string\":"
-output += when (string) {
-                    is String -> buildString { printQuoted(string) }
-                    else -> "null"
-                }
-output += ",\"boolean\":"
-output += boolean
-output += ",\"timestamp\":"
-output += when (timestamp) {
-                    is Instant -> "\"${timestampFormatter.format(timestamp)}\""
-                    else -> "null"
-                }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"string\":"
+        output += when (string) {
+            is String -> buildString { printQuoted(string) }
+            else -> "null"
+        }
+        output += ",\"boolean\":"
+        output += boolean
+        output += ",\"timestamp\":"
+        output += when (timestamp) {
+            is Instant -> "\"${timestampFormatter.format(timestamp)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("string=$string")
-queryParts.add("boolean=$boolean")
-queryParts.add(
-                    "timestamp=${
-                        when (timestamp) {
-                            is Instant -> timestampFormatter.format(timestamp)
-                            else -> "null"
-                        }
-                    }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("string=${__encodeQueryValue(string)}")
+        queryParts.add("boolean=$boolean")
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeObject> {
@@ -2633,20 +3684,21 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryNullableTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeObject.")
                 return new()
             }
-val string: String? = when (__input.jsonObject["string"]) {
-                    is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val boolean: Boolean? = when (__input.jsonObject["boolean"]) {
-                    is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val string: String? = when (__input.jsonObject["string"]) {
+                is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val boolean: Boolean? = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
+
                 else -> null
             }
             return ObjectWithEveryNullableTypeObject(
@@ -2658,32 +3710,331 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
-sealed interface ObjectWithEveryNullableTypeDiscriminator : TestClientModel {
-    val type: String
-
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeDiscriminator> {
+sealed interface ObjectWithEveryNullableTypeUnionExternal : TestClientModel {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionExternal> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeDiscriminator {
-            return ObjectWithEveryNullableTypeDiscriminatorA.new()
+        override fun new(): ObjectWithEveryNullableTypeUnionExternal {
+            return ObjectWithEveryNullableTypeUnionExternalObject.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeDiscriminator {
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionExternal {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeDiscriminator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionExternal {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeDiscriminator.")
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionExternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionExternal.")
                 return new()
             }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> ObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-"B" -> ObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement(__input, instancePath)
+            return when {
+                "object" in __input -> ObjectWithEveryNullableTypeUnionExternalObject.fromJsonElement(__input, instancePath)
+                "array" in __input -> ObjectWithEveryNullableTypeUnionExternalArray.fromJsonElement(__input, instancePath)
+                "boolean" in __input -> ObjectWithEveryNullableTypeUnionExternalBoolean.fromJsonElement(__input, instancePath)
+                "nullable-timestamp" in __input -> ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionExternalObject(
+    val value: ObjectWithEveryNullableTypeUnionExternalObjectValue,
+) : ObjectWithEveryNullableTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"object\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalObject.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionExternalObject> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionExternalObject {
+            return ObjectWithEveryNullableTypeUnionExternalObject(
+                value = ObjectWithEveryNullableTypeUnionExternalObjectValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionExternalObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionExternalObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionExternalObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionExternalObject.")
+                return new()
+            }
+            val value: ObjectWithEveryNullableTypeUnionExternalObjectValue = when (__input.jsonObject["object"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeUnionExternalObjectValue.fromJsonElement(
+                    __input.jsonObject["object"]!!,
+                    "$instancePath/object",
+                )
+
+                else -> ObjectWithEveryNullableTypeUnionExternalObjectValue.new()
+            }
+            return ObjectWithEveryNullableTypeUnionExternalObject(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionExternalArray(
+    val value: MutableList<String>,
+) : ObjectWithEveryNullableTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"array\":"
+        output += "["
+        for ((__index, __element) in value.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += buildString { printQuoted(__element) }
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalArray.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionExternalArray> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionExternalArray {
+            return ObjectWithEveryNullableTypeUnionExternalArray(
+                value = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionExternalArray {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionExternalArray {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionExternalArray.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionExternalArray.")
+                return new()
+            }
+            val value: MutableList<String> = when (__input.jsonObject["array"]) {
+                is JsonArray -> {
+                    val __value: MutableList<String> = mutableListOf()
+                    for (__element in __input.jsonObject["array"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return ObjectWithEveryNullableTypeUnionExternalArray(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionExternalBoolean(
+    val value: Boolean,
+) : ObjectWithEveryNullableTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"boolean\":"
+        output += value
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalBoolean.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionExternalBoolean> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionExternalBoolean {
+            return ObjectWithEveryNullableTypeUnionExternalBoolean(
+                value = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionExternalBoolean {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionExternalBoolean {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionExternalBoolean.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionExternalBoolean.")
+                return new()
+            }
+            val value: Boolean = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return ObjectWithEveryNullableTypeUnionExternalBoolean(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionExternalNullableTimestamp(
+    val value: Instant?,
+) : ObjectWithEveryNullableTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"nullable-timestamp\":"
+        output += when (value) {
+            is Instant -> "\"${timestampFormatter.format(value)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionExternalNullableTimestamp> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionExternalNullableTimestamp {
+            return ObjectWithEveryNullableTypeUnionExternalNullableTimestamp(
+                value = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionExternalNullableTimestamp {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionExternalNullableTimestamp {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionExternalNullableTimestamp.")
+                return new()
+            }
+            val value: Instant? = when (__input.jsonObject["nullable-timestamp"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                    else
+                        null
+
+                else -> null
+            }
+            return ObjectWithEveryNullableTypeUnionExternalNullableTimestamp(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionExternalObjectValue(
+    val id: String,
+    val content: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"content\":"
+        output += buildString { printQuoted(content) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionExternalObjectValue> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionExternalObjectValue {
+            return ObjectWithEveryNullableTypeUnionExternalObjectValue(
+                id = "",
+                content = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionExternalObjectValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionExternalObjectValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionExternalObjectValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionExternalObjectValue.")
+                return new()
+            }
+            val id: String = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val content: String = when (__input.jsonObject["content"]) {
+                is JsonPrimitive -> __input.jsonObject["content"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithEveryNullableTypeUnionExternalObjectValue(
+                id,
+                content,
+            )
+        }
+    }
+}
+
+sealed interface ObjectWithEveryNullableTypeUnionInternal : TestClientModel {
+    val shape: String
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionInternal> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionInternal {
+            return ObjectWithEveryNullableTypeUnionInternalRectangle.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionInternal {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionInternal {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionInternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionInternal.")
+                return new()
+            }
+            return when (__input.jsonObject["shape"]) {
+                is JsonPrimitive -> when (__input.jsonObject["shape"]!!.jsonPrimitive.contentOrNull) {
+                    "rectangle" -> ObjectWithEveryNullableTypeUnionInternalRectangle.fromJsonElement(__input, instancePath)
+                    "circle" -> ObjectWithEveryNullableTypeUnionInternalCircle.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -2693,130 +4044,436 @@ sealed interface ObjectWithEveryNullableTypeDiscriminator : TestClientModel {
     }
 }
 
-data class ObjectWithEveryNullableTypeDiscriminatorA(
-    val title: String?,
-) : ObjectWithEveryNullableTypeDiscriminator {
-    override val type get() = "A"
+data class ObjectWithEveryNullableTypeUnionInternalRectangle(
+    val width: Double,
+    val height: Double,
+) : ObjectWithEveryNullableTypeUnionInternal {
+    override val shape get() = "rectangle"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"A\""
-output += ",\"title\":"
-output += when (title) {
-                    is String -> buildString { printQuoted(title) }
-                    else -> "null"
-                }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"shape\":\"rectangle\""
+        output += ",\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=A")
-queryParts.add("title=$title")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("shape=rectangle")
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeDiscriminatorA> {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionInternalRectangle> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeDiscriminatorA {
-            return ObjectWithEveryNullableTypeDiscriminatorA(
-                title = null,
+        override fun new(): ObjectWithEveryNullableTypeUnionInternalRectangle {
+            return ObjectWithEveryNullableTypeUnionInternalRectangle(
+                width = 0.0,
+                height = 0.0,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeDiscriminatorA {
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionInternalRectangle {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeDiscriminatorA {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionInternalRectangle {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeDiscriminatorA.")
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionInternalRectangle.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionInternalRectangle.")
                 return new()
             }
-val title: String? = when (__input.jsonObject["title"]) {
-                    is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-            return ObjectWithEveryNullableTypeDiscriminatorA(
-                title,
+            val width: Double = when (__input.jsonObject["width"]) {
+                is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val height: Double = when (__input.jsonObject["height"]) {
+                is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            return ObjectWithEveryNullableTypeUnionInternalRectangle(
+                width,
+                height,
             )
         }
     }
 }
 
-
-
-data class ObjectWithEveryNullableTypeDiscriminatorB(
-    val title: String?,
-    val description: String?,
-) : ObjectWithEveryNullableTypeDiscriminator {
-    override val type get() = "B"
+data class ObjectWithEveryNullableTypeUnionInternalCircle(
+    val radius: Double,
+) : ObjectWithEveryNullableTypeUnionInternal {
+    override val shape get() = "circle"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"B\""
-output += ",\"title\":"
-output += when (title) {
-                    is String -> buildString { printQuoted(title) }
-                    else -> "null"
-                }
-output += ",\"description\":"
-output += when (description) {
-                    is String -> buildString { printQuoted(description) }
-                    else -> "null"
-                }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"shape\":\"circle\""
+        output += ",\"radius\":"
+        output += radius
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=B")
-queryParts.add("title=$title")
-queryParts.add("description=$description")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("shape=circle")
+        queryParts.add("radius=$radius")
+        return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeDiscriminatorB> {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionInternalCircle> {
         @JvmStatic
-        override fun new(): ObjectWithEveryNullableTypeDiscriminatorB {
-            return ObjectWithEveryNullableTypeDiscriminatorB(
-                title = null,
-                description = null,
+        override fun new(): ObjectWithEveryNullableTypeUnionInternalCircle {
+            return ObjectWithEveryNullableTypeUnionInternalCircle(
+                radius = 0.0,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryNullableTypeDiscriminatorB {
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionInternalCircle {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeDiscriminatorB {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionInternalCircle {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryNullableTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeDiscriminatorB.")
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionInternalCircle.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionInternalCircle.")
                 return new()
             }
-val title: String? = when (__input.jsonObject["title"]) {
-                    is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val description: String? = when (__input.jsonObject["description"]) {
-                    is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-            return ObjectWithEveryNullableTypeDiscriminatorB(
-                title,
-                description,
+            val radius: Double = when (__input.jsonObject["radius"]) {
+                is JsonPrimitive -> __input.jsonObject["radius"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            return ObjectWithEveryNullableTypeUnionInternalCircle(
+                radius,
             )
         }
     }
 }
 
+sealed interface ObjectWithEveryNullableTypeUnionAdjacent : TestClientModel {
+    val kind: String
 
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionAdjacent> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionAdjacent {
+            return ObjectWithEveryNullableTypeUnionAdjacentObject.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionAdjacent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionAdjacent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionAdjacent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionAdjacent.")
+                return new()
+            }
+            return when (__input.jsonObject["kind"]) {
+                is JsonPrimitive -> when (__input.jsonObject["kind"]!!.jsonPrimitive.contentOrNull) {
+                    "object" -> ObjectWithEveryNullableTypeUnionAdjacentObject.fromJsonElement(__input, instancePath)
+                    "array" -> ObjectWithEveryNullableTypeUnionAdjacentArray.fromJsonElement(__input, instancePath)
+                    "boolean" -> ObjectWithEveryNullableTypeUnionAdjacentBoolean.fromJsonElement(__input, instancePath)
+                    "nullable-timestamp" -> ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.fromJsonElement(__input, instancePath)
+                    else -> new()
+                }
+
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionAdjacentObject(
+    val data: ObjectWithEveryNullableTypeUnionAdjacentObjectData,
+) : ObjectWithEveryNullableTypeUnionAdjacent {
+    override val kind get() = "object"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"object\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentObject.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionAdjacentObject> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionAdjacentObject {
+            return ObjectWithEveryNullableTypeUnionAdjacentObject(
+                data = ObjectWithEveryNullableTypeUnionAdjacentObjectData.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionAdjacentObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionAdjacentObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionAdjacentObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionAdjacentObject.")
+                return new()
+            }
+            val data: ObjectWithEveryNullableTypeUnionAdjacentObjectData = when (__input.jsonObject["data"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeUnionAdjacentObjectData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> ObjectWithEveryNullableTypeUnionAdjacentObjectData.new()
+            }
+            return ObjectWithEveryNullableTypeUnionAdjacentObject(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionAdjacentArray(
+    val data: MutableList<String>,
+) : ObjectWithEveryNullableTypeUnionAdjacent {
+    override val kind get() = "array"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"array\""
+        output += ",\"data\":"
+        output += "["
+        for ((__index, __element) in data.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += buildString { printQuoted(__element) }
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentArray.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionAdjacentArray> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionAdjacentArray {
+            return ObjectWithEveryNullableTypeUnionAdjacentArray(
+                data = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionAdjacentArray {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionAdjacentArray {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionAdjacentArray.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionAdjacentArray.")
+                return new()
+            }
+            val data: MutableList<String> = when (__input.jsonObject["data"]) {
+                is JsonArray -> {
+                    val __value: MutableList<String> = mutableListOf()
+                    for (__element in __input.jsonObject["data"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return ObjectWithEveryNullableTypeUnionAdjacentArray(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionAdjacentBoolean(
+    val data: Boolean,
+) : ObjectWithEveryNullableTypeUnionAdjacent {
+    override val kind get() = "boolean"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"boolean\""
+        output += ",\"data\":"
+        output += data
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentBoolean.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionAdjacentBoolean> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionAdjacentBoolean {
+            return ObjectWithEveryNullableTypeUnionAdjacentBoolean(
+                data = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionAdjacentBoolean {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionAdjacentBoolean {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionAdjacentBoolean.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionAdjacentBoolean.")
+                return new()
+            }
+            val data: Boolean = when (__input.jsonObject["data"]) {
+                is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return ObjectWithEveryNullableTypeUnionAdjacentBoolean(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp(
+    val data: Instant?,
+) : ObjectWithEveryNullableTypeUnionAdjacent {
+    override val kind get() = "nullable-timestamp"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"nullable-timestamp\""
+        output += ",\"data\":"
+        output += when (data) {
+            is Instant -> "\"${timestampFormatter.format(data)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp {
+            return ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp(
+                data = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp.")
+                return new()
+            }
+            val data: Instant? = when (__input.jsonObject["data"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["data"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                    else
+                        null
+
+                else -> null
+            }
+            return ObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryNullableTypeUnionAdjacentObjectData(
+    val id: String,
+    val content: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"content\":"
+        output += buildString { printQuoted(content) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeUnionAdjacentObjectData> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryNullableTypeUnionAdjacentObjectData {
+            return ObjectWithEveryNullableTypeUnionAdjacentObjectData(
+                id = "",
+                content = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryNullableTypeUnionAdjacentObjectData {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryNullableTypeUnionAdjacentObjectData {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryNullableTypeUnionAdjacentObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeUnionAdjacentObjectData.")
+                return new()
+            }
+            val id: String = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val content: String = when (__input.jsonObject["content"]) {
+                is JsonPrimitive -> __input.jsonObject["content"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithEveryNullableTypeUnionAdjacentObjectData(
+                id,
+                content,
+            )
+        }
+    }
+}
 
 data class ObjectWithEveryNullableTypeNestedObject(
     val id: String?,
@@ -2824,36 +4481,29 @@ data class ObjectWithEveryNullableTypeNestedObject(
     val data: ObjectWithEveryNullableTypeNestedObjectData?,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += when (id) {
-                    is String -> buildString { printQuoted(id) }
-                    else -> "null"
-                }
-output += ",\"timestamp\":"
-output += when (timestamp) {
-                    is Instant -> "\"${timestampFormatter.format(timestamp)}\""
-                    else -> "null"
-                }
-output += ",\"data\":"
-output += data?.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += when (id) {
+            is String -> buildString { printQuoted(id) }
+            else -> "null"
+        }
+        output += ",\"timestamp\":"
+        output += when (timestamp) {
+            is Instant -> "\"${timestampFormatter.format(timestamp)}\""
+            else -> "null"
+        }
+        output += ",\"data\":"
+        output += data?.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                    "timestamp=${
-                        when (timestamp) {
-                            is Instant -> timestampFormatter.format(timestamp)
-                            else -> "null"
-                        }
-                    }"
-        )
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObject/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObject/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedObject> {
@@ -2877,25 +4527,27 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryNullableTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedObject.")
                 return new()
             }
-val id: String? = when (__input.jsonObject["id"]) {
-                    is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val id: String? = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
+
                 else -> null
             }
-val data: ObjectWithEveryNullableTypeNestedObjectData? = when (__input.jsonObject["data"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedObjectData.fromJsonElement(
-                        __input.jsonObject["data"]!!,
-                        "$instancePath/data",
-                    )
-                    else -> null
-                }
+            val data: ObjectWithEveryNullableTypeNestedObjectData? = when (__input.jsonObject["data"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeNestedObjectData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> null
+            }
             return ObjectWithEveryNullableTypeNestedObject(
                 id,
                 timestamp,
@@ -2911,36 +4563,29 @@ data class ObjectWithEveryNullableTypeNestedObjectData(
     val data: ObjectWithEveryNullableTypeNestedObjectDataData?,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += when (id) {
-                    is String -> buildString { printQuoted(id) }
-                    else -> "null"
-                }
-output += ",\"timestamp\":"
-output += when (timestamp) {
-                    is Instant -> "\"${timestampFormatter.format(timestamp)}\""
-                    else -> "null"
-                }
-output += ",\"data\":"
-output += data?.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += when (id) {
+            is String -> buildString { printQuoted(id) }
+            else -> "null"
+        }
+        output += ",\"timestamp\":"
+        output += when (timestamp) {
+            is Instant -> "\"${timestampFormatter.format(timestamp)}\""
+            else -> "null"
+        }
+        output += ",\"data\":"
+        output += data?.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                    "timestamp=${
-                        when (timestamp) {
-                            is Instant -> timestampFormatter.format(timestamp)
-                            else -> "null"
-                        }
-                    }"
-        )
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObjectData/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObjectData/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedObjectData> {
@@ -2964,25 +4609,27 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryNullableTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedObjectData.")
                 return new()
             }
-val id: String? = when (__input.jsonObject["id"]) {
-                    is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val id: String? = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
+
                 else -> null
             }
-val data: ObjectWithEveryNullableTypeNestedObjectDataData? = when (__input.jsonObject["data"]) {
-                    is JsonObject -> ObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement(
-                        __input.jsonObject["data"]!!,
-                        "$instancePath/data",
-                    )
-                    else -> null
-                }
+            val data: ObjectWithEveryNullableTypeNestedObjectDataData? = when (__input.jsonObject["data"]) {
+                is JsonObject -> ObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> null
+            }
             return ObjectWithEveryNullableTypeNestedObjectData(
                 id,
                 timestamp,
@@ -2997,33 +4644,26 @@ data class ObjectWithEveryNullableTypeNestedObjectDataData(
     val timestamp: Instant?,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += when (id) {
-                    is String -> buildString { printQuoted(id) }
-                    else -> "null"
-                }
-output += ",\"timestamp\":"
-output += when (timestamp) {
-                    is Instant -> "\"${timestampFormatter.format(timestamp)}\""
-                    else -> "null"
-                }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += when (id) {
+            is String -> buildString { printQuoted(id) }
+            else -> "null"
+        }
+        output += ",\"timestamp\":"
+        output += when (timestamp) {
+            is Instant -> "\"${timestampFormatter.format(timestamp)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                    "timestamp=${
-                        when (timestamp) {
-                            is Instant -> timestampFormatter.format(timestamp)
-                            else -> "null"
-                        }
-                    }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedObjectDataData> {
@@ -3046,16 +4686,17 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryNullableTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedObjectDataData.")
                 return new()
             }
-val id: String? = when (__input.jsonObject["id"]) {
-                    is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val id: String? = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
+
                 else -> null
             }
             return ObjectWithEveryNullableTypeNestedObjectDataData(
@@ -3066,40 +4707,31 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
 data class ObjectWithEveryNullableTypeNestedArrayElementElement(
     val id: String?,
     val timestamp: Instant?,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += when (id) {
-                    is String -> buildString { printQuoted(id) }
-                    else -> "null"
-                }
-output += ",\"timestamp\":"
-output += when (timestamp) {
-                    is Instant -> "\"${timestampFormatter.format(timestamp)}\""
-                    else -> "null"
-                }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += when (id) {
+            is String -> buildString { printQuoted(id) }
+            else -> "null"
+        }
+        output += ",\"timestamp\":"
+        output += when (timestamp) {
+            is Instant -> "\"${timestampFormatter.format(timestamp)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                    "timestamp=${
-                        when (timestamp) {
-                            is Instant -> timestampFormatter.format(timestamp)
-                            else -> "null"
-                        }
-                    }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestamp?.let { timestampFormatter.format(it) })}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryNullableTypeNestedArrayElementElement> {
@@ -3122,16 +4754,17 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryNullableTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryNullableTypeNestedArrayElementElement.")
                 return new()
             }
-val id: String? = when (__input.jsonObject["id"]) {
-                    is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val id: String? = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
+
                 else -> null
             }
             return ObjectWithEveryNullableTypeNestedArrayElementElement(
@@ -3142,54 +4775,52 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
 data class ObjectWithPascalCaseKeys(
     val createdAt: Instant,
     val displayName: String,
     val phoneNumber: String?,
+    val lastEvent: ObjectWithPascalCaseKeysLastEvent?,
     val emailAddress: String? = null,
     val isAdmin: Boolean? = null,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"CreatedAt\":"
-output += "\"${timestampFormatter.format(createdAt)}\""
-output += ",\"DisplayName\":"
-output += buildString { printQuoted(displayName) }
-output += ",\"PhoneNumber\":"
-output += when (phoneNumber) {
-                    is String -> buildString { printQuoted(phoneNumber) }
-                    else -> "null"
-                }
-if (emailAddress != null) {
-                output += ",\"EmailAddress\":"
-                output += buildString { printQuoted(emailAddress) }
-            }
-if (isAdmin != null) {
-                output += ",\"IsAdmin\":"
-                output += isAdmin
-            }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"CreatedAt\":"
+        output += "\"${timestampFormatter.format(createdAt)}\""
+        output += ",\"DisplayName\":"
+        output += buildString { printQuoted(displayName) }
+        output += ",\"PhoneNumber\":"
+        output += when (phoneNumber) {
+            is String -> buildString { printQuoted(phoneNumber) }
+            else -> "null"
+        }
+        output += ",\"LastEvent\":"
+        output += lastEvent?.toJson()
+        if (emailAddress != null) {
+            output += ",\"EmailAddress\":"
+            output += buildString { printQuoted(emailAddress) }
+        }
+        if (isAdmin != null) {
+            output += ",\"IsAdmin\":"
+            output += isAdmin
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add(
-                "CreatedAt=${
-                    timestampFormatter.format(createdAt)
-                }"
-        )
-queryParts.add("DisplayName=$displayName")
-queryParts.add("PhoneNumber=$phoneNumber")
-if (emailAddress != null) {
-            queryParts.add("EmailAddress=$emailAddress")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("CreatedAt=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
+        queryParts.add("DisplayName=${__encodeQueryValue(displayName)}")
+        queryParts.add("PhoneNumber=${__encodeQueryValue(phoneNumber)}")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/LastEvent.")
+        if (emailAddress != null) {
+            queryParts.add("EmailAddress=${__encodeQueryValue(emailAddress)}")
         }
-if (isAdmin != null) {
+        if (isAdmin != null) {
             queryParts.add("IsAdmin=$isAdmin")
         }
-return queryParts.joinToString("&")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeys> {
@@ -3199,6 +4830,7 @@ return queryParts.joinToString("&")
                 createdAt = Instant.now(),
                 displayName = "",
                 phoneNumber = null,
+                lastEvent = null,
             )
         }
 
@@ -3213,34 +4845,44 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithPascalCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeys.")
                 return new()
             }
-val createdAt: Instant = when (__input.jsonObject["CreatedAt"]) {
+            val createdAt: Instant = when (__input.jsonObject["CreatedAt"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["CreatedAt"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["CreatedAt"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val displayName: String = when (__input.jsonObject["DisplayName"]) {
+            val displayName: String = when (__input.jsonObject["DisplayName"]) {
                 is JsonPrimitive -> __input.jsonObject["DisplayName"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val phoneNumber: String? = when (__input.jsonObject["PhoneNumber"]) {
-                    is JsonPrimitive -> __input.jsonObject["PhoneNumber"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val emailAddress: String? = when (__input.jsonObject["EmailAddress"]) {
-                    is JsonPrimitive -> __input.jsonObject["EmailAddress"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val isAdmin: Boolean? = when (__input.jsonObject["IsAdmin"]) {
-                    is JsonPrimitive -> __input.jsonObject["IsAdmin"]!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }
+            val phoneNumber: String? = when (__input.jsonObject["PhoneNumber"]) {
+                is JsonPrimitive -> __input.jsonObject["PhoneNumber"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val lastEvent: ObjectWithPascalCaseKeysLastEvent? = when (__input.jsonObject["LastEvent"]) {
+                is JsonObject -> ObjectWithPascalCaseKeysLastEvent.fromJsonElement(
+                    __input.jsonObject["LastEvent"]!!,
+                    "$instancePath/LastEvent",
+                )
+
+                else -> null
+            }
+            val emailAddress: String? = when (__input.jsonObject["EmailAddress"]) {
+                is JsonPrimitive -> __input.jsonObject["EmailAddress"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val isAdmin: Boolean? = when (__input.jsonObject["IsAdmin"]) {
+                is JsonPrimitive -> __input.jsonObject["IsAdmin"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
             return ObjectWithPascalCaseKeys(
                 createdAt,
                 displayName,
                 phoneNumber,
+                lastEvent,
                 emailAddress,
                 isAdmin,
             )
@@ -3248,54 +4890,371 @@ val isAdmin: Boolean? = when (__input.jsonObject["IsAdmin"]) {
     }
 }
 
+sealed interface ObjectWithPascalCaseKeysLastEvent : TestClientModel {
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEvent> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEvent {
+            return ObjectWithPascalCaseKeysLastEventUserCreated.new()
+        }
 
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEvent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEvent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEvent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEvent.")
+                return new()
+            }
+            return when {
+                "UserCreated" in __input -> ObjectWithPascalCaseKeysLastEventUserCreated.fromJsonElement(__input, instancePath)
+                "UserUpdated" in __input -> ObjectWithPascalCaseKeysLastEventUserUpdated.fromJsonElement(__input, instancePath)
+                "UserDeleted" in __input -> ObjectWithPascalCaseKeysLastEventUserDeleted.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithPascalCaseKeysLastEventUserCreated(
+    val value: ObjectWithPascalCaseKeysLastEventUserCreatedValue,
+) : ObjectWithPascalCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserCreated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserCreated.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEventUserCreated> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEventUserCreated {
+            return ObjectWithPascalCaseKeysLastEventUserCreated(
+                value = ObjectWithPascalCaseKeysLastEventUserCreatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEventUserCreated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEventUserCreated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEventUserCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEventUserCreated.")
+                return new()
+            }
+            val value: ObjectWithPascalCaseKeysLastEventUserCreatedValue = when (__input.jsonObject["UserCreated"]) {
+                is JsonObject -> ObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJsonElement(
+                    __input.jsonObject["UserCreated"]!!,
+                    "$instancePath/UserCreated",
+                )
+
+                else -> ObjectWithPascalCaseKeysLastEventUserCreatedValue.new()
+            }
+            return ObjectWithPascalCaseKeysLastEventUserCreated(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithPascalCaseKeysLastEventUserUpdated(
+    val value: ObjectWithPascalCaseKeysLastEventUserUpdatedValue,
+) : ObjectWithPascalCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserUpdated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserUpdated.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEventUserUpdated> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEventUserUpdated {
+            return ObjectWithPascalCaseKeysLastEventUserUpdated(
+                value = ObjectWithPascalCaseKeysLastEventUserUpdatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEventUserUpdated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEventUserUpdated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEventUserUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEventUserUpdated.")
+                return new()
+            }
+            val value: ObjectWithPascalCaseKeysLastEventUserUpdatedValue = when (__input.jsonObject["UserUpdated"]) {
+                is JsonObject -> ObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJsonElement(
+                    __input.jsonObject["UserUpdated"]!!,
+                    "$instancePath/UserUpdated",
+                )
+
+                else -> ObjectWithPascalCaseKeysLastEventUserUpdatedValue.new()
+            }
+            return ObjectWithPascalCaseKeysLastEventUserUpdated(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithPascalCaseKeysLastEventUserDeleted(
+    val value: ObjectWithPascalCaseKeysLastEventUserDeletedValue,
+) : ObjectWithPascalCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserDeleted\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithPascalCaseKeysLastEventUserDeleted.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEventUserDeleted> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEventUserDeleted {
+            return ObjectWithPascalCaseKeysLastEventUserDeleted(
+                value = ObjectWithPascalCaseKeysLastEventUserDeletedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEventUserDeleted {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEventUserDeleted {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEventUserDeleted.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEventUserDeleted.")
+                return new()
+            }
+            val value: ObjectWithPascalCaseKeysLastEventUserDeletedValue = when (__input.jsonObject["UserDeleted"]) {
+                is JsonObject -> ObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJsonElement(
+                    __input.jsonObject["UserDeleted"]!!,
+                    "$instancePath/UserDeleted",
+                )
+
+                else -> ObjectWithPascalCaseKeysLastEventUserDeletedValue.new()
+            }
+            return ObjectWithPascalCaseKeysLastEventUserDeleted(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithPascalCaseKeysLastEventUserCreatedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("UserId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEventUserCreatedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEventUserCreatedValue {
+            return ObjectWithPascalCaseKeysLastEventUserCreatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEventUserCreatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEventUserCreatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEventUserCreatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEventUserCreatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["UserId"]) {
+                is JsonPrimitive -> __input.jsonObject["UserId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithPascalCaseKeysLastEventUserCreatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class ObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("UserId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEventUserUpdatedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+            return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEventUserUpdatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEventUserUpdatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEventUserUpdatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["UserId"]) {
+                is JsonPrimitive -> __input.jsonObject["UserId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithPascalCaseKeysLastEventUserUpdatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class ObjectWithPascalCaseKeysLastEventUserDeletedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"UserId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("UserId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeysLastEventUserDeletedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeysLastEventUserDeletedValue {
+            return ObjectWithPascalCaseKeysLastEventUserDeletedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeysLastEventUserDeletedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeysLastEventUserDeletedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeysLastEventUserDeletedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeysLastEventUserDeletedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["UserId"]) {
+                is JsonPrimitive -> __input.jsonObject["UserId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithPascalCaseKeysLastEventUserDeletedValue(
+                userId,
+            )
+        }
+    }
+}
 
 data class ObjectWithSnakeCaseKeys(
     val createdAt: Instant,
     val displayName: String,
     val phoneNumber: String?,
+    val lastEvent: ObjectWithSnakeCaseKeysLastEvent?,
     val emailAddress: String? = null,
     val isAdmin: Boolean? = null,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"created_at\":"
-output += "\"${timestampFormatter.format(createdAt)}\""
-output += ",\"display_name\":"
-output += buildString { printQuoted(displayName) }
-output += ",\"phone_number\":"
-output += when (phoneNumber) {
-                    is String -> buildString { printQuoted(phoneNumber) }
-                    else -> "null"
-                }
-if (emailAddress != null) {
-                output += ",\"email_address\":"
-                output += buildString { printQuoted(emailAddress) }
-            }
-if (isAdmin != null) {
-                output += ",\"is_admin\":"
-                output += isAdmin
-            }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"created_at\":"
+        output += "\"${timestampFormatter.format(createdAt)}\""
+        output += ",\"display_name\":"
+        output += buildString { printQuoted(displayName) }
+        output += ",\"phone_number\":"
+        output += when (phoneNumber) {
+            is String -> buildString { printQuoted(phoneNumber) }
+            else -> "null"
+        }
+        output += ",\"last_event\":"
+        output += lastEvent?.toJson()
+        if (emailAddress != null) {
+            output += ",\"email_address\":"
+            output += buildString { printQuoted(emailAddress) }
+        }
+        if (isAdmin != null) {
+            output += ",\"is_admin\":"
+            output += isAdmin
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add(
-                "created_at=${
-                    timestampFormatter.format(createdAt)
-                }"
-        )
-queryParts.add("display_name=$displayName")
-queryParts.add("phone_number=$phoneNumber")
-if (emailAddress != null) {
-            queryParts.add("email_address=$emailAddress")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("created_at=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
+        queryParts.add("display_name=${__encodeQueryValue(displayName)}")
+        queryParts.add("phone_number=${__encodeQueryValue(phoneNumber)}")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/last_event.")
+        if (emailAddress != null) {
+            queryParts.add("email_address=${__encodeQueryValue(emailAddress)}")
         }
-if (isAdmin != null) {
+        if (isAdmin != null) {
             queryParts.add("is_admin=$isAdmin")
         }
-return queryParts.joinToString("&")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeys> {
@@ -3305,6 +5264,7 @@ return queryParts.joinToString("&")
                 createdAt = Instant.now(),
                 displayName = "",
                 phoneNumber = null,
+                lastEvent = null,
             )
         }
 
@@ -3319,34 +5279,44 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithSnakeCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeys.")
                 return new()
             }
-val createdAt: Instant = when (__input.jsonObject["created_at"]) {
+            val createdAt: Instant = when (__input.jsonObject["created_at"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["created_at"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["created_at"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val displayName: String = when (__input.jsonObject["display_name"]) {
+            val displayName: String = when (__input.jsonObject["display_name"]) {
                 is JsonPrimitive -> __input.jsonObject["display_name"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val phoneNumber: String? = when (__input.jsonObject["phone_number"]) {
-                    is JsonPrimitive -> __input.jsonObject["phone_number"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val emailAddress: String? = when (__input.jsonObject["email_address"]) {
-                    is JsonPrimitive -> __input.jsonObject["email_address"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val isAdmin: Boolean? = when (__input.jsonObject["is_admin"]) {
-                    is JsonPrimitive -> __input.jsonObject["is_admin"]!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }
+            val phoneNumber: String? = when (__input.jsonObject["phone_number"]) {
+                is JsonPrimitive -> __input.jsonObject["phone_number"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val lastEvent: ObjectWithSnakeCaseKeysLastEvent? = when (__input.jsonObject["last_event"]) {
+                is JsonObject -> ObjectWithSnakeCaseKeysLastEvent.fromJsonElement(
+                    __input.jsonObject["last_event"]!!,
+                    "$instancePath/last_event",
+                )
+
+                else -> null
+            }
+            val emailAddress: String? = when (__input.jsonObject["email_address"]) {
+                is JsonPrimitive -> __input.jsonObject["email_address"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val isAdmin: Boolean? = when (__input.jsonObject["is_admin"]) {
+                is JsonPrimitive -> __input.jsonObject["is_admin"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
             return ObjectWithSnakeCaseKeys(
                 createdAt,
                 displayName,
                 phoneNumber,
+                lastEvent,
                 emailAddress,
                 isAdmin,
             )
@@ -3354,7 +5324,324 @@ val isAdmin: Boolean? = when (__input.jsonObject["is_admin"]) {
     }
 }
 
+sealed interface ObjectWithSnakeCaseKeysLastEvent : TestClientModel {
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEvent> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEvent {
+            return ObjectWithSnakeCaseKeysLastEventUserCreated.new()
+        }
 
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEvent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEvent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEvent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEvent.")
+                return new()
+            }
+            return when {
+                "user_created" in __input -> ObjectWithSnakeCaseKeysLastEventUserCreated.fromJsonElement(__input, instancePath)
+                "user_updated" in __input -> ObjectWithSnakeCaseKeysLastEventUserUpdated.fromJsonElement(__input, instancePath)
+                "user_deleted" in __input -> ObjectWithSnakeCaseKeysLastEventUserDeleted.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithSnakeCaseKeysLastEventUserCreated(
+    val value: ObjectWithSnakeCaseKeysLastEventUserCreatedValue,
+) : ObjectWithSnakeCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_created\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserCreated.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEventUserCreated> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEventUserCreated {
+            return ObjectWithSnakeCaseKeysLastEventUserCreated(
+                value = ObjectWithSnakeCaseKeysLastEventUserCreatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEventUserCreated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEventUserCreated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEventUserCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEventUserCreated.")
+                return new()
+            }
+            val value: ObjectWithSnakeCaseKeysLastEventUserCreatedValue = when (__input.jsonObject["user_created"]) {
+                is JsonObject -> ObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJsonElement(
+                    __input.jsonObject["user_created"]!!,
+                    "$instancePath/user_created",
+                )
+
+                else -> ObjectWithSnakeCaseKeysLastEventUserCreatedValue.new()
+            }
+            return ObjectWithSnakeCaseKeysLastEventUserCreated(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithSnakeCaseKeysLastEventUserUpdated(
+    val value: ObjectWithSnakeCaseKeysLastEventUserUpdatedValue,
+) : ObjectWithSnakeCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_updated\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserUpdated.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEventUserUpdated> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEventUserUpdated {
+            return ObjectWithSnakeCaseKeysLastEventUserUpdated(
+                value = ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEventUserUpdated {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEventUserUpdated {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEventUserUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEventUserUpdated.")
+                return new()
+            }
+            val value: ObjectWithSnakeCaseKeysLastEventUserUpdatedValue = when (__input.jsonObject["user_updated"]) {
+                is JsonObject -> ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJsonElement(
+                    __input.jsonObject["user_updated"]!!,
+                    "$instancePath/user_updated",
+                )
+
+                else -> ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.new()
+            }
+            return ObjectWithSnakeCaseKeysLastEventUserUpdated(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithSnakeCaseKeysLastEventUserDeleted(
+    val value: ObjectWithSnakeCaseKeysLastEventUserDeletedValue,
+) : ObjectWithSnakeCaseKeysLastEvent {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_deleted\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithSnakeCaseKeysLastEventUserDeleted.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEventUserDeleted> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEventUserDeleted {
+            return ObjectWithSnakeCaseKeysLastEventUserDeleted(
+                value = ObjectWithSnakeCaseKeysLastEventUserDeletedValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEventUserDeleted {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEventUserDeleted {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEventUserDeleted.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEventUserDeleted.")
+                return new()
+            }
+            val value: ObjectWithSnakeCaseKeysLastEventUserDeletedValue = when (__input.jsonObject["user_deleted"]) {
+                is JsonObject -> ObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJsonElement(
+                    __input.jsonObject["user_deleted"]!!,
+                    "$instancePath/user_deleted",
+                )
+
+                else -> ObjectWithSnakeCaseKeysLastEventUserDeletedValue.new()
+            }
+            return ObjectWithSnakeCaseKeysLastEventUserDeleted(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user_id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEventUserCreatedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+            return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEventUserCreatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEventUserCreatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEventUserCreatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user_id"]) {
+                is JsonPrimitive -> __input.jsonObject["user_id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithSnakeCaseKeysLastEventUserCreatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user_id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEventUserUpdatedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+            return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEventUserUpdatedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEventUserUpdatedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user_id"]) {
+                is JsonPrimitive -> __input.jsonObject["user_id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithSnakeCaseKeysLastEventUserUpdatedValue(
+                userId,
+            )
+        }
+    }
+}
+
+data class ObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+    val userId: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"user_id\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("user_id=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeysLastEventUserDeletedValue> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+            return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+                userId = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeysLastEventUserDeletedValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeysLastEventUserDeletedValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeysLastEventUserDeletedValue.")
+                return new()
+            }
+            val userId: String = when (__input.jsonObject["user_id"]) {
+                is JsonPrimitive -> __input.jsonObject["user_id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithSnakeCaseKeysLastEventUserDeletedValue(
+                userId,
+            )
+        }
+    }
+}
 
 data class ObjectWithEveryOptionalType(
     val any: JsonElement? = null,
@@ -3375,143 +5662,127 @@ data class ObjectWithEveryOptionalType(
     val array: MutableList<Boolean>? = null,
     val `object`: ObjectWithEveryOptionalTypeObject? = null,
     val record: MutableMap<String, ULong>? = null,
-    val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = null,
-    val union: JsonElement? = null,
+    val unionExternal: ObjectWithEveryOptionalTypeUnionExternal? = null,
+    val unionInternal: ObjectWithEveryOptionalTypeUnionInternal? = null,
+    val unionAdjacent: ObjectWithEveryOptionalTypeUnionAdjacent? = null,
     val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
     val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = null,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-var hasProperties = false
-if (any != null) {
-    output += "\"any\":"
-    output += JsonInstance.encodeToString(any)
-    hasProperties = true
-}
-if (boolean != null) {
-        if (hasProperties) output += ","
-
-    output += "\"boolean\":"
-    output += boolean
-    hasProperties = true
-}
-if (string != null) {
-        if (hasProperties) output += ","
-
-    output += "\"string\":"
-    output += buildString { printQuoted(string) }
-    hasProperties = true
-}
-if (timestamp != null) {
-        if (hasProperties) output += ","
-
-    output += "\"timestamp\":"
-    output += "\"${timestampFormatter.format(timestamp)}\""
-    hasProperties = true
-}
-if (float32 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"float32\":"
-    output += float32
-    hasProperties = true
-}
-if (float64 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"float64\":"
-    output += float64
-    hasProperties = true
-}
-if (int8 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"int8\":"
-    output += int8
-    hasProperties = true
-}
-if (uint8 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"uint8\":"
-    output += uint8
-    hasProperties = true
-}
-if (int16 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"int16\":"
-    output += int16
-    hasProperties = true
-}
-if (uint16 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"uint16\":"
-    output += uint16
-    hasProperties = true
-}
-if (int32 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"int32\":"
-    output += int32
-    hasProperties = true
-}
-if (uint32 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"uint32\":"
-    output += uint32
-    hasProperties = true
-}
-if (int64 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"int64\":"
-    output += "\"${int64}\""
-    hasProperties = true
-}
-if (uint64 != null) {
-        if (hasProperties) output += ","
-
-    output += "\"uint64\":"
-    output += "\"${uint64}\""
-    hasProperties = true
-}
-if (enumerator != null) {
-        if (hasProperties) output += ","
-
-    output += "\"enumerator\":"
-    output += "\"${enumerator.serialValue}\""
-    hasProperties = true
-}
-if (array != null) {
-        if (hasProperties) output += ","
-
-    output += "\"array\":"
-    output += "["
-                for ((__index, __element) in array.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element
+        var output = "{"
+        var hasProperties = false
+        if (any != null) {
+            output += "\"any\":"
+            output += JsonInstance.encodeToString(any)
+            hasProperties = true
+        }
+        if (boolean != null) {
+            if (hasProperties) output += ","
+            output += "\"boolean\":"
+            output += boolean
+            hasProperties = true
+        }
+        if (string != null) {
+            if (hasProperties) output += ","
+            output += "\"string\":"
+            output += buildString { printQuoted(string) }
+            hasProperties = true
+        }
+        if (timestamp != null) {
+            if (hasProperties) output += ","
+            output += "\"timestamp\":"
+            output += "\"${timestampFormatter.format(timestamp)}\""
+            hasProperties = true
+        }
+        if (float32 != null) {
+            if (hasProperties) output += ","
+            output += "\"float32\":"
+            output += float32
+            hasProperties = true
+        }
+        if (float64 != null) {
+            if (hasProperties) output += ","
+            output += "\"float64\":"
+            output += float64
+            hasProperties = true
+        }
+        if (int8 != null) {
+            if (hasProperties) output += ","
+            output += "\"int8\":"
+            output += int8
+            hasProperties = true
+        }
+        if (uint8 != null) {
+            if (hasProperties) output += ","
+            output += "\"uint8\":"
+            output += uint8
+            hasProperties = true
+        }
+        if (int16 != null) {
+            if (hasProperties) output += ","
+            output += "\"int16\":"
+            output += int16
+            hasProperties = true
+        }
+        if (uint16 != null) {
+            if (hasProperties) output += ","
+            output += "\"uint16\":"
+            output += uint16
+            hasProperties = true
+        }
+        if (int32 != null) {
+            if (hasProperties) output += ","
+            output += "\"int32\":"
+            output += int32
+            hasProperties = true
+        }
+        if (uint32 != null) {
+            if (hasProperties) output += ","
+            output += "\"uint32\":"
+            output += uint32
+            hasProperties = true
+        }
+        if (int64 != null) {
+            if (hasProperties) output += ","
+            output += "\"int64\":"
+            output += "\"${int64}\""
+            hasProperties = true
+        }
+        if (uint64 != null) {
+            if (hasProperties) output += ","
+            output += "\"uint64\":"
+            output += "\"${uint64}\""
+            hasProperties = true
+        }
+        if (enumerator != null) {
+            if (hasProperties) output += ","
+            output += "\"enumerator\":"
+            output += "\"${enumerator.serialValue}\""
+            hasProperties = true
+        }
+        if (array != null) {
+            if (hasProperties) output += ","
+            output += "\"array\":"
+            output += "["
+            for ((__index, __element) in array.withIndex()) {
+                if (__index != 0) {
+                    output += ","
                 }
-                output += "]"
-    hasProperties = true
-}
-if (`object` != null) {
-        if (hasProperties) output += ","
-
-    output += "\"object\":"
-    output += `object`.toJson()
-    hasProperties = true
-}
-if (record != null) {
-        if (hasProperties) output += ","
-
-    output += "\"record\":"
-    output += "{"
+                output += __element
+            }
+            output += "]"
+            hasProperties = true
+        }
+        if (`object` != null) {
+            if (hasProperties) output += ","
+            output += "\"object\":"
+            output += `object`.toJson()
+            hasProperties = true
+        }
+        if (record != null) {
+            if (hasProperties) output += ","
+            output += "\"record\":"
+            output += "{"
             for ((__index, __entry) in record.entries.withIndex()) {
                 if (__index != 0) {
                     output += ","
@@ -3520,39 +5791,41 @@ if (record != null) {
                 output += "\"${__entry.value}\""
             }
             output += "}"
-    hasProperties = true
-}
-if (discriminator != null) {
-        if (hasProperties) output += ","
-
-    output += "\"discriminator\":"
-    output += discriminator.toJson()
-    hasProperties = true
-}
-if (union != null) {
-        if (hasProperties) output += ","
-
-    output += "\"union\":"
-    output += JsonInstance.encodeToString(union)
-    hasProperties = true
-}
-if (nestedObject != null) {
-        if (hasProperties) output += ","
-
-    output += "\"nestedObject\":"
-    output += nestedObject.toJson()
-    hasProperties = true
-}
-if (nestedArray != null) {
-        if (hasProperties) output += ","
-
-    output += "\"nestedArray\":"
-    output += "["
-                for ((__index, __element) in nestedArray.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += "["
+            hasProperties = true
+        }
+        if (unionExternal != null) {
+            if (hasProperties) output += ","
+            output += "\"unionExternal\":"
+            output += unionExternal.toJson()
+            hasProperties = true
+        }
+        if (unionInternal != null) {
+            if (hasProperties) output += ","
+            output += "\"unionInternal\":"
+            output += unionInternal.toJson()
+            hasProperties = true
+        }
+        if (unionAdjacent != null) {
+            if (hasProperties) output += ","
+            output += "\"unionAdjacent\":"
+            output += unionAdjacent.toJson()
+            hasProperties = true
+        }
+        if (nestedObject != null) {
+            if (hasProperties) output += ","
+            output += "\"nestedObject\":"
+            output += nestedObject.toJson()
+            hasProperties = true
+        }
+        if (nestedArray != null) {
+            if (hasProperties) output += ","
+            output += "\"nestedArray\":"
+            output += "["
+            for ((__index, __element) in nestedArray.withIndex()) {
+                if (__index != 0) {
+                    output += ","
+                }
+                output += "["
                 for ((__index, __element) in __element.withIndex()) {
                     if (__index != 0) {
                         output += ","
@@ -3560,79 +5833,73 @@ if (nestedArray != null) {
                     output += __element.toJson()
                 }
                 output += "]"
-                }
-                output += "]"
-
-}
-output += "}"
-return output    
+            }
+            output += "]"
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/any.")
-if (boolean != null) {
+        val queryParts = mutableListOf<String>()
+        __logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/any.")
+        if (boolean != null) {
             queryParts.add("boolean=$boolean")
         }
-if (string != null) {
-            queryParts.add("string=$string")
+        if (string != null) {
+            queryParts.add("string=${__encodeQueryValue(string)}")
         }
-if (timestamp != null) {
-                    queryParts.add(
-                        "timestamp=${
-                            timestampFormatter.format(timestamp)
-                        }"
-                )
-            }
-if (float32 != null) {
+        if (timestamp != null) {
+            queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        }
+        if (float32 != null) {
             queryParts.add("float32=$float32")
         }
-if (float64 != null) {
+        if (float64 != null) {
             queryParts.add("float64=$float64")
         }
-if (int8 != null) {
+        if (int8 != null) {
             queryParts.add("int8=$int8")
         }
-if (uint8 != null) {
+        if (uint8 != null) {
             queryParts.add("uint8=$uint8")
         }
-if (int16 != null) {
+        if (int16 != null) {
             queryParts.add("int16=$int16")
         }
-if (uint16 != null) {
+        if (uint16 != null) {
             queryParts.add("uint16=$uint16")
         }
-if (int32 != null) {
+        if (int32 != null) {
             queryParts.add("int32=$int32")
         }
-if (uint32 != null) {
+        if (uint32 != null) {
             queryParts.add("uint32=$uint32")
         }
-if (int64 != null) {
+        if (int64 != null) {
             queryParts.add("int64=$int64")
         }
-if (uint64 != null) {
+        if (uint64 != null) {
             queryParts.add("uint64=$uint64")
         }
-if (enumerator != null) {
-                    queryParts.add("enumerator=${enumerator.serialValue}")
-                }
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/discriminator.")
-__logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/union.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.")
-return queryParts.joinToString("&")
+        if (enumerator != null) {
+            queryParts.add("enumerator=${__encodeQueryValue(enumerator.serialValue)}")
+        }
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalType> {
         @JvmStatic
         override fun new(): ObjectWithEveryOptionalType {
-            return ObjectWithEveryOptionalType(
-
-            )
+            return ObjectWithEveryOptionalType()
         }
 
         @JvmStatic
@@ -3646,158 +5913,174 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryOptionalType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalType.")
                 return new()
             }
-val any: JsonElement? = when (__input.jsonObject["any"]) {
-                    null -> null
-                    else -> __input.jsonObject["any"] 
-                }
-val boolean: Boolean? = when (__input.jsonObject["boolean"]) {
-                    is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
-                    else -> null
-                }
-val string: String? = when (__input.jsonObject["string"]) {
-                    is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
-val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
+            val any: JsonElement? = when (__input.jsonObject["any"]) {
+                null -> null
+                else -> __input.jsonObject["any"]
+            }
+            val boolean: Boolean? = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
+            val string: String? = when (__input.jsonObject["string"]) {
+                is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         null
-                else -> null
-            }
-val float32: Float? = when (__input.jsonObject["float32"]) {
-                    is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull
-                    else -> null
-                }
-val float64: Double? = when (__input.jsonObject["float64"]) {
-                    is JsonPrimitive -> __input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull
-                    else -> null
-                }
-val int8: Byte? = when (__input.jsonObject["int8"]) {
-                    is JsonPrimitive -> __input.jsonObject["int8"]!!.jsonPrimitive.contentOrNull?.toByteOrNull()
-                    else -> null
-                }
-val uint8: UByte? = when (__input.jsonObject["uint8"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint8"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull()
-                    else -> null
-                }
-val int16: Short? = when (__input.jsonObject["int16"]) {
-                    is JsonPrimitive -> __input.jsonObject["int16"]!!.jsonPrimitive.contentOrNull?.toShortOrNull()
-                    else -> null
-                }
-val uint16: UShort? = when (__input.jsonObject["uint16"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull()
-                    else -> null
-                }
-val int32: Int? = when (__input.jsonObject["int32"]) {
-                    is JsonPrimitive -> __input.jsonObject["int32"]!!.jsonPrimitive.intOrNull
-                    else -> null
-                }
-val uint32: UInt? = when (__input.jsonObject["uint32"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint32"]!!.jsonPrimitive.contentOrNull?.toUIntOrNull()
-                    else -> null
-                }
-val int64: Long? = when (__input.jsonObject["int64"]) {
-                    is JsonPrimitive -> __input.jsonObject["int64"]!!.jsonPrimitive.longOrNull
-                    else -> null
-                }
-val uint64: ULong? = when (__input.jsonObject["uint64"]) {
-                    is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull()
-                    else -> null
-                }
-val enumerator: ObjectWithEveryOptionalTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
-                    is JsonNull -> null
-                    is JsonPrimitive -> ObjectWithEveryOptionalTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
-                    else -> null
-                }
-val array: MutableList<Boolean>? = when (__input.jsonObject["array"]) {
-                    is JsonArray -> {
-                        val __value: MutableList<Boolean> = mutableListOf()
-                        for (__element in __input.jsonObject["array"]!!.jsonArray) {
-                            __value.add(
-                                when (__element) {
-                is JsonPrimitive -> __element!!.jsonPrimitive.booleanOrNull ?: false
-                else -> false
-            }
-                            )
-                        }
-                        __value
-                    }
-
-                    else -> null
-                }
-val `object`: ObjectWithEveryOptionalTypeObject? = when (__input.jsonObject["object"]) {
-                    is JsonObject -> ObjectWithEveryOptionalTypeObject.fromJsonElement(
-                        __input.jsonObject["object"]!!,
-                        "$instancePath/object",
-                    )
-                    else -> null
-                }
-val record: MutableMap<String, ULong>? = when (__input.jsonObject["record"]) {
-                is JsonObject -> {
-                    val __value: MutableMap<String, ULong> = mutableMapOf()
-                    for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
-                        __value[__entry.key] = when (__entry.value) {
-                is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
-                else -> 0UL
-            }
-                    }
-                    __value
-                }
 
                 else -> null
             }
-val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = when (__input.jsonObject["discriminator"]) {
-                is JsonObject -> ObjectWithEveryOptionalTypeDiscriminator.fromJsonElement(
-                    __input.jsonObject["discriminator"]!!,
-                    "$instancePath/discriminator",
-                )
+            val float32: Float? = when (__input.jsonObject["float32"]) {
+                is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull
                 else -> null
             }
-val union: JsonElement? = when (__input.jsonObject["union"]) {
-                    null -> null
-                    else -> __input.jsonObject["union"] 
-                }
-val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
-                    is JsonObject -> ObjectWithEveryOptionalTypeNestedObject.fromJsonElement(
-                        __input.jsonObject["nestedObject"]!!,
-                        "$instancePath/nestedObject",
-                    )
-                    else -> null
-                }
-val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = when (__input.jsonObject["nestedArray"]) {
-                    is JsonArray -> {
-                        val __value: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>> = mutableListOf()
-                        for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
-                            __value.add(
-                                when (__element) {
+            val float64: Double? = when (__input.jsonObject["float64"]) {
+                is JsonPrimitive -> __input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull
+                else -> null
+            }
+            val int8: Byte? = when (__input.jsonObject["int8"]) {
+                is JsonPrimitive -> __input.jsonObject["int8"]!!.jsonPrimitive.contentOrNull?.toByteOrNull()
+                else -> null
+            }
+            val uint8: UByte? = when (__input.jsonObject["uint8"]) {
+                is JsonPrimitive -> __input.jsonObject["uint8"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull()
+                else -> null
+            }
+            val int16: Short? = when (__input.jsonObject["int16"]) {
+                is JsonPrimitive -> __input.jsonObject["int16"]!!.jsonPrimitive.contentOrNull?.toShortOrNull()
+                else -> null
+            }
+            val uint16: UShort? = when (__input.jsonObject["uint16"]) {
+                is JsonPrimitive -> __input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull()
+                else -> null
+            }
+            val int32: Int? = when (__input.jsonObject["int32"]) {
+                is JsonPrimitive -> __input.jsonObject["int32"]!!.jsonPrimitive.intOrNull
+                else -> null
+            }
+            val uint32: UInt? = when (__input.jsonObject["uint32"]) {
+                is JsonPrimitive -> __input.jsonObject["uint32"]!!.jsonPrimitive.contentOrNull?.toUIntOrNull()
+                else -> null
+            }
+            val int64: Long? = when (__input.jsonObject["int64"]) {
+                is JsonPrimitive -> __input.jsonObject["int64"]!!.jsonPrimitive.longOrNull
+                else -> null
+            }
+            val uint64: ULong? = when (__input.jsonObject["uint64"]) {
+                is JsonPrimitive -> __input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull()
+                else -> null
+            }
+            val enumerator: ObjectWithEveryOptionalTypeEnumerator? = when (__input.jsonObject["enumerator"]) {
+                is JsonNull -> null
+                is JsonPrimitive -> ObjectWithEveryOptionalTypeEnumerator.fromJsonElement(__input.jsonObject["enumerator"]!!, "$instancePath/enumerator")
+                else -> null
+            }
+            val array: MutableList<Boolean>? = when (__input.jsonObject["array"]) {
                 is JsonArray -> {
-                    val __value: MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement> = mutableListOf()
-                    for (__element in __element!!.jsonArray) {
+                    val __value: MutableList<Boolean> = mutableListOf()
+                    for (__element in __input.jsonObject["array"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement(
-                    __element!!,
-                    "$instancePath/undefined",
-                )
-
-                else -> ObjectWithEveryOptionalTypeNestedArrayElementElement.new()
-            }
+                                is JsonPrimitive -> __element!!.jsonPrimitive.booleanOrNull ?: false
+                                else -> false
+                            }
                         )
                     }
                     __value
                 }
 
-                else -> mutableListOf()
+                else -> null
             }
-                            )
-                        }
-                        __value
-                    }
+            val `object`: ObjectWithEveryOptionalTypeObject? = when (__input.jsonObject["object"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeObject.fromJsonElement(
+                    __input.jsonObject["object"]!!,
+                    "$instancePath/object",
+                )
 
-                    else -> null
+                else -> null
+            }
+            val record: MutableMap<String, ULong>? = when (__input.jsonObject["record"]) {
+                is JsonObject -> {
+                    val __value: MutableMap<String, ULong> = mutableMapOf()
+                    for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
+                        __value[__entry.key] = when (__entry.value) {
+                            is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
+                            else -> 0UL
+                        }
+                    }
+                    __value
                 }
+
+                else -> null
+            }
+            val unionExternal: ObjectWithEveryOptionalTypeUnionExternal? = when (__input.jsonObject["unionExternal"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeUnionExternal.fromJsonElement(
+                    __input.jsonObject["unionExternal"]!!,
+                    "$instancePath/unionExternal",
+                )
+
+                else -> null
+            }
+            val unionInternal: ObjectWithEveryOptionalTypeUnionInternal? = when (__input.jsonObject["unionInternal"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeUnionInternal.fromJsonElement(
+                    __input.jsonObject["unionInternal"]!!,
+                    "$instancePath/unionInternal",
+                )
+
+                else -> null
+            }
+            val unionAdjacent: ObjectWithEveryOptionalTypeUnionAdjacent? = when (__input.jsonObject["unionAdjacent"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeUnionAdjacent.fromJsonElement(
+                    __input.jsonObject["unionAdjacent"]!!,
+                    "$instancePath/unionAdjacent",
+                )
+
+                else -> null
+            }
+            val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = when (__input.jsonObject["nestedObject"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeNestedObject.fromJsonElement(
+                    __input.jsonObject["nestedObject"]!!,
+                    "$instancePath/nestedObject",
+                )
+
+                else -> null
+            }
+            val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = when (__input.jsonObject["nestedArray"]) {
+                is JsonArray -> {
+                    val __value: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>> = mutableListOf()
+                    for (__element in __input.jsonObject["nestedArray"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonArray -> {
+                                    val __value: MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement> = mutableListOf()
+                                    for (__element in __element!!.jsonArray) {
+                                        __value.add(
+                                            when (__element) {
+                                                is JsonObject -> ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement(
+                                                    __element!!,
+                                                    "$instancePath/undefined",
+                                                )
+
+                                                else -> ObjectWithEveryOptionalTypeNestedArrayElementElement.new()
+                                            }
+                                        )
+                                    }
+                                    __value
+                                }
+
+                                else -> mutableListOf()
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> null
+            }
             return ObjectWithEveryOptionalType(
                 any,
                 boolean,
@@ -3817,8 +6100,9 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayE
                 array,
                 `object`,
                 record,
-                discriminator,
-                union,
+                unionExternal,
+                unionInternal,
+                unionAdjacent,
                 nestedObject,
                 nestedArray,
             )
@@ -3830,13 +6114,14 @@ enum class ObjectWithEveryOptionalTypeEnumerator {
     A,
     B,
     C;
+
     val serialValue: String
         get() = when (this) {
             A -> "A"
             B -> "B"
             C -> "C"
         }
-    
+
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeEnumerator> {
         @JvmStatic
         override fun new(): ObjectWithEveryOptionalTypeEnumerator {
@@ -3875,27 +6160,23 @@ data class ObjectWithEveryOptionalTypeObject(
     val timestamp: Instant,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"string\":"
-output += buildString { printQuoted(string) }
-output += ",\"boolean\":"
-output += boolean
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"string\":"
+        output += buildString { printQuoted(string) }
+        output += ",\"boolean\":"
+        output += boolean
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("string=$string")
-queryParts.add("boolean=$boolean")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("string=${__encodeQueryValue(string)}")
+        queryParts.add("boolean=$boolean")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeObject> {
@@ -3919,20 +6200,21 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryOptionalTypeObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeObject.")
                 return new()
             }
-val string: String = when (__input.jsonObject["string"]) {
+            val string: String = when (__input.jsonObject["string"]) {
                 is JsonPrimitive -> __input.jsonObject["string"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val boolean: Boolean = when (__input.jsonObject["boolean"]) {
+            val boolean: Boolean = when (__input.jsonObject["boolean"]) {
                 is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
             return ObjectWithEveryOptionalTypeObject(
@@ -3944,32 +6226,331 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
-sealed interface ObjectWithEveryOptionalTypeDiscriminator : TestClientModel {
-    val type: String
-
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeDiscriminator> {
+sealed interface ObjectWithEveryOptionalTypeUnionExternal : TestClientModel {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionExternal> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeDiscriminator {
-            return ObjectWithEveryOptionalTypeDiscriminatorA.new()
+        override fun new(): ObjectWithEveryOptionalTypeUnionExternal {
+            return ObjectWithEveryOptionalTypeUnionExternalObject.new()
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeDiscriminator {
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionExternal {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeDiscriminator {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionExternal {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeDiscriminator.")
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionExternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionExternal.")
                 return new()
             }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> ObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement(__input, instancePath)
-"B" -> ObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement(__input, instancePath)
+            return when {
+                "object" in __input -> ObjectWithEveryOptionalTypeUnionExternalObject.fromJsonElement(__input, instancePath)
+                "array" in __input -> ObjectWithEveryOptionalTypeUnionExternalArray.fromJsonElement(__input, instancePath)
+                "boolean" in __input -> ObjectWithEveryOptionalTypeUnionExternalBoolean.fromJsonElement(__input, instancePath)
+                "nullable-timestamp" in __input -> ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionExternalObject(
+    val value: ObjectWithEveryOptionalTypeUnionExternalObjectValue,
+) : ObjectWithEveryOptionalTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"object\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalObject.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionExternalObject> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionExternalObject {
+            return ObjectWithEveryOptionalTypeUnionExternalObject(
+                value = ObjectWithEveryOptionalTypeUnionExternalObjectValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionExternalObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionExternalObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionExternalObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionExternalObject.")
+                return new()
+            }
+            val value: ObjectWithEveryOptionalTypeUnionExternalObjectValue = when (__input.jsonObject["object"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeUnionExternalObjectValue.fromJsonElement(
+                    __input.jsonObject["object"]!!,
+                    "$instancePath/object",
+                )
+
+                else -> ObjectWithEveryOptionalTypeUnionExternalObjectValue.new()
+            }
+            return ObjectWithEveryOptionalTypeUnionExternalObject(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionExternalArray(
+    val value: MutableList<String>,
+) : ObjectWithEveryOptionalTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"array\":"
+        output += "["
+        for ((__index, __element) in value.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += buildString { printQuoted(__element) }
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalArray.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionExternalArray> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionExternalArray {
+            return ObjectWithEveryOptionalTypeUnionExternalArray(
+                value = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionExternalArray {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionExternalArray {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionExternalArray.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionExternalArray.")
+                return new()
+            }
+            val value: MutableList<String> = when (__input.jsonObject["array"]) {
+                is JsonArray -> {
+                    val __value: MutableList<String> = mutableListOf()
+                    for (__element in __input.jsonObject["array"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return ObjectWithEveryOptionalTypeUnionExternalArray(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionExternalBoolean(
+    val value: Boolean,
+) : ObjectWithEveryOptionalTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"boolean\":"
+        output += value
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalBoolean.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionExternalBoolean> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionExternalBoolean {
+            return ObjectWithEveryOptionalTypeUnionExternalBoolean(
+                value = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionExternalBoolean {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionExternalBoolean {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionExternalBoolean.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionExternalBoolean.")
+                return new()
+            }
+            val value: Boolean = when (__input.jsonObject["boolean"]) {
+                is JsonPrimitive -> __input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return ObjectWithEveryOptionalTypeUnionExternalBoolean(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp(
+    val value: Instant?,
+) : ObjectWithEveryOptionalTypeUnionExternal {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"nullable-timestamp\":"
+        output += when (value) {
+            is Instant -> "\"${timestampFormatter.format(value)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp {
+            return ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp(
+                value = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp.")
+                return new()
+            }
+            val value: Instant? = when (__input.jsonObject["nullable-timestamp"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                    else
+                        null
+
+                else -> null
+            }
+            return ObjectWithEveryOptionalTypeUnionExternalNullableTimestamp(
+                value,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionExternalObjectValue(
+    val id: String,
+    val content: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"content\":"
+        output += buildString { printQuoted(content) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionExternalObjectValue> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionExternalObjectValue {
+            return ObjectWithEveryOptionalTypeUnionExternalObjectValue(
+                id = "",
+                content = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionExternalObjectValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionExternalObjectValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionExternalObjectValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionExternalObjectValue.")
+                return new()
+            }
+            val id: String = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val content: String = when (__input.jsonObject["content"]) {
+                is JsonPrimitive -> __input.jsonObject["content"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithEveryOptionalTypeUnionExternalObjectValue(
+                id,
+                content,
+            )
+        }
+    }
+}
+
+sealed interface ObjectWithEveryOptionalTypeUnionInternal : TestClientModel {
+    val shape: String
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionInternal> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionInternal {
+            return ObjectWithEveryOptionalTypeUnionInternalRectangle.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionInternal {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionInternal {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionInternal.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionInternal.")
+                return new()
+            }
+            return when (__input.jsonObject["shape"]) {
+                is JsonPrimitive -> when (__input.jsonObject["shape"]!!.jsonPrimitive.contentOrNull) {
+                    "rectangle" -> ObjectWithEveryOptionalTypeUnionInternalRectangle.fromJsonElement(__input, instancePath)
+                    "circle" -> ObjectWithEveryOptionalTypeUnionInternalCircle.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -3979,121 +6560,436 @@ sealed interface ObjectWithEveryOptionalTypeDiscriminator : TestClientModel {
     }
 }
 
-data class ObjectWithEveryOptionalTypeDiscriminatorA(
-    val title: String,
-) : ObjectWithEveryOptionalTypeDiscriminator {
-    override val type get() = "A"
+data class ObjectWithEveryOptionalTypeUnionInternalRectangle(
+    val width: Double,
+    val height: Double,
+) : ObjectWithEveryOptionalTypeUnionInternal {
+    override val shape get() = "rectangle"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"A\""
-output += ",\"title\":"
-output += buildString { printQuoted(title) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"shape\":\"rectangle\""
+        output += ",\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=A")
-queryParts.add("title=$title")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("shape=rectangle")
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeDiscriminatorA> {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionInternalRectangle> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeDiscriminatorA {
-            return ObjectWithEveryOptionalTypeDiscriminatorA(
-                title = "",
+        override fun new(): ObjectWithEveryOptionalTypeUnionInternalRectangle {
+            return ObjectWithEveryOptionalTypeUnionInternalRectangle(
+                width = 0.0,
+                height = 0.0,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeDiscriminatorA {
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionInternalRectangle {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeDiscriminatorA {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionInternalRectangle {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeDiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeDiscriminatorA.")
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionInternalRectangle.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionInternalRectangle.")
                 return new()
             }
-val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
+            val width: Double = when (__input.jsonObject["width"]) {
+                is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
             }
-            return ObjectWithEveryOptionalTypeDiscriminatorA(
-                title,
+            val height: Double = when (__input.jsonObject["height"]) {
+                is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            return ObjectWithEveryOptionalTypeUnionInternalRectangle(
+                width,
+                height,
             )
         }
     }
 }
 
-
-
-data class ObjectWithEveryOptionalTypeDiscriminatorB(
-    val title: String,
-    val description: String,
-) : ObjectWithEveryOptionalTypeDiscriminator {
-    override val type get() = "B"
+data class ObjectWithEveryOptionalTypeUnionInternalCircle(
+    val radius: Double,
+) : ObjectWithEveryOptionalTypeUnionInternal {
+    override val shape get() = "circle"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"B\""
-output += ",\"title\":"
-output += buildString { printQuoted(title) }
-output += ",\"description\":"
-output += buildString { printQuoted(description) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"shape\":\"circle\""
+        output += ",\"radius\":"
+        output += radius
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=B")
-queryParts.add("title=$title")
-queryParts.add("description=$description")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("shape=circle")
+        queryParts.add("radius=$radius")
+        return queryParts.joinToString("&")
     }
 
-    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeDiscriminatorB> {
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionInternalCircle> {
         @JvmStatic
-        override fun new(): ObjectWithEveryOptionalTypeDiscriminatorB {
-            return ObjectWithEveryOptionalTypeDiscriminatorB(
-                title = "",
-                description = "",
+        override fun new(): ObjectWithEveryOptionalTypeUnionInternalCircle {
+            return ObjectWithEveryOptionalTypeUnionInternalCircle(
+                radius = 0.0,
             )
         }
 
         @JvmStatic
-        override fun fromJson(input: String): ObjectWithEveryOptionalTypeDiscriminatorB {
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionInternalCircle {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeDiscriminatorB {
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionInternalCircle {
             if (__input !is JsonObject) {
-                __logError("[WARNING] ObjectWithEveryOptionalTypeDiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeDiscriminatorB.")
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionInternalCircle.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionInternalCircle.")
                 return new()
             }
-val title: String = when (__input.jsonObject["title"]) {
-                is JsonPrimitive -> __input.jsonObject["title"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
+            val radius: Double = when (__input.jsonObject["radius"]) {
+                is JsonPrimitive -> __input.jsonObject["radius"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
             }
-val description: String = when (__input.jsonObject["description"]) {
-                is JsonPrimitive -> __input.jsonObject["description"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return ObjectWithEveryOptionalTypeDiscriminatorB(
-                title,
-                description,
+            return ObjectWithEveryOptionalTypeUnionInternalCircle(
+                radius,
             )
         }
     }
 }
 
+sealed interface ObjectWithEveryOptionalTypeUnionAdjacent : TestClientModel {
+    val kind: String
 
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionAdjacent> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionAdjacent {
+            return ObjectWithEveryOptionalTypeUnionAdjacentObject.new()
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionAdjacent {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionAdjacent {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionAdjacent.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionAdjacent.")
+                return new()
+            }
+            return when (__input.jsonObject["kind"]) {
+                is JsonPrimitive -> when (__input.jsonObject["kind"]!!.jsonPrimitive.contentOrNull) {
+                    "object" -> ObjectWithEveryOptionalTypeUnionAdjacentObject.fromJsonElement(__input, instancePath)
+                    "array" -> ObjectWithEveryOptionalTypeUnionAdjacentArray.fromJsonElement(__input, instancePath)
+                    "boolean" -> ObjectWithEveryOptionalTypeUnionAdjacentBoolean.fromJsonElement(__input, instancePath)
+                    "nullable-timestamp" -> ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.fromJsonElement(__input, instancePath)
+                    else -> new()
+                }
+
+                else -> new()
+            }
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionAdjacentObject(
+    val data: ObjectWithEveryOptionalTypeUnionAdjacentObjectData,
+) : ObjectWithEveryOptionalTypeUnionAdjacent {
+    override val kind get() = "object"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"object\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentObject.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionAdjacentObject> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionAdjacentObject {
+            return ObjectWithEveryOptionalTypeUnionAdjacentObject(
+                data = ObjectWithEveryOptionalTypeUnionAdjacentObjectData.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionAdjacentObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionAdjacentObject {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionAdjacentObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionAdjacentObject.")
+                return new()
+            }
+            val data: ObjectWithEveryOptionalTypeUnionAdjacentObjectData = when (__input.jsonObject["data"]) {
+                is JsonObject -> ObjectWithEveryOptionalTypeUnionAdjacentObjectData.fromJsonElement(
+                    __input.jsonObject["data"]!!,
+                    "$instancePath/data",
+                )
+
+                else -> ObjectWithEveryOptionalTypeUnionAdjacentObjectData.new()
+            }
+            return ObjectWithEveryOptionalTypeUnionAdjacentObject(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionAdjacentArray(
+    val data: MutableList<String>,
+) : ObjectWithEveryOptionalTypeUnionAdjacent {
+    override val kind get() = "array"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"array\""
+        output += ",\"data\":"
+        output += "["
+        for ((__index, __element) in data.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += buildString { printQuoted(__element) }
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentArray.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionAdjacentArray> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionAdjacentArray {
+            return ObjectWithEveryOptionalTypeUnionAdjacentArray(
+                data = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionAdjacentArray {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionAdjacentArray {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionAdjacentArray.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionAdjacentArray.")
+                return new()
+            }
+            val data: MutableList<String> = when (__input.jsonObject["data"]) {
+                is JsonArray -> {
+                    val __value: MutableList<String> = mutableListOf()
+                    for (__element in __input.jsonObject["data"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonPrimitive -> __element!!.jsonPrimitive.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return ObjectWithEveryOptionalTypeUnionAdjacentArray(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionAdjacentBoolean(
+    val data: Boolean,
+) : ObjectWithEveryOptionalTypeUnionAdjacent {
+    override val kind get() = "boolean"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"boolean\""
+        output += ",\"data\":"
+        output += data
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentBoolean.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionAdjacentBoolean> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionAdjacentBoolean {
+            return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(
+                data = false,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionAdjacentBoolean {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionAdjacentBoolean {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionAdjacentBoolean.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionAdjacentBoolean.")
+                return new()
+            }
+            val data: Boolean = when (__input.jsonObject["data"]) {
+                is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            return ObjectWithEveryOptionalTypeUnionAdjacentBoolean(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp(
+    val data: Instant?,
+) : ObjectWithEveryOptionalTypeUnionAdjacent {
+    override val kind get() = "nullable-timestamp"
+
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"kind\":\"nullable-timestamp\""
+        output += ",\"data\":"
+        output += when (data) {
+            is Instant -> "\"${timestampFormatter.format(data)}\""
+            else -> "null"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp {
+            return ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp(
+                data = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp.")
+                return new()
+            }
+            val data: Instant? = when (__input.jsonObject["data"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["data"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                    else
+                        null
+
+                else -> null
+            }
+            return ObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp(
+                data,
+            )
+        }
+    }
+}
+
+data class ObjectWithEveryOptionalTypeUnionAdjacentObjectData(
+    val id: String,
+    val content: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"content\":"
+        output += buildString { printQuoted(content) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("content=${__encodeQueryValue(content)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeUnionAdjacentObjectData> {
+        @JvmStatic
+        override fun new(): ObjectWithEveryOptionalTypeUnionAdjacentObjectData {
+            return ObjectWithEveryOptionalTypeUnionAdjacentObjectData(
+                id = "",
+                content = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithEveryOptionalTypeUnionAdjacentObjectData {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryOptionalTypeUnionAdjacentObjectData {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithEveryOptionalTypeUnionAdjacentObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeUnionAdjacentObjectData.")
+                return new()
+            }
+            val id: String = when (__input.jsonObject["id"]) {
+                is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val content: String = when (__input.jsonObject["content"]) {
+                is JsonPrimitive -> __input.jsonObject["content"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return ObjectWithEveryOptionalTypeUnionAdjacentObjectData(
+                id,
+                content,
+            )
+        }
+    }
+}
 
 data class ObjectWithEveryOptionalTypeNestedObject(
     val id: String,
@@ -4101,27 +6997,23 @@ data class ObjectWithEveryOptionalTypeNestedObject(
     val data: ObjectWithEveryOptionalTypeNestedObjectData,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += ",\"data\":"
-output += data.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedObject> {
@@ -4145,19 +7037,20 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryOptionalTypeNestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedObject.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val data: ObjectWithEveryOptionalTypeNestedObjectData = when (__input.jsonObject["data"]) {
+            val data: ObjectWithEveryOptionalTypeNestedObjectData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
@@ -4180,27 +7073,23 @@ data class ObjectWithEveryOptionalTypeNestedObjectData(
     val data: ObjectWithEveryOptionalTypeNestedObjectDataData,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += ",\"data\":"
-output += data.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedObjectData> {
@@ -4224,19 +7113,20 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedObjectData.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val data: ObjectWithEveryOptionalTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
+            val data: ObjectWithEveryOptionalTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
@@ -4258,24 +7148,20 @@ data class ObjectWithEveryOptionalTypeNestedObjectDataData(
     val timestamp: Instant,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedObjectDataData> {
@@ -4298,16 +7184,17 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedObjectDataData.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
             return ObjectWithEveryOptionalTypeNestedObjectDataData(
@@ -4318,31 +7205,25 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
 data class ObjectWithEveryOptionalTypeNestedArrayElementElement(
     val id: String,
     val timestamp: Instant,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"timestamp\":"
-output += "\"${timestampFormatter.format(timestamp)}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"timestamp\":"
+        output += "\"${timestampFormatter.format(timestamp)}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add(
-                "timestamp=${
-                    timestampFormatter.format(timestamp)
-                }"
-        )
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("timestamp=${__encodeQueryValue(timestampFormatter.format(timestamp))}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ObjectWithEveryOptionalTypeNestedArrayElementElement> {
@@ -4365,16 +7246,17 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryOptionalTypeNestedArrayElementElement.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
+            val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
             return ObjectWithEveryOptionalTypeNestedArrayElementElement(
@@ -4385,31 +7267,29 @@ val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
     }
 }
 
-
-
 data class RecursiveObject(
     val left: RecursiveObject?,
     val right: RecursiveObject?,
     val value: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"left\":"
-output += left?.toJson()
-output += ",\"right\":"
-output += right?.toJson()
-output += ",\"value\":"
-output += buildString { printQuoted(value) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"left\":"
+        output += left?.toJson()
+        output += ",\"right\":"
+        output += right?.toJson()
+        output += ",\"value\":"
+        output += buildString { printQuoted(value) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
-queryParts.add("value=$value")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
+        queryParts.add("value=${__encodeQueryValue(value)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<RecursiveObject> {
@@ -4433,21 +7313,23 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] RecursiveObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveObject.")
                 return new()
             }
-val left: RecursiveObject? = when (__input.jsonObject["left"]) {
+            val left: RecursiveObject? = when (__input.jsonObject["left"]) {
                 is JsonObject -> RecursiveObject.fromJsonElement(
                     __input.jsonObject["left"]!!,
                     "$instancePath/left",
                 )
+
                 else -> null
             }
-val right: RecursiveObject? = when (__input.jsonObject["right"]) {
+            val right: RecursiveObject? = when (__input.jsonObject["right"]) {
                 is JsonObject -> RecursiveObject.fromJsonElement(
                     __input.jsonObject["right"]!!,
                     "$instancePath/right",
                 )
+
                 else -> null
             }
-val value: String = when (__input.jsonObject["value"]) {
+            val value: String = when (__input.jsonObject["value"]) {
                 is JsonPrimitive -> __input.jsonObject["value"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -4460,15 +7342,13 @@ val value: String = when (__input.jsonObject["value"]) {
     }
 }
 
-
-
 sealed interface RecursiveUnion : TestClientModel {
     val type: String
 
     companion object Factory : TestClientModelFactory<RecursiveUnion> {
         @JvmStatic
         override fun new(): RecursiveUnion {
-            return RecursiveUnionChild.new()
+            return RecursiveUnionChildren.new()
         }
 
         @JvmStatic
@@ -4479,15 +7359,15 @@ sealed interface RecursiveUnion : TestClientModel {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnion {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnion.")
+                __logError("[WARNING] RecursiveUnion.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnion.")
                 return new()
             }
             return when (__input.jsonObject["type"]) {
                 is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
                     "CHILD" -> RecursiveUnionChild.fromJsonElement(__input, instancePath)
-"CHILDREN" -> RecursiveUnionChildren.fromJsonElement(__input, instancePath)
-"TEXT" -> RecursiveUnionText.fromJsonElement(__input, instancePath)
-"SHAPE" -> RecursiveUnionShape.fromJsonElement(__input, instancePath)
+                    "CHILDREN" -> RecursiveUnionChildren.fromJsonElement(__input, instancePath)
+                    "TEXT" -> RecursiveUnionText.fromJsonElement(__input, instancePath)
+                    "SHAPE" -> RecursiveUnionShape.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -4498,27 +7378,27 @@ sealed interface RecursiveUnion : TestClientModel {
 }
 
 /**
-* Child node
-*/
+ * Child node
+ */
 data class RecursiveUnionChild(
     val data: RecursiveUnion,
 ) : RecursiveUnion {
     override val type get() = "CHILD"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"CHILD\""
-output += ",\"data\":"
-output += data.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"type\":\"CHILD\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=CHILD")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionChild/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("type=CHILD")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionChild/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<RecursiveUnionChild> {
@@ -4540,11 +7420,12 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] RecursiveUnionChild.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionChild.")
                 return new()
             }
-val data: RecursiveUnion = when (__input.jsonObject["data"]) {
+            val data: RecursiveUnion = when (__input.jsonObject["data"]) {
                 is JsonObject -> RecursiveUnion.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
                 )
+
                 else -> RecursiveUnion.new()
             }
             return RecursiveUnionChild(
@@ -4554,37 +7435,35 @@ val data: RecursiveUnion = when (__input.jsonObject["data"]) {
     }
 }
 
-
-
 /**
-* List of children node
-*/
+ * List of children node
+ */
 data class RecursiveUnionChildren(
     val data: MutableList<RecursiveUnion>,
 ) : RecursiveUnion {
     override val type get() = "CHILDREN"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"CHILDREN\""
-output += ",\"data\":"
-output += "["
-                for ((__index, __element) in data.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element.toJson()
-                }
-                output += "]"
-output += "}"
-return output    
+        var output = "{"
+        output += "\"type\":\"CHILDREN\""
+        output += ",\"data\":"
+        output += "["
+        for ((__index, __element) in data.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += __element.toJson()
+        }
+        output += "]"
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=CHILDREN")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionChildren/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("type=CHILDREN")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionChildren/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<RecursiveUnionChildren> {
@@ -4606,18 +7485,19 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] RecursiveUnionChildren.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionChildren.")
                 return new()
             }
-val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
+            val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
                 is JsonArray -> {
                     val __value: MutableList<RecursiveUnion> = mutableListOf()
                     for (__element in __input.jsonObject["data"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> RecursiveUnion.fromJsonElement(
-                    __element!!,
-                    "$instancePath/undefined",
-                )
-                else -> RecursiveUnion.new()
-            }
+                                is JsonObject -> RecursiveUnion.fromJsonElement(
+                                    __element!!,
+                                    "$instancePath/undefined",
+                                )
+
+                                else -> RecursiveUnion.new()
+                            }
                         )
                     }
                     __value
@@ -4632,30 +7512,28 @@ val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
     }
 }
 
-
-
 /**
-* Text node
-*/
+ * Text node
+ */
 data class RecursiveUnionText(
     val data: String,
 ) : RecursiveUnion {
     override val type get() = "TEXT"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"TEXT\""
-output += ",\"data\":"
-output += buildString { printQuoted(data) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"type\":\"TEXT\""
+        output += ",\"data\":"
+        output += buildString { printQuoted(data) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=TEXT")
-queryParts.add("data=$data")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("type=TEXT")
+        queryParts.add("data=${__encodeQueryValue(data)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<RecursiveUnionText> {
@@ -4677,7 +7555,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] RecursiveUnionText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionText.")
                 return new()
             }
-val data: String = when (__input.jsonObject["data"]) {
+            val data: String = when (__input.jsonObject["data"]) {
                 is JsonPrimitive -> __input.jsonObject["data"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -4688,30 +7566,28 @@ val data: String = when (__input.jsonObject["data"]) {
     }
 }
 
-
-
 /**
-* Shape node
-*/
+ * Shape node
+ */
 data class RecursiveUnionShape(
     val data: RecursiveUnionShapeData,
 ) : RecursiveUnion {
     override val type get() = "SHAPE"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"SHAPE\""
-output += ",\"data\":"
-output += data.toJson()
-output += "}"
-return output    
+        var output = "{"
+        output += "\"type\":\"SHAPE\""
+        output += ",\"data\":"
+        output += data.toJson()
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=SHAPE")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionShape/data.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("type=SHAPE")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionShape/data.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<RecursiveUnionShape> {
@@ -4733,7 +7609,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] RecursiveUnionShape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionShape.")
                 return new()
             }
-val data: RecursiveUnionShapeData = when (__input.jsonObject["data"]) {
+            val data: RecursiveUnionShapeData = when (__input.jsonObject["data"]) {
                 is JsonObject -> RecursiveUnionShapeData.fromJsonElement(
                     __input.jsonObject["data"]!!,
                     "$instancePath/data",
@@ -4754,23 +7630,23 @@ data class RecursiveUnionShapeData(
     val color: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"width\":"
-output += width
-output += ",\"height\":"
-output += height
-output += ",\"color\":"
-output += buildString { printQuoted(color) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += ",\"color\":"
+        output += buildString { printQuoted(color) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("width=$width")
-queryParts.add("height=$height")
-queryParts.add("color=$color")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        queryParts.add("color=${__encodeQueryValue(color)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<RecursiveUnionShapeData> {
@@ -4794,15 +7670,15 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] RecursiveUnionShapeData.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionShapeData.")
                 return new()
             }
-val width: Double = when (__input.jsonObject["width"]) {
+            val width: Double = when (__input.jsonObject["width"]) {
                 is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
                 else -> 0.0
             }
-val height: Double = when (__input.jsonObject["height"]) {
+            val height: Double = when (__input.jsonObject["height"]) {
                 is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
                 else -> 0.0
             }
-val color: String = when (__input.jsonObject["color"]) {
+            val color: String = when (__input.jsonObject["color"]) {
                 is JsonPrimitive -> __input.jsonObject["color"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -4815,23 +7691,335 @@ val color: String = when (__input.jsonObject["color"]) {
     }
 }
 
+sealed interface RecursiveUnionV2 : TestClientModel {
+    companion object Factory : TestClientModelFactory<RecursiveUnionV2> {
+        @JvmStatic
+        override fun new(): RecursiveUnionV2 {
+            return RecursiveUnionV2Children.new()
+        }
 
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionV2 {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2 {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionV2.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2.")
+                return new()
+            }
+            return when {
+                "child" in __input -> RecursiveUnionV2Child.fromJsonElement(__input, instancePath)
+                "children" in __input -> RecursiveUnionV2Children.fromJsonElement(__input, instancePath)
+                "text" in __input -> RecursiveUnionV2Text.fromJsonElement(__input, instancePath)
+                "shape" in __input -> RecursiveUnionV2Shape.fromJsonElement(__input, instancePath)
+                else -> new()
+            }
+        }
+    }
+}
+
+data class RecursiveUnionV2Child(
+    val value: RecursiveUnionV2,
+) : RecursiveUnionV2 {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"child\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Child.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionV2Child> {
+        @JvmStatic
+        override fun new(): RecursiveUnionV2Child {
+            return RecursiveUnionV2Child(
+                value = RecursiveUnionV2.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionV2Child {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Child {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionV2Child.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Child.")
+                return new()
+            }
+            val value: RecursiveUnionV2 = when (__input.jsonObject["child"]) {
+                is JsonObject -> RecursiveUnionV2.fromJsonElement(
+                    __input.jsonObject["child"]!!,
+                    "$instancePath/child",
+                )
+
+                else -> RecursiveUnionV2.new()
+            }
+            return RecursiveUnionV2Child(
+                value,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionV2Children(
+    val value: MutableList<RecursiveUnionV2>,
+) : RecursiveUnionV2 {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"children\":"
+        output += "["
+        for ((__index, __element) in value.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += __element.toJson()
+        }
+        output += "]"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Children.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionV2Children> {
+        @JvmStatic
+        override fun new(): RecursiveUnionV2Children {
+            return RecursiveUnionV2Children(
+                value = mutableListOf(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionV2Children {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Children {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionV2Children.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Children.")
+                return new()
+            }
+            val value: MutableList<RecursiveUnionV2> = when (__input.jsonObject["children"]) {
+                is JsonArray -> {
+                    val __value: MutableList<RecursiveUnionV2> = mutableListOf()
+                    for (__element in __input.jsonObject["children"]!!.jsonArray) {
+                        __value.add(
+                            when (__element) {
+                                is JsonObject -> RecursiveUnionV2.fromJsonElement(
+                                    __element!!,
+                                    "$instancePath/undefined",
+                                )
+
+                                else -> RecursiveUnionV2.new()
+                            }
+                        )
+                    }
+                    __value
+                }
+
+                else -> mutableListOf()
+            }
+            return RecursiveUnionV2Children(
+                value,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionV2Text(
+    val value: String,
+) : RecursiveUnionV2 {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"text\":"
+        output += buildString { printQuoted(value) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Text.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionV2Text> {
+        @JvmStatic
+        override fun new(): RecursiveUnionV2Text {
+            return RecursiveUnionV2Text(
+                value = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionV2Text {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Text {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionV2Text.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Text.")
+                return new()
+            }
+            val value: String = when (__input.jsonObject["text"]) {
+                is JsonPrimitive -> __input.jsonObject["text"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return RecursiveUnionV2Text(
+                value,
+            )
+        }
+    }
+}
+
+data class RecursiveUnionV2Shape(
+    val value: RecursiveUnionV2ShapeValue,
+) : RecursiveUnionV2 {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"shape\":"
+        output += value.toJson()
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        __logError("[WARNING] unions cannot be serialized to query params. Skipping RecursiveUnionV2Shape.")
+        return ""
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionV2Shape> {
+        @JvmStatic
+        override fun new(): RecursiveUnionV2Shape {
+            return RecursiveUnionV2Shape(
+                value = RecursiveUnionV2ShapeValue.new(),
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionV2Shape {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2Shape {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionV2Shape.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2Shape.")
+                return new()
+            }
+            val value: RecursiveUnionV2ShapeValue = when (__input.jsonObject["shape"]) {
+                is JsonObject -> RecursiveUnionV2ShapeValue.fromJsonElement(
+                    __input.jsonObject["shape"]!!,
+                    "$instancePath/shape",
+                )
+
+                else -> RecursiveUnionV2ShapeValue.new()
+            }
+            return RecursiveUnionV2Shape(
+                value,
+            )
+        }
+    }
+}
+
+/**
+ * Shape node
+ */
+data class RecursiveUnionV2ShapeValue(
+    val width: Double,
+    val height: Double,
+    val color: String,
+) : TestClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += ",\"color\":"
+        output += buildString { printQuoted(color) }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        queryParts.add("color=${__encodeQueryValue(color)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<RecursiveUnionV2ShapeValue> {
+        @JvmStatic
+        override fun new(): RecursiveUnionV2ShapeValue {
+            return RecursiveUnionV2ShapeValue(
+                width = 0.0,
+                height = 0.0,
+                color = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): RecursiveUnionV2ShapeValue {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveUnionV2ShapeValue {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] RecursiveUnionV2ShapeValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveUnionV2ShapeValue.")
+                return new()
+            }
+            val width: Double = when (__input.jsonObject["width"]) {
+                is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val height: Double = when (__input.jsonObject["height"]) {
+                is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val color: String = when (__input.jsonObject["color"]) {
+                is JsonPrimitive -> __input.jsonObject["color"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return RecursiveUnionV2ShapeValue(
+                width,
+                height,
+                color,
+            )
+        }
+    }
+}
 
 data class AutoReconnectParams(
     val messageCount: UByte,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"messageCount\":"
-output += messageCount
-output += "}"
-return output    
+        var output = "{"
+        output += "\"messageCount\":"
+        output += messageCount
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("messageCount=$messageCount")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("messageCount=$messageCount")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<AutoReconnectParams> {
@@ -4853,7 +8041,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] AutoReconnectParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty AutoReconnectParams.")
                 return new()
             }
-val messageCount: UByte = when (__input.jsonObject["messageCount"]) {
+            val messageCount: UByte = when (__input.jsonObject["messageCount"]) {
                 is JsonPrimitive -> __input.jsonObject["messageCount"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
                 else -> 0u
             }
@@ -4864,27 +8052,25 @@ val messageCount: UByte = when (__input.jsonObject["messageCount"]) {
     }
 }
 
-
-
 data class AutoReconnectResponse(
     val count: UByte,
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"count\":"
-output += count
-output += ",\"message\":"
-output += buildString { printQuoted(message) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"count\":"
+        output += count
+        output += ",\"message\":"
+        output += buildString { printQuoted(message) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("count=$count")
-queryParts.add("message=$message")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("count=$count")
+        queryParts.add("message=${__encodeQueryValue(message)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<AutoReconnectResponse> {
@@ -4907,11 +8093,11 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] AutoReconnectResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty AutoReconnectResponse.")
                 return new()
             }
-val count: UByte = when (__input.jsonObject["count"]) {
+            val count: UByte = when (__input.jsonObject["count"]) {
                 is JsonPrimitive -> __input.jsonObject["count"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
                 else -> 0u
             }
-val message: String = when (__input.jsonObject["message"]) {
+            val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -4923,27 +8109,25 @@ val message: String = when (__input.jsonObject["message"]) {
     }
 }
 
-
-
 data class StreamConnectionErrorTestParams(
     val statusCode: Int,
     val statusMessage: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"statusCode\":"
-output += statusCode
-output += ",\"statusMessage\":"
-output += buildString { printQuoted(statusMessage) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"statusCode\":"
+        output += statusCode
+        output += ",\"statusMessage\":"
+        output += buildString { printQuoted(statusMessage) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("statusCode=$statusCode")
-queryParts.add("statusMessage=$statusMessage")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("statusCode=$statusCode")
+        queryParts.add("statusMessage=${__encodeQueryValue(statusMessage)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<StreamConnectionErrorTestParams> {
@@ -4966,11 +8150,11 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamConnectionErrorTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamConnectionErrorTestParams.")
                 return new()
             }
-val statusCode: Int = when (__input.jsonObject["statusCode"]) {
+            val statusCode: Int = when (__input.jsonObject["statusCode"]) {
                 is JsonPrimitive -> __input.jsonObject["statusCode"]!!.jsonPrimitive.intOrNull ?: 0
                 else -> 0
             }
-val statusMessage: String = when (__input.jsonObject["statusMessage"]) {
+            val statusMessage: String = when (__input.jsonObject["statusMessage"]) {
                 is JsonPrimitive -> __input.jsonObject["statusMessage"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -4982,23 +8166,21 @@ val statusMessage: String = when (__input.jsonObject["statusMessage"]) {
     }
 }
 
-
-
 data class StreamConnectionErrorTestResponse(
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"message\":"
-output += buildString { printQuoted(message) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"message\":"
+        output += buildString { printQuoted(message) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("message=$message")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("message=${__encodeQueryValue(message)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<StreamConnectionErrorTestResponse> {
@@ -5020,7 +8202,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamConnectionErrorTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamConnectionErrorTestResponse.")
                 return new()
             }
-val message: String = when (__input.jsonObject["message"]) {
+            val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5031,23 +8213,21 @@ val message: String = when (__input.jsonObject["message"]) {
     }
 }
 
-
-
 data class StreamHeartbeatDetectionTestParams(
     val heartbeatEnabled: Boolean,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"heartbeatEnabled\":"
-output += heartbeatEnabled
-output += "}"
-return output    
+        var output = "{"
+        output += "\"heartbeatEnabled\":"
+        output += heartbeatEnabled
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("heartbeatEnabled=$heartbeatEnabled")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("heartbeatEnabled=$heartbeatEnabled")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<StreamHeartbeatDetectionTestParams> {
@@ -5069,7 +8249,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamHeartbeatDetectionTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamHeartbeatDetectionTestParams.")
                 return new()
             }
-val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
+            val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
                 is JsonPrimitive -> __input.jsonObject["heartbeatEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
@@ -5080,23 +8260,21 @@ val heartbeatEnabled: Boolean = when (__input.jsonObject["heartbeatEnabled"]) {
     }
 }
 
-
-
 data class StreamHeartbeatDetectionTestResponse(
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"message\":"
-output += buildString { printQuoted(message) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"message\":"
+        output += buildString { printQuoted(message) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("message=$message")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("message=${__encodeQueryValue(message)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<StreamHeartbeatDetectionTestResponse> {
@@ -5118,7 +8296,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamHeartbeatDetectionTestResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamHeartbeatDetectionTestResponse.")
                 return new()
             }
-val message: String = when (__input.jsonObject["message"]) {
+            val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5129,41 +8307,39 @@ val message: String = when (__input.jsonObject["message"]) {
     }
 }
 
-
-
 data class StreamLargeObjectsResponse(
     val numbers: MutableList<Double>,
     val objects: MutableList<StreamLargeObjectsResponseObjectsElement>,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"numbers\":"
-output += "["
-                for ((__index, __element) in numbers.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element
-                }
-                output += "]"
-output += ",\"objects\":"
-output += "["
-                for ((__index, __element) in objects.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element.toJson()
-                }
-                output += "]"
-output += "}"
-return output    
+        var output = "{"
+        output += "\"numbers\":"
+        output += "["
+        for ((__index, __element) in numbers.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += __element
+        }
+        output += "]"
+        output += ",\"objects\":"
+        output += "["
+        for ((__index, __element) in objects.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += __element.toJson()
+        }
+        output += "]"
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/numbers.")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/objects.")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/numbers.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /StreamLargeObjectsResponse/objects.")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<StreamLargeObjectsResponse> {
@@ -5186,15 +8362,15 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamLargeObjectsResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamLargeObjectsResponse.")
                 return new()
             }
-val numbers: MutableList<Double> = when (__input.jsonObject["numbers"]) {
+            val numbers: MutableList<Double> = when (__input.jsonObject["numbers"]) {
                 is JsonArray -> {
                     val __value: MutableList<Double> = mutableListOf()
                     for (__element in __input.jsonObject["numbers"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonPrimitive -> __element!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
+                                is JsonPrimitive -> __element!!.jsonPrimitive.doubleOrNull ?: 0.0
+                                else -> 0.0
+                            }
                         )
                     }
                     __value
@@ -5202,19 +8378,19 @@ val numbers: MutableList<Double> = when (__input.jsonObject["numbers"]) {
 
                 else -> mutableListOf()
             }
-val objects: MutableList<StreamLargeObjectsResponseObjectsElement> = when (__input.jsonObject["objects"]) {
+            val objects: MutableList<StreamLargeObjectsResponseObjectsElement> = when (__input.jsonObject["objects"]) {
                 is JsonArray -> {
                     val __value: MutableList<StreamLargeObjectsResponseObjectsElement> = mutableListOf()
                     for (__element in __input.jsonObject["objects"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> StreamLargeObjectsResponseObjectsElement.fromJsonElement(
-                    __element!!,
-                    "$instancePath/undefined",
-                )
+                                is JsonObject -> StreamLargeObjectsResponseObjectsElement.fromJsonElement(
+                                    __element!!,
+                                    "$instancePath/undefined",
+                                )
 
-                else -> StreamLargeObjectsResponseObjectsElement.new()
-            }
+                                else -> StreamLargeObjectsResponseObjectsElement.new()
+                            }
                         )
                     }
                     __value
@@ -5236,23 +8412,23 @@ data class StreamLargeObjectsResponseObjectsElement(
     val email: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"name\":"
-output += buildString { printQuoted(name) }
-output += ",\"email\":"
-output += buildString { printQuoted(email) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"name\":"
+        output += buildString { printQuoted(name) }
+        output += ",\"email\":"
+        output += buildString { printQuoted(email) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add("name=$name")
-queryParts.add("email=$email")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("name=${__encodeQueryValue(name)}")
+        queryParts.add("email=${__encodeQueryValue(email)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<StreamLargeObjectsResponseObjectsElement> {
@@ -5276,15 +8452,15 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamLargeObjectsResponseObjectsElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamLargeObjectsResponseObjectsElement.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val name: String = when (__input.jsonObject["name"]) {
+            val name: String = when (__input.jsonObject["name"]) {
                 is JsonPrimitive -> __input.jsonObject["name"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val email: String = when (__input.jsonObject["email"]) {
+            val email: String = when (__input.jsonObject["email"]) {
                 is JsonPrimitive -> __input.jsonObject["email"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5297,23 +8473,21 @@ val email: String = when (__input.jsonObject["email"]) {
     }
 }
 
-
-
 data class ChatMessageParams(
     val channelId: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"channelId\":"
-output += buildString { printQuoted(channelId) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"channelId\":"
+        output += buildString { printQuoted(channelId) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("channelId=$channelId")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("channelId=${__encodeQueryValue(channelId)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ChatMessageParams> {
@@ -5335,7 +8509,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ChatMessageParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageParams.")
                 return new()
             }
-val channelId: String = when (__input.jsonObject["channelId"]) {
+            val channelId: String = when (__input.jsonObject["channelId"]) {
                 is JsonPrimitive -> __input.jsonObject["channelId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5345,8 +8519,6 @@ val channelId: String = when (__input.jsonObject["channelId"]) {
         }
     }
 }
-
-
 
 sealed interface ChatMessage : TestClientModel {
     val messageType: String
@@ -5365,14 +8537,14 @@ sealed interface ChatMessage : TestClientModel {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ChatMessage {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessage.")
+                __logError("[WARNING] ChatMessage.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessage.")
                 return new()
             }
             return when (__input.jsonObject["messageType"]) {
                 is JsonPrimitive -> when (__input.jsonObject["messageType"]!!.jsonPrimitive.contentOrNull) {
                     "TEXT" -> ChatMessageText.fromJsonElement(__input, instancePath)
-"IMAGE" -> ChatMessageImage.fromJsonElement(__input, instancePath)
-"URL" -> ChatMessageUrl.fromJsonElement(__input, instancePath)
+                    "IMAGE" -> ChatMessageImage.fromJsonElement(__input, instancePath)
+                    "URL" -> ChatMessageUrl.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -5392,35 +8564,31 @@ data class ChatMessageText(
     override val messageType get() = "TEXT"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"messageType\":\"TEXT\""
-output += ",\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"channelId\":"
-output += buildString { printQuoted(channelId) }
-output += ",\"userId\":"
-output += buildString { printQuoted(userId) }
-output += ",\"date\":"
-output += "\"${timestampFormatter.format(date)}\""
-output += ",\"text\":"
-output += buildString { printQuoted(text) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"messageType\":\"TEXT\""
+        output += ",\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"channelId\":"
+        output += buildString { printQuoted(channelId) }
+        output += ",\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += ",\"date\":"
+        output += "\"${timestampFormatter.format(date)}\""
+        output += ",\"text\":"
+        output += buildString { printQuoted(text) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("messageType=TEXT")
-queryParts.add("id=$id")
-queryParts.add("channelId=$channelId")
-queryParts.add("userId=$userId")
-queryParts.add(
-                "date=${
-                    timestampFormatter.format(date)
-                }"
-        )
-queryParts.add("text=$text")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("messageType=TEXT")
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("channelId=${__encodeQueryValue(channelId)}")
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        queryParts.add("date=${__encodeQueryValue(timestampFormatter.format(date))}")
+        queryParts.add("text=${__encodeQueryValue(text)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ChatMessageText> {
@@ -5446,27 +8614,28 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ChatMessageText.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageText.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val channelId: String = when (__input.jsonObject["channelId"]) {
+            val channelId: String = when (__input.jsonObject["channelId"]) {
                 is JsonPrimitive -> __input.jsonObject["channelId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val date: Instant = when (__input.jsonObject["date"]) {
+            val date: Instant = when (__input.jsonObject["date"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["date"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val text: String = when (__input.jsonObject["text"]) {
+            val text: String = when (__input.jsonObject["text"]) {
                 is JsonPrimitive -> __input.jsonObject["text"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5481,8 +8650,6 @@ val text: String = when (__input.jsonObject["text"]) {
     }
 }
 
-
-
 data class ChatMessageImage(
     val id: String,
     val channelId: String,
@@ -5493,35 +8660,31 @@ data class ChatMessageImage(
     override val messageType get() = "IMAGE"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"messageType\":\"IMAGE\""
-output += ",\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"channelId\":"
-output += buildString { printQuoted(channelId) }
-output += ",\"userId\":"
-output += buildString { printQuoted(userId) }
-output += ",\"date\":"
-output += "\"${timestampFormatter.format(date)}\""
-output += ",\"image\":"
-output += buildString { printQuoted(image) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"messageType\":\"IMAGE\""
+        output += ",\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"channelId\":"
+        output += buildString { printQuoted(channelId) }
+        output += ",\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += ",\"date\":"
+        output += "\"${timestampFormatter.format(date)}\""
+        output += ",\"image\":"
+        output += buildString { printQuoted(image) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("messageType=IMAGE")
-queryParts.add("id=$id")
-queryParts.add("channelId=$channelId")
-queryParts.add("userId=$userId")
-queryParts.add(
-                "date=${
-                    timestampFormatter.format(date)
-                }"
-        )
-queryParts.add("image=$image")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("messageType=IMAGE")
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("channelId=${__encodeQueryValue(channelId)}")
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        queryParts.add("date=${__encodeQueryValue(timestampFormatter.format(date))}")
+        queryParts.add("image=${__encodeQueryValue(image)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ChatMessageImage> {
@@ -5547,27 +8710,28 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ChatMessageImage.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageImage.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val channelId: String = when (__input.jsonObject["channelId"]) {
+            val channelId: String = when (__input.jsonObject["channelId"]) {
                 is JsonPrimitive -> __input.jsonObject["channelId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val date: Instant = when (__input.jsonObject["date"]) {
+            val date: Instant = when (__input.jsonObject["date"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["date"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val image: String = when (__input.jsonObject["image"]) {
+            val image: String = when (__input.jsonObject["image"]) {
                 is JsonPrimitive -> __input.jsonObject["image"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5582,8 +8746,6 @@ val image: String = when (__input.jsonObject["image"]) {
     }
 }
 
-
-
 data class ChatMessageUrl(
     val id: String,
     val channelId: String,
@@ -5594,35 +8756,31 @@ data class ChatMessageUrl(
     override val messageType get() = "URL"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"messageType\":\"URL\""
-output += ",\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"channelId\":"
-output += buildString { printQuoted(channelId) }
-output += ",\"userId\":"
-output += buildString { printQuoted(userId) }
-output += ",\"date\":"
-output += "\"${timestampFormatter.format(date)}\""
-output += ",\"url\":"
-output += buildString { printQuoted(url) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"messageType\":\"URL\""
+        output += ",\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"channelId\":"
+        output += buildString { printQuoted(channelId) }
+        output += ",\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += ",\"date\":"
+        output += "\"${timestampFormatter.format(date)}\""
+        output += ",\"url\":"
+        output += buildString { printQuoted(url) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("messageType=URL")
-queryParts.add("id=$id")
-queryParts.add("channelId=$channelId")
-queryParts.add("userId=$userId")
-queryParts.add(
-                "date=${
-                    timestampFormatter.format(date)
-                }"
-        )
-queryParts.add("url=$url")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("messageType=URL")
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("channelId=${__encodeQueryValue(channelId)}")
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        queryParts.add("date=${__encodeQueryValue(timestampFormatter.format(date))}")
+        queryParts.add("url=${__encodeQueryValue(url)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<ChatMessageUrl> {
@@ -5648,27 +8806,28 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] ChatMessageUrl.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ChatMessageUrl.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val channelId: String = when (__input.jsonObject["channelId"]) {
+            val channelId: String = when (__input.jsonObject["channelId"]) {
                 is JsonPrimitive -> __input.jsonObject["channelId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val date: Instant = when (__input.jsonObject["date"]) {
+            val date: Instant = when (__input.jsonObject["date"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["date"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val url: String = when (__input.jsonObject["url"]) {
+            val url: String = when (__input.jsonObject["url"]) {
                 is JsonPrimitive -> __input.jsonObject["url"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5683,23 +8842,21 @@ val url: String = when (__input.jsonObject["url"]) {
     }
 }
 
-
-
 data class TestsStreamRetryWithNewCredentialsResponse(
     val message: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"message\":"
-output += buildString { printQuoted(message) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"message\":"
+        output += buildString { printQuoted(message) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("message=$message")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("message=${__encodeQueryValue(message)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<TestsStreamRetryWithNewCredentialsResponse> {
@@ -5721,7 +8878,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] TestsStreamRetryWithNewCredentialsResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty TestsStreamRetryWithNewCredentialsResponse.")
                 return new()
             }
-val message: String = when (__input.jsonObject["message"]) {
+            val message: String = when (__input.jsonObject["message"]) {
                 is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5732,23 +8889,21 @@ val message: String = when (__input.jsonObject["message"]) {
     }
 }
 
-
-
 data class UsersWatchUserParams(
     val userId: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"userId\":"
-output += buildString { printQuoted(userId) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("userId=$userId")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UsersWatchUserParams> {
@@ -5770,7 +8925,7 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UsersWatchUserParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserParams.")
                 return new()
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -5781,14 +8936,12 @@ val userId: String = when (__input.jsonObject["userId"]) {
     }
 }
 
-
-
 data class UsersWatchUserResponse(
     val id: String,
     val role: UsersWatchUserResponseRole,
     /**
-    * A profile picture    
-*/
+     * A profile picture
+     */
     val photo: UserPhoto?,
     val createdAt: Instant,
     val numFollowers: Int,
@@ -5800,85 +8953,81 @@ data class UsersWatchUserResponse(
     val bio: String? = null,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"id\":"
-output += buildString { printQuoted(id) }
-output += ",\"role\":"
-output += "\"${role.serialValue}\""
-output += ",\"photo\":"
-output += photo?.toJson()
-output += ",\"createdAt\":"
-output += "\"${timestampFormatter.format(createdAt)}\""
-output += ",\"numFollowers\":"
-output += numFollowers
-output += ",\"settings\":"
-output += settings.toJson()
-output += ",\"recentNotifications\":"
-output += "["
-                for ((__index, __element) in recentNotifications.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += __element.toJson()
-                }
-                output += "]"
-output += ",\"bookmarks\":"
-output += "{"
-            for ((__index, __entry) in bookmarks.entries.withIndex()) {
-                if (__index != 0) {
-                    output += ","
-                }
-                output += "${buildString { printQuoted(__entry.key) }}:"
-                output += __entry.value.toJson()
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"role\":"
+        output += "\"${role.serialValue}\""
+        output += ",\"photo\":"
+        output += photo?.toJson()
+        output += ",\"createdAt\":"
+        output += "\"${timestampFormatter.format(createdAt)}\""
+        output += ",\"numFollowers\":"
+        output += numFollowers
+        output += ",\"settings\":"
+        output += settings.toJson()
+        output += ",\"recentNotifications\":"
+        output += "["
+        for ((__index, __element) in recentNotifications.withIndex()) {
+            if (__index != 0) {
+                output += ","
             }
-            output += "}"
-output += ",\"metadata\":"
-output += "{"
-            for ((__index, __entry) in metadata.entries.withIndex()) {
-                if (__index != 0) {
-                    output += ","
-                }
-                output += "${buildString { printQuoted(__entry.key) }}:"
-                output += JsonInstance.encodeToString(__entry.value)
+            output += __element.toJson()
+        }
+        output += "]"
+        output += ",\"bookmarks\":"
+        output += "{"
+        for ((__index, __entry) in bookmarks.entries.withIndex()) {
+            if (__index != 0) {
+                output += ","
             }
-            output += "}"
-output += ",\"randomList\":"
-output += "["
-                for ((__index, __element) in randomList.withIndex()) {
-                    if (__index != 0) {
-                        output += ","
-                    }
-                    output += JsonInstance.encodeToString(__element)
-                }
-                output += "]"
-if (bio != null) {
-                output += ",\"bio\":"
-                output += buildString { printQuoted(bio) }
+            output += "${buildString { printQuoted(__entry.key) }}:"
+            output += __entry.value.toJson()
+        }
+        output += "}"
+        output += ",\"metadata\":"
+        output += "{"
+        for ((__index, __entry) in metadata.entries.withIndex()) {
+            if (__index != 0) {
+                output += ","
             }
-output += "}"
-return output    
+            output += "${buildString { printQuoted(__entry.key) }}:"
+            output += JsonInstance.encodeToString(__entry.value)
+        }
+        output += "}"
+        output += ",\"randomList\":"
+        output += "["
+        for ((__index, __element) in randomList.withIndex()) {
+            if (__index != 0) {
+                output += ","
+            }
+            output += JsonInstance.encodeToString(__element)
+        }
+        output += "]"
+        if (bio != null) {
+            output += ",\"bio\":"
+            output += buildString { printQuoted(bio) }
+        }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("id=$id")
-queryParts.add("role=${role.serialValue}")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/photo.")
-queryParts.add(
-                "createdAt=${
-                    timestampFormatter.format(createdAt)
-                }"
-        )
-queryParts.add("numFollowers=$numFollowers")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/settings.")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/recentNotifications.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/bookmarks.")
-__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/metadata.")
-__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/randomList.")
-if (bio != null) {
-            queryParts.add("bio=$bio")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=${__encodeQueryValue(id)}")
+        queryParts.add("role=${__encodeQueryValue(role.serialValue)}")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/photo.")
+        queryParts.add("createdAt=${__encodeQueryValue(timestampFormatter.format(createdAt))}")
+        queryParts.add("numFollowers=$numFollowers")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/settings.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/recentNotifications.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/bookmarks.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/metadata.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/randomList.")
+        if (bio != null) {
+            queryParts.add("bio=${__encodeQueryValue(bio)}")
         }
-return queryParts.joinToString("&")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UsersWatchUserResponse> {
@@ -5909,35 +9058,37 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UsersWatchUserResponse.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponse.")
                 return new()
             }
-val id: String = when (__input.jsonObject["id"]) {
+            val id: String = when (__input.jsonObject["id"]) {
                 is JsonPrimitive -> __input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val role: UsersWatchUserResponseRole = when (__input.jsonObject["role"]) {
+            val role: UsersWatchUserResponseRole = when (__input.jsonObject["role"]) {
                 is JsonNull -> UsersWatchUserResponseRole.new()
                 is JsonPrimitive -> UsersWatchUserResponseRole.fromJsonElement(__input.jsonObject["role"]!!, "$instancePath/role")
                 else -> UsersWatchUserResponseRole.new()
             }
-val photo: UserPhoto? = when (__input.jsonObject["photo"]) {
-                    is JsonObject -> UserPhoto.fromJsonElement(
-                        __input.jsonObject["photo"]!!,
-                        "$instancePath/photo",
-                    )
-                    else -> null
-                }
-val createdAt: Instant = when (__input.jsonObject["createdAt"]) {
+            val photo: UserPhoto? = when (__input.jsonObject["photo"]) {
+                is JsonObject -> UserPhoto.fromJsonElement(
+                    __input.jsonObject["photo"]!!,
+                    "$instancePath/photo",
+                )
+
+                else -> null
+            }
+            val createdAt: Instant = when (__input.jsonObject["createdAt"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["createdAt"]!!.jsonPrimitive.isString)
                         Instant.parse(__input.jsonObject["createdAt"]!!.jsonPrimitive.content)
                     else
                         Instant.now()
+
                 else -> Instant.now()
             }
-val numFollowers: Int = when (__input.jsonObject["numFollowers"]) {
+            val numFollowers: Int = when (__input.jsonObject["numFollowers"]) {
                 is JsonPrimitive -> __input.jsonObject["numFollowers"]!!.jsonPrimitive.intOrNull ?: 0
                 else -> 0
             }
-val settings: UserSettings = when (__input.jsonObject["settings"]) {
+            val settings: UserSettings = when (__input.jsonObject["settings"]) {
                 is JsonObject -> UserSettings.fromJsonElement(
                     __input.jsonObject["settings"]!!,
                     "$instancePath/settings",
@@ -5945,18 +9096,19 @@ val settings: UserSettings = when (__input.jsonObject["settings"]) {
 
                 else -> UserSettings.new()
             }
-val recentNotifications: MutableList<UsersWatchUserResponseRecentNotificationsElement> = when (__input.jsonObject["recentNotifications"]) {
+            val recentNotifications: MutableList<UsersWatchUserResponseRecentNotificationsElement> = when (__input.jsonObject["recentNotifications"]) {
                 is JsonArray -> {
                     val __value: MutableList<UsersWatchUserResponseRecentNotificationsElement> = mutableListOf()
                     for (__element in __input.jsonObject["recentNotifications"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonObject -> UsersWatchUserResponseRecentNotificationsElement.fromJsonElement(
-                    __element!!,
-                    "$instancePath/undefined",
-                )
-                else -> UsersWatchUserResponseRecentNotificationsElement.new()
-            }
+                                is JsonObject -> UsersWatchUserResponseRecentNotificationsElement.fromJsonElement(
+                                    __element!!,
+                                    "$instancePath/undefined",
+                                )
+
+                                else -> UsersWatchUserResponseRecentNotificationsElement.new()
+                            }
                         )
                     }
                     __value
@@ -5964,47 +9116,47 @@ val recentNotifications: MutableList<UsersWatchUserResponseRecentNotificationsEl
 
                 else -> mutableListOf()
             }
-val bookmarks: MutableMap<String, UsersWatchUserResponseBookmarksValue> = when (__input.jsonObject["bookmarks"]) {
+            val bookmarks: MutableMap<String, UsersWatchUserResponseBookmarksValue> = when (__input.jsonObject["bookmarks"]) {
                 is JsonObject -> {
                     val __value: MutableMap<String, UsersWatchUserResponseBookmarksValue> = mutableMapOf()
                     for (__entry in __input.jsonObject["bookmarks"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                is JsonObject -> UsersWatchUserResponseBookmarksValue.fromJsonElement(
-                    __entry.value!!,
-                    "$instancePath/bookmarks",
-                )
+                            is JsonObject -> UsersWatchUserResponseBookmarksValue.fromJsonElement(
+                                __entry.value!!,
+                                "$instancePath/bookmarks",
+                            )
 
-                else -> UsersWatchUserResponseBookmarksValue.new()
-            }
+                            else -> UsersWatchUserResponseBookmarksValue.new()
+                        }
                     }
                     __value
                 }
 
                 else -> mutableMapOf()
             }
-val metadata: MutableMap<String, JsonElement> = when (__input.jsonObject["metadata"]) {
+            val metadata: MutableMap<String, JsonElement> = when (__input.jsonObject["metadata"]) {
                 is JsonObject -> {
                     val __value: MutableMap<String, JsonElement> = mutableMapOf()
                     for (__entry in __input.jsonObject["metadata"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                is JsonElement -> __entry.value!!
-                else -> JsonNull
-            }
+                            is JsonElement -> __entry.value!!
+                            else -> JsonNull
+                        }
                     }
                     __value
                 }
 
                 else -> mutableMapOf()
             }
-val randomList: MutableList<JsonElement> = when (__input.jsonObject["randomList"]) {
+            val randomList: MutableList<JsonElement> = when (__input.jsonObject["randomList"]) {
                 is JsonArray -> {
                     val __value: MutableList<JsonElement> = mutableListOf()
                     for (__element in __input.jsonObject["randomList"]!!.jsonArray) {
                         __value.add(
                             when (__element) {
-                is JsonElement -> __element!!
-                else -> JsonNull
-            }
+                                is JsonElement -> __element!!
+                                else -> JsonNull
+                            }
                         )
                     }
                     __value
@@ -6012,10 +9164,10 @@ val randomList: MutableList<JsonElement> = when (__input.jsonObject["randomList"
 
                 else -> mutableListOf()
             }
-val bio: String? = when (__input.jsonObject["bio"]) {
-                    is JsonPrimitive -> __input.jsonObject["bio"]!!.jsonPrimitive.contentOrNull
-                    else -> null
-                }
+            val bio: String? = when (__input.jsonObject["bio"]) {
+                is JsonPrimitive -> __input.jsonObject["bio"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
             return UsersWatchUserResponse(
                 id,
                 role,
@@ -6036,12 +9188,13 @@ val bio: String? = when (__input.jsonObject["bio"]) {
 enum class UsersWatchUserResponseRole {
     Standard,
     Admin;
+
     val serialValue: String
         get() = when (this) {
             Standard -> "standard"
             Admin -> "admin"
         }
-    
+
     companion object Factory : TestClientModelFactory<UsersWatchUserResponseRole> {
         @JvmStatic
         override fun new(): UsersWatchUserResponseRole {
@@ -6073,42 +9226,42 @@ enum class UsersWatchUserResponseRole {
 }
 
 /**
-* A profile picture
-*/
+ * A profile picture
+ */
 data class UserPhoto(
     val url: String,
     val width: Double,
     val height: Double,
     val bytes: Long,
     /**
-    * When the photo was last updated in nanoseconds    
-*/
+     * When the photo was last updated in nanoseconds
+     */
     val nanoseconds: ULong,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"url\":"
-output += buildString { printQuoted(url) }
-output += ",\"width\":"
-output += width
-output += ",\"height\":"
-output += height
-output += ",\"bytes\":"
-output += "\"${bytes}\""
-output += ",\"nanoseconds\":"
-output += "\"${nanoseconds}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"url\":"
+        output += buildString { printQuoted(url) }
+        output += ",\"width\":"
+        output += width
+        output += ",\"height\":"
+        output += height
+        output += ",\"bytes\":"
+        output += "\"${bytes}\""
+        output += ",\"nanoseconds\":"
+        output += "\"${nanoseconds}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("url=$url")
-queryParts.add("width=$width")
-queryParts.add("height=$height")
-queryParts.add("bytes=$bytes")
-queryParts.add("nanoseconds=$nanoseconds")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("url=${__encodeQueryValue(url)}")
+        queryParts.add("width=$width")
+        queryParts.add("height=$height")
+        queryParts.add("bytes=$bytes")
+        queryParts.add("nanoseconds=$nanoseconds")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UserPhoto> {
@@ -6134,23 +9287,23 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UserPhoto.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UserPhoto.")
                 return new()
             }
-val url: String = when (__input.jsonObject["url"]) {
+            val url: String = when (__input.jsonObject["url"]) {
                 is JsonPrimitive -> __input.jsonObject["url"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val width: Double = when (__input.jsonObject["width"]) {
+            val width: Double = when (__input.jsonObject["width"]) {
                 is JsonPrimitive -> __input.jsonObject["width"]!!.jsonPrimitive.doubleOrNull ?: 0.0
                 else -> 0.0
             }
-val height: Double = when (__input.jsonObject["height"]) {
+            val height: Double = when (__input.jsonObject["height"]) {
                 is JsonPrimitive -> __input.jsonObject["height"]!!.jsonPrimitive.doubleOrNull ?: 0.0
                 else -> 0.0
             }
-val bytes: Long = when (__input.jsonObject["bytes"]) {
+            val bytes: Long = when (__input.jsonObject["bytes"]) {
                 is JsonPrimitive -> __input.jsonObject["bytes"]!!.jsonPrimitive.longOrNull ?: 0L
                 else -> 0L
             }
-val nanoseconds: ULong = when (__input.jsonObject["nanoseconds"]) {
+            val nanoseconds: ULong = when (__input.jsonObject["nanoseconds"]) {
                 is JsonPrimitive -> __input.jsonObject["nanoseconds"]!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
                 else -> 0UL
             }
@@ -6165,27 +9318,25 @@ val nanoseconds: ULong = when (__input.jsonObject["nanoseconds"]) {
     }
 }
 
-
-
 data class UserSettings(
     val notificationsEnabled: Boolean,
     val preferredTheme: UserSettingsPreferredTheme,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"notificationsEnabled\":"
-output += notificationsEnabled
-output += ",\"preferredTheme\":"
-output += "\"${preferredTheme.serialValue}\""
-output += "}"
-return output    
+        var output = "{"
+        output += "\"notificationsEnabled\":"
+        output += notificationsEnabled
+        output += ",\"preferredTheme\":"
+        output += "\"${preferredTheme.serialValue}\""
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("notificationsEnabled=$notificationsEnabled")
-queryParts.add("preferredTheme=${preferredTheme.serialValue}")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("notificationsEnabled=$notificationsEnabled")
+        queryParts.add("preferredTheme=${__encodeQueryValue(preferredTheme.serialValue)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UserSettings> {
@@ -6208,11 +9359,11 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UserSettings.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UserSettings.")
                 return new()
             }
-val notificationsEnabled: Boolean = when (__input.jsonObject["notificationsEnabled"]) {
+            val notificationsEnabled: Boolean = when (__input.jsonObject["notificationsEnabled"]) {
                 is JsonPrimitive -> __input.jsonObject["notificationsEnabled"]!!.jsonPrimitive.booleanOrNull ?: false
                 else -> false
             }
-val preferredTheme: UserSettingsPreferredTheme = when (__input.jsonObject["preferredTheme"]) {
+            val preferredTheme: UserSettingsPreferredTheme = when (__input.jsonObject["preferredTheme"]) {
                 is JsonNull -> UserSettingsPreferredTheme.new()
                 is JsonPrimitive -> UserSettingsPreferredTheme.fromJsonElement(__input.jsonObject["preferredTheme"]!!, "$instancePath/preferredTheme")
                 else -> UserSettingsPreferredTheme.new()
@@ -6229,13 +9380,14 @@ enum class UserSettingsPreferredTheme {
     DarkMode,
     LightMode,
     System;
+
     val serialValue: String
         get() = when (this) {
             DarkMode -> "dark-mode"
             LightMode -> "light-mode"
             System -> "system"
         }
-    
+
     companion object Factory : TestClientModelFactory<UserSettingsPreferredTheme> {
         @JvmStatic
         override fun new(): UserSettingsPreferredTheme {
@@ -6285,13 +9437,13 @@ sealed interface UsersWatchUserResponseRecentNotificationsElement : TestClientMo
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): UsersWatchUserResponseRecentNotificationsElement {
             if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElement.")
+                __logError("[WARNING] UsersWatchUserResponseRecentNotificationsElement.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElement.")
                 return new()
             }
             return when (__input.jsonObject["notificationType"]) {
                 is JsonPrimitive -> when (__input.jsonObject["notificationType"]!!.jsonPrimitive.contentOrNull) {
                     "POST_LIKE" -> UsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonElement(__input, instancePath)
-"POST_COMMENT" -> UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement(__input, instancePath)
+                    "POST_COMMENT" -> UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement(__input, instancePath)
                     else -> new()
                 }
 
@@ -6308,22 +9460,22 @@ data class UsersWatchUserResponseRecentNotificationsElementPostLike(
     override val notificationType get() = "POST_LIKE"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"notificationType\":\"POST_LIKE\""
-output += ",\"postId\":"
-output += buildString { printQuoted(postId) }
-output += ",\"userId\":"
-output += buildString { printQuoted(userId) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"notificationType\":\"POST_LIKE\""
+        output += ",\"postId\":"
+        output += buildString { printQuoted(postId) }
+        output += ",\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("notificationType=POST_LIKE")
-queryParts.add("postId=$postId")
-queryParts.add("userId=$userId")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("notificationType=POST_LIKE")
+        queryParts.add("postId=${__encodeQueryValue(postId)}")
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UsersWatchUserResponseRecentNotificationsElementPostLike> {
@@ -6346,11 +9498,11 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UsersWatchUserResponseRecentNotificationsElementPostLike.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElementPostLike.")
                 return new()
             }
-val postId: String = when (__input.jsonObject["postId"]) {
+            val postId: String = when (__input.jsonObject["postId"]) {
                 is JsonPrimitive -> __input.jsonObject["postId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -6362,8 +9514,6 @@ val userId: String = when (__input.jsonObject["userId"]) {
     }
 }
 
-
-
 data class UsersWatchUserResponseRecentNotificationsElementPostComment(
     val postId: String,
     val userId: String,
@@ -6372,25 +9522,25 @@ data class UsersWatchUserResponseRecentNotificationsElementPostComment(
     override val notificationType get() = "POST_COMMENT"
 
     override fun toJson(): String {
-var output = "{"
-output += "\"notificationType\":\"POST_COMMENT\""
-output += ",\"postId\":"
-output += buildString { printQuoted(postId) }
-output += ",\"userId\":"
-output += buildString { printQuoted(userId) }
-output += ",\"commentText\":"
-output += buildString { printQuoted(commentText) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"notificationType\":\"POST_COMMENT\""
+        output += ",\"postId\":"
+        output += buildString { printQuoted(postId) }
+        output += ",\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += ",\"commentText\":"
+        output += buildString { printQuoted(commentText) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("notificationType=POST_COMMENT")
-queryParts.add("postId=$postId")
-queryParts.add("userId=$userId")
-queryParts.add("commentText=$commentText")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("notificationType=POST_COMMENT")
+        queryParts.add("postId=${__encodeQueryValue(postId)}")
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        queryParts.add("commentText=${__encodeQueryValue(commentText)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UsersWatchUserResponseRecentNotificationsElementPostComment> {
@@ -6414,15 +9564,15 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UsersWatchUserResponseRecentNotificationsElementPostComment.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseRecentNotificationsElementPostComment.")
                 return new()
             }
-val postId: String = when (__input.jsonObject["postId"]) {
+            val postId: String = when (__input.jsonObject["postId"]) {
                 is JsonPrimitive -> __input.jsonObject["postId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val commentText: String = when (__input.jsonObject["commentText"]) {
+            val commentText: String = when (__input.jsonObject["commentText"]) {
                 is JsonPrimitive -> __input.jsonObject["commentText"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -6435,27 +9585,25 @@ val commentText: String = when (__input.jsonObject["commentText"]) {
     }
 }
 
-
-
 data class UsersWatchUserResponseBookmarksValue(
     val postId: String,
     val userId: String,
 ) : TestClientModel {
     override fun toJson(): String {
-var output = "{"
-output += "\"postId\":"
-output += buildString { printQuoted(postId) }
-output += ",\"userId\":"
-output += buildString { printQuoted(userId) }
-output += "}"
-return output    
+        var output = "{"
+        output += "\"postId\":"
+        output += buildString { printQuoted(postId) }
+        output += ",\"userId\":"
+        output += buildString { printQuoted(userId) }
+        output += "}"
+        return output
     }
 
     override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("postId=$postId")
-queryParts.add("userId=$userId")
-return queryParts.joinToString("&")
+        val queryParts = mutableListOf<String>()
+        queryParts.add("postId=${__encodeQueryValue(postId)}")
+        queryParts.add("userId=${__encodeQueryValue(userId)}")
+        return queryParts.joinToString("&")
     }
 
     companion object Factory : TestClientModelFactory<UsersWatchUserResponseBookmarksValue> {
@@ -6478,11 +9626,11 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] UsersWatchUserResponseBookmarksValue.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty UsersWatchUserResponseBookmarksValue.")
                 return new()
             }
-val postId: String = when (__input.jsonObject["postId"]) {
+            val postId: String = when (__input.jsonObject["postId"]) {
                 is JsonPrimitive -> __input.jsonObject["postId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
-val userId: String = when (__input.jsonObject["userId"]) {
+            val userId: String = when (__input.jsonObject["userId"]) {
                 is JsonPrimitive -> __input.jsonObject["userId"]!!.jsonPrimitive.contentOrNull ?: ""
                 else -> ""
             }
@@ -6493,8 +9641,6 @@ val userId: String = when (__input.jsonObject["userId"]) {
         }
     }
 }
-
-
 
 // Implementation copied from https://github.com/Kotlin/kotlinx.serialization/blob/d0ae697b9394103879e6c7f836d0f7cf128f4b1e/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt#L45
 private const val STRING = '"'
@@ -6554,6 +9700,13 @@ private fun StringBuilder.printQuoted(value: String) {
 
 private fun __logError(string: String) {
     System.err.println(string)
+}
+
+/**
+ * URL encodes a query param value. Null values are serialized as "null".
+ */
+private fun __encodeQueryValue(value: String?): String {
+    return value?.encodeURLParameter(spaceToPlus = true) ?: "null"
 }
 
 private suspend fun __prepareRequest(
@@ -6723,7 +9876,7 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        val err = TestClientError.fromJson(httpResponse.bodyAsText()) 
+                        val err = TestClientError.fromJson(httpResponse.bodyAsText())
                         onError(err)
                         onResponseError(err)
                     } else {

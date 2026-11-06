@@ -28,28 +28,47 @@ export const ObjectWithEveryNullableType = a.object(
             }),
         ),
         record: a.nullable(a.record(a.nullable(a.uint64()))),
-        /** @deprecated */
-        discriminator: a.nullable(
-            a.discriminator('type', {
-                A: a.object({
-                    title: a.nullable(a.string()),
+        unionExternal: a.nullable(
+            a.union({
+                object: a.object({
+                    id: a.string(),
+                    content: a.string(),
                 }),
-                B: a.object({
-                    title: a.nullable(a.string()),
-                    description: a.nullable(a.string()),
-                }),
+                array: a.array(a.string()),
+                boolean: a.boolean(),
+                'nullable-timestamp': a.nullable(a.timestamp()),
             }),
         ),
-        union: a.nullable(
-            a.union({
-                A: a.object({
-                    title: a.string(),
-                    description: a.string(),
-                }),
-                B: a.stringEnum(['A', 'B', 'C']),
-                C: a.nullable(a.timestamp()),
-                D: a.record(a.boolean()),
-            }),
+        unionInternal: a.nullable(
+            a.union(
+                {
+                    rectangle: a.object({
+                        width: a.float64(),
+                        height: a.float64(),
+                    }),
+                    circle: a.object({
+                        radius: a.float64(),
+                    }),
+                },
+                { tagKey: 'shape' },
+            ),
+        ),
+        unionAdjacent: a.nullable(
+            a.union(
+                {
+                    object: a.object({
+                        id: a.string(),
+                        content: a.string(),
+                    }),
+                    array: a.array(a.string()),
+                    boolean: a.boolean(),
+                    'nullable-timestamp': a.nullable(a.timestamp()),
+                },
+                {
+                    tagKey: 'kind',
+                    valueKey: 'data',
+                },
+            ),
         ),
         nestedObject: a.nullable(
             a.object({

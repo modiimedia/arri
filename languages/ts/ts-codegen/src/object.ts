@@ -170,7 +170,7 @@ export function tsObjectFromSchema(
         );
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName} | undefined;`);
-        fromJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+        fromJsonParts.push(`if (typeof ${jsonKeyAccessor('input', key)} !== 'undefined') {
             ${prop.fromJsonTemplate(jsonKeyAccessor('input', key), tempKey)}
         }`);
         if (hasKey) {

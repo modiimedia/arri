@@ -9,6 +9,7 @@ import {
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryType,
     ObjectWithEveryTypeEnumerator,
+    ObjectWithKebabCaseKeys,
     ObjectWithPascalCaseKeys,
     ObjectWithSnakeCaseKeys,
     type RecursiveObject,
@@ -101,14 +102,17 @@ const input: ObjectWithEveryType = {
         B: BigInt('0'),
         '"C"\t': BigInt('4'),
     },
-    discriminator: {
-        type: 'B',
-        title: 'Hello World',
-        description: '',
+    unionExternal: {
+        type: 'array',
+        value: ['foo', 'bar', 'baz'],
     },
-    union: {
-        type: 'B',
-        value: 'C',
+    unionInternal: {
+        shape: 'circle',
+        radius: 15.5,
+    },
+    unionAdjacent: {
+        kind: 'boolean',
+        data: true,
     },
     nestedObject: {
         id: '',
@@ -147,6 +151,10 @@ test('can send/receive object with transformed keys', async () => {
         emailAddress: 'johndoe@gmail.com',
         phoneNumber: null,
         isAdmin: false,
+        lastEvent: {
+            type: 'user_created',
+            value: { userId: '1' },
+        },
     };
     const snakeCaseResult =
         await client.tests.sendObjectWithSnakeCaseKeys(snakeCasePayload);
@@ -157,10 +165,28 @@ test('can send/receive object with transformed keys', async () => {
         isAdmin: undefined,
         displayName: 'john doe',
         phoneNumber: '2112112111',
+        lastEvent: {
+            type: 'UserCreated',
+            value: { userId: '1' },
+        },
     };
     const pascalCaseResult =
         await client.tests.sendObjectWithPascalCaseKeys(pascalCasePayload);
     expect(pascalCaseResult).toStrictEqual(pascalCasePayload);
+    const kebabCasePayload: ObjectWithKebabCaseKeys = {
+        createdAt: new Date(),
+        emailAddress: undefined,
+        isAdmin: undefined,
+        displayName: 'john doe',
+        phoneNumber: '2112112111',
+        lastEvent: {
+            type: 'user-created',
+            value: { userId: '1' },
+        },
+    };
+    const kebabCaseResult =
+        await client.tests.sendObjectWithKebabCaseKeys(kebabCasePayload);
+    expect(kebabCaseResult).toStrictEqual(kebabCasePayload);
 });
 test('returns error if sending nothing when RPC expects body', async () => {
     try {
@@ -237,8 +263,9 @@ test('can send/receive partial objects', async () => {
         array: undefined,
         object: undefined,
         record: undefined,
-        discriminator: undefined,
-        union: undefined,
+        unionExternal: undefined,
+        unionInternal: undefined,
+        unionAdjacent: undefined,
         nestedObject: undefined,
         nestedArray: undefined,
         any: undefined,
@@ -270,8 +297,9 @@ test('can send/receive object with nullable fields', async () => {
         array: null,
         object: null,
         record: null,
-        discriminator: null,
-        union: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         nestedObject: {
             id: null,
             timestamp: null,
