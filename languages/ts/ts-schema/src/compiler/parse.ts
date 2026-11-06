@@ -33,7 +33,12 @@ import {
     uint32Max,
     uint32Min,
 } from '../lib/numberConstants';
-import { refFunctionName, type TemplateInput } from './common';
+import {
+    propertyAccessor,
+    refFunctionName,
+    type TemplateInput,
+    validVarName,
+} from './common';
 
 export function createParsingTemplate(
     input: string,
@@ -241,17 +246,19 @@ export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 function getVarName(input: string): string {
-    return camelCase(
-        input
-            .split('.')
-            .join('_')
-            .split('[')
-            .join('_')
-            .split(']')
-            .join('_')
-            .split('`')
-            .join('_')
-            .split('"'),
+    return validVarName(
+        camelCase(
+            input
+                .split('.')
+                .join('_')
+                .split('[')
+                .join('_')
+                .split(']')
+                .join('_')
+                .split('`')
+                .join('_')
+                .split('"'),
+        ),
     );
 }
 
@@ -517,7 +524,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
     const parsingParts: string[] = [];
     if (input.discriminatorKey && input.discriminatorValue) {
         parsingParts.push(
-            `${innerTargetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
+            `${propertyAccessor(innerTargetVal, input.discriminatorKey)} = "${input.discriminatorValue}";`,
         );
     }
     if (input.schema.isStrict) {
@@ -544,8 +551,8 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
         const subSchema = input.schema.properties[key];
 
         const innerTemplate = schemaTemplate({
-            val: `${input.val}.${key}`,
-            targetVal: `${innerTargetVal}.${key}`,
+            val: propertyAccessor(input.val, key),
+            targetVal: propertyAccessor(innerTargetVal, key),
             schema: subSchema,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
@@ -558,15 +565,15 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
         for (const key of Object.keys(input.schema.optionalProperties)) {
             const subSchema = input.schema.optionalProperties[key];
             const innerTemplate = schemaTemplate({
-                val: `${input.val}.${key}`,
-                targetVal: `${innerTargetVal}.${key}`,
+                val: propertyAccessor(input.val, key),
+                targetVal: propertyAccessor(innerTargetVal, key),
                 schema: subSchema,
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 subFunctions: input.subFunctions,
                 shouldCoerce: input.shouldCoerce,
             });
-            parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
+            parsingParts.push(`if (typeof ${propertyAccessor(input.val, key)} === 'undefined') {
                 // ignore undefined
             } else {
                 ${innerTemplate}
@@ -680,8 +687,8 @@ export function unionTemplateExternallyTagged(
             }
             parsingParts.push(`${targetName} = {}`);
             const innerTemplate = schemaTemplate({
-                val: `${inputName}.${key}`,
-                targetVal: `${targetName}.${key}`,
+                val: propertyAccessor(inputName, key),
+                targetVal: propertyAccessor(targetName, key),
                 schema: variantSchema,
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/union/${key}`,

@@ -18,7 +18,12 @@ import {
 } from '@arrirpc/type-defs';
 import { camelCase } from 'scule';
 
-import { refFunctionName, type TemplateInput } from './common';
+import {
+    propertyAccessor,
+    refFunctionName,
+    type TemplateInput,
+    validVarName,
+} from './common';
 
 interface SerializeTemplateInput<
     TSchema extends Schema = any,
@@ -308,7 +313,7 @@ export function objectTemplate(
         // }
         const innerTemplate = template({
             schema: propSchema,
-            val: `___val___.${key}`,
+            val: propertyAccessor('___val___', key),
             targetVal: input.targetVal,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
@@ -320,15 +325,17 @@ export function objectTemplate(
         templateParts.push(innerTemplate);
     }
     if (isAllOptionalKeys) {
-        const hasFieldsVar = input.instancePath.length
-            ? camelCase(`${input.instancePath}_HasFields`)
-            : camelCase(
-                  `${input.val}_HasFields`
-                      .split('[')
-                      .join('')
-                      .split(']')
-                      .join(''),
-              );
+        const hasFieldsVar = validVarName(
+            input.instancePath.length
+                ? camelCase(`${input.instancePath}_HasFields`)
+                : camelCase(
+                      `${input.val}_HasFields`
+                          .split('[')
+                          .join('')
+                          .split(']')
+                          .join(''),
+                  ),
+        );
         templateParts.push(`let ${hasFieldsVar} = false;`);
         for (let i = 0; i < optionalPropKeys.length; i++) {
             const key = optionalPropKeys[i]!;
@@ -338,7 +345,7 @@ export function objectTemplate(
             if (!optionalPropSchema) {
                 continue;
             }
-            const innerVal = `___val___.${key}`;
+            const innerVal = propertyAccessor('___val___', key);
             const innerTemplate = template({
                 schema: optionalPropSchema,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
@@ -377,7 +384,7 @@ export function objectTemplate(
             if (!optionalPropSchema) {
                 continue;
             }
-            const innerVal = `___val___.${key}`;
+            const innerVal = propertyAccessor('___val___', key);
             const innerTemplate = template({
                 schema: optionalPropSchema,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
@@ -433,18 +440,20 @@ function hasFunctionBody(name: string, fns: Record<string, string>) {
 export function arrayTemplate(
     input: SerializeTemplateInput<SchemaFormElements>,
 ): string {
-    const itemVarName = camelCase(
-        `${
-            input.val
-                .split('`')
-                .join('_')
-                .split('"')
-                .join('_')
-                .split('[')
-                .join('_')
-                .split(']')
-                .join('_') || 'list'
-        }_item`,
+    const itemVarName = validVarName(
+        camelCase(
+            `${
+                input.val
+                    .split('`')
+                    .join('_')
+                    .split('"')
+                    .join('_')
+                    .split('[')
+                    .join('_')
+                    .split(']')
+                    .join('_') || 'list'
+            }_item`,
+        ),
     );
     const templateParts: string[] = [
         `${input.targetVal} += '${input.outputPrefix}[';`,
@@ -482,9 +491,11 @@ export function arrayTemplate(
 export function recordTemplate(
     input: SerializeTemplateInput<SchemaFormValues>,
 ): string {
-    const keysVarName = input.instancePath.length
-        ? camelCase(input.instancePath.split('/').join('_')) + 'Keys'
-        : camelCase(`${input.val.split('.').join('_')}_Keys`);
+    const keysVarName = validVarName(
+        input.instancePath.length
+            ? camelCase(input.instancePath.split('/').join('_')) + 'Keys'
+            : camelCase(`${input.val.split('.').join('_')}_Keys`),
+    );
     const templateParts: string[] = [
         `const ${keysVarName} = Object.keys(${input.val});`,
         `${input.targetVal} += '${input.outputPrefix}{';`,
@@ -584,7 +595,7 @@ function unionTemplateExternallyTagged(
             parts.push(`
                 ${input.targetVal} += \`"${key}":\`;
                 ${template({
-                    val: `${inputName}.${key}`,
+                    val: propertyAccessor(inputName, key),
                     targetVal: input.targetVal,
                     schema: subSchema,
                     instancePath: `${input.instancePath}/${key}`,

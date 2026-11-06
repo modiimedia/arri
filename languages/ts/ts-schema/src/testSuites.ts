@@ -172,6 +172,12 @@ type UnionInternalTaggingWithValue = a.infer<
     typeof UnionInternalTaggingWithValue
 >;
 
+type RecursiveObjectWithNonIdentifierKeys = {
+    'my-value': string;
+    'my-child': RecursiveObjectWithNonIdentifierKeys | null;
+    'my children': RecursiveObjectWithNonIdentifierKeys[];
+};
+
 export const validationTestSuites: Record<
     string,
     {
@@ -1207,6 +1213,245 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    'object with non-identifier keys': {
+        schema: a.object({
+            'my-key': a.string(),
+            'my key': a.boolean(),
+            'my.key': a.int8(),
+            '1key': a.nullable(a.string()),
+            'my-float': a.float64(),
+            'my float': a.float32(),
+            'optional-key': a.optional(a.string()),
+            'nested-object': a.object({
+                'inner-key': a.string(),
+            }),
+            'all-optional-object': a.object({
+                'first-key': a.optional(a.string()),
+                'second-key': a.optional(a.string()),
+            }),
+            'all optional object': a.object({
+                'first key': a.optional(a.string()),
+            }),
+            '1-array': a.array(
+                a.object({
+                    'inner-key': a.string(),
+                }),
+            ),
+            'my array': a.array(a.string()),
+            'my-record': a.record(a.string()),
+            'my record': a.record(a.string()),
+        }),
+        goodInputs: [
+            {
+                'my-key': 'a',
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'nested-object': { 'inner-key': 'b' },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [{ 'inner-key': 'c' }],
+                'my array': ['d'],
+                'my-record': { 'record-key': 'e' },
+                'my record': {},
+            },
+            {
+                'my-key': 'a',
+                'my key': false,
+                'my.key': 1,
+                '1key': 'b',
+                'my-float': 1.5,
+                'my float': 2.5,
+                'optional-key': 'c',
+                'nested-object': { 'inner-key': 'd' },
+                'all-optional-object': { 'first-key': 'e', 'second-key': 'f' },
+                'all optional object': { 'first key': 'g' },
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': { 'record key': 'h' },
+            },
+        ],
+        badInputs: [
+            {},
+            {
+                'my-key': 1,
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'nested-object': { 'inner-key': 'b' },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': {},
+            },
+            {
+                'my-key': 'a',
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'optional-key': 1,
+                'nested-object': { 'inner-key': 'b' },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': {},
+            },
+            {
+                'my-key': 'a',
+                'my key': true,
+                'my.key': 1,
+                '1key': null,
+                'my-float': 1.5,
+                'my float': 2.5,
+                'nested-object': { 'inner-key': 1 },
+                'all-optional-object': {},
+                'all optional object': {},
+                '1-array': [],
+                'my array': [],
+                'my-record': {},
+                'my record': {},
+            },
+        ],
+    },
+    'external union with non-identifier keys': {
+        schema: a.union({
+            'nullable-timestamp': a.nullable(a.timestamp()),
+            'my object': a.object({
+                'inner-key': a.string(),
+            }),
+            '1-boolean': a.boolean(),
+        }),
+        goodInputs: [
+            { 'nullable-timestamp': new Date('2001-01-01T16:00:00.000Z') },
+            { 'nullable-timestamp': null },
+            { 'my object': { 'inner-key': 'a' } },
+            { '1-boolean': true },
+        ],
+        badInputs: [
+            {},
+            { 'nullable-timestamp': true },
+            { 'my object': { 'inner-key': 1 } },
+            { '1-boolean': 'a' },
+        ],
+    },
+    'internally tagged union with non-identifier keys': {
+        schema: a.union(
+            {
+                'my-variant': a.object({
+                    'inner-key': a.string(),
+                    'optional-key': a.optional(a.string()),
+                }),
+                'other variant': a.object({
+                    'inner key': a.boolean(),
+                }),
+            },
+            { tagKey: 'my-tag' },
+        ),
+        goodInputs: [
+            { 'my-tag': 'my-variant', 'inner-key': 'a' },
+            { 'my-tag': 'my-variant', 'inner-key': 'a', 'optional-key': 'b' },
+            { 'my-tag': 'other variant', 'inner key': true },
+        ],
+        badInputs: [
+            {},
+            { 'inner-key': 'a' },
+            { 'my-tag': 'unknown', 'inner-key': 'a' },
+            { 'my-tag': 'my-variant', 'inner-key': 1 },
+            { 'my-tag': 'my-variant', 'inner-key': 'a', 'optional-key': 1 },
+            { 'my-tag': 'other variant', 'inner-key': 'a' },
+        ],
+    },
+    'adjacently tagged union with non-identifier keys': {
+        schema: a.union(
+            {
+                'nullable-timestamp': a.nullable(a.timestamp()),
+                'my object': a.object({
+                    'inner-key': a.string(),
+                }),
+            },
+            { tagKey: 'my-tag', valueKey: 'my-value' },
+        ),
+        goodInputs: [
+            {
+                'my-tag': 'nullable-timestamp',
+                'my-value': new Date('2001-01-01T16:00:00.000Z'),
+            },
+            { 'my-tag': 'nullable-timestamp', 'my-value': null },
+            { 'my-tag': 'my object', 'my-value': { 'inner-key': 'a' } },
+        ],
+        badInputs: [
+            {},
+            { 'my-tag': 'unknown', 'my-value': null },
+            { 'my-tag': 'nullable-timestamp', 'my-value': true },
+            { 'my-tag': 'my object', 'my-value': { 'inner-key': 1 } },
+        ],
+    },
+    'discriminator with non-identifier keys': {
+        schema: a.discriminator('my-tag', {
+            'my-variant': a.object({
+                'inner-key': a.string(),
+            }),
+        }),
+        goodInputs: [{ 'my-tag': 'my-variant', 'inner-key': 'a' }],
+        badInputs: [
+            {},
+            { 'inner-key': 'a' },
+            { 'my-tag': 'my-variant', 'inner-key': 1 },
+        ],
+    },
+    'recursive object with non-identifier keys': {
+        schema: a.recursive<RecursiveObjectWithNonIdentifierKeys>(
+            'RecursiveObjectWithNonIdentifierKeys',
+            (self) =>
+                a.object({
+                    'my-value': a.string(),
+                    'my-child': a.nullable(self),
+                    'my children': a.array(self),
+                }),
+        ),
+        goodInputs: [
+            { 'my-value': 'a', 'my-child': null, 'my children': [] },
+            {
+                'my-value': 'a',
+                'my-child': {
+                    'my-value': 'b',
+                    'my-child': null,
+                    'my children': [
+                        {
+                            'my-value': 'c',
+                            'my-child': null,
+                            'my children': [],
+                        },
+                    ],
+                },
+                'my children': [],
+            },
+        ],
+        badInputs: [
+            {},
+            { 'my-value': 1, 'my-child': null, 'my children': [] },
+            {
+                'my-value': 'a',
+                'my-child': {
+                    'my-value': 1,
+                    'my-child': null,
+                    'my children': [],
+                },
+                'my children': [],
+            },
+        ],
+    },
 };
 
 const ObjectSchema = a.object({
@@ -1767,6 +2012,46 @@ export const coercionTestSuites: Record<
         badInputs: any[];
     }
 > = {
+    'object with non-identifier keys': {
+        schema: a.object({
+            'my-float': a.float64(),
+            'my float': a.float32(),
+            '1-int': a.int8(),
+            'my bool': a.boolean(),
+            'my date': a.timestamp(),
+            'my-enum': a.enumerator(['A', 'B']),
+        }),
+        goodInputs: [
+            {
+                'my-float': '1.5',
+                'my float': '2.5',
+                '1-int': '1',
+                'my bool': 'true',
+                'my date': '2001-01-01T16:00:00.000Z',
+                'my-enum': 'A',
+            },
+        ],
+        expectedResults: [
+            {
+                'my-float': 1.5,
+                'my float': 2.5,
+                '1-int': 1,
+                'my bool': true,
+                'my date': new Date('2001-01-01T16:00:00.000Z'),
+                'my-enum': 'A',
+            },
+        ],
+        badInputs: [
+            {
+                'my-float': 'a',
+                'my float': '2.5',
+                '1-int': '1',
+                'my bool': 'true',
+                'my date': '2001-01-01T16:00:00.000Z',
+                'my-enum': 'A',
+            },
+        ],
+    },
     boolean: {
         schema: a.boolean(),
         goodInputs: [

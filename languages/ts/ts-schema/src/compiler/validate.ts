@@ -31,7 +31,11 @@ import {
     isAStringEnumSchema,
     isAUnionSchema,
 } from '../schemas';
-import { refFunctionName, type TemplateInput } from './common';
+import {
+    propertyAccessor,
+    refFunctionName,
+    type TemplateInput,
+} from './common';
 
 export function createValidationTemplate(
     inputName: string,
@@ -173,7 +177,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
     const parts: string[] = [];
     if (input.discriminatorKey && input.discriminatorValue) {
         parts.push(
-            `${input.val}.${input.discriminatorKey} === "${input.discriminatorValue}"`,
+            `${propertyAccessor(input.val, input.discriminatorKey)} === "${input.discriminatorValue}"`,
         );
     } else {
         parts.push(`typeof ${input.val} === 'object' && ${input.val} !== null`);
@@ -194,7 +198,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 schema: prop,
                 schemaPath: `${input.schemaPath}/properties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
-                val: `${input.val}.${key}`,
+                val: propertyAccessor(input.val, key),
                 targetVal: '',
                 subFunctions: input.subFunctions,
                 shouldCoerce: undefined,
@@ -208,13 +212,13 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 schema: prop,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
-                val: `${input.val}.${key}`,
+                val: propertyAccessor(input.val, key),
                 targetVal: '',
                 subFunctions: input.subFunctions,
                 shouldCoerce: undefined,
             });
             parts.push(
-                `(typeof ${input.val}.${key} === 'undefined' || (${template}))`,
+                `(typeof ${propertyAccessor(input.val, key)} === 'undefined' || (${template}))`,
             );
         }
     }
@@ -311,7 +315,7 @@ function unionTemplateExternallyTagged(
             parts.push(
                 schemaTemplate({
                     schema: subSchema,
-                    val: `${inputName}.${key}`,
+                    val: propertyAccessor(inputName, key),
                     targetVal: '',
                     instancePath: `${input.instancePath}/${key}`,
                     schemaPath: `${input.schemaPath}/union/${key}`,
