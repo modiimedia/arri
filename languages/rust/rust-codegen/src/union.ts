@@ -204,6 +204,7 @@ export function rustInternallyTaggedEnumFromSchema(
                 generatedTypes: context.generatedTypes,
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
+                isOptional: true,
                 rootService: context.rootService,
             });
             if (keyType.content) subTypeContent.push(keyType.content);
@@ -220,24 +221,17 @@ export function rustInternallyTaggedEnumFromSchema(
             fromJsonParts.push(
                 `let ${keyName} = ${keyType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
             );
-            subType.toJsonParts.push(
-                `\t\t_json_output_.push_str(",\\"${key}\\":");`,
+            const innerKey = validRustIdentifier(`${key}_val`);
+            subType.toJsonParts.push(`match ${keyName} {
+                Some(${innerKey}) => {
+                    _json_output_.push_str(",\\"${key}\\":");
+                    ${keyType.toJsonTemplate(innerKey, '_json_output_')};
+                }
+                _ => {}
+            };`);
+            subType.toQueryParts.push(
+                `${keyType.toQueryStringTemplate(keyName, key, '_query_parts_')};`,
             );
-            if (keyType.isNullable) {
-                const innerKey = validRustIdentifier(`${key}_val`);
-                subType.toJsonParts.push(`match ${keyName} {
-                    Some(${innerKey}) => {
-                        ${keyType.toJsonTemplate(innerKey, '_json_output_')};
-                    }
-                    _ => {
-                        _json_output_.push_str("null");
-                    }
-                };`);
-            } else {
-                subType.toJsonParts.push(
-                    `${keyType.toJsonTemplate(keyName, '_json_output_')};`,
-                );
-            }
         }
         fromJsonParts.push(`Self::${subTypeName} {
             ${subType.properties.map((prop) => `${prop.name},`).join('\n')}    
