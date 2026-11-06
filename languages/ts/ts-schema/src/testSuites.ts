@@ -178,6 +178,11 @@ type RecursiveObjectWithNonIdentifierKeys = {
     'my children': RecursiveObjectWithNonIdentifierKeys[];
 };
 
+type RecursiveObjectWithTimestamp = {
+    date: Date;
+    child: RecursiveObjectWithTimestamp | null;
+};
+
 export const validationTestSuites: Record<
     string,
     {
@@ -319,6 +324,104 @@ export const validationTestSuites: Record<
         schema: a.nullable(a.timestamp()),
         goodInputs: [new Date(), null],
         badInputs: [true, false, {}, [], 'hello world'],
+    },
+    'nested timestamps': {
+        schema: a.object({
+            required: a.timestamp(),
+            nullable: a.nullable(a.timestamp()),
+            optional: a.optional(a.timestamp()),
+            array: a.array(a.timestamp()),
+            record: a.record(a.timestamp()),
+        }),
+        goodInputs: [
+            {
+                required: new Date(),
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: new Date(),
+                optional: new Date(),
+                array: [new Date()],
+                record: { a: new Date() },
+            },
+        ],
+        badInputs: [
+            {
+                required: 'hello world',
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: '',
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: 'null',
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: 'hello world',
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: 'null',
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                optional: 'hello world',
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                array: ['hello world'],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                array: [],
+                record: { a: 'hello world' },
+            },
+        ],
+    },
+    'recursive object with timestamp': {
+        schema: a.recursive<RecursiveObjectWithTimestamp>(
+            'RecursiveObjectWithTimestamp',
+            (self) =>
+                a.object({
+                    date: a.timestamp(),
+                    child: a.nullable(self),
+                }),
+        ),
+        goodInputs: [
+            {
+                date: new Date(),
+                child: { date: new Date(), child: null },
+            },
+        ],
+        badInputs: [
+            { date: 'hello world', child: null },
+            {
+                date: new Date(),
+                child: { date: 'hello world', child: null },
+            },
+        ],
     },
     'simple object': {
         schema: a.object({
@@ -1341,6 +1444,7 @@ export const validationTestSuites: Record<
         badInputs: [
             {},
             { 'nullable-timestamp': true },
+            { 'nullable-timestamp': 'a' },
             { 'my object': { 'inner-key': 1 } },
             { '1-boolean': 'a' },
         ],
@@ -1394,6 +1498,7 @@ export const validationTestSuites: Record<
             {},
             { 'my-tag': 'unknown', 'my-value': null },
             { 'my-tag': 'nullable-timestamp', 'my-value': true },
+            { 'my-tag': 'nullable-timestamp', 'my-value': 'a' },
             { 'my-tag': 'my object', 'my-value': { 'inner-key': 1 } },
         ],
     },
@@ -1495,6 +1600,44 @@ export const parsingTestSuites: Record<
         badInputs: any[];
     }
 > = {
+    'nested timestamp strings': {
+        schema: a.object({
+            required: a.timestamp(),
+            nullable: a.nullable(a.timestamp()),
+            array: a.array(a.timestamp()),
+        }),
+        goodInputs: [
+            {
+                required: '2001-01-01T16:00:00.000Z',
+                nullable: '2002-02-02T16:00:00.000Z',
+                array: ['2003-03-03T16:00:00.000Z'],
+            },
+            {
+                required: '2001-01-01T16:00:00.000Z',
+                nullable: null,
+                array: [],
+            },
+        ],
+        expectedResults: [
+            {
+                required: new Date('2001-01-01T16:00:00.000Z'),
+                nullable: new Date('2002-02-02T16:00:00.000Z'),
+                array: [new Date('2003-03-03T16:00:00.000Z')],
+            },
+            {
+                required: new Date('2001-01-01T16:00:00.000Z'),
+                nullable: null,
+                array: [],
+            },
+        ],
+        badInputs: [
+            {
+                required: 'hello world',
+                nullable: null,
+                array: [],
+            },
+        ],
+    },
     any: {
         schema: a.any(),
         goodInputs: [

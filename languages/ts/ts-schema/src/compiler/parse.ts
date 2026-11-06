@@ -446,26 +446,15 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
                 $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
             }`;
     }
-    if (input.instancePath.length === 0) {
-        templateParts.push(`if (typeof ${input.val} === 'string') {
-            const parsedVal = new Date(${input.val});
-            if (!Number.isNaN(parsedVal.getMonth())) {
-                ${input.targetVal} = parsedVal;
-            }`);
-        if (input.schema.isNullable) {
-            templateParts.push(`if (${input.val} === 'null') {
-                ${input.targetVal} = null;
-            }`);
-        }
-        templateParts.push(
-            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string");`,
-        );
-        templateParts.push('}');
-    }
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
         ${input.targetVal} = ${input.val};
     } else if (typeof ${input.val} === 'string') {
-        ${input.targetVal} = new Date(${input.val});
+        const parsedVal = new Date(${input.val});
+        if (!Number.isNaN(parsedVal.getTime())) {
+            ${input.targetVal} = parsedVal;
+        } else {
+            $fallback("${input.instancePath}", "${input.schemaPath}", "Invalid date string");
+        }
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string")
     }`;
