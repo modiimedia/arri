@@ -40,7 +40,7 @@ export function rustStringFromSchema(
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", ${innerKey}));
+                        ${target}.push(format!("${key}={}", encode_query_component(${innerKey})));
                     }
                     _ => {}
                 }`;
@@ -48,14 +48,14 @@ export function rustStringFromSchema(
             if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", ${innerKey}));
+                        ${target}.push(format!("${key}={}", encode_query_component(${innerKey})));
                     }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${input}))`;
+            return `${target}.push(format!("${key}={}", encode_query_component(${input})))`;
         },
         content: '',
     };
@@ -160,7 +160,7 @@ export function rustTimestampFromSchema(
                     Some(${innerKey}) => {
                         ${target}.push(format!(
                             "${key}={}",
-                            serialize_date_time(${innerKey}, false)
+                            encode_query_component(&serialize_date_time(${innerKey}, false))
                         ));
                     }
                     _ => {}
@@ -171,7 +171,7 @@ export function rustTimestampFromSchema(
                     Some(${innerKey}) => {
                         ${target}.push(format!(
                             "${key}={}",
-                            serialize_date_time(${innerKey}, false)
+                            encode_query_component(&serialize_date_time(${innerKey}, false))
                         ));
                     }
                     _ => {
@@ -181,7 +181,7 @@ export function rustTimestampFromSchema(
             }
             return `${target}.push(format!(
                 "${key}={}",
-                serialize_date_time(${input}, false)
+                encode_query_component(&serialize_date_time(${input}, false))
             ))`;
         },
         content: '',

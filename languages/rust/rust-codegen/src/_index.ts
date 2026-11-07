@@ -161,7 +161,7 @@ export function createRustClient(
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},
-    utils::{serialize_date_time, serialize_string},
+    utils::{encode_query_component, serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
 use std::collections::{BTreeMap, HashMap};
@@ -183,7 +183,7 @@ use arri_client::{
     reqwest::{self, Request},
     serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
-    utils::{serialize_date_time, serialize_string},
+    utils::{encode_query_component, serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriError, EmptyArriModel, InternalArriClientConfig,
 };

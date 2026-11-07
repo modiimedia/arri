@@ -54,9 +54,9 @@ async fn main() {
 #[cfg(test)]
 mod parsing_and_serialization_tests {
     use crate::example_client::{
-        Book, BookParams, Enumerator, LegacyDiscriminator, NestedObject, ObjectWithEveryType,
-        ObjectWithNullableFields, ObjectWithOptionalFields, RecursiveObject, UnionAdjacent,
-        UnionExternal, UnionInternal,
+        Book, BookParams, EmptyObject, Enumerator, LegacyDiscriminator, NestedObject,
+        ObjectWithEveryType, ObjectWithNullableFields, ObjectWithOptionalFields, RecursiveObject,
+        UnionAdjacent, UnionExternal, UnionInternal,
     };
     use arri_client::{
         chrono::{DateTime, FixedOffset},
@@ -67,6 +67,83 @@ mod parsing_and_serialization_tests {
 
     fn get_test_date() -> DateTime<FixedOffset> {
         DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z").unwrap_or(DateTime::default())
+    }
+
+    #[test]
+    fn empty_object_test() {
+        let file_content = read_test_file("EmptyObject.json");
+        assert_eq!(
+            EmptyObject::from_json_string(file_content.clone()),
+            EmptyObject::new()
+        );
+        assert_eq!(EmptyObject::new().to_json_string(), file_content);
+        assert_eq!(EmptyObject::new().to_query_params_string(), "");
+    }
+
+    #[test]
+    fn record_order_does_not_affect_equality_test() {
+        assert_eq!(
+            ObjectWithEveryType::from_json_string(read_test_file("ObjectWithEveryType.json")),
+            ObjectWithEveryType::from_json_string(read_test_file(
+                "ObjectWithEveryType_ReversedRecord.json"
+            )),
+        );
+        assert_eq!(
+            ObjectWithOptionalFields::from_json_string(read_test_file(
+                "ObjectWithOptionalFields_NoUndefined.json"
+            )),
+            ObjectWithOptionalFields::from_json_string(read_test_file(
+                "ObjectWithOptionalFields_NoUndefined_ReversedRecord.json"
+            )),
+        );
+        assert_eq!(
+            ObjectWithNullableFields::from_json_string(read_test_file(
+                "ObjectWithNullableFields_NoNull.json"
+            )),
+            ObjectWithNullableFields::from_json_string(read_test_file(
+                "ObjectWithNullableFields_NoNull_ReversedRecord.json"
+            )),
+        );
+    }
+
+    #[test]
+    fn timestamps_default_to_the_unix_epoch_test() {
+        let epoch = "1970-01-01T00:00:00+00:00";
+        let empty = Book::new();
+        assert_eq!(empty.created_at.to_rfc3339(), epoch);
+        assert_eq!(empty.updated_at.timestamp(), 0);
+        let invalid = Book::from_json_string(
+            "{\"id\":\"1\",\"name\":\"foo\",\"createdAt\":\"hello world\",\"updatedAt\":\"\"}"
+                .to_string(),
+        );
+        assert_eq!(invalid.id, "1");
+        assert_eq!(invalid.created_at.to_rfc3339(), epoch);
+        assert_eq!(invalid.updated_at.to_rfc3339(), epoch);
+        let nullable = ObjectWithNullableFields::from_json_string(
+            "{\"timestamp\":\"hello world\"}".to_string(),
+        );
+        assert_eq!(nullable.timestamp, None);
+        let optional = ObjectWithOptionalFields::from_json_string(
+            "{\"timestamp\":\"hello world\"}".to_string(),
+        );
+        assert_eq!(optional.timestamp, None);
+    }
+
+    #[test]
+    fn query_params_are_url_encoded_test() {
+        let input = NestedObject {
+            id: "1".to_string(),
+            content: "a b&c=d/\u{e9}?#+".to_string(),
+        };
+        assert_eq!(
+            input.to_query_params_string(),
+            "id=1&content=a+b%26c%3Dd%2F%C3%A9%3F%23%2B"
+        );
+        let nullable = ObjectWithNullableFields::new();
+        assert!(nullable.to_query_params_string().contains("string=null"));
+        assert!(nullable.to_query_params_string().contains("timestamp=null"));
+        assert!(nullable.to_query_params_string().contains("enum=null"));
+        assert_eq!(ObjectWithOptionalFields::new().to_query_params_string(), "");
     }
 
     #[test]
@@ -86,7 +163,7 @@ mod parsing_and_serialization_tests {
             reference.clone()
         );
         assert_eq!(reference.to_json_string(), file_contents.clone());
-        assert_eq!(reference.to_query_params_string(), "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z")
+        assert_eq!(reference.to_query_params_string(), "id=1&name=The+Adventures+of+Tom+Sawyer&createdAt=2001-01-01T16%3A00%3A00.000Z&updatedAt=2001-01-01T16%3A00%3A00.000Z")
     }
 
     #[test]

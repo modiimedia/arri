@@ -12,7 +12,7 @@ use arri_client::{
     reqwest::{self, Request},
     serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
-    utils::{serialize_date_time, serialize_string},
+    utils::{encode_query_component, serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriError, ArriModel, ArriParsedRequestOptions,
     EmptyArriModel, InternalArriClientConfig,
 };
@@ -684,7 +684,7 @@ impl ArriModel for FooManuallyAddedModel {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("hello={}", &self.hello));
+        _query_parts_.push(format!("hello={}", encode_query_component(&self.hello)));
         _query_parts_.join("&")
     }
 }
@@ -728,7 +728,7 @@ impl ArriModel for FooDefaultPayload {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.push(format!("message={}", encode_query_component(&self.message)));
         _query_parts_.join("&")
     }
 }
@@ -776,7 +776,10 @@ impl ArriModel for FooDeprecatedRpcParams {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("deprecatedField={}", &self.deprecated_field));
+        _query_parts_.push(format!(
+            "deprecatedField={}",
+            encode_query_component(&self.deprecated_field)
+        ));
         _query_parts_.join("&")
     }
 }
@@ -856,11 +859,11 @@ impl ArriModel for FooDiscriminatorWithEmptyObject {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Empty {} => {
-                _query_parts_.push(format!("type=EMPTY"));
+                _query_parts_.push("type=EMPTY".to_string());
             }
             Self::NotEmpty { foo, bar, baz } => {
-                _query_parts_.push(format!("type=NOT_EMPTY"));
-                _query_parts_.push(format!("foo={}", foo));
+                _query_parts_.push("type=NOT_EMPTY".to_string());
+                _query_parts_.push(format!("foo={}", encode_query_component(foo)));
                 _query_parts_.push(format!("bar={}", bar));
                 _query_parts_.push(format!("baz={}", baz));
             }
@@ -919,7 +922,7 @@ impl ArriModel for FooSendErrorParams {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("code={}", &self.code));
-        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.push(format!("message={}", encode_query_component(&self.message)));
         _query_parts_.join("&")
     }
 }
@@ -1293,10 +1296,10 @@ impl ArriModel for FooObjectWithEveryType {
         let mut _query_parts_: Vec<String> = Vec::new();
         println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/any.");
         _query_parts_.push(format!("boolean={}", &self.boolean));
-        _query_parts_.push(format!("string={}", &self.string));
+        _query_parts_.push(format!("string={}", encode_query_component(&self.string)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.push(format!("float32={}", &self.float32));
         _query_parts_.push(format!("float64={}", &self.float64));
@@ -1308,7 +1311,10 @@ impl ArriModel for FooObjectWithEveryType {
         _query_parts_.push(format!("uint32={}", &self.uint32));
         _query_parts_.push(format!("int64={}", &self.int64));
         _query_parts_.push(format!("uint64={}", &self.uint64));
-        _query_parts_.push(format!("enumerator={}", &self.enumerator.serial_value()));
+        _query_parts_.push(format!(
+            "enumerator={}",
+            encode_query_component(&&self.enumerator.serial_value())
+        ));
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
@@ -1411,11 +1417,11 @@ impl ArriModel for FooObjectWithEveryTypeObject {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("string={}", &self.string));
+        _query_parts_.push(format!("string={}", encode_query_component(&self.string)));
         _query_parts_.push(format!("boolean={}", &self.boolean));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -1589,8 +1595,8 @@ impl ArriModel for FooObjectWithEveryTypeUnionExternalObjectValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("content={}", encode_query_component(&self.content)));
         _query_parts_.join("&")
     }
 }
@@ -1679,12 +1685,12 @@ impl ArriModel for FooObjectWithEveryTypeUnionInternal {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Rectangle { width, height } => {
-                _query_parts_.push(format!("shape=rectangle"));
+                _query_parts_.push("shape=rectangle".to_string());
                 _query_parts_.push(format!("width={}", width));
                 _query_parts_.push(format!("height={}", height));
             }
             Self::Circle { radius } => {
-                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push("shape=circle".to_string());
                 _query_parts_.push(format!("radius={}", radius));
             }
         }
@@ -1877,8 +1883,8 @@ impl ArriModel for FooObjectWithEveryTypeUnionAdjacentObjectData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("content={}", encode_query_component(&self.content)));
         _query_parts_.join("&")
     }
 }
@@ -1947,10 +1953,10 @@ impl ArriModel for FooObjectWithEveryTypeNestedObject {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.");
         _query_parts_.join("&")
@@ -2021,10 +2027,10 @@ impl ArriModel for FooObjectWithEveryTypeNestedObjectData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.");
         _query_parts_.join("&")
@@ -2081,10 +2087,10 @@ impl ArriModel for FooObjectWithEveryTypeNestedObjectDataData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -2140,10 +2146,10 @@ impl ArriModel for FooObjectWithEveryTypeNestedArrayElementElement {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -2309,12 +2315,18 @@ impl ArriModel for FooObjectWithKebabCaseKeys {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!(
             "created-at={}",
-            serialize_date_time(&self.created_at, false)
+            encode_query_component(&serialize_date_time(&self.created_at, false))
         ));
-        _query_parts_.push(format!("display-name={}", &self.display_name));
+        _query_parts_.push(format!(
+            "display-name={}",
+            encode_query_component(&self.display_name)
+        ));
         match &self.phone_number {
             Some(phone_number_val) => {
-                _query_parts_.push(format!("phone-number={}", phone_number_val));
+                _query_parts_.push(format!(
+                    "phone-number={}",
+                    encode_query_component(phone_number_val)
+                ));
             }
             _ => {
                 _query_parts_.push("phone-number=null".to_string());
@@ -2325,7 +2337,10 @@ impl ArriModel for FooObjectWithKebabCaseKeys {
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.");
         match &self.email_address {
             Some(email_address_val) => {
-                _query_parts_.push(format!("email-address={}", email_address_val));
+                _query_parts_.push(format!(
+                    "email-address={}",
+                    encode_query_component(email_address_val)
+                ));
             }
             _ => {}
         };
@@ -2465,7 +2480,7 @@ impl ArriModel for FooObjectWithKebabCaseKeysExternalEventUserCreatedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.push(format!("user-id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -2509,7 +2524,7 @@ impl ArriModel for FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.push(format!("user-id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -2553,7 +2568,7 @@ impl ArriModel for FooObjectWithKebabCaseKeysExternalEventUserDeletedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.push(format!("user-id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -2656,20 +2671,20 @@ impl ArriModel for FooObjectWithKebabCaseKeysInternalEvent {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::UserCreated { user_id } => {
-                _query_parts_.push(format!("event-type=user-created"));
-                _query_parts_.push(format!("user-id={}", user_id));
+                _query_parts_.push("event-type=user-created".to_string());
+                _query_parts_.push(format!("user-id={}", encode_query_component(user_id)));
             }
             Self::UserUpdated {
                 user_id,
                 updated_at,
             } => {
-                _query_parts_.push(format!("event-type=user-updated"));
-                _query_parts_.push(format!("user-id={}", user_id));
+                _query_parts_.push("event-type=user-updated".to_string());
+                _query_parts_.push(format!("user-id={}", encode_query_component(user_id)));
                 match updated_at {
                     Some(updated_at_val) => {
                         _query_parts_.push(format!(
                             "updated-at={}",
-                            serialize_date_time(updated_at_val, false)
+                            encode_query_component(&serialize_date_time(updated_at_val, false))
                         ));
                     }
                     _ => {}
@@ -2799,7 +2814,7 @@ impl ArriModel for FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user-id={}", &self.user_id));
+        _query_parts_.push(format!("user-id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -3420,7 +3435,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
         };
         match &self.string {
             Some(string_val) => {
-                _query_parts_.push(format!("string={}", string_val));
+                _query_parts_.push(format!("string={}", encode_query_component(string_val)));
             }
             _ => {
                 _query_parts_.push("string=null".to_string());
@@ -3430,7 +3445,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {
@@ -3519,7 +3534,10 @@ impl ArriModel for FooObjectWithEveryNullableType {
         };
         match &self.enumerator {
             Some(enumerator_val) => {
-                _query_parts_.push(format!("enumerator={}", enumerator_val.serial_value()));
+                _query_parts_.push(format!(
+                    "enumerator={}",
+                    encode_query_component(&enumerator_val.serial_value())
+                ));
             }
             _ => {
                 _query_parts_.push("enumerator=null".to_string());
@@ -3652,7 +3670,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeObject {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.string {
             Some(string_val) => {
-                _query_parts_.push(format!("string={}", string_val));
+                _query_parts_.push(format!("string={}", encode_query_component(string_val)));
             }
             _ => {
                 _query_parts_.push("string=null".to_string());
@@ -3670,7 +3688,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeObject {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {
@@ -3849,8 +3867,8 @@ impl ArriModel for FooObjectWithEveryNullableTypeUnionExternalObjectValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("content={}", encode_query_component(&self.content)));
         _query_parts_.join("&")
     }
 }
@@ -3939,12 +3957,12 @@ impl ArriModel for FooObjectWithEveryNullableTypeUnionInternal {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Rectangle { width, height } => {
-                _query_parts_.push(format!("shape=rectangle"));
+                _query_parts_.push("shape=rectangle".to_string());
                 _query_parts_.push(format!("width={}", width));
                 _query_parts_.push(format!("height={}", height));
             }
             Self::Circle { radius } => {
-                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push("shape=circle".to_string());
                 _query_parts_.push(format!("radius={}", radius));
             }
         }
@@ -4137,8 +4155,8 @@ impl ArriModel for FooObjectWithEveryNullableTypeUnionAdjacentObjectData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("content={}", encode_query_component(&self.content)));
         _query_parts_.join("&")
     }
 }
@@ -4237,7 +4255,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedObject {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.id {
             Some(id_val) => {
-                _query_parts_.push(format!("id={}", id_val));
+                _query_parts_.push(format!("id={}", encode_query_component(id_val)));
             }
             _ => {
                 _query_parts_.push("id=null".to_string());
@@ -4247,7 +4265,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedObject {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {
@@ -4353,7 +4371,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedObjectData {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.id {
             Some(id_val) => {
-                _query_parts_.push(format!("id={}", id_val));
+                _query_parts_.push(format!("id={}", encode_query_component(id_val)));
             }
             _ => {
                 _query_parts_.push("id=null".to_string());
@@ -4363,7 +4381,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedObjectData {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {
@@ -4443,7 +4461,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedObjectDataData {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.id {
             Some(id_val) => {
-                _query_parts_.push(format!("id={}", id_val));
+                _query_parts_.push(format!("id={}", encode_query_component(id_val)));
             }
             _ => {
                 _query_parts_.push("id=null".to_string());
@@ -4453,7 +4471,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedObjectDataData {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {
@@ -4532,7 +4550,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedArrayElementElement {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.id {
             Some(id_val) => {
-                _query_parts_.push(format!("id={}", id_val));
+                _query_parts_.push(format!("id={}", encode_query_component(id_val)));
             }
             _ => {
                 _query_parts_.push("id=null".to_string());
@@ -4542,7 +4560,7 @@ impl ArriModel for FooObjectWithEveryNullableTypeNestedArrayElementElement {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {
@@ -4713,12 +4731,18 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!(
             "CreatedAt={}",
-            serialize_date_time(&self.created_at, false)
+            encode_query_component(&serialize_date_time(&self.created_at, false))
         ));
-        _query_parts_.push(format!("DisplayName={}", &self.display_name));
+        _query_parts_.push(format!(
+            "DisplayName={}",
+            encode_query_component(&self.display_name)
+        ));
         match &self.phone_number {
             Some(phone_number_val) => {
-                _query_parts_.push(format!("PhoneNumber={}", phone_number_val));
+                _query_parts_.push(format!(
+                    "PhoneNumber={}",
+                    encode_query_component(phone_number_val)
+                ));
             }
             _ => {
                 _query_parts_.push("PhoneNumber=null".to_string());
@@ -4729,7 +4753,10 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.");
         match &self.email_address {
             Some(email_address_val) => {
-                _query_parts_.push(format!("EmailAddress={}", email_address_val));
+                _query_parts_.push(format!(
+                    "EmailAddress={}",
+                    encode_query_component(email_address_val)
+                ));
             }
             _ => {}
         };
@@ -4869,7 +4896,7 @@ impl ArriModel for FooObjectWithPascalCaseKeysExternalEventUserCreatedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.push(format!("UserId={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -4913,7 +4940,7 @@ impl ArriModel for FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.push(format!("UserId={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -4957,7 +4984,7 @@ impl ArriModel for FooObjectWithPascalCaseKeysExternalEventUserDeletedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.push(format!("UserId={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -5060,20 +5087,20 @@ impl ArriModel for FooObjectWithPascalCaseKeysInternalEvent {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::UserCreated { user_id } => {
-                _query_parts_.push(format!("EventType=UserCreated"));
-                _query_parts_.push(format!("UserId={}", user_id));
+                _query_parts_.push("EventType=UserCreated".to_string());
+                _query_parts_.push(format!("UserId={}", encode_query_component(user_id)));
             }
             Self::UserUpdated {
                 user_id,
                 updated_at,
             } => {
-                _query_parts_.push(format!("EventType=UserUpdated"));
-                _query_parts_.push(format!("UserId={}", user_id));
+                _query_parts_.push("EventType=UserUpdated".to_string());
+                _query_parts_.push(format!("UserId={}", encode_query_component(user_id)));
                 match updated_at {
                     Some(updated_at_val) => {
                         _query_parts_.push(format!(
                             "UpdatedAt={}",
-                            serialize_date_time(updated_at_val, false)
+                            encode_query_component(&serialize_date_time(updated_at_val, false))
                         ));
                     }
                     _ => {}
@@ -5203,7 +5230,7 @@ impl ArriModel for FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData 
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("UserId={}", &self.user_id));
+        _query_parts_.push(format!("UserId={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -5368,12 +5395,18 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!(
             "created_at={}",
-            serialize_date_time(&self.created_at, false)
+            encode_query_component(&serialize_date_time(&self.created_at, false))
         ));
-        _query_parts_.push(format!("display_name={}", &self.display_name));
+        _query_parts_.push(format!(
+            "display_name={}",
+            encode_query_component(&self.display_name)
+        ));
         match &self.phone_number {
             Some(phone_number_val) => {
-                _query_parts_.push(format!("phone_number={}", phone_number_val));
+                _query_parts_.push(format!(
+                    "phone_number={}",
+                    encode_query_component(phone_number_val)
+                ));
             }
             _ => {
                 _query_parts_.push("phone_number=null".to_string());
@@ -5384,7 +5417,10 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.");
         match &self.email_address {
             Some(email_address_val) => {
-                _query_parts_.push(format!("email_address={}", email_address_val));
+                _query_parts_.push(format!(
+                    "email_address={}",
+                    encode_query_component(email_address_val)
+                ));
             }
             _ => {}
         };
@@ -5524,7 +5560,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user_id={}", &self.user_id));
+        _query_parts_.push(format!("user_id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -5568,7 +5604,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user_id={}", &self.user_id));
+        _query_parts_.push(format!("user_id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -5612,7 +5648,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user_id={}", &self.user_id));
+        _query_parts_.push(format!("user_id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -5715,20 +5751,20 @@ impl ArriModel for FooObjectWithSnakeCaseKeysInternalEvent {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::UserCreated { user_id } => {
-                _query_parts_.push(format!("event_type=user_created"));
-                _query_parts_.push(format!("user_id={}", user_id));
+                _query_parts_.push("event_type=user_created".to_string());
+                _query_parts_.push(format!("user_id={}", encode_query_component(user_id)));
             }
             Self::UserUpdated {
                 user_id,
                 updated_at,
             } => {
-                _query_parts_.push(format!("event_type=user_updated"));
-                _query_parts_.push(format!("user_id={}", user_id));
+                _query_parts_.push("event_type=user_updated".to_string());
+                _query_parts_.push(format!("user_id={}", encode_query_component(user_id)));
                 match updated_at {
                     Some(updated_at_val) => {
                         _query_parts_.push(format!(
                             "updated_at={}",
-                            serialize_date_time(updated_at_val, false)
+                            encode_query_component(&serialize_date_time(updated_at_val, false))
                         ));
                     }
                     _ => {}
@@ -5858,7 +5894,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("user_id={}", &self.user_id));
+        _query_parts_.push(format!("user_id={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -6484,7 +6520,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
         };
         match &self.string {
             Some(string_val) => {
-                _query_parts_.push(format!("string={}", string_val));
+                _query_parts_.push(format!("string={}", encode_query_component(string_val)));
             }
             _ => {}
         };
@@ -6492,7 +6528,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp_val, false)
+                    encode_query_component(&serialize_date_time(timestamp_val, false))
                 ));
             }
             _ => {}
@@ -6559,7 +6595,10 @@ impl ArriModel for FooObjectWithEveryOptionalType {
         };
         match &self.enumerator {
             Some(enumerator_val) => {
-                _query_parts_.push(format!("enumerator={}", enumerator_val.serial_value()));
+                _query_parts_.push(format!(
+                    "enumerator={}",
+                    encode_query_component(&enumerator_val.serial_value())
+                ));
             }
             _ => {}
         };
@@ -6665,11 +6704,11 @@ impl ArriModel for FooObjectWithEveryOptionalTypeObject {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("string={}", &self.string));
+        _query_parts_.push(format!("string={}", encode_query_component(&self.string)));
         _query_parts_.push(format!("boolean={}", &self.boolean));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -6843,8 +6882,8 @@ impl ArriModel for FooObjectWithEveryOptionalTypeUnionExternalObjectValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("content={}", encode_query_component(&self.content)));
         _query_parts_.join("&")
     }
 }
@@ -6933,12 +6972,12 @@ impl ArriModel for FooObjectWithEveryOptionalTypeUnionInternal {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Rectangle { width, height } => {
-                _query_parts_.push(format!("shape=rectangle"));
+                _query_parts_.push("shape=rectangle".to_string());
                 _query_parts_.push(format!("width={}", width));
                 _query_parts_.push(format!("height={}", height));
             }
             Self::Circle { radius } => {
-                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push("shape=circle".to_string());
                 _query_parts_.push(format!("radius={}", radius));
             }
         }
@@ -7131,8 +7170,8 @@ impl ArriModel for FooObjectWithEveryOptionalTypeUnionAdjacentObjectData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("content={}", &self.content));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("content={}", encode_query_component(&self.content)));
         _query_parts_.join("&")
     }
 }
@@ -7201,10 +7240,10 @@ impl ArriModel for FooObjectWithEveryOptionalTypeNestedObject {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.");
         _query_parts_.join("&")
@@ -7277,10 +7316,10 @@ impl ArriModel for FooObjectWithEveryOptionalTypeNestedObjectData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.");
         _query_parts_.join("&")
@@ -7337,10 +7376,10 @@ impl ArriModel for FooObjectWithEveryOptionalTypeNestedObjectDataData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -7396,10 +7435,10 @@ impl ArriModel for FooObjectWithEveryOptionalTypeNestedArrayElementElement {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -7486,7 +7525,7 @@ impl ArriModel for FooRecursiveObject {
         let mut _query_parts_: Vec<String> = Vec::new();
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/left.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/right.");
-        _query_parts_.push(format!("value={}", &self.value));
+        _query_parts_.push(format!("value={}", encode_query_component(&self.value)));
         _query_parts_.join("&")
     }
 }
@@ -7697,7 +7736,7 @@ impl ArriModel for FooRecursiveUnionAdjacentShapeData {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("width={}", &self.width));
         _query_parts_.push(format!("height={}", &self.height));
-        _query_parts_.push(format!("color={}", &self.color));
+        _query_parts_.push(format!("color={}", encode_query_component(&self.color)));
         _query_parts_.join("&")
     }
 }
@@ -7891,7 +7930,7 @@ impl ArriModel for FooRecursiveUnionExternalShapeValue {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("width={}", &self.width));
         _query_parts_.push(format!("height={}", &self.height));
-        _query_parts_.push(format!("color={}", &self.color));
+        _query_parts_.push(format!("color={}", encode_query_component(&self.color)));
         _query_parts_.join("&")
     }
 }
@@ -8037,19 +8076,19 @@ impl ArriModel for FooRecursiveUnionInternal {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Child { data } => {
-                _query_parts_.push(format!("kind=child"));
+                _query_parts_.push("kind=child".to_string());
                 println!("[WARNING] cannot serialize nested objects to query params. Skipping field at RecursiveUnionInternal/data.");
             }
             Self::Children { data } => {
-                _query_parts_.push(format!("kind=children"));
+                _query_parts_.push("kind=children".to_string());
                 println!("[WARNING] cannot serialize arrays to query params. Skipping field at RecursiveUnionInternal/data.");
             }
             Self::Text { data } => {
-                _query_parts_.push(format!("kind=text"));
-                _query_parts_.push(format!("data={}", data));
+                _query_parts_.push("kind=text".to_string());
+                _query_parts_.push(format!("data={}", encode_query_component(data)));
             }
             Self::Shape { data } => {
-                _query_parts_.push(format!("kind=shape"));
+                _query_parts_.push("kind=shape".to_string());
                 println!("[WARNING] cannot serialize nested objects to query params. Skipping field at RecursiveUnionInternal/data.");
             }
         }
@@ -8121,7 +8160,7 @@ impl ArriModel for FooRecursiveUnionInternalDataShape {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("width={}", &self.width));
         _query_parts_.push(format!("height={}", &self.height));
-        _query_parts_.push(format!("color={}", &self.color));
+        _query_parts_.push(format!("color={}", encode_query_component(&self.color)));
         _query_parts_.join("&")
     }
 }
@@ -8309,11 +8348,14 @@ impl ArriModel for FooUnionInternalGetRequest {
                 nullable_enum,
                 optional_string,
             } => {
-                _query_parts_.push(format!("kind=with-fields"));
-                _query_parts_.push(format!("string={}", string));
+                _query_parts_.push("kind=with-fields".to_string());
+                _query_parts_.push(format!("string={}", encode_query_component(string)));
                 match nullable_string {
                     Some(nullable_string_val) => {
-                        _query_parts_.push(format!("nullableString={}", nullable_string_val));
+                        _query_parts_.push(format!(
+                            "nullableString={}",
+                            encode_query_component(nullable_string_val)
+                        ));
                     }
                     _ => {
                         _query_parts_.push("nullableString=null".to_string());
@@ -8324,12 +8366,14 @@ impl ArriModel for FooUnionInternalGetRequest {
                 _query_parts_.push(format!("boolean={}", boolean));
                 _query_parts_.push(format!(
                     "timestamp={}",
-                    serialize_date_time(timestamp, false)
+                    encode_query_component(&serialize_date_time(timestamp, false))
                 ));
                 match nullable_enum {
                     Some(nullable_enum_val) => {
-                        _query_parts_
-                            .push(format!("nullableEnum={}", nullable_enum_val.serial_value()));
+                        _query_parts_.push(format!(
+                            "nullableEnum={}",
+                            encode_query_component(&nullable_enum_val.serial_value())
+                        ));
                     }
                     _ => {
                         _query_parts_.push("nullableEnum=null".to_string());
@@ -8337,13 +8381,16 @@ impl ArriModel for FooUnionInternalGetRequest {
                 };
                 match optional_string {
                     Some(optional_string_val) => {
-                        _query_parts_.push(format!("optionalString={}", optional_string_val));
+                        _query_parts_.push(format!(
+                            "optionalString={}",
+                            encode_query_component(optional_string_val)
+                        ));
                     }
                     _ => {}
                 };
             }
             Self::Empty {} => {
-                _query_parts_.push(format!("kind=empty"));
+                _query_parts_.push("kind=empty".to_string());
             }
         }
         _query_parts_.join("&")
@@ -8690,13 +8737,13 @@ impl ArriModel for FooUnionVariantShapesInternal {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Empty {} => {
-                _query_parts_.push(format!("kind=empty"));
+                _query_parts_.push("kind=empty".to_string());
             }
             Self::AllOptional { first, second } => {
-                _query_parts_.push(format!("kind=all-optional"));
+                _query_parts_.push("kind=all-optional".to_string());
                 match first {
                     Some(first_val) => {
-                        _query_parts_.push(format!("first={}", first_val));
+                        _query_parts_.push(format!("first={}", encode_query_component(first_val)));
                     }
                     _ => {}
                 };
@@ -8712,11 +8759,12 @@ impl ArriModel for FooUnionVariantShapesInternal {
                 nullable,
                 optional,
             } => {
-                _query_parts_.push(format!("kind=mixed"));
-                _query_parts_.push(format!("required={}", required));
+                _query_parts_.push("kind=mixed".to_string());
+                _query_parts_.push(format!("required={}", encode_query_component(required)));
                 match nullable {
                     Some(nullable_val) => {
-                        _query_parts_.push(format!("nullable={}", nullable_val));
+                        _query_parts_
+                            .push(format!("nullable={}", encode_query_component(nullable_val)));
                     }
                     _ => {
                         _query_parts_.push("nullable=null".to_string());
@@ -8724,7 +8772,8 @@ impl ArriModel for FooUnionVariantShapesInternal {
                 };
                 match optional {
                     Some(optional_val) => {
-                        _query_parts_.push(format!("optional={}", optional_val));
+                        _query_parts_
+                            .push(format!("optional={}", encode_query_component(optional_val)));
                     }
                     _ => {}
                 };
@@ -8734,7 +8783,7 @@ impl ArriModel for FooUnionVariantShapesInternal {
                 record,
                 object,
             } => {
-                _query_parts_.push(format!("kind=nested"));
+                _query_parts_.push("kind=nested".to_string());
                 println!("[WARNING] cannot serialize arrays to query params. Skipping field at /UnionVariantShapes/internal/array.");
                 println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UnionVariantShapes/internal/record.");
                 println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UnionVariantShapes/internal/object.");
@@ -8781,7 +8830,7 @@ impl ArriModel for FooUnionVariantShapesInternalArrayElement {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
         _query_parts_.join("&")
     }
 }
@@ -8830,7 +8879,7 @@ impl ArriModel for FooUnionVariantShapesInternalObjectNested {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!(
             "timestamp={}",
-            serialize_date_time(&self.timestamp, false)
+            encode_query_component(&serialize_date_time(&self.timestamp, false))
         ));
         _query_parts_.join("&")
     }
@@ -9021,7 +9070,7 @@ impl ArriModel for FooUnionVariantShapesExternalAllOptionalValue {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.first {
             Some(first_val) => {
-                _query_parts_.push(format!("first={}", first_val));
+                _query_parts_.push(format!("first={}", encode_query_component(first_val)));
             }
             _ => {}
         };
@@ -9106,10 +9155,13 @@ impl ArriModel for FooUnionVariantShapesExternalMixedValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("required={}", &self.required));
+        _query_parts_.push(format!(
+            "required={}",
+            encode_query_component(&self.required)
+        ));
         match &self.nullable {
             Some(nullable_val) => {
-                _query_parts_.push(format!("nullable={}", nullable_val));
+                _query_parts_.push(format!("nullable={}", encode_query_component(nullable_val)));
             }
             _ => {
                 _query_parts_.push("nullable=null".to_string());
@@ -9117,7 +9169,7 @@ impl ArriModel for FooUnionVariantShapesExternalMixedValue {
         };
         match &self.optional {
             Some(optional_val) => {
-                _query_parts_.push(format!("optional={}", optional_val));
+                _query_parts_.push(format!("optional={}", encode_query_component(optional_val)));
             }
             _ => {}
         };
@@ -9326,7 +9378,7 @@ impl ArriModel for FooUnionVariantShapesAdjacentAllOptionalData {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self.first {
             Some(first_val) => {
-                _query_parts_.push(format!("first={}", first_val));
+                _query_parts_.push(format!("first={}", encode_query_component(first_val)));
             }
             _ => {}
         };
@@ -9411,10 +9463,13 @@ impl ArriModel for FooUnionVariantShapesAdjacentMixedData {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("required={}", &self.required));
+        _query_parts_.push(format!(
+            "required={}",
+            encode_query_component(&self.required)
+        ));
         match &self.nullable {
             Some(nullable_val) => {
-                _query_parts_.push(format!("nullable={}", nullable_val));
+                _query_parts_.push(format!("nullable={}", encode_query_component(nullable_val)));
             }
             _ => {
                 _query_parts_.push("nullable=null".to_string());
@@ -9422,7 +9477,7 @@ impl ArriModel for FooUnionVariantShapesAdjacentMixedData {
         };
         match &self.optional {
             Some(optional_val) => {
-                _query_parts_.push(format!("optional={}", optional_val));
+                _query_parts_.push(format!("optional={}", encode_query_component(optional_val)));
             }
             _ => {}
         };
@@ -9941,7 +9996,7 @@ impl ArriModel for FooUnionVariantTypesExternalInternalUnionValue {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Circle { radius } => {
-                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push("shape=circle".to_string());
                 _query_parts_.push(format!("radius={}", radius));
             }
         }
@@ -10471,7 +10526,7 @@ impl ArriModel for FooUnionVariantTypesAdjacentInternalUnionData {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Circle { radius } => {
-                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push("shape=circle".to_string());
                 _query_parts_.push(format!("radius={}", radius));
             }
         }
@@ -10679,9 +10734,9 @@ impl ArriModel for FooUnionVariantTypesInternal {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Class { r#for, default } => {
-                _query_parts_.push(format!("kind=class"));
-                _query_parts_.push(format!("for={}", r#for));
-                _query_parts_.push(format!("default={}", default));
+                _query_parts_.push("kind=class".to_string());
+                _query_parts_.push(format!("for={}", encode_query_component(r#for)));
+                _query_parts_.push(format!("default={}", encode_query_component(default)));
             }
             Self::Default {
                 class,
@@ -10689,8 +10744,8 @@ impl ArriModel for FooUnionVariantTypesInternal {
                 adjacent_union,
                 external_union,
             } => {
-                _query_parts_.push(format!("kind=default"));
-                _query_parts_.push(format!("class={}", class));
+                _query_parts_.push("kind=default".to_string());
+                _query_parts_.push(format!("class={}", encode_query_component(class)));
                 println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UnionVariantTypes/internal/internalUnion.");
                 println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/internal/adjacentUnion.");
                 println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/internal/externalUnion.");
@@ -10758,7 +10813,7 @@ impl ArriModel for FooUnionVariantTypesInternalInternalUnionDefault {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::Circle { radius } => {
-                _query_parts_.push(format!("shape=circle"));
+                _query_parts_.push("shape=circle".to_string());
                 _query_parts_.push(format!("radius={}", radius));
             }
         }
@@ -10976,7 +11031,7 @@ impl ArriModel for FooAutoReconnectResponse {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("count={}", &self.count));
-        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.push(format!("message={}", encode_query_component(&self.message)));
         _query_parts_.join("&")
     }
 }
@@ -11036,7 +11091,10 @@ impl ArriModel for FooStreamConnectionErrorTestParams {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("statusCode={}", &self.status_code));
-        _query_parts_.push(format!("statusMessage={}", &self.status_message));
+        _query_parts_.push(format!(
+            "statusMessage={}",
+            encode_query_component(&self.status_message)
+        ));
         _query_parts_.join("&")
     }
 }
@@ -11080,7 +11138,7 @@ impl ArriModel for FooStreamConnectionErrorTestResponse {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.push(format!("message={}", encode_query_component(&self.message)));
         _query_parts_.join("&")
     }
 }
@@ -11170,7 +11228,7 @@ impl ArriModel for FooStreamHeartbeatDetectionTestResponse {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.push(format!("message={}", encode_query_component(&self.message)));
         _query_parts_.join("&")
     }
 }
@@ -11323,9 +11381,9 @@ impl ArriModel for FooStreamLargeObjectsResponseObjectsElement {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("name={}", &self.name));
-        _query_parts_.push(format!("email={}", &self.email));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!("name={}", encode_query_component(&self.name)));
+        _query_parts_.push(format!("email={}", encode_query_component(&self.email)));
         _query_parts_.join("&")
     }
 }
@@ -11369,7 +11427,10 @@ impl ArriModel for FooChatMessageParams {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("channelId={}", &self.channel_id));
+        _query_parts_.push(format!(
+            "channelId={}",
+            encode_query_component(&self.channel_id)
+        ));
         _query_parts_.join("&")
     }
 }
@@ -11611,12 +11672,15 @@ impl ArriModel for FooChatMessage {
                 date,
                 text,
             } => {
-                _query_parts_.push(format!("messageType=TEXT"));
-                _query_parts_.push(format!("id={}", id));
-                _query_parts_.push(format!("channelId={}", channel_id));
-                _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("date={}", serialize_date_time(date, false)));
-                _query_parts_.push(format!("text={}", text));
+                _query_parts_.push("messageType=TEXT".to_string());
+                _query_parts_.push(format!("id={}", encode_query_component(id)));
+                _query_parts_.push(format!("channelId={}", encode_query_component(channel_id)));
+                _query_parts_.push(format!("userId={}", encode_query_component(user_id)));
+                _query_parts_.push(format!(
+                    "date={}",
+                    encode_query_component(&serialize_date_time(date, false))
+                ));
+                _query_parts_.push(format!("text={}", encode_query_component(text)));
             }
             Self::Image {
                 id,
@@ -11625,12 +11689,15 @@ impl ArriModel for FooChatMessage {
                 date,
                 image,
             } => {
-                _query_parts_.push(format!("messageType=IMAGE"));
-                _query_parts_.push(format!("id={}", id));
-                _query_parts_.push(format!("channelId={}", channel_id));
-                _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("date={}", serialize_date_time(date, false)));
-                _query_parts_.push(format!("image={}", image));
+                _query_parts_.push("messageType=IMAGE".to_string());
+                _query_parts_.push(format!("id={}", encode_query_component(id)));
+                _query_parts_.push(format!("channelId={}", encode_query_component(channel_id)));
+                _query_parts_.push(format!("userId={}", encode_query_component(user_id)));
+                _query_parts_.push(format!(
+                    "date={}",
+                    encode_query_component(&serialize_date_time(date, false))
+                ));
+                _query_parts_.push(format!("image={}", encode_query_component(image)));
             }
             Self::Url {
                 id,
@@ -11639,12 +11706,15 @@ impl ArriModel for FooChatMessage {
                 date,
                 url,
             } => {
-                _query_parts_.push(format!("messageType=URL"));
-                _query_parts_.push(format!("id={}", id));
-                _query_parts_.push(format!("channelId={}", channel_id));
-                _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("date={}", serialize_date_time(date, false)));
-                _query_parts_.push(format!("url={}", url));
+                _query_parts_.push("messageType=URL".to_string());
+                _query_parts_.push(format!("id={}", encode_query_component(id)));
+                _query_parts_.push(format!("channelId={}", encode_query_component(channel_id)));
+                _query_parts_.push(format!("userId={}", encode_query_component(user_id)));
+                _query_parts_.push(format!(
+                    "date={}",
+                    encode_query_component(&serialize_date_time(date, false))
+                ));
+                _query_parts_.push(format!("url={}", encode_query_component(url)));
             }
         }
         _query_parts_.join("&")
@@ -11690,7 +11760,7 @@ impl ArriModel for FooTestsStreamRetryWithNewCredentialsResponse {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.push(format!("message={}", encode_query_component(&self.message)));
         _query_parts_.join("&")
     }
 }
@@ -11734,7 +11804,7 @@ impl ArriModel for FooUsersWatchUserParams {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("userId={}", &self.user_id));
+        _query_parts_.push(format!("userId={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }
@@ -11992,12 +12062,15 @@ impl ArriModel for FooUsersWatchUserResponse {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("role={}", &self.role.serial_value()));
+        _query_parts_.push(format!("id={}", encode_query_component(&self.id)));
+        _query_parts_.push(format!(
+            "role={}",
+            encode_query_component(&&self.role.serial_value())
+        ));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/photo.");
         _query_parts_.push(format!(
             "createdAt={}",
-            serialize_date_time(&self.created_at, false)
+            encode_query_component(&serialize_date_time(&self.created_at, false))
         ));
         _query_parts_.push(format!("numFollowers={}", &self.num_followers));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UsersWatchUserResponse/settings.");
@@ -12007,7 +12080,7 @@ impl ArriModel for FooUsersWatchUserResponse {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /UsersWatchUserResponse/randomList.");
         match &self.bio {
             Some(bio_val) => {
-                _query_parts_.push(format!("bio={}", bio_val));
+                _query_parts_.push(format!("bio={}", encode_query_component(bio_val)));
             }
             _ => {}
         };
@@ -12125,7 +12198,7 @@ impl ArriModel for FooUserPhoto {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("url={}", &self.url));
+        _query_parts_.push(format!("url={}", encode_query_component(&self.url)));
         _query_parts_.push(format!("width={}", &self.width));
         _query_parts_.push(format!("height={}", &self.height));
         _query_parts_.push(format!("bytes={}", &self.bytes));
@@ -12194,7 +12267,7 @@ impl ArriModel for FooUserSettings {
         ));
         _query_parts_.push(format!(
             "preferredTheme={}",
-            &self.preferred_theme.serial_value()
+            encode_query_component(&&self.preferred_theme.serial_value())
         ));
         _query_parts_.join("&")
     }
@@ -12337,19 +12410,22 @@ impl ArriModel for FooUsersWatchUserResponseRecentNotificationsElement {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
             Self::PostLike { post_id, user_id } => {
-                _query_parts_.push(format!("notificationType=POST_LIKE"));
-                _query_parts_.push(format!("postId={}", post_id));
-                _query_parts_.push(format!("userId={}", user_id));
+                _query_parts_.push("notificationType=POST_LIKE".to_string());
+                _query_parts_.push(format!("postId={}", encode_query_component(post_id)));
+                _query_parts_.push(format!("userId={}", encode_query_component(user_id)));
             }
             Self::PostComment {
                 post_id,
                 user_id,
                 comment_text,
             } => {
-                _query_parts_.push(format!("notificationType=POST_COMMENT"));
-                _query_parts_.push(format!("postId={}", post_id));
-                _query_parts_.push(format!("userId={}", user_id));
-                _query_parts_.push(format!("commentText={}", comment_text));
+                _query_parts_.push("notificationType=POST_COMMENT".to_string());
+                _query_parts_.push(format!("postId={}", encode_query_component(post_id)));
+                _query_parts_.push(format!("userId={}", encode_query_component(user_id)));
+                _query_parts_.push(format!(
+                    "commentText={}",
+                    encode_query_component(comment_text)
+                ));
             }
         }
         _query_parts_.join("&")
@@ -12403,8 +12479,8 @@ impl ArriModel for FooUsersWatchUserResponseBookmarksValue {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("postId={}", &self.post_id));
-        _query_parts_.push(format!("userId={}", &self.user_id));
+        _query_parts_.push(format!("postId={}", encode_query_component(&self.post_id)));
+        _query_parts_.push(format!("userId={}", encode_query_component(&self.user_id)));
         _query_parts_.join("&")
     }
 }

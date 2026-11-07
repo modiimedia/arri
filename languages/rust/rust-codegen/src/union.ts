@@ -142,7 +142,7 @@ export function rustInternallyTaggedEnumFromSchema(
             `\t\t_json_output_.push_str("\\"${discriminatorKey}\\":\\"${discriminatorValue}\\"");`,
         );
         subType.toQueryParts.push(
-            `_query_parts_.push(format!("${discriminatorKey}=${discriminatorValue}"));`,
+            `_query_parts_.push("${encodeURIComponent(discriminatorKey)}=${encodeURIComponent(discriminatorValue)}".to_string());`,
         );
         for (const key of Object.keys(subSchema.properties)) {
             const keySchema = subSchema.properties[key]!;
@@ -190,7 +190,7 @@ export function rustInternallyTaggedEnumFromSchema(
                 );
             }
             subType.toQueryParts.push(
-                `${keyType.toQueryStringTemplate(keyName, key, '_query_parts_')};`,
+                `${keyType.toQueryStringTemplate(keyName, encodeURIComponent(key), '_query_parts_')};`,
             );
         }
         for (const key of Object.keys(subSchema.optionalProperties ?? {})) {
@@ -230,7 +230,7 @@ export function rustInternallyTaggedEnumFromSchema(
                 _ => {}
             };`);
             subType.toQueryParts.push(
-                `${keyType.toQueryStringTemplate(keyName, key, '_query_parts_')};`,
+                `${keyType.toQueryStringTemplate(keyName, encodeURIComponent(key), '_query_parts_')};`,
             );
         }
         fromJsonParts.push(`Self::${subTypeName} {

@@ -103,7 +103,7 @@ test('Optional properties of internally tagged variants are generated as optiona
     expect(result).toContain(
         normalizeWhitespace(`match label {
             Some(label_val) => {
-                _query_parts_.push(format!("label={}", label_val));
+                _query_parts_.push(format!("label={}", encode_query_component(label_val)));
             }
             _ => {}
         };`),
