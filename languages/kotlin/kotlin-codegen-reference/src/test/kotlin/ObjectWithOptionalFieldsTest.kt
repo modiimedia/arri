@@ -56,4 +56,21 @@ class ObjectWithOptionalFieldsTest {
         assertEquals(ObjectWithOptionalFields.fromJson(expectedEmptyOutput), emptyValue)
         assertEquals(ObjectWithOptionalFields.fromJson(expectedNonEmptyOutput), nonEmptyValue)
     }
+
+    @Test
+    fun recordOrderDoesNotAffectEquality() {
+        val normal = ObjectWithOptionalFields.fromJson(
+            File("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json").bufferedReader().use { it.readText() }
+        )
+        val reversed = ObjectWithOptionalFields.fromJson(
+            File("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined_ReversedRecord.json").bufferedReader().use { it.readText() }
+        )
+        assertEquals(normal, reversed)
+        assertEquals(normal.hashCode(), reversed.hashCode())
+    }
+
+    @Test
+    fun invalidTimestampsFallBack() {
+        assertEquals(null, ObjectWithOptionalFields.fromJson("""{"timestamp":"hello world"}""").timestamp)
+    }
 }

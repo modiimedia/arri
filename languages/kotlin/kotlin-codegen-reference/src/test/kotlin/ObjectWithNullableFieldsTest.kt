@@ -90,4 +90,21 @@ class ObjectWithNullableFieldsTest {
         assertEquals(result, allNullValue)
         assertEquals(ObjectWithNullableFields.fromJson(noNullReference), noNullValue)
     }
+
+    @Test
+    fun recordOrderDoesNotAffectEquality() {
+        val normal = ObjectWithNullableFields.fromJson(
+            File("../../../tests/test-files/ObjectWithNullableFields_NoNull.json").bufferedReader().use { it.readText() }
+        )
+        val reversed = ObjectWithNullableFields.fromJson(
+            File("../../../tests/test-files/ObjectWithNullableFields_NoNull_ReversedRecord.json").bufferedReader().use { it.readText() }
+        )
+        assertEquals(normal, reversed)
+        assertEquals(normal.hashCode(), reversed.hashCode())
+    }
+
+    @Test
+    fun invalidTimestampsFallBack() {
+        assertEquals(null, ObjectWithNullableFields.fromJson("""{"timestamp":"hello world"}""").timestamp)
+    }
 }

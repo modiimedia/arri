@@ -1,6 +1,8 @@
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.time.Instant
 import java.util.*
@@ -52,7 +54,9 @@ fun main() {
         float64 = 11.1,
         enumerator = ObjectWithEveryTypeEnumerator.B,
         array = mutableListOf(true, false, true),
-        discriminator = ObjectWithEveryTypeDiscriminatorB(title = "Hello world", description = "hi"),
+        unionExternal = ObjectWithEveryTypeUnionExternalArray(value = mutableListOf("foo", "bar", "baz")),
+        unionInternal = ObjectWithEveryTypeUnionInternalCircle(radius = 15.5),
+        unionAdjacent = ObjectWithEveryTypeUnionAdjacentBoolean(data = true),
         nestedArray = mutableListOf(
             mutableListOf(
                 ObjectWithEveryTypeNestedArrayElementElement(
@@ -88,7 +92,14 @@ fun main() {
             displayName = "john doe",
             phoneNumber = null,
             emailAddress = "johndoe@gmail.com",
-            isAdmin = null
+            isAdmin = null,
+            externalEvent = ObjectWithSnakeCaseKeysExternalEventUserCreated(
+                value = ObjectWithSnakeCaseKeysExternalEventUserCreatedValue(userId = "1")
+            ),
+            internalEvent = ObjectWithSnakeCaseKeysInternalEventUserUpdated(userId = "1"),
+            adjacentEvent = ObjectWithSnakeCaseKeysAdjacentEventUserCreated(
+                eventData = ObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData(userId = "1")
+            ),
         )
         val result = client.tests.sendObjectWithSnakeCaseKeys(input)
         expect(tag, result, input)
@@ -101,12 +112,49 @@ fun main() {
             displayName = "john doe",
             phoneNumber = "211-211-2111",
             emailAddress = null,
-            isAdmin = true
+            isAdmin = true,
+            externalEvent = ObjectWithPascalCaseKeysExternalEventUserCreated(
+                value = ObjectWithPascalCaseKeysExternalEventUserCreatedValue(userId = "1")
+            ),
+            internalEvent = ObjectWithPascalCaseKeysInternalEventUserUpdated(
+                userId = "1",
+                updatedAt = targetDate,
+            ),
+            adjacentEvent = ObjectWithPascalCaseKeysAdjacentEventUserUpdated(eventData = "hello"),
         )
         val result = client.tests.sendObjectWithPascalCaseKeys(input)
         expect(tag, result, input)
         input = input.copy(isAdmin = null)
         val result2 = client.tests.sendObjectWithPascalCaseKeys(input)
+        expect(tag, result2, input)
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE OBJECT WITH KEBAB CASE KEYS"
+        var input = ObjectWithKebabCaseKeys(
+            createdAt = targetDate,
+            displayName = "john doe",
+            phoneNumber = null,
+            emailAddress = null,
+            isAdmin = true,
+            externalEvent = null,
+            internalEvent = ObjectWithKebabCaseKeysInternalEventUserUpdated(
+                userId = "1",
+                updatedAt = targetDate,
+            ),
+            adjacentEvent = ObjectWithKebabCaseKeysAdjacentEventUserCreated(
+                eventData = ObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData(userId = "1")
+            ),
+        )
+        val result = client.tests.sendObjectWithKebabCaseKeys(input)
+        expect(tag, result, input)
+        input = input.copy(
+            externalEvent = ObjectWithKebabCaseKeysExternalEventUserDeleted(
+                value = ObjectWithKebabCaseKeysExternalEventUserDeletedValue(userId = "1")
+            ),
+            adjacentEvent = ObjectWithKebabCaseKeysAdjacentEventUserUpdated(eventData = "hello"),
+        )
+        val result2 = client.tests.sendObjectWithKebabCaseKeys(input)
         expect(tag, result2, input)
     }
 
@@ -156,7 +204,9 @@ fun main() {
                 nestedArray = null,
                 `object` = null,
                 nestedObject = null,
-                discriminator = null,
+                unionExternal = null,
+                unionInternal = null,
+                unionAdjacent = null,
                 record = null,
             )
         )
@@ -203,10 +253,9 @@ fun main() {
                         ),
                     ),
                 ),
-                discriminator = ObjectWithEveryNullableTypeDiscriminatorB(
-                    title = "Hello world",
-                    description = ""
-                ),
+                unionExternal = ObjectWithEveryNullableTypeUnionExternalBoolean(value = true),
+                unionInternal = ObjectWithEveryNullableTypeUnionInternalCircle(radius = 15.5),
+                unionAdjacent = ObjectWithEveryNullableTypeUnionAdjacentBoolean(data = true),
                 record = mutableMapOf(Pair("A", 1UL), Pair("B", 0UL)),
             )
         )
@@ -249,37 +298,271 @@ fun main() {
     }
 
     runBlocking {
-        val tag = "SEND/RECEIVE RECURSIVE UNION"
-        val input = RecursiveUnionChildren(
-            data = mutableListOf(
-                RecursiveUnionChild(
-                    data = RecursiveUnionText(
-                        data = "hello world"
-                    )
+        val tag = "SEND/RECEIVE RECURSIVE UNION (EXTERNAL)"
+        val input = RecursiveUnionExternalChildren(
+            value = mutableListOf(
+                RecursiveUnionExternalChild(value = RecursiveUnionExternalText(value = "hello world")),
+                RecursiveUnionExternalShape(
+                    value = RecursiveUnionExternalShapeValue(width = 10.0, height = 10.0, color = "red")
                 ),
-                RecursiveUnionText(
-                    data = "hello world"
+                RecursiveUnionExternalChildren(
+                    value = mutableListOf(RecursiveUnionExternalText(value = "hello world 2"))
                 ),
-                RecursiveUnionShape(
-                    data = RecursiveUnionShapeData(
-                        width = 10.0,
-                        height = 10.0,
-                        color = "red"
-                    )
-                ),
-                RecursiveUnionChildren(
-                    data = mutableListOf(
-                        RecursiveUnionText(
-                            data = "hello world 2"
-                        )
-                    )
-                )
             )
         )
-        val result = client.tests.sendRecursiveUnion(input)
+        val result = client.tests.sendRecursiveUnionExternal(input)
         expect(tag, input, result)
     }
 
+    runBlocking {
+        val tag = "SEND/RECEIVE RECURSIVE UNION (INTERNAL)"
+        val input = RecursiveUnionInternalChildren(
+            data = mutableListOf(
+                RecursiveUnionInternalChild(data = RecursiveUnionInternalText(data = "hello world")),
+                RecursiveUnionInternalShape(
+                    data = RecursiveUnionInternalShapeData(width = 10.0, height = 10.0, color = "red")
+                ),
+                RecursiveUnionInternalChildren(
+                    data = mutableListOf(RecursiveUnionInternalText(data = "hello world 2"))
+                ),
+            )
+        )
+        val result = client.tests.sendRecursiveUnionInternal(input)
+        expect(tag, input, result)
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE RECURSIVE UNION (ADJACENT)"
+        val input = RecursiveUnionAdjacentChildren(
+            data = mutableListOf(
+                RecursiveUnionAdjacentChild(data = RecursiveUnionAdjacentText(data = "hello world")),
+                RecursiveUnionAdjacentShape(
+                    data = RecursiveUnionAdjacentShapeData(width = 10.0, height = 10.0, color = "red")
+                ),
+                RecursiveUnionAdjacentChildren(
+                    data = mutableListOf(RecursiveUnionAdjacentText(data = "hello world 2"))
+                ),
+            )
+        )
+        val result = client.tests.sendRecursiveUnionAdjacent(input)
+        expect(tag, input, result)
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE DISCRIMINATOR WITH EMPTY OBJECT"
+        val inputs = listOf(
+            DiscriminatorWithEmptyObjectEmpty(),
+            DiscriminatorWithEmptyObjectNotEmpty(foo = "hello world", bar = 1.5, baz = true),
+        )
+        for (input in inputs) {
+            expect(tag, client.tests.sendDiscriminatorWithEmptyObject(input), input)
+        }
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE INTERNALLY TAGGED UNION WITH GET REQUEST"
+        val timestamp = Instant.parse("2001-01-01T16:00:00.000Z")
+        val encodedString = "a b&c=d/é?#+"
+        val inputs = listOf(
+            UnionInternalGetRequestEmpty(),
+            UnionInternalGetRequestWithFields(
+                string = "hello world",
+                nullableString = null,
+                float64 = 1.5,
+                int64 = -5,
+                boolean = false,
+                timestamp = timestamp,
+                nullableEnum = null,
+            ),
+            UnionInternalGetRequestWithFields(
+                string = "hello world",
+                nullableString = "hello world",
+                optionalString = "hello world",
+                float64 = 1.5,
+                int64 = 5,
+                boolean = true,
+                timestamp = timestamp,
+                nullableEnum = UnionInternalGetRequestWithFieldsNullableEnum.B,
+            ),
+            UnionInternalGetRequestWithFields(
+                string = encodedString,
+                nullableString = encodedString,
+                optionalString = encodedString,
+                float64 = 1.5,
+                int64 = 5,
+                boolean = true,
+                timestamp = timestamp,
+                nullableEnum = UnionInternalGetRequestWithFieldsNullableEnum.A,
+            ),
+            UnionInternalGetRequestWithFields(
+                string = "null",
+                nullableString = null,
+                float64 = 1.5,
+                int64 = 5,
+                boolean = true,
+                timestamp = timestamp,
+                nullableEnum = null,
+            ),
+        )
+        for (input in inputs) {
+            expect(tag, client.tests.sendUnionInternalGetRequest(input), input)
+        }
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE UNION VARIANT SHAPES"
+        val internal = listOf(
+            UnionVariantShapesInternalEmpty(),
+            UnionVariantShapesInternalAllOptional(),
+            UnionVariantShapesInternalAllOptional(second = 1),
+            UnionVariantShapesInternalAllOptional(first = "a", second = 1),
+            UnionVariantShapesInternalMixed(required = "a", nullable = null),
+            UnionVariantShapesInternalMixed(required = "a", optional = "b", nullable = "c"),
+            UnionVariantShapesInternalNested(
+                array = mutableListOf(UnionVariantShapesInternalNestedArrayElement(id = "a")),
+                record = mutableMapOf(Pair("a", -1L)),
+                `object` = UnionVariantShapesInternalNestedObject(timestamp = targetDate),
+            ),
+        )
+        val external = listOf(
+            UnionVariantShapesExternalEmpty(value = UnionVariantShapesExternalEmptyValue()),
+            UnionVariantShapesExternalAllOptional(value = UnionVariantShapesExternalAllOptionalValue()),
+            UnionVariantShapesExternalAllOptional(value = UnionVariantShapesExternalAllOptionalValue(second = 1)),
+            UnionVariantShapesExternalMixed(
+                value = UnionVariantShapesExternalMixedValue(required = "a", nullable = null)
+            ),
+            UnionVariantShapesExternalMixed(
+                value = UnionVariantShapesExternalMixedValue(required = "a", optional = "b", nullable = "c")
+            ),
+        )
+        val adjacent = listOf(
+            UnionVariantShapesAdjacentEmpty(data = UnionVariantShapesAdjacentEmptyData()),
+            UnionVariantShapesAdjacentAllOptional(data = UnionVariantShapesAdjacentAllOptionalData()),
+            UnionVariantShapesAdjacentAllOptional(data = UnionVariantShapesAdjacentAllOptionalData(second = 1)),
+            UnionVariantShapesAdjacentMixed(
+                data = UnionVariantShapesAdjacentMixedData(required = "a", nullable = null)
+            ),
+            UnionVariantShapesAdjacentMixed(
+                data = UnionVariantShapesAdjacentMixedData(required = "a", optional = "b", nullable = "c")
+            ),
+        )
+        val defaults = UnionVariantShapes(internal = internal[0], external = external[0], adjacent = adjacent[0])
+        val inputs = internal.map { defaults.copy(internal = it) } +
+            external.map { defaults.copy(external = it) } +
+            adjacent.map { defaults.copy(adjacent = it) }
+        for (input in inputs) {
+            expect(tag, client.tests.sendUnionVariantShapes(input), input)
+        }
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE UNION VARIANT TYPES"
+        val anyObject = JsonObject(mapOf(Pair("a", JsonPrimitive(1))))
+        val external = listOf(
+            UnionVariantTypesExternalString(value = "hello world"),
+            UnionVariantTypesExternalInt64(value = -5),
+            UnionVariantTypesExternalUint64(value = 5u),
+            UnionVariantTypesExternalFloat64(value = 1.5),
+            UnionVariantTypesExternalEnumerator(value = UnionVariantTypesExternalEnumeratorValue.B),
+            UnionVariantTypesExternalRecord(value = mutableMapOf(Pair("a", "b"))),
+            UnionVariantTypesExternalAny(value = anyObject),
+            UnionVariantTypesExternalAny(value = JsonNull),
+            UnionVariantTypesExternalNullableString(value = null),
+            UnionVariantTypesExternalNullableString(value = "hello world"),
+            UnionVariantTypesExternalNullableArray(value = null),
+            UnionVariantTypesExternalNullableArray(value = mutableListOf("hello world")),
+            UnionVariantTypesExternalExternalUnion(
+                value = UnionVariantTypesExternalExternalUnionValueText(value = "hello")
+            ),
+            UnionVariantTypesExternalInternalUnion(
+                value = UnionVariantTypesExternalInternalUnionValueCircle(radius = 1.5)
+            ),
+            UnionVariantTypesExternalAdjacentUnion(
+                value = UnionVariantTypesExternalAdjacentUnionValueText(data = "hello")
+            ),
+            UnionVariantTypesExternalClass(value = "hello world"),
+            UnionVariantTypesExternalDefault(value = "hello world"),
+        )
+        val adjacent = listOf(
+            UnionVariantTypesAdjacentString(data = "hello world"),
+            UnionVariantTypesAdjacentInt64(data = -5),
+            UnionVariantTypesAdjacentUint64(data = 5u),
+            UnionVariantTypesAdjacentFloat64(data = 1.5),
+            UnionVariantTypesAdjacentEnumerator(data = UnionVariantTypesAdjacentEnumeratorData.B),
+            UnionVariantTypesAdjacentRecord(data = mutableMapOf(Pair("a", "b"))),
+            UnionVariantTypesAdjacentAny(data = anyObject),
+            UnionVariantTypesAdjacentAny(data = JsonNull),
+            UnionVariantTypesAdjacentNullableString(data = null),
+            UnionVariantTypesAdjacentNullableString(data = "hello world"),
+            UnionVariantTypesAdjacentNullableArray(data = null),
+            UnionVariantTypesAdjacentNullableArray(data = mutableListOf("hello world")),
+            UnionVariantTypesAdjacentExternalUnion(
+                data = UnionVariantTypesAdjacentExternalUnionDataText(value = "hello")
+            ),
+            UnionVariantTypesAdjacentInternalUnion(
+                data = UnionVariantTypesAdjacentInternalUnionDataCircle(radius = 1.5)
+            ),
+            UnionVariantTypesAdjacentAdjacentUnion(
+                data = UnionVariantTypesAdjacentAdjacentUnionDataText(data = "hello")
+            ),
+            UnionVariantTypesAdjacentClass(data = "hello world"),
+            UnionVariantTypesAdjacentDefault(data = "hello world"),
+        )
+        val internal = listOf(
+            UnionVariantTypesInternalClass(`for` = "a", default = "b"),
+            UnionVariantTypesInternalDefault(
+                `class` = "a",
+                internalUnion = UnionVariantTypesInternalDefaultInternalUnionCircle(radius = 1.5),
+                adjacentUnion = UnionVariantTypesInternalDefaultAdjacentUnionText(data = "hello"),
+                externalUnion = UnionVariantTypesInternalDefaultExternalUnionText(value = "hello"),
+            ),
+        )
+        val defaults = UnionVariantTypes(external = external[0], adjacent = adjacent[0], internal = internal[0])
+        val inputs = external.map { defaults.copy(external = it) } +
+            adjacent.map { defaults.copy(adjacent = it) } +
+            internal.map { defaults.copy(internal = it) }
+        for (input in inputs) {
+            expect(tag, client.tests.sendUnionVariantTypes(input), input)
+        }
+    }
+
+    runBlocking {
+        val tag = "PREFIXED CLIENT SEND/RECEIVE UNIONS"
+        val prefixedClient = TestClientPrefixed(
+            httpClient = httpClient,
+            baseUrl = baseUrl,
+            headers = {
+                mutableMapOf(Pair("x-test-header", "12345"))
+            }
+        )
+        val external = FooRecursiveUnionExternalChild(value = FooRecursiveUnionExternalText(value = "hello world"))
+        expect(tag, prefixedClient.sendRecursiveUnionExternal(external), external)
+        val internal = FooRecursiveUnionInternalChild(data = FooRecursiveUnionInternalText(data = "hello world"))
+        expect(tag, prefixedClient.sendRecursiveUnionInternal(internal), internal)
+        val adjacent = FooRecursiveUnionAdjacentChild(data = FooRecursiveUnionAdjacentText(data = "hello world"))
+        expect(tag, prefixedClient.sendRecursiveUnionAdjacent(adjacent), adjacent)
+        val getInput = FooUnionInternalGetRequestWithFields(
+            string = "a b&c",
+            nullableString = null,
+            float64 = 1.5,
+            int64 = 5,
+            boolean = true,
+            timestamp = targetDate,
+            nullableEnum = FooUnionInternalGetRequestWithFieldsNullableEnum.A,
+        )
+        expect(tag, prefixedClient.sendUnionInternalGetRequest(getInput), getInput)
+    }
+
+    runBlocking {
+        val tag = "SERVER ERRORS ARE RETURNED AS A CLIENT ERROR"
+        try {
+            client.tests.sendError(SendErrorParams(code = 418u, message = "this is a test error"))
+            expect(tag, input = false, result = true)
+        } catch (err: TestClientError) {
+            expect(tag, err.code, 418)
+            expect(tag, err.errorMessage, "this is a test error")
+        }
+    }
 
     testSseReceiveMessages(client)
     testAutoRetriesOnServerError(client)

@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.Instant
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ObjectWithEveryTypeTest {
     private val value = ObjectWithEveryType(
@@ -45,6 +46,12 @@ class ObjectWithEveryTypeTest {
 
     @Test
     fun toUrlQueryParams() {
+        val params = value.toUrlQueryParams().split("&")
+        assertTrue("timestamp=2001-01-01T16%3A00%3A00.000Z" in params)
+        assertTrue("float32=1.5" in params)
+        assertTrue("int64=1000" in params)
+        assertTrue("uint64=1000" in params)
+        assertTrue("enum=BAZ" in params)
     }
 
     @Test
@@ -58,4 +65,23 @@ class ObjectWithEveryTypeTest {
         assertEquals(badDataResult2, ObjectWithEveryType.new().copy(timestamp = badDataResult2.timestamp))
     }
 
+    @Test
+    fun recordOrderDoesNotAffectEquality() {
+        val normal = ObjectWithEveryType.fromJson(
+            File("../../../tests/test-files/ObjectWithEveryType.json").bufferedReader().use { it.readText() }
+        )
+        val reversed = ObjectWithEveryType.fromJson(
+            File("../../../tests/test-files/ObjectWithEveryType_ReversedRecord.json").bufferedReader().use { it.readText() }
+        )
+        assertEquals(normal, reversed)
+        assertEquals(normal.hashCode(), reversed.hashCode())
+    }
+
+    @Test
+    fun invalidTimestampsFallBack() {
+        for (input in listOf("hello world", "", "-1")) {
+            val result = ObjectWithEveryType.fromJson("""{"timestamp":"$input"}""")
+            assertEquals(ObjectWithEveryType.new().copy(timestamp = result.timestamp), result)
+        }
+    }
 }

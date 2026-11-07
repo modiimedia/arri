@@ -124,7 +124,11 @@ export function kotlinTimestampFromSchema(
             return `when (${input}) {
     is JsonPrimitive ->
         if (${input}!!.jsonPrimitive.isString)
-            Instant.parse(${input}!!.jsonPrimitive.content)
+            try {
+                Instant.parse(${input}!!.jsonPrimitive.content)
+            } catch (e: java.time.format.DateTimeParseException) {
+                ${defaultValue}
+            }
         else
             ${defaultValue}
 

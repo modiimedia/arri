@@ -1461,7 +1461,11 @@ data class FooObjectWithEveryType(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -1744,7 +1748,11 @@ data class FooObjectWithEveryTypeObject(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -1990,7 +1998,11 @@ data class FooObjectWithEveryTypeUnionExternalNullableTimestamp(
             val value: Instant? = when (__input.jsonObject["nullable-timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -2454,7 +2466,11 @@ data class FooObjectWithEveryTypeUnionAdjacentNullableTimestamp(
             val data: Instant? = when (__input.jsonObject["data"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["data"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -2577,7 +2593,11 @@ data class FooObjectWithEveryTypeNestedObject(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -2653,7 +2673,11 @@ data class FooObjectWithEveryTypeNestedObjectData(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -2724,7 +2748,11 @@ data class FooObjectWithEveryTypeNestedObjectDataData(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -2786,7 +2814,11 @@ data class FooObjectWithEveryTypeNestedArrayElementElement(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -2883,7 +2915,11 @@ data class FooObjectWithKebabCaseKeys(
             val createdAt: Instant = when (__input.jsonObject["created-at"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["created-at"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["created-at"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["created-at"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -3401,7 +3437,11 @@ data class FooObjectWithKebabCaseKeysInternalEventUserUpdated(
             val updatedAt: Instant? = when (__input.jsonObject["updated-at"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["updated-at"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["updated-at"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["updated-at"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -3825,7 +3865,11 @@ data class FooObjectWithEveryNullableType(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -4114,7 +4158,11 @@ data class FooObjectWithEveryNullableTypeObject(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -4360,7 +4408,11 @@ data class FooObjectWithEveryNullableTypeUnionExternalNullableTimestamp(
             val value: Instant? = when (__input.jsonObject["nullable-timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -4824,7 +4876,11 @@ data class FooObjectWithEveryNullableTypeUnionAdjacentNullableTimestamp(
             val data: Instant? = when (__input.jsonObject["data"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["data"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -4953,7 +5009,11 @@ data class FooObjectWithEveryNullableTypeNestedObject(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -5035,7 +5095,11 @@ data class FooObjectWithEveryNullableTypeNestedObjectData(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -5112,7 +5176,11 @@ data class FooObjectWithEveryNullableTypeNestedObjectDataData(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -5180,7 +5248,11 @@ data class FooObjectWithEveryNullableTypeNestedArrayElementElement(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -5277,7 +5349,11 @@ data class FooObjectWithPascalCaseKeys(
             val createdAt: Instant = when (__input.jsonObject["CreatedAt"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["CreatedAt"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["CreatedAt"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["CreatedAt"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -5795,7 +5871,11 @@ data class FooObjectWithPascalCaseKeysInternalEventUserUpdated(
             val updatedAt: Instant? = when (__input.jsonObject["UpdatedAt"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["UpdatedAt"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["UpdatedAt"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["UpdatedAt"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -6074,7 +6154,11 @@ data class FooObjectWithSnakeCaseKeys(
             val createdAt: Instant = when (__input.jsonObject["created_at"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["created_at"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["created_at"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["created_at"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -6592,7 +6676,11 @@ data class FooObjectWithSnakeCaseKeysInternalEventUserUpdated(
             val updatedAt: Instant? = when (__input.jsonObject["updated_at"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["updated_at"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["updated_at"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["updated_at"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -7073,7 +7161,11 @@ data class FooObjectWithEveryOptionalType(
             val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -7356,7 +7448,11 @@ data class FooObjectWithEveryOptionalTypeObject(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -7602,7 +7698,11 @@ data class FooObjectWithEveryOptionalTypeUnionExternalNullableTimestamp(
             val value: Instant? = when (__input.jsonObject["nullable-timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["nullable-timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -8066,7 +8166,11 @@ data class FooObjectWithEveryOptionalTypeUnionAdjacentNullableTimestamp(
             val data: Instant? = when (__input.jsonObject["data"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["data"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["data"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            null
+                        }
                     else
                         null
 
@@ -8189,7 +8293,11 @@ data class FooObjectWithEveryOptionalTypeNestedObject(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -8265,7 +8373,11 @@ data class FooObjectWithEveryOptionalTypeNestedObjectData(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -8336,7 +8448,11 @@ data class FooObjectWithEveryOptionalTypeNestedObjectDataData(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -8398,7 +8514,11 @@ data class FooObjectWithEveryOptionalTypeNestedArrayElementElement(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -9622,7 +9742,11 @@ data class FooUnionInternalGetRequestWithFields(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -10230,7 +10354,11 @@ data class FooUnionVariantShapesInternalNestedObject(
             val timestamp: Instant = when (__input.jsonObject["timestamp"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -14170,7 +14298,11 @@ data class FooChatMessageText(
             val date: Instant = when (__input.jsonObject["date"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["date"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -14266,7 +14398,11 @@ data class FooChatMessageImage(
             val date: Instant = when (__input.jsonObject["date"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["date"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -14362,7 +14498,11 @@ data class FooChatMessageUrl(
             val date: Instant = when (__input.jsonObject["date"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["date"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
@@ -14619,7 +14759,11 @@ data class FooUsersWatchUserResponse(
             val createdAt: Instant = when (__input.jsonObject["createdAt"]) {
                 is JsonPrimitive ->
                     if (__input.jsonObject["createdAt"]!!.jsonPrimitive.isString)
-                        Instant.parse(__input.jsonObject["createdAt"]!!.jsonPrimitive.content)
+                        try {
+                            Instant.parse(__input.jsonObject["createdAt"]!!.jsonPrimitive.content)
+                        } catch (e: java.time.format.DateTimeParseException) {
+                            Instant.now()
+                        }
                     else
                         Instant.now()
 
