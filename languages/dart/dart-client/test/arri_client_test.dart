@@ -9,6 +9,21 @@ import 'package:test/test.dart';
 main() {
   final nonExistentUrl = "http://thisurldoesntexist.blah";
 
+  test("encodeQueryParams() encodes keys and values", () {
+    expect(
+      encodeQueryParams({
+        "id": 1,
+        "my key": "a b&c=d/\u00e9?#+",
+        "nullable": null,
+        "isAdmin": false,
+      }),
+      equals(
+        "id=1&my+key=a+b%26c%3Dd%2F%C3%A9%3F%23%2B&nullable=null&isAdmin=false",
+      ),
+    );
+    expect(encodeQueryParams({}), equals(""));
+  });
+
   test("invalid url", () async {
     final response =
         await parsedArriRequestSafe(nonExistentUrl, parser: (data) {});

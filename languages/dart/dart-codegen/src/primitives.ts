@@ -24,9 +24,12 @@ export function dartStringFromSchema(
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
-                return `if (${input} != null) ${target}.add("${key}=$${input}")`;
+                return `if (${input} != null) ${target}.add("${key}=\${Uri.encodeQueryComponent(${input}!)}")`;
             }
-            return `${target}.add("${key}=$${input}")`;
+            if (isNullable) {
+                return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input} ?? "null")}")`;
+            }
+            return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input})}")`;
         },
         content: '',
     };
@@ -91,12 +94,12 @@ export function dartDateTimeFromSchema(
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
-                return `if (${input} != null) ${target}.add("${key}=\${${input}!.toUtc().toIso8601String()}")`;
+                return `if (${input} != null) ${target}.add("${key}=\${Uri.encodeQueryComponent(${input}!.toUtc().toIso8601String())}")`;
             }
             if (schema.isNullable) {
-                return `${target}.add("${key}=\${${input}?.toUtc().toIso8601String()}")`;
+                return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input}?.toUtc().toIso8601String() ?? "null")}")`;
             }
-            return `${target}.add("${key}=\${${input}.toUtc().toIso8601String()}")`;
+            return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input}.toUtc().toIso8601String())}")`;
         },
         content: '',
     };

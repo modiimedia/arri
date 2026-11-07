@@ -22,6 +22,17 @@ enum HttpMethod implements Comparable<HttpMethod> {
 
 final timeoutDefault = Duration(seconds: 30);
 
+/// Encode params as a url query string. Null values are sent as "null".
+String encodeQueryParams(Map<String, dynamic> params) {
+  final queryParts = <String>[];
+  for (final entry in params.entries) {
+    final key = Uri.encodeQueryComponent(entry.key);
+    final value = Uri.encodeQueryComponent(entry.value.toString());
+    queryParts.add("$key=$value");
+  }
+  return queryParts.join("&");
+}
+
 /// Perform a raw http request
 Future<http.Response> arriRequest(
   String url, {
@@ -59,11 +70,7 @@ Future<http.Response> arriRequest(
     case HttpMethod.get:
       final paramsInput = query ?? params;
       if (paramsInput != null) {
-        final queryParts = <String>[];
-        for (final entry in paramsInput.entries) {
-          queryParts.add("${entry.key}=${entry.value.toString()}");
-        }
-        final uri = Uri.parse("$url?${queryParts.join("&")}");
+        final uri = Uri.parse("$url?${encodeQueryParams(paramsInput)}");
         result = await client.get(
           uri,
           headers: finalHeaders,
@@ -108,11 +115,7 @@ Future<http.Response> arriRequest(
     case HttpMethod.head:
       final paramsInput = query ?? params;
       if (paramsInput != null) {
-        final queryParts = <String>[];
-        for (final entry in paramsInput.entries) {
-          queryParts.add("${entry.key}=${entry.value.toString()}");
-        }
-        final uri = Uri.parse("$url?${queryParts.join("&")}");
+        final uri = Uri.parse("$url?${encodeQueryParams(paramsInput)}");
         result = await client
             .head(
               uri,

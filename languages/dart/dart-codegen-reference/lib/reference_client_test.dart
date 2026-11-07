@@ -28,7 +28,7 @@ void main() {
       expect(
         input.toUrlQueryParams(),
         equals(
-          "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z",
+          "id=1&name=The+Adventures+of+Tom+Sawyer&createdAt=2001-01-01T16%3A00%3A00.000Z&updatedAt=2001-01-01T16%3A00%3A00.000Z",
         ),
       );
     });
@@ -72,12 +72,16 @@ void main() {
       );
     });
     test("toUrlQueryParams()", () {
-      expect(input.toUrlQueryParams(), equals("id=1&content=hello world"));
+      expect(input.toUrlQueryParams(), equals("id=1&content=hello+world"));
       expect(
-        specialCharsInput.toUrlQueryParams(),
-        equals(
-          "id=1&content=double-quote: \" | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000",
+        Uri.splitQueryString(specialCharsInput.toUrlQueryParams()),
+        equals({"id": "1", "content": specialCharsInput.content}),
+      );
+      expect(
+        Uri.splitQueryString(
+          NestedObject(id: "1", content: "a b&c=d/?#+").toUrlQueryParams(),
         ),
+        equals({"id": "1", "content": "a b&c=d/?#+"}),
       );
     });
     test("== operator", () {
@@ -239,6 +243,16 @@ void main() {
         equals(false),
       );
     });
+    test("toUrlQueryParams()", () {
+      expect(ObjectWithOptionalFields.empty().toUrlQueryParams(), equals(""));
+      final params = Uri.splitQueryString(noUndefinedInput.toUrlQueryParams());
+      expect(params["string"], equals(noUndefinedInput.string));
+      expect(
+        params["timestamp"],
+        equals(noUndefinedInput.timestamp?.toUtc().toIso8601String()),
+      );
+      expect(params["enum"], equals(noUndefinedInput.k_enum?.serialValue));
+    });
   });
 
   group("ObjectWithNullableFields", () {
@@ -293,6 +307,21 @@ void main() {
         equals(allNullReference),
       );
       expect(noNullInput.toJsonString(), equals(noNullReference));
+    });
+    test("toUrlQueryParams()", () {
+      final nullParams = Uri.splitQueryString(
+        ObjectWithNullableFields.empty().toUrlQueryParams(),
+      );
+      expect(nullParams["string"], equals("null"));
+      expect(nullParams["timestamp"], equals("null"));
+      expect(nullParams["enum"], equals("null"));
+      final params = Uri.splitQueryString(noNullInput.toUrlQueryParams());
+      expect(params["string"], equals(noNullInput.string));
+      expect(
+        params["timestamp"],
+        equals(noNullInput.timestamp?.toUtc().toIso8601String()),
+      );
+      expect(params["enum"], equals(noNullInput.k_enum?.serialValue));
     });
   });
 

@@ -791,7 +791,7 @@ class FooManuallyAddedModel implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("hello=$hello");
+    _queryParts_.add("hello=${Uri.encodeQueryComponent(hello)}");
     return _queryParts_.join("&");
   }
 
@@ -849,7 +849,7 @@ class FooDefaultPayload implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("message=$message");
+    _queryParts_.add("message=${Uri.encodeQueryComponent(message)}");
     return _queryParts_.join("&");
   }
 
@@ -912,7 +912,9 @@ class FooDeprecatedRpcParams implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("deprecatedField=$deprecatedField");
+    _queryParts_.add(
+      "deprecatedField=${Uri.encodeQueryComponent(deprecatedField)}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -1003,7 +1005,7 @@ class FooDiscriminatorWithEmptyObjectEmpty
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("type=$type");
+    _queryParts_.add("type=EMPTY");
     return _queryParts_.join("&");
   }
 
@@ -1089,8 +1091,8 @@ class FooDiscriminatorWithEmptyObjectNotEmpty
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("type=$type");
-    _queryParts_.add("foo=$foo");
+    _queryParts_.add("type=NOT_EMPTY");
+    _queryParts_.add("foo=${Uri.encodeQueryComponent(foo)}");
     _queryParts_.add("bar=$bar");
     _queryParts_.add("baz=$baz");
     return _queryParts_.join("&");
@@ -1162,7 +1164,7 @@ class FooSendErrorParams implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     _queryParts_.add("code=$code");
-    _queryParts_.add("message=$message");
+    _queryParts_.add("message=${Uri.encodeQueryComponent(message)}");
     return _queryParts_.join("&");
   }
 
@@ -1425,8 +1427,10 @@ class FooObjectWithEveryType implements ArriModel {
       "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.",
     );
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("string=$string");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     _queryParts_.add("float32=$float32");
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int8=$int8");
@@ -1437,7 +1441,9 @@ class FooObjectWithEveryType implements ArriModel {
     _queryParts_.add("uint32=$uint32");
     _queryParts_.add("int64=$int64");
     _queryParts_.add("uint64=$uint64");
-    _queryParts_.add("enumerator=${enumerator.serialValue}");
+    _queryParts_.add(
+      "enumerator=${Uri.encodeQueryComponent(enumerator.serialValue)}",
+    );
     print(
       "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.",
     );
@@ -1634,9 +1640,11 @@ class FooObjectWithEveryTypeObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("string=$string");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string)}");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -2041,8 +2049,8 @@ class FooObjectWithEveryTypeUnionExternalObjectValue implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -2159,7 +2167,7 @@ class FooObjectWithEveryTypeUnionInternalRectangle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=rectangle");
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
     return _queryParts_.join("&");
@@ -2236,7 +2244,7 @@ class FooObjectWithEveryTypeUnionInternalCircle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -2647,8 +2655,8 @@ class FooObjectWithEveryTypeUnionAdjacentObjectData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -2738,8 +2746,10 @@ class FooObjectWithEveryTypeNestedObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObject/data.",
     );
@@ -2836,8 +2846,10 @@ class FooObjectWithEveryTypeNestedObjectData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryTypeNestedObjectData/data.",
     );
@@ -2927,8 +2939,10 @@ class FooObjectWithEveryTypeNestedObjectDataData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -3013,8 +3027,10 @@ class FooObjectWithEveryTypeNestedArrayElementElement implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -3145,9 +3161,13 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("created-at=${createdAt.toUtc().toIso8601String()}");
-    _queryParts_.add("display-name=$displayName");
-    _queryParts_.add("phone-number=$phoneNumber");
+    _queryParts_.add(
+      "created-at=${Uri.encodeQueryComponent(createdAt.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add("display-name=${Uri.encodeQueryComponent(displayName)}");
+    _queryParts_.add(
+      "phone-number=${Uri.encodeQueryComponent(phoneNumber ?? "null")}",
+    );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.",
     );
@@ -3157,7 +3177,10 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.",
     );
-    if (emailAddress != null) _queryParts_.add("email-address=$emailAddress");
+    if (emailAddress != null)
+      _queryParts_.add(
+        "email-address=${Uri.encodeQueryComponent(emailAddress!)}",
+      );
     if (isAdmin != null) _queryParts_.add("is-admin=$isAdmin");
     return _queryParts_.join("&");
   }
@@ -3526,7 +3549,7 @@ class FooObjectWithKebabCaseKeysExternalEventUserCreatedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user-id=$userId");
+    _queryParts_.add("user-id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -3600,7 +3623,7 @@ class FooObjectWithKebabCaseKeysExternalEventUserUpdatedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user-id=$userId");
+    _queryParts_.add("user-id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -3674,7 +3697,7 @@ class FooObjectWithKebabCaseKeysExternalEventUserDeletedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user-id=$userId");
+    _queryParts_.add("user-id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -3783,8 +3806,8 @@ class FooObjectWithKebabCaseKeysInternalEventUserCreated
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("event-type=$eventType");
-    _queryParts_.add("user-id=$userId");
+    _queryParts_.add("event-type=user-created");
+    _queryParts_.add("user-id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -3869,10 +3892,12 @@ class FooObjectWithKebabCaseKeysInternalEventUserUpdated
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("event-type=$eventType");
-    _queryParts_.add("user-id=$userId");
+    _queryParts_.add("event-type=user-updated");
+    _queryParts_.add("user-id=${Uri.encodeQueryComponent(userId)}");
     if (updatedAt != null)
-      _queryParts_.add("updated-at=${updatedAt!.toUtc().toIso8601String()}");
+      _queryParts_.add(
+        "updated-at=${Uri.encodeQueryComponent(updatedAt!.toUtc().toIso8601String())}",
+      );
     return _queryParts_.join("&");
   }
 
@@ -4149,7 +4174,7 @@ class FooObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user-id=$userId");
+    _queryParts_.add("user-id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -4423,8 +4448,10 @@ class FooObjectWithEveryNullableType implements ArriModel {
       "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/any.",
     );
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("string=$string");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string ?? "null")}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     _queryParts_.add("float32=$float32");
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int8=$int8");
@@ -4435,7 +4462,9 @@ class FooObjectWithEveryNullableType implements ArriModel {
     _queryParts_.add("uint32=$uint32");
     _queryParts_.add("int64=$int64");
     _queryParts_.add("uint64=$uint64");
-    _queryParts_.add("enumerator=${enumerator?.serialValue}");
+    _queryParts_.add(
+      "enumerator=${Uri.encodeQueryComponent(enumerator?.serialValue ?? "null")}",
+    );
     print(
       "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.",
     );
@@ -4640,9 +4669,11 @@ class FooObjectWithEveryNullableTypeObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("string=$string");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string ?? "null")}");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -5072,8 +5103,8 @@ class FooObjectWithEveryNullableTypeUnionExternalObjectValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -5198,7 +5229,7 @@ class FooObjectWithEveryNullableTypeUnionInternalRectangle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=rectangle");
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
     return _queryParts_.join("&");
@@ -5277,7 +5308,7 @@ class FooObjectWithEveryNullableTypeUnionInternalCircle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -5717,8 +5748,8 @@ class FooObjectWithEveryNullableTypeUnionAdjacentObjectData
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -5814,8 +5845,10 @@ class FooObjectWithEveryNullableTypeNestedObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id ?? "null")}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObject/data.",
     );
@@ -5916,8 +5949,10 @@ class FooObjectWithEveryNullableTypeNestedObjectData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id ?? "null")}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableTypeNestedObjectData/data.",
     );
@@ -6007,8 +6042,10 @@ class FooObjectWithEveryNullableTypeNestedObjectDataData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id ?? "null")}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -6094,8 +6131,10 @@ class FooObjectWithEveryNullableTypeNestedArrayElementElement
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id ?? "null")}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -6224,9 +6263,13 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("CreatedAt=${createdAt.toUtc().toIso8601String()}");
-    _queryParts_.add("DisplayName=$displayName");
-    _queryParts_.add("PhoneNumber=$phoneNumber");
+    _queryParts_.add(
+      "CreatedAt=${Uri.encodeQueryComponent(createdAt.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add("DisplayName=${Uri.encodeQueryComponent(displayName)}");
+    _queryParts_.add(
+      "PhoneNumber=${Uri.encodeQueryComponent(phoneNumber ?? "null")}",
+    );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.",
     );
@@ -6236,7 +6279,10 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.",
     );
-    if (emailAddress != null) _queryParts_.add("EmailAddress=$emailAddress");
+    if (emailAddress != null)
+      _queryParts_.add(
+        "EmailAddress=${Uri.encodeQueryComponent(emailAddress!)}",
+      );
     if (isAdmin != null) _queryParts_.add("IsAdmin=$isAdmin");
     return _queryParts_.join("&");
   }
@@ -6609,7 +6655,7 @@ class FooObjectWithPascalCaseKeysExternalEventUserCreatedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("UserId=$userId");
+    _queryParts_.add("UserId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -6683,7 +6729,7 @@ class FooObjectWithPascalCaseKeysExternalEventUserUpdatedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("UserId=$userId");
+    _queryParts_.add("UserId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -6757,7 +6803,7 @@ class FooObjectWithPascalCaseKeysExternalEventUserDeletedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("UserId=$userId");
+    _queryParts_.add("UserId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -6870,8 +6916,8 @@ class FooObjectWithPascalCaseKeysInternalEventUserCreated
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("EventType=$eventType");
-    _queryParts_.add("UserId=$userId");
+    _queryParts_.add("EventType=UserCreated");
+    _queryParts_.add("UserId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -6956,10 +7002,12 @@ class FooObjectWithPascalCaseKeysInternalEventUserUpdated
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("EventType=$eventType");
-    _queryParts_.add("UserId=$userId");
+    _queryParts_.add("EventType=UserUpdated");
+    _queryParts_.add("UserId=${Uri.encodeQueryComponent(userId)}");
     if (updatedAt != null)
-      _queryParts_.add("UpdatedAt=${updatedAt!.toUtc().toIso8601String()}");
+      _queryParts_.add(
+        "UpdatedAt=${Uri.encodeQueryComponent(updatedAt!.toUtc().toIso8601String())}",
+      );
     return _queryParts_.join("&");
   }
 
@@ -7240,7 +7288,7 @@ class FooObjectWithPascalCaseKeysAdjacentEventUserCreatedEventData
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("UserId=$userId");
+    _queryParts_.add("UserId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -7370,9 +7418,13 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("created_at=${createdAt.toUtc().toIso8601String()}");
-    _queryParts_.add("display_name=$displayName");
-    _queryParts_.add("phone_number=$phoneNumber");
+    _queryParts_.add(
+      "created_at=${Uri.encodeQueryComponent(createdAt.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add("display_name=${Uri.encodeQueryComponent(displayName)}");
+    _queryParts_.add(
+      "phone_number=${Uri.encodeQueryComponent(phoneNumber ?? "null")}",
+    );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.",
     );
@@ -7382,7 +7434,10 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.",
     );
-    if (emailAddress != null) _queryParts_.add("email_address=$emailAddress");
+    if (emailAddress != null)
+      _queryParts_.add(
+        "email_address=${Uri.encodeQueryComponent(emailAddress!)}",
+      );
     if (isAdmin != null) _queryParts_.add("is_admin=$isAdmin");
     return _queryParts_.join("&");
   }
@@ -7751,7 +7806,7 @@ class FooObjectWithSnakeCaseKeysExternalEventUserCreatedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user_id=$userId");
+    _queryParts_.add("user_id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -7825,7 +7880,7 @@ class FooObjectWithSnakeCaseKeysExternalEventUserUpdatedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user_id=$userId");
+    _queryParts_.add("user_id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -7899,7 +7954,7 @@ class FooObjectWithSnakeCaseKeysExternalEventUserDeletedValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user_id=$userId");
+    _queryParts_.add("user_id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -8008,8 +8063,8 @@ class FooObjectWithSnakeCaseKeysInternalEventUserCreated
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("event_type=$eventType");
-    _queryParts_.add("user_id=$userId");
+    _queryParts_.add("event_type=user_created");
+    _queryParts_.add("user_id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -8094,10 +8149,12 @@ class FooObjectWithSnakeCaseKeysInternalEventUserUpdated
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("event_type=$eventType");
-    _queryParts_.add("user_id=$userId");
+    _queryParts_.add("event_type=user_updated");
+    _queryParts_.add("user_id=${Uri.encodeQueryComponent(userId)}");
     if (updatedAt != null)
-      _queryParts_.add("updated_at=${updatedAt!.toUtc().toIso8601String()}");
+      _queryParts_.add(
+        "updated_at=${Uri.encodeQueryComponent(updatedAt!.toUtc().toIso8601String())}",
+      );
     return _queryParts_.join("&");
   }
 
@@ -8374,7 +8431,7 @@ class FooObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("user_id=$userId");
+    _queryParts_.add("user_id=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -8630,9 +8687,12 @@ class FooObjectWithEveryOptionalType implements ArriModel {
       "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/any.",
     );
     if (boolean != null) _queryParts_.add("boolean=$boolean");
-    if (string != null) _queryParts_.add("string=$string");
+    if (string != null)
+      _queryParts_.add("string=${Uri.encodeQueryComponent(string!)}");
     if (timestamp != null)
-      _queryParts_.add("timestamp=${timestamp!.toUtc().toIso8601String()}");
+      _queryParts_.add(
+        "timestamp=${Uri.encodeQueryComponent(timestamp!.toUtc().toIso8601String())}",
+      );
     if (float32 != null) _queryParts_.add("float32=$float32");
     if (float64 != null) _queryParts_.add("float64=$float64");
     if (int8 != null) _queryParts_.add("int8=$int8");
@@ -8644,7 +8704,9 @@ class FooObjectWithEveryOptionalType implements ArriModel {
     if (int64 != null) _queryParts_.add("int64=$int64");
     if (uint64 != null) _queryParts_.add("uint64=$uint64");
     if (enumerator != null)
-      _queryParts_.add("enumerator=${enumerator!.serialValue}");
+      _queryParts_.add(
+        "enumerator=${Uri.encodeQueryComponent(enumerator!.serialValue)}",
+      );
     print(
       "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.",
     );
@@ -8849,9 +8911,11 @@ class FooObjectWithEveryOptionalTypeObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("string=$string");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string)}");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -9281,8 +9345,8 @@ class FooObjectWithEveryOptionalTypeUnionExternalObjectValue
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -9407,7 +9471,7 @@ class FooObjectWithEveryOptionalTypeUnionInternalRectangle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=rectangle");
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
     return _queryParts_.join("&");
@@ -9486,7 +9550,7 @@ class FooObjectWithEveryOptionalTypeUnionInternalCircle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -9926,8 +9990,8 @@ class FooObjectWithEveryOptionalTypeUnionAdjacentObjectData
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -10023,8 +10087,10 @@ class FooObjectWithEveryOptionalTypeNestedObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObject/data.",
     );
@@ -10125,8 +10191,10 @@ class FooObjectWithEveryOptionalTypeNestedObjectData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalTypeNestedObjectData/data.",
     );
@@ -10216,8 +10284,10 @@ class FooObjectWithEveryOptionalTypeNestedObjectDataData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -10303,8 +10373,10 @@ class FooObjectWithEveryOptionalTypeNestedArrayElementElement
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -10393,7 +10465,7 @@ class FooRecursiveObject implements ArriModel {
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.",
     );
-    _queryParts_.add("value=$value");
+    _queryParts_.add("value=${Uri.encodeQueryComponent(value)}");
     return _queryParts_.join("&");
   }
 
@@ -10794,7 +10866,7 @@ class FooRecursiveUnionAdjacentShapeData implements ArriModel {
     final _queryParts_ = <String>[];
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
-    _queryParts_.add("color=$color");
+    _queryParts_.add("color=${Uri.encodeQueryComponent(color)}");
     return _queryParts_.join("&");
   }
 
@@ -11182,7 +11254,7 @@ class FooRecursiveUnionExternalShapeValue implements ArriModel {
     final _queryParts_ = <String>[];
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
-    _queryParts_.add("color=$color");
+    _queryParts_.add("color=${Uri.encodeQueryComponent(color)}");
     return _queryParts_.join("&");
   }
 
@@ -11288,7 +11360,7 @@ class FooRecursiveUnionInternalChild implements FooRecursiveUnionInternal {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
+    _queryParts_.add("kind=child");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChild/data.",
     );
@@ -11369,7 +11441,7 @@ class FooRecursiveUnionInternalChildren implements FooRecursiveUnionInternal {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
+    _queryParts_.add("kind=children");
     print(
       "[WARNING] arrays cannot be serialized to query params. Skipping field at /RecursiveUnionInternalChildren/data.",
     );
@@ -11437,8 +11509,8 @@ class FooRecursiveUnionInternalText implements FooRecursiveUnionInternal {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
-    _queryParts_.add("data=$data");
+    _queryParts_.add("kind=text");
+    _queryParts_.add("data=${Uri.encodeQueryComponent(data)}");
     return _queryParts_.join("&");
   }
 
@@ -11508,7 +11580,7 @@ class FooRecursiveUnionInternalShape implements FooRecursiveUnionInternal {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
+    _queryParts_.add("kind=shape");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveUnionInternalShape/data.",
     );
@@ -11597,7 +11669,7 @@ class FooRecursiveUnionInternalShapeData implements ArriModel {
     final _queryParts_ = <String>[];
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
-    _queryParts_.add("color=$color");
+    _queryParts_.add("color=${Uri.encodeQueryComponent(color)}");
     return _queryParts_.join("&");
   }
 
@@ -11753,16 +11825,24 @@ class FooUnionInternalGetRequestWithFields
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
-    _queryParts_.add("string=$string");
-    _queryParts_.add("nullableString=$nullableString");
+    _queryParts_.add("kind=with-fields");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string)}");
+    _queryParts_.add(
+      "nullableString=${Uri.encodeQueryComponent(nullableString ?? "null")}",
+    );
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int64=$int64");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
-    _queryParts_.add("nullableEnum=${nullableEnum?.serialValue}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add(
+      "nullableEnum=${Uri.encodeQueryComponent(nullableEnum?.serialValue ?? "null")}",
+    );
     if (optionalString != null)
-      _queryParts_.add("optionalString=$optionalString");
+      _queryParts_.add(
+        "optionalString=${Uri.encodeQueryComponent(optionalString!)}",
+      );
     return _queryParts_.join("&");
   }
 
@@ -11877,7 +11957,7 @@ class FooUnionInternalGetRequestEmpty implements FooUnionInternalGetRequest {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
+    _queryParts_.add("kind=empty");
     return _queryParts_.join("&");
   }
 
@@ -12072,7 +12152,7 @@ class FooUnionVariantShapesInternalEmpty
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
+    _queryParts_.add("kind=empty");
     return _queryParts_.join("&");
   }
 
@@ -12147,8 +12227,9 @@ class FooUnionVariantShapesInternalAllOptional
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
-    if (first != null) _queryParts_.add("first=$first");
+    _queryParts_.add("kind=all-optional");
+    if (first != null)
+      _queryParts_.add("first=${Uri.encodeQueryComponent(first!)}");
     if (second != null) _queryParts_.add("second=$second");
     return _queryParts_.join("&");
   }
@@ -12236,10 +12317,13 @@ class FooUnionVariantShapesInternalMixed
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
-    _queryParts_.add("required=$required");
-    _queryParts_.add("nullable=$nullable");
-    if (optional != null) _queryParts_.add("optional=$optional");
+    _queryParts_.add("kind=mixed");
+    _queryParts_.add("required=${Uri.encodeQueryComponent(required)}");
+    _queryParts_.add(
+      "nullable=${Uri.encodeQueryComponent(nullable ?? "null")}",
+    );
+    if (optional != null)
+      _queryParts_.add("optional=${Uri.encodeQueryComponent(optional!)}");
     return _queryParts_.join("&");
   }
 
@@ -12356,7 +12440,7 @@ class FooUnionVariantShapesInternalNested
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
+    _queryParts_.add("kind=nested");
     print(
       "[WARNING] arrays cannot be serialized to query params. Skipping field at /UnionVariantShapesInternalNested/array.",
     );
@@ -12438,7 +12522,7 @@ class FooUnionVariantShapesInternalNestedArrayElement implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
     return _queryParts_.join("&");
   }
 
@@ -12505,7 +12589,9 @@ class FooUnionVariantShapesInternalNestedObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -12878,7 +12964,8 @@ class FooUnionVariantShapesExternalAllOptionalValue implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    if (first != null) _queryParts_.add("first=$first");
+    if (first != null)
+      _queryParts_.add("first=${Uri.encodeQueryComponent(first!)}");
     if (second != null) _queryParts_.add("second=$second");
     return _queryParts_.join("&");
   }
@@ -12964,9 +13051,12 @@ class FooUnionVariantShapesExternalMixedValue implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("required=$required");
-    _queryParts_.add("nullable=$nullable");
-    if (optional != null) _queryParts_.add("optional=$optional");
+    _queryParts_.add("required=${Uri.encodeQueryComponent(required)}");
+    _queryParts_.add(
+      "nullable=${Uri.encodeQueryComponent(nullable ?? "null")}",
+    );
+    if (optional != null)
+      _queryParts_.add("optional=${Uri.encodeQueryComponent(optional!)}");
     return _queryParts_.join("&");
   }
 
@@ -13353,7 +13443,8 @@ class FooUnionVariantShapesAdjacentAllOptionalData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    if (first != null) _queryParts_.add("first=$first");
+    if (first != null)
+      _queryParts_.add("first=${Uri.encodeQueryComponent(first!)}");
     if (second != null) _queryParts_.add("second=$second");
     return _queryParts_.join("&");
   }
@@ -13436,9 +13527,12 @@ class FooUnionVariantShapesAdjacentMixedData implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("required=$required");
-    _queryParts_.add("nullable=$nullable");
-    if (optional != null) _queryParts_.add("optional=$optional");
+    _queryParts_.add("required=${Uri.encodeQueryComponent(required)}");
+    _queryParts_.add(
+      "nullable=${Uri.encodeQueryComponent(nullable ?? "null")}",
+    );
+    if (optional != null)
+      _queryParts_.add("optional=${Uri.encodeQueryComponent(optional!)}");
     return _queryParts_.join("&");
   }
 
@@ -14779,7 +14873,7 @@ class FooUnionVariantTypesExternalInternalUnionValueCircle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -16148,7 +16242,7 @@ class FooUnionVariantTypesAdjacentInternalUnionDataCircle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -16358,9 +16452,9 @@ class FooUnionVariantTypesInternalClass
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
-    _queryParts_.add("for=$k_for");
-    _queryParts_.add("default=$k_default");
+    _queryParts_.add("kind=class");
+    _queryParts_.add("for=${Uri.encodeQueryComponent(k_for)}");
+    _queryParts_.add("default=${Uri.encodeQueryComponent(k_default)}");
     return _queryParts_.join("&");
   }
 
@@ -16473,8 +16567,8 @@ class FooUnionVariantTypesInternalDefault
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("kind=$kind");
-    _queryParts_.add("class=$k_class");
+    _queryParts_.add("kind=default");
+    _queryParts_.add("class=${Uri.encodeQueryComponent(k_class)}");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.",
     );
@@ -16603,7 +16697,7 @@ class FooUnionVariantTypesInternalDefaultInternalUnionCircle
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -16937,7 +17031,7 @@ class FooAutoReconnectResponse implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     _queryParts_.add("count=$count");
-    _queryParts_.add("message=$message");
+    _queryParts_.add("message=${Uri.encodeQueryComponent(message)}");
     return _queryParts_.join("&");
   }
 
@@ -17013,7 +17107,9 @@ class FooStreamConnectionErrorTestParams implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     _queryParts_.add("statusCode=$statusCode");
-    _queryParts_.add("statusMessage=$statusMessage");
+    _queryParts_.add(
+      "statusMessage=${Uri.encodeQueryComponent(statusMessage)}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -17080,7 +17176,7 @@ class FooStreamConnectionErrorTestResponse implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("message=$message");
+    _queryParts_.add("message=${Uri.encodeQueryComponent(message)}");
     return _queryParts_.join("&");
   }
 
@@ -17211,7 +17307,7 @@ class FooStreamHeartbeatDetectionTestResponse implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("message=$message");
+    _queryParts_.add("message=${Uri.encodeQueryComponent(message)}");
     return _queryParts_.join("&");
   }
 
@@ -17389,9 +17485,9 @@ class FooStreamLargeObjectsResponseObjectsElement implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("name=$name");
-    _queryParts_.add("email=$email");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("name=${Uri.encodeQueryComponent(name)}");
+    _queryParts_.add("email=${Uri.encodeQueryComponent(email)}");
     return _queryParts_.join("&");
   }
 
@@ -17458,7 +17554,7 @@ class FooChatMessageParams implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("channelId=$channelId");
+    _queryParts_.add("channelId=${Uri.encodeQueryComponent(channelId)}");
     return _queryParts_.join("&");
   }
 
@@ -17579,12 +17675,14 @@ class FooChatMessageText implements FooChatMessage {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("messageType=$messageType");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("channelId=$channelId");
-    _queryParts_.add("userId=$userId");
-    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
-    _queryParts_.add("text=$text");
+    _queryParts_.add("messageType=TEXT");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("channelId=${Uri.encodeQueryComponent(channelId)}");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
+    _queryParts_.add(
+      "date=${Uri.encodeQueryComponent(date.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add("text=${Uri.encodeQueryComponent(text)}");
     return _queryParts_.join("&");
   }
 
@@ -17690,12 +17788,14 @@ class FooChatMessageImage implements FooChatMessage {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("messageType=$messageType");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("channelId=$channelId");
-    _queryParts_.add("userId=$userId");
-    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
-    _queryParts_.add("image=$image");
+    _queryParts_.add("messageType=IMAGE");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("channelId=${Uri.encodeQueryComponent(channelId)}");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
+    _queryParts_.add(
+      "date=${Uri.encodeQueryComponent(date.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add("image=${Uri.encodeQueryComponent(image)}");
     return _queryParts_.join("&");
   }
 
@@ -17801,12 +17901,14 @@ class FooChatMessageUrl implements FooChatMessage {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("messageType=$messageType");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("channelId=$channelId");
-    _queryParts_.add("userId=$userId");
-    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
-    _queryParts_.add("url=$url");
+    _queryParts_.add("messageType=URL");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("channelId=${Uri.encodeQueryComponent(channelId)}");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
+    _queryParts_.add(
+      "date=${Uri.encodeQueryComponent(date.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add("url=${Uri.encodeQueryComponent(url)}");
     return _queryParts_.join("&");
   }
 
@@ -17882,7 +17984,7 @@ class FooTestsStreamRetryWithNewCredentialsResponse implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("message=$message");
+    _queryParts_.add("message=${Uri.encodeQueryComponent(message)}");
     return _queryParts_.join("&");
   }
 
@@ -17943,7 +18045,7 @@ class FooUsersWatchUserParams implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("userId=$userId");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -18112,12 +18214,14 @@ class FooUsersWatchUserResponse implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("role=${role.serialValue}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("role=${Uri.encodeQueryComponent(role.serialValue)}");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/photo.",
     );
-    _queryParts_.add("createdAt=${createdAt.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "createdAt=${Uri.encodeQueryComponent(createdAt.toUtc().toIso8601String())}",
+    );
     _queryParts_.add("numFollowers=$numFollowers");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/settings.",
@@ -18134,7 +18238,7 @@ class FooUsersWatchUserResponse implements ArriModel {
     print(
       "[WARNING] arrays cannot be serialized to query params. Skipping field at /UsersWatchUserResponse/randomList.",
     );
-    if (bio != null) _queryParts_.add("bio=$bio");
+    if (bio != null) _queryParts_.add("bio=${Uri.encodeQueryComponent(bio!)}");
     return _queryParts_.join("&");
   }
 
@@ -18287,7 +18391,7 @@ class FooUserPhoto implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("url=$url");
+    _queryParts_.add("url=${Uri.encodeQueryComponent(url)}");
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
     _queryParts_.add("bytes=$bytes");
@@ -18381,7 +18485,9 @@ class FooUserSettings implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     _queryParts_.add("notificationsEnabled=$notificationsEnabled");
-    _queryParts_.add("preferredTheme=${preferredTheme.serialValue}");
+    _queryParts_.add(
+      "preferredTheme=${Uri.encodeQueryComponent(preferredTheme.serialValue)}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -18532,9 +18638,9 @@ class FooUsersWatchUserResponseRecentNotificationsElementPostLike
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("notificationType=$notificationType");
-    _queryParts_.add("postId=$postId");
-    _queryParts_.add("userId=$userId");
+    _queryParts_.add("notificationType=POST_LIKE");
+    _queryParts_.add("postId=${Uri.encodeQueryComponent(postId)}");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 
@@ -18631,10 +18737,10 @@ class FooUsersWatchUserResponseRecentNotificationsElementPostComment
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("notificationType=$notificationType");
-    _queryParts_.add("postId=$postId");
-    _queryParts_.add("userId=$userId");
-    _queryParts_.add("commentText=$commentText");
+    _queryParts_.add("notificationType=POST_COMMENT");
+    _queryParts_.add("postId=${Uri.encodeQueryComponent(postId)}");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
+    _queryParts_.add("commentText=${Uri.encodeQueryComponent(commentText)}");
     return _queryParts_.join("&");
   }
 
@@ -18712,8 +18818,8 @@ class FooUsersWatchUserResponseBookmarksentry implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("postId=$postId");
-    _queryParts_.add("userId=$userId");
+    _queryParts_.add("postId=${Uri.encodeQueryComponent(postId)}");
+    _queryParts_.add("userId=${Uri.encodeQueryComponent(userId)}");
     return _queryParts_.join("&");
   }
 

@@ -266,10 +266,14 @@ class Book implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("name=$name");
-    _queryParts_.add("createdAt=${createdAt.toUtc().toIso8601String()}");
-    _queryParts_.add("updatedAt=${updatedAt.toUtc().toIso8601String()}");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("name=${Uri.encodeQueryComponent(name)}");
+    _queryParts_.add(
+      "createdAt=${Uri.encodeQueryComponent(createdAt.toUtc().toIso8601String())}",
+    );
+    _queryParts_.add(
+      "updatedAt=${Uri.encodeQueryComponent(updatedAt.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
@@ -337,7 +341,7 @@ class BookParams implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("bookId=$bookId");
+    _queryParts_.add("bookId=${Uri.encodeQueryComponent(bookId)}");
     return _queryParts_.join("&");
   }
 
@@ -397,8 +401,8 @@ class NestedObject implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("id=$id");
-    _queryParts_.add("content=$content");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("content=${Uri.encodeQueryComponent(content)}");
     return _queryParts_.join("&");
   }
 
@@ -609,9 +613,11 @@ class ObjectWithEveryType implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("string=$string");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string)}");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp.toUtc().toIso8601String())}",
+    );
     _queryParts_.add("float32=$float32");
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int8=$int8");
@@ -622,7 +628,7 @@ class ObjectWithEveryType implements ArriModel {
     _queryParts_.add("uint32=$uint32");
     _queryParts_.add("int64=$int64");
     _queryParts_.add("uint64=$uint64");
-    _queryParts_.add("enum=${k_enum.serialValue}");
+    _queryParts_.add("enum=${Uri.encodeQueryComponent(k_enum.serialValue)}");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.",
     );
@@ -1099,7 +1105,7 @@ class UnionInternalRectangle implements UnionInternal {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=rectangle");
     _queryParts_.add("width=$width");
     _queryParts_.add("height=$height");
     return _queryParts_.join("&");
@@ -1165,7 +1171,7 @@ class UnionInternalCircle implements UnionInternal {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("shape=$shape");
+    _queryParts_.add("shape=circle");
     _queryParts_.add("radius=$radius");
     return _queryParts_.join("&");
   }
@@ -1653,10 +1659,13 @@ class ObjectWithOptionalFields implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    if (string != null) _queryParts_.add("string=$string");
+    if (string != null)
+      _queryParts_.add("string=${Uri.encodeQueryComponent(string!)}");
     if (boolean != null) _queryParts_.add("boolean=$boolean");
     if (timestamp != null)
-      _queryParts_.add("timestamp=${timestamp!.toUtc().toIso8601String()}");
+      _queryParts_.add(
+        "timestamp=${Uri.encodeQueryComponent(timestamp!.toUtc().toIso8601String())}",
+      );
     if (float32 != null) _queryParts_.add("float32=$float32");
     if (float64 != null) _queryParts_.add("float64=$float64");
     if (int8 != null) _queryParts_.add("int8=$int8");
@@ -1667,7 +1676,8 @@ class ObjectWithOptionalFields implements ArriModel {
     if (uint32 != null) _queryParts_.add("uint32=$uint32");
     if (int64 != null) _queryParts_.add("int64=$int64");
     if (uint64 != null) _queryParts_.add("uint64=$uint64");
-    if (k_enum != null) _queryParts_.add("enum=${k_enum!.serialValue}");
+    if (k_enum != null)
+      _queryParts_.add("enum=${Uri.encodeQueryComponent(k_enum!.serialValue)}");
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.",
     );
@@ -1970,9 +1980,11 @@ class ObjectWithNullableFields implements ArriModel {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("string=$string");
+    _queryParts_.add("string=${Uri.encodeQueryComponent(string ?? "null")}");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
+    _queryParts_.add(
+      "timestamp=${Uri.encodeQueryComponent(timestamp?.toUtc().toIso8601String() ?? "null")}",
+    );
     _queryParts_.add("float32=$float32");
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int8=$int8");
@@ -1983,7 +1995,9 @@ class ObjectWithNullableFields implements ArriModel {
     _queryParts_.add("uint32=$uint32");
     _queryParts_.add("int64=$int64");
     _queryParts_.add("uint64=$uint64");
-    _queryParts_.add("enum=${k_enum?.serialValue}");
+    _queryParts_.add(
+      "enum=${Uri.encodeQueryComponent(k_enum?.serialValue ?? "null")}",
+    );
     print(
       "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.",
     );
@@ -2242,8 +2256,8 @@ class LegacyDiscriminatorA implements LegacyDiscriminator {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("typeName=$typeName");
-    _queryParts_.add("id=$id");
+    _queryParts_.add("typeName=A");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
     return _queryParts_.join("&");
   }
 
@@ -2310,9 +2324,9 @@ class LegacyDiscriminatorB implements LegacyDiscriminator {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("typeName=$typeName");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("name=$name");
+    _queryParts_.add("typeName=B");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("name=${Uri.encodeQueryComponent(name)}");
     return _queryParts_.join("&");
   }
 
@@ -2386,10 +2400,12 @@ class LegacyDiscriminatorC implements LegacyDiscriminator {
   @override
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
-    _queryParts_.add("typeName=$typeName");
-    _queryParts_.add("id=$id");
-    _queryParts_.add("name=$name");
-    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
+    _queryParts_.add("typeName=C");
+    _queryParts_.add("id=${Uri.encodeQueryComponent(id)}");
+    _queryParts_.add("name=${Uri.encodeQueryComponent(name)}");
+    _queryParts_.add(
+      "date=${Uri.encodeQueryComponent(date.toUtc().toIso8601String())}",
+    );
     return _queryParts_.join("&");
   }
 
