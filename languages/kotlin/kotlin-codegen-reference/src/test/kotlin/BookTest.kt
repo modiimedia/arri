@@ -37,5 +37,7 @@ class BookTest {
         val result = Book.fromJson("""{"id":"1","name":"foo","createdAt":"hello world","updatedAt":""}""")
         assertEquals("1", result.id)
         assertEquals("foo", result.name)
+        assertEquals(Instant.EPOCH, result.createdAt)
+        assertEquals(Instant.EPOCH, result.updatedAt)
     }
 }

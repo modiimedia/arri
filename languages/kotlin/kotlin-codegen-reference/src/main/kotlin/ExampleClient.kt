@@ -14,6 +14,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.nio.ByteBuffer
@@ -372,8 +373,8 @@ data class Book(
             return Book(
                 id = "",
                 name = "",
-                createdAt = Instant.now(),
-                updatedAt = Instant.now(),
+                createdAt = Instant.EPOCH,
+                updatedAt = Instant.EPOCH,
             )
         }
 
@@ -402,12 +403,12 @@ data class Book(
                         try {
                             Instant.parse(__input.jsonObject["createdAt"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val updatedAt: Instant = when (__input.jsonObject["updatedAt"]) {
                 is JsonPrimitive ->
@@ -415,12 +416,12 @@ data class Book(
                         try {
                             Instant.parse(__input.jsonObject["updatedAt"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return Book(
                 id,
@@ -654,7 +655,7 @@ data class ObjectWithEveryType(
             return ObjectWithEveryType(
                 string = "",
                 boolean = false,
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 float32 = 0.0F,
                 float64 = 0.0,
                 int8 = 0,
@@ -701,12 +702,12 @@ data class ObjectWithEveryType(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val float32: Float = when (__input.jsonObject["float32"]) {
                 is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull ?: 0.0F
@@ -2531,7 +2532,7 @@ data class LegacyDiscriminatorC(
             return LegacyDiscriminatorC(
                 id = "",
                 name = "",
-                date = Instant.now(),
+                date = Instant.EPOCH,
             )
         }
 
@@ -2560,12 +2561,12 @@ data class LegacyDiscriminatorC(
                         try {
                             Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return LegacyDiscriminatorC(
                 id,
@@ -2879,11 +2880,23 @@ private suspend fun __handleSseRequest(
                 )
             }
             newBackoffTime = 0
+            val heartbeatIntervalMs = httpResponse.headers["heartbeat-interval"]?.toLongOrNull() ?: 0L
             val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
-                val read = channel.readAvailable(buffer)
+                val read = if (heartbeatIntervalMs > 0L) {
+                    withTimeoutOrNull(heartbeatIntervalMs * 2L) {
+                        channel.readAvailable(buffer)
+                    }
+                } else {
+                    channel.readAvailable(buffer)
+                }
+                if (read == null) {
+                    // no data or heartbeat was received in time so assume the connection is dead and reconnect
+                    httpResponse.cancel()
+                    break
+                }
                 if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()

@@ -638,11 +638,23 @@ private suspend fun __handleSseRequest(
                 )
             }
             newBackoffTime = 0
+            val heartbeatIntervalMs = httpResponse.headers["heartbeat-interval"]?.toLongOrNull() ?: 0L
             val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
-                val read = channel.readAvailable(buffer)
+                val read = if (heartbeatIntervalMs > 0L) {
+                    withTimeoutOrNull(heartbeatIntervalMs * 2L) {
+                        channel.readAvailable(buffer)
+                    }
+                } else {
+                    channel.readAvailable(buffer)
+                }
+                if (read == null) {
+                    // no data or heartbeat was received in time so assume the connection is dead and reconnect
+                    httpResponse.cancel()
+                    break
+                }
                 if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()
@@ -755,6 +767,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.nio.ByteBuffer

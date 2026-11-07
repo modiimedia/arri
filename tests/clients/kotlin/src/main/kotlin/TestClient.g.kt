@@ -14,6 +14,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.nio.ByteBuffer
@@ -1473,7 +1474,7 @@ data class ObjectWithEveryType(
                 any = JsonNull,
                 boolean = false,
                 string = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 float32 = 0.0F,
                 float64 = 0.0,
                 int8 = 0,
@@ -1525,12 +1526,12 @@ data class ObjectWithEveryType(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val float32: Float = when (__input.jsonObject["float32"]) {
                 is JsonPrimitive -> __input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull ?: 0.0F
@@ -1783,7 +1784,7 @@ data class ObjectWithEveryTypeObject(
             return ObjectWithEveryTypeObject(
                 string = "",
                 boolean = false,
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -1812,12 +1813,12 @@ data class ObjectWithEveryTypeObject(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return ObjectWithEveryTypeObject(
                 string,
@@ -2631,7 +2632,7 @@ data class ObjectWithEveryTypeNestedObject(
         override fun new(): ObjectWithEveryTypeNestedObject {
             return ObjectWithEveryTypeNestedObject(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 data = ObjectWithEveryTypeNestedObjectData.new(),
             )
         }
@@ -2657,12 +2658,12 @@ data class ObjectWithEveryTypeNestedObject(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val data: ObjectWithEveryTypeNestedObjectData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryTypeNestedObjectData.fromJsonElement(
@@ -2711,7 +2712,7 @@ data class ObjectWithEveryTypeNestedObjectData(
         override fun new(): ObjectWithEveryTypeNestedObjectData {
             return ObjectWithEveryTypeNestedObjectData(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 data = ObjectWithEveryTypeNestedObjectDataData.new(),
             )
         }
@@ -2737,12 +2738,12 @@ data class ObjectWithEveryTypeNestedObjectData(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val data: ObjectWithEveryTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryTypeNestedObjectDataData.fromJsonElement(
@@ -2787,7 +2788,7 @@ data class ObjectWithEveryTypeNestedObjectDataData(
         override fun new(): ObjectWithEveryTypeNestedObjectDataData {
             return ObjectWithEveryTypeNestedObjectDataData(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -2812,12 +2813,12 @@ data class ObjectWithEveryTypeNestedObjectDataData(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return ObjectWithEveryTypeNestedObjectDataData(
                 id,
@@ -2853,7 +2854,7 @@ data class ObjectWithEveryTypeNestedArrayElementElement(
         override fun new(): ObjectWithEveryTypeNestedArrayElementElement {
             return ObjectWithEveryTypeNestedArrayElementElement(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -2878,12 +2879,12 @@ data class ObjectWithEveryTypeNestedArrayElementElement(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return ObjectWithEveryTypeNestedArrayElementElement(
                 id,
@@ -2953,7 +2954,7 @@ data class ObjectWithKebabCaseKeys(
         @JvmStatic
         override fun new(): ObjectWithKebabCaseKeys {
             return ObjectWithKebabCaseKeys(
-                createdAt = Instant.now(),
+                createdAt = Instant.EPOCH,
                 displayName = "",
                 phoneNumber = null,
                 externalEvent = null,
@@ -2979,12 +2980,12 @@ data class ObjectWithKebabCaseKeys(
                         try {
                             Instant.parse(__input.jsonObject["created-at"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val displayName: String = when (__input.jsonObject["display-name"]) {
                 is JsonPrimitive -> __input.jsonObject["display-name"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -5387,7 +5388,7 @@ data class ObjectWithPascalCaseKeys(
         @JvmStatic
         override fun new(): ObjectWithPascalCaseKeys {
             return ObjectWithPascalCaseKeys(
-                createdAt = Instant.now(),
+                createdAt = Instant.EPOCH,
                 displayName = "",
                 phoneNumber = null,
                 externalEvent = null,
@@ -5413,12 +5414,12 @@ data class ObjectWithPascalCaseKeys(
                         try {
                             Instant.parse(__input.jsonObject["CreatedAt"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val displayName: String = when (__input.jsonObject["DisplayName"]) {
                 is JsonPrimitive -> __input.jsonObject["DisplayName"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -6192,7 +6193,7 @@ data class ObjectWithSnakeCaseKeys(
         @JvmStatic
         override fun new(): ObjectWithSnakeCaseKeys {
             return ObjectWithSnakeCaseKeys(
-                createdAt = Instant.now(),
+                createdAt = Instant.EPOCH,
                 displayName = "",
                 phoneNumber = null,
                 externalEvent = null,
@@ -6218,12 +6219,12 @@ data class ObjectWithSnakeCaseKeys(
                         try {
                             Instant.parse(__input.jsonObject["created_at"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val displayName: String = when (__input.jsonObject["display_name"]) {
                 is JsonPrimitive -> __input.jsonObject["display_name"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -7483,7 +7484,7 @@ data class ObjectWithEveryOptionalTypeObject(
             return ObjectWithEveryOptionalTypeObject(
                 string = "",
                 boolean = false,
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -7512,12 +7513,12 @@ data class ObjectWithEveryOptionalTypeObject(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return ObjectWithEveryOptionalTypeObject(
                 string,
@@ -8331,7 +8332,7 @@ data class ObjectWithEveryOptionalTypeNestedObject(
         override fun new(): ObjectWithEveryOptionalTypeNestedObject {
             return ObjectWithEveryOptionalTypeNestedObject(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 data = ObjectWithEveryOptionalTypeNestedObjectData.new(),
             )
         }
@@ -8357,12 +8358,12 @@ data class ObjectWithEveryOptionalTypeNestedObject(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val data: ObjectWithEveryOptionalTypeNestedObjectData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryOptionalTypeNestedObjectData.fromJsonElement(
@@ -8411,7 +8412,7 @@ data class ObjectWithEveryOptionalTypeNestedObjectData(
         override fun new(): ObjectWithEveryOptionalTypeNestedObjectData {
             return ObjectWithEveryOptionalTypeNestedObjectData(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 data = ObjectWithEveryOptionalTypeNestedObjectDataData.new(),
             )
         }
@@ -8437,12 +8438,12 @@ data class ObjectWithEveryOptionalTypeNestedObjectData(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val data: ObjectWithEveryOptionalTypeNestedObjectDataData = when (__input.jsonObject["data"]) {
                 is JsonObject -> ObjectWithEveryOptionalTypeNestedObjectDataData.fromJsonElement(
@@ -8487,7 +8488,7 @@ data class ObjectWithEveryOptionalTypeNestedObjectDataData(
         override fun new(): ObjectWithEveryOptionalTypeNestedObjectDataData {
             return ObjectWithEveryOptionalTypeNestedObjectDataData(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -8512,12 +8513,12 @@ data class ObjectWithEveryOptionalTypeNestedObjectDataData(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return ObjectWithEveryOptionalTypeNestedObjectDataData(
                 id,
@@ -8553,7 +8554,7 @@ data class ObjectWithEveryOptionalTypeNestedArrayElementElement(
         override fun new(): ObjectWithEveryOptionalTypeNestedArrayElementElement {
             return ObjectWithEveryOptionalTypeNestedArrayElementElement(
                 id = "",
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -8578,12 +8579,12 @@ data class ObjectWithEveryOptionalTypeNestedArrayElementElement(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return ObjectWithEveryOptionalTypeNestedArrayElementElement(
                 id,
@@ -9764,7 +9765,7 @@ data class UnionInternalGetRequestWithFields(
                 float64 = 0.0,
                 int64 = 0L,
                 boolean = false,
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
                 nullableEnum = null,
             )
         }
@@ -9806,12 +9807,12 @@ data class UnionInternalGetRequestWithFields(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val nullableEnum: UnionInternalGetRequestWithFieldsNullableEnum? = when (__input.jsonObject["nullableEnum"]) {
                 is JsonNull -> null
@@ -10397,7 +10398,7 @@ data class UnionVariantShapesInternalNestedObject(
         @JvmStatic
         override fun new(): UnionVariantShapesInternalNestedObject {
             return UnionVariantShapesInternalNestedObject(
-                timestamp = Instant.now(),
+                timestamp = Instant.EPOCH,
             )
         }
 
@@ -10418,12 +10419,12 @@ data class UnionVariantShapesInternalNestedObject(
                         try {
                             Instant.parse(__input.jsonObject["timestamp"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             return UnionVariantShapesInternalNestedObject(
                 timestamp,
@@ -14328,7 +14329,7 @@ data class ChatMessageText(
                 id = "",
                 channelId = "",
                 userId = "",
-                date = Instant.now(),
+                date = Instant.EPOCH,
                 text = "",
             )
         }
@@ -14362,12 +14363,12 @@ data class ChatMessageText(
                         try {
                             Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val text: String = when (__input.jsonObject["text"]) {
                 is JsonPrimitive -> __input.jsonObject["text"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -14428,7 +14429,7 @@ data class ChatMessageImage(
                 id = "",
                 channelId = "",
                 userId = "",
-                date = Instant.now(),
+                date = Instant.EPOCH,
                 image = "",
             )
         }
@@ -14462,12 +14463,12 @@ data class ChatMessageImage(
                         try {
                             Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val image: String = when (__input.jsonObject["image"]) {
                 is JsonPrimitive -> __input.jsonObject["image"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -14528,7 +14529,7 @@ data class ChatMessageUrl(
                 id = "",
                 channelId = "",
                 userId = "",
-                date = Instant.now(),
+                date = Instant.EPOCH,
                 url = "",
             )
         }
@@ -14562,12 +14563,12 @@ data class ChatMessageUrl(
                         try {
                             Instant.parse(__input.jsonObject["date"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val url: String = when (__input.jsonObject["url"]) {
                 is JsonPrimitive -> __input.jsonObject["url"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -14779,7 +14780,7 @@ data class UsersWatchUserResponse(
                 id = "",
                 role = UsersWatchUserResponseRole.new(),
                 photo = null,
-                createdAt = Instant.now(),
+                createdAt = Instant.EPOCH,
                 numFollowers = 0,
                 settings = UserSettings.new(),
                 recentNotifications = mutableListOf(),
@@ -14823,12 +14824,12 @@ data class UsersWatchUserResponse(
                         try {
                             Instant.parse(__input.jsonObject["createdAt"]!!.jsonPrimitive.content)
                         } catch (e: java.time.format.DateTimeParseException) {
-                            Instant.now()
+                            Instant.EPOCH
                         }
                     else
-                        Instant.now()
+                        Instant.EPOCH
 
-                else -> Instant.now()
+                else -> Instant.EPOCH
             }
             val numFollowers: Int = when (__input.jsonObject["numFollowers"]) {
                 is JsonPrimitive -> __input.jsonObject["numFollowers"]!!.jsonPrimitive.intOrNull ?: 0
@@ -15691,11 +15692,23 @@ private suspend fun __handleSseRequest(
                 )
             }
             newBackoffTime = 0
+            val heartbeatIntervalMs = httpResponse.headers["heartbeat-interval"]?.toLongOrNull() ?: 0L
             val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
-                val read = channel.readAvailable(buffer)
+                val read = if (heartbeatIntervalMs > 0L) {
+                    withTimeoutOrNull(heartbeatIntervalMs * 2L) {
+                        channel.readAvailable(buffer)
+                    }
+                } else {
+                    channel.readAvailable(buffer)
+                }
+                if (read == null) {
+                    // no data or heartbeat was received in time so assume the connection is dead and reconnect
+                    httpResponse.cancel()
+                    break
+                }
                 if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()

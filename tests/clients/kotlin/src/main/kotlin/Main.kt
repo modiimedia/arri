@@ -570,6 +570,8 @@ fun main() {
     testSseAutoReconnectsWhenClosedByServer(client)
     testSseStreamLargeObjects(client)
     testSseReconnectsWithNewCredentials(httpClient, baseUrl)
+    testSseKeepsConnectionAliveWithHeartbeat(client)
+    testSseReconnectsWhenNoHeartbeatIsReceived(client)
 }
 
 fun testSseReceiveMessages(client: TestClient) {
@@ -776,6 +778,54 @@ fun testSseReconnectsWithNewCredentials(httpClient: HttpClient, baseUrl: String)
         expect(tag, msgCount > 1, true)
         expect(tag, openCount > 1, true)
         expect(tag, headers.size > 1, true)
+    }
+}
+
+fun testSseKeepsConnectionAliveWithHeartbeat(client: TestClient) {
+    runBlocking {
+        val tag = "SSE keeps connection alive when heartbeat is received"
+        var openCount = 0
+        var messageCount = 0
+        withTimeout(30000) {
+            client.tests.streamHeartbeatDetectionTest(
+                params = StreamHeartbeatDetectionTestParams(heartbeatEnabled = true),
+                onOpen = {
+                    openCount++
+                },
+                onData = {
+                    messageCount++
+                    if (messageCount >= 8) {
+                        throw CancellationException()
+                    }
+                },
+            )
+        }
+        expect(tag, openCount, 1)
+        expect(tag, messageCount, 8)
+    }
+}
+
+fun testSseReconnectsWhenNoHeartbeatIsReceived(client: TestClient) {
+    runBlocking {
+        val tag = "SSE reconnects when no heartbeat is received"
+        var openCount = 0
+        var messageCount = 0
+        withTimeout(30000) {
+            client.tests.streamHeartbeatDetectionTest(
+                params = StreamHeartbeatDetectionTestParams(heartbeatEnabled = false),
+                onOpen = {
+                    openCount++
+                },
+                onData = {
+                    messageCount++
+                    if (messageCount >= 15) {
+                        throw CancellationException()
+                    }
+                },
+            )
+        }
+        expect(tag, openCount, 3)
+        expect(tag, messageCount, 15)
     }
 }
 

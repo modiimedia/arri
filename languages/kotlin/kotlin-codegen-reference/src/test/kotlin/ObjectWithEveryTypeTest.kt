@@ -61,8 +61,8 @@ class ObjectWithEveryTypeTest {
 
         val badDataResult = ObjectWithEveryType.fromJson("false")
         val badDataResult2 = ObjectWithEveryType.fromJson(mismatchedJson)
-        assertEquals(badDataResult, ObjectWithEveryType.new().copy(timestamp = badDataResult.timestamp))
-        assertEquals(badDataResult2, ObjectWithEveryType.new().copy(timestamp = badDataResult2.timestamp))
+        assertEquals(ObjectWithEveryType.new(), badDataResult)
+        assertEquals(ObjectWithEveryType.new(), badDataResult2)
     }
 
     @Test
@@ -81,7 +81,7 @@ class ObjectWithEveryTypeTest {
     fun invalidTimestampsFallBack() {
         for (input in listOf("hello world", "", "-1")) {
             val result = ObjectWithEveryType.fromJson("""{"timestamp":"$input"}""")
-            assertEquals(ObjectWithEveryType.new().copy(timestamp = result.timestamp), result)
+            assertEquals(ObjectWithEveryType.new(), result)
         }
     }
 }

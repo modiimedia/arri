@@ -114,7 +114,7 @@ export function kotlinTimestampFromSchema(
     context: CodegenContext,
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
-    const defaultValue = nullable ? 'null' : 'Instant.now()';
+    const defaultValue = nullable ? 'null' : 'Instant.EPOCH';
     return {
         typeName: 'Instant',
         prefixedTypeName: 'Instant',
