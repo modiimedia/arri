@@ -71,10 +71,12 @@ Future<http.Response> arriRequest(
       final paramsInput = query ?? params;
       if (paramsInput != null) {
         final uri = Uri.parse("$url?${encodeQueryParams(paramsInput)}");
-        result = await client.get(
-          uri,
-          headers: finalHeaders,
-        );
+        result = await client
+            .get(
+              uri,
+              headers: finalHeaders,
+            )
+            .timeout(timeout ?? timeoutDefault);
         break;
       }
       final uri = Uri.parse(url);

@@ -124,10 +124,8 @@ DateTime dateTimeFromDynamic(dynamic input, DateTime fallback) {
   if (input is DateTime) {
     return input;
   }
-  DateTime.fromMillisecondsSinceEpoch(0);
-  DateTime.now().toUtc().toIso8601String();
   if (input is String) {
-    return DateTime.parse(input);
+    return DateTime.tryParse(input) ?? fallback;
   }
   if (input is int) {
     return DateTime.fromMillisecondsSinceEpoch(input);
@@ -140,7 +138,7 @@ DateTime? nullableDateTimeFromDynamic(dynamic input) {
     return input;
   }
   if (input is String) {
-    return DateTime.parse(input);
+    return DateTime.tryParse(input);
   }
   if (input is int) {
     return DateTime.fromMillisecondsSinceEpoch(input);

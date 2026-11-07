@@ -24,6 +24,53 @@ main() {
     expect(encodeQueryParams({}), equals(""));
   });
 
+  group("dateTimeFromDynamic()", () {
+    final fallback = DateTime.fromMillisecondsSinceEpoch(0);
+    test("parses valid values", () {
+      final expected = DateTime.parse("2001-01-01T16:00:00.000Z");
+      expect(
+        dateTimeFromDynamic("2001-01-01T16:00:00.000Z", fallback),
+        equals(expected),
+      );
+      expect(dateTimeFromDynamic(expected, fallback), equals(expected));
+      expect(
+        nullableDateTimeFromDynamic("2001-01-01T16:00:00.000Z"),
+        equals(expected),
+      );
+    });
+    test("falls back for invalid strings", () {
+      expect(dateTimeFromDynamic("hello world", fallback), equals(fallback));
+      expect(dateTimeFromDynamic("", fallback), equals(fallback));
+      expect(nullableDateTimeFromDynamic("hello world"), equals(null));
+      expect(dateTimeListFromDynamic(["hello world"]), equals([fallback]));
+      expect(nullableDateTimeListFromDynamic(["hello world"]), equals([null]));
+    });
+  });
+
+  group("request timeouts", () {
+    final slowClient = MockClient((_) async {
+      await Future.delayed(Duration(milliseconds: 200));
+      return http.Response("ok", 200);
+    });
+    for (final params in [
+      null,
+      {"id": "1"},
+    ]) {
+      test("GET ${params == null ? "without" : "with"} params", () async {
+        await expectLater(
+          arriRequest(
+            "http://localhost",
+            httpClient: slowClient,
+            method: HttpMethod.get,
+            params: params,
+            timeout: Duration(milliseconds: 10),
+          ),
+          throwsA(isA<TimeoutException>()),
+        );
+      });
+    }
+  });
+
   test("invalid url", () async {
     final response =
         await parsedArriRequestSafe(nonExistentUrl, parser: (data) {});

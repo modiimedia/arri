@@ -731,6 +731,18 @@ Future<void> main() async {
     });
   });
 
+  test("server errors are returned as an ArriError", () async {
+    try {
+      await client.tests.sendError(
+        SendErrorParams(code: 418, message: "this is a test error"),
+      );
+      fail("expected an error to be thrown");
+    } on ArriError catch (err) {
+      expect(err.code, equals(418));
+      expect(err.message, equals("this is a test error"));
+    }
+  });
+
   test("onError hook fires", () async {
     bool onErrFired = false;
     final customClient = TestClient(

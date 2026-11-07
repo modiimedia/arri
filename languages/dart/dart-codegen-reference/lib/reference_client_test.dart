@@ -5,6 +5,64 @@ import "dart:io";
 import "reference_client.dart";
 
 void main() {
+  group("EmptyObject", () {
+    test("JSON", () async {
+      final reference =
+          await File(
+            "../../../tests/test-files/EmptyObject.json",
+          ).readAsString();
+      expect(
+        EmptyObject.fromJsonString(reference),
+        equals(EmptyObject.empty()),
+      );
+      expect(EmptyObject.empty().toJsonString(), equals(reference));
+    });
+    test("toUrlQueryParams()", () {
+      expect(EmptyObject.empty().toUrlQueryParams(), equals(""));
+    });
+    test("hashCode", () {
+      expect(EmptyObject().hashCode, equals(EmptyObject.empty().hashCode));
+    });
+  });
+
+  group("RecursiveObject", () {
+    final input = RecursiveObject(
+      left: RecursiveObject(
+        left: RecursiveObject(
+          left: null,
+          right: RecursiveObject(left: null, right: null),
+        ),
+        right: null,
+      ),
+      right: RecursiveObject(left: null, right: null),
+    );
+    late String reference;
+    setUpAll(() async {
+      reference =
+          await File(
+            "../../../tests/test-files/RecursiveObject.json",
+          ).readAsString();
+    });
+    test("fromJsonString()", () {
+      expect(RecursiveObject.fromJsonString(reference), equals(input));
+    });
+    test("toJsonString()", () {
+      expect(input.toJsonString(), equals(reference));
+    });
+    test("empty()", () {
+      expect(
+        RecursiveObject.empty(),
+        equals(RecursiveObject(left: null, right: null)),
+      );
+    });
+    test("== operator and hashCode", () {
+      final copy = RecursiveObject.fromJsonString(reference);
+      expect(copy, equals(input));
+      expect(copy.hashCode, equals(input.hashCode));
+      expect(input.copyWith(left: () => null) == input, equals(false));
+    });
+  });
+
   group("Book", () {
     final input = Book(
       id: "1",
@@ -35,6 +93,21 @@ void main() {
     test("== operator", () {
       expect(input.copyWith(createdAt: DateTime.now()) == input, equals(false));
       expect(input.copyWith(), equals(input));
+    });
+    test("hashCode", () {
+      expect(input.copyWith().hashCode, equals(input.hashCode));
+      expect({input, input.copyWith()}.length, equals(1));
+    });
+    test("invalid timestamps fall back instead of throwing", () {
+      final result = Book.fromJson({
+        "id": "1",
+        "name": "foo",
+        "createdAt": "hello world",
+        "updatedAt": "",
+      });
+      expect(result.id, equals("1"));
+      expect(result.createdAt, equals(Book.empty().createdAt));
+      expect(result.updatedAt, equals(Book.empty().updatedAt));
     });
   });
 
@@ -136,6 +209,21 @@ void main() {
     });
     test("toJsonString()", () {
       expect(input.toJsonString(), equals(reference));
+    });
+    test("record order does not affect equality", () async {
+      final normal = ObjectWithEveryType.fromJsonString(
+        await File(
+          "../../../tests/test-files/ObjectWithEveryType.json",
+        ).readAsString(),
+      );
+      final reversed = ObjectWithEveryType.fromJsonString(
+        await File(
+          "../../../tests/test-files/ObjectWithEveryType_ReversedRecord.json",
+        ).readAsString(),
+      );
+      expect(reversed, equals(normal));
+      expect(reversed.hashCode, equals(normal.hashCode));
+      expect({normal, reversed}.length, equals(1));
     });
   });
   group("ObjectWithOptionalFields", () {
@@ -253,6 +341,21 @@ void main() {
       );
       expect(params["enum"], equals(noUndefinedInput.k_enum?.serialValue));
     });
+    test("record order does not affect equality", () async {
+      final normal = ObjectWithOptionalFields.fromJsonString(
+        await File(
+          "../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json",
+        ).readAsString(),
+      );
+      final reversed = ObjectWithOptionalFields.fromJsonString(
+        await File(
+          "../../../tests/test-files/ObjectWithOptionalFields_NoUndefined_ReversedRecord.json",
+        ).readAsString(),
+      );
+      expect(reversed, equals(normal));
+      expect(reversed.hashCode, equals(normal.hashCode));
+      expect({normal, reversed}.length, equals(1));
+    });
   });
 
   group("ObjectWithNullableFields", () {
@@ -323,6 +426,27 @@ void main() {
       );
       expect(params["enum"], equals(noNullInput.k_enum?.serialValue));
     });
+    test("record order does not affect equality", () async {
+      final normal = ObjectWithNullableFields.fromJsonString(
+        await File(
+          "../../../tests/test-files/ObjectWithNullableFields_NoNull.json",
+        ).readAsString(),
+      );
+      final reversed = ObjectWithNullableFields.fromJsonString(
+        await File(
+          "../../../tests/test-files/ObjectWithNullableFields_NoNull_ReversedRecord.json",
+        ).readAsString(),
+      );
+      expect(reversed, equals(normal));
+      expect(reversed.hashCode, equals(normal.hashCode));
+      expect({normal, reversed}.length, equals(1));
+    });
+    test("invalid timestamps fall back to null instead of throwing", () {
+      final result = ObjectWithNullableFields.fromJson({
+        "timestamp": "hello world",
+      });
+      expect(result.timestamp, equals(null));
+    });
   });
 
   group("UnionExternal", () {
@@ -379,6 +503,25 @@ void main() {
         equals(UnionExternalArray(value: ["a"])),
       );
     });
+    test("copyWith()", () {
+      final input = UnionExternalBoolean(value: true);
+      expect(input.copyWith(value: false).value, equals(false));
+      expect(input.copyWith(), equals(input));
+    });
+    test("hashCode", () {
+      final input = UnionExternalBoolean(value: true);
+      expect(input.copyWith().hashCode, equals(input.hashCode));
+    });
+    test("invalid variant values fall back", () {
+      expect(
+        UnionExternal.fromJson({"object": 5}),
+        equals(UnionExternal.empty()),
+      );
+      expect(
+        UnionExternal.fromJson({"array": "hello world"}),
+        equals(UnionExternalArray(value: [])),
+      );
+    });
   });
 
   group("UnionInternal", () {
@@ -412,6 +555,20 @@ void main() {
       expect(
         UnionInternal.fromJsonString('{"width":10}'),
         equals(UnionInternalRectangle.empty()),
+      );
+    });
+    test("copyWith()", () {
+      expect(input.copyWith(width: 1).width, equals(1));
+      expect(input.copyWith(width: 1).height, equals(input.height));
+      expect(input.copyWith(), equals(input));
+    });
+    test("hashCode", () {
+      expect(input.copyWith().hashCode, equals(input.hashCode));
+    });
+    test("non-string tags fall back", () {
+      expect(
+        UnionInternal.fromJson({"shape": 5}),
+        equals(UnionInternal.empty()),
       );
     });
   });
@@ -460,6 +617,21 @@ void main() {
       expect(
         UnionAdjacent.fromJsonString('{"data":true}'),
         equals(UnionAdjacentObject(data: NestedObject.empty())),
+      );
+    });
+    test("copyWith()", () {
+      final input = UnionAdjacentBoolean(data: true);
+      expect(input.copyWith(data: false).data, equals(false));
+      expect(input.copyWith(), equals(input));
+    });
+    test("hashCode", () {
+      final input = UnionAdjacentBoolean(data: true);
+      expect(input.copyWith().hashCode, equals(input.hashCode));
+    });
+    test("invalid variant values fall back", () {
+      expect(
+        UnionAdjacent.fromJson({"kind": "object", "data": 5}),
+        equals(UnionAdjacent.empty()),
       );
     });
   });
