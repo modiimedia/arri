@@ -25,7 +25,7 @@ main() {
   });
 
   group("dateTimeFromDynamic()", () {
-    final fallback = DateTime.fromMillisecondsSinceEpoch(0);
+    final fallback = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
     test("parses valid values", () {
       final expected = DateTime.parse("2001-01-01T16:00:00.000Z");
       expect(

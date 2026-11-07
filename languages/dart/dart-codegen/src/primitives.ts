@@ -71,7 +71,9 @@ export function dartDateTimeFromSchema(
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
     const typeName = isNullable ? 'DateTime?' : 'DateTime';
-    const defaultValue = isNullable ? 'null' : 'DateTime(0)';
+    const defaultValue = isNullable
+        ? 'null'
+        : 'DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)';
     return {
         typeName,
         isNullable,
@@ -80,7 +82,7 @@ export function dartDateTimeFromSchema(
             if (isNullable) {
                 return `nullableDateTimeFromDynamic(${input})`;
             }
-            return `dateTimeFromDynamic(${input}, DateTime(0))`;
+            return `dateTimeFromDynamic(${input}, ${defaultValue})`;
         },
         toJson(input, _target, _key) {
             if (context.isOptional) {

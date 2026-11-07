@@ -229,16 +229,22 @@ class Book implements ArriModel {
     return Book(
       id: "",
       name: "",
-      createdAt: DateTime(0),
-      updatedAt: DateTime(0),
+      createdAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
     );
   }
 
   factory Book.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
-    final createdAt = dateTimeFromDynamic(_input_["createdAt"], DateTime(0));
-    final updatedAt = dateTimeFromDynamic(_input_["updatedAt"], DateTime(0));
+    final createdAt = dateTimeFromDynamic(
+      _input_["createdAt"],
+      DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
+    final updatedAt = dateTimeFromDynamic(
+      _input_["updatedAt"],
+      DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
     return Book(id: id, name: name, createdAt: createdAt, updatedAt: updatedAt);
   }
 
@@ -478,7 +484,7 @@ class ObjectWithEveryType implements ArriModel {
     return ObjectWithEveryType(
       string: "",
       boolean: false,
-      timestamp: DateTime(0),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       float32: 0.0,
       float64: 0.0,
       int8: 0,
@@ -503,7 +509,10 @@ class ObjectWithEveryType implements ArriModel {
   factory ObjectWithEveryType.fromJson(Map<String, dynamic> _input_) {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
-    final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime(0));
+    final timestamp = dateTimeFromDynamic(
+      _input_["timestamp"],
+      DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
     final float32 = doubleFromDynamic(_input_["float32"], 0.0);
     final float64 = doubleFromDynamic(_input_["float64"], 0.0);
     final int8 = intFromDynamic(_input_["int8"], 0);
@@ -2366,13 +2375,20 @@ class LegacyDiscriminatorC implements LegacyDiscriminator {
   String get typeName => "C";
 
   factory LegacyDiscriminatorC.empty() {
-    return LegacyDiscriminatorC(id: "", name: "", date: DateTime(0));
+    return LegacyDiscriminatorC(
+      id: "",
+      name: "",
+      date: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
   }
 
   factory LegacyDiscriminatorC.fromJson(Map<String, dynamic> _input_) {
     final id = typeFromDynamic<String>(_input_["id"], "");
     final name = typeFromDynamic<String>(_input_["name"], "");
-    final date = dateTimeFromDynamic(_input_["date"], DateTime(0));
+    final date = dateTimeFromDynamic(
+      _input_["date"],
+      DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
     return LegacyDiscriminatorC(id: id, name: name, date: date);
   }
 

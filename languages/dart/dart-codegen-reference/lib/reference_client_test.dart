@@ -106,8 +106,14 @@ void main() {
         "updatedAt": "",
       });
       expect(result.id, equals("1"));
-      expect(result.createdAt, equals(Book.empty().createdAt));
-      expect(result.updatedAt, equals(Book.empty().updatedAt));
+      final epoch = DateTime.parse("1970-01-01T00:00:00.000Z");
+      expect(result.createdAt, equals(epoch));
+      expect(result.updatedAt, equals(epoch));
+      expect(Book.empty().createdAt, equals(epoch));
+      expect(
+        Book.empty().toJson()["createdAt"],
+        equals("1970-01-01T00:00:00.000Z"),
+      );
     });
   });
 

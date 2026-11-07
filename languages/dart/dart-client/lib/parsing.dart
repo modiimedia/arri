@@ -149,8 +149,8 @@ DateTime? nullableDateTimeFromDynamic(dynamic input) {
 List<DateTime> dateTimeListFromDynamic(dynamic input) {
   return input is List
       ? input
-          .map((e) =>
-              dateTimeFromDynamic(e, DateTime.fromMillisecondsSinceEpoch(0)))
+          .map((e) => dateTimeFromDynamic(
+              e, DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)))
           .toList()
       : [];
 }
