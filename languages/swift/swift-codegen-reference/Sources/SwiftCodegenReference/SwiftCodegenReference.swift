@@ -156,9 +156,9 @@ public struct Book: ArriClientModel {
     public var name: String = ""
     /// When the book was created
     @available(*, deprecated)
-    public var createdAt: Date = Date()
+    public var createdAt: Date = Date(timeIntervalSince1970: 0)
     @available(*, deprecated)
-    public var updatedAt: Date = Date()
+    public var updatedAt: Date = Date(timeIntervalSince1970: 0)
 
     public init(
         id: String,
@@ -175,8 +175,8 @@ public struct Book: ArriClientModel {
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
-        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date()
-        self.updatedAt = parseDate(json["updatedAt"].string ?? "") ?? Date()
+        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date(timeIntervalSince1970: 0)
+        self.updatedAt = parseDate(json["updatedAt"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -335,7 +335,7 @@ public struct NestedObject: ArriClientModel {
 public struct ObjectWithEveryType: ArriClientModel {
     public var string: String = ""
     public var boolean: Bool = false
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var float32: Float32 = 0.0
     public var float64: Float64 = 0.0
     public var int8: Int8 = 0
@@ -404,7 +404,7 @@ public struct ObjectWithEveryType: ArriClientModel {
     public init(json: JSON) {
         self.string = json["string"].string ?? ""
         self.boolean = json["boolean"].bool ?? false
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.float32 = json["float32"].float ?? 0.0
         self.float64 = json["float64"].double ?? 0.0
         self.int8 = json["int8"].int8 ?? 0
@@ -638,7 +638,7 @@ public enum UnionExternal: ArriClientModel {
         } else if json["nullable-timestamp"].exists() {
             var __variantValue: Date?
             if json["nullable-timestamp"].string != nil {
-                __variantValue = parseDate(json["nullable-timestamp"].string ?? "") ?? Date()
+                __variantValue = parseDate(json["nullable-timestamp"].string ?? "")
             }
             self = .nullableTimestamp(__variantValue)
         } else {
@@ -927,7 +927,7 @@ public enum UnionAdjacent: ArriClientModel {
             case "nullable-timestamp":
                 var __variantValue: Date?
                 if json["data"].string != nil {
-                    __variantValue = parseDate(json["data"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["data"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
                 break
@@ -1087,7 +1087,7 @@ public struct ObjectWithOptionalFields: ArriClientModel {
             self.boolean = json["boolean"].bool
         }
         if json["timestamp"].exists() {
-            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+            self.timestamp = parseDate(json["timestamp"].string ?? "")
         }
         if json["float32"].exists() {
             self.float32 = json["float32"].float
@@ -1529,7 +1529,7 @@ public struct ObjectWithNullableFields: ArriClientModel {
             self.boolean = json["boolean"].bool
         }
         if json["timestamp"].string != nil {
-            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+            self.timestamp = parseDate(json["timestamp"].string ?? "")
         }
         if json["float32"].float != nil {
             self.float32 = json["float32"].float
@@ -2143,7 +2143,7 @@ public struct LegacyDiscriminatorC: ArriClientModel {
     let typeName: String = "C"
     public var id: String = ""
     public var name: String = ""
-    public var date: Date = Date()
+    public var date: Date = Date(timeIntervalSince1970: 0)
 
     public init(
         id: String,
@@ -2158,7 +2158,7 @@ public struct LegacyDiscriminatorC: ArriClientModel {
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
-        self.date = parseDate(json["date"].string ?? "") ?? Date()
+        self.date = parseDate(json["date"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {

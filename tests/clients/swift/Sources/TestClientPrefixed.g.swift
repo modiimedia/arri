@@ -815,7 +815,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
     public var any: JSON = JSON()
     public var boolean: Bool = false
     public var string: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var float32: Float32 = 0.0
     public var float64: Float64 = 0.0
     public var int8: Int8 = 0
@@ -889,7 +889,7 @@ public struct FooObjectWithEveryType: ArriClientModel {
         self.any = json["any"]
         self.boolean = json["boolean"].bool ?? false
         self.string = json["string"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.float32 = json["float32"].float ?? 0.0
         self.float64 = json["float64"].double ?? 0.0
         self.int8 = json["int8"].int8 ?? 0
@@ -1146,7 +1146,7 @@ public enum FooObjectWithEveryTypeEnumerator: ArriClientEnum {
 public struct FooObjectWithEveryTypeObject: ArriClientModel {
     public var string: String = ""
     public var boolean: Bool = false
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         string: String,
         boolean: Bool,
@@ -1160,7 +1160,7 @@ public struct FooObjectWithEveryTypeObject: ArriClientModel {
     public init(json: JSON) {
         self.string = json["string"].string ?? ""
         self.boolean = json["boolean"].bool ?? false
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -1240,7 +1240,7 @@ public enum FooObjectWithEveryTypeUnionExternal: ArriClientModel {
         } else if json["nullable-timestamp"].exists() {
                 var __variantValue: Date?
                 if json["nullable-timestamp"].string != nil {
-                    __variantValue = parseDate(json["nullable-timestamp"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["nullable-timestamp"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
         } else {
@@ -1601,7 +1601,7 @@ public enum FooObjectWithEveryTypeUnionAdjacent: ArriClientModel {
             case "nullable-timestamp":
                 var __variantValue: Date?
                 if json["data"].string != nil {
-                    __variantValue = parseDate(json["data"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["data"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
                 break
@@ -1750,7 +1750,7 @@ public struct FooObjectWithEveryTypeUnionAdjacentObject: ArriClientModel {
 
 public struct FooObjectWithEveryTypeNestedObject: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var data: FooObjectWithEveryTypeNestedObjectData = FooObjectWithEveryTypeNestedObjectData()
     public init(
         id: String,
@@ -1764,7 +1764,7 @@ public struct FooObjectWithEveryTypeNestedObject: ArriClientModel {
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.data = FooObjectWithEveryTypeNestedObjectData(json: json["data"])
     }
     public init(JSONData: Data) {
@@ -1817,7 +1817,7 @@ public struct FooObjectWithEveryTypeNestedObject: ArriClientModel {
     
 public struct FooObjectWithEveryTypeNestedObjectData: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var data: FooObjectWithEveryTypeNestedObjectDataData = FooObjectWithEveryTypeNestedObjectDataData()
     public init(
         id: String,
@@ -1831,7 +1831,7 @@ public struct FooObjectWithEveryTypeNestedObjectData: ArriClientModel {
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.data = FooObjectWithEveryTypeNestedObjectDataData(json: json["data"])
     }
     public init(JSONData: Data) {
@@ -1884,7 +1884,7 @@ public struct FooObjectWithEveryTypeNestedObjectData: ArriClientModel {
     
 public struct FooObjectWithEveryTypeNestedObjectDataData: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         id: String,
         timestamp: Date
@@ -1895,7 +1895,7 @@ public struct FooObjectWithEveryTypeNestedObjectDataData: ArriClientModel {
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -1944,7 +1944,7 @@ public struct FooObjectWithEveryTypeNestedObjectDataData: ArriClientModel {
 
 public struct FooObjectWithEveryTypeNestedArrayElementElement: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         id: String,
         timestamp: Date
@@ -1955,7 +1955,7 @@ public struct FooObjectWithEveryTypeNestedArrayElementElement: ArriClientModel {
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -2003,7 +2003,7 @@ public struct FooObjectWithEveryTypeNestedArrayElementElement: ArriClientModel {
     
 
 public struct FooObjectWithKebabCaseKeys: ArriClientModel {
-    public var createdAt: Date = Date()
+    public var createdAt: Date = Date(timeIntervalSince1970: 0)
     public var displayName: String = ""
     public var phoneNumber: String?
     public var externalEvent: FooObjectWithKebabCaseKeysExternalEvent?
@@ -2032,7 +2032,7 @@ public struct FooObjectWithKebabCaseKeys: ArriClientModel {
     }
     public init() {}
     public init(json: JSON) {
-        self.createdAt = parseDate(json["created-at"].string ?? "") ?? Date()
+        self.createdAt = parseDate(json["created-at"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.displayName = json["display-name"].string ?? ""
         if json["phone-number"].string != nil {
             self.phoneNumber = json["phone-number"].string
@@ -2509,7 +2509,7 @@ public struct FooObjectWithKebabCaseKeysInternalEventUserUpdated: ArriClientMode
     public init(json: JSON) {
         self.userId = json["user-id"].string ?? ""
         if json["updated-at"].exists() {
-                    self.updatedAt = parseDate(json["updated-at"].string ?? "") ?? Date()
+                    self.updatedAt = parseDate(json["updated-at"].string ?? "")
                 }
     }
     public init(JSONData: Data) {
@@ -2773,7 +2773,7 @@ public struct FooObjectWithEveryNullableType: ArriClientModel {
             self.string = json["string"].string
         }
         if json["timestamp"].string != nil {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
         if json["float32"].float != nil {
                     self.float32 = json["float32"].float
@@ -3268,7 +3268,7 @@ public struct FooObjectWithEveryNullableTypeObject: ArriClientModel {
                     self.boolean = json["boolean"].bool
                 }
         if json["timestamp"].string != nil {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
     }
     public init(JSONData: Data) {
@@ -3373,7 +3373,7 @@ public enum FooObjectWithEveryNullableTypeUnionExternal: ArriClientModel {
         } else if json["nullable-timestamp"].exists() {
                 var __variantValue: Date?
                 if json["nullable-timestamp"].string != nil {
-                    __variantValue = parseDate(json["nullable-timestamp"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["nullable-timestamp"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
         } else {
@@ -3734,7 +3734,7 @@ public enum FooObjectWithEveryNullableTypeUnionAdjacent: ArriClientModel {
             case "nullable-timestamp":
                 var __variantValue: Date?
                 if json["data"].string != nil {
-                    __variantValue = parseDate(json["data"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["data"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
                 break
@@ -3900,7 +3900,7 @@ public struct FooObjectWithEveryNullableTypeNestedObject: ArriClientModel {
             self.id = json["id"].string
         }
         if json["timestamp"].string != nil {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
         if json["data"].dictionary != nil {
                     self.data = FooObjectWithEveryNullableTypeNestedObjectData(json: json["data"])
@@ -3993,7 +3993,7 @@ public struct FooObjectWithEveryNullableTypeNestedObjectData: ArriClientModel {
             self.id = json["id"].string
         }
         if json["timestamp"].string != nil {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
         if json["data"].dictionary != nil {
                     self.data = FooObjectWithEveryNullableTypeNestedObjectDataData(json: json["data"])
@@ -4083,7 +4083,7 @@ public struct FooObjectWithEveryNullableTypeNestedObjectDataData: ArriClientMode
             self.id = json["id"].string
         }
         if json["timestamp"].string != nil {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
     }
     public init(JSONData: Data) {
@@ -4163,7 +4163,7 @@ public struct FooObjectWithEveryNullableTypeNestedArrayElementElement: ArriClien
             self.id = json["id"].string
         }
         if json["timestamp"].string != nil {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
     }
     public init(JSONData: Data) {
@@ -4228,7 +4228,7 @@ public struct FooObjectWithEveryNullableTypeNestedArrayElementElement: ArriClien
     
 
 public struct FooObjectWithPascalCaseKeys: ArriClientModel {
-    public var createdAt: Date = Date()
+    public var createdAt: Date = Date(timeIntervalSince1970: 0)
     public var displayName: String = ""
     public var phoneNumber: String?
     public var externalEvent: FooObjectWithPascalCaseKeysExternalEvent?
@@ -4257,7 +4257,7 @@ public struct FooObjectWithPascalCaseKeys: ArriClientModel {
     }
     public init() {}
     public init(json: JSON) {
-        self.createdAt = parseDate(json["CreatedAt"].string ?? "") ?? Date()
+        self.createdAt = parseDate(json["CreatedAt"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.displayName = json["DisplayName"].string ?? ""
         if json["PhoneNumber"].string != nil {
             self.phoneNumber = json["PhoneNumber"].string
@@ -4734,7 +4734,7 @@ public struct FooObjectWithPascalCaseKeysInternalEventUserUpdated: ArriClientMod
     public init(json: JSON) {
         self.userId = json["UserId"].string ?? ""
         if json["UpdatedAt"].exists() {
-                    self.updatedAt = parseDate(json["UpdatedAt"].string ?? "") ?? Date()
+                    self.updatedAt = parseDate(json["UpdatedAt"].string ?? "")
                 }
     }
     public init(JSONData: Data) {
@@ -4914,7 +4914,7 @@ public struct FooObjectWithPascalCaseKeysAdjacentEventUserCreated: ArriClientMod
     
 
 public struct FooObjectWithSnakeCaseKeys: ArriClientModel {
-    public var createdAt: Date = Date()
+    public var createdAt: Date = Date(timeIntervalSince1970: 0)
     public var displayName: String = ""
     public var phoneNumber: String?
     public var externalEvent: FooObjectWithSnakeCaseKeysExternalEvent?
@@ -4943,7 +4943,7 @@ public struct FooObjectWithSnakeCaseKeys: ArriClientModel {
     }
     public init() {}
     public init(json: JSON) {
-        self.createdAt = parseDate(json["created_at"].string ?? "") ?? Date()
+        self.createdAt = parseDate(json["created_at"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.displayName = json["display_name"].string ?? ""
         if json["phone_number"].string != nil {
             self.phoneNumber = json["phone_number"].string
@@ -5420,7 +5420,7 @@ public struct FooObjectWithSnakeCaseKeysInternalEventUserUpdated: ArriClientMode
     public init(json: JSON) {
         self.userId = json["user_id"].string ?? ""
         if json["updated_at"].exists() {
-                    self.updatedAt = parseDate(json["updated_at"].string ?? "") ?? Date()
+                    self.updatedAt = parseDate(json["updated_at"].string ?? "")
                 }
     }
     public init(JSONData: Data) {
@@ -5684,7 +5684,7 @@ public struct FooObjectWithEveryOptionalType: ArriClientModel {
             self.string = json["string"].string    
         }
         if json["timestamp"].exists() {
-                    self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+                    self.timestamp = parseDate(json["timestamp"].string ?? "")
                 }
         if json["float32"].exists() {
                     self.float32 = json["float32"].float
@@ -6152,7 +6152,7 @@ public enum FooObjectWithEveryOptionalTypeEnumerator: ArriClientEnum {
 public struct FooObjectWithEveryOptionalTypeObject: ArriClientModel {
     public var string: String = ""
     public var boolean: Bool = false
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         string: String,
         boolean: Bool,
@@ -6166,7 +6166,7 @@ public struct FooObjectWithEveryOptionalTypeObject: ArriClientModel {
     public init(json: JSON) {
         self.string = json["string"].string ?? ""
         self.boolean = json["boolean"].bool ?? false
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -6246,7 +6246,7 @@ public enum FooObjectWithEveryOptionalTypeUnionExternal: ArriClientModel {
         } else if json["nullable-timestamp"].exists() {
                 var __variantValue: Date?
                 if json["nullable-timestamp"].string != nil {
-                    __variantValue = parseDate(json["nullable-timestamp"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["nullable-timestamp"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
         } else {
@@ -6607,7 +6607,7 @@ public enum FooObjectWithEveryOptionalTypeUnionAdjacent: ArriClientModel {
             case "nullable-timestamp":
                 var __variantValue: Date?
                 if json["data"].string != nil {
-                    __variantValue = parseDate(json["data"].string ?? "") ?? Date()
+                    __variantValue = parseDate(json["data"].string ?? "")
                 }
                 self = .nullableTimestamp(__variantValue)
                 break
@@ -6756,7 +6756,7 @@ public struct FooObjectWithEveryOptionalTypeUnionAdjacentObject: ArriClientModel
 
 public struct FooObjectWithEveryOptionalTypeNestedObject: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var data: FooObjectWithEveryOptionalTypeNestedObjectData = FooObjectWithEveryOptionalTypeNestedObjectData()
     public init(
         id: String,
@@ -6770,7 +6770,7 @@ public struct FooObjectWithEveryOptionalTypeNestedObject: ArriClientModel {
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.data = FooObjectWithEveryOptionalTypeNestedObjectData(json: json["data"])
     }
     public init(JSONData: Data) {
@@ -6823,7 +6823,7 @@ public struct FooObjectWithEveryOptionalTypeNestedObject: ArriClientModel {
     
 public struct FooObjectWithEveryOptionalTypeNestedObjectData: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var data: FooObjectWithEveryOptionalTypeNestedObjectDataData = FooObjectWithEveryOptionalTypeNestedObjectDataData()
     public init(
         id: String,
@@ -6837,7 +6837,7 @@ public struct FooObjectWithEveryOptionalTypeNestedObjectData: ArriClientModel {
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.data = FooObjectWithEveryOptionalTypeNestedObjectDataData(json: json["data"])
     }
     public init(JSONData: Data) {
@@ -6890,7 +6890,7 @@ public struct FooObjectWithEveryOptionalTypeNestedObjectData: ArriClientModel {
     
 public struct FooObjectWithEveryOptionalTypeNestedObjectDataData: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         id: String,
         timestamp: Date
@@ -6901,7 +6901,7 @@ public struct FooObjectWithEveryOptionalTypeNestedObjectDataData: ArriClientMode
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -6950,7 +6950,7 @@ public struct FooObjectWithEveryOptionalTypeNestedObjectDataData: ArriClientMode
 
 public struct FooObjectWithEveryOptionalTypeNestedArrayElementElement: ArriClientModel {
     public var id: String = ""
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         id: String,
         timestamp: Date
@@ -6961,7 +6961,7 @@ public struct FooObjectWithEveryOptionalTypeNestedArrayElementElement: ArriClien
     public init() {}
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -7927,7 +7927,7 @@ public struct FooUnionInternalGetRequestWithFields: ArriClientModel {
     public var float64: Float64 = 0.0
     public var int64: Int64 = 0
     public var boolean: Bool = false
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public var nullableEnum: FooUnionInternalGetRequestWithFieldsNullableEnum?
     public var optionalString: String?
     public init(
@@ -7958,7 +7958,7 @@ public struct FooUnionInternalGetRequestWithFields: ArriClientModel {
         self.float64 = json["float64"].double ?? 0.0
         self.int64 = Int64(json["int64"].string ?? "0") ?? 0
         self.boolean = json["boolean"].bool ?? false
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         if json["nullableEnum"].string != nil {
                     self.nullableEnum = FooUnionInternalGetRequestWithFieldsNullableEnum(serialValue: json["nullableEnum"].string ?? "")
                 }
@@ -8658,7 +8658,7 @@ public struct FooUnionVariantShapesInternalNestedArrayElement: ArriClientModel {
     
 
 public struct FooUnionVariantShapesInternalNestedObject: ArriClientModel {
-    public var timestamp: Date = Date()
+    public var timestamp: Date = Date(timeIntervalSince1970: 0)
     public init(
         timestamp: Date
     ) {
@@ -8666,7 +8666,7 @@ public struct FooUnionVariantShapesInternalNestedObject: ArriClientModel {
     }
     public init() {}
     public init(json: JSON) {
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date(timeIntervalSince1970: 0)
     }
     public init(JSONData: Data) {
         do {
@@ -11466,7 +11466,7 @@ public struct FooChatMessageText: ArriClientModel {
     public var id: String = ""
     public var channelId: String = ""
     public var userId: String = ""
-    public var date: Date = Date()
+    public var date: Date = Date(timeIntervalSince1970: 0)
     public var text: String = ""
     public init(
         id: String,
@@ -11486,7 +11486,7 @@ public struct FooChatMessageText: ArriClientModel {
         self.id = json["id"].string ?? ""
         self.channelId = json["channelId"].string ?? ""
         self.userId = json["userId"].string ?? ""
-        self.date = parseDate(json["date"].string ?? "") ?? Date()
+        self.date = parseDate(json["date"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.text = json["text"].string ?? ""
     }
     public init(JSONData: Data) {
@@ -11553,7 +11553,7 @@ public struct FooChatMessageImage: ArriClientModel {
     public var id: String = ""
     public var channelId: String = ""
     public var userId: String = ""
-    public var date: Date = Date()
+    public var date: Date = Date(timeIntervalSince1970: 0)
     public var image: String = ""
     public init(
         id: String,
@@ -11573,7 +11573,7 @@ public struct FooChatMessageImage: ArriClientModel {
         self.id = json["id"].string ?? ""
         self.channelId = json["channelId"].string ?? ""
         self.userId = json["userId"].string ?? ""
-        self.date = parseDate(json["date"].string ?? "") ?? Date()
+        self.date = parseDate(json["date"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.image = json["image"].string ?? ""
     }
     public init(JSONData: Data) {
@@ -11640,7 +11640,7 @@ public struct FooChatMessageUrl: ArriClientModel {
     public var id: String = ""
     public var channelId: String = ""
     public var userId: String = ""
-    public var date: Date = Date()
+    public var date: Date = Date(timeIntervalSince1970: 0)
     public var url: String = ""
     public init(
         id: String,
@@ -11660,7 +11660,7 @@ public struct FooChatMessageUrl: ArriClientModel {
         self.id = json["id"].string ?? ""
         self.channelId = json["channelId"].string ?? ""
         self.userId = json["userId"].string ?? ""
-        self.date = parseDate(json["date"].string ?? "") ?? Date()
+        self.date = parseDate(json["date"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.url = json["url"].string ?? ""
     }
     public init(JSONData: Data) {
@@ -11831,7 +11831,7 @@ public struct FooUsersWatchUserResponse: ArriClientModel {
     public var role: FooUsersWatchUserResponseRole = FooUsersWatchUserResponseRole.standard
     /// A profile picture
     public var photo: FooUserPhoto?
-    public var createdAt: Date = Date()
+    public var createdAt: Date = Date(timeIntervalSince1970: 0)
     public var numFollowers: Int32 = 0
     public var settings: FooUserSettings = FooUserSettings()
     public var recentNotifications: [FooUsersWatchUserResponseRecentNotificationsElement] = []
@@ -11871,7 +11871,7 @@ public struct FooUsersWatchUserResponse: ArriClientModel {
         if json["photo"].dictionary != nil {
                     self.photo = FooUserPhoto(json: json["photo"])
                 }
-        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date()
+        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date(timeIntervalSince1970: 0)
         self.numFollowers = json["numFollowers"].int32 ?? 0
         self.settings = FooUserSettings(json: json["settings"])
         self.recentNotifications = []

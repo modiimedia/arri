@@ -34,7 +34,7 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
         switch method {
             case "GET":
                 if !(params is EmptyArriModel) {
-                    parsedURL!.queryItems = params.toURLQueryParts()
+                    parsedURL!.setArriQueryItems(params.toURLQueryParts())
                 }
                 break;
             default:
@@ -770,7 +770,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         if self.params != nil {
             switch (self.method) {
                 case "GET":
-                    urlComponents!.queryItems = self.params!.toURLQueryParts()
+                    urlComponents!.setArriQueryItems(self.params!.toURLQueryParts())
                     break;
                 default:
                     body = self.params!.toJSONString()
@@ -781,7 +781,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         let request = ArriHTTPRequest(
             url: urlComponents!.url!, 
             method: self.method, 
-            headers: self.headers(), 
+            headers: headers, 
             body: body,
             timeoutMs: self.options.timeoutMs 
         )
@@ -922,5 +922,14 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         }
         self.retryCount += 1
         return await self.sendRequest()
+    }
+}
+
+extension URLComponents {
+    /// Sets the query items and also percent encodes "+".
+    /// Foundation leaves "+" as is, but servers decode it as a space.
+    public mutating func setArriQueryItems(_ items: [URLQueryItem]) {
+        self.queryItems = items
+        self.percentEncodedQuery = self.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
     }
 }
