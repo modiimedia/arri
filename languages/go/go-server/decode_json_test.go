@@ -324,3 +324,41 @@ func TestDecodeBadStringInput(t *testing.T) {
 		return
 	}
 }
+
+func TestDecodeLongArrays(t *testing.T) {
+	type nestedArrays struct {
+		Items  []string
+		Nested [][]int32
+		Nulls  []arri.Nullable[string]
+	}
+	input := []byte(`{"items":["a","b","c","d","e","f","g","h","i","j"],"nested":[[1,2,3,4,5],[],[],[],[6]],"nulls":[null,null,null,null,"a"]}`)
+	var result nestedArrays
+	err := arri.DecodeJSON(input, &result, arri.EncodingOptions{})
+	if err != nil {
+		t.Fatalf("%+v", err.Errors)
+	}
+	if len(result.Items) != 10 || result.Items[9] != "j" {
+		t.Fatalf("unexpected items %+v", result.Items)
+	}
+	if len(result.Nested) != 5 || len(result.Nested[0]) != 5 || result.Nested[4][0] != 6 {
+		t.Fatalf("unexpected nested arrays %+v", result.Nested)
+	}
+	if len(result.Nulls) != 5 || result.Nulls[4].Unwrap() != "a" {
+		t.Fatalf("unexpected nullable items %+v", result.Nulls)
+	}
+}
+
+func TestDecodeArraysRespectMaxDepth(t *testing.T) {
+	type deep struct {
+		Value [][][]int32
+	}
+	var result deep
+	err := arri.DecodeJSON([]byte(`{"value":[[[1]]]}`), &result, arri.EncodingOptions{MaxDepth: 2})
+	if err == nil {
+		t.Fatal("expected arrays nested past the max depth to fail")
+	}
+	err = arri.DecodeJSON([]byte(`{"value":[[[1]]]}`), &result, arri.EncodingOptions{MaxDepth: 10})
+	if err != nil {
+		t.Fatalf("%+v", err.Errors)
+	}
+}

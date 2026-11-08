@@ -558,7 +558,6 @@ func arrayFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCon
 		subTarget := target.Index(i)
 		context.InstancePath = currCtx.InstancePath + "/" + fmt.Sprint(i)
 		success := typeFromJSON(&element, subTarget, context)
-		context.CurrentDepth--
 		if !success {
 			hasErr = true
 			continue
