@@ -47,7 +47,7 @@ app.route({
 });
 
 app.registerDefinitions({
-    ManuallyAddedModel: a.object({
+    ManuallyAddedModel: a.object('ManuallyAddedModel', {
         hello: a.string(),
     }),
 });

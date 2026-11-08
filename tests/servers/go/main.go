@@ -82,12 +82,25 @@ func main() {
 	arri.ScopedRpc(&app, "tests", SendDiscriminatorWithEmptyObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendError, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObject, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendObjectWithKebabCaseKeys, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithNullableFields, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithPascalCaseKeys, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithSnakeCaseKeys, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendPartialObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveObject, arri.RpcOptions{})
-	arri.ScopedRpc(&app, "tests", SendRecursiveUnion, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendRecursiveUnionAdjacent, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendRecursiveUnionExternal, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendRecursiveUnionInternal, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendUnionInternalGetRequest, arri.RpcOptions{
+		Method:      arri.HttpMethodGet,
+		Description: "GET requests send params through url query params. Only internally tagged unions can be represented this way.",
+	})
+	arri.ScopedRpc(&app, "tests", SendUnionVariantShapes, arri.RpcOptions{
+		Description: "Union variants with no fields, only optional fields, a mix of required, optional, and nullable fields, and nested fields.",
+	})
+	arri.ScopedRpc(&app, "tests", SendUnionVariantTypes, arri.RpcOptions{
+		Description: "Union variants of every value type, nested unions, and names that are reserved words in many languages.",
+	})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamAutoReconnect, arri.RpcOptions{})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamConnectionErrorTest, arri.RpcOptions{Description: "This route will always return an error. The client should automatically retry with exponential backoff."})
 	arri.ScopedEventStreamRpc(&app, "tests", StreamHeartbeatDetectionTest, arri.RpcOptions{Description: `Sends 5 messages quickly then starts sending messages slowly (1s) after that.
@@ -119,9 +132,11 @@ type DiscriminatorWithEmptyObject struct {
 	NotEmpty *DiscriminatorWithEmptyObjectNotEmpty `discriminator:"NOT_EMPTY"`
 }
 
-type DiscriminatorWithEmptyObjectEmpty struct{}
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type DiscriminatorWithEmptyObjectEmpty = struct{}
 
-type DiscriminatorWithEmptyObjectNotEmpty struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type DiscriminatorWithEmptyObjectNotEmpty = struct {
 	Foo string
 	Bar float64
 	Baz bool
@@ -183,14 +198,35 @@ type ObjectWithEveryType struct {
 		Timestamp time.Time
 	}
 	Record        map[string]uint64
-	Discriminator struct {
-		A *struct {
-			Title string
-		} `discriminator:"A"`
-		B *struct {
-			Title       string
-			Description string
-		} `discriminator:"B"`
+	UnionExternal struct {
+		arri.Union
+		Object *struct {
+			Id      string
+			Content string
+		}
+		Array             *[]string
+		Boolean           *bool
+		NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
+	}
+	UnionInternal struct {
+		arri.Union `tagKey:"shape"`
+		Rectangle  *struct {
+			Width  float64
+			Height float64
+		}
+		Circle *struct {
+			Radius float64
+		}
+	}
+	UnionAdjacent struct {
+		arri.Union `tagKey:"kind" valueKey:"data"`
+		Object     *struct {
+			Id      string
+			Content string
+		}
+		Array             *[]string
+		Boolean           *bool
+		NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
 	}
 	NestedObject struct {
 		Id        string
@@ -237,14 +273,35 @@ type ObjectWithEveryNullableType struct {
 		Timestamp arri.Nullable[time.Time]
 	}]
 	Record        arri.Nullable[map[string]arri.Nullable[uint64]]
-	Discriminator arri.Nullable[struct {
-		A *struct {
-			Title arri.Nullable[string]
-		} `discriminator:"A"`
-		B *struct {
-			Title       arri.Nullable[string]
-			Description arri.Nullable[string]
-		} `discriminator:"B"`
+	UnionExternal arri.Nullable[struct {
+		arri.Union
+		Object *struct {
+			Id      string
+			Content string
+		}
+		Array             *[]string
+		Boolean           *bool
+		NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
+	}]
+	UnionInternal arri.Nullable[struct {
+		arri.Union `tagKey:"shape"`
+		Rectangle  *struct {
+			Width  float64
+			Height float64
+		}
+		Circle *struct {
+			Radius float64
+		}
+	}]
+	UnionAdjacent arri.Nullable[struct {
+		arri.Union `tagKey:"kind" valueKey:"data"`
+		Object     *struct {
+			Id      string
+			Content string
+		}
+		Array             *[]string
+		Boolean           *bool
+		NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
 	}]
 	NestedObject arri.Nullable[struct {
 		Id        arri.Nullable[string]
@@ -268,12 +325,82 @@ func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ RpcEvent
 	return params, nil
 }
 
+type ObjectWithKebabCaseKeys struct {
+	CreatedAt     time.Time             `key:"created-at"`
+	DisplayName   string                `key:"display-name"`
+	EmailAddress  arri.Option[string]   `key:"email-address"`
+	PhoneNumber   arri.Nullable[string] `key:"phone-number"`
+	ExternalEvent arri.Nullable[struct {
+		arri.Union
+		UserCreated *struct {
+			UserId string `key:"user-id"`
+		} `tag:"user-created"`
+		UserUpdated *struct {
+			UserId string `key:"user-id"`
+		} `tag:"user-updated"`
+		UserDeleted *struct {
+			UserId string `key:"user-id"`
+		} `tag:"user-deleted"`
+	}] `key:"external-event"`
+	InternalEvent struct {
+		arri.Union  `tagKey:"event-type"`
+		UserCreated *struct {
+			UserId string `key:"user-id"`
+		} `tag:"user-created"`
+		UserUpdated *struct {
+			UserId    string                 `key:"user-id"`
+			UpdatedAt arri.Option[time.Time] `key:"updated-at"`
+		} `tag:"user-updated"`
+	} `key:"internal-event"`
+	AdjacentEvent struct {
+		arri.Union  `tagKey:"event-type" valueKey:"event-data"`
+		UserCreated *struct {
+			UserId string `key:"user-id"`
+		} `tag:"user-created"`
+		UserUpdated *string `tag:"user-updated"`
+	} `key:"adjacent-event"`
+	IsAdmin arri.Option[bool] `key:"is-admin"`
+}
+
+func SendObjectWithKebabCaseKeys(params ObjectWithKebabCaseKeys, _ RpcEvent) (ObjectWithKebabCaseKeys, arri.RpcError) {
+	return params, nil
+}
+
 type ObjectWithPascalCaseKeys struct {
-	CreatedAt    time.Time             `key:"CreatedAt"`
-	DisplayName  string                `key:"DisplayName"`
-	EmailAddress arri.Option[string]   `key:"EmailAddress"`
-	PhoneNumber  arri.Nullable[string] `key:"PhoneNumber"`
-	IsAdmin      arri.Option[bool]     `key:"IsAdmin"`
+	CreatedAt     time.Time             `key:"CreatedAt"`
+	DisplayName   string                `key:"DisplayName"`
+	EmailAddress  arri.Option[string]   `key:"EmailAddress"`
+	PhoneNumber   arri.Nullable[string] `key:"PhoneNumber"`
+	ExternalEvent arri.Nullable[struct {
+		arri.Union
+		UserCreated *struct {
+			UserId string `key:"UserId"`
+		} `tag:"UserCreated"`
+		UserUpdated *struct {
+			UserId string `key:"UserId"`
+		} `tag:"UserUpdated"`
+		UserDeleted *struct {
+			UserId string `key:"UserId"`
+		} `tag:"UserDeleted"`
+	}] `key:"ExternalEvent"`
+	InternalEvent struct {
+		arri.Union  `tagKey:"EventType"`
+		UserCreated *struct {
+			UserId string `key:"UserId"`
+		} `tag:"UserCreated"`
+		UserUpdated *struct {
+			UserId    string                 `key:"UserId"`
+			UpdatedAt arri.Option[time.Time] `key:"UpdatedAt"`
+		} `tag:"UserUpdated"`
+	} `key:"InternalEvent"`
+	AdjacentEvent struct {
+		arri.Union  `tagKey:"EventType" valueKey:"EventData"`
+		UserCreated *struct {
+			UserId string `key:"UserId"`
+		} `tag:"UserCreated"`
+		UserUpdated *string `tag:"UserUpdated"`
+	} `key:"AdjacentEvent"`
+	IsAdmin arri.Option[bool] `key:"IsAdmin"`
 }
 
 func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ RpcEvent) (ObjectWithPascalCaseKeys, arri.RpcError) {
@@ -281,11 +408,40 @@ func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ RpcEvent) (
 }
 
 type ObjectWithSnakeCaseKeys struct {
-	CreatedAt    time.Time             `key:"created_at"`
-	DisplayName  string                `key:"display_name"`
-	EmailAddress arri.Option[string]   `key:"email_address"`
-	PhoneNumber  arri.Nullable[string] `key:"phone_number"`
-	IsAdmin      arri.Option[bool]     `key:"is_admin"`
+	CreatedAt     time.Time             `key:"created_at"`
+	DisplayName   string                `key:"display_name"`
+	EmailAddress  arri.Option[string]   `key:"email_address"`
+	PhoneNumber   arri.Nullable[string] `key:"phone_number"`
+	ExternalEvent arri.Nullable[struct {
+		arri.Union
+		UserCreated *struct {
+			UserId string `key:"user_id"`
+		} `tag:"user_created"`
+		UserUpdated *struct {
+			UserId string `key:"user_id"`
+		} `tag:"user_updated"`
+		UserDeleted *struct {
+			UserId string `key:"user_id"`
+		} `tag:"user_deleted"`
+	}] `key:"external_event"`
+	InternalEvent struct {
+		arri.Union  `tagKey:"event_type"`
+		UserCreated *struct {
+			UserId string `key:"user_id"`
+		} `tag:"user_created"`
+		UserUpdated *struct {
+			UserId    string                 `key:"user_id"`
+			UpdatedAt arri.Option[time.Time] `key:"updated_at"`
+		} `tag:"user_updated"`
+	} `key:"internal_event"`
+	AdjacentEvent struct {
+		arri.Union  `tagKey:"event_type" valueKey:"event_data"`
+		UserCreated *struct {
+			UserId string `key:"user_id"`
+		} `tag:"user_created"`
+		UserUpdated *string `tag:"user_updated"`
+	} `key:"adjacent_event"`
+	IsAdmin arri.Option[bool] `key:"is_admin"`
 }
 
 func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ RpcEvent) (ObjectWithSnakeCaseKeys, arri.RpcError) {
@@ -315,14 +471,35 @@ type ObjectWithEveryOptionalType struct {
 		Timestamp time.Time
 	}]
 	Record        arri.Option[map[string]uint64]
-	Discriminator arri.Option[struct {
-		A *struct {
-			Title string
-		} `discriminator:"A"`
-		B *struct {
-			Title       string
-			Description string
-		} `discriminator:"B"`
+	UnionExternal arri.Option[struct {
+		arri.Union
+		Object *struct {
+			Id      string
+			Content string
+		}
+		Array             *[]string
+		Boolean           *bool
+		NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
+	}]
+	UnionInternal arri.Option[struct {
+		arri.Union `tagKey:"shape"`
+		Rectangle  *struct {
+			Width  float64
+			Height float64
+		}
+		Circle *struct {
+			Radius float64
+		}
+	}]
+	UnionAdjacent arri.Option[struct {
+		arri.Union `tagKey:"kind" valueKey:"data"`
+		Object     *struct {
+			Id      string
+			Content string
+		}
+		Array             *[]string
+		Boolean           *bool
+		NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
 	}]
 	NestedObject arri.Option[struct {
 		Id        string
@@ -356,26 +533,210 @@ func SendRecursiveObject(params RecursiveObject, _ RpcEvent) (RecursiveObject, a
 	return params, nil
 }
 
-type RecursiveUnion struct {
-	Child *struct {
-		Data RecursiveUnion
-	} `discriminator:"CHILD" description:"Child node"`
+type RecursiveUnionExternal struct {
+	arri.Union
+	Child    *RecursiveUnionExternal
+	Children *[]RecursiveUnionExternal `description:"an array of child nodes"`
+	Text     *string                   `description:"Text node"`
+	Shape    *struct {
+		Width  float64
+		Height float64
+		Color  string
+	} `description:"Shape node"`
+}
+
+func SendRecursiveUnionExternal(params RecursiveUnionExternal, _ RpcEvent) (RecursiveUnionExternal, arri.RpcError) {
+	return params, nil
+}
+
+type RecursiveUnionInternal struct {
+	arri.Union `tagKey:"kind"`
+	Child      *struct {
+		Data RecursiveUnionInternal
+	}
 	Children *struct {
-		Data []RecursiveUnion
-	} `discriminator:"CHILDREN" description:"List of children node"`
+		Data []RecursiveUnionInternal `description:"an array of child nodes"`
+	}
 	Text *struct {
-		Data string
-	} `discriminator:"TEXT" description:"Text node"`
+		Data string `description:"Text node"`
+	}
 	Shape *struct {
 		Data struct {
 			Width  float64
 			Height float64
 			Color  string
-		}
-	} `discriminator:"SHAPE" description:"Shape node"`
+		} `description:"Shape node"`
+	}
 }
 
-func SendRecursiveUnion(params RecursiveUnion, _ RpcEvent) (RecursiveUnion, arri.RpcError) {
+func SendRecursiveUnionInternal(params RecursiveUnionInternal, _ RpcEvent) (RecursiveUnionInternal, arri.RpcError) {
+	return params, nil
+}
+
+type RecursiveUnionAdjacent struct {
+	arri.Union `tagKey:"kind" valueKey:"data"`
+	Child      *RecursiveUnionAdjacent
+	Children   *[]RecursiveUnionAdjacent `description:"an array of child nodes"`
+	Text       *string                   `description:"Text node"`
+	Shape      *struct {
+		Width  float64
+		Height float64
+		Color  string
+	} `description:"Shape node"`
+}
+
+func SendRecursiveUnionAdjacent(params RecursiveUnionAdjacent, _ RpcEvent) (RecursiveUnionAdjacent, arri.RpcError) {
+	return params, nil
+}
+
+type UnionInternalGetRequest struct {
+	arri.Union `tagKey:"kind"`
+	WithFields *struct {
+		String         string
+		NullableString arri.Nullable[string]
+		Float64        float64
+		Int64          int64
+		Boolean        bool
+		Timestamp      time.Time
+		NullableEnum   arri.Nullable[string] `enum:"A,B"`
+		OptionalString arri.Option[string]
+	} `tag:"with-fields"`
+	Empty *struct{}
+}
+
+func SendUnionInternalGetRequest(params UnionInternalGetRequest, _ RpcEvent) (UnionInternalGetRequest, arri.RpcError) {
+	return params, nil
+}
+
+type UnionVariantShapes struct {
+	Internal struct {
+		arri.Union  `tagKey:"kind"`
+		Empty       *struct{}
+		AllOptional *struct {
+			First  arri.Option[string]
+			Second arri.Option[int32]
+		} `tag:"all-optional"`
+		Mixed *struct {
+			Required string
+			Nullable arri.Nullable[string]
+			Optional arri.Option[string]
+		}
+		Nested *struct {
+			Array  []struct{ Id string }
+			Record map[string]int64
+			Object struct{ Timestamp time.Time }
+		}
+	}
+	External struct {
+		arri.Union
+		Empty       *struct{}
+		AllOptional *struct {
+			First  arri.Option[string]
+			Second arri.Option[int32]
+		} `tag:"all-optional"`
+		Mixed *struct {
+			Required string
+			Nullable arri.Nullable[string]
+			Optional arri.Option[string]
+		}
+	}
+	Adjacent struct {
+		arri.Union  `tagKey:"kind" valueKey:"data"`
+		Empty       *struct{}
+		AllOptional *struct {
+			First  arri.Option[string]
+			Second arri.Option[int32]
+		} `tag:"all-optional"`
+		Mixed *struct {
+			Required string
+			Nullable arri.Nullable[string]
+			Optional arri.Option[string]
+		}
+	}
+}
+
+func SendUnionVariantShapes(params UnionVariantShapes, _ RpcEvent) (UnionVariantShapes, arri.RpcError) {
+	return params, nil
+}
+
+type UnionVariantTypes struct {
+	External struct {
+		arri.Union
+		String         *string
+		Int64          *int64
+		Uint64         *uint64
+		Float64        *float64
+		Enumerator     *string `enum:"A,B"`
+		Record         *map[string]string
+		Any            *any
+		NullableString *arri.Nullable[string]
+		NullableArray  *arri.Nullable[[]string]
+		ExternalUnion  *struct {
+			arri.Union
+			Text *string
+		}
+		InternalUnion *struct {
+			arri.Union `tagKey:"shape"`
+			Circle     *struct{ Radius float64 }
+		}
+		AdjacentUnion *struct {
+			arri.Union `tagKey:"kind" valueKey:"data"`
+			Text       *string
+		}
+		Class   *string
+		Default *string
+	}
+	Adjacent struct {
+		arri.Union     `tagKey:"kind" valueKey:"data"`
+		String         *string
+		Int64          *int64
+		Uint64         *uint64
+		Float64        *float64
+		Enumerator     *string `enum:"A,B"`
+		Record         *map[string]string
+		Any            *any
+		NullableString *arri.Nullable[string]
+		NullableArray  *arri.Nullable[[]string]
+		ExternalUnion  *struct {
+			arri.Union
+			Text *string
+		}
+		InternalUnion *struct {
+			arri.Union `tagKey:"shape"`
+			Circle     *struct{ Radius float64 }
+		}
+		AdjacentUnion *struct {
+			arri.Union `tagKey:"kind" valueKey:"data"`
+			Text       *string
+		}
+		Class   *string
+		Default *string
+	}
+	Internal struct {
+		arri.Union `tagKey:"kind"`
+		Class      *struct {
+			For     string
+			Default string
+		}
+		Default *struct {
+			Class         string
+			InternalUnion struct {
+				arri.Union `tagKey:"shape"`
+				Circle     *struct{ Radius float64 }
+			}
+			AdjacentUnion struct {
+				arri.Union `tagKey:"kind" valueKey:"data"`
+				Text       *string
+			}
+			ExternalUnion struct {
+				arri.Union
+				Text *string
+			}
+		}
+	}
+}
+
+func SendUnionVariantTypes(params UnionVariantTypes, _ RpcEvent) (UnionVariantTypes, arri.RpcError) {
 	return params, nil
 }
 
@@ -510,7 +871,8 @@ type ChatMessage struct {
 	*ChatMessageUrl       `discriminator:"URL"`
 }
 
-type ChatMessageText struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type ChatMessageText = struct {
 	Id        string
 	ChannelId string
 	UserId    string
@@ -518,7 +880,8 @@ type ChatMessageText struct {
 	Text      string
 }
 
-type ChatMessageImage struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type ChatMessageImage = struct {
 	Id        string
 	ChannelId string
 	UserId    string
@@ -526,7 +889,8 @@ type ChatMessageImage struct {
 	Image     string
 }
 
-type ChatMessageUrl struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type ChatMessageUrl = struct {
 	Id        string
 	ChannelId string
 	UserId    string
@@ -549,7 +913,8 @@ func StreamMessages(params ChatMessageParams, controller arri.SseController[Chat
 	}
 }
 
-type TestsStreamRetryWithNewCredentialsResponse struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type TestsStreamRetryWithNewCredentialsResponse = struct {
 	Message string
 }
 
@@ -607,11 +972,13 @@ func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.SseController[C
 	}
 }
 
-type UsersWatchUserParams struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type UsersWatchUserParams = struct {
 	UserId string
 }
 
-type UsersWatchUserResponse struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type UsersWatchUserResponse = struct {
 	Id                  string
 	Role                string                   `enum:"standard,admin"`
 	Photo               arri.Nullable[UserPhoto] `description:"A profile picture"`
@@ -636,7 +1003,8 @@ type UserPhoto struct {
 	Nanoseconds uint64 `description:"When the photo was last updated in nanoseconds"`
 }
 
-type UsersWatchUserResponseRecentNotificationsElement struct {
+// alias of an anonymous struct so the definition doesn't get an id, matching the ts test server
+type UsersWatchUserResponseRecentNotificationsElement = struct {
 	arri.DiscriminatorKey `discriminatorKey:"notificationType"`
 	PostLike              *struct {
 		PostId string
