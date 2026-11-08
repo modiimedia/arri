@@ -759,7 +759,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
             return await handleRetry()
         }
         var headers = self.headers()
-        headers["Accepts"] = "text/event-stream,application/json"
+        headers["Accept"] = "text/event-stream,application/json"
         if !self.clientVersion.isEmpty {
             headers["client-version"] = self.clientVersion
         }
