@@ -16,13 +16,11 @@ import {
     type SchemaFormUnion,
     type SchemaFormValues,
 } from '@arrirpc/type-defs';
-import { camelCase } from 'scule';
 
 import {
     propertyAccessor,
     refFunctionName,
     type TemplateInput,
-    validVarName,
 } from './common';
 
 interface SerializeTemplateInput<
@@ -32,10 +30,17 @@ interface SerializeTemplateInput<
     needsSanitization: string[];
 }
 
+let varNameCounter = 0;
+function uniqueVarName(name: string) {
+    varNameCounter++;
+    return `__${name}${varNameCounter}`;
+}
+
 export function createSerializationV2Template(
     inputName: string,
     schema: Schema,
 ): string {
+    varNameCounter = 0;
     const subFunctions: Record<string, string> = {};
     const context: SerializeTemplateInput<any> = {
         val: inputName,
@@ -325,17 +330,7 @@ export function objectTemplate(
         templateParts.push(innerTemplate);
     }
     if (isAllOptionalKeys) {
-        const hasFieldsVar = validVarName(
-            input.instancePath.length
-                ? camelCase(`${input.instancePath}_HasFields`)
-                : camelCase(
-                      `${input.val}_HasFields`
-                          .split('[')
-                          .join('')
-                          .split(']')
-                          .join(''),
-                  ),
-        );
+        const hasFieldsVar = uniqueVarName('hasFields');
         templateParts.push(`let ${hasFieldsVar} = false;`);
         for (let i = 0; i < optionalPropKeys.length; i++) {
             const key = optionalPropKeys[i]!;
@@ -440,21 +435,7 @@ function hasFunctionBody(name: string, fns: Record<string, string>) {
 export function arrayTemplate(
     input: SerializeTemplateInput<SchemaFormElements>,
 ): string {
-    const itemVarName = validVarName(
-        camelCase(
-            `${
-                input.val
-                    .split('`')
-                    .join('_')
-                    .split('"')
-                    .join('_')
-                    .split('[')
-                    .join('_')
-                    .split(']')
-                    .join('_') || 'list'
-            }_item`,
-        ),
-    );
+    const itemVarName = uniqueVarName('item');
     const templateParts: string[] = [
         `${input.targetVal} += '${input.outputPrefix}[';`,
     ];
@@ -491,11 +472,7 @@ export function arrayTemplate(
 export function recordTemplate(
     input: SerializeTemplateInput<SchemaFormValues>,
 ): string {
-    const keysVarName = validVarName(
-        input.instancePath.length
-            ? camelCase(input.instancePath.split('/').join('_')) + 'Keys'
-            : camelCase(`${input.val.split('.').join('_')}_Keys`),
-    );
+    const keysVarName = uniqueVarName('keys');
     const templateParts: string[] = [
         `const ${keysVarName} = Object.keys(${input.val});`,
         `${input.targetVal} += '${input.outputPrefix}{';`,

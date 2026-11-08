@@ -1531,6 +1531,56 @@ export const validationTestSuites: Record<
             },
         ],
     },
+    'keys that have the same camelCase name': {
+        schema: a.object({
+            helloWorld: a.record(a.string()),
+            hello_world: a.record(a.string()),
+            'hello-world': a.record(a.string()),
+            optionalFields: a.object({ a: a.optional(a.string()) }),
+            optional_fields: a.object({ a: a.optional(a.string()) }),
+            listItems: a.array(a.string()),
+            list_items: a.array(a.string()),
+            nested: a.object({
+                fooBar: a.record(a.int32()),
+                foo_bar: a.record(a.int32()),
+            }),
+        }),
+        goodInputs: [
+            {
+                helloWorld: { a: '1' },
+                hello_world: { b: '2' },
+                'hello-world': {},
+                optionalFields: { a: '1' },
+                optional_fields: {},
+                listItems: ['a', 'b'],
+                list_items: [],
+                nested: { fooBar: { a: 1 }, foo_bar: { b: 2 } },
+            },
+        ],
+        badInputs: [
+            {},
+            {
+                helloWorld: { a: 1 },
+                hello_world: {},
+                'hello-world': {},
+                optionalFields: {},
+                optional_fields: {},
+                listItems: [],
+                list_items: [],
+                nested: { fooBar: {}, foo_bar: {} },
+            },
+            {
+                helloWorld: {},
+                hello_world: {},
+                'hello-world': {},
+                optionalFields: {},
+                optional_fields: { a: 1 },
+                listItems: [],
+                list_items: [],
+                nested: { fooBar: {}, foo_bar: { b: 'b' } },
+            },
+        ],
+    },
     'external union with non-identifier keys': {
         schema: a.union({
             'nullable-timestamp': a.nullable(a.timestamp()),
