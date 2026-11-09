@@ -289,7 +289,9 @@ export function BookValidate(input: unknown): input is Book {
         typeof input.id === 'string' &&
         typeof input.name === 'string' &&
         input.createdAt instanceof Date &&
-        input.updatedAt instanceof Date
+        !Number.isNaN(input.createdAt.getTime()) &&
+        input.updatedAt instanceof Date &&
+        !Number.isNaN(input.updatedAt.getTime())
     );
 }
 export function BookClone(input: Book): Book {
@@ -549,6 +551,7 @@ export function ObjectWithEveryTypeValidate(
         typeof input.string === 'string' &&
         typeof input.boolean === 'boolean' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         typeof input.float32 === 'number' &&
         typeof input.float64 === 'number' &&
         typeof input.int8 === 'number' &&
@@ -972,7 +975,11 @@ export function UnionExternalValidate(input: unknown): input is UnionExternal {
             return typeof input.value === 'boolean';
 
         case `nullable-timestamp`:
-            return input.value instanceof Date || input.value === null;
+            return (
+                (input.value instanceof Date &&
+                    !Number.isNaN(input.value.getTime())) ||
+                input.value === null
+            );
 
         default:
             return false;
@@ -1440,7 +1447,11 @@ export function UnionAdjacentValidate(input: unknown): input is UnionAdjacent {
             return typeof input.data === 'boolean';
 
         case `nullable-timestamp`:
-            return input.data instanceof Date || input.data === null;
+            return (
+                (input.data instanceof Date &&
+                    !Number.isNaN(input.data.getTime())) ||
+                input.data === null
+            );
 
         default:
             return false;
@@ -1670,7 +1681,8 @@ export function ObjectWithOptionalFieldsValidate(
             typeof input.string === 'undefined') &&
         (typeof input.boolean === 'boolean' ||
             typeof input.boolean === 'undefined') &&
-        (input.timestamp instanceof Date ||
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
             typeof input.timestamp === 'undefined') &&
         (typeof input.float32 === 'number' ||
             typeof input.float32 === 'undefined') &&
@@ -2316,7 +2328,9 @@ export function ObjectWithNullableFieldsValidate(
         isObject(input) &&
         (typeof input.string === 'string' || input.string === null) &&
         (typeof input.boolean === 'boolean' || input.boolean === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null) &&
         (typeof input.float32 === 'number' || input.float32 === null) &&
         (typeof input.float64 === 'number' || input.float64 === null) &&
         ((typeof input.int8 === 'number' &&
@@ -3167,7 +3181,8 @@ export function LegacyDiscriminatorCValidate(
         input.typeName === `C` &&
         typeof input.id === 'string' &&
         typeof input.name === 'string' &&
-        input.date instanceof Date
+        input.date instanceof Date &&
+        !Number.isNaN(input.date.getTime())
     );
 }
 export function LegacyDiscriminatorCClone(

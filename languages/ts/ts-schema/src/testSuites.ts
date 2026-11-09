@@ -323,12 +323,12 @@ export const validationTestSuites: Record<
     timestamp: {
         schema: a.timestamp(),
         goodInputs: [new Date()],
-        badInputs: [null, true, false, {}, 'hello world'],
+        badInputs: [null, true, false, {}, 'hello world', new Date(NaN)],
     },
     'nullable timestamp': {
         schema: a.nullable(a.timestamp()),
         goodInputs: [new Date(), null],
-        badInputs: [true, false, {}, [], 'hello world'],
+        badInputs: [true, false, {}, [], 'hello world', new Date(NaN)],
     },
     'nested timestamps': {
         schema: a.object({
@@ -402,6 +402,37 @@ export const validationTestSuites: Record<
                 nullable: null,
                 array: [],
                 record: { a: 'hello world' },
+            },
+            {
+                required: new Date(NaN),
+                nullable: null,
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: new Date(NaN),
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                optional: new Date(NaN),
+                array: [],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                array: [new Date(NaN)],
+                record: {},
+            },
+            {
+                required: new Date(),
+                nullable: null,
+                array: [],
+                record: { a: new Date(NaN) },
             },
         ],
     },
@@ -2455,7 +2486,28 @@ export const coercionTestSuites: Record<
         schema: a.timestamp(),
         goodInputs: ['2001-01-01T00:00:00.000Z', 1000],
         expectedResults: [new Date('2001-01-01T00:00:00.000Z'), new Date(1000)],
-        badInputs: ['hello world', true, false, [], {}],
+        badInputs: [
+            'hello world',
+            true,
+            false,
+            [],
+            {},
+            new Date(NaN),
+            NaN,
+            Infinity,
+            8.64e15 + 1,
+        ],
+    },
+    'nullable timestamp': {
+        schema: a.nullable(a.timestamp()),
+        goodInputs: ['2001-01-01T00:00:00.000Z', 1000, null, 'null'],
+        expectedResults: [
+            new Date('2001-01-01T00:00:00.000Z'),
+            new Date(1000),
+            null,
+            null,
+        ],
+        badInputs: ['hello world', true, new Date(NaN), NaN],
     },
     int8: {
         schema: a.int8(),

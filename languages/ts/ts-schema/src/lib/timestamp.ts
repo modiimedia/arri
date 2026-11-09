@@ -42,7 +42,11 @@ export function timestamp(
 }
 
 function validate(input: unknown): input is Date {
-    return typeof input === 'object' && input instanceof Date;
+    return (
+        typeof input === 'object' &&
+        input instanceof Date &&
+        !Number.isNaN(input.getTime())
+    );
 }
 function parse(input: unknown, data: ValidationContext): Date | undefined {
     try {
@@ -79,7 +83,16 @@ function parse(input: unknown, data: ValidationContext): Date | undefined {
 }
 function coerce(input: unknown, options: ValidationContext): Date | undefined {
     if (typeof input === 'number') {
-        return new Date(input);
+        const result = new Date(input);
+        if (Number.isNaN(result.getTime())) {
+            options.errors.push({
+                message: `Error at ${options.instancePath}. Invalid date.`,
+                instancePath: options.instancePath,
+                schemaPath: `${options.schemaPath}/type`,
+            });
+            return undefined;
+        }
+        return result;
     }
     return parse(input, options);
 }

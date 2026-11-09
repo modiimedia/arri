@@ -608,9 +608,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                             fn(input, context) {
                                 if (typeof input === 'string') {
                                     const decodedInput = new Date(input);
-                                    if (
-                                        !Number.isNaN(decodedInput.getMonth())
-                                    ) {
+                                    if (!Number.isNaN(decodedInput.getTime())) {
                                         return decodedInput;
                                     }
                                     if (input === 'null') {
@@ -619,15 +617,14 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                                 }
                                 if (typeof input === 'number') {
                                     const decodedInput = new Date(input);
-                                    if (
-                                        !Number.isNaN(decodedInput.getMonth())
-                                    ) {
+                                    if (!Number.isNaN(decodedInput.getTime())) {
                                         return decodedInput;
                                     }
                                 }
                                 if (
                                     typeof input === 'object' &&
-                                    input instanceof Date
+                                    input instanceof Date &&
+                                    !Number.isNaN(input.getTime())
                                 ) {
                                     return input;
                                 }
@@ -648,19 +645,20 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         fn(input, context) {
                             if (typeof input === 'string') {
                                 const decodedInput = new Date(input);
-                                if (!Number.isNaN(decodedInput.getMonth())) {
+                                if (!Number.isNaN(decodedInput.getTime())) {
                                     return decodedInput;
                                 }
                             }
                             if (typeof input === 'number') {
                                 const decodedInput = new Date(input);
-                                if (!Number.isNaN(decodedInput.getMonth())) {
+                                if (!Number.isNaN(decodedInput.getTime())) {
                                     return decodedInput;
                                 }
                             }
                             if (
                                 typeof input === 'object' &&
-                                input instanceof Date
+                                input instanceof Date &&
+                                !Number.isNaN(input.getTime())
                             ) {
                                 return input;
                             }
@@ -679,7 +677,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                         fn(input, context) {
                             if (typeof input === 'string') {
                                 const decodedInput = new Date(input);
-                                if (!Number.isNaN(decodedInput.getMonth())) {
+                                if (!Number.isNaN(decodedInput.getTime())) {
                                     return decodedInput;
                                 }
                                 if (input === 'null') {
@@ -688,7 +686,8 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                             }
                             if (
                                 typeof input === 'object' &&
-                                input instanceof Date
+                                input instanceof Date &&
+                                !Number.isNaN(input.getTime())
                             ) {
                                 return input;
                             }
@@ -709,13 +708,14 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
                     fn(input: unknown, context) {
                         if (typeof input === 'string') {
                             const decodedInput = new Date(input);
-                            if (!Number.isNaN(decodedInput.getMonth())) {
+                            if (!Number.isNaN(decodedInput.getTime())) {
                                 return decodedInput;
                             }
                         }
                         if (
                             typeof input === 'object' &&
-                            input instanceof Date
+                            input instanceof Date &&
+                            !Number.isNaN(input.getTime())
                         ) {
                             return input;
                         }

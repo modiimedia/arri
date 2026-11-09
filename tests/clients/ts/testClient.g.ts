@@ -1342,6 +1342,7 @@ export function ObjectWithEveryTypeValidate(
         typeof input.boolean === 'boolean' &&
         typeof input.string === 'string' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         typeof input.float32 === 'number' &&
         typeof input.float64 === 'number' &&
         typeof input.int8 === 'number' &&
@@ -1865,7 +1866,8 @@ export function ObjectWithEveryTypeObjectValidate(
         isObject(input) &&
         typeof input.string === 'string' &&
         typeof input.boolean === 'boolean' &&
-        input.timestamp instanceof Date
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
     );
 }
 export function ObjectWithEveryTypeObjectClone(
@@ -1977,7 +1979,11 @@ export function ObjectWithEveryTypeUnionExternalValidate(
             return typeof input.value === 'boolean';
 
         case `nullable-timestamp`:
-            return input.value instanceof Date || input.value === null;
+            return (
+                (input.value instanceof Date &&
+                    !Number.isNaN(input.value.getTime())) ||
+                input.value === null
+            );
 
         default:
             return false;
@@ -2568,7 +2574,11 @@ export function ObjectWithEveryTypeUnionAdjacentValidate(
             return typeof input.data === 'boolean';
 
         case `nullable-timestamp`:
-            return input.data instanceof Date || input.data === null;
+            return (
+                (input.data instanceof Date &&
+                    !Number.isNaN(input.data.getTime())) ||
+                input.data === null
+            );
 
         default:
             return false;
@@ -2881,6 +2891,7 @@ export function ObjectWithEveryTypeNestedObjectValidate(
         isObject(input) &&
         typeof input.id === 'string' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         ObjectWithEveryTypeNestedObjectDataValidate(input.data)
     );
 }
@@ -2983,6 +2994,7 @@ export function ObjectWithEveryTypeNestedObjectDataValidate(
         isObject(input) &&
         typeof input.id === 'string' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         ObjectWithEveryTypeNestedObjectDataDataValidate(input.data)
     );
 }
@@ -3084,7 +3096,8 @@ export function ObjectWithEveryTypeNestedObjectDataDataValidate(
     return (
         isObject(input) &&
         typeof input.id === 'string' &&
-        input.timestamp instanceof Date
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
     );
 }
 export function ObjectWithEveryTypeNestedObjectDataDataClone(
@@ -3172,7 +3185,8 @@ export function ObjectWithEveryTypeNestedArrayElementElementValidate(
     return (
         isObject(input) &&
         typeof input.id === 'string' &&
-        input.timestamp instanceof Date
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
     );
 }
 export function ObjectWithEveryTypeNestedArrayElementElementClone(
@@ -3273,6 +3287,7 @@ export function ObjectWithKebabCaseKeysValidate(
     return (
         isObject(input) &&
         input.createdAt instanceof Date &&
+        !Number.isNaN(input.createdAt.getTime()) &&
         typeof input.displayName === 'string' &&
         (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
         (ObjectWithKebabCaseKeysExternalEventValidate(input.externalEvent) ||
@@ -4132,7 +4147,8 @@ export function ObjectWithKebabCaseKeysInternalEventUserUpdatedValidate(
         isObject(input) &&
         input.eventType === `user-updated` &&
         typeof input.userId === 'string' &&
-        (input.updatedAt instanceof Date ||
+        ((input.updatedAt instanceof Date &&
+            !Number.isNaN(input.updatedAt.getTime())) ||
             typeof input.updatedAt === 'undefined')
     );
 }
@@ -4515,7 +4531,9 @@ export function ObjectWithEveryNullableTypeValidate(
         true &&
         (typeof input.boolean === 'boolean' || input.boolean === null) &&
         (typeof input.string === 'string' || input.string === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null) &&
         (typeof input.float32 === 'number' || input.float32 === null) &&
         (typeof input.float64 === 'number' || input.float64 === null) &&
         ((typeof input.int8 === 'number' &&
@@ -5215,7 +5233,9 @@ export function ObjectWithEveryNullableTypeObjectValidate(
         isObject(input) &&
         (typeof input.string === 'string' || input.string === null) &&
         (typeof input.boolean === 'boolean' || input.boolean === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null)
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null)
     );
 }
 export function ObjectWithEveryNullableTypeObjectClone(
@@ -5341,7 +5361,11 @@ export function ObjectWithEveryNullableTypeUnionExternalValidate(
             return typeof input.value === 'boolean';
 
         case `nullable-timestamp`:
-            return input.value instanceof Date || input.value === null;
+            return (
+                (input.value instanceof Date &&
+                    !Number.isNaN(input.value.getTime())) ||
+                input.value === null
+            );
 
         default:
             return false;
@@ -5958,7 +5982,11 @@ export function ObjectWithEveryNullableTypeUnionAdjacentValidate(
             return typeof input.data === 'boolean';
 
         case `nullable-timestamp`:
-            return input.data instanceof Date || input.data === null;
+            return (
+                (input.data instanceof Date &&
+                    !Number.isNaN(input.data.getTime())) ||
+                input.data === null
+            );
 
         default:
             return false;
@@ -6280,7 +6308,9 @@ export function ObjectWithEveryNullableTypeNestedObjectValidate(
     return (
         isObject(input) &&
         (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null) &&
         (ObjectWithEveryNullableTypeNestedObjectDataValidate(input.data) ||
             input.data === null)
     );
@@ -6408,7 +6438,9 @@ export function ObjectWithEveryNullableTypeNestedObjectDataValidate(
     return (
         isObject(input) &&
         (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null) &&
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null) &&
         (ObjectWithEveryNullableTypeNestedObjectDataDataValidate(input.data) ||
             input.data === null)
     );
@@ -6541,7 +6573,9 @@ export function ObjectWithEveryNullableTypeNestedObjectDataDataValidate(
     return (
         isObject(input) &&
         (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null)
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null)
     );
 }
 export function ObjectWithEveryNullableTypeNestedObjectDataDataClone(
@@ -6645,7 +6679,9 @@ export function ObjectWithEveryNullableTypeNestedArrayElementElementValidate(
     return (
         isObject(input) &&
         (typeof input.id === 'string' || input.id === null) &&
-        (input.timestamp instanceof Date || input.timestamp === null)
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null)
     );
 }
 export function ObjectWithEveryNullableTypeNestedArrayElementElementClone(
@@ -6759,6 +6795,7 @@ export function ObjectWithPascalCaseKeysValidate(
     return (
         isObject(input) &&
         input.createdAt instanceof Date &&
+        !Number.isNaN(input.createdAt.getTime()) &&
         typeof input.displayName === 'string' &&
         (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
         (ObjectWithPascalCaseKeysExternalEventValidate(input.externalEvent) ||
@@ -7625,7 +7662,8 @@ export function ObjectWithPascalCaseKeysInternalEventUserUpdatedValidate(
         isObject(input) &&
         input.eventType === `UserUpdated` &&
         typeof input.userId === 'string' &&
-        (input.updatedAt instanceof Date ||
+        ((input.updatedAt instanceof Date &&
+            !Number.isNaN(input.updatedAt.getTime())) ||
             typeof input.updatedAt === 'undefined')
     );
 }
@@ -7970,6 +8008,7 @@ export function ObjectWithSnakeCaseKeysValidate(
     return (
         isObject(input) &&
         input.createdAt instanceof Date &&
+        !Number.isNaN(input.createdAt.getTime()) &&
         typeof input.displayName === 'string' &&
         (typeof input.phoneNumber === 'string' || input.phoneNumber === null) &&
         (ObjectWithSnakeCaseKeysExternalEventValidate(input.externalEvent) ||
@@ -8829,7 +8868,8 @@ export function ObjectWithSnakeCaseKeysInternalEventUserUpdatedValidate(
         isObject(input) &&
         input.eventType === `user_updated` &&
         typeof input.userId === 'string' &&
-        (input.updatedAt instanceof Date ||
+        ((input.updatedAt instanceof Date &&
+            !Number.isNaN(input.updatedAt.getTime())) ||
             typeof input.updatedAt === 'undefined')
     );
 }
@@ -9185,7 +9225,8 @@ export function ObjectWithEveryOptionalTypeValidate(
             typeof input.boolean === 'undefined') &&
         (typeof input.string === 'string' ||
             typeof input.string === 'undefined') &&
-        (input.timestamp instanceof Date ||
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
             typeof input.timestamp === 'undefined') &&
         (typeof input.float32 === 'number' ||
             typeof input.float32 === 'undefined') &&
@@ -9997,7 +10038,8 @@ export function ObjectWithEveryOptionalTypeObjectValidate(
         isObject(input) &&
         typeof input.string === 'string' &&
         typeof input.boolean === 'boolean' &&
-        input.timestamp instanceof Date
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
     );
 }
 export function ObjectWithEveryOptionalTypeObjectClone(
@@ -10111,7 +10153,11 @@ export function ObjectWithEveryOptionalTypeUnionExternalValidate(
             return typeof input.value === 'boolean';
 
         case `nullable-timestamp`:
-            return input.value instanceof Date || input.value === null;
+            return (
+                (input.value instanceof Date &&
+                    !Number.isNaN(input.value.getTime())) ||
+                input.value === null
+            );
 
         default:
             return false;
@@ -10728,7 +10774,11 @@ export function ObjectWithEveryOptionalTypeUnionAdjacentValidate(
             return typeof input.data === 'boolean';
 
         case `nullable-timestamp`:
-            return input.data instanceof Date || input.data === null;
+            return (
+                (input.data instanceof Date &&
+                    !Number.isNaN(input.data.getTime())) ||
+                input.data === null
+            );
 
         default:
             return false;
@@ -11051,6 +11101,7 @@ export function ObjectWithEveryOptionalTypeNestedObjectValidate(
         isObject(input) &&
         typeof input.id === 'string' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         ObjectWithEveryOptionalTypeNestedObjectDataValidate(input.data)
     );
 }
@@ -11156,6 +11207,7 @@ export function ObjectWithEveryOptionalTypeNestedObjectDataValidate(
         isObject(input) &&
         typeof input.id === 'string' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         ObjectWithEveryOptionalTypeNestedObjectDataDataValidate(input.data)
     );
 }
@@ -11265,7 +11317,8 @@ export function ObjectWithEveryOptionalTypeNestedObjectDataDataValidate(
     return (
         isObject(input) &&
         typeof input.id === 'string' &&
-        input.timestamp instanceof Date
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
     );
 }
 export function ObjectWithEveryOptionalTypeNestedObjectDataDataClone(
@@ -11357,7 +11410,8 @@ export function ObjectWithEveryOptionalTypeNestedArrayElementElementValidate(
     return (
         isObject(input) &&
         typeof input.id === 'string' &&
-        input.timestamp instanceof Date
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
     );
 }
 export function ObjectWithEveryOptionalTypeNestedArrayElementElementClone(
@@ -12935,6 +12989,7 @@ export function UnionInternalGetRequestWithFieldsValidate(
         input.int64 <= INT64_MAX &&
         typeof input.boolean === 'boolean' &&
         input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
         (UnionInternalGetRequestWithFieldsNullableEnumValidate(
             input.nullableEnum,
         ) ||
@@ -13968,7 +14023,11 @@ export function UnionVariantShapesInternalNestedObjectNew(): UnionVariantShapesI
 export function UnionVariantShapesInternalNestedObjectValidate(
     input: unknown,
 ): input is UnionVariantShapesInternalNestedObject {
-    return isObject(input) && input.timestamp instanceof Date;
+    return (
+        isObject(input) &&
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime())
+    );
 }
 export function UnionVariantShapesInternalNestedObjectClone(
     input: UnionVariantShapesInternalNestedObject,
@@ -18832,6 +18891,7 @@ export function ChatMessageTextValidate(
         typeof input.channelId === 'string' &&
         typeof input.userId === 'string' &&
         input.date instanceof Date &&
+        !Number.isNaN(input.date.getTime()) &&
         typeof input.text === 'string'
     );
 }
@@ -18944,6 +19004,7 @@ export function ChatMessageImageValidate(
         typeof input.channelId === 'string' &&
         typeof input.userId === 'string' &&
         input.date instanceof Date &&
+        !Number.isNaN(input.date.getTime()) &&
         typeof input.image === 'string'
     );
 }
@@ -19060,6 +19121,7 @@ export function ChatMessageUrlValidate(
         typeof input.channelId === 'string' &&
         typeof input.userId === 'string' &&
         input.date instanceof Date &&
+        !Number.isNaN(input.date.getTime()) &&
         typeof input.url === 'string'
     );
 }
@@ -19328,6 +19390,7 @@ export function UsersWatchUserResponseValidate(
         UsersWatchUserResponseRoleValidate(input.role) &&
         (UserPhotoValidate(input.photo) || input.photo === null) &&
         input.createdAt instanceof Date &&
+        !Number.isNaN(input.createdAt.getTime()) &&
         typeof input.numFollowers === 'number' &&
         Number.isInteger(input.numFollowers) &&
         input.numFollowers >= INT32_MIN &&

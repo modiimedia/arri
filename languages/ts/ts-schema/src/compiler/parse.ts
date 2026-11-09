@@ -425,7 +425,7 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
         return `if (typeof ${input.val} === 'string') {
             try {
                 const parsedVal = new Date(${input.val});
-                if (!Number.isNaN(parsedVal.getMonth())) {
+                if (!Number.isNaN(parsedVal.getTime())) {
                     ${input.targetVal} = parsedVal;
                 } ${
                     input.schema.isNullable
@@ -441,12 +441,12 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
             }    
         } else if (typeof ${input.val} === 'number') {
             const parsedVal = new Date(${input.val});
-            if (!Number.isNaN(parsedVal.getMonth())) {
+            if (!Number.isNaN(parsedVal.getTime())) {
                 ${input.targetVal} = parsedVal;
             } else {
                 $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
             }
-        } else if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+        } else if (typeof ${input.val} === 'object' && ${input.val} instanceof Date && !Number.isNaN(${input.val}.getTime())) {
             ${input.targetVal} = ${input.val};
         }${
             input.schema.isNullable
@@ -458,7 +458,7 @@ export function timestampTemplate(input: TemplateInput<SchemaFormType>) {
                 $fallback("${input.instancePath}", "${input.schemaPath}", "Unable to parse date");  
             }`;
     }
-    const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+    const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date && !Number.isNaN(${input.val}.getTime())) {
         ${input.targetVal} = ${input.val};
     } else if (typeof ${input.val} === 'string') {
         const parsedVal = new Date(${input.val});

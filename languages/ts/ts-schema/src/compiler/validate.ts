@@ -168,9 +168,9 @@ function timestampTemplate(
     input: TemplateInput<AScalarSchema<'timestamp'>>,
 ): string {
     if (input.schema.isNullable) {
-        return `((typeof ${input.val} === 'object' && ${input.val} instanceof Date) || ${input.val} === null)`;
+        return `((typeof ${input.val} === 'object' && ${input.val} instanceof Date && !Number.isNaN(${input.val}.getTime())) || ${input.val} === null)`;
     }
-    return `typeof ${input.val} === 'object' && ${input.val}  instanceof Date`;
+    return `(typeof ${input.val} === 'object' && ${input.val} instanceof Date && !Number.isNaN(${input.val}.getTime()))`;
 }
 
 function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
