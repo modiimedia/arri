@@ -22,7 +22,7 @@ describe('loadAppDefinition()', () => {
 
     it('loads a valid JSON AppDefinition', async () => {
         const appDef = {
-            schemaVersion: '0.0.8',
+            schemaVersion: '0.0.9',
             procedures: {},
             definitions: {
                 User: {
@@ -36,7 +36,7 @@ describe('loadAppDefinition()', () => {
         fs.writeFileSync(filePath, JSON.stringify(appDef));
 
         const result = await loadAppDefinition(filePath);
-        expect(result.schemaVersion).toBe('0.0.8');
+        expect(result.schemaVersion).toBe('0.0.9');
         expect(result.definitions?.User).toBeDefined();
     });
 

@@ -49,7 +49,7 @@ const ObjectKebabCase: Schema = {
 };
 
 const appDef: AppDefinition = {
-    schemaVersion: '0.0.8',
+    schemaVersion: '0.0.9',
     procedures: {},
     definitions: {
         InternalSnakeCase,
