@@ -3,7 +3,7 @@ import type { AppDefinition, Schema } from '@arrirpc/codegen-utils';
 import { appDefinitionToJsonSchema } from './json-schema';
 
 const createDef = (overrides: Partial<AppDefinition> = {}): AppDefinition => ({
-    schemaVersion: '0.0.8',
+    schemaVersion: '0.0.9',
     procedures: {},
     definitions: {},
     ...overrides,
