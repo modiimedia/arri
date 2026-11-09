@@ -30,7 +30,21 @@ final class BookTests: XCTestCase {
         ]
         XCTAssertEqual(expectedResult, control.toURLQueryParts())
     }
-    func testCopyWith() {
+    func testTimestampsDefaultToTheUnixEpoch() {
+        let epoch = Date(timeIntervalSince1970: 0)
+        XCTAssertEqual(Book().createdAt, epoch)
+        XCTAssertEqual(Book().updatedAt, epoch)
+        XCTAssertEqual(Book(), Book())
+        let invalid = Book(JSONString: "{\"id\":\"1\",\"name\":\"foo\",\"createdAt\":\"hello world\",\"updatedAt\":\"\"}")
+        XCTAssertEqual(invalid.id, "1")
+        XCTAssertEqual(invalid.createdAt, epoch)
+        XCTAssertEqual(invalid.updatedAt, epoch)
+        let nullable = ObjectWithNullableFields(JSONString: "{\"timestamp\":\"hello world\"}")
+        XCTAssertNil(nullable.timestamp)
+        let optional = ObjectWithOptionalFields(JSONString: "{\"timestamp\":\"hello world\"}")
+        XCTAssertNil(optional.timestamp)
+    }
+        func testCopyWith() {
         var clonedControl = control.clone()
         clonedControl.name = "The Adventures of Tom Sawyer!!!"
         XCTAssertNotEqual(clonedControl, control)

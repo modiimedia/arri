@@ -18,15 +18,25 @@ export function parseNullableBoolean(input: unknown): boolean | null {
     return null;
 }
 
+function isValidDate(input: unknown): input is Date {
+    return input instanceof Date && !Number.isNaN(input.getTime());
+}
+
 export function parseTimestamp(input: unknown, fallback = new Date(0)): Date {
-    if (typeof input === 'string') return new Date(input);
-    if (input instanceof Date) return input;
+    if (typeof input === 'string') {
+        const result = new Date(input);
+        return isValidDate(result) ? result : fallback;
+    }
+    if (isValidDate(input)) return input;
     return fallback;
 }
 
 export function parseNullableTimestamp(input: unknown): Date | null {
-    if (typeof input === 'string') return new Date(input);
-    if (input instanceof Date) return input;
+    if (typeof input === 'string') {
+        const result = new Date(input);
+        return isValidDate(result) ? result : null;
+    }
+    if (isValidDate(input)) return input;
     return null;
 }
 

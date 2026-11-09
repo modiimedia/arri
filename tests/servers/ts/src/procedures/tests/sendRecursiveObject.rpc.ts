@@ -1,5 +1,5 @@
-import { a } from "@arrirpc/schema";
-import { defineRpc } from "@arrirpc/server";
+import { a } from '@arrirpc/schema';
+import { defineRpc } from '@arrirpc/server';
 
 interface RecursiveObject {
     left: RecursiveObject | null;
@@ -8,7 +8,7 @@ interface RecursiveObject {
 }
 
 const RecursiveObject = a.recursive<RecursiveObject>(
-    "RecursiveObject",
+    'RecursiveObject',
     (self) =>
         a.object({
             left: a.nullable(self),

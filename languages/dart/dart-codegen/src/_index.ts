@@ -11,6 +11,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     isServiceDefinition,
     Schema,
@@ -44,6 +45,7 @@ import {
 } from './procedures';
 import { dartMapFromSchema } from './record';
 import { dartRefFromSchema } from './ref';
+import { dartUnionFromSchema } from './union';
 
 export interface DartClientGeneratorOptions {
     outputFile: string;
@@ -55,6 +57,8 @@ export interface DartClientGeneratorOptions {
     format?: boolean;
     rootService?: string;
 }
+
+const dartFormatLanguageVersion = '3.7';
 
 export const dartClientGenerator = defineGeneratorPlugin(
     (options: DartClientGeneratorOptions) => {
@@ -71,7 +75,11 @@ export const dartClientGenerator = defineGeneratorPlugin(
                     const destination = path.resolve(options.outputFile);
                     await fs.writeFile(destination, result);
                     if (options.format !== false) {
-                        execSync(`dart format ${destination}`);
+                        // Formatting style depends on the language version, which otherwise comes from
+                        // the nearest package config. Pinning it keeps the output the same on every machine.
+                        execSync(
+                            `dart format --language-version=${dartFormatLanguageVersion} ${destination}`,
+                        );
                     }
                 } catch (err) {
                     console.error(err);
@@ -258,6 +266,10 @@ export function dartTypeFromSchema(
 
     if (isSchemaFormDiscriminator(schema)) {
         return dartSealedClassFromSchema(schema, context);
+    }
+
+    if (isSchemaFormUnion(schema)) {
+        return dartUnionFromSchema(schema, context);
     }
 
     if (isSchemaFormRef(schema)) {

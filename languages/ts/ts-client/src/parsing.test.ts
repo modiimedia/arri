@@ -82,6 +82,12 @@ describe('parsing', () => {
             expect(parseTimestamp(123).getTime()).toBe(new Date(0).getTime());
             expect(parseTimestamp(null, fallback)).toBe(fallback);
         });
+        it('returns fallback if input is an invalid date', () => {
+            const fallback = new Date('2024-01-01T00:00:00.000Z');
+            expect(parseTimestamp('hello world').getTime()).toBe(0);
+            expect(parseTimestamp('hello world', fallback)).toBe(fallback);
+            expect(parseTimestamp(new Date(NaN)).getTime()).toBe(0);
+        });
     });
 
     describe('parseNullableTimestamp', () => {
@@ -98,6 +104,10 @@ describe('parsing', () => {
         it('returns null if input is not string or Date', () => {
             expect(parseNullableTimestamp(123)).toBeNull();
             expect(parseNullableTimestamp(null)).toBeNull();
+        });
+        it('returns null if input is an invalid date', () => {
+            expect(parseNullableTimestamp('hello world')).toBeNull();
+            expect(parseNullableTimestamp(new Date(NaN))).toBeNull();
         });
     });
 

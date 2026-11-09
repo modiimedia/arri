@@ -87,9 +87,9 @@ export function tsDateFromSchema(
         defaultValue,
         validationTemplate(input) {
             if (schema.isNullable) {
-                return `(${input} instanceof Date || ${input} === null)`;
+                return `((${input} instanceof Date && !Number.isNaN(${input}.getTime())) || ${input} === null)`;
             }
-            return `${input} instanceof Date`;
+            return `(${input} instanceof Date && !Number.isNaN(${input}.getTime()))`;
         },
         cloneTemplate(input, target) {
             if (schema.isNullable) {

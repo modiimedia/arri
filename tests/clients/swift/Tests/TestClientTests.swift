@@ -39,12 +39,11 @@ final class TestSwiftClientTests: XCTestCase {
                 timestamp: testDate
             ),
             record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0), ("\"C\"\t", 0)),
-            discriminator: ObjectWithEveryTypeDiscriminator.b(
-                ObjectWithEveryTypeDiscriminatorB(
-                    title: "this is a title",
-                    description: "this is a description"
-                )
+            unionExternal: ObjectWithEveryTypeUnionExternal.array(["foo", "bar", "baz"]),
+            unionInternal: ObjectWithEveryTypeUnionInternal.circle(
+                ObjectWithEveryTypeUnionInternalCircle(radius: 15.5)
             ),
+            unionAdjacent: ObjectWithEveryTypeUnionAdjacent.boolean(true),
             nestedObject: ObjectWithEveryTypeNestedObject(
                 id: "d1",
                 timestamp: testDate,
@@ -70,6 +69,15 @@ final class TestSwiftClientTests: XCTestCase {
             createdAt: testDate,
             displayName: "John Doe",
             phoneNumber: nil,
+            externalEvent: ObjectWithSnakeCaseKeysExternalEvent.userCreated(
+                ObjectWithSnakeCaseKeysExternalEventUserCreated(userId: "1")
+            ),
+            internalEvent: ObjectWithSnakeCaseKeysInternalEvent.userUpdated(
+                ObjectWithSnakeCaseKeysInternalEventUserUpdated(userId: "1", updatedAt: nil)
+            ),
+            adjacentEvent: ObjectWithSnakeCaseKeysAdjacentEvent.userCreated(
+                ObjectWithSnakeCaseKeysAdjacentEventUserCreated(userId: "1")
+            ),
             emailAddress: "johndoe@gmail.com",
             isAdmin: false
         )
@@ -81,6 +89,13 @@ final class TestSwiftClientTests: XCTestCase {
             createdAt: testDate, 
             displayName: "John Doe", 
             phoneNumber: "2112112111", 
+            externalEvent: ObjectWithPascalCaseKeysExternalEvent.userCreated(
+                ObjectWithPascalCaseKeysExternalEventUserCreated(userId: "1")
+            ),
+            internalEvent: ObjectWithPascalCaseKeysInternalEvent.userUpdated(
+                ObjectWithPascalCaseKeysInternalEventUserUpdated(userId: "1", updatedAt: testDate)
+            ),
+            adjacentEvent: ObjectWithPascalCaseKeysAdjacentEvent.userUpdated("hello"),
             emailAddress: nil, 
             isAdmin: nil
         )
@@ -110,9 +125,11 @@ final class TestSwiftClientTests: XCTestCase {
             array: [nil, true, false],
             object: ObjectWithEveryNullableTypeObject(string: nil, boolean: true, timestamp: nil),
             record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0), ("C", 4)),
-            discriminator: ObjectWithEveryNullableTypeDiscriminator.a(
-                ObjectWithEveryNullableTypeDiscriminatorA(title: nil)
+            unionExternal: ObjectWithEveryNullableTypeUnionExternal.boolean(true),
+            unionInternal: ObjectWithEveryNullableTypeUnionInternal.circle(
+                ObjectWithEveryNullableTypeUnionInternalCircle(radius: 15.5)
             ),
+            unionAdjacent: ObjectWithEveryNullableTypeUnionAdjacent.boolean(true),
             nestedObject: ObjectWithEveryNullableTypeNestedObject(
                 id: nil,
                 timestamp: testDate,
@@ -159,7 +176,9 @@ final class TestSwiftClientTests: XCTestCase {
             array: nil,
             object: nil,
             record: nil,
-            discriminator: nil,
+            unionExternal: nil,
+            unionInternal: nil,
+            unionAdjacent: nil,
             nestedObject: nil,
             nestedArray: [
                 [ObjectWithEveryOptionalTypeNestedArrayElementElement(id: "1", timestamp: testDate)],
@@ -237,32 +256,303 @@ final class TestSwiftClientTests: XCTestCase {
         XCTAssertEqual(input, result)
     }
 
-    func testSendRecursiveUnion() async throws {
-        let input = RecursiveUnion.children(RecursiveUnionChildren(data: [
-            RecursiveUnion.child(
-                RecursiveUnionChild(
-                    data: RecursiveUnion.text(
-                        RecursiveUnionText(data: "hello world")
-                    )
-                )
+    func testSendObjectWithKebabCaseKeys() async throws {
+        var input = ObjectWithKebabCaseKeys(
+            createdAt: testDate,
+            displayName: "John Doe",
+            phoneNumber: nil,
+            externalEvent: nil,
+            internalEvent: ObjectWithKebabCaseKeysInternalEvent.userUpdated(
+                ObjectWithKebabCaseKeysInternalEventUserUpdated(userId: "1", updatedAt: testDate)
             ),
-            RecursiveUnion.shape(
-                RecursiveUnionShape(
-                    data: RecursiveUnionShapeData(
-                        width: 1,
-                        height: 1.5,
-                        color: "blue"
-                    )
-                )
+            adjacentEvent: ObjectWithKebabCaseKeysAdjacentEvent.userCreated(
+                ObjectWithKebabCaseKeysAdjacentEventUserCreated(userId: "1")
             ),
-            RecursiveUnion.children(
-                RecursiveUnionChildren(
-                    data: []
-                )
-            )
-        ]))
-        let result = try await client.tests.sendRecursiveUnion(input)
+            emailAddress: nil,
+            isAdmin: true
+        )
+        let result = try await client.tests.sendObjectWithKebabCaseKeys(input)
         XCTAssertEqual(input, result)
+        input.externalEvent = ObjectWithKebabCaseKeysExternalEvent.userDeleted(
+            ObjectWithKebabCaseKeysExternalEventUserDeleted(userId: "1")
+        )
+        input.adjacentEvent = ObjectWithKebabCaseKeysAdjacentEvent.userUpdated("hello")
+        let result2 = try await client.tests.sendObjectWithKebabCaseKeys(input)
+        XCTAssertEqual(input, result2)
+    }
+
+    func testSendRecursiveUnionExternal() async throws {
+        let input = RecursiveUnionExternal.children([
+            .child(.text("hello world")),
+            .shape(RecursiveUnionExternalShape(width: 1, height: 2, color: "blue")),
+            .children([.text("hello world")]),
+        ])
+        let result = try await client.tests.sendRecursiveUnionExternal(input)
+        XCTAssertEqual(input, result)
+    }
+
+    func testSendRecursiveUnionInternal() async throws {
+        let input = RecursiveUnionInternal.children(RecursiveUnionInternalChildren(data: [
+            .child(RecursiveUnionInternalChild(data: .text(RecursiveUnionInternalText(data: "hello world")))),
+            .shape(RecursiveUnionInternalShape(
+                data: RecursiveUnionInternalShapeData(width: 1, height: 2, color: "blue")
+            )),
+            .children(RecursiveUnionInternalChildren(data: [.text(RecursiveUnionInternalText(data: "hello world"))])),
+        ]))
+        let result = try await client.tests.sendRecursiveUnionInternal(input)
+        XCTAssertEqual(input, result)
+    }
+
+    func testSendRecursiveUnionAdjacent() async throws {
+        let input = RecursiveUnionAdjacent.children([
+            .child(.text("hello world")),
+            .shape(RecursiveUnionAdjacentShape(width: 1, height: 2, color: "blue")),
+            .children([.text("hello world")]),
+        ])
+        let result = try await client.tests.sendRecursiveUnionAdjacent(input)
+        XCTAssertEqual(input, result)
+    }
+
+    func testSendDiscriminatorWithEmptyObject() async throws {
+        for input in [
+            DiscriminatorWithEmptyObject.empty(DiscriminatorWithEmptyObjectEmpty()),
+            DiscriminatorWithEmptyObject.notEmpty(
+                DiscriminatorWithEmptyObjectNotEmpty(foo: "hello world", bar: 1.5, baz: true)
+            ),
+        ] {
+            let result = try await client.tests.sendDiscriminatorWithEmptyObject(input)
+            XCTAssertEqual(input, result)
+        }
+    }
+
+    func getRequestInput(_ value: String) -> UnionInternalGetRequest {
+        return .withFields(UnionInternalGetRequestWithFields(
+            string: value,
+            nullableString: value,
+            float64: 1.5,
+            int64: 5,
+            boolean: true,
+            timestamp: testDate,
+            nullableEnum: .b,
+            optionalString: value
+        ))
+    }
+
+    func testSendUnionWithGetRequest() async throws {
+        let nullValues = UnionInternalGetRequest.withFields(UnionInternalGetRequestWithFields(
+            string: "hello world",
+            nullableString: nil,
+            float64: 1.5,
+            int64: -5,
+            boolean: false,
+            timestamp: testDate,
+            nullableEnum: nil,
+            optionalString: nil
+        ))
+        let stringSetToNull = UnionInternalGetRequest.withFields(UnionInternalGetRequestWithFields(
+            string: "null",
+            nullableString: nil,
+            float64: 1.5,
+            int64: 5,
+            boolean: true,
+            timestamp: testDate,
+            nullableEnum: nil,
+            optionalString: nil
+        ))
+        for input in [
+            UnionInternalGetRequest.empty(UnionInternalGetRequestEmpty()),
+            nullValues,
+            stringSetToNull,
+            getRequestInput("helloworld"),
+        ] {
+            let result = try await client.tests.sendUnionInternalGetRequest(input)
+            XCTAssertEqual(input, result)
+        }
+    }
+
+    func testGetRequestsUrlEncodeParams() async throws {
+        for value in ["hello world", "a b&c=d/\u{e9}?#+"] {
+            let input = getRequestInput(value)
+            let result = try await client.tests.sendUnionInternalGetRequest(input)
+            XCTAssertEqual(input, result, "value: \(value)")
+        }
+    }
+
+    func testSendUnionVariantShapes() async throws {
+        let internalValues: [UnionVariantShapesInternal] = [
+            .empty(UnionVariantShapesInternalEmpty()),
+            .allOptional(UnionVariantShapesInternalAllOptional(first: nil, second: nil)),
+            .allOptional(UnionVariantShapesInternalAllOptional(first: nil, second: 1)),
+            .allOptional(UnionVariantShapesInternalAllOptional(first: "a", second: 1)),
+            .mixed(UnionVariantShapesInternalMixed(required: "a", nullable: nil, optional: nil)),
+            .mixed(UnionVariantShapesInternalMixed(required: "a", nullable: "c", optional: "b")),
+            .nested(UnionVariantShapesInternalNested(
+                array: [UnionVariantShapesInternalNestedArrayElement(id: "a")],
+                record: ["a": -1],
+                object: UnionVariantShapesInternalNestedObject(timestamp: testDate)
+            )),
+        ]
+        let externalValues: [UnionVariantShapesExternal] = [
+            .empty(UnionVariantShapesExternalEmpty()),
+            .allOptional(UnionVariantShapesExternalAllOptional(first: nil, second: nil)),
+            .allOptional(UnionVariantShapesExternalAllOptional(first: nil, second: 1)),
+            .mixed(UnionVariantShapesExternalMixed(required: "a", nullable: nil, optional: nil)),
+            .mixed(UnionVariantShapesExternalMixed(required: "a", nullable: "c", optional: "b")),
+        ]
+        let adjacentValues: [UnionVariantShapesAdjacent] = [
+            .empty(UnionVariantShapesAdjacentEmpty()),
+            .allOptional(UnionVariantShapesAdjacentAllOptional(first: nil, second: nil)),
+            .allOptional(UnionVariantShapesAdjacentAllOptional(first: nil, second: 1)),
+            .mixed(UnionVariantShapesAdjacentMixed(required: "a", nullable: nil, optional: nil)),
+            .mixed(UnionVariantShapesAdjacentMixed(required: "a", nullable: "c", optional: "b")),
+        ]
+        let defaults = UnionVariantShapes(
+            internal: internalValues[0],
+            external: externalValues[0],
+            adjacent: adjacentValues[0]
+        )
+        var inputs: [UnionVariantShapes] = []
+        for value in internalValues {
+            var input = defaults
+            input.internal = value
+            inputs.append(input)
+        }
+        for value in externalValues {
+            var input = defaults
+            input.external = value
+            inputs.append(input)
+        }
+        for value in adjacentValues {
+            var input = defaults
+            input.adjacent = value
+            inputs.append(input)
+        }
+        for input in inputs {
+            let result = try await client.tests.sendUnionVariantShapes(input)
+            XCTAssertEqual(input, result, input.toJSONString())
+        }
+    }
+
+    func testSendUnionVariantTypes() async throws {
+        let hello = "hello world"
+        let externalValues: [UnionVariantTypesExternal] = [
+            .string(hello),
+            .int64(-5),
+            .uint64(5),
+            .float64(1.5),
+            .enumerator(.b),
+            .record(["a": "b"]),
+            .any(JSON(["a": 1])),
+            .any(JSON.null),
+            .nullableString(nil),
+            .nullableString(hello),
+            .nullableArray(nil),
+            .nullableArray([hello]),
+            .externalUnion(.text("hello")),
+            .internalUnion(.circle(UnionVariantTypesExternalInternalUnionCircle(radius: 1.5))),
+            .adjacentUnion(.text("hello")),
+            .class(hello),
+            .default(hello),
+        ]
+        let adjacentValues: [UnionVariantTypesAdjacent] = [
+            .string(hello),
+            .int64(-5),
+            .uint64(5),
+            .float64(1.5),
+            .enumerator(.b),
+            .record(["a": "b"]),
+            .any(JSON(["a": 1])),
+            .any(JSON.null),
+            .nullableString(nil),
+            .nullableString(hello),
+            .nullableArray(nil),
+            .nullableArray([hello]),
+            .externalUnion(.text("hello")),
+            .internalUnion(.circle(UnionVariantTypesAdjacentInternalUnionCircle(radius: 1.5))),
+            .adjacentUnion(.text("hello")),
+            .class(hello),
+            .default(hello),
+        ]
+        let internalValues: [UnionVariantTypesInternal] = [
+            .class(UnionVariantTypesInternalClass(for: "a", default: "b")),
+            .default(UnionVariantTypesInternalDefault(
+                class: "a",
+                internalUnion: .circle(UnionVariantTypesInternalDefaultInternalUnionCircle(radius: 1.5)),
+                adjacentUnion: .text("hello"),
+                externalUnion: .text("hello")
+            )),
+        ]
+        let defaults = UnionVariantTypes(
+            external: externalValues[0],
+            adjacent: adjacentValues[0],
+            internal: internalValues[0]
+        )
+        var inputs: [UnionVariantTypes] = []
+        for value in externalValues {
+            var input = defaults
+            input.external = value
+            inputs.append(input)
+        }
+        for value in adjacentValues {
+            var input = defaults
+            input.adjacent = value
+            inputs.append(input)
+        }
+        for value in internalValues {
+            var input = defaults
+            input.internal = value
+            inputs.append(input)
+        }
+        for input in inputs {
+            let result = try await client.tests.sendUnionVariantTypes(input)
+            XCTAssertEqual(input, result, input.toJSONString())
+        }
+    }
+
+    func testPrefixedClientUnions() async throws {
+        let prefixedClient = TestClientPrefixed(
+            baseURL: baseUrl,
+            delegate: DefaultRequestDelegate(),
+            headers: {
+                var headers: Dictionary<String, String> = Dictionary()
+                headers["x-test-header"] = "test-client-swift"
+                return headers
+            }
+        )
+        let external = FooRecursiveUnionExternal.child(.text("hello world"))
+        let externalResult = try await prefixedClient.sendRecursiveUnionExternal(external)
+        XCTAssertEqual(external, externalResult)
+        let internallyTagged = FooRecursiveUnionInternal.text(FooRecursiveUnionInternalText(data: "hello world"))
+        let internalResult = try await prefixedClient.sendRecursiveUnionInternal(internallyTagged)
+        XCTAssertEqual(internallyTagged, internalResult)
+        let adjacent = FooRecursiveUnionAdjacent.child(.text("hello world"))
+        let adjacentResult = try await prefixedClient.sendRecursiveUnionAdjacent(adjacent)
+        XCTAssertEqual(adjacent, adjacentResult)
+        let getInput = FooUnionInternalGetRequest.withFields(FooUnionInternalGetRequestWithFields(
+            string: "helloworld",
+            nullableString: nil,
+            float64: 1.5,
+            int64: 5,
+            boolean: true,
+            timestamp: testDate,
+            nullableEnum: .a,
+            optionalString: nil
+        ))
+        let getResult = try await prefixedClient.sendUnionInternalGetRequest(getInput)
+        XCTAssertEqual(getInput, getResult)
+    }
+
+    func testServerErrorsAreReturnedAsAnError() async {
+        do {
+            try await client.tests.sendError(SendErrorParams(code: 418, message: "this is a test error"))
+            XCTFail("expected an error to be thrown")
+        } catch {
+            XCTAssert(error is ArriResponseError)
+            if let e = error as? ArriResponseError {
+                XCTAssertEqual(e.code, 418)
+                XCTAssertEqual(e.message, "this is a test error")
+            }
+        }
     }
 
     func testStreamMessages() async {

@@ -31,27 +31,60 @@ type objectWithEveryType struct {
 	Object        nestedObject    `json:"object"`
 	Array         []bool          `json:"array"`
 	Record        map[string]bool `json:"record"`
-	Discriminator discriminator   `json:"discriminator"`
+	UnionExternal unionExternal   `json:"unionExternal"`
+	UnionInternal unionInternal   `json:"unionInternal"`
+	UnionAdjacent unionAdjacent   `json:"unionAdjacent"`
 	Any           any             `json:"any"`
 }
 
-type discriminator struct {
-	arri.DiscriminatorKey `discriminatorKey:"typeName"`
-	A                     *discriminatorA `discriminator:"A"`
-	B                     *discriminatorB `discriminator:"B"`
-	C                     *discriminatorC `discriminator:"C"`
+type unionExternal struct {
+	arri.Union
+	Object            *nestedObject
+	Array             *[]string
+	Boolean           *bool
+	NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
 }
 
-type discriminatorA struct {
+type unionInternal struct {
+	arri.Union `tagKey:"shape"`
+	Rectangle  *unionInternalRectangle
+	Circle     *unionInternalCircle
+}
+
+type unionInternalRectangle struct {
+	Width  float64
+	Height float64
+}
+
+type unionInternalCircle struct {
+	Radius float64
+}
+
+type unionAdjacent struct {
+	arri.Union        `tagKey:"kind" valueKey:"data"`
+	Object            *nestedObject
+	Array             *[]string
+	Boolean           *bool
+	NullableTimestamp *arri.Nullable[time.Time] `tag:"nullable-timestamp"`
+}
+
+type legacyDiscriminator struct {
+	arri.DiscriminatorKey `discriminatorKey:"typeName"`
+	A                     *legacyDiscriminatorA `discriminator:"A"`
+	B                     *legacyDiscriminatorB `discriminator:"B"`
+	C                     *legacyDiscriminatorC `discriminator:"C"`
+}
+
+type legacyDiscriminatorA struct {
 	Id string
 }
 
-type discriminatorB struct {
+type legacyDiscriminatorB struct {
 	Id   string
 	Name string
 }
 
-type discriminatorC struct {
+type legacyDiscriminatorC struct {
 	Id   string
 	Name string
 	Date time.Time
@@ -75,7 +108,9 @@ type objectWithOptionalFields struct {
 	Object        arri.Option[nestedObject]
 	Array         arri.Option[[]bool]
 	Record        arri.Option[map[string]bool]
-	Discriminator arri.Option[discriminator]
+	UnionExternal arri.Option[unionExternal]
+	UnionInternal arri.Option[unionInternal]
+	UnionAdjacent arri.Option[unionAdjacent]
 	Any           arri.Option[any]
 }
 
@@ -97,7 +132,9 @@ type objectWithNullableFields struct {
 	Object        arri.Nullable[nestedObject]
 	Array         arri.Nullable[[]bool]
 	Record        arri.Nullable[map[string]bool]
-	Discriminator arri.Nullable[discriminator]
+	UnionExternal arri.Nullable[unionExternal]
+	UnionInternal arri.Nullable[unionInternal]
+	UnionAdjacent arri.Nullable[unionAdjacent]
 	Any           arri.Nullable[any]
 }
 
@@ -116,4 +153,8 @@ func deepEqualErrString(result any, expectedResult any) string {
 		}
 	}
 	return "\n" + fmt.Sprint(result) + "\nis not equal to\n" + fmt.Sprint(expectedResult)
+}
+
+func ptr[T any](value T) *T {
+	return &value
 }

@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
 import 'package:test_client_dart/test_client.g.dart';
+import 'package:test_client_dart/test_client_prefixed.g.dart' as prefixed;
 // ignore: depend_on_referenced_packages
 import 'package:http/io_client.dart';
+// ignore: depend_on_referenced_packages
+import 'package:http/http.dart' as http;
 
 const baseUrl = "http://127.0.0.1:2020";
 
@@ -73,7 +77,11 @@ Future<void> main() async {
         "B": BigInt.from(0),
         "\"C\"\t": BigInt.from(1),
       },
-      discriminator: ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
+      unionExternal: ObjectWithEveryTypeUnionExternalArray(
+        value: ["foo", "bar", "baz"],
+      ),
+      unionInternal: ObjectWithEveryTypeUnionInternalCircle(radius: 15.5),
+      unionAdjacent: ObjectWithEveryTypeUnionAdjacentBoolean(data: true),
       nestedObject: ObjectWithEveryTypeNestedObject(
         id: "",
         timestamp: targetDate,
@@ -107,6 +115,16 @@ Future<void> main() async {
       displayName: "testing 123",
       phoneNumber: "211-211-2111",
       emailAddress: "johndoe@gmail",
+      externalEvent: ObjectWithSnakeCaseKeysExternalEventUserCreated(
+        value:
+            ObjectWithSnakeCaseKeysExternalEventUserCreatedValue(userId: "1"),
+      ),
+      internalEvent:
+          ObjectWithSnakeCaseKeysInternalEventUserUpdated(userId: "1"),
+      adjacentEvent: ObjectWithSnakeCaseKeysAdjacentEventUserCreated(
+        eventData: ObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData(
+            userId: "1"),
+      ),
     );
     final result = await client.tests.sendObjectWithSnakeCaseKeys(payload);
     expect(result, equals(payload));
@@ -116,6 +134,16 @@ Future<void> main() async {
       createdAt: targetDate,
       displayName: "testing 123",
       phoneNumber: null,
+      externalEvent: ObjectWithPascalCaseKeysExternalEventUserCreated(
+        value:
+            ObjectWithPascalCaseKeysExternalEventUserCreatedValue(userId: "1"),
+      ),
+      internalEvent: ObjectWithPascalCaseKeysInternalEventUserUpdated(
+        userId: "1",
+        updatedAt: targetDate,
+      ),
+      adjacentEvent:
+          ObjectWithPascalCaseKeysAdjacentEventUserUpdated(eventData: "hello"),
     );
     final result = await client.tests.sendObjectWithPascalCaseKeys(payload);
     expect(result, equals(payload));
@@ -124,6 +152,34 @@ Future<void> main() async {
       emailAddress: () => "johndoe@gmail.com",
     );
     final result2 = await client.tests.sendObjectWithPascalCaseKeys(payload2);
+    expect(result2, equals(payload2));
+  });
+  test("can send/receive objects with kebab-case keys", () async {
+    final payload = ObjectWithKebabCaseKeys(
+      createdAt: targetDate,
+      displayName: "testing 123",
+      phoneNumber: null,
+      externalEvent: null,
+      internalEvent: ObjectWithKebabCaseKeysInternalEventUserUpdated(
+        userId: "1",
+        updatedAt: targetDate,
+      ),
+      adjacentEvent: ObjectWithKebabCaseKeysAdjacentEventUserCreated(
+        eventData: ObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData(
+            userId: "1"),
+      ),
+    );
+    final result = await client.tests.sendObjectWithKebabCaseKeys(payload);
+    expect(result, equals(payload));
+    final payload2 = payload.copyWith(
+      externalEvent: () => ObjectWithKebabCaseKeysExternalEventUserDeleted(
+        value:
+            ObjectWithKebabCaseKeysExternalEventUserDeletedValue(userId: "1"),
+      ),
+      adjacentEvent:
+          ObjectWithKebabCaseKeysAdjacentEventUserUpdated(eventData: "hello"),
+    );
+    final result2 = await client.tests.sendObjectWithKebabCaseKeys(payload2);
     expect(result2, equals(payload2));
   });
   test("supports injecting custom http clients", () async {
@@ -204,7 +260,9 @@ Future<void> main() async {
       array: null,
       object: null,
       record: null,
-      discriminator: null,
+      unionExternal: null,
+      unionInternal: null,
+      unionAdjacent: null,
       nestedObject: null,
       nestedArray: null,
     );
@@ -234,8 +292,12 @@ Future<void> main() async {
         "A": BigInt.from(1),
         "B": BigInt.from(0),
       },
-      discriminator:
-          ObjectWithEveryNullableTypeDiscriminatorA(title: "Hello World"),
+      unionExternal:
+          ObjectWithEveryNullableTypeUnionExternalBoolean(value: true),
+      unionInternal:
+          ObjectWithEveryNullableTypeUnionInternalCircle(radius: 15.5),
+      unionAdjacent:
+          ObjectWithEveryNullableTypeUnionAdjacentBoolean(data: true),
       nestedObject: ObjectWithEveryNullableTypeNestedObject(
         id: "",
         timestamp: DateTime.now(),
@@ -262,10 +324,9 @@ Future<void> main() async {
     expect(result2.nestedArray?[0]?[0]?.id, equals(""));
     expect(result2.nestedObject?.data?.id, equals(""));
     expect(result2.int64, equals(BigInt.from(1)));
-    expect(
-      result2.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
-      equals(true),
-    );
+    expect(result2.unionExternal, equals(input2.unionExternal));
+    expect(result2.unionInternal, equals(input2.unionInternal));
+    expect(result2.unionAdjacent, equals(input2.unionAdjacent));
   });
   test("can send/receive recursive objects", () async {
     final input = RecursiveObject(
@@ -289,28 +350,397 @@ Future<void> main() async {
     expect(result.left?.left?.left, equals(null));
     expect(result.left?.left?.value, equals("depth2"));
   });
-  test("can send/receive recursive unions", () async {
-    final input = RecursiveUnionChildren(
-      data: [
-        RecursiveUnionChild(
-          data: RecursiveUnionText(
-            data: "hello world",
+  group("can send/receive recursive unions", () {
+    test("externally tagged", () async {
+      final input = RecursiveUnionExternalChildren(
+        value: [
+          RecursiveUnionExternalChild(
+            value: RecursiveUnionExternalText(value: "hello world"),
           ),
-        ),
-        RecursiveUnionShape(
-          data: RecursiveUnionShapeData(
-            width: 1,
-            height: 1,
-            color: "blue",
+          RecursiveUnionExternalShape(
+            value: RecursiveUnionExternalShapeValue(
+              width: 1,
+              height: 2,
+              color: "blue",
+            ),
           ),
+          RecursiveUnionExternalChildren(
+            value: [RecursiveUnionExternalText(value: "hello world")],
+          ),
+        ],
+      );
+      final result = await client.tests.sendRecursiveUnionExternal(input);
+      expect(result, equals(input));
+    });
+    test("internally tagged", () async {
+      final input = RecursiveUnionInternalChildren(
+        data: [
+          RecursiveUnionInternalChild(
+            data: RecursiveUnionInternalText(data: "hello world"),
+          ),
+          RecursiveUnionInternalShape(
+            data: RecursiveUnionInternalShapeData(
+              width: 1,
+              height: 2,
+              color: "blue",
+            ),
+          ),
+          RecursiveUnionInternalChildren(
+            data: [RecursiveUnionInternalText(data: "hello world")],
+          ),
+        ],
+      );
+      final result = await client.tests.sendRecursiveUnionInternal(input);
+      expect(result, equals(input));
+    });
+    test("adjacently tagged", () async {
+      final input = RecursiveUnionAdjacentChildren(
+        data: [
+          RecursiveUnionAdjacentChild(
+            data: RecursiveUnionAdjacentText(data: "hello world"),
+          ),
+          RecursiveUnionAdjacentShape(
+            data: RecursiveUnionAdjacentShapeData(
+              width: 1,
+              height: 2,
+              color: "blue",
+            ),
+          ),
+          RecursiveUnionAdjacentChildren(
+            data: [RecursiveUnionAdjacentText(data: "hello world")],
+          ),
+        ],
+      );
+      final result = await client.tests.sendRecursiveUnionAdjacent(input);
+      expect(result, equals(input));
+    });
+  });
+
+  group("can send/receive discriminators with empty objects", () {
+    final cases = <String, DiscriminatorWithEmptyObject>{
+      "EMPTY": DiscriminatorWithEmptyObjectEmpty(),
+      "NOT_EMPTY": DiscriminatorWithEmptyObjectNotEmpty(
+        foo: "hello world",
+        bar: 1.5,
+        baz: true,
+      ),
+    };
+    cases.forEach((name, payload) {
+      test(name, () async {
+        final result =
+            await client.tests.sendDiscriminatorWithEmptyObject(payload);
+        expect(result, equals(payload));
+      });
+    });
+  });
+
+  group("can send/receive internally tagged unions with GET requests", () {
+    final timestamp = DateTime.parse("2001-01-01T16:00:00.000Z");
+    const encodedString = "a b&c=d/é?#+";
+    final cases = <String, UnionInternalGetRequest>{
+      "empty variant": UnionInternalGetRequestEmpty(),
+      "null values": UnionInternalGetRequestWithFields(
+        string: "hello world",
+        nullableString: null,
+        float64: 1.5,
+        int64: BigInt.from(-5),
+        boolean: false,
+        timestamp: timestamp,
+        nullableEnum: null,
+      ),
+      "all values set": UnionInternalGetRequestWithFields(
+        string: "hello world",
+        nullableString: "hello world",
+        optionalString: "hello world",
+        float64: 1.5,
+        int64: BigInt.from(5),
+        boolean: true,
+        timestamp: timestamp,
+        nullableEnum: UnionInternalGetRequestWithFieldsNullableEnum.b,
+      ),
+      "values that need to be url encoded": UnionInternalGetRequestWithFields(
+        string: encodedString,
+        nullableString: encodedString,
+        optionalString: encodedString,
+        float64: 1.5,
+        int64: BigInt.from(5),
+        boolean: true,
+        timestamp: timestamp,
+        nullableEnum: UnionInternalGetRequestWithFieldsNullableEnum.a,
+      ),
+      'non-nullable string set to "null"': UnionInternalGetRequestWithFields(
+        string: "null",
+        nullableString: null,
+        float64: 1.5,
+        int64: BigInt.from(5),
+        boolean: true,
+        timestamp: timestamp,
+        nullableEnum: null,
+      ),
+    };
+    cases.forEach((name, payload) {
+      test(name, () async {
+        final result = await client.tests.sendUnionInternalGetRequest(payload);
+        expect(result, equals(payload));
+      });
+      test("$name using toUrlQueryParams()", () async {
+        final response = await http.get(
+          Uri.parse(
+            "$baseUrl/rpcs/tests/send-union-internal-get-request?${payload.toUrlQueryParams()}",
+          ),
+          headers: {"x-test-header": "test"},
+        );
+        expect(response.statusCode, equals(200));
+        final result = UnionInternalGetRequest.fromJsonString(
+          utf8.decode(response.bodyBytes),
+        );
+        expect(result, equals(payload));
+      });
+    });
+  });
+
+  group("can send/receive union variant shapes", () {
+    final internal = <UnionVariantShapesInternal>[
+      UnionVariantShapesInternalEmpty(),
+      UnionVariantShapesInternalAllOptional(),
+      UnionVariantShapesInternalAllOptional(second: 1),
+      UnionVariantShapesInternalAllOptional(first: "a", second: 1),
+      UnionVariantShapesInternalMixed(required: "a", nullable: null),
+      UnionVariantShapesInternalMixed(
+        required: "a",
+        optional: "b",
+        nullable: "c",
+      ),
+      UnionVariantShapesInternalNested(
+        array: [UnionVariantShapesInternalNestedArrayElement(id: "a")],
+        record: {"a": BigInt.from(-1)},
+        object: UnionVariantShapesInternalNestedObject(timestamp: targetDate),
+      ),
+    ];
+    final external = <UnionVariantShapesExternal>[
+      UnionVariantShapesExternalEmpty(
+        value: UnionVariantShapesExternalEmptyValue(),
+      ),
+      UnionVariantShapesExternalAllOptional(
+        value: UnionVariantShapesExternalAllOptionalValue(),
+      ),
+      UnionVariantShapesExternalAllOptional(
+        value: UnionVariantShapesExternalAllOptionalValue(second: 1),
+      ),
+      UnionVariantShapesExternalMixed(
+        value: UnionVariantShapesExternalMixedValue(
+          required: "a",
+          nullable: null,
         ),
-      ],
+      ),
+      UnionVariantShapesExternalMixed(
+        value: UnionVariantShapesExternalMixedValue(
+          required: "a",
+          optional: "b",
+          nullable: "c",
+        ),
+      ),
+    ];
+    final adjacent = <UnionVariantShapesAdjacent>[
+      UnionVariantShapesAdjacentEmpty(
+        data: UnionVariantShapesAdjacentEmptyData(),
+      ),
+      UnionVariantShapesAdjacentAllOptional(
+        data: UnionVariantShapesAdjacentAllOptionalData(),
+      ),
+      UnionVariantShapesAdjacentAllOptional(
+        data: UnionVariantShapesAdjacentAllOptionalData(second: 1),
+      ),
+      UnionVariantShapesAdjacentMixed(
+        data: UnionVariantShapesAdjacentMixedData(
+          required: "a",
+          nullable: null,
+        ),
+      ),
+      UnionVariantShapesAdjacentMixed(
+        data: UnionVariantShapesAdjacentMixedData(
+          required: "a",
+          optional: "b",
+          nullable: "c",
+        ),
+      ),
+    ];
+    final defaults = UnionVariantShapes(
+      internal: internal[0],
+      external: external[0],
+      adjacent: adjacent[0],
     );
-    final result = await client.tests.sendRecursiveUnion(input);
-    expect(result is RecursiveUnionChildren, equals(true));
-    expect((result as RecursiveUnionChildren).data.length, equals(2));
-    expect((result.data[0] as RecursiveUnionChild).data is RecursiveUnionText,
-        equals(true));
+    Future<void> roundTrip(UnionVariantShapes payload) async {
+      final result = await client.tests.sendUnionVariantShapes(payload);
+      expect(result, equals(payload));
+    }
+
+    for (final value in internal) {
+      test("internally tagged ${value.toJsonString()}", () async {
+        await roundTrip(defaults.copyWith(internal: value));
+      });
+    }
+    for (final value in external) {
+      test("externally tagged ${value.toJsonString()}", () async {
+        await roundTrip(defaults.copyWith(external: value));
+      });
+    }
+    for (final value in adjacent) {
+      test("adjacently tagged ${value.toJsonString()}", () async {
+        await roundTrip(defaults.copyWith(adjacent: value));
+      });
+    }
+  });
+
+  group("can send/receive union variant types", () {
+    final external = <UnionVariantTypesExternal>[
+      UnionVariantTypesExternalString(value: "hello world"),
+      UnionVariantTypesExternalInt64(value: BigInt.from(-5)),
+      UnionVariantTypesExternalUint64(value: BigInt.from(5)),
+      UnionVariantTypesExternalFloat64(value: 1.5),
+      UnionVariantTypesExternalEnumerator(
+        value: UnionVariantTypesExternalEnumeratorValue.b,
+      ),
+      UnionVariantTypesExternalRecord(value: {"a": "b"}),
+      UnionVariantTypesExternalAny(value: {"a": 1}),
+      UnionVariantTypesExternalAny(value: null),
+      UnionVariantTypesExternalNullableString(value: null),
+      UnionVariantTypesExternalNullableString(value: "hello world"),
+      UnionVariantTypesExternalNullableArray(value: null),
+      UnionVariantTypesExternalNullableArray(value: ["hello world"]),
+      UnionVariantTypesExternalExternalUnion(
+        value: UnionVariantTypesExternalExternalUnionValueText(value: "hello"),
+      ),
+      UnionVariantTypesExternalInternalUnion(
+        value: UnionVariantTypesExternalInternalUnionValueCircle(radius: 1.5),
+      ),
+      UnionVariantTypesExternalAdjacentUnion(
+        value: UnionVariantTypesExternalAdjacentUnionValueText(data: "hello"),
+      ),
+      UnionVariantTypesExternalClass(value: "hello world"),
+      UnionVariantTypesExternalDefault(value: "hello world"),
+    ];
+    final adjacent = <UnionVariantTypesAdjacent>[
+      UnionVariantTypesAdjacentString(data: "hello world"),
+      UnionVariantTypesAdjacentInt64(data: BigInt.from(-5)),
+      UnionVariantTypesAdjacentUint64(data: BigInt.from(5)),
+      UnionVariantTypesAdjacentFloat64(data: 1.5),
+      UnionVariantTypesAdjacentEnumerator(
+        data: UnionVariantTypesAdjacentEnumeratorData.b,
+      ),
+      UnionVariantTypesAdjacentRecord(data: {"a": "b"}),
+      UnionVariantTypesAdjacentAny(data: {"a": 1}),
+      UnionVariantTypesAdjacentAny(data: null),
+      UnionVariantTypesAdjacentNullableString(data: null),
+      UnionVariantTypesAdjacentNullableString(data: "hello world"),
+      UnionVariantTypesAdjacentNullableArray(data: null),
+      UnionVariantTypesAdjacentNullableArray(data: ["hello world"]),
+      UnionVariantTypesAdjacentExternalUnion(
+        data: UnionVariantTypesAdjacentExternalUnionDataText(value: "hello"),
+      ),
+      UnionVariantTypesAdjacentInternalUnion(
+        data: UnionVariantTypesAdjacentInternalUnionDataCircle(radius: 1.5),
+      ),
+      UnionVariantTypesAdjacentAdjacentUnion(
+        data: UnionVariantTypesAdjacentAdjacentUnionDataText(data: "hello"),
+      ),
+      UnionVariantTypesAdjacentClass(data: "hello world"),
+      UnionVariantTypesAdjacentDefault(data: "hello world"),
+    ];
+    final internal = <UnionVariantTypesInternal>[
+      UnionVariantTypesInternalClass(k_for: "a", k_default: "b"),
+      UnionVariantTypesInternalDefault(
+        k_class: "a",
+        internalUnion: UnionVariantTypesInternalDefaultInternalUnionCircle(
+          radius: 1.5,
+        ),
+        adjacentUnion: UnionVariantTypesInternalDefaultAdjacentUnionText(
+          data: "hello",
+        ),
+        externalUnion: UnionVariantTypesInternalDefaultExternalUnionText(
+          value: "hello",
+        ),
+      ),
+    ];
+    final defaults = UnionVariantTypes(
+      external: external[0],
+      adjacent: adjacent[0],
+      internal: internal[0],
+    );
+    Future<void> roundTrip(UnionVariantTypes payload) async {
+      final result = await client.tests.sendUnionVariantTypes(payload);
+      expect(result, equals(payload));
+    }
+
+    for (final value in external) {
+      test("externally tagged ${value.toJsonString()}", () async {
+        await roundTrip(defaults.copyWith(external: value));
+      });
+    }
+    for (final value in adjacent) {
+      test("adjacently tagged ${value.toJsonString()}", () async {
+        await roundTrip(defaults.copyWith(adjacent: value));
+      });
+    }
+    for (final value in internal) {
+      test("internally tagged ${value.toJsonString()}", () async {
+        await roundTrip(defaults.copyWith(internal: value));
+      });
+    }
+  });
+
+  group("prefixed client can send/receive unions", () {
+    final prefixedClient = prefixed.TestClientPrefixed(
+      baseUrl: baseUrl,
+      headers: () => {"x-test-header": "test"},
+    );
+    test("externally tagged", () async {
+      final payload = prefixed.FooRecursiveUnionExternalChild(
+        value: prefixed.FooRecursiveUnionExternalText(value: "hello world"),
+      );
+      final result = await prefixedClient.sendRecursiveUnionExternal(payload);
+      expect(result, equals(payload));
+    });
+    test("internally tagged", () async {
+      final payload = prefixed.FooRecursiveUnionInternalChild(
+        data: prefixed.FooRecursiveUnionInternalText(data: "hello world"),
+      );
+      final result = await prefixedClient.sendRecursiveUnionInternal(payload);
+      expect(result, equals(payload));
+    });
+    test("adjacently tagged", () async {
+      final payload = prefixed.FooRecursiveUnionAdjacentChild(
+        data: prefixed.FooRecursiveUnionAdjacentText(data: "hello world"),
+      );
+      final result = await prefixedClient.sendRecursiveUnionAdjacent(payload);
+      expect(result, equals(payload));
+    });
+    test("internally tagged with a GET request", () async {
+      final payload = prefixed.FooUnionInternalGetRequestWithFields(
+        string: "hello world",
+        nullableString: null,
+        float64: 1.5,
+        int64: BigInt.from(5),
+        boolean: true,
+        timestamp: DateTime.parse("2001-01-01T16:00:00.000Z"),
+        nullableEnum:
+            prefixed.FooUnionInternalGetRequestWithFieldsNullableEnum.a,
+      );
+      final result = await prefixedClient.sendUnionInternalGetRequest(payload);
+      expect(result, equals(payload));
+    });
+  });
+
+  test("server errors are returned as an ArriError", () async {
+    try {
+      await client.tests.sendError(
+        SendErrorParams(code: 418, message: "this is a test error"),
+      );
+      fail("expected an error to be thrown");
+    } on ArriError catch (err) {
+      expect(err.code, equals(418));
+      expect(err.message, equals("this is a test error"));
+    }
   });
 
   test("onError hook fires", () async {

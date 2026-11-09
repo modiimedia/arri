@@ -24,6 +24,12 @@ class NestedObjectTest {
 
     @Test
     fun toUrlQueryParams() {
+        assertEquals("id=1&content=hello+world", input.toUrlQueryParams())
+        val reservedChars = NestedObject(id = "a&b=c", content = "50% off? #1 + more")
+        assertEquals(
+            "id=a%26b%3Dc&content=50%25+off%3F+%231+%2B+more",
+            reservedChars.toUrlQueryParams()
+        )
     }
 
     @Test

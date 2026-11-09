@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/iancoleman/strcase"
@@ -34,6 +35,10 @@ type defaultSseController[T any] struct {
 	heartbeatTicker    *time.Ticker
 	heartbeatInterval  time.Duration
 	heartbeatEnabled   bool
+	// guards writes to the response since heartbeats are sent from a separate goroutine
+	writeMu sync.Mutex
+	// set once the procedure handler returns. the response can't be written to after that point.
+	finished bool
 }
 
 func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing, heartbeatInterval time.Duration) *defaultSseController[T] {
@@ -86,8 +91,7 @@ func (controller *defaultSseController[T]) startStream() {
 			for {
 				select {
 				case <-controller.heartbeatTicker.C:
-					fmt.Fprintf(controller.writer, "event: heartbeat\ndata:\n\n")
-					controller.responseController.Flush()
+					controller.writeEvent("event: heartbeat\ndata:\n\n")
 				case <-controller.Done():
 					return
 				}
@@ -103,7 +107,18 @@ func (controller *defaultSseController[T]) Init() {
 	if !controller.headersSent {
 		controller.startStream()
 	}
-	fmt.Fprintf(controller.writer, "event: start\ndata: connection successful\n\n")
+	controller.writeEvent("event: start\ndata: connection successful\n\n")
+}
+
+// writeEvent writes a complete event and flushes it while holding the write lock
+// so that heartbeats can't be interleaved with other events
+func (controller *defaultSseController[T]) writeEvent(format string, args ...any) {
+	controller.writeMu.Lock()
+	defer controller.writeMu.Unlock()
+	if controller.finished {
+		return
+	}
+	fmt.Fprintf(controller.writer, format, args...)
 	controller.responseController.Flush()
 }
 
@@ -115,8 +130,7 @@ func (controller *defaultSseController[T]) Push(message T) RpcError {
 	if bodyErr != nil {
 		return Error(500, bodyErr.Error())
 	}
-	fmt.Fprintf(controller.writer, "event: message\ndata: %s\n\n", string(body))
-	controller.responseController.Flush()
+	controller.writeEvent("event: message\ndata: %s\n\n", string(body))
 	return nil
 }
 
@@ -125,9 +139,17 @@ func (controller *defaultSseController[T]) Close(notifyClient bool) {
 		controller.startStream()
 	}
 	if notifyClient {
-		fmt.Fprint(controller.writer, "event: done\ndata: done\n\n")
-		controller.responseController.Flush()
+		controller.writeEvent("event: done\ndata: done\n\n")
 	}
+	controller.cancelFunc()
+}
+
+// finish stops any further writes (such as heartbeats) and cancels the stream context.
+// It must be called before the procedure handler returns.
+func (controller *defaultSseController[T]) finish() {
+	controller.writeMu.Lock()
+	controller.finished = true
+	controller.writeMu.Unlock()
 	controller.cancelFunc()
 }
 
@@ -187,6 +209,11 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		}
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
+		}
+		if rpcSchema.Http.Method == HttpMethodGet {
+			if err := validateUrlQueryTypeDef(paramsSchema); err != nil {
+				panic(fmt.Sprintf("error registering %s. GET requests receive params through url query params. %s. use a different http method such as POST for these params", rpcName, err.Error()))
+			}
 		}
 		rpcSchema.Http.Params.Set(paramName)
 		app.definitions.Set(paramName, *paramsSchema)
@@ -277,6 +304,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 
 		sseController := newDefaultSseController[TResponse](w, r, app.options.KeyCasing, app.options.HeartbeatInterval)
 		err = handler(params, sseController, *event)
+		sseController.finish()
 		if err != nil {
 			handleError(false, w, event, err, onError)
 			return

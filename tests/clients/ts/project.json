@@ -4,6 +4,7 @@
   "implicitDependencies": ["ts-codegen", "ts-client"],
   "targets": {
     "integration-test": {
+      "dependsOn": ["^build"],
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tests/clients/ts"],
       "cache": false,

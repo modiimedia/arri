@@ -24,9 +24,12 @@ export function dartStringFromSchema(
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
-                return `if (${input} != null) ${target}.add("${key}=$${input}")`;
+                return `if (${input} != null) ${target}.add("${key}=\${Uri.encodeQueryComponent(${input}!)}")`;
             }
-            return `${target}.add("${key}=$${input}")`;
+            if (isNullable) {
+                return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input} ?? "null")}")`;
+            }
+            return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input})}")`;
         },
         content: '',
     };
@@ -68,7 +71,9 @@ export function dartDateTimeFromSchema(
 ): DartProperty {
     const isNullable = outputIsNullable(schema, context);
     const typeName = isNullable ? 'DateTime?' : 'DateTime';
-    const defaultValue = isNullable ? 'null' : 'DateTime(0)';
+    const defaultValue = isNullable
+        ? 'null'
+        : 'DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)';
     return {
         typeName,
         isNullable,
@@ -77,7 +82,7 @@ export function dartDateTimeFromSchema(
             if (isNullable) {
                 return `nullableDateTimeFromDynamic(${input})`;
             }
-            return `dateTimeFromDynamic(${input}, DateTime(0))`;
+            return `dateTimeFromDynamic(${input}, ${defaultValue})`;
         },
         toJson(input, _target, _key) {
             if (context.isOptional) {
@@ -91,12 +96,12 @@ export function dartDateTimeFromSchema(
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
-                return `if (${input} != null) ${target}.add("${key}=\${${input}!.toUtc().toIso8601String()}")`;
+                return `if (${input} != null) ${target}.add("${key}=\${Uri.encodeQueryComponent(${input}!.toUtc().toIso8601String())}")`;
             }
             if (schema.isNullable) {
-                return `${target}.add("${key}=\${${input}?.toUtc().toIso8601String()}")`;
+                return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input}?.toUtc().toIso8601String() ?? "null")}")`;
             }
-            return `${target}.add("${key}=\${${input}.toUtc().toIso8601String()}")`;
+            return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input}.toUtc().toIso8601String())}")`;
         },
         content: '',
     };

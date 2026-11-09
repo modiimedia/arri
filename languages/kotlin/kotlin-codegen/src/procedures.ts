@@ -11,6 +11,7 @@ import {
 import {
     type CodegenContext,
     getCodeComment,
+    indentTail,
     kotlinClassName,
     kotlinIdentifier,
 } from './_common';
@@ -54,37 +55,35 @@ export function kotlinHttpRpcFromSchema(
 
     if (schema.isEventStream) {
         return `${codeComment}suspend fun ${name}(
-            ${params ? `params: ${params},` : ''}
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024 * 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onRequestError: ((error: Exception) -> Unit) = {},
-            onResponseError: ((error: ${context.clientName}Error) -> Unit) = {},
-            onData: ((${response ? `data: ${response}` : ''}) -> Unit) = {},
-            maxBackoffTime: Long? = null,
-        ): Unit {
-            __handleSseRequest(
-                httpClient = httpClient,
-                url = "$baseUrl${schema.path}",
-                method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-                params = ${params ? 'params' : 'null'},
-                headers = headers,
-                backoffTime = 0,
-                maxBackoffTime = maxBackoffTime ?: 30000L,
-                lastEventId = lastEventId,
-                bufferCapacity = bufferCapacity,
-                onOpen = onOpen,
-                onClose = onClose,
-                onError = onError,
-                onRequestError = onRequestError,
-                onResponseError = onResponseError,
-                onData = { str ->
-                    ${response ? `val data = ${response}.fromJson(str)` : ''}
-                    onData(${response ? 'data' : ''})
-                }
-            )
-        }`;
+    ${params ? `params: ${params},\n    ` : ''}lastEventId: String? = null,
+    bufferCapacity: Int = 1024 * 1024,
+    onOpen: ((response: HttpResponse) -> Unit) = {},
+    onClose: (() -> Unit) = {},
+    onRequestError: ((error: Exception) -> Unit) = {},
+    onResponseError: ((error: ${context.clientName}Error) -> Unit) = {},
+    onData: ((${response ? `data: ${response}` : ''}) -> Unit) = {},
+    maxBackoffTime: Long? = null,
+): Unit {
+    __handleSseRequest(
+        httpClient = httpClient,
+        url = "$baseUrl${schema.path}",
+        method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
+        params = ${params ? 'params' : 'null'},
+        headers = headers,
+        backoffTime = 0,
+        maxBackoffTime = maxBackoffTime ?: 30000L,
+        lastEventId = lastEventId,
+        bufferCapacity = bufferCapacity,
+        onOpen = onOpen,
+        onClose = onClose,
+        onError = onError,
+        onRequestError = onRequestError,
+        onResponseError = onResponseError,
+        onData = { str ->
+            ${response ? `val data = ${response}.fromJson(str)\n            ` : ''}onData(${response ? 'data' : ''})
+        }
+    )
+}`;
     }
     const headingCheck = `if (response.headers["Content-Type"] != "application/json") {
             throw ${context.clientName}Error(
@@ -93,26 +92,26 @@ export function kotlinHttpRpcFromSchema(
                 data = JsonPrimitive(response.bodyAsText()),
                 stack = null,
             )
-        }`;
-    return `${codeComment}suspend fun ${name}(${params ? `params: ${params}` : ''}): ${response ?? 'Unit'} {
-        try {
-            val response = __prepareRequest(
-                client = httpClient,
-                url = "$baseUrl${schema.path}",
-                method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-                params = ${params ? 'params' : null},
-                headers = headers?.invoke(),
-            ).execute()
-            ${response ? headingCheck : ''}
-            if (response.status.value in 200..299) {
-                return ${response ? `${response}.fromJson(response.bodyAsText())` : ''}
-            }
-            throw ${context.clientName}Error.fromJson(response.bodyAsText())    
-        } catch (e: Exception) {
-            onError(e)
-            throw e
         }
-    }`;
+        `;
+    return `${codeComment}suspend fun ${name}(${params ? `params: ${params}` : ''}): ${response ?? 'Unit'} {
+    try {
+        val response = __prepareRequest(
+            client = httpClient,
+            url = "$baseUrl${schema.path}",
+            method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
+            params = ${params ? 'params' : null},
+            headers = headers?.invoke(),
+        ).execute()
+        ${response ? headingCheck : ''}if (response.status.value in 200..299) {
+            return${response ? ` ${response}.fromJson(response.bodyAsText())` : ''}
+        }
+        throw ${context.clientName}Error.fromJson(response.bodyAsText())
+    } catch (e: Exception) {
+        onError(e)
+        throw e
+    }
+}`;
 }
 
 export function kotlinWsRpcFromSchema(
@@ -142,12 +141,9 @@ export function kotlinServiceFromSchema(
                 ...context,
                 instancePath: `${context.instancePath}.${key}`,
             });
-            procedureParts.push(`val ${kotlinKey}: ${subService.name} = ${subService.name}(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )`);
+            procedureParts.push(
+                kotlinSubServiceField(kotlinKey, subService.name),
+            );
             if (subService.content) {
                 subServiceParts.push(subService.content);
             }
@@ -172,11 +168,21 @@ export function kotlinServiceFromSchema(
     private val headers: __${context.clientName}HeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    ${procedureParts.join('\n\n    ')}
+    ${indentTail(procedureParts.join('\n\n'), 4)}
+}${subServiceParts.length ? `\n\n${subServiceParts.join('\n\n')}` : ''}`,
+    };
 }
 
-${subServiceParts.join('\n\n')}`,
-    };
+export function kotlinSubServiceField(
+    key: string,
+    serviceName: string,
+): string {
+    return `val ${key}: ${serviceName} = ${serviceName}(
+    httpClient = httpClient,
+    baseUrl = baseUrl,
+    headers = headers,
+    onError = onError,
+)`;
 }
 
 export function getProcedureName(context: CodegenContext): string {

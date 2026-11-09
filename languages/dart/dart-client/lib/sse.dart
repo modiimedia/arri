@@ -146,11 +146,7 @@ class EventSource<T> {
       switch (method) {
         case HttpMethod.get:
         case HttpMethod.head:
-          final queryParts = <String>[];
-          _params.forEach((key, value) {
-            queryParts.add("$key=$value");
-          });
-          parsedUrl += "?${queryParts.join("&")}";
+          parsedUrl += "?${encodeQueryParams(_params)}";
           break;
         default:
           body = json.encode(_params);

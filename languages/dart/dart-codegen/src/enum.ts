@@ -50,12 +50,12 @@ export function dartEnumFromSchema(
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
-                return `if (${input} != null) ${target}.add("${key}=\${${input}!.serialValue}")`;
+                return `if (${input} != null) ${target}.add("${key}=\${Uri.encodeQueryComponent(${input}!.serialValue)}")`;
             }
             if (schema.isNullable) {
-                return `${target}.add("${key}=\${${input}?.serialValue}")`;
+                return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input}?.serialValue ?? "null")}")`;
             }
-            return `${target}.add("${key}=\${${input}.serialValue}")`;
+            return `${target}.add("${key}=\${Uri.encodeQueryComponent(${input}.serialValue)}")`;
         },
         content: '',
     };

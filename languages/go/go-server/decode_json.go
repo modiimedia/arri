@@ -558,7 +558,6 @@ func arrayFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCon
 		subTarget := target.Index(i)
 		context.InstancePath = currCtx.InstancePath + "/" + fmt.Sprint(i)
 		success := typeFromJSON(&element, subTarget, context)
-		context.CurrentDepth--
 		if !success {
 			hasErr = true
 			continue
@@ -625,8 +624,13 @@ func structFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext
 		return false
 	}
 	targetType := target.Type()
-	if IsDiscriminatorStruct(targetType) {
-		return discriminatorStructFromJSON(data, target, dc)
+	union, unionErr := getUnionInfo(targetType)
+	if unionErr != nil {
+		dc.Errors = append(dc.Errors, NewValidationError(unionErr.Error(), dc.InstancePath, dc.SchemaPath))
+		return false
+	}
+	if union != nil {
+		return unionFromJSON(data, target, union, dc)
 	}
 	hasErr := false
 	contextSnapshot := dc.clone()
@@ -726,80 +730,6 @@ func anyFromJSON(data *gjson.Result, target reflect.Value, context *DecoderConte
 		target.Set(reflect.ValueOf(innerTarget))
 	}
 	return true
-}
-
-func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
-	numFields := target.NumField()
-	structType := target.Type()
-	discriminatorKey := "type"
-	contextSnapshot := dc.clone()
-	for i := 0; i < numFields; i++ {
-		field := target.Field(i)
-		fieldMeta := structType.Field(i)
-		fieldType := field.Type()
-		if fieldMeta.Name == "DiscriminatorKey" {
-			dKeyTag := fieldMeta.Tag.Get("discriminatorKey")
-			if len(dKeyTag) > 0 {
-				discriminatorKey = dKeyTag
-			}
-			continue
-		}
-		if fieldType.Kind() != reflect.Ptr || fieldType.Elem().Kind() != reflect.Struct {
-			dc.Errors = append(dc.Errors,
-				NewValidationError(
-					"all discriminator fields must be a pointer to a struct",
-					dc.InstancePath,
-					dc.SchemaPath,
-				),
-			)
-			return false
-		}
-		discriminatorValue := fieldMeta.Tag.Get("discriminator")
-		if len(discriminatorValue) == 0 {
-			dc.Errors = append(
-				dc.Errors,
-				NewValidationError(
-					"no discriminator value specified unable to unmarshal",
-					dc.InstancePath,
-					dc.SchemaPath,
-				),
-			)
-			return false
-		}
-		jsonDiscriminatorValue := data.Get(discriminatorKey)
-		if jsonDiscriminatorValue.Type != gjson.String {
-			dc.Errors = append(dc.Errors,
-				NewValidationError(
-					"missing discriminator field \""+discriminatorKey+"\"",
-					dc.InstancePath,
-					dc.SchemaPath,
-				),
-			)
-			return false
-		}
-		if jsonDiscriminatorValue.String() != discriminatorValue {
-			continue
-		}
-		innerTarget := reflect.New(field.Type().Elem())
-		dc.SchemaPath = contextSnapshot.SchemaPath + "/mapping/" + discriminatorValue
-		dc.CurrentDepth++
-		dc.EnumValues = []string{}
-		typeFromJSON(data, innerTarget, dc)
-		dc.SchemaPath = contextSnapshot.SchemaPath
-		dc.InstancePath = contextSnapshot.InstancePath
-		dc.EnumValues = contextSnapshot.EnumValues
-		field.Set(innerTarget)
-		return true
-	}
-	dc.Errors = append(
-		dc.Errors,
-		NewValidationError(
-			"input didn't match any of the discriminator sub types",
-			dc.InstancePath,
-			dc.SchemaPath,
-		),
-	)
-	return false
 }
 
 func optionFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {

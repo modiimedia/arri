@@ -5,16 +5,32 @@ import { assertType, describe, expect, test } from 'vitest';
 
 import {
     $$ObjectWithEveryTypeEnumerator,
+    $$UnionVariantShapes,
+    $$UnionVariantTypes,
+    type DiscriminatorWithEmptyObject,
     type ObjectWithEveryNullableType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryType,
     ObjectWithEveryTypeEnumerator,
+    ObjectWithKebabCaseKeys,
     ObjectWithPascalCaseKeys,
     ObjectWithSnakeCaseKeys,
     type RecursiveObject,
-    type RecursiveUnion,
+    RecursiveUnionAdjacent,
+    RecursiveUnionExternal,
+    RecursiveUnionInternal,
     TestClient,
+    type UnionInternalGetRequest,
+    type UnionVariantShapes,
+    type UnionVariantTypes,
 } from './testClient.g';
+import {
+    type FooRecursiveUnionAdjacent,
+    type FooRecursiveUnionExternal,
+    type FooRecursiveUnionInternal,
+    type FooUnionInternalGetRequest,
+    TestClientPrefixed,
+} from './tsClientPrefixed.g';
 
 // function wait(ms: number) {
 //     return new Promise((resolve) => {
@@ -101,10 +117,17 @@ const input: ObjectWithEveryType = {
         B: BigInt('0'),
         '"C"\t': BigInt('4'),
     },
-    discriminator: {
-        type: 'B',
-        title: 'Hello World',
-        description: '',
+    unionExternal: {
+        type: 'array',
+        value: ['foo', 'bar', 'baz'],
+    },
+    unionInternal: {
+        shape: 'circle',
+        radius: 15.5,
+    },
+    unionAdjacent: {
+        kind: 'boolean',
+        data: true,
     },
     nestedObject: {
         id: '',
@@ -143,6 +166,19 @@ test('can send/receive object with transformed keys', async () => {
         emailAddress: 'johndoe@gmail.com',
         phoneNumber: null,
         isAdmin: false,
+        externalEvent: {
+            type: 'user_created',
+            value: { userId: '1' },
+        },
+        internalEvent: {
+            eventType: 'user_updated',
+            userId: '1',
+            updatedAt: undefined,
+        },
+        adjacentEvent: {
+            eventType: 'user_created',
+            eventData: { userId: '1' },
+        },
     };
     const snakeCaseResult =
         await client.tests.sendObjectWithSnakeCaseKeys(snakeCasePayload);
@@ -153,10 +189,43 @@ test('can send/receive object with transformed keys', async () => {
         isAdmin: undefined,
         displayName: 'john doe',
         phoneNumber: '2112112111',
+        externalEvent: {
+            type: 'UserCreated',
+            value: { userId: '1' },
+        },
+        internalEvent: {
+            eventType: 'UserUpdated',
+            userId: '1',
+            updatedAt: new Date(),
+        },
+        adjacentEvent: { eventType: 'UserUpdated', eventData: 'hello world' },
     };
     const pascalCaseResult =
         await client.tests.sendObjectWithPascalCaseKeys(pascalCasePayload);
     expect(pascalCaseResult).toStrictEqual(pascalCasePayload);
+    const kebabCasePayload: ObjectWithKebabCaseKeys = {
+        createdAt: new Date(),
+        emailAddress: undefined,
+        isAdmin: undefined,
+        displayName: 'john doe',
+        phoneNumber: '2112112111',
+        externalEvent: {
+            type: 'user-created',
+            value: { userId: '1' },
+        },
+        internalEvent: {
+            eventType: 'user-updated',
+            userId: '1',
+            updatedAt: new Date(),
+        },
+        adjacentEvent: {
+            eventType: 'user-created',
+            eventData: { userId: '1' },
+        },
+    };
+    const kebabCaseResult =
+        await client.tests.sendObjectWithKebabCaseKeys(kebabCasePayload);
+    expect(kebabCaseResult).toStrictEqual(kebabCasePayload);
 });
 test('returns error if sending nothing when RPC expects body', async () => {
     try {
@@ -233,7 +302,9 @@ test('can send/receive partial objects', async () => {
         array: undefined,
         object: undefined,
         record: undefined,
-        discriminator: undefined,
+        unionExternal: undefined,
+        unionInternal: undefined,
+        unionAdjacent: undefined,
         nestedObject: undefined,
         nestedArray: undefined,
         any: undefined,
@@ -265,7 +336,9 @@ test('can send/receive object with nullable fields', async () => {
         array: null,
         object: null,
         record: null,
-        discriminator: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         nestedObject: {
             id: null,
             timestamp: null,
@@ -308,38 +381,344 @@ test('can send/receive recursive objects', async () => {
     expect(result).toStrictEqual(payload);
 });
 
-test('can send/receive recursive unions', async () => {
-    const payload: RecursiveUnion = {
-        type: 'CHILDREN',
-        data: [
-            {
-                type: 'CHILD',
-                data: {
-                    type: 'TEXT',
-                    data: 'Hello world',
+describe('can send/receive recursive unions', () => {
+    test('externally tagged', async () => {
+        const payload: RecursiveUnionExternal = {
+            type: 'children',
+            value: [
+                {
+                    type: 'child',
+                    value: {
+                        type: 'text',
+                        value: 'Hello world',
+                    },
                 },
-            },
-            {
-                type: 'SHAPE',
-                data: {
-                    width: 1,
-                    height: 2,
-                    color: 'blue',
+                {
+                    type: 'shape',
+                    value: {
+                        width: 1,
+                        height: 2,
+                        color: 'blue',
+                    },
                 },
-            },
-            {
-                type: 'CHILDREN',
-                data: [
-                    {
-                        type: 'TEXT',
+                {
+                    type: 'children',
+                    value: [
+                        {
+                            type: 'text',
+                            value: 'Hello world',
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.tests.sendRecursiveUnionExternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('internally tagged', async () => {
+        const payload: RecursiveUnionInternal = {
+            kind: 'children',
+            data: [
+                {
+                    kind: 'child',
+                    data: {
+                        kind: 'text',
                         data: 'Hello world',
                     },
-                ],
-            },
-        ],
+                },
+                {
+                    kind: 'shape',
+                    data: {
+                        width: 1,
+                        height: 2,
+                        color: 'blue',
+                    },
+                },
+                {
+                    kind: 'children',
+                    data: [
+                        {
+                            kind: 'text',
+                            data: 'Hello world',
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.tests.sendRecursiveUnionInternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('adjacently tagged', async () => {
+        const payload: RecursiveUnionAdjacent = {
+            kind: 'children',
+            data: [
+                {
+                    kind: 'child',
+                    data: {
+                        kind: 'text',
+                        data: 'Hello world',
+                    },
+                },
+                {
+                    kind: 'shape',
+                    data: {
+                        width: 1,
+                        height: 2,
+                        color: 'blue',
+                    },
+                },
+                {
+                    kind: 'children',
+                    data: [
+                        {
+                            kind: 'text',
+                            data: 'Hello world',
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.tests.sendRecursiveUnionAdjacent(payload);
+        expect(result).toStrictEqual(payload);
+    });
+});
+
+describe('can send/receive internally tagged unions with GET requests', () => {
+    const timestamp = new Date('2001-01-01T16:00:00.000Z');
+    const cases: Record<string, UnionInternalGetRequest> = {
+        'empty variant': { kind: 'empty' },
+        'null values': {
+            kind: 'with-fields',
+            string: 'hello world',
+            nullableString: null,
+            float64: 1.5,
+            int64: BigInt('-5'),
+            boolean: false,
+            timestamp,
+            nullableEnum: null,
+        },
+        'all values set': {
+            kind: 'with-fields',
+            string: 'hello world',
+            nullableString: 'hello world',
+            optionalString: 'hello world',
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp,
+            nullableEnum: 'B',
+        },
+        'values that need to be url encoded': {
+            kind: 'with-fields',
+            string: 'a b&c=d/\u00e9?#+',
+            nullableString: 'a b&c=d/\u00e9?#+',
+            optionalString: 'a b&c=d/\u00e9?#+',
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp,
+            nullableEnum: 'A',
+        },
+        'non-nullable string set to "null"': {
+            kind: 'with-fields',
+            string: 'null',
+            nullableString: null,
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp,
+            nullableEnum: null,
+        },
     };
-    const result = await client.tests.sendRecursiveUnion(payload);
-    expect(result).toStrictEqual(payload);
+    for (const name of Object.keys(cases)) {
+        test(name, async () => {
+            const payload = cases[name]!;
+            const result =
+                await client.tests.sendUnionInternalGetRequest(payload);
+            expect(result).toEqual(payload);
+        });
+    }
+});
+
+function label(input: unknown) {
+    return JSON.stringify(input, (_, val) =>
+        typeof val === 'bigint' ? val.toString() : val,
+    );
+}
+
+describe('can send/receive union variant shapes', () => {
+    const internal: UnionVariantShapes['internal'][] = [
+        { kind: 'empty' },
+        { kind: 'all-optional' },
+        { kind: 'all-optional', second: 1 },
+        { kind: 'all-optional', first: 'a', second: 1 },
+        { kind: 'mixed', required: 'a', nullable: null },
+        { kind: 'mixed', required: 'a', optional: 'b', nullable: 'c' },
+        {
+            kind: 'nested',
+            array: [{ id: 'a' }],
+            record: { a: BigInt('-1') },
+            object: { timestamp: new Date() },
+        },
+    ];
+    const external: UnionVariantShapes['external'][] = [
+        { type: 'empty', value: {} },
+        { type: 'all-optional', value: {} },
+        { type: 'all-optional', value: { second: 1 } },
+        { type: 'mixed', value: { required: 'a', nullable: null } },
+        {
+            type: 'mixed',
+            value: { required: 'a', optional: 'b', nullable: 'c' },
+        },
+    ];
+    const adjacent: UnionVariantShapes['adjacent'][] = [
+        { kind: 'empty', data: {} },
+        { kind: 'all-optional', data: {} },
+        { kind: 'all-optional', data: { second: 1 } },
+        { kind: 'mixed', data: { required: 'a', nullable: null } },
+        {
+            kind: 'mixed',
+            data: { required: 'a', optional: 'b', nullable: 'c' },
+        },
+    ];
+    const defaults: UnionVariantShapes = {
+        internal: internal[0]!,
+        external: external[0]!,
+        adjacent: adjacent[0]!,
+    };
+    async function roundTrip(payload: UnionVariantShapes) {
+        const result = await client.tests.sendUnionVariantShapes(payload);
+        // the client sets missing optional fields to undefined
+        expect(result).toEqual(payload);
+        expect($$UnionVariantShapes.validate(result)).toBe(true);
+    }
+    for (const value of internal) {
+        test(`internally tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, internal: value }));
+    }
+    for (const value of external) {
+        test(`externally tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, external: value }));
+    }
+    for (const value of adjacent) {
+        test(`adjacently tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, adjacent: value }));
+    }
+});
+
+describe('can send/receive union variant types', () => {
+    const values: { type: string; value: any }[] = [
+        { type: 'string', value: 'hello world' },
+        { type: 'int64', value: BigInt('-5') },
+        { type: 'uint64', value: BigInt('5') },
+        { type: 'float64', value: 1.5 },
+        { type: 'enumerator', value: 'B' },
+        { type: 'record', value: { a: 'b' } },
+        { type: 'any', value: { a: 1 } },
+        { type: 'any', value: null },
+        { type: 'nullableString', value: null },
+        { type: 'nullableString', value: 'hello world' },
+        { type: 'nullableArray', value: null },
+        { type: 'nullableArray', value: ['hello world'] },
+        { type: 'externalUnion', value: { type: 'text', value: 'hello' } },
+        { type: 'internalUnion', value: { shape: 'circle', radius: 1.5 } },
+        { type: 'adjacentUnion', value: { kind: 'text', data: 'hello' } },
+        { type: 'class', value: 'hello world' },
+        { type: 'default', value: 'hello world' },
+    ];
+    const internal: UnionVariantTypes['internal'][] = [
+        { kind: 'class', for: 'a', default: 'b' },
+        {
+            kind: 'default',
+            class: 'a',
+            internalUnion: { shape: 'circle', radius: 1.5 },
+            adjacentUnion: { kind: 'text', data: 'hello' },
+            externalUnion: { type: 'text', value: 'hello' },
+        },
+    ];
+    const defaults: UnionVariantTypes = {
+        external: { type: 'string', value: 'hello world' },
+        adjacent: { kind: 'string', data: 'hello world' },
+        internal: internal[0]!,
+    };
+    async function roundTrip(payload: UnionVariantTypes) {
+        const result = await client.tests.sendUnionVariantTypes(payload);
+        expect(result).toStrictEqual(payload);
+        expect($$UnionVariantTypes.validate(result)).toBe(true);
+    }
+    for (const { type, value } of values) {
+        test(`externally tagged ${label({ type, value })}`, () =>
+            roundTrip({ ...defaults, external: { type, value } as any }));
+    }
+    for (const { type, value } of values) {
+        test(`adjacently tagged ${label({ type, value })}`, () =>
+            roundTrip({
+                ...defaults,
+                adjacent: { kind: type, data: value } as any,
+            }));
+    }
+    for (const value of internal) {
+        test(`internally tagged ${label(value)}`, () =>
+            roundTrip({ ...defaults, internal: value }));
+    }
+});
+
+describe('can send/receive discriminators with empty objects', () => {
+    const cases: DiscriminatorWithEmptyObject[] = [
+        { type: 'EMPTY' },
+        { type: 'NOT_EMPTY', foo: 'hello world', bar: 1.5, baz: true },
+    ];
+    for (const payload of cases) {
+        test(payload.type, async () => {
+            const result =
+                await client.tests.sendDiscriminatorWithEmptyObject(payload);
+            expect(result).toStrictEqual(payload);
+        });
+    }
+});
+
+describe('prefixed client can send/receive unions', () => {
+    const prefixedClient = new TestClientPrefixed({ baseUrl, headers });
+
+    test('externally tagged', async () => {
+        const payload: FooRecursiveUnionExternal = {
+            type: 'child',
+            value: { type: 'text', value: 'hello world' },
+        };
+        const result = await prefixedClient.sendRecursiveUnionExternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('internally tagged', async () => {
+        const payload: FooRecursiveUnionInternal = {
+            kind: 'child',
+            data: { kind: 'text', data: 'hello world' },
+        };
+        const result = await prefixedClient.sendRecursiveUnionInternal(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('adjacently tagged', async () => {
+        const payload: FooRecursiveUnionAdjacent = {
+            kind: 'child',
+            data: { kind: 'text', data: 'hello world' },
+        };
+        const result = await prefixedClient.sendRecursiveUnionAdjacent(payload);
+        expect(result).toStrictEqual(payload);
+    });
+    test('internally tagged with a GET request', async () => {
+        const payload: FooUnionInternalGetRequest = {
+            kind: 'with-fields',
+            string: 'a b&c',
+            nullableString: null,
+            float64: 1.5,
+            int64: BigInt('5'),
+            boolean: true,
+            timestamp: new Date('2001-01-01T16:00:00.000Z'),
+            nullableEnum: 'A',
+        };
+        const result =
+            await prefixedClient.sendUnionInternalGetRequest(payload);
+        expect(result).toEqual(payload);
+    });
 });
 
 test('onError hook fires properly', async () => {

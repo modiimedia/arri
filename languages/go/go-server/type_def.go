@@ -46,9 +46,14 @@ type TypeDef struct {
 	OptionalProperties Option[OrderedMap[TypeDef]] `key:"optionalProperties"`
 	IsStrict           Option[bool]                `key:"isStrict"`
 	Values             Option[*TypeDef]            `key:"values"`
-	Discriminator      Option[string]              `key:"discriminator"`
-	Mapping            Option[OrderedMap[TypeDef]] `key:"mapping"`
-	Ref                Option[string]              `key:"ref"`
+	TagKey             Option[string]              `key:"tagKey"`
+	ValueKey           Option[string]              `key:"valueKey"`
+	Union              Option[OrderedMap[TypeDef]] `key:"union"`
+	// Deprecated: the go server outputs union schemas instead. Use TagKey and Union.
+	Discriminator Option[string] `key:"discriminator"`
+	// Deprecated: the go server outputs union schemas instead. Use TagKey and Union.
+	Mapping Option[OrderedMap[TypeDef]] `key:"mapping"`
+	Ref     Option[string]              `key:"ref"`
 }
 
 const (
@@ -247,6 +252,7 @@ func primitiveTypeToTypeDef(value reflect.Type, context TypeDefContext) (*TypeDe
 	}
 }
 
+// Deprecated: discriminator structs are treated as internally tagged unions. Use arri.Union instead.
 func IsDiscriminatorStruct(input reflect.Type) bool {
 	if input.Kind() != reflect.Struct {
 		return false
@@ -293,17 +299,17 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
 	}
-	// if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
-	// 	return nil, errors.New("cannot create schema for an empty struct")
-	// }
+	union, unionErr := getUnionInfo(input)
+	if unionErr != nil {
+		return nil, fmt.Errorf("error at %s. %w", context.InstancePath, unionErr)
+	}
+	if union != nil {
+		return unionToTypeDef(typeId, input, union, context)
+	}
 	requiredFields := OrderedMap[TypeDef]{}
 	optionalFields := OrderedMap[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
-		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
-		if isDiscriminator {
-			return taggedUnionToTypeDef(typeId, input, context)
-		}
 		key := field.Tag.Get("key")
 		if len(key) == 0 {
 			switch context.KeyCasing {
@@ -317,38 +323,8 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 				key = strcase.ToLowerCamel(field.Name)
 			}
 		}
-		var deprecated = false
-		annotations := strings.Split(field.Tag.Get("arri"), ",")
-		for i := 0; i < len(annotations); i++ {
-			annotation := annotations[i]
-			switch annotation {
-			case "deprecated":
-				deprecated = true
-			}
-		}
-		deprecatedNote := None[string]()
-		deprecatedAnnotation := field.Tag.Get("deprecated")
-		if len(deprecatedAnnotation) > 0 {
-			deprecated = true
-			deprecatedNote.Set(deprecatedAnnotation)
-		}
 		fieldType := field.Type
-		description := field.Tag.Get("description")
-		enumValues := None[Option[[]string]]()
-		enumName := None[Option[string]]()
-		if len(field.Tag.Get("enum")) > 0 {
-			valueList := []string{}
-			values := strings.Split(field.Tag.Get("enum"), ",")
-			for i := 0; i < len(values); i++ {
-				value := values[i]
-				valueList = append(valueList, strings.TrimSpace(value))
-			}
-			enumValues = Some(Some(valueList))
-		}
-		if len(field.Tag.Get("enumName")) > 0 {
-			s := strings.TrimSpace(field.Tag.Get("enumName"))
-			enumName = Some(Some(s))
-		}
+		enumValues, enumName := enumOptionsFromField(&field)
 		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
 			fieldType = extractOptionalType(fieldType)
@@ -376,27 +352,7 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 		if fieldError != nil {
 			return nil, fieldError
 		}
-		if len(description) > 0 || deprecated {
-			if fieldResult.Metadata.IsNone() {
-				fieldResult.Metadata = Some(TypeDefMetadata{})
-			}
-			desc := None[string]()
-			isDeprecated := None[bool]()
-			if len(description) > 0 {
-				desc.Set(description)
-			}
-			if deprecated {
-				isDeprecated.Set(deprecated)
-			}
-			if desc.IsSome() || isDeprecated.IsSome() {
-				fieldResult.Metadata.Set(TypeDefMetadata{
-					Id:             fieldResult.Metadata.Unwrap().Id,
-					Description:    desc,
-					IsDeprecated:   isDeprecated,
-					DeprecatedNote: deprecatedNote,
-				})
-			}
-		}
+		applyFieldMetadata(&field, fieldResult)
 		if isOptional {
 			optionalFields.Set(key, *fieldResult)
 		} else {
@@ -431,74 +387,63 @@ func extractNullableType(input reflect.Type) reflect.Type {
 	return field.Type
 }
 
-func taggedUnionToTypeDef(name Option[string], input reflect.Type, context TypeDefContext) (*TypeDef, error) {
-	kind := input.Kind()
-	if kind != reflect.Struct {
-		return nil, errors.ErrUnsupported
+func enumOptionsFromField(field *reflect.StructField) (Option[Option[[]string]], Option[Option[string]]) {
+	enumValues := None[Option[[]string]]()
+	enumName := None[Option[string]]()
+	if len(field.Tag.Get("enum")) > 0 {
+		valueList := []string{}
+		values := strings.Split(field.Tag.Get("enum"), ",")
+		for i := 0; i < len(values); i++ {
+			value := values[i]
+			valueList = append(valueList, strings.TrimSpace(value))
+		}
+		enumValues = Some(Some(valueList))
 	}
-	if input.NumField() == 0 {
-		return nil, errors.New("cannot create discriminator schema for an empty struct")
+	if len(field.Tag.Get("enumName")) > 0 {
+		s := strings.TrimSpace(field.Tag.Get("enumName"))
+		enumName = Some(Some(s))
 	}
-	discriminatorKey := "type"
-	mapping := OrderedMap[TypeDef]{}
-	for i := 0; i < input.NumField(); i++ {
-		field := input.Field(i)
-		// we only accept "DiscriminatorKey" if it's the first key in the struct
-		if i == 0 && field.Type.Name() == "DiscriminatorKey" {
-			discriminatorKeyTag := field.Tag.Get("discriminatorKey")
-			if len(discriminatorKeyTag) > 0 {
-				discriminatorKey = strings.TrimSpace(discriminatorKeyTag)
-			}
-			continue
+	return enumValues, enumName
+}
+
+// applies the description and deprecation tags of a field to its type definition
+func applyFieldMetadata(field *reflect.StructField, fieldResult *TypeDef) {
+	var deprecated = false
+	annotations := strings.Split(field.Tag.Get("arri"), ",")
+	for i := 0; i < len(annotations); i++ {
+		annotation := annotations[i]
+		switch annotation {
+		case "deprecated":
+			deprecated = true
 		}
-		discriminatorValue := field.Tag.Get("discriminator")
-		if len(discriminatorValue) == 0 {
-			return nil, errors.New("all discriminator subtypes must have the \"discriminator\" tag")
-		}
-		if field.Type.Kind() != reflect.Ptr {
-			return nil, errors.New("all fields in discriminators structs must be a pointer to a struct")
-		}
-		if IsDiscriminatorStruct(field.Type.Elem()) {
-			return nil, errors.New("the direct child of a discriminator struct cannot be another discriminator struct")
-		}
-		description := None[string]()
-		descriptionTag := field.Tag.Get("description")
-		if len(descriptionTag) > 0 {
-			description = Some(descriptionTag)
-		}
-		schemaPath := context.SchemaPath + "/mapping/" + discriminatorValue
-		fieldResult, fieldError := structToTypeDef(
-			field.Type.Elem(),
-			context.copyWith(
-				None[uint32](),
-				None[[]string](),
-				None[string](),
-				Some(schemaPath),
-				Some(None[bool]()),
-				None[Option[[]string]](),
-				None[Option[string]](),
-			),
-		)
-		if fieldError != nil {
-			return nil, fieldError
-		}
-		if description.IsSome() {
-			meta := fieldResult.Metadata
-			if meta.IsNone() {
-				meta = Some(TypeDefMetadata{Description: description})
-			} else {
-				meta.Value.Description = description
-			}
-			fieldResult.Metadata = meta
-		}
-		mapping.Set(discriminatorValue, *fieldResult)
 	}
-	return &TypeDef{
-		Discriminator: Some(discriminatorKey),
-		Mapping:       Some(mapping),
-		IsNullable:    context.IsNullable,
-		Metadata:      Some(TypeDefMetadata{Id: name}),
-	}, nil
+	deprecatedNote := None[string]()
+	deprecatedAnnotation := field.Tag.Get("deprecated")
+	if len(deprecatedAnnotation) > 0 {
+		deprecated = true
+		deprecatedNote.Set(deprecatedAnnotation)
+	}
+	description := field.Tag.Get("description")
+	if len(description) == 0 && !deprecated {
+		return
+	}
+	if fieldResult.Metadata.IsNone() {
+		fieldResult.Metadata = Some(TypeDefMetadata{})
+	}
+	desc := None[string]()
+	isDeprecated := None[bool]()
+	if len(description) > 0 {
+		desc.Set(description)
+	}
+	if deprecated {
+		isDeprecated.Set(deprecated)
+	}
+	fieldResult.Metadata.Set(TypeDefMetadata{
+		Id:             fieldResult.Metadata.Unwrap().Id,
+		Description:    desc,
+		IsDeprecated:   isDeprecated,
+		DeprecatedNote: deprecatedNote,
+	})
 }
 
 func arrayToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) {

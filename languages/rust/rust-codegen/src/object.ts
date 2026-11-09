@@ -129,7 +129,7 @@ export default function rustObjectFromSchema(
         }
 
         toQueryParamParams.push(
-            `\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, '_query_parts_')};`,
+            `\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, encodeURIComponent(key), '_query_parts_')};`,
         );
     }
     for (let i = 0; i < optionalKeys.length; i++) {
@@ -196,7 +196,7 @@ export default function rustObjectFromSchema(
             };`);
         }
         toQueryParamParams.push(
-            `\t\t\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, '_query_parts_')};`,
+            `\t\t\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, encodeURIComponent(key), '_query_parts_')};`,
         );
     }
     context.generatedTypes.push(structName);

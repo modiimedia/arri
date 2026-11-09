@@ -171,7 +171,7 @@ All generated models will be data classes. They will have access to the followin
 **Other Notes**
 
 - All Enums will have a `serialValue` property.
-- Discriminator schemas are converted to sealed classes
+- Union and discriminator schemas are converted to sealed interfaces
 
 ## Development
 

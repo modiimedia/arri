@@ -62,7 +62,7 @@ export function dartClassFromSchema(
     const toUrlQueryParts: string[] = [];
     if (context.discriminatorKey && context.discriminatorValue) {
         toUrlQueryParts.push(
-            `_queryParts_.add("${context.discriminatorKey}=$${validDartIdentifier(context.discriminatorKey)}");`,
+            `_queryParts_.add("${encodeURIComponent(context.discriminatorKey)}=${encodeURIComponent(context.discriminatorValue)}");`,
         );
     }
     const copyWithParamParts: string[] = [];
@@ -96,7 +96,7 @@ export function dartClassFromSchema(
             `      "${key}": ${typeResult.toJson(propName, '', key)},`,
         );
         toUrlQueryParts.push(
-            `    ${typeResult.toQueryString(propName, '_queryParts_', key)};`,
+            `    ${typeResult.toQueryString(propName, '_queryParts_', encodeURIComponent(key))};`,
         );
         if (typeResult.isNullable) {
             copyWithParamParts.push(
@@ -142,7 +142,7 @@ export function dartClassFromSchema(
             `    if (${propName} != null) _output_["${key}"] = ${typeResult.toJson(propName, '_output_', key)};`,
         );
         toUrlQueryParts.push(
-            `    ${typeResult.toQueryString(propName, '_queryParts_', key)};`,
+            `    ${typeResult.toQueryString(propName, '_queryParts_', encodeURIComponent(key))};`,
         );
         copyWithParamParts.push(
             `  ${typeResult.typeName} Function()? ${propName},`,

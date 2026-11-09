@@ -59,11 +59,11 @@ func TestArrayToTypeDef(t *testing.T) {
 	}
 }
 
-func TestDiscriminatorToTypeDef(t *testing.T) {
+func TestLegacyDiscriminatorToTypeDef(t *testing.T) {
 	expectedResult := &arri.TypeDef{
-		Metadata:      arri.Some(arri.TypeDefMetadata{}),
-		Discriminator: arri.Some("type"),
-		Mapping: arri.Some(arri.OrderedMapWithData[arri.TypeDef](
+		Metadata: arri.Some(arri.TypeDefMetadata{}),
+		TagKey:   arri.Some("type"),
+		Union: arri.Some(arri.OrderedMapWithData[arri.TypeDef](
 			arri.Pair("A", arri.TypeDef{
 				Metadata: arri.Some(arri.TypeDefMetadata{}),
 				Properties: arri.Some(arri.OrderedMapWithData[arri.TypeDef](
@@ -125,6 +125,20 @@ func TestNullableStringToTypeDef(t *testing.T) {
 	}
 }
 
+// the variants shared by unionExternal and unionAdjacent
+var sharedUnionVariants = arri.OrderedMapWithData(
+	arri.Pair("object", arri.TypeDef{
+		Metadata: arri.Some(arri.TypeDefMetadata{Id: arri.Some("nestedObject")}),
+		Properties: arri.Some(arri.OrderedMapWithData(
+			arri.Pair("id", arri.TypeDef{Type: arri.Some(arri.String)}),
+			arri.Pair("content", arri.TypeDef{Type: arri.Some(arri.String)}),
+		)),
+	}),
+	arri.Pair("array", arri.TypeDef{Elements: arri.Some(&arri.TypeDef{Type: arri.Some(arri.String)})}),
+	arri.Pair("boolean", arri.TypeDef{Type: arri.Some(arri.Boolean)}),
+	arri.Pair("nullable-timestamp", arri.TypeDef{Type: arri.Some(arri.Timestamp), IsNullable: arri.Some(true)}),
+)
+
 func TestObjectWithEveryTypeToTypeDef(t *testing.T) {
 	expectedResult := &arri.TypeDef{
 		Metadata: arri.Some(arri.TypeDefMetadata{
@@ -156,43 +170,35 @@ func TestObjectWithEveryTypeToTypeDef(t *testing.T) {
 			),
 			arri.Pair("array", arri.TypeDef{Elements: arri.Some(&arri.TypeDef{Type: arri.Some(arri.Boolean)})}),
 			arri.Pair("record", arri.TypeDef{Values: arri.Some(&arri.TypeDef{Type: arri.Some(arri.Boolean)})}),
-			arri.Pair(
-				"discriminator",
-				arri.TypeDef{
-					Discriminator: arri.Some("typeName"),
-					Metadata: arri.Some(arri.TypeDefMetadata{
-						Id: arri.Some("discriminator"),
+			arri.Pair("unionExternal", arri.TypeDef{
+				Metadata: arri.Some(arri.TypeDefMetadata{Id: arri.Some("unionExternal")}),
+				Union:    arri.Some(sharedUnionVariants),
+			}),
+			arri.Pair("unionInternal", arri.TypeDef{
+				Metadata: arri.Some(arri.TypeDefMetadata{Id: arri.Some("unionInternal")}),
+				TagKey:   arri.Some("shape"),
+				Union: arri.Some(arri.OrderedMapWithData(
+					arri.Pair("rectangle", arri.TypeDef{
+						Metadata: arri.Some(arri.TypeDefMetadata{Id: arri.Some("unionInternalRectangle")}),
+						Properties: arri.Some(arri.OrderedMapWithData(
+							arri.Pair("width", arri.TypeDef{Type: arri.Some(arri.Float64)}),
+							arri.Pair("height", arri.TypeDef{Type: arri.Some(arri.Float64)}),
+						)),
 					}),
-					Mapping: arri.Some(arri.OrderedMapWithData(
-						arri.Pair("A", arri.TypeDef{
-							Metadata: arri.Some(arri.TypeDefMetadata{
-								Id: arri.Some("discriminatorA"),
-							}),
-							Properties: arri.Some(arri.OrderedMapWithData(
-								arri.Pair("id", arri.TypeDef{Type: arri.Some(arri.String)}),
-							)),
-						}),
-						arri.Pair("B", arri.TypeDef{
-							Metadata: arri.Some(arri.TypeDefMetadata{
-								Id: arri.Some("discriminatorB"),
-							}),
-							Properties: arri.Some(arri.OrderedMapWithData(
-								arri.Pair("id", arri.TypeDef{Type: arri.Some(arri.String)}),
-								arri.Pair("name", arri.TypeDef{Type: arri.Some(arri.String)}),
-							)),
-						}),
-						arri.Pair("C", arri.TypeDef{
-							Metadata: arri.Some(arri.TypeDefMetadata{
-								Id: arri.Some("discriminatorC"),
-							}),
-							Properties: arri.Some(arri.OrderedMapWithData(
-								arri.Pair("id", arri.TypeDef{Type: arri.Some(arri.String)}),
-								arri.Pair("name", arri.TypeDef{Type: arri.Some(arri.String)}),
-								arri.Pair("date", arri.TypeDef{Type: arri.Some(arri.Timestamp)}),
-							)),
-						}),
-					)),
-				}),
+					arri.Pair("circle", arri.TypeDef{
+						Metadata: arri.Some(arri.TypeDefMetadata{Id: arri.Some("unionInternalCircle")}),
+						Properties: arri.Some(arri.OrderedMapWithData(
+							arri.Pair("radius", arri.TypeDef{Type: arri.Some(arri.Float64)}),
+						)),
+					}),
+				)),
+			}),
+			arri.Pair("unionAdjacent", arri.TypeDef{
+				Metadata: arri.Some(arri.TypeDefMetadata{Id: arri.Some("unionAdjacent")}),
+				TagKey:   arri.Some("kind"),
+				ValueKey: arri.Some("data"),
+				Union:    arri.Some(sharedUnionVariants),
+			}),
 			arri.Pair("any", arri.TypeDef{}),
 		)),
 	}
